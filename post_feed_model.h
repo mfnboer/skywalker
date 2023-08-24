@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-#include <atproto/lib/lexicon/app_bsky_feed.h>
+#include "post.h"
 #include <QAbstractListModel>
 
 namespace Skywalker {
@@ -12,7 +12,8 @@ class PostFeedModel : public QAbstractListModel
 public:
     enum class Role {
         AuthorName = Qt::UserRole + 1,
-        Text
+        PostText,
+        CreatedSecondsAgo
     };
 
     explicit PostFeedModel(QObject* parent = nullptr);
@@ -25,7 +26,8 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    ATProto::AppBskyFeed::PostFeed mFeed;
+    std::vector<Post> mFeed;
+    ATProto::AppBskyFeed::PostFeed mRawFeed;
 };
 
 }

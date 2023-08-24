@@ -2,6 +2,8 @@
 // License: GPLv3
 #include "post_feed_model.h"
 
+using namespace std::chrono_literals;
+
 namespace Skywalker {
 
 PostFeedModel::PostFeedModel(QObject* parent) :
@@ -10,10 +12,18 @@ PostFeedModel::PostFeedModel(QObject* parent) :
 
 void PostFeedModel::addFeed(ATProto::AppBskyFeed::PostFeed&& feed)
 {
-    // TODO: proper concatenation
-    beginInsertRows({}, mFeed.size(), mFeed.size() + feed.size() - 1);
-    mFeed = std::move(feed);
-    qDebug() << "NEW FEED:" << mFeed.size();
+    mRawFeed = std::forward<ATProto::AppBskyFeed::PostFeed>(feed);
+    const int oldSize = mFeed.size();
+
+    for (const auto& feedEntry : mRawFeed)
+    {
+        if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+            mFeed.push_back(Post(feedEntry.get()));
+        else
+            qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
+    }
+
+    beginInsertRows({}, oldSize, mFeed.size() - 1);
     endInsertRows();
 }
 
@@ -28,18 +38,19 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
     if (index.row() < 0 || index.row() >= mFeed.size())
         return {};
 
-    const auto& feedViewPost = mFeed[index.row()];
-    const auto& post = feedViewPost->mPost;
-    const auto& author = post->mAuthor;
+    const auto& post = mFeed[index.row()];
 
     switch (Role(role))
     {
     case Role::AuthorName:
-        return author->mDisplayName ? author->mDisplayName->trimmed() : author->mHandle;
-    case Role::Text:
-        if (post->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
-            return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(post->mRecord)->mText;
-        break;
+        return post.getAuthor().getName();
+    case Role::PostText:
+        return post.getText();
+    case Role::CreatedSecondsAgo:
+    {
+        const auto duration = QDateTime::currentDateTime() - post.getCreatedAt();
+        return qint64(duration / 1000ms);
+    }
     default:
         break;
     }
@@ -51,7 +62,8 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::AuthorName), "authorName" },
-        { int(Role::Text), "postText" }
+        { int(Role::PostText), "postText" },
+        { int(Role::CreatedSecondsAgo), "createdSecondsAgo" }
     };
 
     return roles;
