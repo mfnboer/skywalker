@@ -25,6 +25,8 @@ qt_add_qml_module(appskywalker
         skywalker.cpp
     RESOURCES
         qtquickcontrols2.conf
+        SOURCES post_feed_model.h
+        SOURCES post_feed_model.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

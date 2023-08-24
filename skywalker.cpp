@@ -4,7 +4,9 @@
 
 namespace Skywalker {
 
-Skywalker::Skywalker(QObject* parent) : QObject(parent) {}
+Skywalker::Skywalker(QObject* parent) :
+    QObject(parent)
+{}
 
 void Skywalker::login(const QString user, QString password, const QString host)
 {
@@ -19,6 +21,18 @@ void Skywalker::login(const QString user, QString password, const QString host)
             qDebug() << "Login" << user << "failed:" << error;
             emit loginFailed(error);
         });
+}
+
+void Skywalker::getTimeline()
+{
+    Q_ASSERT(mBsky);
+    mBsky->getTimeline({}, {},
+       [this](auto feed){
+            mTimelineModel.addFeed(std::move(feed->mFeed));
+            emit timelineModelChanged();
+       },
+       [](const QString& error){ qDebug() << "getTimeline FAILED:" << error; }
+    );
 }
 
 }
