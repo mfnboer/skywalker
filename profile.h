@@ -11,6 +11,7 @@ public:
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
 
     QString getName() const;
+    QString getAvatarUrl() const;
 
 private:
     const ATProto::AppBskyActor::ProfileViewBasic* mProfile;

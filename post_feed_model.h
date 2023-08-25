@@ -12,8 +12,10 @@ class PostFeedModel : public QAbstractListModel
 public:
     enum class Role {
         AuthorName = Qt::UserRole + 1,
+        AuthorAvatar,
         PostText,
-        CreatedSecondsAgo
+        PostCreatedSecondsAgo,
+        PostImages
     };
 
     explicit PostFeedModel(QObject* parent = nullptr);

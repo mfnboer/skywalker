@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtQuick.Window
+import Qt5Compat.GraphicalEffects
 import skywalker
 
 Window {
@@ -14,32 +15,61 @@ Window {
         id: timelineView
         anchors.fill: parent
         model: skywalker.timelineModel
-        delegate: ColumnLayout {
-            required property string authorName
-            required property string postText
-            required property int createdSecondsAgo
 
+        delegate: GridLayout {
+            required property string authorName
+            required property string authorAvatar
+            required property string postText
+            required property int postCreatedSecondsAgo
+            required property list<var> postImages // ImgageView
+
+            columns: 2
             width: timelineView.width
 
-            RowLayout {
+            Avatar {
+                id: avatar
+                width: 25
+                Layout.alignment: Qt.AlignTop
+                avatarUrl: authorAvatar
+            }
+
+            Column {
+                width: parent.width - avatar.width
+
+                RowLayout {
+                    width: parent.width
+
+                    Text {
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                        text: authorName
+                        font.bold: true
+                    }
+                    Text {
+                        rightPadding: 5
+                        text: durationToString(postCreatedSecondsAgo)
+                        font.pointSize: 8
+                        color: "grey"
+                    }
+                }
                 Text {
+                    width: parent.width
                     Layout.fillWidth: true
-                    text: authorName
-                    font.bold: true
+                    rightPadding: 5
+                    wrapMode: Text.Wrap
+                    text: postText
                 }
-                Text {
-                    text: durationToString(createdSecondsAgo)
-                    font.pointSize: 8
-                    color: "grey"
+                Image {
+                    width: parent.width
+                    Layout.fillWidth: true
+                    source: postImages.length > 0 ? postImages[0].thumbUrl : ""
+                    fillMode: Image.PreserveAspectFit
+                    visible: postImages.length > 0
                 }
             }
-            Text {
-                width: parent.width
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                text: postText
-            }
+
             Rectangle {
+                Layout.columnSpan: 2
                 width: parent.width
                 color: "lightgrey"
                 Layout.preferredHeight: 1
@@ -75,10 +105,14 @@ Window {
 
         duration = duration / 24
         if (duration < 30.4368499)
-            return Math.round(duration) + qStr("mo", "months")
+            return Math.round(duration) + qsTr("d", "days")
 
         duration = duration / 30.4368499
-        return Math.round(duration) + qStr("yr", "years")
+        if (duration < 36)
+            return Math.round(duration) + qsTr("mo", "months")
+
+        duration = duration / 12
+        return Math.round(duration) + qsTr("yr", "years")
     }
 
     Component.onCompleted: {

@@ -1,6 +1,8 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
+#include <QQmlEngine>
+#include <QQmlListProperty>
 
 using namespace std::chrono_literals;
 
@@ -44,14 +46,26 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
     {
     case Role::AuthorName:
         return post.getAuthor().getName();
+    case Role::AuthorAvatar:
+        return post.getAuthor().getAvatarUrl();
     case Role::PostText:
         return post.getText();
-    case Role::CreatedSecondsAgo:
+    case Role::PostCreatedSecondsAgo:
     {
         const auto duration = QDateTime::currentDateTime() - post.getCreatedAt();
         return qint64(duration / 1000ms);
     }
+    case Role::PostImages:
+    {
+        QVariantList images;
+        for (const auto& img : post.getImages())
+            images.push_back(QVariant::fromValue(*img));
+
+        qDebug() << "MICHEL:" << images.size();
+        return images;
+    }
     default:
+        qDebug() << "Uknown role requested:" << role;
         break;
     }
 
@@ -62,8 +76,10 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::AuthorName), "authorName" },
+        { int(Role::AuthorAvatar), "authorAvatar" },
         { int(Role::PostText), "postText" },
-        { int(Role::CreatedSecondsAgo), "createdSecondsAgo" }
+        { int(Role::PostCreatedSecondsAgo), "postCreatedSecondsAgo" },
+        { int(Role::PostImages), "postImages" },
     };
 
     return roles;

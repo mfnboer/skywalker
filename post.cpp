@@ -33,4 +33,23 @@ QDateTime Post::getCreatedAt() const
     return {};
 }
 
+std::vector<ImageView::Ptr> Post::getImages() const
+{
+    const auto& post = mFeedViewPost->mPost;
+
+    if (!post->mEmbed || post->mEmbed->mType != ATProto::AppBskyEmbed::EmbedType::IMAGES_VIEW)
+        return {};
+
+    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::Ptr>(post->mEmbed->mEmbed);
+    std::vector<ImageView::Ptr> images;
+
+    for (const auto& img : imagesView->mImages)
+    {
+        auto imgPtr = std::make_unique<ImageView>(img->mThumb, img->mFullSize, img->mFullSize);
+        images.push_back(std::move(imgPtr));
+    }
+
+    return images;
+}
+
 }

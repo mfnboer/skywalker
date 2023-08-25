@@ -16,4 +16,9 @@ QString BasicProfile::getName() const
     return name.isEmpty() ? mProfile->mHandle : name;
 }
 
+QString BasicProfile::getAvatarUrl() const
+{
+    return mProfile->mAvatar ? *mProfile->mAvatar : QString();
+}
+
 }

@@ -31,6 +31,8 @@ qt_add_qml_module(appskywalker
         SOURCES profile.h
         SOURCES post.cpp
         SOURCES profile.cpp
+        QML_FILES Avatar.qml
+        SOURCES image_view.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
