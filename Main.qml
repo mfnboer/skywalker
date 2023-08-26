@@ -14,6 +14,7 @@ Window {
     ListView {
         id: timelineView
         anchors.fill: parent
+        spacing: 5
         model: skywalker.timelineModel
 
         delegate: GridLayout {
@@ -21,7 +22,7 @@ Window {
             required property string authorAvatar
             required property string postText
             required property int postCreatedSecondsAgo
-            required property list<var> postImages // ImgageView
+            required property list<var> postImages // ImageView
 
             columns: 2
             width: timelineView.width
@@ -34,7 +35,8 @@ Window {
             }
 
             Column {
-                width: parent.width - avatar.width
+                id: postColumn
+                width: parent.width - avatar.width - 10
 
                 RowLayout {
                     width: parent.width
@@ -46,7 +48,6 @@ Window {
                         font.bold: true
                     }
                     Text {
-                        rightPadding: 5
                         text: durationToString(postCreatedSecondsAgo)
                         font.pointSize: 8
                         color: "grey"
@@ -55,16 +56,17 @@ Window {
                 Text {
                     width: parent.width
                     Layout.fillWidth: true
-                    rightPadding: 5
                     wrapMode: Text.Wrap
                     text: postText
+                    bottomPadding: postImages.length > 0 ? 5 : 0
                 }
-                Image {
-                    width: parent.width
-                    Layout.fillWidth: true
-                    source: postImages.length > 0 ? postImages[0].thumbUrl : ""
-                    fillMode: Image.PreserveAspectFit
-                    visible: postImages.length > 0
+
+                Component.onCompleted: {
+                    if (postImages.length > 0) {
+                        let qmlFile = `ImagePreview${(postImages.length)}.qml`
+                        let component = Qt.createComponent(qmlFile)
+                        component.createObject(postColumn, {images: postImages})
+                    }
                 }
             }
 
