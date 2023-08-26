@@ -33,6 +33,7 @@ void Skywalker::getTimeline()
        },
        [](const QString& error){ qDebug() << "getTimeline FAILED:" << error; }
     );
+    // TODO: show error in GUI
 }
 
 }

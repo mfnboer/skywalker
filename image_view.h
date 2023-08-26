@@ -2,10 +2,10 @@
 // License: GPLv3
 #pragma once
 #include <QObject>
-#include <QtQmlIntegration>
 
 namespace Skywalker
 {
+
 class ImageView
 {
     Q_GADGET

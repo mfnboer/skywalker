@@ -22,10 +22,29 @@ Window {
             required property string authorAvatar
             required property string postText
             required property int postCreatedSecondsAgo
+            required property string postRepostedByName
             required property list<var> postImages // ImageView
+            required property var postExternal // ExternalView
 
             columns: 2
             width: timelineView.width
+
+            Rectangle {
+                width: 25
+                color: "transparent"
+                visible: postRepostedByName
+            }
+
+            Text {
+                width: parent.width - 25 - 10
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                text: "Reposted by " + postRepostedByName
+                color: "darkslategrey"
+                font.bold: true
+                font.pointSize: 8
+                visible: postRepostedByName
+            }
 
             Avatar {
                 id: avatar
@@ -58,7 +77,7 @@ Window {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
                     text: postText
-                    bottomPadding: postImages.length > 0 ? 5 : 0
+                    bottomPadding: postImages.length > 0 || postExternal ? 5 : 0
                 }
 
                 Component.onCompleted: {
@@ -66,6 +85,11 @@ Window {
                         let qmlFile = `ImagePreview${(postImages.length)}.qml`
                         let component = Qt.createComponent(qmlFile)
                         component.createObject(postColumn, {images: postImages})
+                    }
+
+                    if (postExternal) {
+                        let component = Qt.createComponent("ExternalView.qml")
+                        component.createObject(postColumn, {postExternal: postExternal})
                     }
                 }
             }

@@ -15,7 +15,9 @@ public:
         AuthorAvatar,
         PostText,
         PostCreatedSecondsAgo,
-        PostImages
+        PostRepostedByName,
+        PostImages,
+        PostExternal
     };
 
     explicit PostFeedModel(QObject* parent = nullptr);

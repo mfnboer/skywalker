@@ -33,6 +33,14 @@ QDateTime Post::getCreatedAt() const
     return {};
 }
 
+std::optional<BasicProfile> Post::getRepostedBy() const
+{
+    if (!mFeedViewPost->mReason)
+        return {};
+
+    return BasicProfile(mFeedViewPost->mReason->mBy.get());
+}
+
 std::vector<ImageView::Ptr> Post::getImages() const
 {
     const auto& post = mFeedViewPost->mPost;
@@ -50,6 +58,21 @@ std::vector<ImageView::Ptr> Post::getImages() const
     }
 
     return images;
+}
+
+ExternalView::Ptr Post::getExternalView() const
+{
+    const auto& post = mFeedViewPost->mPost;
+
+    if (!post->mEmbed || post->mEmbed->mType != ATProto::AppBskyEmbed::EmbedType::EXTERNAL_VIEW)
+        return {};
+
+    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::Ptr>(post->mEmbed->mEmbed)->mExternal;
+    return std::make_unique<ExternalView>(
+            external->mUri,
+            external->mTitle,
+            external->mDescription,
+            external->mThumb ? *external->mThumb : "");
 }
 
 }
