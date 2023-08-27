@@ -1,0 +1,46 @@
+import QtQuick
+import QtQuick.Layouts
+import skywalker
+
+RowLayout {
+    required property string postText
+    required property list<imageview> postImages
+    property var postExternal // externalview (var allows NULL)
+    property var postRecord // recordview
+
+    id: postBody
+
+    Text {
+        id: bodyText
+        width: parent.width
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        text: postText
+        bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
+    }
+
+    Component.onCompleted: {
+        if (postImages.length > 0) {
+            let qmlFile = `ImagePreview${(postImages.length)}.qml`
+            let component = Qt.createComponent(qmlFile)
+            component.createObject(postBody.parent, {images: postImages})
+        }
+
+        if (postExternal) {
+            let component = Qt.createComponent("ExternalView.qml")
+            component.createObject(postBody.parent, {postExternal: postBody.postExternal})
+        }
+
+        if (postRecord) {
+            if (postRecord.notFound) {
+                console.debug("RECORD NOT FOUND")
+            } else if (postRecord.blocked) {
+                console.debug("RECORD BLOCKED")
+            }
+            else {
+                let component = Qt.createComponent("RecordView.qml")
+                component.createObject(postBody.parent, {record: postRecord})
+            }
+        }
+    }
+}

@@ -26,7 +26,7 @@ void Skywalker::login(const QString user, QString password, const QString host)
 void Skywalker::getTimeline()
 {
     Q_ASSERT(mBsky);
-    mBsky->getTimeline({}, {},
+    mBsky->getTimeline(100, {},
        [this](auto feed){
             mTimelineModel.addFeed(std::move(feed->mFeed));
             emit timelineModelChanged();

@@ -41,6 +41,11 @@ qt_add_qml_module(appskywalker
         SOURCES external_view.h
         QML_FILES ExternalView.qml
         SOURCES record_view.h
+        SOURCES record_view.cpp
+        QML_FILES RecordView.qml
+        QML_FILES PostHeader.qml
+        RESOURCES
+        QML_FILES PostBody.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

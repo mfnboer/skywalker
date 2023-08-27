@@ -16,7 +16,8 @@ public:
         PostCreatedSecondsAgo,
         PostRepostedByName,
         PostImages,
-        PostExternal
+        PostExternal,
+        PostRecord
     };
 
     explicit PostFeedModel(QObject* parent = nullptr);

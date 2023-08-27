@@ -71,6 +71,11 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         const auto& repostedBy = post.getRepostedBy();
         return repostedBy ? repostedBy->getName() : QVariant();
     }
+    case Role::PostRecord:
+    {
+        auto record = post.getRecordView();
+        return record ? QVariant::fromValue(*record) : QVariant();
+    }
     default:
         qDebug() << "Uknown role requested:" << role;
         break;
@@ -87,7 +92,8 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
         { int(Role::PostCreatedSecondsAgo), "postCreatedSecondsAgo" },
         { int(Role::PostRepostedByName), "postRepostedByName" },
         { int(Role::PostImages), "postImages" },
-        { int(Role::PostExternal), "postExternal"}
+        { int(Role::PostExternal), "postExternal"},
+        { int(Role::PostRecord), "postRecord"}
     };
 
     return roles;
