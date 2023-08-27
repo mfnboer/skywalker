@@ -16,9 +16,10 @@ QString BasicProfile::getName() const
     return name.isEmpty() ? mProfile->mHandle : name;
 }
 
-QString BasicProfile::getAvatarUrl() const
+const QString& BasicProfile::getAvatarUrl() const
 {
-    return mProfile->mAvatar ? *mProfile->mAvatar : QString();
+    static const QString NO_AVATAR;
+    return mProfile->mAvatar ? *mProfile->mAvatar : NO_AVATAR;
 }
 
 }

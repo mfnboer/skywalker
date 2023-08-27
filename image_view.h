@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
 
 namespace Skywalker
@@ -18,20 +19,16 @@ public:
     using Ptr = std::unique_ptr<ImageView>;
 
     ImageView() = default;
-    ImageView(const QString& thumbUrl, const QString& fullSizeUrl, const QString& alt) :
-        mThumbUrl(thumbUrl),
-        mFullSizeUrl(fullSizeUrl),
-        mAlt(alt)
+    ImageView(const ATProto::AppBskyEmbed::ImagesViewImage* viewImage) :
+        mViewImage(viewImage)
     {}
 
-    const QString& getThumbUrl() const { return mThumbUrl; }
-    const QString& getFullSizeUrl() const { return mFullSizeUrl; }
-    const QString& getAlt() const { return mAlt; }
+    const QString& getThumbUrl() const { return mViewImage->mThumb; }
+    const QString& getFullSizeUrl() const { return mViewImage->mFullSize; }
+    const QString& getAlt() const { return mViewImage->mAlt; }
 
 private:
-    QString mThumbUrl;
-    QString mFullSizeUrl;
-    QString mAlt;
+    const ATProto::AppBskyEmbed::ImagesViewImage* mViewImage = nullptr;
 };
 
 }

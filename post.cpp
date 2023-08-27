@@ -52,10 +52,7 @@ std::vector<ImageView::Ptr> Post::getImages() const
     std::vector<ImageView::Ptr> images;
 
     for (const auto& img : imagesView->mImages)
-    {
-        auto imgPtr = std::make_unique<ImageView>(img->mThumb, img->mFullSize, img->mFullSize);
-        images.push_back(std::move(imgPtr));
-    }
+        images.push_back(std::make_unique<ImageView>(img.get()));
 
     return images;
 }
@@ -68,11 +65,7 @@ ExternalView::Ptr Post::getExternalView() const
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::Ptr>(post->mEmbed->mEmbed)->mExternal;
-    return std::make_unique<ExternalView>(
-            external->mUri,
-            external->mTitle,
-            external->mDescription,
-            external->mThumb ? *external->mThumb : "");
+    return std::make_unique<ExternalView>(external.get());
 }
 
 RecordView::Ptr Post::getRecordView() const

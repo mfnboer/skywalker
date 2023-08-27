@@ -59,7 +59,6 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         for (const auto& img : post.getImages())
             images.push_back(*img);
 
-        qDebug() << "MICHEL #images:" << images.size();
         return QVariant::fromValue(images);
     }
     case Role::PostExternal:

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
 
 namespace Skywalker
@@ -19,23 +20,17 @@ public:
     using Ptr = std::unique_ptr<ExternalView>;
 
     ExternalView() = default;
-    ExternalView(const QString& uri, const QString& title, const QString& description, const QString& thumbUrl) :
-        mUri(uri),
-        mTitle(title),
-        mDescription(description),
-        mThumbUrl(thumbUrl)
+    ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal* external) :
+        mExternal(external)
     {}
 
-    const QString& getUri() const { return mUri; }
-    const QString& getTitle() const { return mTitle; }
-    const QString& getDescription() const { return mDescription; }
-    const QString& getThumbUrl() const { return mThumbUrl; }
+    const QString& getUri() const { return mExternal->mUri; }
+    const QString& getTitle() const { return mExternal->mTitle; }
+    const QString& getDescription() const { return mExternal->mDescription; }
+    const QString getThumbUrl() const { return mExternal->mThumb ? *mExternal->mThumb : QString(); }
 
 private:
-    QString mUri;
-    QString mTitle;
-    QString mDescription;
-    QString mThumbUrl;
+    const ATProto::AppBskyEmbed::ExternalViewExternal* mExternal = nullptr;
 };
 
 }
