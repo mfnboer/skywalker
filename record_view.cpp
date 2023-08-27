@@ -1,14 +1,42 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "record_view.h"
+#include "external_view.h"
 
 using namespace std::chrono_literals;
 
 namespace Skywalker {
 
+RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
+{
+    switch (view.mRecordType)
+    {
+    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND:
+    {
+        mNotFound = true;
+        break;
+    }
+    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_BLOCKED:
+    {
+        mBlocked = true;
+        break;
+    }
+    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD:
+    {
+        const auto& record = std::get<ATProto::AppBskyEmbed::RecordViewRecord::Ptr>(view.mRecord);
+        mRecord = record.get();
+        break;
+    }
+    default:
+        qWarning() << "Record type not supported:" << int(view.mRecordType);
+        mNotFound = true;
+        break;
+    }
+}
+
 QString RecordView::getText() const
 {
-    if (mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
         return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue)->mText;
 
     return {};
@@ -16,12 +44,12 @@ QString RecordView::getText() const
 
 BasicProfile RecordView::getAuthor() const
 {
-    return BasicProfile(mRecord->mAuthor.get());
+    return mRecord ? BasicProfile(mRecord->mAuthor.get()) : BasicProfile();
 }
 
 QDateTime RecordView::getCreatedAt() const
 {
-    if (mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
         return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue)->mCreatedAt;
 
     return {};
@@ -35,7 +63,7 @@ qint64 RecordView::getCreatedSecondsAgo() const
 
 QList<ImageView> RecordView::getImages() const
 {
-    if (mRecord->mEmbeds.empty())
+    if (!mRecord || mRecord->mEmbeds.empty())
         return {};
 
     // TODO: there is a list of embeds; can there be more than 1?
@@ -54,7 +82,7 @@ QList<ImageView> RecordView::getImages() const
 
 QVariant RecordView::getExternal() const
 {
-    if (mRecord->mEmbeds.empty())
+    if (!mRecord || mRecord->mEmbeds.empty())
         return {};
 
     // TODO: there is a list of embeds; can there be more than 1?

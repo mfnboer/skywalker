@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "external_view.h"
 #include "image_view.h"
 #include "profile.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
@@ -26,9 +25,7 @@ public:
     using Ptr = std::unique_ptr<RecordView>;
 
     RecordView() = default;
-    explicit RecordView(const ATProto::AppBskyEmbed::RecordViewRecord* record) :
-        mRecord(record)
-    {}
+    explicit RecordView(const ATProto::AppBskyEmbed::RecordView& view);
 
     QString getText() const;
     BasicProfile getAuthor() const;
@@ -50,3 +47,5 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Skywalker::RecordView)

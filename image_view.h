@@ -23,9 +23,9 @@ public:
         mViewImage(viewImage)
     {}
 
-    const QString& getThumbUrl() const { return mViewImage->mThumb; }
-    const QString& getFullSizeUrl() const { return mViewImage->mFullSize; }
-    const QString& getAlt() const { return mViewImage->mAlt; }
+    QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : QString(); }
+    QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : QString(); }
+    QString getAlt() const { return mViewImage ? mViewImage->mAlt : QString(); }
 
 private:
     const ATProto::AppBskyEmbed::ImagesViewImage* mViewImage = nullptr;

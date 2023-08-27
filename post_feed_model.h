@@ -17,7 +17,8 @@ public:
         PostRepostedByName,
         PostImages,
         PostExternal,
-        PostRecord
+        PostRecord,
+        PostRecordWithMedia
     };
 
     explicit PostFeedModel(QObject* parent = nullptr);

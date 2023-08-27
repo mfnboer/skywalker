@@ -7,6 +7,8 @@ RowLayout {
     required property list<imageview> postImages
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
+    property var postRecordWithMedia // record_with_media_view
+    property int maxTextLines: 1000
 
     id: postBody
 
@@ -15,6 +17,8 @@ RowLayout {
         width: parent.width
         Layout.fillWidth: true
         wrapMode: Text.Wrap
+        maximumLineCount: maxTextLines
+        elide: Text.ElideRight
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
     }
@@ -41,6 +45,11 @@ RowLayout {
                 let component = Qt.createComponent("RecordView.qml")
                 component.createObject(postBody.parent, {record: postRecord})
             }
+        }
+
+        if (postRecordWithMedia) {
+            let component = Qt.createComponent("RecordWithMediaView.qml")
+            component.createObject(postBody.parent, {record: postRecordWithMedia})
         }
     }
 }

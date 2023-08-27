@@ -20,14 +20,12 @@ public:
     using Ptr = std::unique_ptr<ExternalView>;
 
     ExternalView() = default;
-    ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal* external) :
-        mExternal(external)
-    {}
+    explicit ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal* external);
 
-    const QString& getUri() const { return mExternal->mUri; }
-    const QString& getTitle() const { return mExternal->mTitle; }
-    const QString& getDescription() const { return mExternal->mDescription; }
-    const QString getThumbUrl() const { return mExternal->mThumb ? *mExternal->mThumb : QString(); }
+    QString getUri() const;
+    QString getTitle() const;
+    QString getDescription() const;
+    QString getThumbUrl() const;
 
 private:
     const ATProto::AppBskyEmbed::ExternalViewExternal* mExternal = nullptr;

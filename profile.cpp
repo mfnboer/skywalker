@@ -12,14 +12,16 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profil
 
 QString BasicProfile::getName() const
 {
+    if (!mProfile)
+        return {};
+
     const QString name = mProfile->mDisplayName.value_or("").trimmed();
     return name.isEmpty() ? mProfile->mHandle : name;
 }
 
-const QString& BasicProfile::getAvatarUrl() const
+QString BasicProfile::getAvatarUrl() const
 {
-    static const QString NO_AVATAR;
-    return mProfile->mAvatar ? *mProfile->mAvatar : NO_AVATAR;
+    return (mProfile && mProfile->mAvatar) ? *mProfile->mAvatar : QString();
 }
 
 }

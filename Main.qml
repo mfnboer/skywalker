@@ -25,6 +25,7 @@ Window {
             required property list<imageview> postImages
             required property var postExternal // externalview (var allows NULL)
             required property var postRecord // recordview
+            required property var postRecordWithMedia // record_with_media_view
 
             id: postEntry
             columns: 2
@@ -70,6 +71,7 @@ Window {
                     postImages: postEntry.postImages
                     postExternal: postEntry.postExternal
                     postRecord: postEntry.postRecord
+                    postRecordWithMedia: postEntry.postRecordWithMedia
                 }
             }
 

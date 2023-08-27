@@ -76,31 +76,18 @@ RecordView::Ptr Post::getRecordView() const
         return {};
 
     const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordView::Ptr>(post->mEmbed->mEmbed);
-
-    switch (recordView->mRecordType)
-    {
-    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND:
-    {
-        auto record = std::make_unique<RecordView>();
-        record->setNotFound(true);
-        return record;
-    }
-    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_BLOCKED:
-    {
-        auto record = std::make_unique<RecordView>();
-        record->setBlocked(true);
-        return record;
-    }
-    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD:
-    {
-        const auto& record = std::get<ATProto::AppBskyEmbed::RecordViewRecord::Ptr>(recordView->mRecord);
-        return std::make_unique<RecordView>(record.get());
-    }
-    default:
-        qWarning() << "Record type not supported:" <<  int(recordView->mRecordType);
-        break;
-    }
-
-    return {};
+    return std::make_unique<RecordView>(*recordView);
 }
+
+RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
+{
+    const auto& post = mFeedViewPost->mPost;
+
+    if (!post->mEmbed || post->mEmbed->mType != ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA_VIEW)
+        return {};
+
+    const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::Ptr>(post->mEmbed->mEmbed);
+    return std::make_unique<RecordWithMediaView>(recordView.get());
+}
+
 }

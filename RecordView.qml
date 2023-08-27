@@ -35,6 +35,7 @@ Item {
             postText: record.postText
             postImages: record.images
             postExternal: record.external
+            maxTextLines: 6
         }
     }
     Rectangle {

@@ -5,6 +5,7 @@
 #include "image_view.h"
 #include "profile.h"
 #include "record_view.h"
+#include "record_with_media_view.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
 
 namespace Skywalker {
@@ -21,6 +22,7 @@ public:
     std::vector<ImageView::Ptr> getImages() const;
     ExternalView::Ptr getExternalView() const;
     RecordView::Ptr getRecordView() const;
+    RecordWithMediaView::Ptr getRecordWithMediaView() const;
 
 private:
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost;
