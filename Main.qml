@@ -18,13 +18,12 @@ Window {
         model: skywalker.timelineModel
 
         delegate: GridLayout {
-            required property string authorName
-            required property string authorAvatar
+            required property basicprofile author
             required property string postText
             required property int postCreatedSecondsAgo
             required property string postRepostedByName
-            required property list<var> postImages // ImageView
-            required property var postExternal // ExternalView
+            required property list<imageview> postImages
+            required property var postExternal // externalview (var allows NULL)
 
             columns: 2
             width: timelineView.width
@@ -50,7 +49,7 @@ Window {
                 id: avatar
                 width: 25
                 Layout.alignment: Qt.AlignTop
-                avatarUrl: authorAvatar
+                avatarUrl: author.avatarUrl
             }
 
             Column {
@@ -63,7 +62,7 @@ Window {
                     Text {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
-                        text: authorName
+                        text: author.name
                         font.bold: true
                     }
                     Text {

@@ -1,8 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
+import skywalker
 
 Rectangle {
-    property list<var> images // ImageView
+    property list<imageview> images
 
     width: parent.width
     height: width
@@ -12,7 +13,7 @@ Rectangle {
         columns: 2
         spacing: 4
 
-        Image {
+        RoundedImage {
             id: img1
             width: parent.width / 2 - parent.spacing / 2
             height: width
@@ -20,7 +21,7 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             source: images[0].thumbUrl
         }
-        Image {
+        RoundedImage {
             id: img2
             width: parent.width / 2 - parent.spacing / 2
             height: width
@@ -28,7 +29,7 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             source: images[1].thumbUrl
         }
-        Image {
+        RoundedImage {
             id: img3
             width: parent.width / 2 - parent.spacing / 2
             height: width
@@ -36,7 +37,7 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             source: images[2].thumbUrl
         }
-        Image {
+        RoundedImage {
             id: img4
             width: parent.width / 2 - parent.spacing / 2
             height: width

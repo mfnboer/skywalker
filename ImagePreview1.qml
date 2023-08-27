@@ -1,8 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
+import skywalker
 
 RoundedImage {
-    property list<var> images // ImageView
+    property list<imageview> images
 
     width: parent.width
     Layout.fillWidth: true

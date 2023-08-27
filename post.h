@@ -4,6 +4,7 @@
 #include "external_view.h"
 #include "image_view.h"
 #include "profile.h"
+#include "record_view.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
 
 namespace Skywalker {
@@ -19,6 +20,7 @@ public:
     std::optional<BasicProfile> getRepostedBy() const;
     std::vector<ImageView::Ptr> getImages() const;
     ExternalView::Ptr getExternalView() const;
+    RecordView::Ptr getRecordView() const;
 
 private:
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost;

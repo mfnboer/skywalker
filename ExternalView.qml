@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
+import skywalker
 
 Item {
-    property var postExternal // ExternalView
+    property externalview postExternal
 
     width: parent.width
     height: externalColumn.height

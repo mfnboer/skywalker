@@ -44,10 +44,8 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
 
     switch (Role(role))
     {
-    case Role::AuthorName:
-        return post.getAuthor().getName();
-    case Role::AuthorAvatar:
-        return post.getAuthor().getAvatarUrl();
+    case Role::Author:
+        return QVariant::fromValue(post.getAuthor());
     case Role::PostText:
         return post.getText();
     case Role::PostCreatedSecondsAgo:
@@ -57,12 +55,12 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostImages:
     {
-        QVariantList images;
+        QList<ImageView> images;
         for (const auto& img : post.getImages())
-            images.push_back(QVariant::fromValue(*img));
+            images.push_back(*img);
 
-        qDebug() << "MICHEL:" << images.size();
-        return images;
+        qDebug() << "MICHEL #images:" << images.size();
+        return QVariant::fromValue(images);
     }
     case Role::PostExternal:
     {
@@ -85,8 +83,7 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
 QHash<int, QByteArray> PostFeedModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
-        { int(Role::AuthorName), "authorName" },
-        { int(Role::AuthorAvatar), "authorAvatar" },
+        { int(Role::Author), "author" },
         { int(Role::PostText), "postText" },
         { int(Role::PostCreatedSecondsAgo), "postCreatedSecondsAgo" },
         { int(Role::PostRepostedByName), "postRepostedByName" },

@@ -1,8 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
+import skywalker
 
 Rectangle {
-    property list<var> images // ImageView
+    property list<imageview> images
 
     width: parent.width
     height: width / 2

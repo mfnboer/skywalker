@@ -11,8 +11,7 @@ class PostFeedModel : public QAbstractListModel
     Q_OBJECT
 public:
     enum class Role {
-        AuthorName = Qt::UserRole + 1,
-        AuthorAvatar,
+        Author = Qt::UserRole + 1,
         PostText,
         PostCreatedSecondsAgo,
         PostRepostedByName,

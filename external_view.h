@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-#include <QObject>
+#include <QtQmlIntegration>
 
 namespace Skywalker
 {
@@ -9,17 +9,16 @@ namespace Skywalker
 class ExternalView
 {
     Q_GADGET
-    Q_PROPERTY(QString uri MEMBER mUri CONSTANT)
-    Q_PROPERTY(QString title MEMBER mTitle CONSTANT)
-    Q_PROPERTY(QString description MEMBER mDescription CONSTANT)
-    Q_PROPERTY(QString thumbUrl MEMBER mThumbUrl CONSTANT)
-
+    Q_PROPERTY(QString uri READ getUri FINAL)
+    Q_PROPERTY(QString title READ getTitle FINAL)
+    Q_PROPERTY(QString description READ getDescription FINAL)
+    Q_PROPERTY(QString thumbUrl READ getThumbUrl FINAL)
+    QML_VALUE_TYPE(externalview)
 
 public:
     using Ptr = std::unique_ptr<ExternalView>;
 
     ExternalView() = default;
-    ExternalView(const ExternalView&) = default;
     ExternalView(const QString& uri, const QString& title, const QString& description, const QString& thumbUrl) :
         mUri(uri),
         mTitle(title),
@@ -27,11 +26,16 @@ public:
         mThumbUrl(thumbUrl)
     {}
 
+    const QString& getUri() const { return mUri; }
+    const QString& getTitle() const { return mTitle; }
+    const QString& getDescription() const { return mDescription; }
+    const QString& getThumbUrl() const { return mThumbUrl; }
+
 private:
-    const QString mUri;
-    const QString mTitle;
-    const QString mDescription;
-    const QString mThumbUrl;
+    QString mUri;
+    QString mTitle;
+    QString mDescription;
+    QString mThumbUrl;
 };
 
 }
