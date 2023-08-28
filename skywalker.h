@@ -12,23 +12,29 @@ class Skywalker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel NOTIFY timelineModelChanged)
+    Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged)
     QML_ELEMENT
 public:
     explicit Skywalker(QObject* parent = nullptr);
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
-    Q_INVOKABLE void getTimeline();
+    Q_INVOKABLE void getTimeline(const QString& cursor = {});
+    Q_INVOKABLE void getTimelineNextPage();
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
+    bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
+    void setGetTimelineInProgress(bool inProgress);
 
 signals:
     void loginOk();
     void loginFailed(QString error);
     void timelineModelChanged();
+    void getTimeLineInProgressChanged();
 
 private:
     std::unique_ptr<ATProto::Client> mBsky;
     PostFeedModel mTimelineModel;
+    bool mGetTimelineInProgress = false;
 };
 
 }

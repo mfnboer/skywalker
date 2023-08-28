@@ -15,6 +15,7 @@ Window {
         anchors.fill: parent
         spacing: 5
         model: skywalker.timelineModel
+        ScrollIndicator.vertical: ScrollIndicator {}
 
         delegate: GridLayout {
             required property basicprofile author
@@ -81,6 +82,19 @@ Window {
                 Layout.preferredHeight: 1
                 Layout.fillWidth: true
             }
+        }
+
+        onMovementEnded: {
+            let lastVisibleIndex = indexAt(0, contentY + height - 1)
+            console.debug("END MOVEMENT", visibleArea.yPosition + visibleArea.heightRatio, lastVisibleIndex, count);
+            if (lastVisibleIndex > timelineView.count - 5 && !skywalker.isGetTimelineInProgress) {
+                skywalker.getTimelineNextPage()
+            }
+        }
+
+        onVerticalOvershootChanged: {
+            if (verticalOvershoot < 0 && !skywalker.isGetTimelineInProgress)
+                skywalker.getTimeline()
         }
     }
 

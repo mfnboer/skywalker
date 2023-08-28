@@ -12,35 +12,84 @@ PostFeedModel::PostFeedModel(QObject* parent) :
     QAbstractListModel(parent)
 {}
 
-void PostFeedModel::addFeed(ATProto::AppBskyFeed::PostFeed&& feed)
+void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
-    mRawFeed = std::forward<ATProto::AppBskyFeed::PostFeed>(feed);
-    const int oldSize = mFeed.size();
-
-    for (const auto& feedEntry : mRawFeed)
+    if (feed->mFeed.empty())
     {
-        if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
-            mFeed.push_back(Post(feedEntry.get()));
-        else
-            qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
+        qDebug() << "Trying to set an empty feed";
+        return;
     }
 
-    beginInsertRows({}, oldSize, mFeed.size() - 1);
+    if (mFeedPages.empty())
+    {
+        addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+        return;
+    }
+
+    // TODO: is this check needed? we can just replace, right?
+    // Use this position the feed to the last viewed post, and to check
+    // if there is a gap between that post and the loaded page!
+    const QString& cidFirstPost = feed->mFeed[0]->mPost->mCid;
+    const QString& cidFirstStoredPost = mFeedPages[0]->mRawFeed[0]->mPost->mCid;
+
+    if (cidFirstPost == cidFirstStoredPost)
+    {
+        qDebug() << "No new post available";
+    }
+
+    clear();
+    addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+}
+
+void PostFeedModel::clear()
+{
+    beginRemoveRows({}, 0, mRowCount - 1);
+    mFeedPages.clear();
+    mRowCount = 0;
+    endRemoveRows();
+    qDebug() << "All posts removed";
+}
+
+void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+{
+    qDebug() << "Add raw posts:" << feed->mFeed.size();
+
+    if (feed->mFeed.empty())
+        return;
+
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::PostFeed>(feed->mFeed));
+
+    if (feed->mCursor && !feed->mCursor->isEmpty())
+        page->mCursorNextPage = *feed->mCursor;
+
+    const size_t newRowCount = mRowCount + page->mFeed.size();
+
+    beginInsertRows({}, mRowCount, newRowCount - 1);
+    mFeedPages.push_back(std::move(page));
     endInsertRows();
+
+    mRowCount = newRowCount;
+    qDebug() << "New feed size:" << mRowCount;
+}
+
+QString PostFeedModel::getLastCursor() const
+{
+    const auto& cursor = mFeedPages.back()->mCursorNextPage;
+    return cursor.isEmpty() ? QString() : cursor;
 }
 
 int PostFeedModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return mFeed.size();
+    return mRowCount;
 }
 
 QVariant PostFeedModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= mFeed.size())
+    if (index.row() < 0 || index.row() >= mRowCount)
         return {};
 
-    const auto& post = mFeed[index.row()];
+    const auto& post = getPost(index.row());
 
     switch (Role(role))
     {
@@ -103,6 +152,39 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
     };
 
     return roles;
+}
+
+PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::PostFeed&& feed) const
+{
+    auto page = std::make_unique<Page>();
+    page->mRawFeed = std::forward<ATProto::AppBskyFeed::PostFeed>(feed);
+
+    for (const auto& feedEntry : page->mRawFeed)
+    {
+        if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+            page->mFeed.push_back(Post(feedEntry.get()));
+        else
+            qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
+    }
+
+    return page;
+}
+
+const Post& PostFeedModel::getPost(size_t index) const
+{
+    Q_ASSERT(index >= 0);
+    Q_ASSERT(index < mRowCount);
+
+    for (const auto& page : mFeedPages)
+    {
+        if (index < page->mFeed.size())
+            return page->mFeed[index];
+
+        index -= page->mFeed.size();
+    }
+
+    qWarning() << "Invalid index:" << index << "row count:" << mRowCount;
+    throw std::invalid_argument("Invalid post index");
 }
 
 }
