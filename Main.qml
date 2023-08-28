@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtQuick.Window
-import Qt5Compat.GraphicalEffects
 import skywalker
 
 Window {
@@ -32,16 +31,16 @@ Window {
             width: timelineView.width
 
             Rectangle {
-                width: 25
+                width: avatar.width
                 color: "transparent"
                 visible: postRepostedByName
             }
 
             Text {
-                width: parent.width - 25 - 10
+                width: parent.width - avatar.width - timelineView.spacing * 2
                 Layout.fillWidth: true
                 elide: Text.ElideRight
-                text: "Reposted by " + postRepostedByName
+                text: qsTr(`Reposted by ${postRepostedByName}`)
                 color: "darkslategrey"
                 font.bold: true
                 font.pointSize: 8
@@ -50,14 +49,14 @@ Window {
 
             Avatar {
                 id: avatar
-                width: 25
+                width: 30
                 Layout.alignment: Qt.AlignTop
                 avatarUrl: author.avatarUrl
             }
 
             Column {
                 id: postColumn
-                width: parent.width - avatar.width - 10
+                width: parent.width - avatar.width - timelineView.spacing * 2
 
                 PostHeader {
                     width: parent.width

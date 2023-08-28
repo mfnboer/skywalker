@@ -2,18 +2,20 @@ import QtQuick
 import QtQuick.Layouts
 import skywalker
 
-Rectangle {
+RoundedFrame {
     property list<imageview> images
 
+    objectToRound: imgGrid
     width: parent.width
     height: width
 
     Grid {
+        id: imgGrid
         anchors.fill: parent
         columns: 2
         spacing: 4
 
-        RoundedImage {
+        Image {
             id: img1
             width: parent.width / 2 - parent.spacing / 2
             height: width
@@ -21,7 +23,7 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             source: images[0].thumbUrl
         }
-        RoundedImage {
+        Image {
             id: img2
             width: parent.width / 2 - parent.spacing / 2
             height: width
@@ -29,7 +31,7 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             source: images[1].thumbUrl
         }
-        RoundedImage {
+        Image {
             id: img3
             width: parent.width / 2 - parent.spacing / 2
             height: width
@@ -37,7 +39,7 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             source: images[2].thumbUrl
         }
-        RoundedImage {
+        Image {
             id: img4
             width: parent.width / 2 - parent.spacing / 2
             height: width
