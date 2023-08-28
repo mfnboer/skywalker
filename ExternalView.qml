@@ -10,8 +10,10 @@ Item {
 
     RoundedFrame {
         id: externalContent
-        width: parent.width
         objectToRound: externalColumn
+        anchors.fill: parent
+        border.width: 1
+        border.color: "lightgrey"
 
         Column {
             id: externalColumn
@@ -56,17 +58,9 @@ Item {
             }
         }
     }
-    Rectangle {
+    MouseArea {
         anchors.fill: parent
-        border.width: 1
-        border.color: "lightgrey"
-        color: "transparent"
-        radius: externalContent.radius
-
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: { Qt.openUrlExternally(postExternal.uri); }
-        }
+        cursorShape: Qt.PointingHandCursor
+        onClicked: { Qt.openUrlExternally(postExternal.uri); }
     }
 }
