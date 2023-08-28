@@ -15,6 +15,7 @@ Item {
 
         RowLayout {
             width: parent.width
+            visible: record.available
 
             Avatar {
                 id: avatar
@@ -36,6 +37,18 @@ Item {
             postImages: record.images
             postExternal: record.external
             maxTextLines: 6
+            visible: record.available
+        }
+
+        Text {
+            width: parent.width
+            text: qsTr("NOT FOUND")
+            visible: record.notFound
+        }
+        Text {
+            width: parent.width
+            text: qsTr("BLOCKED")
+            visible: record.blocked
         }
     }
     Rectangle {

@@ -24,6 +24,9 @@ RowLayout {
     }
 
     Component.onCompleted: {
+        if (!postBody.visible)
+            return
+
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             let component = Qt.createComponent(qmlFile)
@@ -36,15 +39,8 @@ RowLayout {
         }
 
         if (postRecord) {
-            if (postRecord.notFound) {
-                console.debug("RECORD NOT FOUND")
-            } else if (postRecord.blocked) {
-                console.debug("RECORD BLOCKED")
-            }
-            else {
-                let component = Qt.createComponent("RecordView.qml")
-                component.createObject(postBody.parent, {record: postRecord})
-            }
+            let component = Qt.createComponent("RecordView.qml")
+            component.createObject(postBody.parent, {record: postRecord})
         }
 
         if (postRecordWithMedia) {

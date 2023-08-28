@@ -24,5 +24,8 @@ Rectangle {
         z: -1
     }
 
-    Component.onCompleted: { objectToRound.visible = false; objectToRound.z = -1 }
+    Component.onCompleted: {
+        objectToRound.visible = false
+        objectToRound.z = -1
+    }
 }
