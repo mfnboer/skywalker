@@ -3,6 +3,7 @@
 #pragma once
 #include "post.h"
 #include <QAbstractListModel>
+#include <deque>
 
 namespace Skywalker {
 
@@ -13,7 +14,7 @@ public:
     enum class Role {
         Author = Qt::UserRole + 1,
         PostText,
-        PostCreatedSecondsAgo,
+        PostIndexedSecondsAgo,
         PostRepostedByName,
         PostImages,
         PostExternal,
@@ -25,6 +26,7 @@ public:
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    void insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QString getLastCursor() const;
@@ -42,11 +44,11 @@ private:
     };
 
     void clear();
-    Page::Ptr createPage(ATProto::AppBskyFeed::PostFeed&& feed) const;
-    const Post& getPost(size_t index) const;
+    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed) const;
 
-    std::vector<Page::Ptr> mFeedPages;
-    size_t mRowCount = 0;
+    std::deque<Post> mFeed;
+    std::map<size_t, QString> mIndexCursorMap; // cursor to post at next index
+    std::map<size_t, ATProto::AppBskyFeed::PostFeed> mIndexRawFeedMap; // last index in raw feed
 };
 
 }

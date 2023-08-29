@@ -22,8 +22,8 @@ public:
     Q_INVOKABLE void getTimelineNextPage();
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
-    bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
+    bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
 
 signals:
     void loginOk();

@@ -3,7 +3,7 @@ import QtQuick.Layouts
 
 RowLayout {
     property string authorName
-    property int postCreatedSecondsAgo
+    property int postIndexedSecondsAgo
 
     Text {
         Layout.fillWidth: true
@@ -12,7 +12,7 @@ RowLayout {
         font.bold: true
     }
     Text {
-        text: durationToString(postCreatedSecondsAgo)
+        text: durationToString(postIndexedSecondsAgo)
         font.pointSize: 8
         color: "grey"
     }

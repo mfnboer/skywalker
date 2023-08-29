@@ -11,6 +11,8 @@ Window {
     title: qsTr("Skywalker")
 
     ListView {
+        property bool inTopOvershoot: false
+
         id: timelineView
         anchors.fill: parent
         spacing: 5
@@ -20,7 +22,7 @@ Window {
         delegate: GridLayout {
             required property basicprofile author
             required property string postText
-            required property int postCreatedSecondsAgo
+            required property int postIndexedSecondsAgo
             required property string postRepostedByName
             required property list<imageview> postImages
             required property var postExternal // externalview (var allows NULL)
@@ -62,7 +64,7 @@ Window {
                 PostHeader {
                     width: parent.width
                     authorName: author.name
-                    postCreatedSecondsAgo: postEntry.postCreatedSecondsAgo
+                    postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
                 }
 
                 PostBody {
@@ -93,8 +95,15 @@ Window {
         }
 
         onVerticalOvershootChanged: {
-            if (verticalOvershoot < 0 && !skywalker.isGetTimelineInProgress)
-                skywalker.getTimeline()
+            if (verticalOvershoot < 0)  {
+                if (!inTopOvershoot && !skywalker.getTimelineInProgress) {
+                    skywalker.getTimeline()
+                }
+
+                inTopOvershoot = true
+            } else {
+                inTopOvershoot = false
+            }
         }
     }
 

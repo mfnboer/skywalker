@@ -24,13 +24,11 @@ BasicProfile Post::getAuthor() const
     return BasicProfile(mFeedViewPost->mPost->mAuthor.get());
 }
 
-QDateTime Post::getCreatedAt() const
+QDateTime Post::getIndexedAt() const
 {
-    const auto& post = mFeedViewPost->mPost;
-    if (post->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
-        return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(post->mRecord)->mCreatedAt;
-
-    return {};
+    // NOTE: the createdAt timestamp is not reliable as clients can put in a local timestamp
+    // without timezone (seen in feeds)
+    return mFeedViewPost->mPost->mIndexedAt;
 }
 
 std::optional<BasicProfile> Post::getRepostedBy() const

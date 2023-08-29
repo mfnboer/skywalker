@@ -27,7 +27,7 @@ Item {
             PostHeader {
                 Layout.fillWidth: true
                 authorName: record.author.name
-                postCreatedSecondsAgo: record.createdSecondsAgo
+                postIndexedSecondsAgo: record.createdSecondsAgo
             }
         }
 

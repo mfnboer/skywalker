@@ -17,7 +17,7 @@ public:
 
     QString getText() const;
     BasicProfile getAuthor() const;
-    QDateTime getCreatedAt() const;
+    QDateTime getIndexedAt() const;
     std::optional<BasicProfile> getRepostedBy() const;
     std::vector<ImageView::Ptr> getImages() const;
     ExternalView::Ptr getExternalView() const;
