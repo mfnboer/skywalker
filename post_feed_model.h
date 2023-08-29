@@ -19,17 +19,22 @@ public:
         PostImages,
         PostExternal,
         PostRecord,
-        PostRecordWithMedia
+        PostRecordWithMedia,
+        IsPlaceHolder,
+        EndOfFeed
     };
 
     explicit PostFeedModel(QObject* parent = nullptr);
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
-    void insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    void prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    void gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, size_t gapIndex);
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QString getLastCursor() const;
+    const Post* getPostAt(size_t index) const;
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -46,9 +51,26 @@ private:
     void clear();
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed) const;
 
+    // Returns an index in the page feed
+    std::optional<size_t> findOverlapStart(const Page& page, size_t feedIndex) const;
+
+    // Return an index in mFeed
+    std::optional<size_t> findOverlapEnd(const Page& page, size_t feedIndex) const;
+
+    void addToIndices(size_t offset, size_t startAtIndex);
+    void logIndices() const;
+
     std::deque<Post> mFeed;
+
+    // The index is the last (non-filtered) post from a received page. The cursor is to get
+    // the next page.
     std::map<size_t, QString> mIndexCursorMap; // cursor to post at next index
+
+    // The index of the last post that depends on the raw PostFeed. All posts from the previous
+    // index in this map till this one depend on it. The raw PostFeed must be kept alive as
+    // long it has dependend posts.
     std::map<size_t, ATProto::AppBskyFeed::PostFeed> mIndexRawFeedMap; // last index in raw feed
+    bool mEndOfFeed = false;
 };
 
 }

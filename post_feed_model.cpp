@@ -26,76 +26,157 @@ void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
         return;
     }
 
-    // TODO: is this check needed? we can just replace, right?
-    // Use this position the feed to the last viewed post, and to check
-    // if there is a gap between that post and the loaded page!
-//    const QString& cidFirstPost = feed->mFeed[0]->mPost->mCid;
-//    const QString& cidFirstStoredPost = mFeedPages[0]->mRawFeed[0]->mPost->mCid;
-
-//    if (cidFirstPost == cidFirstStoredPost)
-//    {
-//        qDebug() << "No new post available";
-//        return;
-//    }
-
     clear();
     addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 }
 
-void PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
-#if 0
-    Q_ASSERT(!mFeedPages.empty());
-    Q_ASSERT(!mFeedPages[0]->mRawFeed.empty());
-
-    qDebug() << "Insert feed at start";
-    const QString& cidFirstStoredPost = mFeedPages[0]->mRawFeed[0]->mPost->mCid;
-
-    int index = 0;
-    for (const auto& feedEntry : feed->mFeed)
-    {
-        const QString& cid = feedEntry->mPost->mCid;
-        if (cid == cidFirstStoredPost)
-            break;
-
-        ++index;
-    }
-
-    if (index < feed->mFeed.size())
-    {
-        qDebug() << "Page overlap:" << feed->mFeed.size() - index;
-        feed->mFeed.erase(feed->mFeed.begin() + index, feed->mFeed.end());
-    }
-    else
-    {
-        qDebug() << "No page overlap found";
-    }
-
     if (feed->mFeed.empty())
+        return;
+
+    if (mFeed.empty())
     {
-        qDebug() << "Full overlap";
+        setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
         return;
     }
 
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::PostFeed>(feed->mFeed));
-    // TODO: the cursor indicates the next page after a full page, but we truncated it.
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 
-    const size_t newRowCount = mRowCount + page->mFeed.size();
+    if (page->mFeed.empty())
+    {
+        qWarning() << "Page has no posts";
+        return;
+    }
 
-    // TODO: maybe use a deque instead of vector
-    beginInsertRows({}, 0, page->mFeed.size() - 1);
-    mFeedPages.insert(mFeedPages.begin(), std::move(page));
+    const auto overlapStart = findOverlapStart(*page, 0);
+
+    if (!overlapStart)
+    {
+        page->mFeed.push_back(Post::createPlaceHolder(page->mCursorNextPage));
+
+        const size_t lastInsertIndex = page->mFeed.size() - 1;
+        beginInsertRows({}, 0, lastInsertIndex);
+        mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.end());
+        addToIndices(page->mFeed.size(), 0);
+
+        // The -1 offset on lastInsertIndex is for the place holder post.
+        if (!page->mCursorNextPage.isEmpty())
+            mIndexCursorMap[lastInsertIndex - 1] = page->mCursorNextPage;
+
+        mIndexRawFeedMap[lastInsertIndex - 1] = std::move(page->mRawFeed);
+        endInsertRows();
+
+        qDebug() << "Full feed prepended, new size:" << mFeed.size();
+        logIndices();
+        return;
+    }
+
+    if (*overlapStart == 0)
+    {
+        qDebug() << "Full overlap, no new posts";
+        return;
+    }
+
+    const auto overlapEnd = findOverlapEnd(*page, 0);
+
+    beginInsertRows({}, 0, *overlapStart - 1);
+    mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.begin() + *overlapStart);
+    addToIndices(*overlapStart, 0);
+
+    if (!page->mCursorNextPage.isEmpty() && overlapEnd)
+        mIndexCursorMap[*overlapStart + *overlapEnd] = page->mCursorNextPage;
+
+    mIndexRawFeedMap[*overlapStart - 1] = std::move(page->mRawFeed);
     endInsertRows();
 
-    mRowCount = newRowCount;
-    qDebug() << "New feed size:" << mRowCount;
-#endif
+    qDebug() << "Prepended" << *overlapStart << "posts, new size:" << mFeed.size();
+    logIndices();
+}
+
+void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, size_t gapIndex)
+{
+    qDebug() << "Fill gap:" << gapIndex;
+
+    if (gapIndex > mFeed.size())
+    {
+        qWarning() << "Gap index" << gapIndex << "beyond feed size" << mFeed.size();
+        return;
+    }
+
+    if (!mFeed[gapIndex].isPlaceHolder())
+    {
+        qWarning() << "Trying to fill a gap where there is none:" << gapIndex;
+        return;
+    }
+
+    beginRemoveRows({}, gapIndex, gapIndex);
+    mFeed.erase(mFeed.begin() + gapIndex);
+    addToIndices(-1, gapIndex);
+    endRemoveRows();
+
+    qDebug() << "Removed place holder post:" << gapIndex;
+    logIndices();
+
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+
+    if (page->mFeed.empty())
+    {
+        qWarning() << "Page has no posts";
+        return;
+    }
+
+    const auto overlapStart = findOverlapStart(*page, gapIndex);
+
+    if (!overlapStart)
+    {
+        page->mFeed.push_back(Post::createPlaceHolder(page->mCursorNextPage));
+
+        const size_t lastInsertIndex = gapIndex + page->mFeed.size() - 1;
+        beginInsertRows({}, gapIndex, lastInsertIndex);
+        mFeed.insert(mFeed.begin() + gapIndex, page->mFeed.begin(), page->mFeed.end());
+        addToIndices(page->mFeed.size(), gapIndex);
+
+        // The -1 offset on lastInsertIndex is for the place holder post.
+        if (!page->mCursorNextPage.isEmpty())
+            mIndexCursorMap[lastInsertIndex - 1] = page->mCursorNextPage;
+
+        mIndexRawFeedMap[lastInsertIndex - 1] = std::move(page->mRawFeed);
+        endInsertRows();
+
+        qDebug() << "Full feed inserted in gap, new size:" << mFeed.size();
+        logIndices();
+        return;
+    }
+
+    if (*overlapStart == 0)
+    {
+        qDebug() << "Full overlap, no new posts";
+        return;
+    }
+
+    const auto overlapEnd = findOverlapEnd(*page, gapIndex);
+
+    beginInsertRows({}, gapIndex, gapIndex + *overlapStart - 1);
+    mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.begin() + *overlapStart);
+    addToIndices(*overlapStart, gapIndex);
+
+    if (!page->mCursorNextPage.isEmpty() && overlapEnd)
+        mIndexCursorMap[*overlapStart + *overlapEnd] = page->mCursorNextPage;
+
+    mIndexRawFeedMap[gapIndex + *overlapStart - 1] = std::move(page->mRawFeed);
+    endInsertRows();
+
+    qDebug() << "Inserted in gap" << *overlapStart << "posts, new size:" << mFeed.size();
+    logIndices();
 }
 
 void PostFeedModel::clear()
 {
     beginRemoveRows({}, 0, mFeed.size() - 1);
     mFeed.clear();
+    mIndexCursorMap.clear();
+    mIndexRawFeedMap.clear();
     endRemoveRows();
     qDebug() << "All posts removed";
 }
@@ -108,28 +189,44 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
         return;
 
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+
+    if (page->mFeed.empty())
+    {
+        qWarning() << "Page has no posts";
+        return;
+    }
+
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
-
     mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
 
     if (!page->mCursorNextPage.isEmpty())
         mIndexCursorMap[mFeed.size() - 1] = page->mCursorNextPage;
+    else
+        mEndOfFeed = true;
 
     mIndexRawFeedMap[mFeed.size() - 1] = std::move(page->mRawFeed);
-
     endInsertRows();
 
     qDebug() << "New feed size:" << mFeed.size();
+    logIndices();
 }
 
 QString PostFeedModel::getLastCursor() const
 {
-    if (mIndexCursorMap.empty())
+    if (mEndOfFeed || mIndexCursorMap.empty())
         return {};
 
     return mIndexCursorMap.rbegin()->second;
+}
+
+const Post* PostFeedModel::getPostAt(size_t index) const
+{
+    if (index > mFeed.size())
+        return nullptr;
+
+    return &mFeed[index];
 }
 
 int PostFeedModel::rowCount(const QModelIndex& parent) const
@@ -184,6 +281,10 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         auto record = post.getRecordWithMediaView();
         return record ? QVariant::fromValue(*record) : QVariant();
     }
+    case Role::IsPlaceHolder:
+        return post.isPlaceHolder();
+    case Role::EndOfFeed:
+        return post.isEndOfFeed();
     default:
         qDebug() << "Uknown role requested:" << role;
         break;
@@ -200,9 +301,11 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
         { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },
         { int(Role::PostRepostedByName), "postRepostedByName" },
         { int(Role::PostImages), "postImages" },
-        { int(Role::PostExternal), "postExternal"},
-        { int(Role::PostRecord), "postRecord"},
-        { int(Role::PostRecordWithMedia), "postRecordWithMedia"}
+        { int(Role::PostExternal), "postExternal" },
+        { int(Role::PostRecord), "postRecord" },
+        { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
+        { int(Role::IsPlaceHolder), "isPlaceHolder" },
+        { int(Role::EndOfFeed), "endOfFeed" }
     };
 
     return roles;
@@ -222,9 +325,118 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     }
 
     if (feed->mCursor && !feed->mCursor->isEmpty())
+    {
         page->mCursorNextPage = *feed->mCursor;
+    }
+    else
+    {
+        if (!page->mFeed.empty())
+            page->mFeed.back().setEndOfFeed(true);
+    }
 
     return page;
+}
+
+std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const
+{
+    Q_ASSERT(mFeed.size() > feedIndex);
+    Q_ASSERT(!mFeed[feedIndex].isPlaceHolder());
+    const auto& cidFirstStoredPost = mFeed[feedIndex].getCid();
+    const auto& timestampFirstStoredPost = mFeed[feedIndex].getTimelineTimestamp();
+
+    for (size_t i = 0; i < page.mFeed.size(); ++i)
+    {
+        const auto& post = page.mFeed[i];
+
+        // Check on timestamp because of repost.
+        // A repost will have the cid of the original post.
+        if (cidFirstStoredPost == post.getCid() && timestampFirstStoredPost == post.getTimelineTimestamp())
+        {
+            qDebug() << "Matching overlap index found:" << i;
+            return i;
+        }
+
+        if (timestampFirstStoredPost > post.getTimelineTimestamp())
+        {
+            qDebug() << "Overlap on timestamp found:" << i << timestampFirstStoredPost << post.getTimelineTimestamp();
+            return i;
+        }
+    }
+
+    // NOTE: the gap may be empty when the last post in the page is the predecessor of
+    // the first post the stored feed. There is no way of knowing.
+    qDebug() << "No overlap found, there is a gap";
+    return {};
+}
+
+std::optional<size_t> PostFeedModel::findOverlapEnd(const Page& page, size_t feedIndex) const
+{
+    Q_ASSERT(!page.mFeed.empty());
+    const auto& cidLastPagePost = page.mFeed.back().getCid();
+    const auto& timestampLastPagePost = page.mFeed.back().getTimelineTimestamp();
+
+    for (size_t i = feedIndex; i < mFeed.size(); ++ i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.isPlaceHolder())
+            continue;
+
+        if (cidLastPagePost == post.getCid() && timestampLastPagePost == post.getTimelineTimestamp())
+        {
+            qDebug() << "Last matching overlap index found:" << i;
+            return i;
+        }
+
+        if (timestampLastPagePost > post.getTimelineTimestamp())
+        {
+            qDebug() << "Overlap on timestamp found:" << i << timestampLastPagePost << post.getTimelineTimestamp();
+            return i;
+        }
+    }
+
+    qWarning() << "No overlap found, page exceeds end of stored feed";
+    return {};
+}
+
+void PostFeedModel::addToIndices(size_t offset, size_t startAtIndex)
+{
+    std::map<size_t, QString> newCursorMap;
+    for (const auto& [index, cursor] : mIndexCursorMap)
+    {
+        if (index >= startAtIndex)
+            newCursorMap[index + offset] = cursor;
+        else
+            newCursorMap[index] = cursor;
+    }
+
+    mIndexCursorMap = std::move(newCursorMap);
+
+    std::map<size_t, ATProto::AppBskyFeed::PostFeed> newRawFeedMap;
+    for (auto& [index, rawFeed] : mIndexRawFeedMap)
+    {
+        if (index >= startAtIndex)
+            newRawFeedMap[index + offset] = std::move(rawFeed);
+        else
+            newRawFeedMap[index] = std::move(rawFeed);
+    }
+
+    mIndexRawFeedMap = std::move(newRawFeedMap);
+}
+
+void PostFeedModel::logIndices() const
+{
+    qDebug() << "INDEX CURSOR MAP:";
+    for (const auto& [index, cursor] : mIndexCursorMap)
+        qDebug() << "Index:" << index << "Cursor:" << cursor;
+
+    qDebug() << "INDEX RAW FEED MAP:";
+    for (const auto& [index, rawFeed] : mIndexRawFeedMap)
+    {
+        Q_ASSERT(!rawFeed.empty());
+        qDebug() << "Index:" << index << "cid:" << rawFeed.front()->mPost->mCid
+                 << "indexedAt:" << rawFeed.front()->mPost->mIndexedAt;
+    }
 }
 
 }

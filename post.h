@@ -13,9 +13,20 @@ namespace Skywalker {
 class Post
 {
 public:
-    explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost);
+    static Post createPlaceHolder(const QString& gapCursor);
 
-    QString getText() const;
+    explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr);
+
+    bool isPlaceHolder() const { return !mFeedViewPost; }
+    bool isEndOfFeed() const { return mEndOfFeed; }
+    const QString& getGapCursor() const { return mGapCursor; }
+
+    const QString& getCid() const;
+
+    // The indexedAt of a post or repost
+    QDateTime getTimelineTimestamp() const;
+
+    const QString& getText() const;
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
     std::optional<BasicProfile> getRepostedBy() const;
@@ -24,8 +35,14 @@ public:
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
 
+    void setGapCursor(const QString& gapCursor) { mGapCursor = gapCursor; }
+    void setEndOfFeed(bool end) { mEndOfFeed = end; }
+
 private:
-    const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost;
+    // NULL is place holder for more posts (gap)
+    const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
+    QString mGapCursor; // cursor to get more posts to fill the gap
+    bool mEndOfFeed = false;
 };
 
 }

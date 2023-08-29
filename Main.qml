@@ -12,6 +12,7 @@ Window {
 
     ListView {
         property bool inTopOvershoot: false
+        property bool inBottomOvershoot: false
 
         id: timelineView
         anchors.fill: parent
@@ -20,6 +21,7 @@ Window {
         ScrollIndicator.vertical: ScrollIndicator {}
 
         delegate: GridLayout {
+            required property int index
             required property basicprofile author
             required property string postText
             required property int postIndexedSecondsAgo
@@ -28,6 +30,8 @@ Window {
             required property var postExternal // externalview (var allows NULL)
             required property var postRecord // recordview
             required property var postRecordWithMedia // record_with_media_view
+            required property bool isPlaceHolder;
+            required property bool endOfFeed;
 
             id: postEntry
             columns: 2
@@ -36,7 +40,7 @@ Window {
             Rectangle {
                 width: avatar.width
                 color: "transparent"
-                visible: postRepostedByName
+                visible: postRepostedByName && !isPlaceHolder
             }
 
             Text {
@@ -47,7 +51,7 @@ Window {
                 color: "darkslategrey"
                 font.bold: true
                 font.pointSize: 8
-                visible: postRepostedByName
+                visible: postRepostedByName && !isPlaceHolder
             }
 
             Avatar {
@@ -55,11 +59,13 @@ Window {
                 width: 30
                 Layout.alignment: Qt.AlignTop
                 avatarUrl: author.avatarUrl
+                visible: !isPlaceHolder
             }
 
             Column {
                 id: postColumn
                 width: parent.width - avatar.width - timelineView.spacing * 2
+                visible: !isPlaceHolder
 
                 PostHeader {
                     width: parent.width
@@ -77,19 +83,45 @@ Window {
                 }
             }
 
-            Rectangle {
-                Layout.columnSpan: 2
+            Text {
                 width: parent.width
-                color: "lightgrey"
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                textFormat: Text.StyledText
+                text: "<a href=\"showMore\">" + qsTr("Show more posts") + "</a>"
+                visible: isPlaceHolder
+
+                onLinkActivated: {
+                    if (!skywalker.getTimelineInProgress)
+                        skywalker.getTimelineForGap(index)
+                }
+            }
+
+            Rectangle {
+                width: parent.width
+                Layout.columnSpan: 2
                 Layout.preferredHeight: 1
                 Layout.fillWidth: true
+                color: "lightgrey"
+            }
+
+            Text {
+                Layout.columnSpan: 2
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                text: qsTr("End of feed")
+                font.italic: true
+                visible: endOfFeed
             }
         }
 
         onMovementEnded: {
             let lastVisibleIndex = indexAt(0, contentY + height - 1)
             console.debug("END MOVEMENT", visibleArea.yPosition + visibleArea.heightRatio, lastVisibleIndex, count);
-            if (lastVisibleIndex > timelineView.count - 5 && !skywalker.isGetTimelineInProgress) {
+            if (lastVisibleIndex > timelineView.count - 5 && !skywalker.getTimelineInProgress) {
                 skywalker.getTimelineNextPage()
             }
         }
@@ -97,12 +129,22 @@ Window {
         onVerticalOvershootChanged: {
             if (verticalOvershoot < 0)  {
                 if (!inTopOvershoot && !skywalker.getTimelineInProgress) {
-                    skywalker.getTimeline()
+                    skywalker.getTimeline(50)
                 }
 
                 inTopOvershoot = true
             } else {
                 inTopOvershoot = false
+            }
+
+            if (verticalOvershoot > 0) {
+                if (!inBottomOvershoot && !skywalker.getTimelineInProgress) {
+                    skywalker.getTimelineNextPage()
+                }
+
+                inBottomOvershoot = true;
+            } else {
+                inBottomOvershoot = false;
             }
         }
     }
@@ -116,8 +158,19 @@ Window {
 
     Skywalker {
         id: skywalker
-        onLoginOk: skywalker.getTimeline()
+        onLoginOk: {
+            skywalker.getTimeline(50)
+            timelineUpdateTimer.start()
+        }
         onLoginFailed: (error) => loginDialog.show(error)
+    }
+
+    Timer {
+        id: timelineUpdateTimer
+        interval: 30000
+        running: false
+        repeat: true
+        onTriggered: skywalker.getTimelinePrepend()
     }
 
     Component.onCompleted: {

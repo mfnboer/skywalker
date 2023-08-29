@@ -4,35 +4,68 @@
 
 namespace Skywalker {
 
+static const QString NO_STRING;
+
+Post Post::createPlaceHolder(const QString& gapCursor)
+{
+    Post post;
+    post.setGapCursor(gapCursor);
+    return post;
+}
+
 Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost) :
     mFeedViewPost(feedViewPost)
 {
-    Q_ASSERT(mFeedViewPost);
 }
 
-QString Post::getText() const
+const QString& Post::getCid() const
 {
+    return mFeedViewPost ? mFeedViewPost->mPost->mCid : NO_STRING;
+}
+
+const QString& Post::getText() const
+{
+    if (!mFeedViewPost)
+        return NO_STRING;
+
     const auto& post = mFeedViewPost->mPost;
     if (post->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(post->mRecord)->mText;
 
-    return {};
+    return NO_STRING;
 }
 
 BasicProfile Post::getAuthor() const
 {
-    return BasicProfile(mFeedViewPost->mPost->mAuthor.get());
+    return mFeedViewPost ? BasicProfile(mFeedViewPost->mPost->mAuthor.get()) : BasicProfile();
 }
 
 QDateTime Post::getIndexedAt() const
 {
+    if (!mFeedViewPost)
+        return {};
+
     // NOTE: the createdAt timestamp is not reliable as clients can put in a local timestamp
     // without timezone (seen in feeds)
     return mFeedViewPost->mPost->mIndexedAt;
 }
 
+QDateTime Post::getTimelineTimestamp() const
+{
+    if (!mFeedViewPost)
+        return {};
+
+    if (mFeedViewPost->mReason)
+        return mFeedViewPost->mReason->mIndexedAt;
+
+    return getIndexedAt();
+}
+
 std::optional<BasicProfile> Post::getRepostedBy() const
 {
+    if (!mFeedViewPost)
+        return {};
+
     if (!mFeedViewPost->mReason)
         return {};
 
@@ -41,6 +74,9 @@ std::optional<BasicProfile> Post::getRepostedBy() const
 
 std::vector<ImageView::Ptr> Post::getImages() const
 {
+    if (!mFeedViewPost)
+        return {};
+
     const auto& post = mFeedViewPost->mPost;
 
     if (!post->mEmbed || post->mEmbed->mType != ATProto::AppBskyEmbed::EmbedType::IMAGES_VIEW)
@@ -57,6 +93,9 @@ std::vector<ImageView::Ptr> Post::getImages() const
 
 ExternalView::Ptr Post::getExternalView() const
 {
+    if (!mFeedViewPost)
+        return {};
+
     const auto& post = mFeedViewPost->mPost;
 
     if (!post->mEmbed || post->mEmbed->mType != ATProto::AppBskyEmbed::EmbedType::EXTERNAL_VIEW)
@@ -68,6 +107,9 @@ ExternalView::Ptr Post::getExternalView() const
 
 RecordView::Ptr Post::getRecordView() const
 {
+    if (!mFeedViewPost)
+        return {};
+
     const auto& post = mFeedViewPost->mPost;
 
     if (!post->mEmbed || post->mEmbed->mType != ATProto::AppBskyEmbed::EmbedType::RECORD_VIEW)
@@ -79,6 +121,9 @@ RecordView::Ptr Post::getRecordView() const
 
 RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
 {
+    if (!mFeedViewPost)
+        return {};
+
     const auto& post = mFeedViewPost->mPost;
 
     if (!post->mEmbed || post->mEmbed->mType != ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA_VIEW)

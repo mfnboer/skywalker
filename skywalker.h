@@ -11,14 +11,16 @@ namespace Skywalker {
 class Skywalker : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel NOTIFY timelineModelChanged)
-    Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged)
+    Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
+    Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     QML_ELEMENT
 public:
     explicit Skywalker(QObject* parent = nullptr);
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
-    Q_INVOKABLE void getTimeline(const QString& cursor = {});
+    Q_INVOKABLE void getTimeline(int limit, const QString& cursor = {});
+    Q_INVOKABLE void getTimelinePrepend();
+    Q_INVOKABLE void getTimelineForGap(size_t gapIndex);
     Q_INVOKABLE void getTimelineNextPage();
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
@@ -28,7 +30,6 @@ public:
 signals:
     void loginOk();
     void loginFailed(QString error);
-    void timelineModelChanged();
     void getTimeLineInProgressChanged();
 
 private:

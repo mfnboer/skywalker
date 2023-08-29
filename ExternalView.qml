@@ -45,6 +45,8 @@ Item {
                 rightPadding: 5
                 text: postExternal.title
                 wrapMode: Text.Wrap
+                maximumLineCount: 2
+                elide: Text.ElideRight
                 font.bold: true
             }
             Text {
@@ -55,6 +57,8 @@ Item {
                 bottomPadding: 5
                 text: postExternal.description
                 wrapMode: Text.Wrap
+                maximumLineCount: 5
+                elide: Text.ElideRight
             }
         }
     }

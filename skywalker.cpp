@@ -4,6 +4,9 @@
 
 namespace Skywalker {
 
+static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
+static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
+
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent)
 {}
@@ -24,7 +27,7 @@ void Skywalker::login(const QString user, QString password, const QString host)
         });
 }
 
-void Skywalker::getTimeline(const QString& cursor)
+void Skywalker::getTimeline(int limit, const QString& cursor)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline:" << cursor;
@@ -40,14 +43,13 @@ void Skywalker::getTimeline(const QString& cursor)
         cur = cursor;
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline({}, cur,
-       [this ,cursor](auto feed){
+    mBsky->getTimeline(limit, cur,
+       [this, cursor](auto feed){
             if (cursor.isEmpty())
                 mTimelineModel.setFeed(std::move(feed));
             else
                 mTimelineModel.addFeed(std::move(feed));
 
-            emit timelineModelChanged();
             setGetTimelineInProgress(false);
        },
        [this](const QString& error){
@@ -55,6 +57,72 @@ void Skywalker::getTimeline(const QString& cursor)
             setGetTimelineInProgress(false);
         }
     );
+    // TODO: show error in GUI
+}
+
+void Skywalker::getTimelinePrepend()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get timeline prepend";
+
+    if (mGetTimelineInProgress)
+    {
+        qDebug() << "Get timeline still in progress";
+        return;
+    }
+
+    setGetTimelineInProgress(true);
+    mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, {},
+        [this](auto feed){
+            mTimelineModel.prependFeed(std::move(feed));
+            setGetTimelineInProgress(false);
+        },
+        [this](const QString& error){
+            qDebug() << "getTimeline FAILED:" << error;
+            setGetTimelineInProgress(false);
+        }
+        );
+    // TODO: show error in GUI
+}
+
+void Skywalker::getTimelineForGap(size_t gapIndex)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get timeline for gap:" << gapIndex;
+
+    if (mGetTimelineInProgress)
+    {
+        qDebug() << "Get timeline still in progress";
+        return;
+    }
+
+    const Post* post = mTimelineModel.getPostAt(gapIndex);
+    if (!post || !post->isPlaceHolder())
+    {
+        qWarning() << "NO GAP AT index:" << gapIndex;
+        return;
+    }
+
+    std::optional<QString> cur = post->getGapCursor();
+    if (!cur || cur->isEmpty())
+    {
+        qWarning() << "NO CURSOR FOR GAP:" << gapIndex;
+        return;
+    }
+
+    qDebug() << "Set gap cursor:" << *cur;
+
+    setGetTimelineInProgress(true);
+    mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, cur,
+        [this, gapIndex](auto feed){
+            mTimelineModel.gapFillFeed(std::move(feed), gapIndex);
+            setGetTimelineInProgress(false);
+        },
+        [this](const QString& error){
+            qDebug() << "getTimelineForGap FAILED:" << error;
+            setGetTimelineInProgress(false);
+        }
+        );
     // TODO: show error in GUI
 }
 
@@ -67,7 +135,7 @@ void Skywalker::getTimelineNextPage()
         return;
     }
 
-    getTimeline(cursor);
+    getTimeline(TIMELINE_ADD_PAGE_SIZE, cursor);
 }
 
 void Skywalker::setGetTimelineInProgress(bool inProgress)
