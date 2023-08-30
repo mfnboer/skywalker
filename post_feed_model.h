@@ -30,8 +30,14 @@ public:
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
-    void prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
-    void gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId);
+
+    // Returns gap id if prepending created a gap in the feed.
+    // Returns 0 otherwise.
+    int prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+
+    // Returns new gap id if the gap was not fully filled, i.e. there is a new gap.
+    // Returns 0 otherwise.
+    int gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

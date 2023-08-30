@@ -170,7 +170,7 @@ Window {
         interval: 30000
         running: false
         repeat: true
-        onTriggered: skywalker.getTimelinePrepend()
+        onTriggered: skywalker.getTimelinePrepend(2)
     }
 
     Component.onCompleted: {

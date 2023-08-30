@@ -30,15 +30,15 @@ void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 }
 
-void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     if (feed->mFeed.empty())
-        return;
+        return 0;
 
     if (mFeed.empty())
     {
         setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
-        return;
+        return 0;
     }
 
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
@@ -46,7 +46,7 @@ void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     if (page->mFeed.empty())
     {
         qWarning() << "Page has no posts";
-        return;
+        return 0;
     }
 
     const auto overlapStart = findOverlapStart(*page, 0);
@@ -54,12 +54,13 @@ void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     if (!overlapStart)
     {
         page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
+        const int gapId = page->mFeed.back().getGapId();
 
         const size_t lastInsertIndex = page->mFeed.size() - 1;
         beginInsertRows({}, 0, lastInsertIndex);
         mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.end());
         addToIndices(page->mFeed.size(), 0);
-        mGapIdIndexMap[page->mFeed.back().getGapId()] = lastInsertIndex;
+        mGapIdIndexMap[gapId] = lastInsertIndex;
 
         // The -1 offset on lastInsertIndex is for the place holder post.
         if (!page->mCursorNextPage.isEmpty())
@@ -70,13 +71,13 @@ void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 
         qDebug() << "Full feed prepended, new size:" << mFeed.size();
         logIndices();
-        return;
+        return gapId;
     }
 
     if (*overlapStart == 0)
     {
         qDebug() << "Full overlap, no new posts";
-        return;
+        return 0;
     }
 
     const auto overlapEnd = findOverlapEnd(*page, 0);
@@ -93,16 +94,17 @@ void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 
     qDebug() << "Prepended" << *overlapStart << "posts, new size:" << mFeed.size();
     logIndices();
+    return 0;
 }
 
-void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId)
+int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId)
 {
     qDebug() << "Fill gap:" << gapId;
 
     if (!mGapIdIndexMap.count(gapId))
     {
         qWarning() << "Gap does not exist:" << gapId;
-        return;
+        return 0;
     }
 
     const int gapIndex = mGapIdIndexMap[gapId];
@@ -111,7 +113,7 @@ void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, in
     if (gapIndex > mFeed.size())
     {
         qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
-        return;
+        return 0;
     }
 
     Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
@@ -129,7 +131,7 @@ void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, in
     if (page->mFeed.empty())
     {
         qWarning() << "Page has no posts";
-        return;
+        return 0;
     }
 
     const auto overlapStart = findOverlapStart(*page, gapIndex);
@@ -137,12 +139,13 @@ void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, in
     if (!overlapStart)
     {
         page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
+        const int gapId = page->mFeed.back().getGapId();
 
         const size_t lastInsertIndex = gapIndex + page->mFeed.size() - 1;
         beginInsertRows({}, gapIndex, lastInsertIndex);
         mFeed.insert(mFeed.begin() + gapIndex, page->mFeed.begin(), page->mFeed.end());
         addToIndices(page->mFeed.size(), gapIndex);
-        mGapIdIndexMap[page->mFeed.back().getGapId()] = lastInsertIndex;
+        mGapIdIndexMap[gapId] = lastInsertIndex;
 
         // The -1 offset on lastInsertIndex is for the place holder post.
         if (!page->mCursorNextPage.isEmpty())
@@ -153,13 +156,13 @@ void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, in
 
         qDebug() << "Full feed inserted in gap, new size:" << mFeed.size();
         logIndices();
-        return;
+        return gapId;
     }
 
     if (*overlapStart == 0)
     {
         qDebug() << "Full overlap, no new posts";
-        return;
+        return 0;
     }
 
     const auto overlapEnd = findOverlapEnd(*page, gapIndex);
@@ -176,6 +179,7 @@ void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, in
 
     qDebug() << "Inserted in gap" << *overlapStart << "posts, new size:" << mFeed.size();
     logIndices();
+    return 0;
 }
 
 void PostFeedModel::clear()

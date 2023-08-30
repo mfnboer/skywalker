@@ -60,7 +60,7 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
     // TODO: show error in GUI
 }
 
-void Skywalker::getTimelinePrepend()
+void Skywalker::getTimelinePrepend(int autoGapFill)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline prepend";
@@ -73,9 +73,17 @@ void Skywalker::getTimelinePrepend()
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, {},
-        [this](auto feed){
-            mTimelineModel.prependFeed(std::move(feed));
+        [this, autoGapFill](auto feed){
+            const int gapId = mTimelineModel.prependFeed(std::move(feed));
             setGetTimelineInProgress(false);
+
+            if (gapId > 0)
+            {
+                if (autoGapFill > 0)
+                    getTimelineForGap(gapId, autoGapFill - 1);
+                else
+                    qWarning() << "Gap created, no auto gap fill";
+            }
         },
         [this](const QString& error){
             qDebug() << "getTimeline FAILED:" << error;
@@ -85,7 +93,7 @@ void Skywalker::getTimelinePrepend()
     // TODO: show error in GUI
 }
 
-void Skywalker::getTimelineForGap(int gapId)
+void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline for gap:" << gapId;
@@ -114,9 +122,17 @@ void Skywalker::getTimelineForGap(int gapId)
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, cur,
-        [this, gapId](auto feed){
-            mTimelineModel.gapFillFeed(std::move(feed), gapId);
+        [this, gapId, autoGapFill](auto feed){
+            const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
             setGetTimelineInProgress(false);
+
+            if (newGapId > 0)
+            {
+                if (autoGapFill > 0)
+                    getTimelineForGap(newGapId, autoGapFill - 1);
+                else
+                    qWarning() << "Gap created, no auto gap fill";
+            }
         },
         [this](const QString& error){
             qDebug() << "getTimelineForGap FAILED:" << error;
