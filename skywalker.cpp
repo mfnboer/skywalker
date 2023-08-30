@@ -6,7 +6,7 @@ namespace Skywalker {
 
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
-static constexpr int TIMELINE_MAX_SIZE = 250;
+static constexpr int TIMELINE_MAX_SIZE = 5000;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent)
