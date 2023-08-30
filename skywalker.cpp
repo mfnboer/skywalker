@@ -6,6 +6,7 @@ namespace Skywalker {
 
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
+static constexpr int TIMELINE_MAX_SIZE = 250;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent)
@@ -68,6 +69,12 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
     if (mGetTimelineInProgress)
     {
         qDebug() << "Get timeline still in progress";
+        return;
+    }
+
+    if (mTimelineModel.rowCount() >= TIMELINE_MAX_SIZE)
+    {
+        qWarning() << "Timeline is full:" << mTimelineModel.rowCount();
         return;
     }
 
@@ -151,6 +158,9 @@ void Skywalker::getTimelineNextPage()
         return;
     }
 
+    if (mTimelineModel.rowCount() >= TIMELINE_MAX_SIZE)
+        mTimelineModel.removeHeadPosts(TIMELINE_ADD_PAGE_SIZE);
+
     getTimeline(TIMELINE_ADD_PAGE_SIZE, cursor);
 }
 
@@ -163,10 +173,10 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
 // NOTE: indices can be -1 if the UI cannot determine the index
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
 {
-    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 3 * TIMELINE_ADD_PAGE_SIZE)
-        mTimelineModel.removeTailPosts(2 * TIMELINE_ADD_PAGE_SIZE);
+    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_ADD_PAGE_SIZE)
+        mTimelineModel.removeTailPosts(TIMELINE_ADD_PAGE_SIZE);
 
-    if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && mGetTimelineInProgress)
+    if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && !mGetTimelineInProgress)
         getTimelineNextPage();
 }
 

@@ -118,10 +118,18 @@ Window {
             }
         }
 
+        onCountChanged: {
+            let firstVisibleIndex = indexAt(0, contentY)
+            let lastVisibleIndex = indexAt(0, contentY + height - 1)
+            console.debug("COUNT CHANGED First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count)
+            // Adding/removing content changes the indices.
+            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        }
+
         onMovementEnded: {
             let firstVisibleIndex = indexAt(0, contentY)
             let lastVisibleIndex = indexAt(0, contentY + height - 1)
-            console.debug("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:" << count)
+            console.debug("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count)
             skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
         }
 

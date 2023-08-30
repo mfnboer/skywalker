@@ -188,7 +188,7 @@ void PostFeedModel::removeTailPosts(int size)
     if (size <= 0 || size >= mFeed.size())
         return;
 
-    const auto removeIndexCursorIt = mIndexCursorMap.lower_bound(mFeed.size() - size);
+    const auto removeIndexCursorIt = mIndexCursorMap.lower_bound(mFeed.size() - size - 1);
 
     if (removeIndexCursorIt == mIndexCursorMap.end())
     {
@@ -206,7 +206,7 @@ void PostFeedModel::removeTailPosts(int size)
         return;
     }
 
-    const auto removeIndexRawFeedIt = mIndexRawFeedMap.upper_bound(removeIndex - 1);
+    const auto removeIndexRawFeedIt = mIndexRawFeedMap.lower_bound(removeIndex);
 
     beginRemoveRows({}, removeIndex, mFeed.size() - 1);
     mFeed.erase(mFeed.begin() + removeIndex, mFeed.end());
@@ -225,6 +225,47 @@ void PostFeedModel::removeTailPosts(int size)
     endRemoveRows();
 
     qDebug() << "Removed tail rows, new size:" << mFeed.size();
+    logIndices();
+}
+
+void PostFeedModel::removeHeadPosts(int size)
+{
+    if (size <= 0 || size >= mFeed.size())
+        return;
+
+    size_t removeEndIndex = size - 1;
+    while (removeEndIndex < mFeed.size() - 1 && mFeed[removeEndIndex + 1].isPlaceHolder())
+        ++removeEndIndex;
+
+    if (removeEndIndex >= mFeed.size() - 1)
+    {
+        qWarning() << "Cannot remove beyond end, removeIndex:" << removeEndIndex << "size:" << mFeed.size();
+        logIndices();
+        return;
+    }
+
+    const auto removeEndIndexCursorIt = mIndexCursorMap.upper_bound(removeEndIndex);
+    const auto removeEndIndexRawFeedIt = mIndexRawFeedMap.upper_bound(removeEndIndex);
+    const size_t removeSize = removeEndIndex + 1;
+
+    beginRemoveRows({}, 0, removeEndIndex);
+    mFeed.erase(mFeed.begin(), mFeed.begin() + removeSize);
+    Q_ASSERT(!mFeed.front().isPlaceHolder());
+    mIndexCursorMap.erase(mIndexCursorMap.begin(), removeEndIndexCursorIt);
+    mIndexRawFeedMap.erase(mIndexRawFeedMap.begin(), removeEndIndexRawFeedIt);
+
+    for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
+    {
+        if (it->second <= removeEndIndex)
+            it = mGapIdIndexMap.erase(it);
+        else
+            ++it;
+    }
+
+    addToIndices(-removeSize, removeSize);
+    endRemoveRows();
+
+    qDebug() << "Removed head rows, new size:" << mFeed.size();
     logIndices();
 }
 
