@@ -128,7 +128,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
     qDebug() << "Set gap cursor:" << *cur;
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, cur,
+    mBsky->getTimeline(TIMELINE_ADD_PAGE_SIZE, cur,
         [this, gapId, autoGapFill](auto feed){
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
             setGetTimelineInProgress(false);
