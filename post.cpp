@@ -14,9 +14,11 @@ Post Post::createGapPlaceHolder(const QString& gapCursor)
     return post;
 }
 
-Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost) :
-    mFeedViewPost(feedViewPost)
+Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost, int rawIndex) :
+    mFeedViewPost(feedViewPost),
+    mRawIndex(rawIndex)
 {
+    Q_ASSERT((feedViewPost && rawIndex >= 0) || (!feedViewPost && rawIndex == -1));
 }
 
 const QString& Post::getCid() const

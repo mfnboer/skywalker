@@ -18,9 +18,10 @@ public:
     // to fetch those posts.
     static Post createGapPlaceHolder(const QString& gapCursor);
 
-    explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr);
+    explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr, int rawIndex = -1);
 
     bool isPlaceHolder() const { return !mFeedViewPost; }
+    int getRawIndex() const { return mRawIndex; }
     bool isEndOfFeed() const { return mEndOfFeed; }
     int getGapId() const { return mGapId; }
     const QString& getGapCursor() const { return mGapCursor; }
@@ -44,8 +45,15 @@ public:
 private:
     // NULL is place holder for more posts (gap)
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
+
+    // Index in the vector of raw feed view posts
+    int mRawIndex = -1;
+
     int mGapId = 0;
-    QString mGapCursor; // cursor to get more posts to fill the gap
+
+    // cursor to get more posts to fill the gap
+    QString mGapCursor;
+
     bool mEndOfFeed = false;
 
     static int sNextGapId;

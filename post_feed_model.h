@@ -59,6 +59,9 @@ private:
     void clear();
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed) const;
 
+    // Returns gap id if insertion created a gap in the feed.
+    int insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex);
+
     // Returns an index in the page feed
     std::optional<size_t> findOverlapStart(const Page& page, size_t feedIndex) const;
 

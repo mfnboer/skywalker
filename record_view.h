@@ -37,12 +37,13 @@ public:
 
     bool getNotFound() const { return mNotFound; }
     bool getBlocked() const { return mBlocked; }
-    bool getAvailable() const { return !mNotFound && !mBlocked; }
+    bool getAvailable() const { return !mNotFound && !mBlocked && !mNotSupported; }
 
 private:
     const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;
     bool mNotFound = false;
     bool mBlocked = false;
+    bool mNotSupported = false;
 };
 
 }
