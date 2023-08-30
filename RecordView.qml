@@ -50,6 +50,11 @@ Item {
             text: qsTr("BLOCKED")
             visible: record.blocked
         }
+        Text {
+            width: parent.width
+            text: qsTr("NOT SUPPORTED")
+            visible: record.notSupported
+        }
     }
     Rectangle {
         anchors.fill: parent
