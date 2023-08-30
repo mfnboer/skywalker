@@ -85,10 +85,10 @@ void Skywalker::getTimelinePrepend()
     // TODO: show error in GUI
 }
 
-void Skywalker::getTimelineForGap(size_t gapIndex)
+void Skywalker::getTimelineForGap(int gapId)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get timeline for gap:" << gapIndex;
+    qDebug() << "Get timeline for gap:" << gapId;
 
     if (mGetTimelineInProgress)
     {
@@ -96,17 +96,17 @@ void Skywalker::getTimelineForGap(size_t gapIndex)
         return;
     }
 
-    const Post* post = mTimelineModel.getPostAt(gapIndex);
+    const Post* post = mTimelineModel.getGapPlaceHolder(gapId);
     if (!post || !post->isPlaceHolder())
     {
-        qWarning() << "NO GAP AT index:" << gapIndex;
+        qWarning() << "NO GAP:" << gapId;
         return;
     }
 
     std::optional<QString> cur = post->getGapCursor();
     if (!cur || cur->isEmpty())
     {
-        qWarning() << "NO CURSOR FOR GAP:" << gapIndex;
+        qWarning() << "NO CURSOR FOR GAP:" << gapId;
         return;
     }
 
@@ -114,8 +114,8 @@ void Skywalker::getTimelineForGap(size_t gapIndex)
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, cur,
-        [this, gapIndex](auto feed){
-            mTimelineModel.gapFillFeed(std::move(feed), gapIndex);
+        [this, gapId](auto feed){
+            mTimelineModel.gapFillFeed(std::move(feed), gapId);
             setGetTimelineInProgress(false);
         },
         [this](const QString& error){

@@ -20,7 +20,7 @@ public:
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
     Q_INVOKABLE void getTimeline(int limit, const QString& cursor = {});
     Q_INVOKABLE void getTimelinePrepend();
-    Q_INVOKABLE void getTimelineForGap(size_t gapIndex);
+    Q_INVOKABLE void getTimelineForGap(int gapId);
     Q_INVOKABLE void getTimelineNextPage();
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }

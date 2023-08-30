@@ -13,12 +13,16 @@ namespace Skywalker {
 class Post
 {
 public:
-    static Post createPlaceHolder(const QString& gapCursor);
+    // A gap place holder is created to represent a gap in the timeline, i.e.
+    // missing posts that have not been retrieved. The gapCursor can be use
+    // to fetch those posts.
+    static Post createGapPlaceHolder(const QString& gapCursor);
 
     explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr);
 
     bool isPlaceHolder() const { return !mFeedViewPost; }
     bool isEndOfFeed() const { return mEndOfFeed; }
+    int getGapId() const { return mGapId; }
     const QString& getGapCursor() const { return mGapCursor; }
 
     const QString& getCid() const;
@@ -35,14 +39,16 @@ public:
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
 
-    void setGapCursor(const QString& gapCursor) { mGapCursor = gapCursor; }
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
 
 private:
     // NULL is place holder for more posts (gap)
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
+    int mGapId = 0;
     QString mGapCursor; // cursor to get more posts to fill the gap
     bool mEndOfFeed = false;
+
+    static int sNextGapId;
 };
 
 }

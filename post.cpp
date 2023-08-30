@@ -4,12 +4,13 @@
 
 namespace Skywalker {
 
-static const QString NO_STRING;
+int Post::sNextGapId = 1;
 
-Post Post::createPlaceHolder(const QString& gapCursor)
+Post Post::createGapPlaceHolder(const QString& gapCursor)
 {
     Post post;
-    post.setGapCursor(gapCursor);
+    post.mGapCursor = gapCursor;
+    post.mGapId = sNextGapId++;
     return post;
 }
 
@@ -20,11 +21,14 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost) :
 
 const QString& Post::getCid() const
 {
+    static const QString NO_STRING;
     return mFeedViewPost ? mFeedViewPost->mPost->mCid : NO_STRING;
 }
 
 const QString& Post::getText() const
 {
+    static const QString NO_STRING;
+
     if (!mFeedViewPost)
         return NO_STRING;
 

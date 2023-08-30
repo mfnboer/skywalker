@@ -53,12 +53,13 @@ void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 
     if (!overlapStart)
     {
-        page->mFeed.push_back(Post::createPlaceHolder(page->mCursorNextPage));
+        page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
 
         const size_t lastInsertIndex = page->mFeed.size() - 1;
         beginInsertRows({}, 0, lastInsertIndex);
         mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.end());
         addToIndices(page->mFeed.size(), 0);
+        mGapIdIndexMap[page->mFeed.back().getGapId()] = lastInsertIndex;
 
         // The -1 offset on lastInsertIndex is for the place holder post.
         if (!page->mCursorNextPage.isEmpty())
@@ -94,21 +95,26 @@ void PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     logIndices();
 }
 
-void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, size_t gapIndex)
+void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId)
 {
-    qDebug() << "Fill gap:" << gapIndex;
+    qDebug() << "Fill gap:" << gapId;
+
+    if (!mGapIdIndexMap.count(gapId))
+    {
+        qWarning() << "Gap does not exist:" << gapId;
+        return;
+    }
+
+    const int gapIndex = mGapIdIndexMap[gapId];
+    mGapIdIndexMap.erase(gapId);
 
     if (gapIndex > mFeed.size())
     {
-        qWarning() << "Gap index" << gapIndex << "beyond feed size" << mFeed.size();
+        qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
         return;
     }
 
-    if (!mFeed[gapIndex].isPlaceHolder())
-    {
-        qWarning() << "Trying to fill a gap where there is none:" << gapIndex;
-        return;
-    }
+    Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
 
     beginRemoveRows({}, gapIndex, gapIndex);
     mFeed.erase(mFeed.begin() + gapIndex);
@@ -130,12 +136,13 @@ void PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, si
 
     if (!overlapStart)
     {
-        page->mFeed.push_back(Post::createPlaceHolder(page->mCursorNextPage));
+        page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
 
         const size_t lastInsertIndex = gapIndex + page->mFeed.size() - 1;
         beginInsertRows({}, gapIndex, lastInsertIndex);
         mFeed.insert(mFeed.begin() + gapIndex, page->mFeed.begin(), page->mFeed.end());
         addToIndices(page->mFeed.size(), gapIndex);
+        mGapIdIndexMap[page->mFeed.back().getGapId()] = lastInsertIndex;
 
         // The -1 offset on lastInsertIndex is for the place holder post.
         if (!page->mCursorNextPage.isEmpty())
@@ -177,6 +184,7 @@ void PostFeedModel::clear()
     mFeed.clear();
     mIndexCursorMap.clear();
     mIndexRawFeedMap.clear();
+    mGapIdIndexMap.clear();
     endRemoveRows();
     qDebug() << "All posts removed";
 }
@@ -221,12 +229,27 @@ QString PostFeedModel::getLastCursor() const
     return mIndexCursorMap.rbegin()->second;
 }
 
-const Post* PostFeedModel::getPostAt(size_t index) const
+const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
 {
-    if (index > mFeed.size())
-        return nullptr;
+    const auto it = mGapIdIndexMap.find(gapId);
 
-    return &mFeed[index];
+    if (it == mGapIdIndexMap.end())
+    {
+        qWarning() << "Gap does not exist:" << gapId;
+        return nullptr;
+    }
+
+    const int gapIndex = it->second;
+
+    if (gapIndex > mFeed.size())
+    {
+        qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
+        return nullptr;
+    }
+
+    const auto* gap = &mFeed[gapIndex];
+    Q_ASSERT(gap->getGapId() == gapId);
+    return gap;
 }
 
 int PostFeedModel::rowCount(const QModelIndex& parent) const
@@ -281,8 +304,8 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         auto record = post.getRecordWithMediaView();
         return record ? QVariant::fromValue(*record) : QVariant();
     }
-    case Role::IsPlaceHolder:
-        return post.isPlaceHolder();
+    case Role::PostGapId:
+        return post.getGapId();
     case Role::EndOfFeed:
         return post.isEndOfFeed();
     default:
@@ -304,7 +327,7 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
         { int(Role::PostExternal), "postExternal" },
         { int(Role::PostRecord), "postRecord" },
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
-        { int(Role::IsPlaceHolder), "isPlaceHolder" },
+        { int(Role::PostGapId), "postGapId" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
 
@@ -422,6 +445,12 @@ void PostFeedModel::addToIndices(size_t offset, size_t startAtIndex)
     }
 
     mIndexRawFeedMap = std::move(newRawFeedMap);
+
+    for (auto& [gapId, index] : mGapIdIndexMap)
+    {
+        if (index >= startAtIndex)
+            index += offset;
+    }
 }
 
 void PostFeedModel::logIndices() const
@@ -437,6 +466,10 @@ void PostFeedModel::logIndices() const
         qDebug() << "Index:" << index << "cid:" << rawFeed.front()->mPost->mCid
                  << "indexedAt:" << rawFeed.front()->mPost->mIndexedAt;
     }
+
+    qDebug() << "GAP INDEX MAP:";
+    for (const auto& [gapId, index] : mGapIdIndexMap)
+        qDebug() << "Gap:" << gapId << "Index:" << index;
 }
 
 }

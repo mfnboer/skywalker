@@ -4,6 +4,8 @@
 #include "post.h"
 #include <QAbstractListModel>
 #include <deque>
+#include <map>
+#include <unordered_map>
 
 namespace Skywalker {
 
@@ -20,7 +22,7 @@ public:
         PostExternal,
         PostRecord,
         PostRecordWithMedia,
-        IsPlaceHolder,
+        PostGapId,
         EndOfFeed
     };
 
@@ -29,12 +31,12 @@ public:
     void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
-    void gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, size_t gapIndex);
+    void gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QString getLastCursor() const;
-    const Post* getPostAt(size_t index) const;
+    const Post* getGapPlaceHolder(int gapId) const;
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -69,7 +71,11 @@ private:
     // The index of the last post that depends on the raw PostFeed. All posts from the previous
     // index in this map till this one depend on it. The raw PostFeed must be kept alive as
     // long it has dependend posts.
-    std::map<size_t, ATProto::AppBskyFeed::PostFeed> mIndexRawFeedMap; // last index in raw feed
+    std::map<size_t, ATProto::AppBskyFeed::PostFeed> mIndexRawFeedMap;
+
+    // Index of each gap
+    std::unordered_map<int, size_t> mGapIdIndexMap;
+
     bool mEndOfFeed = false;
 };
 

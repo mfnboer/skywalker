@@ -30,7 +30,7 @@ Window {
             required property var postExternal // externalview (var allows NULL)
             required property var postRecord // recordview
             required property var postRecordWithMedia // record_with_media_view
-            required property bool isPlaceHolder;
+            required property int postGapId;
             required property bool endOfFeed;
 
             id: postEntry
@@ -40,7 +40,7 @@ Window {
             Rectangle {
                 width: avatar.width
                 color: "transparent"
-                visible: postRepostedByName && !isPlaceHolder
+                visible: postRepostedByName && !postGapId
             }
 
             Text {
@@ -51,7 +51,7 @@ Window {
                 color: "darkslategrey"
                 font.bold: true
                 font.pointSize: 8
-                visible: postRepostedByName && !isPlaceHolder
+                visible: postRepostedByName && !postGapId
             }
 
             Avatar {
@@ -59,13 +59,13 @@ Window {
                 width: 30
                 Layout.alignment: Qt.AlignTop
                 avatarUrl: author.avatarUrl
-                visible: !isPlaceHolder
+                visible: !postGapId
             }
 
             Column {
                 id: postColumn
                 width: parent.width - avatar.width - timelineView.spacing * 2
-                visible: !isPlaceHolder
+                visible: !postGapId
 
                 PostHeader {
                     width: parent.width
@@ -91,11 +91,11 @@ Window {
                 elide: Text.ElideRight
                 textFormat: Text.StyledText
                 text: "<a href=\"showMore\">" + qsTr("Show more posts") + "</a>"
-                visible: isPlaceHolder
+                visible: postGapId > 0
 
                 onLinkActivated: {
                     if (!skywalker.getTimelineInProgress)
-                        skywalker.getTimelineForGap(index)
+                        skywalker.getTimelineForGap(postGapId)
                 }
             }
 
