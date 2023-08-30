@@ -65,6 +65,6 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: { Qt.openUrlExternally(postExternal.uri); }
+        onClicked: Qt.openUrlExternally(postExternal.uri)
     }
 }

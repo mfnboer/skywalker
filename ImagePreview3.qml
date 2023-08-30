@@ -15,7 +15,7 @@ RoundedFrame {
         id: imgGrid
         anchors.fill: parent
 
-        Image {
+        ThumbImageView {
             id: img1
             anchors.left: parent.left
             anchors.top: parent.top
@@ -24,9 +24,10 @@ RoundedFrame {
             height: parent.height
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            source: images[0].thumbUrl
+            imageView: images[0]
         }
-        Image {
+
+        ThumbImageView {
             id: img2
             anchors.right: parent.right
             anchors.top: parent.top
@@ -34,9 +35,10 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            source: images[1].thumbUrl
+            imageView: images[1]
         }
-        Image {
+
+        ThumbImageView {
             id: img3
             anchors.right: parent.right
             anchors.bottom: parent.bottom
@@ -44,7 +46,14 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            source: images[2].thumbUrl
+            imageView: images[2]
         }
+
+    }
+
+    MouseArea {
+        anchors.fill: imgGrid
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.viewFullImage(images, 0)
     }
 }

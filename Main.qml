@@ -5,6 +5,7 @@ import QtQuick.Window
 import skywalker
 
 Window {
+    id: root
     width: 480
     height: 960
     visible: true
@@ -178,6 +179,12 @@ Window {
         running: false
         repeat: true
         onTriggered: skywalker.getTimelinePrepend(2)
+    }
+
+    function viewFullImage(imageList, currentIndex) {
+        let component = Qt.createComponent("FullImageView.qml")
+        let view = component.createObject(root, {images: imageList, imageIndex: currentIndex})
+        view.open()
     }
 
     Component.onCompleted: {

@@ -15,37 +15,40 @@ RoundedFrame {
         columns: 2
         spacing: 4
 
-        Image {
+        ThumbImageView {
             id: img1
             width: parent.width / 2 - parent.spacing / 2
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            source: images[0].thumbUrl
+            imageView: images[0]
         }
-        Image {
+
+        ThumbImageView {
             id: img2
             width: parent.width / 2 - parent.spacing / 2
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            source: images[1].thumbUrl
+            imageView: images[1]
         }
-        Image {
+
+        ThumbImageView {
             id: img3
             width: parent.width / 2 - parent.spacing / 2
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            source: images[2].thumbUrl
+            imageView: images[2]
         }
-        Image {
+
+        ThumbImageView {
             id: img4
             width: parent.width / 2 - parent.spacing / 2
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            source: images[3].thumbUrl
+            imageView: images[3]
         }
     }
 }
