@@ -39,6 +39,8 @@ public:
     // Returns 0 otherwise.
     int gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId);
 
+    void removeTailPosts(int size);
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QString getLastCursor() const;

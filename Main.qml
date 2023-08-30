@@ -119,11 +119,10 @@ Window {
         }
 
         onMovementEnded: {
+            let firstVisibleIndex = indexAt(0, contentY)
             let lastVisibleIndex = indexAt(0, contentY + height - 1)
-            console.debug("END MOVEMENT", visibleArea.yPosition + visibleArea.heightRatio, lastVisibleIndex, count);
-            if (lastVisibleIndex > timelineView.count - 5 && !skywalker.getTimelineInProgress) {
-                skywalker.getTimelineNextPage()
-            }
+            console.debug("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:" << count)
+            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
         }
 
         onVerticalOvershootChanged: {

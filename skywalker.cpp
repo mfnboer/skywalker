@@ -160,4 +160,14 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
     emit getTimeLineInProgressChanged();
 }
 
+// NOTE: indices can be -1 if the UI cannot determine the index
+void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
+{
+    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 3 * TIMELINE_ADD_PAGE_SIZE)
+        mTimelineModel.removeTailPosts(2 * TIMELINE_ADD_PAGE_SIZE);
+
+    if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && mGetTimelineInProgress)
+        getTimelineNextPage();
+}
+
 }

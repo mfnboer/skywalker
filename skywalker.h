@@ -22,6 +22,7 @@ public:
     Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0);
     Q_INVOKABLE void getTimelineNextPage();
+    Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);

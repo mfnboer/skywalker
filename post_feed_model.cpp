@@ -146,6 +146,7 @@ void PostFeedModel::clear()
     mIndexCursorMap.clear();
     mIndexRawFeedMap.clear();
     mGapIdIndexMap.clear();
+    mEndOfFeed = false;
     endRemoveRows();
     qDebug() << "All posts removed";
 }
@@ -179,6 +180,51 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     endInsertRows();
 
     qDebug() << "New feed size:" << mFeed.size();
+    logIndices();
+}
+
+void PostFeedModel::removeTailPosts(int size)
+{
+    if (size <= 0 || size >= mFeed.size())
+        return;
+
+    const auto removeIndexCursorIt = mIndexCursorMap.lower_bound(mFeed.size() - size);
+
+    if (removeIndexCursorIt == mIndexCursorMap.end())
+    {
+        qWarning() << "Cannot remove" << size << "posts";
+        logIndices();
+        return;
+    }
+
+    const size_t removeIndex = removeIndexCursorIt->first + 1;
+
+    if (removeIndex >= mFeed.size())
+    {
+        qWarning() << "Cannot remove beyond end, removeIndex:" << removeIndex << "size:" << mFeed.size();
+        logIndices();
+        return;
+    }
+
+    const auto removeIndexRawFeedIt = mIndexRawFeedMap.upper_bound(removeIndex - 1);
+
+    beginRemoveRows({}, removeIndex, mFeed.size() - 1);
+    mFeed.erase(mFeed.begin() + removeIndex, mFeed.end());
+    mIndexCursorMap.erase(std::next(removeIndexCursorIt), mIndexCursorMap.end());
+    mIndexRawFeedMap.erase(removeIndexRawFeedIt, mIndexRawFeedMap.end());
+
+    for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
+    {
+        if (it->second >= removeIndex)
+            it = mGapIdIndexMap.erase(it);
+        else
+            ++it;
+    }
+
+    mEndOfFeed = false;
+    endRemoveRows();
+
+    qDebug() << "Removed tail rows, new size:" << mFeed.size();
     logIndices();
 }
 
