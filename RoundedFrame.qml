@@ -14,18 +14,15 @@ Rectangle {
         height: objectToRound.height
         radius: frame.radius
         visible: false
-        z: -1
     }
     OpacityMask {
         id: content
         anchors.fill: objectToRound
         source: objectToRound
         maskSource: mask
-        z: -1
     }
 
     Component.onCompleted: {
         objectToRound.visible = false
-        objectToRound.z = -1
     }
 }

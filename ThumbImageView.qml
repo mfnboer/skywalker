@@ -23,7 +23,7 @@ Image {
         background: Rectangle {
             radius: 5
             color: "black"
-            opacity: 0.5
+            opacity: 0.6
         }
     }
 }

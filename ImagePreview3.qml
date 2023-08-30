@@ -50,10 +50,22 @@ RoundedFrame {
         }
 
     }
-
     MouseArea {
         anchors.fill: imgGrid
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.viewFullImage(images, 0)
+        onClicked: {
+            let p = Qt.point(mouseX, mouseY)
+            let index = -1
+
+            if (img1.contains(mapToItem(img1, p)))
+                index = 0
+            else if (img2.contains(mapToItem(img2, p)))
+                index = 1
+            else if (img3.contains(mapToItem(img3, p)))
+                index = 2
+
+            if (index >= 0)
+                root.viewFullImage(images, index)
+        }
     }
 }
