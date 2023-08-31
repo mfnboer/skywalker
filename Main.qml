@@ -14,10 +14,11 @@ Window {
     ListView {
         property bool inTopOvershoot: false
         property bool inBottomOvershoot: false
+        property int margin: 5
 
         id: timelineView
         anchors.fill: parent
-        spacing: 5
+        spacing: 0
         model: skywalker.timelineModel
         ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -31,21 +32,34 @@ Window {
             required property var postExternal // externalview (var allows NULL)
             required property var postRecord // recordview
             required property var postRecordWithMedia // record_with_media_view
+            required property int postType; // Post::PostType
             required property int postGapId;
             required property bool endOfFeed;
 
             id: postEntry
             columns: 2
             width: timelineView.width
+            rowSpacing: 0
 
             Rectangle {
                 width: avatar.width
-                color: "transparent"
+                Layout.preferredHeight: timelineView.margin
+                color: postType === 1 ? "white" : avatar.color
+            }
+            Rectangle {
+                width: parent.width - avatar.width - timelineView.margin * 2
+                Layout.preferredHeight: timelineView.margin
+                Layout.fillWidth: true
+            }
+
+            Rectangle {
+                width: avatar.width
+                color: avatar.color
                 visible: postRepostedByName && !postGapId
             }
 
             Text {
-                width: parent.width - avatar.width - timelineView.spacing * 2
+                width: parent.width - avatar.width - timelineView.margin * 2
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 text: qsTr(`Reposted by ${postRepostedByName}`)
@@ -55,17 +69,25 @@ Window {
                 visible: postRepostedByName && !postGapId
             }
 
-            Avatar {
+            Rectangle {
                 id: avatar
-                width: 30
-                Layout.alignment: Qt.AlignTop
-                avatarUrl: author.avatarUrl
-                visible: !postGapId
+                width: 40
+                Layout.fillHeight: true
+
+                Avatar {
+                    x: parent.x + 5
+                    width: parent.width - 10
+                    Layout.alignment: Qt.AlignTop
+                    avatarUrl: author.avatarUrl
+                    visible: !postGapId
+                }
+
+                color: postType === 0 ? "transparent" : postType === 1 ? "blue" : "lightblue"
             }
 
             Column {
                 id: postColumn
-                width: parent.width - avatar.width - timelineView.spacing * 2
+                width: parent.width - avatar.width - timelineView.margin * 2
                 visible: !postGapId
 
                 PostHeader {
@@ -107,11 +129,23 @@ Window {
             }
 
             Rectangle {
+                width: avatar.width
+                height: timelineView.margin
+                color: postType === 3 ? "white" : avatar.color
+            }
+            Rectangle {
+                width: parent.width - avatar.width - timelineView.margin * 2
+                height: timelineView.margin
+                Layout.fillWidth: true
+            }
+
+            Rectangle {
                 width: parent.width
                 Layout.columnSpan: 2
                 Layout.preferredHeight: 1
                 Layout.fillWidth: true
                 color: "lightgrey"
+                visible: postType === 0 || postType === 3
             }
 
             Text {

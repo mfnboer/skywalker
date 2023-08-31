@@ -10,21 +10,37 @@
 
 namespace Skywalker {
 
+struct PostReplyRef;
+
 class Post
 {
+    Q_GADGET
+    QML_VALUE_TYPE(post)
+
 public:
+    enum PostType
+    {
+        STANDALONE = 0,
+        ROOT,
+        REPLY,
+        LAST_REPLY
+    };
+    Q_ENUM(PostType)
+
     // A gap place holder is created to represent a gap in the timeline, i.e.
     // missing posts that have not been retrieved. The gapCursor can be use
     // to fetch those posts.
     static Post createGapPlaceHolder(const QString& gapCursor);
 
     explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr, int rawIndex = -1);
+    Post(const ATProto::AppBskyFeed::PostView* postView, int rawIndex);
 
-    bool isPlaceHolder() const { return !mFeedViewPost; }
+    bool isPlaceHolder() const { return !mPost; }
     int getRawIndex() const { return mRawIndex; }
     bool isEndOfFeed() const { return mEndOfFeed; }
     int getGapId() const { return mGapId; }
     const QString& getGapCursor() const { return mGapCursor; }
+    PostType getPostType() const { return mPostType; }
 
     const QString& getCid() const;
 
@@ -35,12 +51,15 @@ public:
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
     std::optional<BasicProfile> getRepostedBy() const;
+    std::optional<PostReplyRef> getReplyRef() const;
+
     std::vector<ImageView::Ptr> getImages() const;
     ExternalView::Ptr getExternalView() const;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
+    void setPostType(PostType postType) { mPostType = postType; }
 
 private:
     struct HyperLink
@@ -50,7 +69,10 @@ private:
         QString mText;
     };
 
-    // NULL is place holder for more posts (gap)
+    // null is place holder for more posts (gap)
+    const ATProto::AppBskyFeed::PostView* mPost = nullptr;
+
+    // null if the post represents a reply ref.
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
 
     // Index in the vector of raw feed view posts
@@ -62,8 +84,17 @@ private:
     QString mGapCursor;
 
     bool mEndOfFeed = false;
+    PostType mPostType = STANDALONE;
 
     static int sNextGapId;
 };
 
+struct PostReplyRef
+{
+    Post mRoot;
+    Post mParent;
+};
+
 }
+
+Q_DECLARE_METATYPE(Skywalker::Post)

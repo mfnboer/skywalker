@@ -22,6 +22,7 @@ public:
         PostExternal,
         PostRecord,
         PostRecordWithMedia,
+        PostType,
         PostGapId,
         EndOfFeed
     };

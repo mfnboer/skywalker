@@ -352,6 +352,8 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         auto record = post.getRecordWithMediaView();
         return record ? QVariant::fromValue(*record) : QVariant();
     }
+    case Role::PostType:
+        return post.getPostType();
     case Role::PostGapId:
         return post.getGapId();
     case Role::EndOfFeed:
@@ -375,6 +377,7 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
         { int(Role::PostExternal), "postExternal" },
         { int(Role::PostRecord), "postRecord" },
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
+        { int(Role::PostType), "postType" },
         { int(Role::PostGapId), "postGapId" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
@@ -392,9 +395,32 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
         const auto& feedEntry = page->mRawFeed[i];
 
         if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
-            page->mFeed.push_back(Post(feedEntry.get(), i));
+        {
+            Post post(feedEntry.get(), i);
+            const auto& replyRef = post.getReplyRef();
+
+            if (replyRef)
+            {
+                bool rootAdded = false;
+
+                if (replyRef->mRoot.getCid() != replyRef->mParent.getCid())
+                {
+                    page->mFeed.push_back(replyRef->mRoot);
+                    page->mFeed.back().setPostType(Post::ROOT);
+                    rootAdded = true;
+                }
+
+                page->mFeed.push_back(replyRef->mParent);
+                page->mFeed.back().setPostType(rootAdded ? Post::REPLY : Post::ROOT);
+                post.setPostType(Post::LAST_REPLY);
+            }
+
+            page->mFeed.push_back(post);
+        }
         else
+        {
             qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
+        }
     }
 
     if (feed->mCursor && !feed->mCursor->isEmpty())
