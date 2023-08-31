@@ -50,8 +50,6 @@ private:
         QString mText;
     };
 
-    QString applyFacets(const ATProto::AppBskyFeed::Record::Post& post) const;
-
     // NULL is place holder for more posts (gap)
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
 
