@@ -10,11 +10,11 @@ Dialog {
     width: parent.width
     height: parent.height
     standardButtons: Dialog.Close
-    background: Rectangle {
-        color: "black"
-    }
+    background: Rectangle { color: "black" }
+    onClosed: destroy()
 
     SwipeView {
+        id: view
         anchors.fill: parent
         currentIndex: imageIndex
 
@@ -23,6 +23,7 @@ Dialog {
 
             Rectangle {
                 required property int index
+                property bool isCurrentItem: SwipeView.isCurrentItem
 
                 color: "black"
 
@@ -38,11 +39,11 @@ Dialog {
                     width: parent.width
                     anchors.bottom: parent.bottom
                     wrapMode: Text.Wrap
-                    maximumLineCount: 3
+                    maximumLineCount: 6
                     elide: Text.ElideRight
                     color: "white"
                     text: images[index].alt
-                    visible: images[index].alt
+                    visible: images[index].alt && isCurrentItem
                 }
             }
         }
