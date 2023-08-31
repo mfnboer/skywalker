@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include "external_view.h"
 #include "image_view.h"
 #include "profile.h"
@@ -8,25 +9,14 @@
 #include "record_with_media_view.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
 
+
 namespace Skywalker {
 
 struct PostReplyRef;
 
 class Post
 {
-    Q_GADGET
-    QML_VALUE_TYPE(post)
-
 public:
-    enum PostType
-    {
-        STANDALONE = 0,
-        ROOT,
-        REPLY,
-        LAST_REPLY
-    };
-    Q_ENUM(PostType)
-
     // A gap place holder is created to represent a gap in the timeline, i.e.
     // missing posts that have not been retrieved. The gapCursor can be use
     // to fetch those posts.
@@ -40,7 +30,7 @@ public:
     bool isEndOfFeed() const { return mEndOfFeed; }
     int getGapId() const { return mGapId; }
     const QString& getGapCursor() const { return mGapCursor; }
-    PostType getPostType() const { return mPostType; }
+    QEnums::PostType getPostType() const { return mPostType; }
 
     const QString& getCid() const;
 
@@ -59,7 +49,7 @@ public:
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
-    void setPostType(PostType postType) { mPostType = postType; }
+    void setPostType(QEnums::PostType postType) { mPostType = postType; }
 
 private:
     struct HyperLink
@@ -84,7 +74,7 @@ private:
     QString mGapCursor;
 
     bool mEndOfFeed = false;
-    PostType mPostType = STANDALONE;
+    QEnums::PostType mPostType = QEnums::POST_STANDALONE;
 
     static int sNextGapId;
 };
@@ -96,5 +86,3 @@ struct PostReplyRef
 };
 
 }
-
-Q_DECLARE_METATYPE(Skywalker::Post)

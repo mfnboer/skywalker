@@ -406,13 +406,13 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 if (replyRef->mRoot.getCid() != replyRef->mParent.getCid())
                 {
                     page->mFeed.push_back(replyRef->mRoot);
-                    page->mFeed.back().setPostType(Post::ROOT);
+                    page->mFeed.back().setPostType(QEnums::POST_ROOT);
                     rootAdded = true;
                 }
 
                 page->mFeed.push_back(replyRef->mParent);
-                page->mFeed.back().setPostType(rootAdded ? Post::REPLY : Post::ROOT);
-                post.setPostType(Post::LAST_REPLY);
+                page->mFeed.back().setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
+                post.setPostType(QEnums::POST_LAST_REPLY);
             }
 
             page->mFeed.push_back(post);

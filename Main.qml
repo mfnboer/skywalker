@@ -32,7 +32,7 @@ Window {
             required property var postExternal // externalview (var allows NULL)
             required property var postRecord // recordview
             required property var postRecordWithMedia // record_with_media_view
-            required property int postType; // Post::PostType
+            required property int postType // QEnums::PostType
             required property int postGapId;
             required property bool endOfFeed;
 
@@ -41,10 +41,20 @@ Window {
             width: timelineView.width
             rowSpacing: 0
 
+            // Instead of using row spacing, these empty rectangles are used for white space.
+            // This way we can color the background for threads.
             Rectangle {
                 width: avatar.width
                 Layout.preferredHeight: timelineView.margin
-                color: postType === 1 ? "white" : avatar.color
+                color: {
+                    switch (postType) {
+                    case QEnums.POST_REPLY:
+                    case QEnums.POST_LAST_REPLY:
+                        return "lightcyan"
+                    default:
+                        return "transparent"
+                    }
+                }
             }
             Rectangle {
                 width: parent.width - avatar.width - timelineView.margin * 2
@@ -73,16 +83,42 @@ Window {
                 id: avatar
                 width: 40
                 Layout.fillHeight: true
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0.0
+                        color: {
+                            switch (postType) {
+                            case QEnums.POST_ROOT:
+                                return "cyan"
+                            case QEnums.POST_REPLY:
+                            case QEnums.POST_LAST_REPLY:
+                                return "lightcyan"
+                            default:
+                                return "transparent"
+                            }
+                        }
+                    }
+                    GradientStop {
+                        position: 1.0
+                        color: {
+                            switch (postType) {
+                            case QEnums.POST_STANDALONE:
+                                return "transparent"
+                            default:
+                                return "lightcyan"
+                            }
+                        }
+                    }
+                }
 
                 Avatar {
                     x: parent.x + 5
+                    y: parent.y
                     width: parent.width - 10
-                    Layout.alignment: Qt.AlignTop
+                    //Layout.alignment: Qt.AlignTop
                     avatarUrl: author.avatarUrl
                     visible: !postGapId
                 }
-
-                color: postType === 0 ? "transparent" : postType === 1 ? "blue" : "lightblue"
             }
 
             Column {
@@ -128,10 +164,20 @@ Window {
                 }
             }
 
+            // Instead of using row spacing, these empty rectangles are used for white space.
+            // This way we can color the background for threads.
             Rectangle {
                 width: avatar.width
                 height: timelineView.margin
-                color: postType === 3 ? "white" : avatar.color
+                color: {
+                    switch (postType) {
+                    case QEnums.POST_ROOT:
+                    case QEnums.POST_REPLY:
+                        return "lightcyan"
+                    default:
+                        return "transparent"
+                    }
+                }
             }
             Rectangle {
                 width: parent.width - avatar.width - timelineView.margin * 2
@@ -145,7 +191,7 @@ Window {
                 Layout.preferredHeight: 1
                 Layout.fillWidth: true
                 color: "lightgrey"
-                visible: postType === 0 || postType === 3
+                visible: postType === QEnums.POST_STANDALONE || postType === QEnums.POST_LAST_REPLY
             }
 
             Text {
