@@ -98,6 +98,12 @@ Window {
                     if (!skywalker.getTimelineInProgress)
                         skywalker.getTimelineForGap(postGapId)
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    acceptedButtons: Qt.NoButton
+                }
             }
 
             Rectangle {

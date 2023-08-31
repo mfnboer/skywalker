@@ -31,7 +31,7 @@ public:
     // The indexedAt of a post or repost
     QDateTime getTimelineTimestamp() const;
 
-    const QString& getText() const;
+    QString getText() const;
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
     std::optional<BasicProfile> getRepostedBy() const;
@@ -43,6 +43,15 @@ public:
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
 
 private:
+    struct HyperLink
+    {
+        int mStart;
+        int mEnd;
+        QString mText;
+    };
+
+    QString applyFacets(const ATProto::AppBskyFeed::Record::Post& post) const;
+
     // NULL is place holder for more posts (gap)
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
 

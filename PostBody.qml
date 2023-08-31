@@ -19,8 +19,22 @@ RowLayout {
         wrapMode: Text.Wrap
         maximumLineCount: maxTextLines
         elide: Text.ElideRight
+        textFormat: Text.StyledText
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
+
+        onLinkActivated: (link) => {
+            if (link.startsWith("did:"))
+                console.debug("TODO MENTION", link)
+            else
+                Qt.openUrlExternally(link)
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            acceptedButtons: Qt.NoButton
+        }
     }
 
     Component.onCompleted: {

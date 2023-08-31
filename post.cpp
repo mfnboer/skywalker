@@ -27,7 +27,7 @@ const QString& Post::getCid() const
     return mFeedViewPost ? mFeedViewPost->mPost->mCid : NO_STRING;
 }
 
-const QString& Post::getText() const
+QString Post::getText() const
 {
     static const QString NO_STRING;
 
@@ -36,7 +36,14 @@ const QString& Post::getText() const
 
     const auto& post = mFeedViewPost->mPost;
     if (post->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
-        return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(post->mRecord)->mText;
+    {
+        const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(post->mRecord);
+
+        if (record->mFacets.empty())
+            return record->mText.toHtmlEscaped();
+        else
+            return applyFacets(*record);
+    }
 
     return NO_STRING;
 }
@@ -137,6 +144,85 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
 
     const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::Ptr>(post->mEmbed->mEmbed);
     return std::make_unique<RecordWithMediaView>(recordView.get());
+}
+
+QString Post::applyFacets(const ATProto::AppBskyFeed::Record::Post& post) const
+{
+    std::map<int, HyperLink> startLinkMap;
+    const auto& bytes = post.mText.toUtf8();
+
+    for (const auto& facet : post.mFacets)
+    {
+        if (facet->mFeatures.empty())
+        {
+            qWarning() << "Empty facet:" << post.mText;
+            continue;
+        }
+
+        // What to do with multiple features?
+        if (facet->mFeatures.size() > 1)
+            qWarning() << "Multiple features, taking only the first";
+
+        HyperLink link;
+        link.mStart = facet->mIndex.mByteStart;
+        link.mEnd = facet->mIndex.mByteEnd;
+        const int sliceSize = link.mEnd - link.mStart;
+
+        if (link.mStart < 0 || link.mEnd > bytes.size() || sliceSize < 0)
+        {
+            qWarning() << "Invalid index in facet:" << post.mText;
+            continue;
+        }
+
+        const auto linkText = QString(bytes.sliced(link.mStart, sliceSize));
+        const auto& feature = facet->mFeatures.front();
+
+        switch (feature.mType)
+        {
+        case ATProto::AppBskyRichtext::Facet::Feature::Type::MENTION:
+        {
+            const auto& facetMention = std::get<ATProto::AppBskyRichtext::FacetMention::Ptr>(feature.mFeature);
+            link.mText = QString("<a href=\"%1\">%2</a>").arg(facetMention->mDid, linkText);
+            break;
+        }
+        case ATProto::AppBskyRichtext::Facet::Feature::Type::LINK:
+        {
+            const auto& facetLink = std::get<ATProto::AppBskyRichtext::FacetLink::Ptr>(feature.mFeature);
+            link.mText = QString("<a href=\"%1\">%2</a>").arg(facetLink->mUri, linkText);
+            break;
+        }
+        case ATProto::AppBskyRichtext::Facet::Feature::Type::UNKNOWN:
+            qWarning() << "Uknown facet type:" << int(feature.mType) << "post:" << post.mText;
+            continue;
+            break;
+        }
+
+        startLinkMap[link.mStart] = link;
+    }
+
+    QString result;
+    int bytePos = 0;
+
+    for (const auto& [start, link] : startLinkMap)
+    {
+        if (start < bytePos)
+        {
+            qWarning() << "Overlapping facets:" << post.mText;
+            result.clear();
+            bytePos = 0;
+            break;
+        }
+
+        const auto before = bytes.sliced(bytePos, start - bytePos);
+        result.append(QString(before).toHtmlEscaped());
+        result.append(link.mText);
+        bytePos = link.mEnd;
+    }
+
+    result.append(QString(bytes.sliced(bytePos)).toHtmlEscaped());
+    qDebug() << "Orig:   " << post.mText;
+    qDebug() << "Faceted:" << result;
+    return result;
 }
 
 }
