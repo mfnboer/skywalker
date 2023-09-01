@@ -39,7 +39,6 @@ Dialog {
                     width: parent.width
                     anchors.bottom: parent.bottom
                     wrapMode: Text.Wrap
-                    maximumLineCount: 6
                     elide: Text.ElideRight
                     color: "white"
                     text: images[index].alt

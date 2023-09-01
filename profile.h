@@ -16,12 +16,15 @@ class BasicProfile
 public:
     BasicProfile() = default;
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
+    BasicProfile(const QString& handle, const QString& displayName);
 
     QString getName() const;
     QString getAvatarUrl() const;
 
 private:
     const ATProto::AppBskyActor::ProfileViewBasic* mProfile = nullptr;
+    QString mHandle;
+    QString mDisplayName;
 };
 
 }

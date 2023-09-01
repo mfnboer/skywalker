@@ -10,13 +10,28 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profil
     Q_ASSERT(mProfile);
 }
 
-QString BasicProfile::getName() const
+BasicProfile::BasicProfile(const QString& handle, const QString& displayName) :
+    mHandle(handle),
+    mDisplayName(displayName)
 {
-    if (!mProfile)
-        return {};
+}
 
-    const QString name = mProfile->mDisplayName.value_or("").trimmed();
-    return name.isEmpty() ? mProfile->mHandle : name;
+QString BasicProfile::getName() const
+{   
+    if (mProfile)
+    {
+        const QString name = mProfile->mDisplayName.value_or("").trimmed();
+        return name.isEmpty() ? mProfile->mHandle : name;
+    }
+
+    const QString name = mDisplayName.trimmed();
+    if (!name.isEmpty())
+        return name.trimmed();
+
+    if (!mHandle.isEmpty())
+        return mHandle;
+
+    return {};
 }
 
 QString BasicProfile::getAvatarUrl() const

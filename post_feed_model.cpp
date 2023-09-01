@@ -65,6 +65,7 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int
 
     Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
 
+    // Remove gap place holder
     beginRemoveRows({}, gapIndex, gapIndex);
     mFeed.erase(mFeed.begin() + gapIndex);
     addToIndices(-1, gapIndex);
@@ -74,6 +75,41 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int
     logIndices();
 
     return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), gapIndex);
+}
+
+void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
+{
+    mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
+
+    for (const auto& post : page.mFeed)
+    {
+        const auto& cid = post.getCid();
+        if (!cid.isEmpty())
+        {
+            mStoredCids.insert(cid);
+            mStoredCidQueue.push(cid);
+        }
+    }
+
+    cleanupStoredCids();
+    qDebug() << "Stored cid set:" << mStoredCids.size() << "cid queue:" << mStoredCidQueue.size();
+}
+
+void PostFeedModel::cleanupStoredCids()
+{
+    while (mStoredCids.size() > MAX_TIMELINE_SIZE && !mStoredCidQueue.empty())
+    {
+        const auto& cid = mStoredCidQueue.front();
+        mStoredCids.erase(cid);
+        mStoredCidQueue.pop();
+    }
+
+    if (mStoredCidQueue.empty())
+    {
+        Q_ASSERT(mStoredCids.empty());
+        qWarning() << "Stored cid set should have been empty:" << mStoredCids.size();
+        mStoredCids.clear();
+    }
 }
 
 int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex)
@@ -95,7 +131,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
 
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
         beginInsertRows({}, insertIndex, lastInsertIndex);
-        mFeed.insert(mFeed.begin() + insertIndex, page->mFeed.begin(), page->mFeed.end());
+        insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size());
         addToIndices(page->mFeed.size(), insertIndex);
         mGapIdIndexMap[gapId] = lastInsertIndex;
 
@@ -120,14 +156,18 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
     const auto overlapEnd = findOverlapEnd(*page, insertIndex);
 
     beginInsertRows({}, insertIndex, insertIndex + *overlapStart - 1);
-    mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.begin() + *overlapStart);
+    insertPage(mFeed.begin() + insertIndex, *page, *overlapStart);
     addToIndices(*overlapStart, insertIndex);
 
     if (!page->mCursorNextPage.isEmpty() && overlapEnd)
         mIndexCursorMap[*overlapStart + *overlapEnd] = page->mCursorNextPage;
 
     // Remove unused overlap
-    const int firstUnusedRawIndex = page->mFeed[*overlapStart].getRawIndex();
+    int firstUnusedRawIndex = -1;
+
+    for (int i = 0; i < *overlapStart; ++i)
+        firstUnusedRawIndex = std::max(firstUnusedRawIndex, page->mFeed[i].getRawIndex());
+
     Q_ASSERT(firstUnusedRawIndex >= 0);
     page->mRawFeed.erase(page->mRawFeed.begin() + firstUnusedRawIndex, page->mRawFeed.end());
 
@@ -146,6 +186,8 @@ void PostFeedModel::clear()
     mIndexCursorMap.clear();
     mIndexRawFeedMap.clear();
     mGapIdIndexMap.clear();
+    mStoredCids.clear();
+    mStoredCidQueue = {};
     mEndOfFeed = false;
     endRemoveRows();
     qDebug() << "All posts removed";
@@ -169,7 +211,7 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
-    mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
+    insertPage(mFeed.end(), *page, page->mFeed.size());
 
     if (!page->mCursorNextPage.isEmpty())
         mIndexCursorMap[mFeed.size() - 1] = page->mCursorNextPage;
@@ -201,7 +243,7 @@ void PostFeedModel::removeTailPosts(int size)
 
     if (removeIndex >= mFeed.size())
     {
-        qWarning() << "Cannot remove beyond end, removeIndex:" << removeIndex << "size:" << mFeed.size();
+        qDebug() << "Cannot remove beyond end, removeIndex:" << removeIndex << "size:" << mFeed.size();
         logIndices();
         return;
     }
@@ -209,7 +251,7 @@ void PostFeedModel::removeTailPosts(int size)
     const auto removeIndexRawFeedIt = mIndexRawFeedMap.lower_bound(removeIndex);
 
     beginRemoveRows({}, removeIndex, mFeed.size() - 1);
-    mFeed.erase(mFeed.begin() + removeIndex, mFeed.end());
+    removePosts(removeIndex, mFeed.size() - removeIndex);
     mIndexCursorMap.erase(std::next(removeIndexCursorIt), mIndexCursorMap.end());
     mIndexRawFeedMap.erase(removeIndexRawFeedIt, mIndexRawFeedMap.end());
 
@@ -249,7 +291,7 @@ void PostFeedModel::removeHeadPosts(int size)
     const size_t removeSize = removeEndIndex + 1;
 
     beginRemoveRows({}, 0, removeEndIndex);
-    mFeed.erase(mFeed.begin(), mFeed.begin() + removeSize);
+    removePosts(0, removeSize);
     Q_ASSERT(!mFeed.front().isPlaceHolder());
     mIndexCursorMap.erase(mIndexCursorMap.begin(), removeEndIndexCursorIt);
     mIndexRawFeedMap.erase(mIndexRawFeedMap.begin(), removeEndIndexRawFeedIt);
@@ -267,6 +309,18 @@ void PostFeedModel::removeHeadPosts(int size)
 
     qDebug() << "Removed head rows, new size:" << mFeed.size();
     logIndices();
+}
+
+void PostFeedModel::removePosts(int startIndex, int size)
+{
+    Q_ASSERT(startIndex >=0 && startIndex + size <= mFeed.size());
+
+    // We leave the cid's in the chronological queues. They don't do
+    // harm. At cleanup, the non-stored cid's will be removed from the queue.
+    for (int i = startIndex; i < startIndex + size; ++i)
+        mStoredCids.erase(mFeed[i].getCid());
+
+    mFeed.erase(mFeed.begin() + startIndex, mFeed.begin() + startIndex + size);
 }
 
 QString PostFeedModel::getLastCursor() const
@@ -356,6 +410,11 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         return post.getPostType();
     case Role::PostGapId:
         return post.getGapId();
+    case Role::PostReplyToAuthor:
+    {
+        const auto& author = post.getReplyToAuthor();
+        return author ? QVariant::fromValue(*author) : QVariant();
+    }
     case Role::EndOfFeed:
         return post.isEndOfFeed();
     default:
@@ -379,13 +438,73 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
         { int(Role::PostType), "postType" },
         { int(Role::PostGapId), "postGapId" },
+        { int(Role::PostReplyToAuthor), "postReplyToAuthor" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
 
     return roles;
 }
 
-PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed) const
+void PostFeedModel::Page::addPost(const Post& post, bool isParent)
+{
+    mFeed.push_back(post);
+    const auto& cid = post.getCid();
+
+    if (!cid.isEmpty())
+        mAddedCids.insert(post.getCid());
+
+    if (isParent)
+        mParentIndexMap[cid] = mFeed.size() - 1;
+}
+
+bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef)
+{
+    auto parentIt = mParentIndexMap.find(post.getCid());
+    if (parentIt == mParentIndexMap.end())
+        return false;
+
+    // The post we add is already in the page, probably as a parent of another post
+
+    const int parentIndex = parentIt->second;
+    Q_ASSERT(parentIndex < mFeed.size());
+
+    const auto& parentPost = mFeed[parentIndex];
+    const auto parentPostType = parentPost.getPostType();
+    const auto parentTimestamp = parentPost.getTimelineTimestamp();
+
+    // Replace the existing post by this one, as this post has a reply ref.
+    // A parent post does not have the information
+    mFeed[parentIndex] = post;
+    mFeed[parentIndex].setReplyRefTimestamp(parentTimestamp);
+
+    if (replyRef.mParent.getCid() == replyRef.mRoot.getCid())
+    {
+        // The parent of this parent will already be in the thread.
+        mFeed[parentIndex].setPostType(parentPostType);
+        return true;
+    }
+
+    // Add parent of this parent
+    mFeed[parentIndex].setPostType(QEnums::POST_REPLY);
+    mFeed.insert(mFeed.begin() + parentIndex, replyRef.mParent);
+    mFeed[parentIndex].setReplyRefTimestamp(parentTimestamp);
+    mFeed[parentIndex].setPostType(parentPostType);
+    mAddedCids.insert(replyRef.mParent.getCid());
+    mParentIndexMap.erase(parentIt);
+
+    for (auto& [cid, idx] : mParentIndexMap)
+    {
+        if (idx > parentIndex)
+            ++idx;
+    }
+
+    mParentIndexMap[replyRef.mParent.getCid()] = parentIndex;
+
+    qDebug() << "Added parent (" << replyRef.mParent.getCid() << ") to existing thread:" << post.getCid();
+    return true;
+}
+
+PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     auto page = std::make_unique<Page>();
     page->mRawFeed = std::forward<ATProto::AppBskyFeed::PostFeed>(feed->mFeed);
@@ -397,25 +516,70 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
         if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
             Post post(feedEntry.get(), i);
+
+            // Due to reposting a post can show up multiple times in the feed.
+            if (cidIsStored(post.getCid()))
+                continue;
+
+            const auto& author = *feedEntry->mPost->mAuthor;
+            const BasicProfile authorProfile(author.mHandle, author.mDisplayName.value_or(""));
+            mDidAuthorMap[author.mDid] = authorProfile;
+
             const auto& replyRef = post.getReplyRef();
 
-            if (replyRef)
+            // Reposted replies are displayed without thread context
+            if (replyRef && !post.isRepost())
             {
                 bool rootAdded = false;
+                const auto& rootCid = replyRef->mRoot.getCid();
+                const auto& parentCid = replyRef->mParent.getCid();
 
-                if (replyRef->mRoot.getCid() != replyRef->mParent.getCid())
+                if (page->tryAddToExistingThread(post, *replyRef))
+                    continue;
+
+                if (rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid))
                 {
-                    page->mFeed.push_back(replyRef->mRoot);
+                    page->addPost(replyRef->mRoot);
                     page->mFeed.back().setPostType(QEnums::POST_ROOT);
                     rootAdded = true;
                 }
 
-                page->mFeed.push_back(replyRef->mParent);
-                page->mFeed.back().setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
-                post.setPostType(QEnums::POST_LAST_REPLY);
+                // If the parent was seen already, but the root not, then show the parent
+                // again for consistency of the thread.
+                if ((!cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded)
+                {
+                    page->addPost(replyRef->mParent, true);
+                    auto& parentPost = page->mFeed.back();
+                    parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
+
+                    // Determine author of the parent's parent
+                    if (parentPost.getReplyToCid() == rootCid)
+                    {
+                        parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
+                    }
+                    else
+                    {
+                        const auto authorDid = parentPost.getReplyToAuthorDid();
+                        if (!authorDid.isEmpty())
+                        {
+                            const auto authorIt = mDidAuthorMap.find(authorDid);
+                            if (authorIt != mDidAuthorMap.end())
+                                parentPost.setReplyToAuthor(authorIt->second);
+                        }
+                    }
+
+                    post.setPostType(QEnums::POST_LAST_REPLY);
+                    post.setParentInThread(true);
+                }
+            }
+            else
+            {
+                // A post may have been added already as a parent/root of a reply
+                if (page->cidAdded(post.getCid()))
+                    continue;
             }
 
-            page->mFeed.push_back(post);
+            page->addPost(post);
         }
         else
         {

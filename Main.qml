@@ -34,6 +34,7 @@ Window {
             required property var postRecordWithMedia // record_with_media_view
             required property int postType // QEnums::PostType
             required property int postGapId;
+            required property basicprofile postReplyToAuthor
             required property bool endOfFeed;
 
             id: postEntry
@@ -62,12 +63,12 @@ Window {
                 Layout.fillWidth: true
             }
 
+            // Repost information
             Rectangle {
                 width: avatar.width
                 color: avatar.color
                 visible: postRepostedByName && !postGapId
             }
-
             Text {
                 width: parent.width - avatar.width - timelineView.margin * 2
                 Layout.fillWidth: true
@@ -79,10 +80,13 @@ Window {
                 visible: postRepostedByName && !postGapId
             }
 
+            // Author and content
             Rectangle {
                 id: avatar
                 width: 40
                 Layout.fillHeight: true
+
+                // Gradient is used display thread context.
                 gradient: Gradient {
                     GradientStop {
                         position: 0.0
@@ -115,12 +119,10 @@ Window {
                     x: parent.x + 5
                     y: parent.y
                     width: parent.width - 10
-                    //Layout.alignment: Qt.AlignTop
                     avatarUrl: author.avatarUrl
                     visible: !postGapId
                 }
             }
-
             Column {
                 id: postColumn
                 width: parent.width - avatar.width - timelineView.margin * 2
@@ -130,6 +132,15 @@ Window {
                     width: parent.width
                     authorName: author.name
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                }
+
+                Text {
+                    width: parent.width
+                    elide: Text.ElideRight
+                    color: "darkslategrey"
+                    font.pointSize: 8
+                    text: qsTr(`Reply to ${postReplyToAuthor.name}`)
+                    visible: postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY
                 }
 
                 PostBody {
@@ -142,6 +153,7 @@ Window {
                 }
             }
 
+            // Gap place holder
             Text {
                 width: parent.width
                 Layout.columnSpan: 2
@@ -185,6 +197,7 @@ Window {
                 Layout.fillWidth: true
             }
 
+            // Post/Thread separator
             Rectangle {
                 width: parent.width
                 Layout.columnSpan: 2
@@ -194,6 +207,7 @@ Window {
                 visible: postType === QEnums.POST_STANDALONE || postType === QEnums.POST_LAST_REPLY
             }
 
+            // End of feed indication
             Text {
                 Layout.columnSpan: 2
                 width: parent.width

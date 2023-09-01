@@ -6,7 +6,6 @@ namespace Skywalker {
 
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
-static constexpr int TIMELINE_MAX_SIZE = 5000;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent)
@@ -72,7 +71,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
         return;
     }
 
-    if (mTimelineModel.rowCount() >= TIMELINE_MAX_SIZE)
+    if (mTimelineModel.rowCount() >= PostFeedModel::MAX_TIMELINE_SIZE)
     {
         qWarning() << "Timeline is full:" << mTimelineModel.rowCount();
         return;
@@ -158,7 +157,7 @@ void Skywalker::getTimelineNextPage()
         return;
     }
 
-    if (mTimelineModel.rowCount() >= TIMELINE_MAX_SIZE)
+    if (mTimelineModel.rowCount() >= PostFeedModel::MAX_TIMELINE_SIZE)
         mTimelineModel.removeHeadPosts(TIMELINE_ADD_PAGE_SIZE);
 
     getTimeline(TIMELINE_ADD_PAGE_SIZE, cursor);

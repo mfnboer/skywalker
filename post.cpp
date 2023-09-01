@@ -74,29 +74,40 @@ QDateTime Post::getIndexedAt() const
 
 QDateTime Post::getTimelineTimestamp() const
 {
-    if (mFeedViewPost && mFeedViewPost->mReason)
-        return mFeedViewPost->mReason->mIndexedAt;
-
     if (!mReplyRefTimestamp.isNull())
         return mReplyRefTimestamp;
+
+    if (mFeedViewPost && mFeedViewPost->mReason)
+        return mFeedViewPost->mReason->mIndexedAt;
 
     return getIndexedAt();
 }
 
+bool Post::isRepost() const
+{
+    return mFeedViewPost && mFeedViewPost->mReason;
+}
+
 std::optional<BasicProfile> Post::getRepostedBy() const
 {
-    if (!mFeedViewPost)
-        return {};
-
-    if (!mFeedViewPost->mReason)
+    if (!isRepost())
         return {};
 
     return BasicProfile(mFeedViewPost->mReason->mBy.get());
 }
 
+bool Post::isReply() const
+{
+    return mFeedViewPost && mFeedViewPost->mReply;
+}
+
+
 std::optional<PostReplyRef> Post::getReplyRef() const
 {
-    if (!mFeedViewPost || !mFeedViewPost->mReply)
+    if (!mPost)
+        return {};
+
+    if (!isReply())
         return {};
 
     const auto& reply = *mFeedViewPost->mReply;
@@ -110,6 +121,64 @@ std::optional<PostReplyRef> Post::getReplyRef() const
     replyRef.mParent.mReplyRefTimestamp = getTimelineTimestamp();
 
     return replyRef;
+}
+
+std::optional<BasicProfile> Post::getReplyToAuthor() const
+{
+    if (!mPost)
+        return {};
+
+    if (mReplyToAuthor)
+        return mReplyToAuthor;
+
+    if (!isReply())
+        return {};
+
+    const auto& reply = *mFeedViewPost->mReply;
+    return BasicProfile(reply.mParent->mAuthor.get());
+}
+
+QString Post::getReplyToCid() const
+{
+    if (!mPost)
+        return {};
+
+    if (isReply())
+        return mFeedViewPost->mReply->mParent->mCid;
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+
+    if (!record->mReply)
+        return {};
+
+    return record->mReply->mParent->mCid;
+}
+
+QString Post::getReplyToAuthorDid() const
+{
+    if (!mPost)
+        return {};
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+
+    if (!record->mReply)
+        return {};
+
+    const auto& uri = record->mReply->mParent->mUri;
+
+    if (!uri.startsWith("at://did:"))
+        return {};
+
+    const auto did = "TODO";
+
+    qDebug() << "uri:" << uri << "did:" << did;
+    return did;
 }
 
 std::vector<ImageView::Ptr> Post::getImages() const

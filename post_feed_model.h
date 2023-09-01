@@ -5,7 +5,9 @@
 #include <QAbstractListModel>
 #include <deque>
 #include <map>
+#include <queue>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace Skywalker {
 
@@ -13,6 +15,8 @@ class PostFeedModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
+    static constexpr int MAX_TIMELINE_SIZE = 5000;
+
     enum class Role {
         Author = Qt::UserRole + 1,
         PostText,
@@ -24,6 +28,7 @@ public:
         PostRecordWithMedia,
         PostType,
         PostGapId,
+        PostReplyToAuthor,
         EndOfFeed
     };
 
@@ -42,6 +47,7 @@ public:
 
     void removeTailPosts(int size);
     void removeHeadPosts(int size);
+    void removePosts(int startIndex, int size);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -52,16 +58,29 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
+    using TimelineFeed = std::deque<Post>;
+
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
         std::vector<Post> mFeed;
         ATProto::AppBskyFeed::PostFeed mRawFeed;
         QString mCursorNextPage;
+        std::unordered_set<QString> mAddedCids;
+        std::unordered_map<QString, int> mParentIndexMap;
+
+        void addPost(const Post& post, bool isParent = false);
+        bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
+        bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
     };
 
     void clear();
-    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed) const;
+    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+
+    void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
+    void cleanupStoredCids();
+
+    bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
 
     // Returns gap id if insertion created a gap in the feed.
     int insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex);
@@ -75,7 +94,7 @@ private:
     void addToIndices(size_t offset, size_t startAtIndex);
     void logIndices() const;
 
-    std::deque<Post> mFeed;
+    TimelineFeed mFeed;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.
@@ -88,6 +107,13 @@ private:
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
+
+    // CID of posts stored in the timeline.
+    std::unordered_set<QString> mStoredCids;
+    std::queue<QString> mStoredCidQueue;
+
+    // TODO: maximum size
+    std::unordered_map<QString, BasicProfile> mDidAuthorMap;
 
     bool mEndOfFeed = false;
 };

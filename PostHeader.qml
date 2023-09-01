@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 
 RowLayout {
-    property string authorName
-    property int postIndexedSecondsAgo
+    required property string authorName
+    required property int postIndexedSecondsAgo
 
     Text {
         Layout.fillWidth: true

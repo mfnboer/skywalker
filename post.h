@@ -31,17 +31,25 @@ public:
     int getGapId() const { return mGapId; }
     const QString& getGapCursor() const { return mGapCursor; }
     QEnums::PostType getPostType() const { return mPostType; }
+    bool isParentInThread() const { return mParentInThread; }
 
     const QString& getCid() const;
 
     // The indexedAt of a post or repost
     QDateTime getTimelineTimestamp() const;
 
+    void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
+
     QString getText() const;
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
+    bool isRepost() const;
     std::optional<BasicProfile> getRepostedBy() const;
+    bool isReply() const;
     std::optional<PostReplyRef> getReplyRef() const;
+    std::optional<BasicProfile> getReplyToAuthor() const;
+    QString getReplyToCid() const;
+    QString getReplyToAuthorDid() const;
 
     std::vector<ImageView::Ptr> getImages() const;
     ExternalView::Ptr getExternalView() const;
@@ -50,6 +58,8 @@ public:
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
     void setPostType(QEnums::PostType postType) { mPostType = postType; }
+    void setParentInThread(bool parentInThread) { mParentInThread = parentInThread; }
+    void setReplyToAuthor(const BasicProfile& profile) { mReplyToAuthor = profile; }
 
 private:
     struct HyperLink
@@ -78,6 +88,11 @@ private:
 
     // Timestamp to keep reply referenes in time sequence for the timeline
     QDateTime mReplyRefTimestamp;
+
+    // For posts not having all parent informations, the reply-to-author may
+    // inferred from through other posts.
+    std::optional<BasicProfile> mReplyToAuthor;
+    bool mParentInThread = false;
 
     static int sNextGapId;
 };
