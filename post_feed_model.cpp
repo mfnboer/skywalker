@@ -449,6 +449,8 @@ std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t f
 
         // Check on timestamp because of repost.
         // A repost will have the cid of the original post.
+        // We also put the parent/root of a reply in the timeline with the
+        // timestamp of the reply.
         if (cidFirstStoredPost == post.getCid() && timestampFirstStoredPost == post.getTimelineTimestamp())
         {
             qDebug() << "Matching overlap index found:" << i;

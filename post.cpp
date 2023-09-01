@@ -77,6 +77,9 @@ QDateTime Post::getTimelineTimestamp() const
     if (mFeedViewPost && mFeedViewPost->mReason)
         return mFeedViewPost->mReason->mIndexedAt;
 
+    if (!mReplyRefTimestamp.isNull())
+        return mReplyRefTimestamp;
+
     return getIndexedAt();
 }
 
@@ -100,6 +103,11 @@ std::optional<PostReplyRef> Post::getReplyRef() const
     PostReplyRef replyRef;
     replyRef.mRoot = Post(reply.mRoot.get(), mRawIndex);
     replyRef.mParent = Post(reply.mParent.get(), mRawIndex);
+
+    // Set the reference timestamp to the timestap of this reply post.
+    // They show up together with this reply post.
+    replyRef.mRoot.mReplyRefTimestamp = getTimelineTimestamp();
+    replyRef.mParent.mReplyRefTimestamp = getTimelineTimestamp();
 
     return replyRef;
 }

@@ -76,6 +76,9 @@ private:
     bool mEndOfFeed = false;
     QEnums::PostType mPostType = QEnums::POST_STANDALONE;
 
+    // Timestamp to keep reply referenes in time sequence for the timeline
+    QDateTime mReplyRefTimestamp;
+
     static int sNextGapId;
 };
 
