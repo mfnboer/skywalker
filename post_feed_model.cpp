@@ -8,6 +8,13 @@ using namespace std::chrono_literals;
 
 namespace Skywalker {
 
+QCache<QString, CachedBasicProfile> PostFeedModel::sAuthorCache(1000);
+
+void PostFeedModel::cacheAuthorProfile(const QString& did, const BasicProfile& profile)
+{
+    sAuthorCache.insert(did, new CachedBasicProfile(profile));
+}
+
 PostFeedModel::PostFeedModel(QObject* parent) :
     QAbstractListModel(parent)
 {}
@@ -410,6 +417,10 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         return post.getPostType();
     case Role::PostGapId:
         return post.getGapId();
+    case Role::PostIsReply:
+        return post.isReply();
+    case Role::PostParentInThread:
+        return post.isParentInThread();
     case Role::PostReplyToAuthor:
     {
         const auto& author = post.getReplyToAuthor();
@@ -438,6 +449,8 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
         { int(Role::PostType), "postType" },
         { int(Role::PostGapId), "postGapId" },
+        { int(Role::PostIsReply), "postIsReply" },
+        { int(Role::PostParentInThread), "postParentInThread" },
         { int(Role::PostReplyToAuthor), "postReplyToAuthor" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
@@ -468,27 +481,33 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     const int parentIndex = parentIt->second;
     Q_ASSERT(parentIndex < mFeed.size());
 
-    const auto& parentPost = mFeed[parentIndex];
-    const auto parentPostType = parentPost.getPostType();
-    const auto parentTimestamp = parentPost.getTimelineTimestamp();
+    const auto oldPost = mFeed[parentIndex];
 
     // Replace the existing post by this one, as this post has a reply ref.
     // A parent post does not have the information
     mFeed[parentIndex] = post;
-    mFeed[parentIndex].setReplyRefTimestamp(parentTimestamp);
+    mFeed[parentIndex].setReplyRefTimestamp(oldPost.getTimelineTimestamp());
+    mFeed[parentIndex].setParentInThread(oldPost.isParentInThread());
 
     if (replyRef.mParent.getCid() == replyRef.mRoot.getCid())
     {
-        // The parent of this parent will already be in the thread.
-        mFeed[parentIndex].setPostType(parentPostType);
+        // The root is already in this page
+        mFeed[parentIndex].setPostType(oldPost.getPostType());
+        mFeed[parentIndex].setParentInThread(true);
         return true;
     }
 
-    // Add parent of this parent
     mFeed[parentIndex].setPostType(QEnums::POST_REPLY);
+    mFeed[parentIndex].setParentInThread(true);
+
+    // Add parent of this parent
     mFeed.insert(mFeed.begin() + parentIndex, replyRef.mParent);
-    mFeed[parentIndex].setReplyRefTimestamp(parentTimestamp);
-    mFeed[parentIndex].setPostType(parentPostType);
+    mFeed[parentIndex].setReplyRefTimestamp(oldPost.getTimelineTimestamp());
+    mFeed[parentIndex].setPostType(oldPost.getPostType());
+
+    if (mFeed[parentIndex].getReplyToCid() == replyRef.mRoot.getCid())
+        mFeed[parentIndex].setParentInThread(true);
+
     mAddedCids.insert(replyRef.mParent.getCid());
     mParentIndexMap.erase(parentIt);
 
@@ -523,9 +542,9 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
             const auto& author = *feedEntry->mPost->mAuthor;
             const BasicProfile authorProfile(author.mHandle, author.mDisplayName.value_or(""));
-            mDidAuthorMap[author.mDid] = authorProfile;
+            cacheAuthorProfile(author.mDid, authorProfile);
 
-            const auto& replyRef = post.getReplyRef();
+            const auto& replyRef = post.getViewPostReplyRef();
 
             // Reposted replies are displayed without thread context
             if (replyRef && !post.isRepost())
@@ -556,16 +575,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                     if (parentPost.getReplyToCid() == rootCid)
                     {
                         parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
-                    }
-                    else
-                    {
-                        const auto authorDid = parentPost.getReplyToAuthorDid();
-                        if (!authorDid.isEmpty())
-                        {
-                            const auto authorIt = mDidAuthorMap.find(authorDid);
-                            if (authorIt != mDidAuthorMap.end())
-                                parentPost.setReplyToAuthor(authorIt->second);
-                        }
+                        parentPost.setParentInThread(rootAdded);
                     }
 
                     post.setPostType(QEnums::POST_LAST_REPLY);
@@ -597,6 +607,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             page->mFeed.back().setEndOfFeed(true);
     }
 
+    qDebug() << "Author profile cache size:" << sAuthorCache.size();
     return page;
 }
 

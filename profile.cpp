@@ -39,4 +39,10 @@ QString BasicProfile::getAvatarUrl() const
     return (mProfile && mProfile->mAvatar) ? *mProfile->mAvatar : QString();
 }
 
+CachedBasicProfile::CachedBasicProfile(const BasicProfile& profile) :
+    QObject(),
+    mProfile(profile)
+{
+}
+
 }

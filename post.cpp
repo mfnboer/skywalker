@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post.h"
+#include "post_feed_model.h"
 
 namespace Skywalker {
 
@@ -98,16 +99,23 @@ std::optional<BasicProfile> Post::getRepostedBy() const
 
 bool Post::isReply() const
 {
-    return mFeedViewPost && mFeedViewPost->mReply;
+    if (mFeedViewPost && mFeedViewPost->mReply)
+        return true;
+
+    if (!mPost)
+        return false;
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return false;
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    return record->mReply.get();
 }
 
 
-std::optional<PostReplyRef> Post::getReplyRef() const
+std::optional<PostReplyRef> Post::getViewPostReplyRef() const
 {
-    if (!mPost)
-        return {};
-
-    if (!isReply())
+    if (!mFeedViewPost || !mFeedViewPost->mReply)
         return {};
 
     const auto& reply = *mFeedViewPost->mReply;
@@ -125,26 +133,33 @@ std::optional<PostReplyRef> Post::getReplyRef() const
 
 std::optional<BasicProfile> Post::getReplyToAuthor() const
 {
-    if (!mPost)
-        return {};
-
     if (mReplyToAuthor)
         return mReplyToAuthor;
 
-    if (!isReply())
+    if (mFeedViewPost && mFeedViewPost->mReply)
+        return BasicProfile(mFeedViewPost->mReply->mParent->mAuthor.get());
+
+    const auto did = getReplyToAuthorDid();
+    if (did.isEmpty())
         return {};
 
-    const auto& reply = *mFeedViewPost->mReply;
-    return BasicProfile(reply.mParent->mAuthor.get());
+    const auto& authorCache = PostFeedModel::getAuthorCache();
+    auto* author = authorCache[did];
+
+    if (!author)
+        return {};
+
+    const_cast<Post*>(this)->setReplyToAuthor(author->getProfile());
+    return mReplyToAuthor;
 }
 
 QString Post::getReplyToCid() const
 {
+    if (mFeedViewPost && mFeedViewPost->mReply)
+        return mFeedViewPost->mReply->mParent->mCid;
+
     if (!mPost)
         return {};
-
-    if (isReply())
-        return mFeedViewPost->mReply->mParent->mCid;
 
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
@@ -159,6 +174,9 @@ QString Post::getReplyToCid() const
 
 QString Post::getReplyToAuthorDid() const
 {
+    if (mFeedViewPost && mFeedViewPost->mReply)
+        return mFeedViewPost->mReply->mParent->mAuthor->mDid;
+
     if (!mPost)
         return {};
 
@@ -175,9 +193,12 @@ QString Post::getReplyToAuthorDid() const
     if (!uri.startsWith("at://did:"))
         return {};
 
-    const auto did = "TODO";
+    const int end = uri.indexOf('/', 5);
+    if (end < 0)
+        return {};
 
-    qDebug() << "uri:" << uri << "did:" << did;
+    const auto did = uri.sliced(5, end - 5);
+    qDebug() << "Extracted did from uri:" << uri << "did:" << did;
     return did;
 }
 

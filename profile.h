@@ -3,6 +3,7 @@
 #pragma once
 #include <atproto/lib/lexicon/app_bsky_actor.h>
 #include <QtQmlIntegration>
+#include <QObject>
 
 namespace Skywalker {
 
@@ -25,6 +26,18 @@ private:
     const ATProto::AppBskyActor::ProfileViewBasic* mProfile = nullptr;
     QString mHandle;
     QString mDisplayName;
+};
+
+class CachedBasicProfile : public QObject
+{
+public:
+    CachedBasicProfile() = default;
+    explicit CachedBasicProfile(const BasicProfile& profile);
+
+    const BasicProfile& getProfile() const { return mProfile; }
+
+private:
+    BasicProfile mProfile;
 };
 
 }

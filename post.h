@@ -46,7 +46,7 @@ public:
     bool isRepost() const;
     std::optional<BasicProfile> getRepostedBy() const;
     bool isReply() const;
-    std::optional<PostReplyRef> getReplyRef() const;
+    std::optional<PostReplyRef> getViewPostReplyRef() const;
     std::optional<BasicProfile> getReplyToAuthor() const;
     QString getReplyToCid() const;
     QString getReplyToAuthorDid() const;

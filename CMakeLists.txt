@@ -23,37 +23,36 @@ qt_add_qml_module(appskywalker
     SOURCES
         skywalker.h
         skywalker.cpp
+        post_feed_model.h
+        post_feed_model.cpp
+        post.h
+        profile.h
+        post.cpp
+        profile.cpp
+        image_view.h
+        external_view.h
+        record_view.h
+        record_view.cpp
+        record_with_media_view.h
+        record_with_media_view.cpp
+        external_view.cpp
+        enums.h
+    QML_FILES
+        Avatar.qml
+        ImagePreview1.qml
+        ImagePreview2.qml
+        ImagePreview3.qml
+        ImagePreview4.qml
+        ExternalView.qml
+        RecordView.qml
+        PostHeader.qml
+        PostBody.qml
+        RecordWithMediaView.qml
+        RoundedFrame.qml
+        ThumbImageView.qml
+        FullImageView.qml
     RESOURCES
         qtquickcontrols2.conf
-        SOURCES post_feed_model.h
-        SOURCES post_feed_model.cpp
-        SOURCES post.h
-        SOURCES profile.h
-        SOURCES post.cpp
-        SOURCES profile.cpp
-        QML_FILES Avatar.qml
-        SOURCES image_view.h
-        QML_FILES ImagePreview1.qml
-        QML_FILES ImagePreview2.qml
-        QML_FILES ImagePreview3.qml
-        QML_FILES ImagePreview4.qml
-        QML_FILES
-        SOURCES external_view.h
-        QML_FILES ExternalView.qml
-        SOURCES record_view.h
-        SOURCES record_view.cpp
-        QML_FILES RecordView.qml
-        QML_FILES PostHeader.qml
-        RESOURCES
-        QML_FILES PostBody.qml
-        SOURCES record_with_media_view.h
-        SOURCES record_with_media_view.cpp
-        QML_FILES RecordWithMediaView.qml
-        SOURCES external_view.cpp
-        QML_FILES RoundedFrame.qml
-        QML_FILES ThumbImageView.qml
-        QML_FILES FullImageView.qml
-        SOURCES enums.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

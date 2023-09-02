@@ -34,6 +34,8 @@ Window {
             required property var postRecordWithMedia // record_with_media_view
             required property int postType // QEnums::PostType
             required property int postGapId;
+            required property bool postIsReply
+            required property bool postParentInThread
             required property basicprofile postReplyToAuthor
             required property bool endOfFeed;
 
@@ -44,22 +46,35 @@ Window {
 
             // Instead of using row spacing, these empty rectangles are used for white space.
             // This way we can color the background for threads.
-            Rectangle {
+            RowLayout {
+                id: topLeftSpace
                 width: avatar.width
-                Layout.preferredHeight: timelineView.margin
-                color: {
-                    switch (postType) {
-                    case QEnums.POST_REPLY:
-                    case QEnums.POST_LAST_REPLY:
-                        return "lightcyan"
-                    default:
-                        return "transparent"
+                height: timelineView.margin * (postIsReply && !postParentInThread ? 2 : 1)
+                spacing: 0
+
+                Repeater {
+                    model: 5
+
+                    Rectangle {
+                        required property int index
+
+                        width: avatar.width / 5
+                        Layout.preferredHeight: topLeftSpace.height
+                        color: {
+                            switch (postType) {
+                            case QEnums.POST_REPLY:
+                            case QEnums.POST_LAST_REPLY:
+                                return !postParentInThread && index % 2 === 0 ? "transparent" : "lightcyan"
+                            default:
+                                return "transparent"
+                            }
+                        }
                     }
                 }
             }
             Rectangle {
                 width: parent.width - avatar.width - timelineView.margin * 2
-                Layout.preferredHeight: timelineView.margin
+                Layout.preferredHeight: topLeftSpace.height
                 Layout.fillWidth: true
             }
 
@@ -104,14 +119,7 @@ Window {
                     }
                     GradientStop {
                         position: 1.0
-                        color: {
-                            switch (postType) {
-                            case QEnums.POST_STANDALONE:
-                                return "transparent"
-                            default:
-                                return "lightcyan"
-                            }
-                        }
+                        color: postType === QEnums.POST_STANDALONE ? "transparent" : "lightcyan"
                     }
                 }
 
@@ -140,7 +148,7 @@ Window {
                     color: "darkslategrey"
                     font.pointSize: 8
                     text: qsTr(`Reply to ${postReplyToAuthor.name}`)
-                    visible: postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY
+                    visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT)
                 }
 
                 PostBody {
@@ -204,7 +212,7 @@ Window {
                 Layout.preferredHeight: 1
                 Layout.fillWidth: true
                 color: "lightgrey"
-                visible: postType === QEnums.POST_STANDALONE || postType === QEnums.POST_LAST_REPLY
+                visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType)
             }
 
             // End of feed indication

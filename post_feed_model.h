@@ -3,6 +3,7 @@
 #pragma once
 #include "post.h"
 #include <QAbstractListModel>
+#include <QCache>
 #include <deque>
 #include <map>
 #include <queue>
@@ -16,6 +17,7 @@ class PostFeedModel : public QAbstractListModel
     Q_OBJECT
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
+    static const QCache<QString, CachedBasicProfile>& getAuthorCache() { return sAuthorCache; }
 
     enum class Role {
         Author = Qt::UserRole + 1,
@@ -28,6 +30,8 @@ public:
         PostRecordWithMedia,
         PostType,
         PostGapId,
+        PostIsReply,
+        PostParentInThread,
         PostReplyToAuthor,
         EndOfFeed
     };
@@ -108,14 +112,15 @@ private:
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
 
+    // TODO: change to QCache
     // CID of posts stored in the timeline.
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;
 
-    // TODO: maximum size
-    std::unordered_map<QString, BasicProfile> mDidAuthorMap;
-
     bool mEndOfFeed = false;
+
+    static void cacheAuthorProfile(const QString& did, const BasicProfile& profile);
+    static QCache<QString, CachedBasicProfile> sAuthorCache;
 };
 
 }
