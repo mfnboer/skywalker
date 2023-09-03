@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.settings
 
 Dialog {
     property string user
@@ -50,6 +51,12 @@ Dialog {
             Layout.fillWidth: true
             color: "red"
             wrapMode: Text.Wrap
+        }
+
+        Settings {
+            property alias user: userField.text
+            property alias password: passwordField.text
+            property alias host: hostField.text
         }
     }
 

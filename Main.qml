@@ -150,7 +150,7 @@ Window {
                         width: replyToText.height
                         height: replyToText.height
                         color: "darkslategrey"
-                        svgPath: svgOutline.favorite
+                        svg: svgOutline.reply
                     }
 
                     Text {
@@ -178,14 +178,21 @@ Window {
                     width: parent.width
                     topPadding: 5
 
-                    SvgImage {
-                        width: replyCountText.height
-                        height: replyCountText.height
-                        svgPath: svgOutline.favorite
+                    StatIcon {
+                        width: parent.width / 4
+                        svg: svgOutline.reply
                     }
-                    Text {
-                        id: replyCountText
-                        text: "0"
+                    StatIcon {
+                        width: parent.width / 4
+                        svg: svgOutline.repost
+                    }
+                    StatIcon {
+                        width: parent.width / 4
+                        svg: svgOutline.like
+                    }
+                    StatIcon {
+                        width: parent.width / 4
+                        svg: svgOutline.moreVert
                     }
                 }
             }

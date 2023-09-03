@@ -2,8 +2,8 @@
 // License: GPLv3
 #pragma once
 #include <atproto/lib/lexicon/app_bsky_actor.h>
-#include <QtQmlIntegration>
 #include <QObject>
+#include <QtQmlIntegration>
 
 namespace Skywalker {
 

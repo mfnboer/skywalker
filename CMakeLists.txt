@@ -55,6 +55,8 @@ qt_add_qml_module(appskywalker
         SvgImage.qml
     RESOURCES
         qtquickcontrols2.conf
+        SOURCES svg_image.h
+        QML_FILES StatIcon.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

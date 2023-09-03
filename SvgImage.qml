@@ -1,19 +1,18 @@
 import QtQuick
 import QtQuick.Shapes
+import skywalker
 
 Shape {
-    required property string svgPath
+    required property svgimage svg
     property string color
-    property int svgWidth: 960
-    property int svgHeight: 960
 
     id: shape
     y: height
 
     ShapePath {
-        scale: Qt.size(shape.height / svgWidth, shape.height / svgHeight)
+        scale: Qt.size(shape.height / svg.width, shape.height / svg.height)
         strokeColor: shape.color
         fillColor: shape.color
-        PathSvg { path: svgPath }
+        PathSvg { path: svg.path }
     }
 }
