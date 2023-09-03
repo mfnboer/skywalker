@@ -426,6 +426,12 @@ QVariant PostFeedModel::data(const QModelIndex& index, int role) const
         const auto& author = post.getReplyToAuthor();
         return author ? QVariant::fromValue(*author) : QVariant();
     }
+    case Role::PostReplyCount:
+        return post.getReplyCount();
+    case Role::PostRepostCount:
+        return post.getRepostCount();
+    case Role::PostLikeCount:
+        return post.getLikeCount();
     case Role::EndOfFeed:
         return post.isEndOfFeed();
     default:
@@ -452,6 +458,9 @@ QHash<int, QByteArray> PostFeedModel::roleNames() const
         { int(Role::PostIsReply), "postIsReply" },
         { int(Role::PostParentInThread), "postParentInThread" },
         { int(Role::PostReplyToAuthor), "postReplyToAuthor" },
+        { int(Role::PostReplyCount), "postReplyCount" },
+        { int(Role::PostRepostCount), "postRepostCount" },
+        { int(Role::PostLikeCount), "postLikeCount" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
 

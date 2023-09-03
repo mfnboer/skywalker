@@ -35,7 +35,7 @@ Item {
                 rightPadding: 5
                 text: new URL(postExternal.uri).hostname
                 elide: Text.ElideRight
-                font.pointSize: 8
+                //font.pointSize: 8
                 color: "grey"
             }
             Text {

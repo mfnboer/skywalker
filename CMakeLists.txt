@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(skywalker VERSION 0.1 LANGUAGES CXX)
+project(appskywalker VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
 find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2)
 
 qt_standard_project_setup()
@@ -58,6 +59,22 @@ qt_add_qml_module(appskywalker
         SOURCES svg_image.h
         QML_FILES StatIcon.qml
 )
+
+if (ANDROID)
+    FetchContent_Declare(
+      android_openssl
+      DOWNLOAD_EXTRACT_TIMESTAMP true
+      URL      https://github.com/KDAB/android_openssl/archive/refs/heads/master.zip
+#      URL_HASH MD5=c97d6ad774fab16be63b0ab40f78d945 #optional
+    )
+    FetchContent_MakeAvailable(android_openssl)
+    include(${android_openssl_SOURCE_DIR}/android_openssl.cmake)
+endif()
+
+if (ANDROID)
+    add_android_openssl_libraries(appskywalker)
+endif()
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

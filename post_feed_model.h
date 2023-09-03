@@ -33,6 +33,9 @@ public:
         PostIsReply,
         PostParentInThread,
         PostReplyToAuthor,
+        PostReplyCount,
+        PostRepostCount,
+        PostLikeCount,
         EndOfFeed
     };
 

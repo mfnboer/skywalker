@@ -56,6 +56,10 @@ public:
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
 
+    int getReplyCount() const;
+    int getRepostCount() const;
+    int getLikeCount() const;
+
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
     void setPostType(QEnums::PostType postType) { mPostType = postType; }
     void setParentInThread(bool parentInThread) { mParentInThread = parentInThread; }

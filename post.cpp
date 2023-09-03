@@ -255,4 +255,19 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
     return std::make_unique<RecordWithMediaView>(recordView.get());
 }
 
+int Post::getReplyCount() const
+{
+    return mFeedViewPost ? mFeedViewPost->mPost->mReplyCount : 0;
+}
+
+int Post::getRepostCount() const
+{
+    return mFeedViewPost ? mFeedViewPost->mPost->mRepostCount : 0;
+}
+
+int Post::getLikeCount() const
+{
+    return mFeedViewPost ? mFeedViewPost->mPost->mLikeCount : 0;
+}
+
 }

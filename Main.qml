@@ -14,7 +14,7 @@ Window {
     ListView {
         property bool inTopOvershoot: false
         property bool inBottomOvershoot: false
-        property int margin: 5
+        property int margin: 10
 
         id: timelineView
         anchors.fill: parent
@@ -37,6 +37,9 @@ Window {
             required property bool postIsReply
             required property bool postParentInThread
             required property basicprofile postReplyToAuthor
+            required property int postReplyCount
+            required property int postRepostCount
+            required property int postLikeCount
             required property bool endOfFeed;
 
             id: postEntry
@@ -91,14 +94,14 @@ Window {
                 text: qsTr(`Reposted by ${postRepostedByName}`)
                 color: "darkslategrey"
                 font.bold: true
-                font.pointSize: 8
+                //font.pointSize: 8
                 visible: postRepostedByName && !postGapId
             }
 
             // Author and content
             Rectangle {
                 id: avatar
-                width: 40
+                width: 56
                 Layout.fillHeight: true
 
                 // Gradient is used display thread context.
@@ -124,9 +127,9 @@ Window {
                 }
 
                 Avatar {
-                    x: parent.x + 5
+                    x: parent.x + 8
                     y: parent.y
-                    width: parent.width - 10
+                    width: parent.width - 16
                     avatarUrl: author.avatarUrl
                     visible: !postGapId
                 }
@@ -158,7 +161,7 @@ Window {
                         width: parent.width
                         elide: Text.ElideRight
                         color: "darkslategrey"
-                        font.pointSize: 8
+                        //font.pointSize: 8
                         text: qsTr(`Reply to ${postReplyToAuthor.name}`)
                     }
                     visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT)
@@ -181,14 +184,17 @@ Window {
                     StatIcon {
                         width: parent.width / 4
                         svg: svgOutline.reply
+                        statistic: postReplyCount
                     }
                     StatIcon {
                         width: parent.width / 4
                         svg: svgOutline.repost
+                        statistic: postRepostCount
                     }
                     StatIcon {
                         width: parent.width / 4
                         svg: svgOutline.like
+                        statistic: postLikeCount
                     }
                     StatIcon {
                         width: parent.width / 4
