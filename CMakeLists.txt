@@ -37,6 +37,7 @@ qt_add_qml_module(appskywalker
         record_with_media_view.cpp
         external_view.cpp
         enums.h
+        svg_outline.h
     QML_FILES
         Avatar.qml
         ImagePreview1.qml
@@ -51,6 +52,7 @@ qt_add_qml_module(appskywalker
         RoundedFrame.qml
         ThumbImageView.qml
         FullImageView.qml
+        SvgImage.qml
     RESOURCES
         qtquickcontrols2.conf
 )

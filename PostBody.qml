@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import skywalker
 
-RowLayout {
+Column {
     required property string postText
     required property list<imageview> postImages
     property var postExternal // externalview (var allows NULL)
@@ -44,22 +44,22 @@ RowLayout {
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             let component = Qt.createComponent(qmlFile)
-            component.createObject(postBody.parent, {images: postImages})
+            component.createObject(postBody, {images: postImages})
         }
 
         if (postExternal) {
             let component = Qt.createComponent("ExternalView.qml")
-            component.createObject(postBody.parent, {postExternal: postBody.postExternal})
+            component.createObject(postBody, {postExternal: postBody.postExternal})
         }
 
         if (postRecord) {
             let component = Qt.createComponent("RecordView.qml")
-            component.createObject(postBody.parent, {record: postRecord})
+            component.createObject(postBody, {record: postRecord})
         }
 
         if (postRecordWithMedia) {
             let component = Qt.createComponent("RecordWithMediaView.qml")
-            component.createObject(postBody.parent, {record: postRecordWithMedia})
+            component.createObject(postBody, {record: postRecordWithMedia})
         }
     }
 }

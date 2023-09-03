@@ -142,12 +142,25 @@ Window {
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
                 }
 
-                Text {
+                // Reply to
+                Row {
                     width: parent.width
-                    elide: Text.ElideRight
-                    color: "darkslategrey"
-                    font.pointSize: 8
-                    text: qsTr(`Reply to ${postReplyToAuthor.name}`)
+
+                    SvgImage {
+                        width: replyToText.height
+                        height: replyToText.height
+                        color: "darkslategrey"
+                        svgPath: svgOutline.favorite
+                    }
+
+                    Text {
+                        id: replyToText
+                        width: parent.width
+                        elide: Text.ElideRight
+                        color: "darkslategrey"
+                        font.pointSize: 8
+                        text: qsTr(`Reply to ${postReplyToAuthor.name}`)
+                    }
                     visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT)
                 }
 
@@ -158,6 +171,22 @@ Window {
                     postExternal: postEntry.postExternal
                     postRecord: postEntry.postRecord
                     postRecordWithMedia: postEntry.postRecordWithMedia
+                }
+
+                // Stats
+                Row {
+                    width: parent.width
+                    topPadding: 5
+
+                    SvgImage {
+                        width: replyCountText.height
+                        height: replyCountText.height
+                        svgPath: svgOutline.favorite
+                    }
+                    Text {
+                        id: replyCountText
+                        text: "0"
+                    }
                 }
             }
 
@@ -263,6 +292,10 @@ Window {
                 inBottomOvershoot = false;
             }
         }
+    }
+
+    SvgOutline {
+        id: svgOutline
     }
 
     Login {
