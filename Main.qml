@@ -275,7 +275,7 @@ ApplicationWindow {
                 Layout.columnSpan: 2
                 Layout.preferredHeight: 1
                 Layout.fillWidth: true
-                color: Material.color(Material.Grey)
+                color: "lightgrey"
                 visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType)
             }
 

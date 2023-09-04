@@ -50,7 +50,7 @@ QString Post::getText() const
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
 
         if (record->mFacets.empty())
-            return record->mText.toHtmlEscaped();
+            return record->mText.toHtmlEscaped().replace('\n', "<br>");
         else
             return ATProto::AppBskyRichtext::applyFacets(record->mText, record->mFacets);
     }

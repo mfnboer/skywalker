@@ -34,7 +34,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         border.width: 1
-        border.color: Material.color(Material.Grey)
+        border.color: "lightgrey"
         color: "transparent"
         radius: 10
     }

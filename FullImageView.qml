@@ -9,7 +9,6 @@ Dialog {
 
     width: parent.width
     height: parent.height
-    standardButtons: Dialog.Close
     background: Rectangle { color: "black" }
     onClosed: destroy()
 
@@ -45,6 +44,22 @@ Dialog {
                     visible: images[index].alt && isCurrentItem
                 }
             }
+        }
+    }
+
+    RoundButton {
+        id: backButton
+        anchors.top: view.top
+        anchors.left: view.left
+        Material.background: "black"
+        onClicked: close()
+
+        SvgImage {
+            width: 20
+            height: 20
+            x: parent.x
+            svg: svgOutline.arrowBack
+            color: "white"
         }
     }
 }
