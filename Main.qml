@@ -14,7 +14,7 @@ Window {
     ListView {
         property bool inTopOvershoot: false
         property bool inBottomOvershoot: false
-        property int margin: 10
+        property int margin: 8
 
         id: timelineView
         anchors.fill: parent
@@ -84,24 +84,34 @@ Window {
             // Repost information
             Rectangle {
                 width: avatar.width
+                height: repostedByText.height
                 color: avatar.color
                 visible: postRepostedByName && !postGapId
+
+                SvgImage {
+                    anchors.right: parent.right
+                    width: repostedByText.height
+                    height: repostedByText.height
+                    color: "grey"
+                    svg: svgOutline.repost
+                }
             }
             Text {
+                id: repostedByText
                 width: parent.width - avatar.width - timelineView.margin * 2
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 text: qsTr(`Reposted by ${postRepostedByName}`)
-                color: "darkslategrey"
+                color: "grey"
                 font.bold: true
-                //font.pointSize: 8
+                font.pointSize: `${(Application.font.pointSize * 7/8)}`
                 visible: postRepostedByName && !postGapId
             }
 
             // Author and content
             Rectangle {
                 id: avatar
-                width: 56
+                width: 55
                 Layout.fillHeight: true
 
                 // Gradient is used display thread context.
@@ -127,9 +137,9 @@ Window {
                 }
 
                 Avatar {
-                    x: parent.x + 8
-                    y: parent.y
-                    width: parent.width - 16
+                    x: avatar.x + 8
+                    y: postHeader.y + 5 // For some reaon "avatar.y + 5" does not work when it is a repost
+                    width: parent.width - 13
                     avatarUrl: author.avatarUrl
                     visible: !postGapId
                 }
@@ -140,6 +150,7 @@ Window {
                 visible: !postGapId
 
                 PostHeader {
+                    id: postHeader
                     width: parent.width
                     authorName: author.name
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
@@ -152,7 +163,7 @@ Window {
                     SvgImage {
                         width: replyToText.height
                         height: replyToText.height
-                        color: "darkslategrey"
+                        color: "grey"
                         svg: svgOutline.reply
                     }
 
@@ -160,8 +171,8 @@ Window {
                         id: replyToText
                         width: parent.width
                         elide: Text.ElideRight
-                        color: "darkslategrey"
-                        //font.pointSize: 8
+                        color: "grey"
+                        font.pointSize: `${(Application.font.pointSize * 7/8)}`
                         text: qsTr(`Reply to ${postReplyToAuthor.name}`)
                     }
                     visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT)
@@ -183,21 +194,25 @@ Window {
 
                     StatIcon {
                         width: parent.width / 4
+                        iconColor: "grey"
                         svg: svgOutline.reply
                         statistic: postReplyCount
                     }
                     StatIcon {
                         width: parent.width / 4
+                        iconColor: "grey"
                         svg: svgOutline.repost
                         statistic: postRepostCount
                     }
                     StatIcon {
                         width: parent.width / 4
+                        iconColor: "grey"
                         svg: svgOutline.like
                         statistic: postLikeCount
                     }
                     StatIcon {
                         width: parent.width / 4
+                        iconColor: "grey"
                         svg: svgOutline.moreVert
                     }
                 }

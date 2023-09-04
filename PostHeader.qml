@@ -13,7 +13,7 @@ RowLayout {
     }
     Text {
         text: durationToString(postIndexedSecondsAgo)
-        //font.pointSize: 8
+        font.pointSize: `${(Application.font.pointSize * 7/8)}`
         color: "grey"
     }
 

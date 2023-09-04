@@ -23,7 +23,6 @@ Dialog {
         TextField {
             id: userField
             Layout.fillWidth: true
-            text: "michelbestaat.bsky.social"
             focus: true
         }
 

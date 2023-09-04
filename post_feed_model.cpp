@@ -125,7 +125,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
 
     if (page->mFeed.empty())
     {
-        qWarning() << "Page has no posts";
+        qDebug() << "Page has no posts";
         return 0;
     }
 

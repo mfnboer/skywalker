@@ -2,7 +2,7 @@
 // License: GPLv3
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-
+#include <QFont>
 
 int main(int argc, char *argv[])
 {
@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
     app.setOrganizationName("Michel de Boer");
     app.setOrganizationDomain("mfnboer.gmail.com");
     app.setApplicationName("Skywalker");
+
+    qDebug() << "Font size:" << app.font();
 
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
 
