@@ -3,9 +3,10 @@ cmake_minimum_required(VERSION 3.16)
 project(appskywalker VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTORCC ON)
 
 include(FetchContent)
-find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2)
 
 qt_standard_project_setup()
 
@@ -17,7 +18,8 @@ qt_add_executable(appskywalker
 
 qt_add_qml_module(appskywalker
     URI skywalker
-    VERSION 1.0
+    VERSION ${PROJECT_VERSION}
+    NO_RESOURCE_TARGET_PATH
     QML_FILES
         Main.qml
         Login.qml
@@ -39,6 +41,7 @@ qt_add_qml_module(appskywalker
         external_view.cpp
         enums.h
         svg_outline.h
+        svg_image.h
     QML_FILES
         Avatar.qml
         ImagePreview1.qml
@@ -54,10 +57,9 @@ qt_add_qml_module(appskywalker
         ThumbImageView.qml
         FullImageView.qml
         SvgImage.qml
+        StatIcon.qml
     RESOURCES
         qtquickcontrols2.conf
-        SOURCES svg_image.h
-        QML_FILES StatIcon.qml
 )
 
 if (ANDROID)
@@ -89,6 +91,7 @@ set_target_properties(appskywalker PROPERTIES
 
 target_link_libraries(appskywalker
     PRIVATE libatproto
+    PRIVATE Qt6::Core
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
 )

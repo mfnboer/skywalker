@@ -1,10 +1,11 @@
+import QtCore
 import QtQuick
-import QtQuick.Controls.Material
+import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import skywalker
 
-Window {
+ApplicationWindow {
     id: root
     width: 480
     height: 960
@@ -72,6 +73,7 @@ Window {
                                 return "transparent"
                             }
                         }
+                        opacity: avatar.opacity
                     }
                 }
             }
@@ -79,20 +81,21 @@ Window {
                 width: parent.width - avatar.width - timelineView.margin * 2
                 Layout.preferredHeight: topLeftSpace.height
                 Layout.fillWidth: true
+                color: "transparent"
             }
 
             // Repost information
             Rectangle {
                 width: avatar.width
                 height: repostedByText.height
-                color: avatar.color
+                color: "transparent"
                 visible: postRepostedByName && !postGapId
 
                 SvgImage {
                     anchors.right: parent.right
                     width: repostedByText.height
                     height: repostedByText.height
-                    color: "grey"
+                    color: Material.color(Material.Grey)
                     svg: svgOutline.repost
                 }
             }
@@ -102,7 +105,7 @@ Window {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 text: qsTr(`Reposted by ${postRepostedByName}`)
-                color: "grey"
+                color: Material.color(Material.Grey)
                 font.bold: true
                 font.pointSize: `${(Application.font.pointSize * 7/8)}`
                 visible: postRepostedByName && !postGapId
@@ -113,6 +116,7 @@ Window {
                 id: avatar
                 width: 55
                 Layout.fillHeight: true
+                opacity: 0.9
 
                 // Gradient is used display thread context.
                 gradient: Gradient {
@@ -163,7 +167,7 @@ Window {
                     SvgImage {
                         width: replyToText.height
                         height: replyToText.height
-                        color: "grey"
+                        color: Material.color(Material.Grey)
                         svg: svgOutline.reply
                     }
 
@@ -171,7 +175,7 @@ Window {
                         id: replyToText
                         width: parent.width
                         elide: Text.ElideRight
-                        color: "grey"
+                        color: Material.color(Material.Grey)
                         font.pointSize: `${(Application.font.pointSize * 7/8)}`
                         text: qsTr(`Reply to ${postReplyToAuthor.name}`)
                     }
@@ -194,25 +198,25 @@ Window {
 
                     StatIcon {
                         width: parent.width / 4
-                        iconColor: "grey"
+                        iconColor: Material.color(Material.Grey)
                         svg: svgOutline.reply
                         statistic: postReplyCount
                     }
                     StatIcon {
                         width: parent.width / 4
-                        iconColor: "grey"
+                        iconColor: Material.color(Material.Grey)
                         svg: svgOutline.repost
                         statistic: postRepostCount
                     }
                     StatIcon {
                         width: parent.width / 4
-                        iconColor: "grey"
+                        iconColor: Material.color(Material.Grey)
                         svg: svgOutline.like
                         statistic: postLikeCount
                     }
                     StatIcon {
                         width: parent.width / 4
-                        iconColor: "grey"
+                        iconColor: Material.color(Material.Grey)
                         svg: svgOutline.moreVert
                     }
                 }
@@ -226,6 +230,7 @@ Window {
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 textFormat: Text.StyledText
+                color: Material.foreground
                 text: "<a href=\"showMore\">" + qsTr("Show more posts") + "</a>"
                 visible: postGapId > 0
 
@@ -255,11 +260,13 @@ Window {
                         return "transparent"
                     }
                 }
+                opacity: avatar.opacity
             }
             Rectangle {
                 width: parent.width - avatar.width - timelineView.margin * 2
                 height: timelineView.margin
                 Layout.fillWidth: true
+                color: "transparent"
             }
 
             // Post/Thread separator
@@ -268,7 +275,7 @@ Window {
                 Layout.columnSpan: 2
                 Layout.preferredHeight: 1
                 Layout.fillWidth: true
-                color: "lightgrey"
+                color: Material.color(Material.Grey)
                 visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType)
             }
 
@@ -278,6 +285,7 @@ Window {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
+                color: Material.foreground
                 text: qsTr("End of feed")
                 font.italic: true
                 visible: endOfFeed
@@ -357,6 +365,7 @@ Window {
     }
 
     Component.onCompleted: {
+        console.debug("Foreground:", Material.foreground, "Background:", Material.background)
         loginDialog.show()
     }
 }

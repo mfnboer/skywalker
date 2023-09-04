@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -42,16 +43,19 @@ Item {
 
         Text {
             width: parent.width
+            color: Material.foreground
             text: qsTr("NOT FOUND")
             visible: record.notFound
         }
         Text {
             width: parent.width
+            color: Material.foreground
             text: qsTr("BLOCKED")
             visible: record.blocked
         }
         Text {
             width: parent.width
+            color: Material.foreground
             text: qsTr("NOT SUPPORTED")
             visible: record.notSupported
         }
@@ -59,7 +63,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         border.width: 1
-        border.color: "lightgrey"
+        border.color: Material.color(Material.Grey)
         color: "transparent"
         radius: 10
     }

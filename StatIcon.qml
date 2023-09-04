@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 Rectangle {
@@ -7,6 +8,7 @@ Rectangle {
     property string iconColor
 
     height: statText.height
+    color: "transparent"
 
     SvgImage {
         id: statIcon

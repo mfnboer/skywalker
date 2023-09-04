@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -36,13 +37,14 @@ Item {
                 text: new URL(postExternal.uri).hostname
                 elide: Text.ElideRight
                 font.pointSize: `${(Application.font.pointSize * 7/8)}`
-                color: "grey"
+                color: Material.color(Material.Grey)
             }
             Text {
                 id: titleText
                 width: parent.width - 10
                 leftPadding: 5
                 rightPadding: 5
+                color: Material.foreground
                 text: postExternal.title
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
@@ -55,6 +57,7 @@ Item {
                 leftPadding: 5
                 rightPadding: 5
                 bottomPadding: 5
+                color: Material.foreground
                 text: postExternal.description
                 wrapMode: Text.Wrap
                 maximumLineCount: 5

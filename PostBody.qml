@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -20,6 +21,7 @@ Column {
         maximumLineCount: maxTextLines
         elide: Text.ElideRight
         textFormat: Text.StyledText
+        color: Material.foreground
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
 

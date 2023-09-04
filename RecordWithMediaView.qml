@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -33,7 +34,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         border.width: 1
-        border.color: "lightgrey"
+        border.color: Material.color(Material.Grey)
         color: "transparent"
         radius: 10
     }

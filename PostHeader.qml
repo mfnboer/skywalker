@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 RowLayout {
@@ -8,13 +9,14 @@ RowLayout {
     Text {
         Layout.fillWidth: true
         elide: Text.ElideRight
+        color: Material.foreground
         text: authorName
         font.bold: true
     }
     Text {
         text: durationToString(postIndexedSecondsAgo)
         font.pointSize: `${(Application.font.pointSize * 7/8)}`
-        color: "grey"
+        color: Material.color(Material.Grey)
     }
 
     function durationToString(duration) {
