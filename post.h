@@ -80,7 +80,7 @@ private:
     // null if the post represents a reply ref.
     const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
 
-    // Index in the vector of raw feed view posts
+    // Index in the vector of raw feed view posts (only for timeline)
     int mRawIndex = -1;
 
     int mGapId = 0;

@@ -195,6 +195,7 @@ void PostFeedModel::clear()
     mGapIdIndexMap.clear();
     mStoredCids.clear();
     mStoredCidQueue = {};
+    mRawThread = nullptr;
     mEndOfFeed = false;
     endRemoveRows();
     qDebug() << "All posts removed";
@@ -361,6 +362,30 @@ const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
     return gap;
 }
 
+void PostFeedModel::setPostThread(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread)
+{
+    if (!mFeed.empty())
+        clear();
+
+    auto page = createPage(std::move(thread));
+
+    if (page->mFeed.empty())
+    {
+        qWarning() << "Page has no posts";
+        return;
+    }
+
+    const size_t newRowCount = page->mFeed.size();
+
+    beginInsertRows({}, 0, newRowCount - 1);
+    insertPage(mFeed.end(), *page, newRowCount);
+    mRawThread = std::move(page->mRawThread);
+    // TODO: end of feed?
+    endInsertRows();
+
+    qDebug() << "New feed size:" << mFeed.size();
+}
+
 int PostFeedModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
@@ -477,6 +502,15 @@ void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 
     if (isParent)
         mParentIndexMap[cid] = mFeed.size() - 1;
+}
+
+void PostFeedModel::Page::prependPost(const Post& post)
+{
+    mFeed.push_front(post);
+    const auto& cid = post.getCid();
+
+    if (!cid.isEmpty())
+        mAddedCids.insert(post.getCid());
 }
 
 bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef)
@@ -617,6 +651,61 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     }
 
     qDebug() << "Author profile cache size:" << sAuthorCache.size();
+    return page;
+}
+
+void PostFeedModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply)
+{
+    switch (reply.mType)
+    {
+    case ATProto::AppBskyFeed::ThreadElementType::THREAD_VIEW_POST:
+    {
+        const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(reply.mPost));
+        addPost(Post(post->mPost.get(), -1));
+
+        if (!post->mReplies.empty())
+            addReplyThread(*post->mReplies[0]);
+
+        break;
+    }
+    default:
+        // TODO: notFound, blocked
+        break;
+    }
+
+}
+
+PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread)
+{
+    auto page = std::make_unique<Page>();
+    page->mRawThread = std::move(thread);
+
+    // TODO: set post type
+    Post post(page->mRawThread->mPost.get(), -1);
+    page->addPost(post);
+
+    auto parent = page->mRawThread->mParent.get();
+    while (parent)
+    {
+        switch (parent->mType)
+        {
+        case ATProto::AppBskyFeed::ThreadElementType::THREAD_VIEW_POST:
+        {
+            const auto& post = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(parent->mPost);
+            page->prependPost(Post(post->mPost.get(), -1));
+            break;
+        }
+        default:
+            // TODO: notFound, blocked
+            break;
+        }
+    }
+
+    for (const auto& reply : page->mRawThread->mReplies)
+    {
+        page->addReplyThread(*reply);
+    }
+
     return page;
 }
 

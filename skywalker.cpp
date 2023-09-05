@@ -130,7 +130,7 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
        [this](const QString& error){
             qDebug() << "getTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
-            emit statusMessage("Could not update timeline: " + error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         }
     );
 }
@@ -169,7 +169,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
         [this](const QString& error){
             qDebug() << "getTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
-            emit statusMessage("Could not update timeline: " + error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         }
         );
 }
@@ -218,7 +218,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
         [this](const QString& error){
             qDebug() << "getTimelineForGap FAILED:" << error;
             setGetTimelineInProgress(false);
-            emit statusMessage("Could not update timeline: " + error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         }
         );
 }
@@ -252,6 +252,35 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
 
     if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && !mGetTimelineInProgress)
         getTimelineNextPage();
+}
+
+void Skywalker::getPostThread(const QString& uri)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get post thread:" << uri;
+
+    mBsky->getPostThread(uri, {}, {},
+        [this](auto thread){
+            auto model = std::make_unique<PostFeedModel>();
+            model->setPostThread(std::move(thread));
+            mPostThreadModels[mNextPostThreadModelId++] = std::move(model);
+            emit postThreadOk(mNextPostThreadModelId - 1);
+        },
+        [this](const QString& error){
+            qDebug() << "getPostThread FAILED:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+const PostFeedModel* Skywalker::getPostThreadModel(int id) const
+{
+    auto it = mPostThreadModels.find(id);
+    return it != mPostThreadModels.end() ? it->second.get() : nullptr;
+}
+
+void Skywalker::removePostThreadModel(int id)
+{
+    mPostThreadModels.erase(id);
 }
 
 void Skywalker::SaveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

@@ -39,6 +39,8 @@ public:
         EndOfFeed
     };
 
+    using Ptr = std::unique_ptr<PostFeedModel>;
+
     explicit PostFeedModel(QObject* parent = nullptr);
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
@@ -51,6 +53,8 @@ public:
     // Returns new gap id if the gap was not fully filled, i.e. there is a new gap.
     // Returns 0 otherwise.
     int gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId);
+
+    void setPostThread(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread);
 
     void removeTailPosts(int size);
     void removeHeadPosts(int size);
@@ -70,19 +74,23 @@ private:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
-        std::vector<Post> mFeed;
+        std::deque<Post> mFeed;
         ATProto::AppBskyFeed::PostFeed mRawFeed;
+        ATProto::AppBskyFeed::ThreadViewPost::Ptr mRawThread;
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
 
         void addPost(const Post& post, bool isParent = false);
+        void prependPost(const Post& post);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
+        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply);
     };
 
     void clear();
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    Page::Ptr createPage(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread);
 
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void cleanupStoredCids();
@@ -114,6 +122,9 @@ private:
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
+
+    // The raw thread data for a view on a thread.
+    ATProto::AppBskyFeed::ThreadViewPost::Ptr mRawThread;
 
     // TODO: change to QCache
     // CID of posts stored in the timeline.

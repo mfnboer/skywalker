@@ -25,6 +25,9 @@ public:
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0);
     Q_INVOKABLE void getTimelineNextPage();
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
+    Q_INVOKABLE void getPostThread(const QString& uri);
+    Q_INVOKABLE const PostFeedModel* getPostThreadModel(int id) const;
+    Q_INVOKABLE void removePostThreadModel(int id);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);
@@ -38,6 +41,7 @@ signals:
     void getTimeLineInProgressChanged();
     void sessionExpired(QString error);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
+    void postThreadOk(int id);
 
 private:
     void startRefreshTimer();
@@ -50,6 +54,9 @@ private:
     PostFeedModel mTimelineModel;
     bool mGetTimelineInProgress = false;
     QTimer mRefreshTimer;
+
+    std::unordered_map<int, PostFeedModel::Ptr> mPostThreadModels;
+    int mNextPostThreadModelId = 1;
 };
 
 }

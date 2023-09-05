@@ -51,6 +51,7 @@ QString Post::getText() const
     if (!mPost)
         return NO_STRING;
 
+    // TODO: notFoundPost, blockedPost
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
