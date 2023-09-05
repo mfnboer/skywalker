@@ -343,16 +343,26 @@ ApplicationWindow {
 
     Skywalker {
         id: skywalker
-        onLoginOk: {
+        onLoginOk: start()
+        onLoginFailed: (error) => loginDialog.show(error)
+        onResumeSessionOk: start()
+        onResumeSessionFailed: loginDialog.show()
+        onSessionExpired: (error) => {
+            timelineUpdateTimer.stop()
+            loginDialog.show()
+        }
+
+        function start() {
             skywalker.getTimeline(50)
             timelineUpdateTimer.start()
         }
-        onLoginFailed: (error) => loginDialog.show(error)
     }
 
     Timer {
         id: timelineUpdateTimer
-        interval: 30000
+        // There is a trade off: short timeout is fast updating timeline, long timeout
+        // allows for better reply thread construction as we receive more posts per update.
+        interval: 91000
         running: false
         repeat: true
         onTriggered: skywalker.getTimelinePrepend(2)
@@ -365,7 +375,7 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        console.debug("Foreground:", Material.foreground, "Background:", Material.background)
-        loginDialog.show()
+        // Try to resume the previous session. If that fails, then ask the user to login.
+        skywalker.resumeSession()
     }
 }
