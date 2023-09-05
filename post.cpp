@@ -263,17 +263,17 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
 
 int Post::getReplyCount() const
 {
-    return mFeedViewPost ? mFeedViewPost->mPost->mReplyCount : 0;
+    return mPost ? mPost->mReplyCount : 0;
 }
 
 int Post::getRepostCount() const
 {
-    return mFeedViewPost ? mFeedViewPost->mPost->mRepostCount : 0;
+    return mPost ? mPost->mRepostCount : 0;
 }
 
 int Post::getLikeCount() const
 {
-    return mFeedViewPost ? mFeedViewPost->mPost->mLikeCount : 0;
+    return mPost ? mPost->mLikeCount : 0;
 }
 
 }

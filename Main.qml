@@ -141,11 +141,28 @@ ApplicationWindow {
                 }
 
                 Avatar {
+                    id: avatarImg
                     x: avatar.x + 8
                     y: postHeader.y + 5 // For some reaon "avatar.y + 5" does not work when it is a repost
                     width: parent.width - 13
                     avatarUrl: author.avatarUrl
-                    visible: !postGapId
+                    visible: !postGapId && author.avatarUrl && status === Image.Ready
+                }
+                Rectangle {
+                    x: avatarImg.x
+                    y: avatarImg.y
+                    width: parent.width - 13
+                    height: width
+                    radius: width / 2
+                    color: Material.color(Material.Blue)
+                    visible: !avatarImg.visible
+
+                    SvgImage {
+                        width: parent.width
+                        height: parent.height
+                        color: "white"
+                        svg: svgFilled.unknownAvatar
+                    }
                 }
             }
             Column {
@@ -332,6 +349,9 @@ ApplicationWindow {
 
     SvgOutline {
         id: svgOutline
+    }
+    SvgFilled {
+        id: svgFilled
     }
 
     StatusPopup {

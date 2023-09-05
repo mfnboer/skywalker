@@ -52,11 +52,12 @@ Dialog {
         anchors.top: view.top
         anchors.left: view.left
         Material.background: "black"
+        opacity: 0.7
         onClicked: close()
 
         SvgImage {
-            width: 20
-            height: 20
+            width: 30
+            height: 30
             x: parent.x
             svg: svgOutline.arrowBack
             color: "white"

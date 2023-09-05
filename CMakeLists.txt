@@ -61,6 +61,7 @@ qt_add_qml_module(appskywalker
     RESOURCES
         qtquickcontrols2.conf
         QML_FILES StatusPopup.qml
+        SOURCES svg_filled.h
 )
 
 if (ANDROID)

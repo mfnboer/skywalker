@@ -17,7 +17,7 @@ BasicProfile::BasicProfile(const QString& handle, const QString& displayName) :
 }
 
 QString BasicProfile::getName() const
-{   
+{
     if (mProfile)
     {
         const QString name = mProfile->mDisplayName.value_or("").trimmed();

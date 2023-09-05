@@ -256,6 +256,7 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
 
 void Skywalker::SaveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
 {
+    // TODO: secure storage
     QSettings settings;
     settings.setValue("host", host);
     settings.setValue("did", session.mDid);
