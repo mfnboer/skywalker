@@ -34,6 +34,7 @@ public:
     bool isParentInThread() const { return mParentInThread; }
 
     const QString& getCid() const;
+    const QString& getUri() const;
 
     // The indexedAt of a post or repost
     QDateTime getTimelineTimestamp() const;

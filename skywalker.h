@@ -37,6 +37,7 @@ signals:
     void resumeSessionFailed();
     void getTimeLineInProgressChanged();
     void sessionExpired(QString error);
+    void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
 
 private:
     void startRefreshTimer();

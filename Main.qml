@@ -334,6 +334,10 @@ ApplicationWindow {
         id: svgOutline
     }
 
+    StatusPopup {
+        id: statusPopup
+    }
+
     Login {
         id: loginDialog
         anchors.centerIn: parent
@@ -351,6 +355,7 @@ ApplicationWindow {
             timelineUpdateTimer.stop()
             loginDialog.show()
         }
+        onStatusMessage: (msg, level) => statusPopup.show(msg, level)
 
         function start() {
             skywalker.getTimeline(50)

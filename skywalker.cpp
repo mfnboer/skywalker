@@ -130,9 +130,9 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
        [this](const QString& error){
             qDebug() << "getTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
+            emit statusMessage("Could not update timeline: " + error, QEnums::STATUS_LEVEL_ERROR);
         }
     );
-    // TODO: show error in GUI
 }
 
 void Skywalker::getTimelinePrepend(int autoGapFill)
@@ -148,7 +148,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
 
     if (mTimelineModel.rowCount() >= PostFeedModel::MAX_TIMELINE_SIZE)
     {
-        qWarning() << "Timeline is full:" << mTimelineModel.rowCount();
+        qDebug() << "Timeline is full:" << mTimelineModel.rowCount();
         return;
     }
 
@@ -163,15 +163,15 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
                 if (autoGapFill > 0)
                     getTimelineForGap(gapId, autoGapFill - 1);
                 else
-                    qWarning() << "Gap created, no auto gap fill";
+                    qDebug() << "Gap created, no auto gap fill";
             }
         },
         [this](const QString& error){
             qDebug() << "getTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
+            emit statusMessage("Could not update timeline: " + error, QEnums::STATUS_LEVEL_ERROR);
         }
         );
-    // TODO: show error in GUI
 }
 
 void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
@@ -212,15 +212,15 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
                 if (autoGapFill > 0)
                     getTimelineForGap(newGapId, autoGapFill - 1);
                 else
-                    qWarning() << "Gap created, no auto gap fill";
+                    qDebug() << "Gap created, no auto gap fill";
             }
         },
         [this](const QString& error){
             qDebug() << "getTimelineForGap FAILED:" << error;
             setGetTimelineInProgress(false);
+            emit statusMessage("Could not update timeline: " + error, QEnums::STATUS_LEVEL_ERROR);
         }
         );
-    // TODO: show error in GUI
 }
 
 void Skywalker::getTimelineNextPage()

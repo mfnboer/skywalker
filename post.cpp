@@ -38,6 +38,12 @@ const QString& Post::getCid() const
     return mPost ? mPost->mCid : NO_STRING;
 }
 
+const QString& Post::getUri() const
+{
+    static const QString NO_STRING;
+    return mPost ? mPost->mUri : NO_STRING;
+}
+
 QString Post::getText() const
 {
     static const QString NO_STRING;

@@ -22,6 +22,13 @@ public:
         POST_LAST_REPLY
     };
     Q_ENUM(PostType)
+
+    enum StatusLevel
+    {
+        STATUS_LEVEL_INFO = 0,
+        STATUS_LEVEL_ERROR
+    };
+    Q_ENUM(StatusLevel)
 };
 
 }

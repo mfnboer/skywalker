@@ -60,6 +60,7 @@ qt_add_qml_module(appskywalker
         StatIcon.qml
     RESOURCES
         qtquickcontrols2.conf
+        QML_FILES StatusPopup.qml
 )
 
 if (ANDROID)
