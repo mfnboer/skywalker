@@ -57,12 +57,12 @@ ApplicationWindow {
                 spacing: 0
 
                 Repeater {
-                    model: 5
+                    model: 11
 
                     Rectangle {
                         required property int index
 
-                        width: avatar.width / 5
+                        width: avatar.width / 11
                         Layout.preferredHeight: topLeftSpace.height
                         color: {
                             switch (postType) {
