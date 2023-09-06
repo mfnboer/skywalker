@@ -261,7 +261,7 @@ void Skywalker::getPostThread(const QString& uri)
 
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
-            auto model = std::make_unique<PostFeedModel>();
+            auto model = std::make_unique<PostThreadModel>();
             model->setPostThread(std::move(thread));
             mPostThreadModels[mNextPostThreadModelId++] = std::move(model);
             emit postThreadOk(mNextPostThreadModelId - 1);
@@ -272,7 +272,7 @@ void Skywalker::getPostThread(const QString& uri)
         });
 }
 
-const PostFeedModel* Skywalker::getPostThreadModel(int id) const
+const PostThreadModel* Skywalker::getPostThreadModel(int id) const
 {
     auto it = mPostThreadModels.find(id);
     return it != mPostThreadModels.end() ? it->second.get() : nullptr;

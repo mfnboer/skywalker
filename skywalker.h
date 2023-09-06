@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "post_feed_model.h"
+#include "post_thread_model.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QTimer>
@@ -26,7 +27,7 @@ public:
     Q_INVOKABLE void getTimelineNextPage();
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
     Q_INVOKABLE void getPostThread(const QString& uri);
-    Q_INVOKABLE const PostFeedModel* getPostThreadModel(int id) const;
+    Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
@@ -55,7 +56,7 @@ private:
     bool mGetTimelineInProgress = false;
     QTimer mRefreshTimer;
 
-    std::unordered_map<int, PostFeedModel::Ptr> mPostThreadModels;
+    std::unordered_map<int, PostThreadModel::Ptr> mPostThreadModels;
     int mNextPostThreadModelId = 1;
 };
 

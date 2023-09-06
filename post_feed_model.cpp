@@ -1,22 +1,11 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
-#include <QQmlEngine>
-#include <QQmlListProperty>
-
-using namespace std::chrono_literals;
 
 namespace Skywalker {
 
-QCache<QString, CachedBasicProfile> PostFeedModel::sAuthorCache(1000);
-
-void PostFeedModel::cacheAuthorProfile(const QString& did, const BasicProfile& profile)
-{
-    sAuthorCache.insert(did, new CachedBasicProfile(profile));
-}
-
 PostFeedModel::PostFeedModel(QObject* parent) :
-    QAbstractListModel(parent)
+    AbstractPostFeedModel(parent)
 {}
 
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
@@ -92,31 +81,10 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
     {
         const auto& cid = post.getCid();
         if (!cid.isEmpty())
-        {
-            mStoredCids.insert(cid);
-            mStoredCidQueue.push(cid);
-        }
+            storeCid(cid);
     }
 
     cleanupStoredCids();
-    qDebug() << "Stored cid set:" << mStoredCids.size() << "cid queue:" << mStoredCidQueue.size();
-}
-
-void PostFeedModel::cleanupStoredCids()
-{
-    while (mStoredCids.size() > MAX_TIMELINE_SIZE && !mStoredCidQueue.empty())
-    {
-        const auto& cid = mStoredCidQueue.front();
-        mStoredCids.erase(cid);
-        mStoredCidQueue.pop();
-    }
-
-    if (mStoredCidQueue.empty())
-    {
-        Q_ASSERT(mStoredCids.empty());
-        qWarning() << "Stored cid set should have been empty:" << mStoredCids.size();
-        mStoredCids.clear();
-    }
 }
 
 int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex)
@@ -193,10 +161,7 @@ void PostFeedModel::clear()
     mIndexCursorMap.clear();
     mIndexRawFeedMap.clear();
     mGapIdIndexMap.clear();
-    mStoredCids.clear();
-    mStoredCidQueue = {};
-    mRawThread = nullptr;
-    mEndOfFeed = false;
+    clearFeed();
     endRemoveRows();
     qDebug() << "All posts removed";
 }
@@ -224,7 +189,7 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     if (!page->mCursorNextPage.isEmpty())
         mIndexCursorMap[mFeed.size() - 1] = page->mCursorNextPage;
     else
-        mEndOfFeed = true;
+        setEndOfFeed(true);
 
     mIndexRawFeedMap[mFeed.size() - 1] = std::move(page->mRawFeed);
     endInsertRows();
@@ -271,7 +236,7 @@ void PostFeedModel::removeTailPosts(int size)
             ++it;
     }
 
-    mEndOfFeed = false;
+    setEndOfFeed(false);
     endRemoveRows();
 
     qDebug() << "Removed tail rows, new size:" << mFeed.size();
@@ -323,17 +288,15 @@ void PostFeedModel::removePosts(int startIndex, int size)
 {
     Q_ASSERT(startIndex >=0 && startIndex + size <= mFeed.size());
 
-    // We leave the cid's in the chronological queues. They don't do
-    // harm. At cleanup, the non-stored cid's will be removed from the queue.
     for (int i = startIndex; i < startIndex + size; ++i)
-        mStoredCids.erase(mFeed[i].getCid());
+        removeStoredCid(mFeed[i].getCid());
 
     mFeed.erase(mFeed.begin() + startIndex, mFeed.begin() + startIndex + size);
 }
 
 QString PostFeedModel::getLastCursor() const
 {
-    if (mEndOfFeed || mIndexCursorMap.empty())
+    if (isEndOfFeed() || mIndexCursorMap.empty())
         return {};
 
     return mIndexCursorMap.rbegin()->second;
@@ -362,136 +325,6 @@ const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
     return gap;
 }
 
-void PostFeedModel::setPostThread(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread)
-{
-    if (!mFeed.empty())
-        clear();
-
-    auto page = createPage(std::move(thread));
-
-    if (page->mFeed.empty())
-    {
-        qWarning() << "Page has no posts";
-        return;
-    }
-
-    const size_t newRowCount = page->mFeed.size();
-
-    beginInsertRows({}, 0, newRowCount - 1);
-    insertPage(mFeed.end(), *page, newRowCount);
-    mRawThread = std::move(page->mRawThread);
-    // TODO: end of feed?
-    endInsertRows();
-
-    qDebug() << "New feed size:" << mFeed.size();
-}
-
-int PostFeedModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mFeed.size();
-}
-
-QVariant PostFeedModel::data(const QModelIndex& index, int role) const
-{
-    if (index.row() < 0 || index.row() >= mFeed.size())
-        return {};
-
-    const auto& post = mFeed[index.row()];
-
-    switch (Role(role))
-    {
-    case Role::Author:
-        return QVariant::fromValue(post.getAuthor());
-    case Role::PostText:
-        return post.getText();
-    case Role::PostIndexedSecondsAgo:
-    {
-        const auto duration = QDateTime::currentDateTime() - post.getIndexedAt();
-        return qint64(duration / 1000ms);
-    }
-    case Role::PostImages:
-    {
-        QList<ImageView> images;
-        for (const auto& img : post.getImages())
-            images.push_back(*img);
-
-        return QVariant::fromValue(images);
-    }
-    case Role::PostExternal:
-    {
-        auto external = post.getExternalView();
-        return external ? QVariant::fromValue(*external) : QVariant();
-    }
-    case Role::PostRepostedByName:
-    {
-        const auto& repostedBy = post.getRepostedBy();
-        return repostedBy ? repostedBy->getName() : QVariant();
-    }
-    case Role::PostRecord:
-    {
-        auto record = post.getRecordView();
-        return record ? QVariant::fromValue(*record) : QVariant();
-    }
-    case Role::PostRecordWithMedia:
-    {
-        auto record = post.getRecordWithMediaView();
-        return record ? QVariant::fromValue(*record) : QVariant();
-    }
-    case Role::PostType:
-        return post.getPostType();
-    case Role::PostGapId:
-        return post.getGapId();
-    case Role::PostIsReply:
-        return post.isReply();
-    case Role::PostParentInThread:
-        return post.isParentInThread();
-    case Role::PostReplyToAuthor:
-    {
-        const auto& author = post.getReplyToAuthor();
-        return author ? QVariant::fromValue(*author) : QVariant();
-    }
-    case Role::PostReplyCount:
-        return post.getReplyCount();
-    case Role::PostRepostCount:
-        return post.getRepostCount();
-    case Role::PostLikeCount:
-        return post.getLikeCount();
-    case Role::EndOfFeed:
-        return post.isEndOfFeed();
-    default:
-        qDebug() << "Uknown role requested:" << role;
-        break;
-    }
-
-    return {};
-}
-
-QHash<int, QByteArray> PostFeedModel::roleNames() const
-{
-    static const QHash<int, QByteArray> roles{
-        { int(Role::Author), "author" },
-        { int(Role::PostText), "postText" },
-        { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },
-        { int(Role::PostRepostedByName), "postRepostedByName" },
-        { int(Role::PostImages), "postImages" },
-        { int(Role::PostExternal), "postExternal" },
-        { int(Role::PostRecord), "postRecord" },
-        { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
-        { int(Role::PostType), "postType" },
-        { int(Role::PostGapId), "postGapId" },
-        { int(Role::PostIsReply), "postIsReply" },
-        { int(Role::PostParentInThread), "postParentInThread" },
-        { int(Role::PostReplyToAuthor), "postReplyToAuthor" },
-        { int(Role::PostReplyCount), "postReplyCount" },
-        { int(Role::PostRepostCount), "postRepostCount" },
-        { int(Role::PostLikeCount), "postLikeCount" },
-        { int(Role::EndOfFeed), "endOfFeed" }
-    };
-
-    return roles;
-}
-
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 {
     mFeed.push_back(post);
@@ -502,15 +335,6 @@ void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 
     if (isParent)
         mParentIndexMap[cid] = mFeed.size() - 1;
-}
-
-void PostFeedModel::Page::prependPost(const Post& post)
-{
-    mFeed.push_front(post);
-    const auto& cid = post.getCid();
-
-    if (!cid.isEmpty())
-        mAddedCids.insert(post.getCid());
 }
 
 bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef)
@@ -651,61 +475,6 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     }
 
     qDebug() << "Author profile cache size:" << sAuthorCache.size();
-    return page;
-}
-
-void PostFeedModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply)
-{
-    switch (reply.mType)
-    {
-    case ATProto::AppBskyFeed::ThreadElementType::THREAD_VIEW_POST:
-    {
-        const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(reply.mPost));
-        addPost(Post(post->mPost.get(), -1));
-
-        if (!post->mReplies.empty())
-            addReplyThread(*post->mReplies[0]);
-
-        break;
-    }
-    default:
-        // TODO: notFound, blocked
-        break;
-    }
-
-}
-
-PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread)
-{
-    auto page = std::make_unique<Page>();
-    page->mRawThread = std::move(thread);
-
-    // TODO: set post type
-    Post post(page->mRawThread->mPost.get(), -1);
-    page->addPost(post);
-
-    auto parent = page->mRawThread->mParent.get();
-    while (parent)
-    {
-        switch (parent->mType)
-        {
-        case ATProto::AppBskyFeed::ThreadElementType::THREAD_VIEW_POST:
-        {
-            const auto& post = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(parent->mPost);
-            page->prependPost(Post(post->mPost.get(), -1));
-            break;
-        }
-        default:
-            // TODO: notFound, blocked
-            break;
-        }
-    }
-
-    for (const auto& reply : page->mRawThread->mReplies)
-    {
-        page->addReplyThread(*reply);
-    }
-
     return page;
 }
 

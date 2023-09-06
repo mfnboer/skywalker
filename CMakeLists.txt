@@ -42,6 +42,11 @@ qt_add_qml_module(appskywalker
         enums.h
         svg_outline.h
         svg_image.h
+        svg_filled.h
+        abstract_post_feed_model.h
+        abstract_post_feed_model.cpp
+        post_thread_model.h
+        post_thread_model.cpp
     QML_FILES
         Avatar.qml
         ImagePreview1.qml
@@ -58,10 +63,9 @@ qt_add_qml_module(appskywalker
         FullImageView.qml
         SvgImage.qml
         StatIcon.qml
+        QML_FILES StatusPopup.qml
     RESOURCES
         qtquickcontrols2.conf
-        QML_FILES StatusPopup.qml
-        SOURCES svg_filled.h
 )
 
 if (ANDROID)
