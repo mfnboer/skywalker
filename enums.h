@@ -19,7 +19,14 @@ public:
         POST_STANDALONE = 0,
         POST_ROOT,
         POST_REPLY,
-        POST_LAST_REPLY
+        POST_LAST_REPLY,
+        POST_THREAD_ENTRY,
+        POST_THREAD_TOP,
+        POST_THREAD_PARENT,
+        POST_THREAD_FIRST_CHILD,
+        POST_THREAD_CHILD,
+        POST_THREAD_GRANT_CHILD,
+        POST_THREAD_LEAF
     };
     Q_ENUM(PostType)
 

@@ -20,6 +20,7 @@ public:
 
     enum class Role {
         Author = Qt::UserRole + 1,
+        PostUri,
         PostText,
         PostIndexedSecondsAgo,
         PostRepostedByName,

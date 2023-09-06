@@ -13,25 +13,25 @@ public:
 
     explicit PostThreadModel(QObject* parent = nullptr);
 
-    void setPostThread(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread);
+    void setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
 
 private:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
         std::deque<Post> mFeed;
-        ATProto::AppBskyFeed::ThreadViewPost::Ptr mRawThread;
+        ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
 
-        void addPost(const Post& post);
-        void prependPost(const Post& post);
-        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply);
+        void addPost(const Post& post, QEnums::PostType postType);
+        void prependPost(const Post& post, QEnums::PostType postType);
+        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply, QEnums::PostType postType);
     };
 
     void clear();
-    Page::Ptr createPage(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread);
+    Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
-    ATProto::AppBskyFeed::ThreadViewPost::Ptr mRawThread;
+    ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
 };
 
 }

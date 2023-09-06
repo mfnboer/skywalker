@@ -61,6 +61,7 @@ ApplicationWindow {
             loginDialog.show()
         }
         onStatusMessage: (msg, level) => statusPopup.show(msg, level)
+        onPostThreadOk: (modelId) => viewPostThread(modelId)
 
         function start() {
             skywalker.getTimeline(50)
@@ -78,9 +79,16 @@ ApplicationWindow {
         onTriggered: skywalker.getTimelinePrepend(2)
     }
 
+    function viewPostThread(modelId) {
+        let component = Qt.createComponent("PostThreadView.qml")
+        let view = component.createObject(root, { modelId: modelId })
+        //view.onClosed.connect(() => { popStack() })
+        stack.push(view)
+    }
+
     function viewFullImage(imageList, currentIndex) {
         let component = Qt.createComponent("FullImageView.qml")
-        let view = component.createObject(root, {images: imageList, imageIndex: currentIndex})
+        let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() })
         stack.push(view)
     }

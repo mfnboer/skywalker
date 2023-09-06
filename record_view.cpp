@@ -34,6 +34,11 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
     }
 }
 
+QString RecordView::getUri() const
+{
+    return mRecord ? mRecord->mUri : QString();
+}
+
 QString RecordView::getText() const
 {
     if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)

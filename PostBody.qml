@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    required property string postUri
     required property string postText
     required property list<imageview> postImages
     property var postExternal // externalview (var allows NULL)
@@ -35,7 +36,12 @@ Column {
         MouseArea {
             anchors.fill: parent
             cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-            acceptedButtons: Qt.NoButton
+            acceptedButtons: parent.hoveredLink ? Qt.NoButton : Qt.LeftButton
+            onClicked: {
+                console.debug("POST CLICKED:", postUri)
+                if (postUri)
+                    skywalker.getPostThread(postUri)
+            }
         }
     }
 

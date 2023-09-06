@@ -75,6 +75,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(post.getAuthor());
     case Role::PostText:
         return post.getText();
+    case Role::PostUri:
+        return post.getUri();
     case Role::PostIndexedSecondsAgo:
     {
         const auto duration = QDateTime::currentDateTime() - post.getIndexedAt();
@@ -141,6 +143,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::Author), "author" },
+        { int(Role::PostUri), "postUri" },
         { int(Role::PostText), "postText" },
         { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },
         { int(Role::PostRepostedByName), "postRepostedByName" },

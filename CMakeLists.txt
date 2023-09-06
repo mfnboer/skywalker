@@ -68,6 +68,8 @@ qt_add_qml_module(appskywalker
         qtquickcontrols2.conf
         QML_FILES TimelineView.qml
         QML_FILES SvgButton.qml
+        QML_FILES PostFeedViewDelegate.qml
+        QML_FILES PostThreadView.qml
 )
 
 if (ANDROID)

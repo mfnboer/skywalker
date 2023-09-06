@@ -12,6 +12,7 @@ namespace Skywalker
 class RecordView
 {
     Q_GADGET
+    Q_PROPERTY(QString postUri READ getUri FINAL)
     Q_PROPERTY(QString postText READ getText FINAL)
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(qint64 createdSecondsAgo READ getCreatedSecondsAgo FINAL)
@@ -29,6 +30,7 @@ public:
     RecordView() = default;
     explicit RecordView(const ATProto::AppBskyEmbed::RecordView& view);
 
+    QString getUri() const;
     QString getText() const;
     BasicProfile getAuthor() const;
     QDateTime getCreatedAt() const;
