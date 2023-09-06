@@ -3,14 +3,16 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+Page {
     required property list<imageview> images
     required property int imageIndex
+    signal closed
 
+    id: page
     width: parent.width
     height: parent.height
+    padding: 10
     background: Rectangle { color: "black" }
-    onClosed: destroy()
 
     SwipeView {
         id: view
@@ -24,6 +26,7 @@ Dialog {
                 required property int index
                 property bool isCurrentItem: SwipeView.isCurrentItem
 
+                id: imgRect
                 color: "black"
 
                 Image {
@@ -47,20 +50,9 @@ Dialog {
         }
     }
 
-    RoundButton {
-        id: backButton
-        anchors.top: view.top
-        anchors.left: view.left
+    SvgButton {
+        iconColor: "white"
         Material.background: "black"
-        opacity: 0.7
-        onClicked: close()
-
-        SvgImage {
-            width: 30
-            height: 30
-            x: parent.x
-            svg: svgOutline.arrowBack
-            color: "white"
-        }
+        svg: svgOutline.arrowBack
     }
 }

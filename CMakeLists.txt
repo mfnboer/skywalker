@@ -66,6 +66,8 @@ qt_add_qml_module(appskywalker
         QML_FILES StatusPopup.qml
     RESOURCES
         qtquickcontrols2.conf
+        QML_FILES TimelineView.qml
+        QML_FILES SvgButton.qml
 )
 
 if (ANDROID)
