@@ -19,6 +19,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
 
 void AbstractPostFeedModel::clearFeed()
 {
+    mFeed.clear();
     mStoredCids.clear();
     mStoredCidQueue = {};
     mEndOfFeed = false;
@@ -112,6 +113,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostType:
         return post.getPostType();
+    case Role::PostThreadType:
+        return post.getThreadType();
     case Role::PostGapId:
         return post.getGapId();
     case Role::PostIsReply:
@@ -152,6 +155,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostRecord), "postRecord" },
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
         { int(Role::PostType), "postType" },
+        { int(Role::PostThreadType), "postThreadType" },
         { int(Role::PostGapId), "postGapId" },
         { int(Role::PostIsReply), "postIsReply" },
         { int(Role::PostParentInThread), "postParentInThread" },

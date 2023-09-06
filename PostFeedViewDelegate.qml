@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-
 GridLayout {
     property int margin: 8
     property int viewWidth
@@ -19,6 +18,7 @@ GridLayout {
     required property var postRecord // recordview
     required property var postRecordWithMedia // record_with_media_view
     required property int postType // QEnums::PostType
+    required property int postThreadType // QEnums::ThreadPostType flags
     required property int postGapId;
     required property bool postIsReply
     required property bool postParentInThread
@@ -54,14 +54,20 @@ GridLayout {
                     case QEnums.POST_REPLY:
                     case QEnums.POST_LAST_REPLY:
                         return !postParentInThread && index % 2 === 0 ? "transparent" : "lightcyan"
-                    case QEnums.POST_THREAD_ENTRY:
-                    case QEnums.POST_THREAD_PARENT:
-                    case QEnums.POST_THREAD_FIRST_CHILD:
-                    case QEnums.POST_THREAD_CHILD:
-                        return "cyan"
-                    case QEnums.POST_THREAD_GRANT_CHILD:
-                    case QEnums.POST_THREAD_LEAF:
+                    case QEnums.POST_THREAD: {
+                        if (postThreadType & QEnums.THREAD_TOP) {
+                            return "transparent"
+                        } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) &&
+                                   !(postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD)) {
+                            return "transparent"
+                        } else if ((postThreadType & QEnums.THREAD_PARENT) ||
+                                   (postThreadType & QEnums.THREAD_ENTRY) ||
+                                   (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD)) {
+                            return "cyan"
+                        }
+
                         return "lightcyan"
+                    }
                     default:
                         return "transparent"
                     }
@@ -122,15 +128,16 @@ GridLayout {
                     case QEnums.POST_REPLY:
                     case QEnums.POST_LAST_REPLY:
                         return "lightcyan"
-                    case QEnums.POST_THREAD_ENTRY:
-                    case QEnums.POST_THREAD_TOP:
-                    case QEnums.POST_THREAD_PARENT:
-                    case QEnums.POST_THREAD_FIRST_CHILD:
-                    case QEnums.POST_THREAD_CHILD:
-                        return "cyan"
-                    case QEnums.POST_THREAD_GRANT_CHILD:
-                    case QEnums.POST_THREAD_LEAF:
+                    case QEnums.POST_THREAD: {
+                        if (postThreadType & QEnums.THREAD_ENTRY) {
+                            return "darkcyan"
+                        } else if ((postThreadType & QEnums.THREAD_PARENT) ||
+                                (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
+                            return "cyan"
+                        }
+
                         return "lightcyan"
+                    }
                     default:
                         return "transparent"
                     }
@@ -142,10 +149,15 @@ GridLayout {
                     switch (postType) {
                     case QEnums.POST_STANDALONE:
                         return "transparent"
-                    case QEnums.POST_THREAD_TOP:
-                    case QEnums.POST_THREAD_PARENT:
-                    case QEnums.POST_THREAD_ENTRY:
-                        return "cyan"
+                    case QEnums.POST_THREAD: {
+                        if (postThreadType & QEnums.THREAD_ENTRY) {
+                            return "darkcyan"
+                        } else if (postThreadType & QEnums.THREAD_PARENT) {
+                            return "cyan"
+                        }
+
+                        return "lightcyan"
+                    }
                     default:
                         return "lightcyan"
                     }
@@ -209,6 +221,7 @@ GridLayout {
                 font.pointSize: `${(Application.font.pointSize * 7/8)}`
                 text: qsTr(`Reply to ${postReplyToAuthor.name}`)
             }
+
             visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT)
         }
 
@@ -287,14 +300,16 @@ GridLayout {
             case QEnums.POST_ROOT:
             case QEnums.POST_REPLY:
                 return "lightcyan"
-            case QEnums.POST_THREAD_TOP:
-            case QEnums.POST_THREAD_PARENT:
-            case QEnums.POST_THREAD_ENTRY:
-                return "cyan"
-            case QEnums.POST_THREAD_FIRST_CHILD:
-            case QEnums.POST_THREAD_CHILD:
-            case QEnums.POST_THREAD_GRANT_CHILD:
+            case QEnums.POST_THREAD: {
+                if (postThreadType & QEnums.THREAD_LEAF) {
+                    return "transparent"
+                } else if ((postThreadType & QEnums.THREAD_PARENT) ||
+                           (postThreadType & QEnums.THREAD_ENTRY)) {
+                    return "cyan"
+                }
+
                 return "lightcyan"
+            }
             default:
                 return "transparent"
             }
@@ -315,7 +330,8 @@ GridLayout {
         Layout.preferredHeight: 1
         Layout.fillWidth: true
         color: "lightgrey"
-        visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY, QEnums.POST_THREAD_LEAF].includes(postType)
+        visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType) ||
+        (postThreadType & QEnums.THREAD_LEAF)
     }
 
     // End of feed indication

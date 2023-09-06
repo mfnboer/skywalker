@@ -61,7 +61,7 @@ ApplicationWindow {
             loginDialog.show()
         }
         onStatusMessage: (msg, level) => statusPopup.show(msg, level)
-        onPostThreadOk: (modelId) => viewPostThread(modelId)
+        onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
 
         function start() {
             skywalker.getTimeline(50)
@@ -79,9 +79,9 @@ ApplicationWindow {
         onTriggered: skywalker.getTimelinePrepend(2)
     }
 
-    function viewPostThread(modelId) {
+    function viewPostThread(modelId, postEntryIndex) {
         let component = Qt.createComponent("PostThreadView.qml")
-        let view = component.createObject(root, { modelId: modelId })
+        let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
         //view.onClosed.connect(() => { popStack() })
         stack.push(view)
     }

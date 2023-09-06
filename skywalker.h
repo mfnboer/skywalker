@@ -18,6 +18,7 @@ class Skywalker : public QObject
     QML_ELEMENT
 public:
     explicit Skywalker(QObject* parent = nullptr);
+    ~Skywalker();
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
     Q_INVOKABLE void resumeSession();
@@ -42,7 +43,7 @@ signals:
     void getTimeLineInProgressChanged();
     void sessionExpired(QString error);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
-    void postThreadOk(int id);
+    void postThreadOk(int id, int postEntryIndex);
 
 private:
     void startRefreshTimer();

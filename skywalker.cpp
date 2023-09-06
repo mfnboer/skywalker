@@ -17,6 +17,11 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
 }
 
+Skywalker::~Skywalker()
+{
+    Q_ASSERT(mPostThreadModels.empty());
+}
+
 void Skywalker::login(const QString user, QString password, const QString host)
 {
     qDebug() << "Login:" << user << "host:" << host;
@@ -261,10 +266,18 @@ void Skywalker::getPostThread(const QString& uri)
 
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
-            auto model = std::make_unique<PostThreadModel>();
-            model->setPostThread(std::move(thread));
+            auto model = std::make_unique<PostThreadModel>(this);
+            int postEntryIndex = model->setPostThread(std::move(thread));
+
+            if (postEntryIndex < 0)
+            {
+                qDebug() << "No thread posts";
+                emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
+                return;
+            }
+
             mPostThreadModels[mNextPostThreadModelId++] = std::move(model);
-            emit postThreadOk(mNextPostThreadModelId - 1);
+            emit postThreadOk(mNextPostThreadModelId - 1, postEntryIndex);
         },
         [this](const QString& error){
             qDebug() << "getPostThread FAILED:" << error;
@@ -274,12 +287,14 @@ void Skywalker::getPostThread(const QString& uri)
 
 const PostThreadModel* Skywalker::getPostThreadModel(int id) const
 {
+    qDebug() << "Get model:" << id;
     auto it = mPostThreadModels.find(id);
     return it != mPostThreadModels.end() ? it->second.get() : nullptr;
 }
 
 void Skywalker::removePostThreadModel(int id)
 {
+    qDebug() << "Remove model:" << id;
     mPostThreadModels.erase(id);
 }
 

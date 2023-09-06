@@ -12,6 +12,9 @@ qt_standard_project_setup()
 
 add_subdirectory(atproto/lib)
 
+#add_compile_options(-fsanitize=address)
+#add_link_options(-fsanitize=address)
+
 qt_add_executable(appskywalker
     main.cpp
 )

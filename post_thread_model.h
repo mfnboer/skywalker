@@ -13,7 +13,8 @@ public:
 
     explicit PostThreadModel(QObject* parent = nullptr);
 
-    void setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
+    // Returns index of the entry post
+    int setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
 
 private:
     struct Page
@@ -21,10 +22,11 @@ private:
         using Ptr = std::unique_ptr<Page>;
         std::deque<Post> mFeed;
         ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
+        int mEntryPostIndex = 0;
 
-        void addPost(const Post& post, QEnums::PostType postType);
-        void prependPost(const Post& post, QEnums::PostType postType);
-        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply, QEnums::PostType postType);
+        Post& addPost(const Post& post);
+        Post& prependPost(const Post& post);
+        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply, bool directReply, bool firstDirectReply);
     };
 
     void clear();

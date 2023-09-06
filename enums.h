@@ -20,15 +20,22 @@ public:
         POST_ROOT,
         POST_REPLY,
         POST_LAST_REPLY,
-        POST_THREAD_ENTRY,
-        POST_THREAD_TOP,
-        POST_THREAD_PARENT,
-        POST_THREAD_FIRST_CHILD,
-        POST_THREAD_CHILD,
-        POST_THREAD_GRANT_CHILD,
-        POST_THREAD_LEAF
+        POST_THREAD
     };
     Q_ENUM(PostType)
+
+    enum ThreadPostType
+    {
+        THREAD_NONE = 0,
+        THREAD_TOP = 1,
+        THREAD_PARENT = 2,
+        THREAD_ENTRY = 4, // Post that was selected to retrieve the thread
+        THREAD_FIRST_DIRECT_CHILD = 8,
+        THREAD_DIRECT_CHILD = 16,
+        THREAD_CHILD = 32,
+        THREAD_LEAF = 64
+    };
+    Q_ENUM(ThreadPostType);
 
     enum StatusLevel
     {

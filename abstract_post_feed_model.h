@@ -29,6 +29,7 @@ public:
         PostRecord,
         PostRecordWithMedia,
         PostType,
+        PostThreadType,
         PostGapId,
         PostIsReply,
         PostParentInThread,

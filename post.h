@@ -25,6 +25,7 @@ public:
     explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr, int rawIndex = -1);
     Post(const ATProto::AppBskyFeed::PostView* postView, int rawIndex);
 
+    const ATProto::AppBskyFeed::PostView* getPostView() const { return mPost; }
     bool isPlaceHolder() const { return !mPost; }
     int getRawIndex() const { return mRawIndex; }
     bool isEndOfFeed() const { return mEndOfFeed; }
@@ -66,6 +67,9 @@ public:
     void setParentInThread(bool parentInThread) { mParentInThread = parentInThread; }
     void setReplyToAuthor(const BasicProfile& profile) { mReplyToAuthor = profile; }
 
+    int getThreadType() const { return mThreadType; }
+    void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
+
 private:
     struct HyperLink
     {
@@ -90,6 +94,7 @@ private:
 
     bool mEndOfFeed = false;
     QEnums::PostType mPostType = QEnums::POST_STANDALONE;
+    int mThreadType = QEnums::THREAD_NONE;
 
     // Timestamp to keep reply referenes in time sequence for the timeline
     QDateTime mReplyRefTimestamp;
