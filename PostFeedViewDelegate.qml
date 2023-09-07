@@ -360,4 +360,15 @@ Rectangle {
             visible: endOfFeed
         }
     }
+
+    MouseArea {
+        z: -1 // Let other mouse areas, e.g. links and images, get on top
+        anchors.fill: parent
+        enabled: !((postThreadType & QEnums.THREAD_ENTRY))
+        onClicked: {
+            console.debug("POST CLICKED:", postUri)
+            if (postUri)
+                skywalker.getPostThread(postUri)
+        }
+    }
 }

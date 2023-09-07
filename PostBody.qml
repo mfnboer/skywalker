@@ -32,17 +32,6 @@ Column {
             else
                 Qt.openUrlExternally(link)
         }
-
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-            acceptedButtons: parent.hoveredLink ? Qt.NoButton : Qt.LeftButton
-            onClicked: {
-                console.debug("POST CLICKED:", postUri)
-                if (postUri)
-                    skywalker.getPostThread(postUri)
-            }
-        }
     }
 
     Component.onCompleted: {
