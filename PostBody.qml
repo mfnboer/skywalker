@@ -45,7 +45,7 @@ Column {
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
             text: postDateTime.toLocaleString(Qt.locale(), Locale.LongFormat)
-            font.pointSize: `${(Application.font.pointSize * 7/8)}`
+            font.pointSize: root.scaledFont(7/8)
         }
     }
 

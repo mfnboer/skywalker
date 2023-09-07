@@ -28,7 +28,7 @@ Item {
             PostHeader {
                 Layout.fillWidth: true
                 authorName: record.author.name
-                postIndexedSecondsAgo: record.createdSecondsAgo
+                postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
             }
         }
 
@@ -38,6 +38,7 @@ Item {
             postText: record.postText
             postImages: record.images
             postExternal: record.external
+            postDateTime: record.postDateTime
             maxTextLines: 6
             visible: record.available
         }

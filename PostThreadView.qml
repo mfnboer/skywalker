@@ -15,24 +15,29 @@ ListView {
 
     header: Rectangle {
         width: parent.width
-        height: backButton.height
+        height: 44
         z: 10
-        color: "white"
-        border.width: 1
+        color: "black"
 
-        SvgButton {
-            id: backButton
-            iconColor: Material.foreground
-            Material.background: "transparent"
-            svg: svgOutline.arrowBack
-            onClicked: view.closed()
-        }
-        Text {
-            id: headerText
-            height: backButton.height
-            anchors.left: backButton.right
-            font.bold: true
-            text: qsTr("Post thread")
+        RowLayout
+        {
+            id: headerRow
+
+            SvgButton {
+                id: backButton
+                iconColor: "white"
+                Material.background: "transparent"
+                svg: svgOutline.arrowBack
+                onClicked: view.closed()
+            }
+            Text {
+                id: headerTexts
+                Layout.alignment: Qt.AlignVCenter
+                font.bold: true
+                font.pointSize: root.scaledFont(10/8)
+                color: "white"
+                text: qsTr("Post thread")
+            }
         }
     }
     headerPositioning: ListView.OverlayHeader
@@ -43,7 +48,7 @@ ListView {
 
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
-        positionViewAtIndex(postEntryIndex, ListView.Beginning)
+        positionViewAtIndex(postEntryIndex, ListView.Center)
     }
     Component.onDestruction: skywalker.removePostThreadModel(modelId)
 }

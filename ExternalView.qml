@@ -36,7 +36,7 @@ Item {
                 rightPadding: 5
                 text: new URL(postExternal.uri).hostname
                 elide: Text.ElideRight
-                font.pointSize: `${(Application.font.pointSize * 7/8)}`
+                font.pointSize: root.scaledFont(7/8)
                 color: Material.color(Material.Grey)
             }
             Text {

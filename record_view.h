@@ -15,7 +15,7 @@ class RecordView
     Q_PROPERTY(QString postUri READ getUri FINAL)
     Q_PROPERTY(QString postText READ getText FINAL)
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
-    Q_PROPERTY(qint64 createdSecondsAgo READ getCreatedSecondsAgo FINAL)
+    Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
@@ -33,8 +33,7 @@ public:
     QString getUri() const;
     QString getText() const;
     BasicProfile getAuthor() const;
-    QDateTime getCreatedAt() const;
-    qint64 getCreatedSecondsAgo() const;
+    QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
 

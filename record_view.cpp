@@ -52,18 +52,11 @@ BasicProfile RecordView::getAuthor() const
     return mRecord ? BasicProfile(mRecord->mAuthor.get()) : BasicProfile();
 }
 
-QDateTime RecordView::getCreatedAt() const
+QDateTime RecordView::getIndexedAt() const
 {
-    if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
-        return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue)->mCreatedAt;
+    return mRecord ? mRecord->mIndexedAt : QDateTime();
 
     return {};
-}
-
-qint64 RecordView::getCreatedSecondsAgo() const
-{
-    const auto duration = QDateTime::currentDateTime() - getCreatedAt();
-    return qint64(duration / 1000ms);
 }
 
 QList<ImageView> RecordView::getImages() const

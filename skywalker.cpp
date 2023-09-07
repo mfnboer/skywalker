@@ -7,7 +7,7 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-static constexpr auto SESSION_REFRESH_INTERVAL = 901s;
+static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 

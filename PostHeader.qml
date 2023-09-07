@@ -15,7 +15,7 @@ RowLayout {
     }
     Text {
         text: durationToString(postIndexedSecondsAgo)
-        font.pointSize: `${(Application.font.pointSize * 7/8)}`
+        font.pointSize: root.scaledFont(7/8)
         color: Material.color(Material.Grey)
     }
 

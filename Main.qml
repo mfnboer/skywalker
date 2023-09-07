@@ -98,6 +98,10 @@ ApplicationWindow {
         item.destroy()
     }
 
+    function scaledFont(scaleFactor) {
+        return Application.font.pointSize * scaleFactor;
+    }
+
     Component.onCompleted: {
         // Try to resume the previous session. If that fails, then ask the user to login.
         skywalker.resumeSession()

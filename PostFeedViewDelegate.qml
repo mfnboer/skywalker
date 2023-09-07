@@ -119,7 +119,7 @@ Rectangle {
             text: qsTr(`Reposted by ${postRepostedByName}`)
             color: Material.color(Material.Grey)
             font.bold: true
-            font.pointSize: `${(Application.font.pointSize * 7/8)}`
+            font.pointSize: root.scaledFont(7/8)
             visible: postRepostedByName && !postGapId
         }
 
@@ -184,23 +184,7 @@ Rectangle {
                 y: postHeader.y + 5 // For some reaon "avatar.y + 5" does not work when it is a repost
                 width: parent.width - 13
                 avatarUrl: author.avatarUrl
-                visible: !postGapId && author.avatarUrl && status === Image.Ready
-            }
-            Rectangle {
-                x: avatarImg.x
-                y: avatarImg.y
-                width: parent.width - 13
-                height: width
-                radius: width / 2
-                color: Material.color(Material.Blue)
-                visible: !avatarImg.visible
-
-                SvgImage {
-                    width: parent.width
-                    height: parent.height
-                    color: "white"
-                    svg: svgFilled.unknownAvatar
-                }
+                visible: !postGapId
             }
         }
         Column {
@@ -231,7 +215,7 @@ Rectangle {
                     width: parent.width
                     elide: Text.ElideRight
                     color: Material.color(Material.Grey)
-                    font.pointSize: `${(Application.font.pointSize * 7/8)}`
+                    font.pointSize: root.scaledFont(7/8)
                     text: qsTr(`Reply to ${postReplyToAuthor.name}`)
                 }
 
@@ -250,6 +234,7 @@ Rectangle {
                 detailedView: postThreadType & QEnums.THREAD_ENTRY
             }
 
+            // Reposts and likes in detailed view of post entry in thread view
             Row {
                width: parent.width
                topPadding: 10
@@ -258,12 +243,10 @@ Rectangle {
 
                Text {
                    rightPadding: 30
-                   font.pointSize: `${(Application.font.pointSize * 7/8)}`
                    text: postRepostCount > 1 ? qsTr(`${postRepostCount} reposts`) : qsTr(`${postRepostCount} repost`)
                    visible: postRepostCount
                }
                Text {
-                   font.pointSize: `${(Application.font.pointSize * 7/8)}`
                    text: postLikeCount > 1 ? qsTr(`${postLikeCount} likes`) : qsTr(`${postLikeCount} like`)
                    visible: postLikeCount
                }
