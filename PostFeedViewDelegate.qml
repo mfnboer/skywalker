@@ -57,12 +57,10 @@ GridLayout {
                     case QEnums.POST_THREAD: {
                         if (postThreadType & QEnums.THREAD_TOP) {
                             return "transparent"
-                        } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) &&
-                                   !(postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD)) {
-                            return "transparent"
+                        } else if (postThreadType & QEnums.THREAD_DIRECT_CHILD) {
+                            return "darkcyan"
                         } else if ((postThreadType & QEnums.THREAD_PARENT) ||
-                                   (postThreadType & QEnums.THREAD_ENTRY) ||
-                                   (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD)) {
+                                   (postThreadType & QEnums.THREAD_ENTRY)) {
                             return "cyan"
                         }
 
@@ -303,8 +301,9 @@ GridLayout {
             case QEnums.POST_THREAD: {
                 if (postThreadType & QEnums.THREAD_LEAF) {
                     return "transparent"
-                } else if ((postThreadType & QEnums.THREAD_PARENT) ||
-                           (postThreadType & QEnums.THREAD_ENTRY)) {
+                } else if (postThreadType & QEnums.THREAD_ENTRY) {
+                    return "darkcyan"
+                } else if (postThreadType & QEnums.THREAD_PARENT) {
                     return "cyan"
                 }
 
