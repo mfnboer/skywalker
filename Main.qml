@@ -82,7 +82,7 @@ ApplicationWindow {
     function viewPostThread(modelId, postEntryIndex) {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
-        //view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() })
         stack.push(view)
     }
 

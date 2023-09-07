@@ -9,7 +9,6 @@ RoundButton {
 
     Material.background: "black"
     opacity: 0.7
-    onClicked: page.closed()
 
     SvgImage {
         width: parent.width - 20

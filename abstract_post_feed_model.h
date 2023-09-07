@@ -22,7 +22,7 @@ public:
         Author = Qt::UserRole + 1,
         PostUri,
         PostText,
-        PostIndexedSecondsAgo,
+        PostIndexedDateTime,
         PostRepostedByName,
         PostImages,
         PostExternal,

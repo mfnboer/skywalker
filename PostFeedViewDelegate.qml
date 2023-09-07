@@ -6,12 +6,13 @@ import skywalker
 Rectangle {
     property int margin: 8
     property int viewWidth
+    property date now: new Date()
 
     required property int index
     required property basicprofile author
     required property string postUri
     required property string postText
-    required property int postIndexedSecondsAgo
+    required property date postIndexedDateTime
     required property string postRepostedByName
     required property list<imageview> postImages
     required property var postExternal // externalview (var allows NULL)
@@ -211,7 +212,7 @@ Rectangle {
                 id: postHeader
                 width: parent.width
                 authorName: author.name
-                postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                postIndexedSecondsAgo: (postEntry.now - postEntry.postIndexedDateTime) / 1000
             }
 
             // Reply to
@@ -245,6 +246,27 @@ Rectangle {
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia
+                postDateTime: postEntry.postIndexedDateTime
+                detailedView: postThreadType & QEnums.THREAD_ENTRY
+            }
+
+            Row {
+               width: parent.width
+               topPadding: 10
+               bottomPadding: 5
+               visible: postThreadType & QEnums.THREAD_ENTRY
+
+               Text {
+                   rightPadding: 30
+                   font.pointSize: `${(Application.font.pointSize * 7/8)}`
+                   text: postRepostCount > 1 ? qsTr(`${postRepostCount} reposts`) : qsTr(`${postRepostCount} repost`)
+                   visible: postRepostCount
+               }
+               Text {
+                   font.pointSize: `${(Application.font.pointSize * 7/8)}`
+                   text: postLikeCount > 1 ? qsTr(`${postLikeCount} likes`) : qsTr(`${postLikeCount} like`)
+                   visible: postLikeCount
+               }
             }
 
             // Stats
@@ -362,7 +384,7 @@ Rectangle {
     }
 
     MouseArea {
-        z: -1 // Let other mouse areas, e.g. links and images, get on top
+        z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
         enabled: !((postThreadType & QEnums.THREAD_ENTRY))
         onClicked: {

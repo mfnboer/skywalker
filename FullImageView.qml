@@ -54,5 +54,6 @@ Page {
         iconColor: "white"
         Material.background: "black"
         svg: svgOutline.arrowBack
+        onClicked: page.closed()
     }
 }

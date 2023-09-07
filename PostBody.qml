@@ -7,9 +7,11 @@ Column {
     required property string postUri
     required property string postText
     required property list<imageview> postImages
+    required property date postDateTime
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
     property var postRecordWithMedia // record_with_media_view
+    property bool detailedView: false
     property int maxTextLines: 1000
 
     id: postBody
@@ -31,6 +33,19 @@ Column {
                 console.debug("TODO MENTION", link)
             else
                 Qt.openUrlExternally(link)
+        }
+    }
+
+    Component {
+        id: dateTimeComp
+        Text {
+            width: parent.width
+            topPadding: 10
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+            color: Material.color(Material.Grey)
+            text: postDateTime.toLocaleString(Qt.locale(), Locale.LongFormat)
+            font.pointSize: `${(Application.font.pointSize * 7/8)}`
         }
     }
 
@@ -58,5 +73,8 @@ Column {
             let component = Qt.createComponent("RecordWithMediaView.qml")
             component.createObject(postBody, {record: postRecordWithMedia})
         }
+
+        if (detailedView)
+            dateTimeComp.createObject(postBody)
     }
 }
