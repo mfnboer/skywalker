@@ -55,24 +55,25 @@ ApplicationWindow {
         onLoginFailed: (error) => loginDialog.show(error)
         onResumeSessionOk: start()
         onResumeSessionFailed: loginDialog.show()
+
         onSessionExpired: (error) => {
             timelineUpdateTimer.stop()
             loginDialog.show()
         }
+
         onStatusMessage: (msg, level) => statusPopup.show(msg, level)
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
+
         onTimelineSyncOK: (index) => {
-            stack.get(0).positionViewAtIndex(index, ListView.Center)
+            if (index >= 0)
+                stack.get(0).positionViewAtIndex(index, ListView.Beginning)
+
             timelineUpdateTimer.start()
         }
         onTimelineSyncFailed: console.warn("SYNC FAILED")
 
         function start() {
-            //skywalker.getTimeline(50)
-            //timelineUpdateTimer.start()
-            let ts = new Date()
-            ts.setTime(ts.getTime() - 3600 * 1000 * 24)
-            skywalker.syncTimeline(ts)
+            skywalker.syncTimeline()
         }
     }
 

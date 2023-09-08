@@ -591,7 +591,6 @@ void PostFeedModel::addToIndices(size_t offset, size_t startAtIndex)
 
 void PostFeedModel::logIndices() const
 {
-    return;
     qDebug() << "INDEX CURSOR MAP:";
     for (const auto& [index, cursor] : mIndexCursorMap)
         qDebug() << "Index:" << index << "Cursor:" << cursor;

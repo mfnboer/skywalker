@@ -26,29 +26,29 @@ Skywalker::~Skywalker()
 
 void Skywalker::login(const QString user, QString password, const QString host)
 {
-    qDebug() << "Login:" << user << "host:" << host;
+    qInfo() << "Login:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
     mBsky->createSession(user, password,
         [this, user, host]{
-            qDebug() << "Login" << user << "succeded";
-            SaveSession(host, *mBsky->getSession());
+            qInfo() << "Login" << user << "succeeded";
+            saveSession(host, *mBsky->getSession());
             emit loginOk();
             startRefreshTimer();
         },
         [this, user](const QString& error){
-            qDebug() << "Login" << user << "failed:" << error;
+            qInfo() << "Login" << user << "failed:" << error;
             emit loginFailed(error);
         });
 }
 
 void Skywalker::resumeSession()
 {
-    qDebug() << "Resume session";
+    qInfo() << "Resume session";
     QString host;
     ATProto::ComATProtoServer::Session session;
 
-    if (!GetSession(host, session))
+    if (!getSession(host, session))
     {
         qWarning() << "No saved session";
         emit resumeSessionFailed();
@@ -60,27 +60,27 @@ void Skywalker::resumeSession()
 
     mBsky->resumeSession(session,
         [this, host] {
-            qDebug() << "Session resumed";
-            SaveSession(host, *mBsky->getSession());
+            qInfo() << "Session resumed";
+            saveSession(host, *mBsky->getSession());
             emit resumeSessionOk();
             refreshSession();
             startRefreshTimer();
         },
         [this](const QString& error){
-            qDebug() << "Session could not be resumed:" << error;
+            qInfo() << "Session could not be resumed:" << error;
             emit resumeSessionFailed();
         });
 }
 
 void Skywalker::startRefreshTimer()
 {
-    qDebug() << "Refresh timer started";
+    qInfo() << "Refresh timer started";
     mRefreshTimer.start(SESSION_REFRESH_INTERVAL);
 }
 
 void Skywalker::stopRefreshTimer()
 {
-    qDebug() << "Refresh timer stopped";
+    qInfo() << "Refresh timer stopped";
     mRefreshTimer.stop();
 }
 
@@ -100,7 +100,7 @@ void Skywalker::refreshSession()
     mBsky->refreshSession(*session,
         [this] {
             qDebug() << "Session refreshed";
-            SaveSession(mBsky->getHost(), *mBsky->getSession());
+            saveSession(mBsky->getHost(), *mBsky->getSession());
         },
         [this](const QString& error){
             qDebug() << "Session could not be refreshed:" << error;
@@ -109,15 +109,30 @@ void Skywalker::refreshSession()
         });
 }
 
+void Skywalker::syncTimeline(int maxPages)
+{
+    const auto timestamp = getSyncTimestamp();
+
+    if (!timestamp.isValid())
+    {
+        qInfo() << "No timestamp saved";
+        getTimeline(TIMELINE_ADD_PAGE_SIZE);
+        return;
+    }
+
+    syncTimeline(timestamp, maxPages);
+    emit timelineSyncOK(-1);
+}
+
 void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
     Q_ASSERT(tillTimestamp.isValid());
-    qDebug() << "Sync timeline:" << tillTimestamp << "max pages:" << maxPages;
+    qInfo() << "Sync timeline:" << tillTimestamp << "max pages:" << maxPages;
 
     if (mGetTimelineInProgress)
     {
-        qDebug() << "Get timeline still in progress";
+        qInfo() << "Get timeline still in progress";
         return;
     }
 
@@ -142,15 +157,21 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             if (lastTimestamp < tillTimestamp)
             {
                 const auto index = mTimelineModel.findTimestamp(tillTimestamp);
-                qDebug() << "Timeline synced:" << lastTimestamp << "index:" << index << "pages left:" << maxPages;
+                qInfo() << "Timeline synced, last timestamp:" << lastTimestamp << "index:"
+                        << index << ",feed size:" << mTimelineModel.rowCount()
+                        << ",pages left:" << maxPages;
+
                 Q_ASSERT(index >= 0);
+                const auto& post = mTimelineModel.getPost(index);
+                qInfo() << post.getTimelineTimestamp() << post.getText();
+
                 emit timelineSyncOK(index);
                 return;
             }
 
             if (maxPages == 1)
             {
-                qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+                qInfo() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
                 emit timelineSyncOK(mTimelineModel.rowCount() - 1);
                 return;
             }
@@ -158,7 +179,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             const QString& newCursor = mTimelineModel.getLastCursor();
             if (newCursor.isEmpty())
             {
-                qDebug() << "Last page reached, no more cursor";
+                qInfo() << "Last page reached, no more cursor";
                 emit timelineSyncOK(mTimelineModel.rowCount() - 1);
                 return;
             }
@@ -166,7 +187,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             syncTimeline(tillTimestamp, maxPages - 1, newCursor);
         },
         [this](const QString& error){
-            qDebug() << "syncTimeline FAILED:" << error;
+            qInfo() << "syncTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
             emit timelineSyncFailed();
@@ -177,11 +198,11 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 void Skywalker::getTimeline(int limit, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get timeline:" << cursor;
+    qInfo() << "Get timeline:" << cursor;
 
     if (mGetTimelineInProgress)
     {
-        qDebug() << "Get timeline still in progress";
+        qInfo() << "Get timeline still in progress";
         return;
     }
 
@@ -200,7 +221,7 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
             setGetTimelineInProgress(false);
        },
        [this](const QString& error){
-            qDebug() << "getTimeline FAILED:" << error;
+            qInfo() << "getTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         }
@@ -210,17 +231,17 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
 void Skywalker::getTimelinePrepend(int autoGapFill)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get timeline prepend";
+    qInfo() << "Get timeline prepend";
 
     if (mGetTimelineInProgress)
     {
-        qDebug() << "Get timeline still in progress";
+        qInfo() << "Get timeline still in progress";
         return;
     }
 
     if (mTimelineModel.rowCount() >= PostFeedModel::MAX_TIMELINE_SIZE)
     {
-        qDebug() << "Timeline is full:" << mTimelineModel.rowCount();
+        qInfo() << "Timeline is full:" << mTimelineModel.rowCount();
         return;
     }
 
@@ -249,11 +270,11 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
 void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get timeline for gap:" << gapId;
+    qInfo() << "Get timeline for gap:" << gapId;
 
     if (mGetTimelineInProgress)
     {
-        qDebug() << "Get timeline still in progress";
+        qInfo() << "Get timeline still in progress";
         return;
     }
 
@@ -271,7 +292,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
         return;
     }
 
-    qDebug() << "Set gap cursor:" << *cur;
+    qInfo() << "Set gap cursor:" << *cur;
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_ADD_PAGE_SIZE, cur,
@@ -284,11 +305,11 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
                 if (autoGapFill > 0)
                     getTimelineForGap(newGapId, autoGapFill - 1);
                 else
-                    qDebug() << "Gap created, no auto gap fill";
+                    qInfo() << "Gap created, no auto gap fill";
             }
         },
         [this](const QString& error){
-            qDebug() << "getTimelineForGap FAILED:" << error;
+            qInfo() << "getTimelineForGap FAILED:" << error;
             setGetTimelineInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         }
@@ -300,7 +321,7 @@ void Skywalker::getTimelineNextPage()
     const QString& cursor = mTimelineModel.getLastCursor();
     if (cursor.isEmpty())
     {
-        qDebug() << "Last page reached, no more cursor";
+        qInfo() << "Last page reached, no more cursor";
         return;
     }
 
@@ -319,6 +340,9 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
 // NOTE: indices can be -1 if the UI cannot determine the index
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
 {
+    if (lastVisibleIndex > -1)
+        saveSyncTimestamp(lastVisibleIndex);
+
     if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_DELETE_SIZE)
         mTimelineModel.removeTailPosts(TIMELINE_DELETE_SIZE);
 
@@ -329,7 +353,7 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
 void Skywalker::getPostThread(const QString& uri)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get post thread:" << uri;
+    qInfo() << "Get post thread:" << uri;
 
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
@@ -338,7 +362,7 @@ void Skywalker::getPostThread(const QString& uri)
 
             if (postEntryIndex < 0)
             {
-                qDebug() << "No thread posts";
+                qInfo() << "No thread posts";
                 emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
                 return;
             }
@@ -347,7 +371,7 @@ void Skywalker::getPostThread(const QString& uri)
             emit postThreadOk(mNextPostThreadModelId - 1, postEntryIndex);
         },
         [this](const QString& error){
-            qDebug() << "getPostThread FAILED:" << error;
+            qInfo() << "getPostThread FAILED:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -365,25 +389,40 @@ void Skywalker::removePostThreadModel(int id)
     mPostThreadModels.erase(id);
 }
 
-void Skywalker::SaveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
+void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
 {
     // TODO: secure storage
-    QSettings settings;
-    settings.setValue("host", host);
-    settings.setValue("did", session.mDid);
-    settings.setValue("access", session.mAccessJwt);
-    settings.setValue("refresh", session.mRefreshJwt);
+    mSettings.setValue("host", host);
+    mSettings.setValue("did", session.mDid);
+    mSettings.setValue("access", session.mAccessJwt);
+    mSettings.setValue("refresh", session.mRefreshJwt);
 }
 
-bool Skywalker::GetSession(QString& host, ATProto::ComATProtoServer::Session& session)
+bool Skywalker::getSession(QString& host, ATProto::ComATProtoServer::Session& session)
 {
-    QSettings settings;
-    host = settings.value("host").toString();
-    session.mDid = settings.value("did").toString();
-    session.mAccessJwt = settings.value("access").toString();
-    session.mRefreshJwt = settings.value("refresh").toString();
+    host = mSettings.value("host").toString();
+    session.mDid = mSettings.value("did").toString();
+    session.mAccessJwt = mSettings.value("access").toString();
+    session.mRefreshJwt = mSettings.value("refresh").toString();
 
     return !(host.isEmpty() || session.mDid.isEmpty() || session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty());
+}
+
+void Skywalker::saveSyncTimestamp(int postIndex)
+{
+    if (postIndex < 0 || postIndex >= mTimelineModel.rowCount())
+    {
+        qWarning() << "Invalid index:" << postIndex << "size:" << mTimelineModel.rowCount();
+        return;
+    }
+
+    const auto& post = mTimelineModel.getPost(postIndex);
+    mSettings.setValue("syncTimestamp", post.getTimelineTimestamp());
+}
+
+QDateTime Skywalker::getSyncTimestamp() const
+{
+    return mSettings.value("syncTimestamp").toDateTime();
 }
 
 }

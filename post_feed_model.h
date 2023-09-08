@@ -37,6 +37,8 @@ public:
     // Get the timestamp of the last post in the feed
     QDateTime lastTimestamp() const;
 
+    const Post& getPost(int index) const { return mFeed.at(index); }
+
     // Returns the index of the first post <= timestamp
     int findTimestamp(QDateTime timestamp) const;
 
