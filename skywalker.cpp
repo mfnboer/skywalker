@@ -10,6 +10,8 @@ using namespace std::chrono_literals;
 static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
+static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
+static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent)
@@ -105,6 +107,71 @@ void Skywalker::refreshSession()
             emit sessionExpired(error);
             stopRefreshTimer();
         });
+}
+
+void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    Q_ASSERT(tillTimestamp.isValid());
+    qDebug() << "Sync timeline:" << tillTimestamp << "max pages:" << maxPages;
+
+    if (mGetTimelineInProgress)
+    {
+        qDebug() << "Get timeline still in progress";
+        return;
+    }
+
+    std::optional<QString> cur;
+    if (!cursor.isEmpty())
+        cur = cursor;
+
+    setGetTimelineInProgress(true);
+    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, cur,
+        [this, tillTimestamp, maxPages](auto feed){
+            mTimelineModel.addFeed(std::move(feed));
+            setGetTimelineInProgress(false);
+            const auto lastTimestamp = mTimelineModel.lastTimestamp();
+
+            if (lastTimestamp.isNull())
+            {
+                qWarning() << "Feed is empty";
+                emit timelineSyncFailed();
+                return;
+            }
+
+            if (lastTimestamp < tillTimestamp)
+            {
+                const auto index = mTimelineModel.findTimestamp(tillTimestamp);
+                qDebug() << "Timeline synced:" << lastTimestamp << "index:" << index << "pages left:" << maxPages;
+                Q_ASSERT(index >= 0);
+                emit timelineSyncOK(index);
+                return;
+            }
+
+            if (maxPages == 1)
+            {
+                qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+                emit timelineSyncOK(mTimelineModel.rowCount() - 1);
+                return;
+            }
+
+            const QString& newCursor = mTimelineModel.getLastCursor();
+            if (newCursor.isEmpty())
+            {
+                qDebug() << "Last page reached, no more cursor";
+                emit timelineSyncOK(mTimelineModel.rowCount() - 1);
+                return;
+            }
+
+            syncTimeline(tillTimestamp, maxPages - 1, newCursor);
+        },
+        [this](const QString& error){
+            qDebug() << "syncTimeline FAILED:" << error;
+            setGetTimelineInProgress(false);
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            emit timelineSyncFailed();
+        }
+        );
 }
 
 void Skywalker::getTimeline(int limit, const QString& cursor)
@@ -252,8 +319,8 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
 // NOTE: indices can be -1 if the UI cannot determine the index
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
 {
-    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_ADD_PAGE_SIZE)
-        mTimelineModel.removeTailPosts(TIMELINE_ADD_PAGE_SIZE);
+    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_DELETE_SIZE)
+        mTimelineModel.removeTailPosts(TIMELINE_DELETE_SIZE);
 
     if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && !mGetTimelineInProgress)
         getTimelineNextPage();

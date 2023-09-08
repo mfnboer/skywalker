@@ -22,6 +22,7 @@ public:
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
     Q_INVOKABLE void resumeSession();
+    Q_INVOKABLE void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     Q_INVOKABLE void getTimeline(int limit, const QString& cursor = {});
     Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0);
@@ -40,6 +41,8 @@ signals:
     void loginFailed(QString error);
     void resumeSessionOk();
     void resumeSessionFailed();
+    void timelineSyncOK(int index);
+    void timelineSyncFailed();
     void getTimeLineInProgressChanged();
     void sessionExpired(QString error);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);

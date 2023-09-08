@@ -47,7 +47,6 @@ ApplicationWindow {
         id: loginDialog
         anchors.centerIn: parent
         onAccepted: skywalker.login(user, password, host)
-
     }
 
     Skywalker {
@@ -62,10 +61,18 @@ ApplicationWindow {
         }
         onStatusMessage: (msg, level) => statusPopup.show(msg, level)
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
+        onTimelineSyncOK: (index) => {
+            stack.get(0).positionViewAtIndex(index, ListView.Center)
+            timelineUpdateTimer.start()
+        }
+        onTimelineSyncFailed: console.warn("SYNC FAILED")
 
         function start() {
-            skywalker.getTimeline(50)
-            timelineUpdateTimer.start()
+            //skywalker.getTimeline(50)
+            //timelineUpdateTimer.start()
+            let ts = new Date()
+            ts.setTime(ts.getTime() - 3600 * 1000 * 24)
+            skywalker.syncTimeline(ts)
         }
     }
 

@@ -34,6 +34,12 @@ public:
     QString getLastCursor() const;
     const Post* getGapPlaceHolder(int gapId) const;
 
+    // Get the timestamp of the last post in the feed
+    QDateTime lastTimestamp() const;
+
+    // Returns the index of the first post <= timestamp
+    int findTimestamp(QDateTime timestamp) const;
+
 private:
     struct Page
     {
@@ -51,7 +57,6 @@ private:
 
     void clear();
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
-    Page::Ptr createPage(ATProto::AppBskyFeed::ThreadViewPost::Ptr&& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
     // Returns gap id if insertion created a gap in the feed.

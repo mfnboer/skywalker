@@ -325,6 +325,22 @@ const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
     return gap;
 }
 
+QDateTime PostFeedModel::lastTimestamp() const
+{
+    return !mFeed.empty() ? mFeed.back().getTimelineTimestamp() : QDateTime();
+}
+
+int PostFeedModel::findTimestamp(QDateTime timestamp) const
+{
+    const Post dummy;
+    auto it = std::lower_bound(mFeed.begin(), mFeed.end(), dummy,
+            [timestamp](const Post& post, const Post&){
+                return post.getTimelineTimestamp() > timestamp;
+            });
+
+    return it != mFeed.end() ? it - mFeed.begin() : -1;
+}
+
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 {
     mFeed.push_back(post);
@@ -386,7 +402,7 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
 
     mParentIndexMap[replyRef.mParent.getCid()] = parentIndex;
 
-    qDebug() << "Added parent (" << replyRef.mParent.getCid() << ") to existing thread:" << post.getCid();
+    //qDebug() << "Added parent (" << replyRef.mParent.getCid() << ") to existing thread:" << post.getCid();
     return true;
 }
 
@@ -575,6 +591,7 @@ void PostFeedModel::addToIndices(size_t offset, size_t startAtIndex)
 
 void PostFeedModel::logIndices() const
 {
+    return;
     qDebug() << "INDEX CURSOR MAP:";
     for (const auto& [index, cursor] : mIndexCursorMap)
         qDebug() << "Index:" << index << "Cursor:" << cursor;
