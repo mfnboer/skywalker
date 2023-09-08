@@ -341,7 +341,12 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
 {
     if (lastVisibleIndex > -1)
-        saveSyncTimestamp(lastVisibleIndex);
+    {
+        if (firstVisibleIndex > -1)
+            saveSyncTimestamp((lastVisibleIndex + firstVisibleIndex) / 2);
+        else
+            saveSyncTimestamp(lastVisibleIndex);
+    }
 
     if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_DELETE_SIZE)
         mTimelineModel.removeTailPosts(TIMELINE_DELETE_SIZE);

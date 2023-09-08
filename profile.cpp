@@ -28,10 +28,12 @@ QString BasicProfile::getName() const
     if (!name.isEmpty())
         return name.trimmed();
 
-    if (!mHandle.isEmpty())
-        return mHandle;
+    return mHandle;
+}
 
-    return {};
+QString BasicProfile::getHandle() const
+{
+    return mProfile ? mProfile->mHandle : mHandle;
 }
 
 QString BasicProfile::getAvatarUrl() const

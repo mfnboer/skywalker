@@ -10,6 +10,7 @@ namespace Skywalker {
 class BasicProfile
 {
     Q_GADGET
+    Q_PROPERTY(QString handle READ getHandle FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
     QML_VALUE_TYPE(basicprofile)
@@ -20,6 +21,7 @@ public:
     BasicProfile(const QString& handle, const QString& displayName);
 
     QString getName() const;
+    QString getHandle() const;
     QString getAvatarUrl() const;
 
 private:

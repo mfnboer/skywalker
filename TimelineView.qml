@@ -5,8 +5,10 @@ import skywalker
 
 ListView {
     property int margin: 8
+    property int headerHeight: 44
 
     property bool inTopOvershoot: false
+    property bool gettingNewPosts: false
     property bool inBottomOvershoot: false
     property string avatarUrl: ""
 
@@ -17,14 +19,14 @@ ListView {
 
     header: Rectangle {
         width: parent.width
-        height: 44
+        height: headerHeight
         z: 10
         color: "black"
 
         RowLayout {
             id: headerRow
             width: parent.width
-            height: 44
+            height: headerHeight
 
             Text {
                 id: headerTexts
@@ -67,13 +69,14 @@ ListView {
     onMovementEnded: {
         let firstVisibleIndex = indexAt(0, contentY)
         let lastVisibleIndex = indexAt(0, contentY + height - 1)
-        console.debug("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count)
+        console.info("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count, "AtBegin:", atYBeginning)
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
     }
 
     onVerticalOvershootChanged: {
         if (verticalOvershoot < 0)  {
             if (!inTopOvershoot && !skywalker.getTimelineInProgress) {
+                gettingNewPosts = true
                 skywalker.getTimeline(50)
             }
 
@@ -91,5 +94,32 @@ ListView {
         } else {
             inBottomOvershoot = false;
         }
+    }
+
+    BusyIndicator {
+        id: busyTopIndicator
+        y: parent.y + headerHeight
+        anchors.horizontalCenter: parent.horizontalCenter
+        running: gettingNewPosts
+    }
+
+    Component.onCompleted: {
+        skywalker.onGetTimeLineInProgressChanged.connect(() => {
+                if (!skywalker.getTimelineInProgress)
+                    gettingNewPosts = false
+            })
+
+        model.onRowsAboutToBeInserted.connect((parent, start, end) => {
+                console.debug("ROWS TO INSERT:", start, end, "AtBegin:", atYBeginning)
+            })
+
+        model.onRowsInserted.connect((parent, start, end) => {
+                console.debug("ROWS INSERTED:", start, end, "AtBegin:", atYBeginning)
+                if (atYBeginning)
+                    if (count > end + 1)
+                        positionViewAtIndex(end, ListView.Beginning)
+                    else
+                        positionViewAtBeginning()
+            })
     }
 }

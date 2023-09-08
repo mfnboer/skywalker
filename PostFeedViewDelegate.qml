@@ -196,6 +196,8 @@ Rectangle {
                 id: postHeader
                 width: parent.width
                 authorName: author.name
+                authorHandle: author.handle
+                postThreadType: postEntry.postThreadType
                 postIndexedSecondsAgo: (postEntry.now - postEntry.postIndexedDateTime) / 1000
             }
 
@@ -243,11 +245,13 @@ Rectangle {
 
                Text {
                    rightPadding: 30
-                   text: postRepostCount > 1 ? qsTr(`${postRepostCount} reposts`) : qsTr(`${postRepostCount} repost`)
+                   textFormat: Text.StyledText
+                   text: postRepostCount > 1 ? qsTr(`<b>${postRepostCount}</b> reposts`) : qsTr(`<b>${postRepostCount}</b> repost`)
                    visible: postRepostCount
                }
                Text {
-                   text: postLikeCount > 1 ? qsTr(`${postLikeCount} likes`) : qsTr(`${postLikeCount} like`)
+                   textFormat: Text.StyledText
+                   text: postLikeCount > 1 ? qsTr(`<b>${postLikeCount}</b> likes`) : qsTr(`<b>${postLikeCount}</b> like`)
                    visible: postLikeCount
                }
             }
