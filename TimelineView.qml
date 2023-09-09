@@ -57,26 +57,32 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     footer: Rectangle {
+        id: viewFooter
         width: parent.width
         height: footerWeight
         z: 10
         color: "white"
 
-        RowLayout {
-            SvgButton {
+        Row {
+            width: parent.width
+
+            SvgImage {
+                y: height + 5
+                width: 34
+                height: 34
                 id: homeButton
-                iconColor: "black"
-                Material.background: "transparent"
+                color: "black"
                 svg: svgOutline.home
-                onClicked: moveToPost(0)
 
                 Rectangle {
-                    x: parent.width - 24
-                    y: 10
-                    width: Math.max(unreadCountText.width + 4, 14)
-                    height: 14
-                    radius: height / 2
-                    color: Material.color(Material.Blue)
+                    x: parent.width - 14
+                    y: -parent.y + 5
+                    width: Math.max(unreadCountText.width + 10, 18)
+                    height: 18
+                    radius: 8
+                    color: "blue"
+                    border.color: "white"
+                    border.width: 2
                     visible: timelineView.unreadPosts > 0
 
                     Text {
@@ -87,6 +93,13 @@ ListView {
                         color: "white"
                         text: timelineView.unreadPosts
                     }
+                }
+
+                MouseArea {
+                    y: -parent.y
+                    width: parent.width
+                    height: parent.height
+                    onClicked: moveToPost(0)
                 }
             }
         }

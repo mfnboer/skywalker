@@ -29,7 +29,7 @@ Item {
         width: parent.width
         height: parent.height
         radius: height / 2
-        color: Material.color(Material.Blue)
+        color: "blue"
         visible: !avatarFrame.visible
 
         SvgImage {

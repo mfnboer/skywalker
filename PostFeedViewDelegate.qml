@@ -320,6 +320,7 @@ Rectangle {
             width: parent.width
             Layout.columnSpan: 2
             Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: qsTr("NOT FOUND")
             visible: postNotFound
@@ -330,6 +331,7 @@ Rectangle {
             width: parent.width
             Layout.columnSpan: 2
             Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: qsTr("BLOCKED")
             visible: postBlocked
@@ -340,6 +342,7 @@ Rectangle {
             width: parent.width
             Layout.columnSpan: 2
             Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: qsTr("NOT SUPPORTED")
             visible: postNotSupported
@@ -348,6 +351,7 @@ Rectangle {
             width: parent.width
             Layout.columnSpan: 2
             Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             maximumLineCount: 2
             elide: Text.ElideRight

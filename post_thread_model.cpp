@@ -51,11 +51,15 @@ Post& PostThreadModel::Page::addPost(const Post& post)
     mFeed.push_back(post);
     mFeed.back().setPostType(QEnums::POST_THREAD);
 
-    const auto& author = post.getPostView()->mAuthor;
-    if (author)
+    const auto& postView = post.getPostView();
+    if (postView)
     {
-        const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
-        AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
+        const auto& author = postView->mAuthor;
+        if (author)
+        {
+            const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
+            AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
+        }
     }
 
     return mFeed.back();
@@ -67,11 +71,15 @@ Post& PostThreadModel::Page::prependPost(const Post& post)
     mFeed.front().setPostType(QEnums::POST_THREAD);
 
     // TODO: refactor duplicate code
-    const auto& author = post.getPostView()->mAuthor;
-    if (author)
+    const auto& postView = post.getPostView();
+    if (postView)
     {
-        const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
-        AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
+        const auto& author = postView->mAuthor;
+        if (author)
+        {
+            const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
+            AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
+        }
     }
 
     return mFeed.front();

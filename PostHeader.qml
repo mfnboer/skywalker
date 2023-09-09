@@ -28,7 +28,7 @@ GridLayout {
         Layout.columnSpan: 2
         bottomPadding: 5
         elide: Text.ElideRight
-        text: authorHandle
+        text: "@" + authorHandle
         font.pointSize: root.scaledFont(7/8)
         color: Material.color(Material.Grey)
         visible: postThreadType & QEnums.THREAD_ENTRY
