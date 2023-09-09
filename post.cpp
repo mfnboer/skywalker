@@ -15,6 +15,77 @@ Post Post::createGapPlaceHolder(const QString& gapCursor)
     return post;
 }
 
+Post Post::createNotFound()
+{
+    Post post;
+    post.mNotFound = true;
+    return post;
+}
+
+Post Post::createBlocked()
+{
+    Post post;
+    post.mBlocked = true;
+    return post;
+}
+
+Post Post::createNotSupported(const QString& unsupportedType)
+{
+    Post post;
+    post.mNotSupported = true;
+    post.mUnsupportedType = unsupportedType;
+    return post;
+}
+
+Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement)
+{
+    switch (threadElement.mType)
+    {
+    case ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST:
+    {
+        const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(threadElement.mPost).get();
+        Q_ASSERT(threadPost);
+        Q_ASSERT(threadPost->mPost);
+        return Post(threadPost->mPost.get(), -1);
+    }
+    case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
+        return Post::createNotFound();
+    case ATProto::AppBskyFeed::PostElementType::BLOCKED_POST:
+        return Post::createBlocked();
+    case ATProto::AppBskyFeed::PostElementType::POST_VIEW:
+    case ATProto::AppBskyFeed::PostElementType::UNKNOWN:
+        return Post::createNotSupported(threadElement.mUnsupportedType);
+    }
+
+    Q_ASSERT(false);
+    qWarning() << "Unexpected thread post type:" << int(threadElement.mType);
+    return Post::createNotSupported(QString("Unexpected type: %1").arg(int(threadElement.mType)));
+}
+
+Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, int rawIndex)
+{
+    switch (replyElement.mType)
+    {
+    case ATProto::AppBskyFeed::PostElementType::POST_VIEW:
+    {
+        const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(replyElement.mPost).get();
+        Q_ASSERT(postView);
+        return Post(postView, rawIndex);
+    }
+    case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
+        return Post::createNotFound();
+    case ATProto::AppBskyFeed::PostElementType::BLOCKED_POST:
+        return Post::createBlocked();
+    case ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST:
+    case ATProto::AppBskyFeed::PostElementType::UNKNOWN:
+        return Post::createNotSupported(replyElement.mUnsupportedType);
+    }
+
+    Q_ASSERT(false);
+    qWarning() << "Unexpected thread post type:" << int(replyElement.mType);
+    return Post::createNotSupported(QString("Unexpected type: %1").arg(int(replyElement.mType)));
+}
+
 Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost, int rawIndex) :
     mFeedViewPost(feedViewPost),
     mRawIndex(rawIndex)
@@ -127,8 +198,8 @@ std::optional<PostReplyRef> Post::getViewPostReplyRef() const
 
     const auto& reply = *mFeedViewPost->mReply;
     PostReplyRef replyRef;
-    replyRef.mRoot = Post(reply.mRoot.get(), mRawIndex);
-    replyRef.mParent = Post(reply.mParent.get(), mRawIndex);
+    replyRef.mRoot = Post::createPost(*reply.mRoot, mRawIndex);
+    replyRef.mParent = Post::createPost(*reply.mParent, mRawIndex);
 
     // Set the reference timestamp to the timestap of this reply post.
     // They show up together with this reply post.
@@ -144,7 +215,17 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
         return mReplyToAuthor;
 
     if (mFeedViewPost && mFeedViewPost->mReply)
-        return BasicProfile(mFeedViewPost->mReply->mParent->mAuthor.get());
+    {
+        if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        {
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
+            return BasicProfile(postView->mAuthor.get());
+        }
+        else
+        {
+            return {};
+        }
+    }
 
     const auto did = getReplyToAuthorDid();
     if (did.isEmpty())
@@ -163,7 +244,17 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
 QString Post::getReplyToCid() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
-        return mFeedViewPost->mReply->mParent->mCid;
+    {
+        if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        {
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
+            return postView->mCid;
+        }
+        else
+        {
+            return {};
+        }
+    }
 
     if (!mPost)
         return {};
@@ -182,7 +273,17 @@ QString Post::getReplyToCid() const
 QString Post::getReplyToAuthorDid() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
-        return mFeedViewPost->mReply->mParent->mAuthor->mDid;
+    {
+        if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        {
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
+            return postView->mAuthor->mDid;
+        }
+        else
+        {
+            return {};
+        }
+    }
 
     if (!mPost)
         return {};

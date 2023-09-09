@@ -28,8 +28,9 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         break;
     }
     default:
-        qWarning() << "Record type not supported:" << int(view.mRecordType);
+        qWarning() << "Record type not supported:" << view.mUnsupportedType;
         mNotSupported = true;
+        mUnsupportedType = view.mUnsupportedType;
         break;
     }
 }

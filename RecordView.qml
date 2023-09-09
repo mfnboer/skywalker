@@ -63,6 +63,16 @@ Item {
             text: qsTr("NOT SUPPORTED")
             visible: record.notSupported
         }
+        Text {
+            width: parent.width
+            color: Material.color(Material.Grey)
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
+            font.pointSize: root.scaledFont(7/8)
+            text: record.unsupportedType
+            visible: record.notSupported
+        }
     }
     Rectangle {
         anchors.fill: parent

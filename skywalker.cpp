@@ -279,7 +279,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
     }
 
     const Post* post = mTimelineModel.getGapPlaceHolder(gapId);
-    if (!post || !post->isPlaceHolder())
+    if (!post || !post->isGap())
     {
         qWarning() << "NO GAP:" << gapId;
         return;
@@ -337,6 +337,12 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
     emit getTimeLineInProgressChanged();
 }
 
+void Skywalker::setGetPostThreadInProgress(bool inProgress)
+{
+    mGetPostThreadInProgress = inProgress;
+}
+
+
 // NOTE: indices can be -1 if the UI cannot determine the index
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
 {
@@ -360,8 +366,16 @@ void Skywalker::getPostThread(const QString& uri)
     Q_ASSERT(mBsky);
     qInfo() << "Get post thread:" << uri;
 
+    if (mGetPostThreadInProgress)
+    {
+        qInfo() << "Get post thread still in progress";
+        return;
+    }
+
+    setGetPostThreadInProgress(true);
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
+            setGetPostThreadInProgress(false);
             auto model = std::make_unique<PostThreadModel>(this);
             int postEntryIndex = model->setPostThread(std::move(thread));
 
@@ -376,6 +390,7 @@ void Skywalker::getPostThread(const QString& uri)
             emit postThreadOk(mNextPostThreadModelId - 1, postEntryIndex);
         },
         [this](const QString& error){
+            setGetPostThreadInProgress(false);
             qInfo() << "getPostThread FAILED:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });

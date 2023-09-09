@@ -58,7 +58,7 @@ Item {
                 rightPadding: 5
                 bottomPadding: 5
                 color: Material.foreground
-                text: postExternal.description
+                text: postExternal.description ? postExternal.description : postExternal.uri
                 wrapMode: Text.Wrap
                 maximumLineCount: 5
                 elide: Text.ElideRight

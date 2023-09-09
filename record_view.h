@@ -21,6 +21,7 @@ class RecordView
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
     Q_PROPERTY(bool notSupported READ getNotSupported FINAL)
+    Q_PROPERTY(QString unsupportedType READ getUnsupportedType FINAL)
     Q_PROPERTY(bool available READ getAvailable FINAL)
     QML_VALUE_TYPE(recordview)
 
@@ -40,6 +41,7 @@ public:
     bool getNotFound() const { return mNotFound; }
     bool getBlocked() const { return mBlocked; }
     bool getNotSupported() const { return mNotSupported; }
+    const QString& getUnsupportedType() const { return mUnsupportedType; }
     bool getAvailable() const { return !mNotFound && !mBlocked && !mNotSupported; }
 
 private:
@@ -47,6 +49,7 @@ private:
     bool mNotFound = false;
     bool mBlocked = false;
     bool mNotSupported = false;
+    QString mUnsupportedType;
 };
 
 }

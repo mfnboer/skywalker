@@ -21,12 +21,18 @@ public:
     // missing posts that have not been retrieved. The gapCursor can be use
     // to fetch those posts.
     static Post createGapPlaceHolder(const QString& gapCursor);
+    static Post createNotFound();
+    static Post createBlocked();
+    static Post createNotSupported(const QString& unsupportedType);
+    static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement);
+    static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, int rawIndex);
 
     explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr, int rawIndex = -1);
     Post(const ATProto::AppBskyFeed::PostView* postView, int rawIndex);
 
     const ATProto::AppBskyFeed::PostView* getPostView() const { return mPost; }
     bool isPlaceHolder() const { return !mPost; }
+    bool isGap() const { return !mPost && mGapId > 0; }
     int getRawIndex() const { return mRawIndex; }
     bool isEndOfFeed() const { return mEndOfFeed; }
     int getGapId() const { return mGapId; }
@@ -70,6 +76,11 @@ public:
     int getThreadType() const { return mThreadType; }
     void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
 
+    bool isNotFound() const { return mNotFound; }
+    bool isBlocked() const { return mBlocked; }
+    bool isNotSupported() const { return mNotSupported; }
+    const QString& getUnsupportedType() const { return mUnsupportedType; }
+
 private:
     struct HyperLink
     {
@@ -103,6 +114,11 @@ private:
     // inferred from through other posts.
     std::optional<BasicProfile> mReplyToAuthor;
     bool mParentInThread = false;
+
+    bool mBlocked = false;
+    bool mNotFound = false;
+    bool mNotSupported = false;
+    QString mUnsupportedType;
 
     static int sNextGapId;
 };

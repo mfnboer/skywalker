@@ -115,11 +115,17 @@ ListView {
 
         model.onRowsInserted.connect((parent, start, end) => {
                 console.debug("ROWS INSERTED:", start, end, "AtBegin:", atYBeginning)
-                if (atYBeginning)
-                    if (count > end + 1)
+                if (atYBeginning) {
+                    if (count > end + 1) {
+                        // Stay at the current item instead of scrolling to the new top
                         positionViewAtIndex(end, ListView.Beginning)
-                    else
+                    }
+                    else {
+                        // Avoid the flick to bounce down the timeline
+                        cancelFlick()
                         positionViewAtBeginning()
+                    }
+                }
             })
     }
 }

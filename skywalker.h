@@ -35,6 +35,7 @@ public:
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
+    void setGetPostThreadInProgress(bool inProgress);
 
 signals:
     void loginOk();
@@ -61,6 +62,7 @@ private:
     std::unique_ptr<ATProto::Client> mBsky;
     PostFeedModel mTimelineModel;
     bool mGetTimelineInProgress = false;
+    bool mGetPostThreadInProgress = false;
     QTimer mRefreshTimer;
 
     std::unordered_map<int, PostThreadModel::Ptr> mPostThreadModels;

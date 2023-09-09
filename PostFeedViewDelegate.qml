@@ -20,7 +20,12 @@ Rectangle {
     required property var postRecordWithMedia // record_with_media_view
     required property int postType // QEnums::PostType
     required property int postThreadType // QEnums::ThreadPostType flags
+    required property bool postIsPlaceHolder
     required property int postGapId;
+    required property bool postNotFound;
+    required property bool postBlocked;
+    required property bool postNotSupported;
+    required property string postUnsupportedType;
     required property bool postIsReply
     required property bool postParentInThread
     required property basicprofile postReplyToAuthor
@@ -184,13 +189,13 @@ Rectangle {
                 y: postHeader.y + 5 // For some reaon "avatar.y + 5" does not work when it is a repost
                 width: parent.width - 13
                 avatarUrl: author.avatarUrl
-                visible: !postGapId
+                visible: !postIsPlaceHolder
             }
         }
         Column {
             id: postColumn
             width: parent.width - avatar.width - postEntry.margin * 2
-            visible: !postGapId
+            visible: !postIsPlaceHolder
 
             PostHeader {
                 id: postHeader
@@ -295,7 +300,6 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             textFormat: Text.StyledText
-            color: Material.foreground
             text: "<a href=\"showMore\">" + qsTr("Show more posts") + "</a>"
             visible: postGapId > 0
 
@@ -309,6 +313,48 @@ Rectangle {
                 cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
                 acceptedButtons: Qt.NoButton
             }
+        }
+
+        // NOT FOUND place holder
+        Text {
+            width: parent.width
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+            text: qsTr("NOT FOUND")
+            visible: postNotFound
+        }
+
+        // BLOCKED place holder
+        Text {
+            width: parent.width
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+            text: qsTr("BLOCKED")
+            visible: postBlocked
+        }
+
+        // NOT SUPPORTED place holder
+        Text {
+            width: parent.width
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+            text: qsTr("NOT SUPPORTED")
+            visible: postNotSupported
+        }
+        Text {
+            width: parent.width
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
+            color: Material.color(Material.Grey)
+            font.pointSize: root.scaledFont(7/8)
+            text: postUnsupportedType
+            visible: postNotSupported
         }
 
         // Instead of using row spacing, these empty rectangles are used for white space.

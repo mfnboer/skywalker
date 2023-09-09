@@ -80,28 +80,26 @@ Post& PostThreadModel::Page::prependPost(const Post& post)
 void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply,
                                            bool directReply, bool firstDirectReply)
 {
-    switch (reply.mType)
+    auto threadPost = Post::createPost(reply);
+    threadPost.addThreadType(QEnums::THREAD_CHILD);
+
+    if (directReply)
     {
-    case ATProto::AppBskyFeed::ThreadElementType::THREAD_VIEW_POST:
+        threadPost.addThreadType(QEnums::THREAD_DIRECT_CHILD);
+
+        if (firstDirectReply)
+            threadPost.addThreadType(QEnums::THREAD_FIRST_DIRECT_CHILD);
+    }
+    else
+    {
+        threadPost.setParentInThread(true);
+    }
+
+    addPost(threadPost);
+
+    if (!threadPost.isPlaceHolder())
     {
         const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(reply.mPost));
-        Q_ASSERT(post);
-        Q_ASSERT(post->mPost);
-        auto& threadPost = addPost(Post(post->mPost.get(), -1));
-        threadPost.addThreadType(QEnums::THREAD_CHILD);
-
-        if (directReply)
-        {
-            threadPost.addThreadType(QEnums::THREAD_DIRECT_CHILD);
-
-            if (firstDirectReply)
-                threadPost.addThreadType(QEnums::THREAD_FIRST_DIRECT_CHILD);
-        }
-        else
-        {
-            threadPost.setParentInThread(true);
-        }
-
         if (!post->mReplies.empty())
         {
             Q_ASSERT(post->mReplies[0]);
@@ -111,14 +109,11 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
         {
             mFeed.back().addThreadType(QEnums::THREAD_LEAF);
         }
-
-        break;
     }
-    default:
-        // TODO: notFound, blocked
-        break;
+    else
+    {
+        mFeed.back().addThreadType(QEnums::THREAD_LEAF);
     }
-
 }
 
 PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread)
@@ -128,60 +123,55 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
 
     ATProto::AppBskyFeed::ThreadViewPost* viewPost = nullptr;
     const auto& postThread = page->mRawThread->mThread;
+    Post post = Post::createPost(*postThread);
+    post.addThreadType(QEnums::THREAD_ENTRY);
 
-    switch (postThread->mType)
-    {
-    case ATProto::AppBskyFeed::ThreadElementType::THREAD_VIEW_POST:
+    if (!post.isPlaceHolder())
     {
         viewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(postThread->mPost).get();
-        Q_ASSERT(viewPost);
-        Q_ASSERT(viewPost->mPost);
-        auto& pagePost = page->addPost(Post(viewPost->mPost.get(), -1));
-        pagePost.addThreadType(QEnums::THREAD_ENTRY);
 
         if (!viewPost->mParent)
-            pagePost.addThreadType(QEnums::THREAD_TOP);
+            post.addThreadType(QEnums::THREAD_TOP);
         else
-            pagePost.setParentInThread(true);
+            post.setParentInThread(true);
 
         if (viewPost->mReplies.empty())
-            pagePost.addThreadType(QEnums::THREAD_LEAF);
+            post.addThreadType(QEnums::THREAD_LEAF);
+    }
+    else
+    {
+        post.addThreadType(QEnums::THREAD_TOP);
+        post.addThreadType(QEnums::THREAD_LEAF);
+    }
 
-        break;
-    }
-    default:
-        // TODO: notFound, blocked
-        break;
-    }
+    page->addPost(post);
 
     if (viewPost)
     {
         auto parent = viewPost->mParent.get();
         while (parent)
         {
-            switch (parent->mType)
+            Post parentPost = Post::createPost(*parent);
+            parentPost.addThreadType(QEnums::THREAD_PARENT);
+
+            if (!parentPost.isPlaceHolder())
             {
-            case ATProto::AppBskyFeed::ThreadElementType::THREAD_VIEW_POST:
-            {
-                const auto post = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(parent->mPost).get();
-                Q_ASSERT(post);
-                Q_ASSERT(viewPost->mPost);
-                auto& pagePost = page->prependPost(Post(post->mPost.get(), -1));
-                pagePost.addThreadType(QEnums::THREAD_PARENT);
-                parent = post->mParent.get();
+                const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(parent->mPost).get();
+                parent = threadPost->mParent.get();
 
                 if (!parent)
-                    pagePost.addThreadType(QEnums::THREAD_TOP);
+                    parentPost.addThreadType(QEnums::THREAD_TOP);
                 else
-                    pagePost.setParentInThread(true);
+                    parentPost.setParentInThread(true);
 
-                break;
             }
-            default:
-                // TODO: notFound, blocked
+            else
+            {
+                parentPost.addThreadType(QEnums::THREAD_TOP);
                 parent = nullptr;
-                break;
             }
+
+            page->prependPost(parentPost);
         }
 
         // The entry post is now at the end of the feed

@@ -112,8 +112,18 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getPostType();
     case Role::PostThreadType:
         return post.getThreadType();
+    case Role::PostIsPlaceHolder:
+        return post.isPlaceHolder();
     case Role::PostGapId:
         return post.getGapId();
+    case Role::PostNotFound:
+        return post.isNotFound();
+    case Role::PostBlocked:
+        return post.isBlocked();
+    case Role::PostNotSupported:
+        return post.isNotSupported();
+    case Role::PostUnsupportedType:
+        return post.getUnsupportedType();
     case Role::PostIsReply:
         return post.isReply();
     case Role::PostParentInThread:
@@ -153,7 +163,12 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
         { int(Role::PostType), "postType" },
         { int(Role::PostThreadType), "postThreadType" },
+        { int(Role::PostIsPlaceHolder), "postIsPlaceHolder" },
         { int(Role::PostGapId), "postGapId" },
+        { int(Role::PostNotFound), "postNotFound" },
+        { int(Role::PostBlocked), "postBlocked" },
+        { int(Role::PostNotSupported), "postNotSupported" },
+        { int(Role::PostUnsupportedType), "postUnsupportedType" },
         { int(Role::PostIsReply), "postIsReply" },
         { int(Role::PostParentInThread), "postParentInThread" },
         { int(Role::PostReplyToAuthor), "postReplyToAuthor" },

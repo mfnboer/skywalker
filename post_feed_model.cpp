@@ -249,7 +249,7 @@ void PostFeedModel::removeHeadPosts(int size)
         return;
 
     size_t removeEndIndex = size - 1;
-    while (removeEndIndex < mFeed.size() - 1 && mFeed[removeEndIndex + 1].isPlaceHolder())
+    while (removeEndIndex < mFeed.size() - 1 && mFeed[removeEndIndex + 1].isGap())
         ++removeEndIndex;
 
     if (removeEndIndex >= mFeed.size() - 1)
@@ -265,7 +265,7 @@ void PostFeedModel::removeHeadPosts(int size)
 
     beginRemoveRows({}, 0, removeEndIndex);
     removePosts(0, removeSize);
-    Q_ASSERT(!mFeed.front().isPlaceHolder());
+    Q_ASSERT(!mFeed.front().isGap());
     mIndexCursorMap.erase(mIndexCursorMap.begin(), removeEndIndexCursorIt);
     mIndexRawFeedMap.erase(mIndexRawFeedMap.begin(), removeEndIndexRawFeedIt);
 
@@ -335,6 +335,9 @@ int PostFeedModel::findTimestamp(QDateTime timestamp) const
     const Post dummy;
     auto it = std::lower_bound(mFeed.begin(), mFeed.end(), dummy,
             [timestamp](const Post& post, const Post&){
+                if (post.isPlaceHolder())
+                    return true; // place holder has no timestamp
+
                 return post.getTimelineTimestamp() > timestamp;
             });
 
@@ -497,9 +500,24 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const
 {
     Q_ASSERT(mFeed.size() > feedIndex);
-    Q_ASSERT(!mFeed[feedIndex].isPlaceHolder());
-    const auto& cidFirstStoredPost = mFeed[feedIndex].getCid();
-    const auto& timestampFirstStoredPost = mFeed[feedIndex].getTimelineTimestamp();
+    QString cidFirstStoredPost;
+    QDateTime timestampFirstStoredPost;
+
+    for (const auto& post : mFeed)
+    {
+        if (post.isPlaceHolder())
+            continue;
+
+        cidFirstStoredPost = post.getCid();
+        timestampFirstStoredPost = post.getTimelineTimestamp();
+        break;
+    }
+
+    if (cidFirstStoredPost.isEmpty())
+    {
+        qWarning() << "There are not real posts in the feed!";
+        return {};
+    }
 
     for (size_t i = 0; i < page.mFeed.size(); ++i)
     {
