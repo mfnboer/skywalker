@@ -66,7 +66,7 @@ ApplicationWindow {
 
         onTimelineSyncOK: (index) => {
             if (index >= 0)
-                stack.get(0).positionViewAtIndex(index, ListView.Beginning)
+                stack.get(0).moveToPost(index)
 
             timelineUpdateTimer.start()
         }

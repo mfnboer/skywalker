@@ -6,6 +6,8 @@ import skywalker
 ListView {
     property int margin: 8
     property int headerHeight: 44
+    property int footerWeight: 44
+    property int unreadPosts: 0
 
     property bool inTopOvershoot: false
     property bool gettingNewPosts: false
@@ -54,6 +56,43 @@ ListView {
     }
     headerPositioning: ListView.OverlayHeader
 
+    footer: Rectangle {
+        width: parent.width
+        height: footerWeight
+        z: 10
+        color: "white"
+
+        RowLayout {
+            SvgButton {
+                id: homeButton
+                iconColor: "black"
+                Material.background: "transparent"
+                svg: svgOutline.home
+                onClicked: moveToPost(0)
+
+                Rectangle {
+                    x: parent.width - 24
+                    y: 10
+                    width: Math.max(unreadCountText.width + 4, 14)
+                    height: 14
+                    radius: height / 2
+                    color: Material.color(Material.Blue)
+                    visible: timelineView.unreadPosts > 0
+
+                    Text {
+                        id: unreadCountText
+                        anchors.centerIn: parent
+                        font.bold: true
+                        font.pointSize: root.scaledFont(6/8)
+                        color: "white"
+                        text: timelineView.unreadPosts
+                    }
+                }
+            }
+        }
+    }
+    footerPositioning: ListView.OverlayFooter
+
     delegate: PostFeedViewDelegate {
         viewWidth: timelineView.width
     }
@@ -64,6 +103,7 @@ ListView {
         console.debug("COUNT CHANGED First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count)
         // Adding/removing content changes the indices.
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        updateUnreadPosts(firstVisibleIndex)
     }
 
     onMovementEnded: {
@@ -71,6 +111,7 @@ ListView {
         let lastVisibleIndex = indexAt(0, contentY + height - 1)
         console.info("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count, "AtBegin:", atYBeginning)
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        updateUnreadPosts(firstVisibleIndex)
     }
 
     onVerticalOvershootChanged: {
@@ -103,6 +144,15 @@ ListView {
         running: gettingNewPosts
     }
 
+    function updateUnreadPosts(firstIndex) {
+        timelineView.unreadPosts = Math.max(firstIndex, 0)
+    }
+
+    function moveToPost(index) {
+        positionViewAtIndex(index, ListView.Beginning)
+        updateUnreadPosts(index)
+    }
+
     Component.onCompleted: {
         skywalker.onGetTimeLineInProgressChanged.connect(() => {
                 if (!skywalker.getTimelineInProgress)
@@ -126,6 +176,9 @@ ListView {
                         positionViewAtBeginning()
                     }
                 }
+
+                let firstVisibleIndex = indexAt(0, contentY)
+                updateUnreadPosts(firstVisibleIndex)
             })
     }
 }
