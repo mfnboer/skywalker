@@ -122,7 +122,6 @@ QString Post::getText() const
     if (!mPost)
         return NO_STRING;
 
-    // TODO: notFoundPost, blockedPost
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
@@ -133,7 +132,8 @@ QString Post::getText() const
             return ATProto::AppBskyRichtext::applyFacets(record->mText, record->mFacets);
     }
 
-    return NO_STRING;
+    QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;
+    return text.toHtmlEscaped().replace('\n', "<br>");
 }
 
 BasicProfile Post::getAuthor() const

@@ -480,6 +480,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
         else
         {
             qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
+            page->addPost(Post::createNotSupported(feedEntry->mPost->mRawRecordType));
         }
     }
 
