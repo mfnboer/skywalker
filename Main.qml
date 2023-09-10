@@ -64,16 +64,27 @@ ApplicationWindow {
         onStatusMessage: (msg, level) => statusPopup.show(msg, level)
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
 
+        onGetUserProfileOK: (avatarUrl) => {
+            getTimelineView().avatarUrl = avatarUrl
+            skywalker.syncTimeline()
+        }
+
+        onGetUserProfileFailed: {
+            // TODO: retry
+            console.warn("FAILED TO LOAD USER PROFILE")
+        }
+
         onTimelineSyncOK: (index) => {
             if (index >= 0)
-                stack.get(0).moveToPost(index)
+                getTimelineView().moveToPost(index)
 
             timelineUpdateTimer.start()
         }
+
         onTimelineSyncFailed: console.warn("SYNC FAILED")
 
         function start() {
-            skywalker.syncTimeline()
+            skywalker.getUserProfileAndFollows()
         }
     }
 
@@ -99,6 +110,10 @@ ApplicationWindow {
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() })
         stack.push(view)
+    }
+
+    function getTimelineView() {
+        return stack.get(0)
     }
 
     function popStack() {

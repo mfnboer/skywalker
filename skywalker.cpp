@@ -98,7 +98,7 @@ void Skywalker::refreshSession()
     }
 
     mBsky->refreshSession(*session,
-        [this] {
+        [this]{
             qDebug() << "Session refreshed";
             saveSession(mBsky->getHost(), *mBsky->getSession());
         },
@@ -107,6 +107,65 @@ void Skywalker::refreshSession()
             emit sessionExpired(error);
             stopRefreshTimer();
         });
+}
+
+void Skywalker::getUserProfileAndFollows()
+{
+    Q_ASSERT(mBsky);
+    const auto* session = mBsky->getSession();
+    Q_ASSERT(session);
+    qInfo() << "Get user profile, handle:" << session->mHandle << "did:" << session->mDid;
+
+    // Get profile and follows in one go. We do not need detailed profile data.
+    mBsky->getFollows(session->mDid, 100, {},
+        [this](auto follows){
+            mUserFollows = std::move(follows);
+
+            const auto& nextCursor = mUserFollows->mCursor;
+            if (!nextCursor->isEmpty())
+                getUserProfileAndFollowsNextPage(*nextCursor);
+            else
+                signalGetUserProfileOk();
+        },
+        [this](const QString& error){
+            qWarning() << error;
+            mUserFollows = nullptr;
+            emit getUserProfileFailed();
+        });
+}
+
+void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    const auto* session = mBsky->getSession();
+    Q_ASSERT(session);
+    qInfo() << "Get user profile next page:" << cursor << "handle:" << session->mHandle << "did:" << session->mDid;
+
+    mBsky->getFollows(session->mDid, 100, cursor,
+        [this](auto follows){
+            for (auto& profile : follows->mFollows)
+                mUserFollows->mFollows.push_back(std::move(profile));
+
+            const auto& nextCursor = follows->mCursor;
+            if (!nextCursor->isEmpty())
+                getUserProfileAndFollowsNextPage(*nextCursor);
+            else
+                signalGetUserProfileOk();
+        },
+        [this](const QString& error){
+            qWarning() << error;
+            mUserFollows = nullptr;
+            emit getUserProfileFailed();
+        });
+}
+
+void Skywalker::signalGetUserProfileOk()
+{
+    Q_ASSERT(mUserFollows);
+    const auto& user = mUserFollows->mSubject;
+    qInfo() << "Got user:" << user->mHandle << "#follows:" << mUserFollows->mFollows.size();
+    const auto avatar = user->mAvatar ? *user->mAvatar : QString();
+    emit getUserProfileOK(avatar);
 }
 
 void Skywalker::syncTimeline(int maxPages)
@@ -136,12 +195,8 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
         return;
     }
 
-    std::optional<QString> cur;
-    if (!cursor.isEmpty())
-        cur = cursor;
-
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, cur,
+    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, makeOptionalCursor(cursor),
         [this, tillTimestamp, maxPages](auto feed){
             mTimelineModel.addFeed(std::move(feed));
             setGetTimelineInProgress(false);
@@ -206,12 +261,8 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
         return;
     }
 
-    std::optional<QString> cur;
-    if (!cursor.isEmpty())
-        cur = cursor;
-
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(limit, cur,
+    mBsky->getTimeline(limit, makeOptionalCursor(cursor),
        [this, cursor](auto feed){
             if (cursor.isEmpty())
                 mTimelineModel.setFeed(std::move(feed));
@@ -394,6 +445,15 @@ void Skywalker::getPostThread(const QString& uri)
             qInfo() << "getPostThread FAILED:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
+}
+
+std::optional<QString> Skywalker::makeOptionalCursor(const QString& cursor) const
+{
+    std::optional<QString> optionalCursor;
+    if (!cursor.isEmpty())
+        optionalCursor = cursor;
+
+    return optionalCursor;
 }
 
 const PostThreadModel* Skywalker::getPostThreadModel(int id) const

@@ -22,6 +22,7 @@ public:
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
     Q_INVOKABLE void resumeSession();
+    Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void syncTimeline(int maxPages = 40);
     Q_INVOKABLE void getTimeline(int limit, const QString& cursor = {});
     Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
@@ -44,12 +45,17 @@ signals:
     void resumeSessionFailed();
     void timelineSyncOK(int index);
     void timelineSyncFailed();
+    void getUserProfileOK(QString avatarUrl);
+    void getUserProfileFailed();
     void getTimeLineInProgressChanged();
     void sessionExpired(QString error);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);
 
 private:
+    std::optional<QString> makeOptionalCursor(const QString& cursor) const;
+    void getUserProfileAndFollowsNextPage(const QString& cursor);
+    void signalGetUserProfileOk();
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void startRefreshTimer();
     void stopRefreshTimer();
@@ -60,6 +66,7 @@ private:
     QDateTime getSyncTimestamp() const;
 
     std::unique_ptr<ATProto::Client> mBsky;
+    ATProto::AppBskyGraph::GetFollowsOutput::Ptr mUserFollows;
     PostFeedModel mTimelineModel;
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
