@@ -39,11 +39,9 @@ public class QPhotoPicker extends AppCompatActivity {
             } else {
                 Log.d("PhotoPicker", "No media selected");
             }
-        });
 
-        // This will close the activity window, so the media picker shows
-        // on top of the main activity window.
-        finish();
+            finish();
+        });
 
         // Launch the photo picker and let the user choose images and videos.
         pickMedia.launch(new PickVisualMediaRequest.Builder()
