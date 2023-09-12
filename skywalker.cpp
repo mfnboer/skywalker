@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "skywalker.h"
+#include "photo_picker.h"
 #include <QSettings>
 
 namespace Skywalker {
@@ -150,12 +151,15 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
                 mUserFollows.add(profile->mDid, BasicProfile(*profile));
 
             const auto& nextCursor = follows->mCursor;
-            if (!nextCursor->isEmpty() && maxPages > 0)
+            if (nextCursor->isEmpty())
+            {
+                signalGetUserProfileOk(*follows->mSubject);
+                return;
+            }
+
+            if (maxPages > 0)
                 getUserProfileAndFollowsNextPage(*nextCursor, maxPages - 1);
             else
-                signalGetUserProfileOk(*follows->mSubject);
-
-            if (!nextCursor->isEmpty())
                 qWarning() << "Max pages reached!";
         },
         [this](const QString& error){
@@ -478,6 +482,11 @@ void Skywalker::removePostThreadModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mPostThreadModels.erase(id);
+}
+
+void Skywalker::pickPhoto()
+{
+    ::Skywalker::pickPhoto();
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

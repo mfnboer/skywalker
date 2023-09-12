@@ -34,6 +34,7 @@ public:
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
+    Q_INVOKABLE void pickPhoto();
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);

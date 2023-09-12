@@ -41,7 +41,7 @@ Page {
             }
 
             enabled: postText.text.length > 0 && postText.text.length <= maxPostLength
-            onClicked: page.closed()
+            onClicked: skywalker.pickPhoto()
         }
     }
 

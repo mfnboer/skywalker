@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(appskywalker VERSION 0.1 LANGUAGES CXX)
+set(VERSION_CODE 1)
+set(APP_NAME "Skywalker")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
@@ -76,7 +78,18 @@ qt_add_qml_module(appskywalker
         SOURCES profile_store.h
         SOURCES profile_store.cpp
         QML_FILES ComposePost.qml
+        RESOURCES android/src/com/gmail/mfnboer/QPhotoPicker.java
+        SOURCES photo_picker.h
+        SOURCES photo_picker.cpp
+
 )
+
+set_target_properties(appskywalker PROPERTIES
+    QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+    QT_ANDROID_TARGET_SDK_VERSION 33
+    QT_ANDROID_VERSION_NAME ${PROJECT_VERSION}
+    QT_ANDROID_VERSION_CODE ${VERSION_CODE})
+
 
 if (ANDROID)
     FetchContent_Declare(
@@ -103,6 +116,7 @@ set_target_properties(appskywalker PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
+    QT_ANDROID_ABIS "arm64-v8a;armeabi-v7a"
 )
 
 target_link_libraries(appskywalker
