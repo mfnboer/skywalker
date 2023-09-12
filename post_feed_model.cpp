@@ -456,9 +456,6 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
             const auto& replyRef = post.getViewPostReplyRef();
 
-            if (post.getText() == "Hahaha")
-                qInfo("HAHAHA");
-
             // Reposted replies are displayed without thread context
             if (replyRef && !post.isRepost())
             {

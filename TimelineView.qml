@@ -5,8 +5,6 @@ import skywalker
 
 ListView {
     property int margin: 8
-    property int headerHeight: 44
-    property int footerWeight: 44
     property int unreadPosts: 0
 
     property bool inTopOvershoot: false
@@ -20,14 +18,14 @@ ListView {
 
     header: Rectangle {
         width: parent.width
-        height: headerHeight
+        height: root.headerHeight
         z: 10
         color: "black"
 
         RowLayout {
             id: headerRow
             width: parent.width
-            height: headerHeight
+            height: root.headerHeight
 
             Text {
                 id: headerTexts
@@ -58,7 +56,7 @@ ListView {
     footer: Rectangle {
         id: viewFooter
         width: parent.width
-        height: footerWeight
+        height: root.footerHeight
         z: 10
         color: "white"
 
@@ -101,6 +99,19 @@ ListView {
                     onClicked: moveToPost(0)
                 }
             }
+        }
+
+        SvgButton {
+            x: parent.width - width - 10
+            y: -height - 10
+            width: 70
+            height: width
+            iconColor: "white"
+            Material.background: "blue"
+            opacity: 0.6
+            imageMargin: 20
+            svg: svgOutline.chat
+            onClicked: root.composePost()
         }
     }
     footerPositioning: ListView.OverlayFooter
@@ -151,7 +162,7 @@ ListView {
 
     BusyIndicator {
         id: busyTopIndicator
-        y: parent.y + headerHeight
+        y: parent.y + root.headerHeight
         anchors.horizontalCenter: parent.horizontalCenter
         running: gettingNewPosts
     }

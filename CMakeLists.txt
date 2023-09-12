@@ -75,6 +75,7 @@ qt_add_qml_module(appskywalker
         QML_FILES PostThreadView.qml
         SOURCES profile_store.h
         SOURCES profile_store.cpp
+        QML_FILES ComposePost.qml
 )
 
 if (ANDROID)

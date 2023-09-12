@@ -4,17 +4,18 @@ import skywalker
 
 RoundButton {
     id: button
-    property string iconColor
-    property svgimage svg
+    required property string iconColor
+    required property svgimage svg
+    property int imageMargin: 10
 
     Material.background: "black"
     opacity: 0.7
 
     SvgImage {
-        width: parent.width - 20
-        height: parent.height - 20
-        x: parent.x + 10
-        y: parent.y + height + 10
+        width: button.width - 2 * button.imageMargin
+        height: button.height - 2 * button.imageMargin
+        x: button.imageMargin
+        y: height + button.imageMargin
         svg: button.svg
         color: button.iconColor
     }

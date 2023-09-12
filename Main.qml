@@ -6,6 +6,9 @@ import QtQuick.Window
 import skywalker
 
 ApplicationWindow {
+    property int headerHeight: 44
+    property int footerHeight: 44
+
     id: root
     width: 480
     height: 960
@@ -92,6 +95,13 @@ ApplicationWindow {
         running: false
         repeat: true
         onTriggered: skywalker.getTimelinePrepend(2)
+    }
+
+    function composePost() {
+        let component = Qt.createComponent("ComposePost.qml")
+        let page = component.createObject(root)
+        page.onClosed.connect(() => { popStack() })
+        stack.push(page)
     }
 
     function viewPostThread(modelId, postEntryIndex) {

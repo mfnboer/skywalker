@@ -15,7 +15,7 @@ ListView {
 
     header: Rectangle {
         width: parent.width
-        height: 44
+        height: root.headerHeight
         z: 10
         color: "black"
 
