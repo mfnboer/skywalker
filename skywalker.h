@@ -15,6 +15,7 @@ class Skywalker : public QObject
     Q_OBJECT
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
+    Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     QML_ELEMENT
 public:
     explicit Skywalker(QObject* parent = nullptr);
@@ -37,6 +38,8 @@ public:
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
+    const QString& getAvatarUrl() const { return mAvatarUrl; }
+    void setAvatarUrl(const QString& avatarUrl);
 
 signals:
     void loginOk();
@@ -45,12 +48,13 @@ signals:
     void resumeSessionFailed();
     void timelineSyncOK(int index);
     void timelineSyncFailed();
-    void getUserProfileOK(QString avatarUrl);
+    void getUserProfileOK();
     void getUserProfileFailed();
     void getTimeLineInProgressChanged();
     void sessionExpired(QString error);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);
+    void avatarUrlChanged();
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
@@ -66,6 +70,7 @@ private:
     QDateTime getSyncTimestamp() const;
 
     std::unique_ptr<ATProto::Client> mBsky;
+    QString mAvatarUrl;
     ATProto::AppBskyGraph::GetFollowsOutput::Ptr mUserFollows;
     PostFeedModel mTimelineModel;
     bool mGetTimelineInProgress = false;

@@ -12,7 +12,6 @@ ListView {
     property bool inTopOvershoot: false
     property bool gettingNewPosts: false
     property bool inBottomOvershoot: false
-    property string avatarUrl: ""
 
     id: timelineView
     spacing: 0
@@ -49,7 +48,7 @@ ListView {
                     id: avatar
                     width: parent.width
                     height: parent.height
-                    avatarUrl: timelineView.avatarUrl
+                    avatarUrl: skywalker.avatarUrl
                 }
             }
         }

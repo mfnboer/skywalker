@@ -63,11 +63,7 @@ ApplicationWindow {
 
         onStatusMessage: (msg, level) => statusPopup.show(msg, level)
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
-
-        onGetUserProfileOK: (avatarUrl) => {
-            getTimelineView().avatarUrl = avatarUrl
-            skywalker.syncTimeline()
-        }
+        onGetUserProfileOK: () => skywalker.syncTimeline()
 
         onGetUserProfileFailed: {
             // TODO: retry

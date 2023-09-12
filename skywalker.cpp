@@ -165,7 +165,8 @@ void Skywalker::signalGetUserProfileOk()
     const auto& user = mUserFollows->mSubject;
     qInfo() << "Got user:" << user->mHandle << "#follows:" << mUserFollows->mFollows.size();
     const auto avatar = user->mAvatar ? *user->mAvatar : QString();
-    emit getUserProfileOK(avatar);
+    setAvatarUrl(avatar);
+    emit getUserProfileOK();
 }
 
 void Skywalker::syncTimeline(int maxPages)
@@ -391,6 +392,12 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
 void Skywalker::setGetPostThreadInProgress(bool inProgress)
 {
     mGetPostThreadInProgress = inProgress;
+}
+
+void Skywalker::setAvatarUrl(const QString& avatarUrl)
+{
+    mAvatarUrl = avatarUrl;
+    emit avatarUrlChanged();
 }
 
 
