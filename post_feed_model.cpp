@@ -4,8 +4,9 @@
 
 namespace Skywalker {
 
-PostFeedModel::PostFeedModel(const IProfileStore& following, QObject* parent) :
+PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent) :
     AbstractPostFeedModel(parent),
+    mUserDid(userDid),
     mFollowing(following)
 {}
 
@@ -412,6 +413,10 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
 
 bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
+    // Always show the replies of the user.
+    if (post.getAuthor().getDid() == mUserDid)
+        return true;
+
     if (post.getLikeCount() < mMinReplyLikes)
         return false;
 

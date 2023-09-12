@@ -73,6 +73,7 @@ private:
 
     std::unique_ptr<ATProto::Client> mBsky;
     QString mAvatarUrl;
+    QString mUserDid;
     ProfileStore mUserFollows;
 
     PostFeedModel mTimelineModel;

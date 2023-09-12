@@ -15,7 +15,7 @@ class PostFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
 
-    explicit PostFeedModel(const IProfileStore& following, QObject* parent = nullptr);
+    explicit PostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
@@ -87,6 +87,7 @@ private:
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
 
+    const QString& mUserDid;
     const IProfileStore& mFollowing;
 
     // Show only replies to people in your following list.

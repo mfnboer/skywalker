@@ -16,7 +16,7 @@ static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
-    mTimelineModel(mUserFollows, this)
+    mTimelineModel(mUserDid, mUserFollows, this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
 }
@@ -35,6 +35,7 @@ void Skywalker::login(const QString user, QString password, const QString host)
         [this, user, host]{
             qInfo() << "Login" << user << "succeeded";
             saveSession(host, *mBsky->getSession());
+            mUserDid = mBsky->getSession()->mDid;
             emit loginOk();
             startRefreshTimer();
         },
@@ -64,6 +65,7 @@ void Skywalker::resumeSession()
         [this, host] {
             qInfo() << "Session resumed";
             saveSession(host, *mBsky->getSession());
+            mUserDid = mBsky->getSession()->mDid;
             emit resumeSessionOk();
             refreshSession();
             startRefreshTimer();
