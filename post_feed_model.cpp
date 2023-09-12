@@ -4,8 +4,9 @@
 
 namespace Skywalker {
 
-PostFeedModel::PostFeedModel(QObject* parent) :
-    AbstractPostFeedModel(parent)
+PostFeedModel::PostFeedModel(const IProfileStore& following, QObject* parent) :
+    AbstractPostFeedModel(parent),
+    mFollowing(following)
 {}
 
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
@@ -409,6 +410,29 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     return true;
 }
 
+bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
+{
+    if (post.getLikeCount() < mMinReplyLikes)
+        return false;
+
+    if (mOnlyRepliesToFollowing)
+    {
+        // In case of blocked posts there is no reply ref.
+        // Sure someone that blocks you is not a friend of yours.
+        if (!replyRef)
+            return false;
+
+        // Do not show replies to blocked and not-found posts
+        if (replyRef->mParent.isPlaceHolder())
+            return false;
+
+        if (!mFollowing.contains(replyRef->mParent.getAuthor().getDid()))
+            return false;
+    }
+
+    return true;
+}
+
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     auto page = std::make_unique<Page>();
@@ -432,17 +456,26 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
             const auto& replyRef = post.getViewPostReplyRef();
 
+            if (post.getText() == "Hahaha")
+                qInfo("HAHAHA");
+
             // Reposted replies are displayed without thread context
             if (replyRef && !post.isRepost())
             {
+                // If a reply fits in an existing thread then always show it as it provides
+                // context to the user. The leaf of this thread is a reply that passed
+                // throught the filter settings.
+                if (page->tryAddToExistingThread(post, *replyRef))
+                    continue;
+
+                if (!mustShowReply(post, replyRef))
+                    continue;
+
                 bool rootAdded = false;
                 const auto& rootCid = replyRef->mRoot.getCid();
                 const auto& parentCid = replyRef->mParent.getCid();
 
-                if (page->tryAddToExistingThread(post, *replyRef))
-                    continue;
-
-                if (rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid))
+                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid))
                 {
                     page->addPost(replyRef->mRoot);
                     page->mFeed.back().setPostType(QEnums::POST_ROOT);
@@ -451,7 +484,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                 // If the parent was seen already, but the root not, then show the parent
                 // again for consistency of the thread.
-                if ((!cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded)
+                if ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded)
                 {
                     page->addPost(replyRef->mParent, true);
                     auto& parentPost = page->mFeed.back();
@@ -467,6 +500,13 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                     post.setPostType(QEnums::POST_LAST_REPLY);
                     post.setParentInThread(true);
                 }
+            }
+            else if (post.isReply() && !post.isRepost())
+            {
+                // A post can still be a reply even if there is no reply reference.
+                // The reference may be missing due to blocked posts.
+                if (!mustShowReply(post, {}))
+                    continue;
             }
             else
             {

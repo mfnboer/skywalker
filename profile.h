@@ -19,13 +19,16 @@ public:
     BasicProfile() = default;
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
     BasicProfile(const QString& handle, const QString& displayName);
+    BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
+    QString getDid() const;
     QString getName() const;
     QString getHandle() const;
     QString getAvatarUrl() const;
 
 private:
     const ATProto::AppBskyActor::ProfileViewBasic* mProfile = nullptr;
+    QString mDid;
     QString mHandle;
     QString mDisplayName;
 };

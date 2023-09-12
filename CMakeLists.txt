@@ -73,6 +73,8 @@ qt_add_qml_module(appskywalker
         QML_FILES SvgButton.qml
         QML_FILES PostFeedViewDelegate.qml
         QML_FILES PostThreadView.qml
+        SOURCES profile_store.h
+        SOURCES profile_store.cpp
 )
 
 if (ANDROID)

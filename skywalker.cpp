@@ -14,7 +14,8 @@ static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 
 Skywalker::Skywalker(QObject* parent) :
-    QObject(parent)
+    QObject(parent),
+    mTimelineModel(mUserFollows, this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
 }
@@ -119,52 +120,55 @@ void Skywalker::getUserProfileAndFollows()
     // Get profile and follows in one go. We do not need detailed profile data.
     mBsky->getFollows(session->mDid, 100, {},
         [this](auto follows){
-            mUserFollows = std::move(follows);
-
-            const auto& nextCursor = mUserFollows->mCursor;
-            if (!nextCursor->isEmpty())
-                getUserProfileAndFollowsNextPage(*nextCursor);
-            else
-                signalGetUserProfileOk();
-        },
-        [this](const QString& error){
-            qWarning() << error;
-            mUserFollows = nullptr;
-            emit getUserProfileFailed();
-        });
-}
-
-void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor)
-{
-    Q_ASSERT(mBsky);
-    const auto* session = mBsky->getSession();
-    Q_ASSERT(session);
-    qInfo() << "Get user profile next page:" << cursor << "handle:" << session->mHandle << "did:" << session->mDid;
-
-    mBsky->getFollows(session->mDid, 100, cursor,
-        [this](auto follows){
             for (auto& profile : follows->mFollows)
-                mUserFollows->mFollows.push_back(std::move(profile));
+                mUserFollows.add(profile->mDid, BasicProfile(*profile));
 
             const auto& nextCursor = follows->mCursor;
             if (!nextCursor->isEmpty())
                 getUserProfileAndFollowsNextPage(*nextCursor);
             else
-                signalGetUserProfileOk();
+                signalGetUserProfileOk(*follows->mSubject);
         },
         [this](const QString& error){
             qWarning() << error;
-            mUserFollows = nullptr;
+            mUserFollows.clear();
             emit getUserProfileFailed();
         });
 }
 
-void Skywalker::signalGetUserProfileOk()
+void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages)
+{   
+    Q_ASSERT(mBsky);
+    const auto* session = mBsky->getSession();
+    Q_ASSERT(session);
+    qInfo() << "Get user profile next page:" << cursor << ",handle:" << session->mHandle <<
+            ",did:" << session->mDid << ",max pages:" << maxPages;
+
+    mBsky->getFollows(session->mDid, 100, cursor,
+        [this, maxPages](auto follows){
+            for (auto& profile : follows->mFollows)
+                mUserFollows.add(profile->mDid, BasicProfile(*profile));
+
+            const auto& nextCursor = follows->mCursor;
+            if (!nextCursor->isEmpty() && maxPages > 0)
+                getUserProfileAndFollowsNextPage(*nextCursor, maxPages - 1);
+            else
+                signalGetUserProfileOk(*follows->mSubject);
+
+            if (!nextCursor->isEmpty())
+                qWarning() << "Max pages reached!";
+        },
+        [this](const QString& error){
+            qWarning() << error;
+            mUserFollows.clear();
+            emit getUserProfileFailed();
+        });
+}
+
+void Skywalker::signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user)
 {
-    Q_ASSERT(mUserFollows);
-    const auto& user = mUserFollows->mSubject;
-    qInfo() << "Got user:" << user->mHandle << "#follows:" << mUserFollows->mFollows.size();
-    const auto avatar = user->mAvatar ? *user->mAvatar : QString();
+    qInfo() << "Got user:" << user.mHandle << "#follows:" << mUserFollows.size();
+    const auto avatar = user.mAvatar ? *user.mAvatar : QString();
     setAvatarUrl(avatar);
     emit getUserProfileOK();
 }

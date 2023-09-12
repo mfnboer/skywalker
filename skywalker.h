@@ -3,6 +3,7 @@
 #pragma once
 #include "post_feed_model.h"
 #include "post_thread_model.h"
+#include "profile_store.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QTimer>
@@ -58,8 +59,8 @@ signals:
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
-    void getUserProfileAndFollowsNextPage(const QString& cursor);
-    void signalGetUserProfileOk();
+    void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
+    void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void startRefreshTimer();
     void stopRefreshTimer();
@@ -71,7 +72,8 @@ private:
 
     std::unique_ptr<ATProto::Client> mBsky;
     QString mAvatarUrl;
-    ATProto::AppBskyGraph::GetFollowsOutput::Ptr mUserFollows;
+    ProfileStore mUserFollows;
+
     PostFeedModel mTimelineModel;
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;

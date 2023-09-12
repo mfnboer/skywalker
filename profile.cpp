@@ -16,6 +16,18 @@ BasicProfile::BasicProfile(const QString& handle, const QString& displayName) :
 {
 }
 
+BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :
+    mDid(profile.mDid),
+    mHandle(profile.mHandle),
+    mDisplayName(profile.mDisplayName.value_or(QString()))
+{
+}
+
+QString BasicProfile::getDid() const
+{
+    return mProfile ? mProfile->mDid : mDid;
+}
+
 QString BasicProfile::getName() const
 {
     if (mProfile)

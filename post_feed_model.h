@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "profile_store.h"
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
@@ -14,7 +15,7 @@ class PostFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
 
-    explicit PostFeedModel(QObject* parent = nullptr);
+    explicit PostFeedModel(const IProfileStore& following, QObject* parent = nullptr);
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
@@ -58,6 +59,7 @@ private:
     };
 
     void clear();
+    bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
@@ -84,6 +86,14 @@ private:
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
+
+    const IProfileStore& mFollowing;
+
+    // Show only replies to people in your following list.
+    bool mOnlyRepliesToFollowing = true;
+
+    // Minimum likes for a reply to be shown.
+    int mMinReplyLikes = 0;
 };
 
 }
