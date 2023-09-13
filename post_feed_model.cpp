@@ -431,7 +431,13 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         if (replyRef->mParent.isPlaceHolder())
             return false;
 
-        if (!mFollowing.contains(replyRef->mParent.getAuthor().getDid()))
+        const auto parentDid = replyRef->mParent.getAuthor().getDid();
+
+        // Always show replies to the user
+        if (parentDid == mUserDid)
+            return true;
+
+        if (!mFollowing.contains(parentDid))
             return false;
     }
 

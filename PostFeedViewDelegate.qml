@@ -32,6 +32,8 @@ Rectangle {
     required property int postReplyCount
     required property int postRepostCount
     required property int postLikeCount
+    required property bool postReposted
+    required property bool postLiked
     required property bool endOfFeed;
 
     id: postEntry
@@ -268,25 +270,25 @@ Rectangle {
 
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: Material.color(Material.Grey)
+                    iconColor: "grey"
                     svg: svgOutline.reply
                     statistic: postReplyCount
                 }
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: Material.color(Material.Grey)
+                    iconColor: postReposted ? "red" : "grey"
                     svg: svgOutline.repost
                     statistic: postRepostCount
                 }
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: Material.color(Material.Grey)
-                    svg: svgOutline.like
+                    iconColor: postLiked ? "red" : "grey"
+                    svg: postLiked ? svgFilled.like : svgOutline.like
                     statistic: postLikeCount
                 }
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: Material.color(Material.Grey)
+                    iconColor: "grey"
                     svg: svgOutline.moreVert
                 }
             }

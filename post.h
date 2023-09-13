@@ -67,6 +67,8 @@ public:
     int getReplyCount() const;
     int getRepostCount() const;
     int getLikeCount() const;
+    bool hasReposted() const;
+    bool hasLiked() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
     void setPostType(QEnums::PostType postType) { mPostType = postType; }

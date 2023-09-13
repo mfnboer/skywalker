@@ -378,4 +378,23 @@ int Post::getLikeCount() const
     return mPost ? mPost->mLikeCount : 0;
 }
 
+bool Post::hasReposted() const
+{
+    if (!mPost && !mPost->mViewer)
+        return false;
+
+    const auto& repost = mPost->mViewer->mRepost;
+    return repost && !repost->isEmpty();
+}
+
+bool Post::hasLiked() const
+{
+    if (!mPost && !mPost->mViewer)
+        return false;
+
+    const auto& like = mPost->mViewer->mLike;
+    return like && !like->isEmpty();
+}
+
+
 }
