@@ -1,10 +1,13 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick.Dialogs
 import skywalker
 
 Page {
     property int maxPostLength: 300
+    property int maxImages: 4
+    property list<string> images
     signal closed
 
     id: page
@@ -17,7 +20,7 @@ Page {
         z: 10
         color: "black"
 
-        RoundButton {
+        Button {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             Material.background: "blue"
@@ -40,50 +43,169 @@ Page {
                 text: qsTr("Post", "verb on post button")
             }
 
-            enabled: postText.text.length > 0 && postText.text.length <= maxPostLength
-            onClicked: skywalker.pickPhoto()
+            enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
+            onClicked: console.debug("TODO")
         }
     }
 
-    footer: Rectangle {
-        width: parent.width
-        height: root.footerHeight
-        z: 10
-        color: "white"
+    Flickable {
+        id: flick
+        anchors.fill: parent
+        clip: true
+        contentWidth: postText.width
+        contentHeight: postText.height + imageScroller.height
+        flickableDirection: Flickable.VerticalFlick
 
-        ProgressBar {
-            id: textLengthBar
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            from: 0
-            to: page.maxPostLength
-            value: postText.text.length
+        TextArea {
+            id: postText
+            width: page.width
+            placeholderText: textLength() === 0 ? "Say something nice" : ""
+            placeholderTextColor: "grey"
+            wrapMode: TextEdit.Wrap
+            font.pointSize: root.scaledFont(9/8)
+            clip: true
+            focus: true
+            background: Rectangle { border.color: "transparent" }
 
-            contentItem: Rectangle {
-                width: textLengthBar.visualPosition * parent.width
-                height: parent.height
-                color: textLengthBar.value <= textLengthBar.to ? "blue" : "red"
+            onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+
+            function textLength() {
+                return length + preeditText.length
             }
         }
 
-        Text {
-            anchors.rightMargin: 10
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            text: maxPostLength - postText.text.length
+        Rectangle {
+            id: textFooter
+            anchors.top: postText.bottom
+            anchors.topMargin: 30
+            width: page.width
+            height: root.footerHeight
+            z: 10
+            color: "transparent"
+
+            ProgressBar {
+                id: textLengthBar
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                from: 0
+                to: page.maxPostLength
+                value: postText.textLength()
+
+                contentItem: Rectangle {
+                    width: textLengthBar.visualPosition * parent.width
+                    height: parent.height
+                    color: postText.textLength() <= maxPostLength ? "blue" : "red"
+                }
+            }
+
+            SvgImage {
+                x: 10
+                y: height + 5
+                width: 34
+                height: 34
+                id: homeButton
+                color: page.images.length < maxImages ? "blue" : "lightgrey"
+                svg: svgOutline.addImage
+
+                MouseArea {
+                    y: -parent.y
+                    width: parent.width
+                    height: parent.height
+                    visible: page.images.length < maxImages
+
+                    onClicked: {
+                        if (Qt.platform.os === "android")
+                            skywalker.pickPhoto()
+                        else
+                            fileDialog.open()
+                    }
+                }
+            }
+
+            Text {
+                anchors.rightMargin: 10
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                color: postText.textLength() <= maxPostLength ? Material.foreground : "red"
+                text: maxPostLength - postText.textLength()
+            }
+        }
+
+        ScrollView {
+            property int imgWidth: 240
+
+            id: imageScroller
+            height: 180
+            width: page.width
+            horizontalPadding: 10
+            anchors.top: textFooter.bottom
+            contentWidth: imageRow.width
+            contentHeight: height
+
+            Row {
+                id: imageRow
+                width: page.images.length * imageScroller.imgWidth + (page.images.length - 1) * spacing
+                spacing: 10
+
+                Repeater {
+                    model: page.images
+
+                    Image {
+                        required property string modelData
+                        required property int index
+
+                        width: imageScroller.imgWidth
+                        height: imageScroller.height
+                        fillMode: Image.PreserveAspectCrop
+                        source: modelData
+
+                        RoundButton {
+                            Material.background: "black"
+                            contentItem: Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                color: "white"
+                                font.pointSize: root.scaledFont(7/8)
+                                font.bold: true
+                                text: qsTr("+ALT", "add alternative text button")
+                            }
+                        }
+
+                        SvgButton {
+                            x: parent.width - width
+                            height: width
+                            iconColor: "white"
+                            Material.background: "black"
+                            opacity: 1
+                            svg: svgOutline.close
+                            onClicked: page.images.splice(index, 1)
+                        }
+                    }
+                }
+            }
+        }
+
+        function ensureVisible(r) {
+            if (contentY >= r.y)
+                contentY = r.y;
+            else if (contentY + height <= r.y + r.height)
+                contentY = r.y + r.height - height;
         }
     }
 
-    TextArea {
-        id: postText
-        anchors.fill: parent
-        placeholderText: text.length === 0 ? "Say something nice" : ""
-        placeholderTextColor: "grey"
-        wrapMode: TextEdit.Wrap
-        focus: true
-        background: Rectangle {
-            border.color: "transparent"
-        }
+    FileDialog {
+        id: fileDialog
+        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+        onAccepted: photoPicked(selectedFile)
+    }
+
+    function photoPicked(filename) {
+        page.images.push(filename)
+        let scrollBar = imageScroller.ScrollBar.horizontal
+        scrollBar.position = 1.0 - scrollBar.size
+    }
+
+    Component.onCompleted: {
+        skywalker.photoPicked.connect((filename) => { photoPicked("file://" + filename) })
     }
 }

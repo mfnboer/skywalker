@@ -17,7 +17,7 @@ Image {
         bottomInset: 10
         padding: 12
         color: "white"
-        text: "ALT"
+        text: qsTr("ALT", "alternative text indication on an image")
         visible: imageView.alt
 
         background: Rectangle {

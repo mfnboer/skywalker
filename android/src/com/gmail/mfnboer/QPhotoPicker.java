@@ -5,6 +5,7 @@ package com.gmail.mfnboer;
 
 import org.qtproject.qt.android.QtNative;
 
+import java.lang.String;
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -17,6 +18,8 @@ import android.util.Log;
 
 public class QPhotoPicker extends AppCompatActivity {
     private static final String LOGTAG = "QPhotoPicker";
+
+    public static native void emitPhotoPicked(String uri);
 
     public static void start() {
         Context context = QtNative.getContext();
@@ -36,6 +39,7 @@ public class QPhotoPicker extends AppCompatActivity {
             // photo picker.
             if (uri != null) {
                 Log.d("PhotoPicker", "Selected URI: " + uri);
+                emitPhotoPicked(uri.toString());
             } else {
                 Log.d("PhotoPicker", "No media selected");
             }

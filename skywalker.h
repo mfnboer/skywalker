@@ -57,6 +57,7 @@ signals:
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);
     void avatarUrlChanged();
+    void photoPicked(QString filename);
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;

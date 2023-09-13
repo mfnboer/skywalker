@@ -52,6 +52,12 @@ qt_add_qml_module(appskywalker
         abstract_post_feed_model.cpp
         post_thread_model.h
         post_thread_model.cpp
+        profile_store.h
+        profile_store.cpp
+        photo_picker.h
+        photo_picker.cpp
+        jni_callback.h
+        jni_callback.cpp
     QML_FILES
         Avatar.qml
         ImagePreview1.qml
@@ -68,20 +74,16 @@ qt_add_qml_module(appskywalker
         FullImageView.qml
         SvgImage.qml
         StatIcon.qml
-        QML_FILES StatusPopup.qml
+        StatusPopup.qml
+        TimelineView.qml
+        SvgButton.qml
+        PostFeedViewDelegate.qml
+        PostThreadView.qml
+        ComposePost.qml
     RESOURCES
         qtquickcontrols2.conf
-        QML_FILES TimelineView.qml
-        QML_FILES SvgButton.qml
-        QML_FILES PostFeedViewDelegate.qml
-        QML_FILES PostThreadView.qml
-        SOURCES profile_store.h
-        SOURCES profile_store.cpp
-        QML_FILES ComposePost.qml
-        RESOURCES android/src/com/gmail/mfnboer/QPhotoPicker.java
-        SOURCES photo_picker.h
-        SOURCES photo_picker.cpp
-
+        android/src/com/gmail/mfnboer/QPhotoPicker.java
+        RESOURCES android/src/com/gmail/mfnboer/FileUtils.java
 )
 
 set_target_properties(appskywalker PROPERTIES

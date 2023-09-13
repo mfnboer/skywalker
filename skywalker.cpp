@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "skywalker.h"
+#include "jni_callback.h"
 #include "photo_picker.h"
 #include <QSettings>
 
@@ -19,6 +20,17 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineModel(mUserDid, mUserFollows, this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
+
+    auto& jniCallbackListener = JNICallbackListener::getInstance();
+    QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
+                     this, [this](const QString& uri){
+                        qInfo() << "PHOTO PICKED:" << uri;
+                        QString fileName = resolveContentUriToFile(uri);
+                        qInfo() << "PHOTO FILE NAME:" << fileName;
+                        QFile file(fileName);
+                        qInfo() << "File exists:" << file.exists() << ",size:" << file.size();
+                        emit photoPicked(fileName);
+                     });
 }
 
 Skywalker::~Skywalker()
