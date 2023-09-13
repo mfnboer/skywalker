@@ -44,6 +44,7 @@ ApplicationWindow {
 
     StatusPopup {
         id: statusPopup
+        z: 100
     }
 
     Login {

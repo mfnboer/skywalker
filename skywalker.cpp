@@ -195,15 +195,15 @@ void Skywalker::syncTimeline(int maxPages)
 {
     const auto timestamp = getSyncTimestamp();
 
-    if (!timestamp.isValid())
+    // TODO: if (!timestamp.isValid())
     {
         qInfo() << "No timestamp saved";
         getTimeline(TIMELINE_ADD_PAGE_SIZE);
+        emit timelineSyncOK(-1);
         return;
     }
 
     syncTimeline(timestamp, maxPages);
-    emit timelineSyncOK(-1);
 }
 
 void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QString& cursor)
@@ -501,6 +501,24 @@ void Skywalker::removePostThreadModel(int id)
 void Skywalker::pickPhoto()
 {
     ::Skywalker::pickPhoto();
+}
+
+void Skywalker::post(const QString& text)
+{
+    Q_ASSERT(mBsky);
+    ATProto::AppBskyFeed::Record::Post post;
+    post.mText = text;
+    post.mCreatedAt = QDateTime::currentDateTimeUtc();
+
+    mBsky->post(post,
+        [this]{
+            emit postOk();
+        },
+        [this](const QString& error){
+            qDebug() << "Post failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            emit postFailed();
+        });
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

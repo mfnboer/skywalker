@@ -35,6 +35,7 @@ public:
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void pickPhoto();
+    Q_INVOKABLE void post(const QString& text);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);
@@ -58,6 +59,8 @@ signals:
     void postThreadOk(int id, int postEntryIndex);
     void avatarUrlChanged();
     void photoPicked(QString filename);
+    void postOk();
+    void postFailed();
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;

@@ -380,7 +380,7 @@ int Post::getLikeCount() const
 
 bool Post::hasReposted() const
 {
-    if (!mPost && !mPost->mViewer)
+    if (!mPost || !mPost->mViewer)
         return false;
 
     const auto& repost = mPost->mViewer->mRepost;
@@ -389,7 +389,7 @@ bool Post::hasReposted() const
 
 bool Post::hasLiked() const
 {
-    if (!mPost && !mPost->mViewer)
+    if (!mPost || !mPost->mViewer)
         return false;
 
     const auto& like = mPost->mViewer->mLike;

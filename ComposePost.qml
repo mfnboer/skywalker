@@ -44,7 +44,7 @@ Page {
             }
 
             enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
-            onClicked: console.debug("TODO")
+            onClicked: skywalker.post(postText.text);
         }
     }
 
@@ -199,13 +199,27 @@ Page {
         onAccepted: photoPicked(selectedFile)
     }
 
-    function photoPicked(filename) {
-        page.images.push(filename)
+    function photoPicked(file) {
+        page.images.push(file)
         let scrollBar = imageScroller.ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
     }
 
+    function photoNamePicked(filename) {
+        photoPicked("file://" + filename)
+    }
+
+    function postDone() {
+        page.closed()
+    }
+
+    Component.onDestruction: {
+        skywalker.photoPicked.disconnect(photoNamePicked)
+        skywalker.postOk.disconnect(postDone)
+    }
+
     Component.onCompleted: {
-        skywalker.photoPicked.connect((filename) => { photoPicked("file://" + filename) })
+        skywalker.photoPicked.connect(photoNamePicked)
+        skywalker.postOk.connect(postDone)
     }
 }

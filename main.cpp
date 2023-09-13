@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
     app.setOrganizationDomain("skywalker.foo");
     app.setApplicationName("Skywalker");
 
-    QLoggingCategory::setFilterRules("*.debug=false");
+    //QLoggingCategory::setFilterRules("*.debug=false");
+
     qDebug() << "Font size:" << app.font();
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
 
