@@ -36,8 +36,7 @@ Item {
                 rightPadding: 5
                 text: new URL(postExternal.uri).hostname
                 elide: Text.ElideRight
-                font.pointSize: root.scaledFont(7/8)
-                color: Material.color(Material.Grey)
+                color: "blue"
             }
             Text {
                 id: titleText
@@ -50,6 +49,7 @@ Item {
                 maximumLineCount: 2
                 elide: Text.ElideRight
                 font.bold: true
+                visible: postExternal.title
             }
             Text {
                 id: descriptionText

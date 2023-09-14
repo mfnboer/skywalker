@@ -24,11 +24,11 @@ Skywalker::Skywalker(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
     QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
                      this, [this](const QString& uri){
-                        qInfo() << "PHOTO PICKED:" << uri;
+                        qDebug() << "PHOTO PICKED:" << uri;
                         QString fileName = resolveContentUriToFile(uri);
-                        qInfo() << "PHOTO FILE NAME:" << fileName;
+                        qDebug() << "PHOTO FILE NAME:" << fileName;
                         QFile file(fileName);
-                        qInfo() << "File exists:" << file.exists() << ",size:" << file.size();
+                        qDebug() << "File exists:" << file.exists() << ",size:" << file.size();
                         emit photoPicked(fileName);
                      });
 }
@@ -503,16 +503,60 @@ void Skywalker::pickPhoto()
     ::Skywalker::pickPhoto();
 }
 
-void Skywalker::post(const QString& text)
+void Skywalker::post(const QString& text, const QStringList& imageFileNames)
 {
     Q_ASSERT(mBsky);
-    ATProto::AppBskyFeed::Record::Post post;
-    post.mText = text;
-    post.mCreatedAt = QDateTime::currentDateTimeUtc();
+    qDebug() << "Posting:" << text;
+    auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
+    post->mText = text;
+    post->mCreatedAt = QDateTime::currentDateTimeUtc();
+    continuePost(imageFileNames, post);
+}
 
-    mBsky->post(post,
-        [this]{
-            emit postOk();
+void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+{
+    if (imageFileNames.empty())
+    {
+        mBsky->post(*post,
+            [this]{
+                emit postOk();
+            },
+            [this](const QString& error){
+                qDebug() << "Post failed:" << error;
+                emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+                emit postFailed();
+            });
+
+        return;
+    }
+
+    const auto& fileName = imageFileNames[0];
+    const auto& blob = createBlob(fileName);
+    if (blob.isEmpty())
+    {
+        emit statusMessage(tr("Could not load image") + ": " + QFileInfo(fileName).fileName());
+        emit postFailed();
+        return;
+    }
+
+    if (!post->mEmbed)
+    {
+        post->mEmbed = std::make_unique<ATProto::AppBskyEmbed::Embed>();
+        post->mEmbed->mType = ATProto::AppBskyEmbed::EmbedType::IMAGES;
+        post->mEmbed->mEmbed = std::make_unique<ATProto::AppBskyEmbed::Images>();
+    }
+
+    mBsky->uploadBlob(blob, "image/jpeg",
+        [this, imageFileNames, post](auto blob){
+            auto image = std::make_unique<ATProto::AppBskyEmbed::Image>();
+            image->mImage = std::move(blob);
+            image->mAlt = ""; // TODO
+            auto& images = std::get<ATProto::AppBskyEmbed::Images::Ptr>(post->mEmbed->mEmbed);
+            images->mImages.push_back(std::move(image));
+
+            auto remaining = imageFileNames;
+            remaining.erase(imageFileNames.begin());
+            continuePost(remaining, post);
         },
         [this](const QString& error){
             qDebug() << "Post failed:" << error;

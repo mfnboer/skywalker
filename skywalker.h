@@ -35,7 +35,7 @@ public:
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void pickPhoto();
-    Q_INVOKABLE void post(const QString& text);
+    Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);
@@ -70,6 +70,7 @@ private:
     void startRefreshTimer();
     void stopRefreshTimer();
     void refreshSession();
+    void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session);
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);

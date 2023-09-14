@@ -2,7 +2,10 @@
 // License: GPLv3
 #include "photo_picker.h"
 #include <QtGlobal>
+#include <QBuffer>
 #include <QCoreApplication>
+#include <QImage>
+#include <QImageReader>
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
@@ -10,6 +13,9 @@
 #endif
 
 namespace {
+
+constexpr size_t MAX_IMAGE_BYTES = 1000000;
+constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
 
 bool checkStoragePermission()
 {
@@ -67,6 +73,41 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #else
     return {};
 #endif
+}
+
+QByteArray createBlob(const QString& fileName)
+{
+    QImageReader reader(fileName);
+    reader.setAutoTransform(true);
+    QImage img = reader.read();
+    qDebug() << "Original image:" << fileName << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
+
+    if (std::max(img.width(), img.height()) > MAX_IMAGE_PIXEL_SIZE)
+    {
+        if (img.width() > img.height())
+            img = img.scaledToWidth(MAX_IMAGE_PIXEL_SIZE, Qt::SmoothTransformation);
+        else
+            img = img.scaledToHeight(MAX_IMAGE_PIXEL_SIZE, Qt::SmoothTransformation);
+    }
+
+    QByteArray blob;
+    QBuffer buffer(&blob);
+    buffer.open(QIODevice::WriteOnly);
+
+    if (!img.save(&buffer, "jpg"))
+    {
+        qWarning() << "Failed to write blob:" << fileName;
+        blob.clear();
+    }
+
+    qDebug() << "Blob size:" << blob.size();
+    if (blob.size() > MAX_IMAGE_BYTES)
+    {
+        qWarning() << "Image too large:" << fileName << "blob bytes:" << blob.size();
+        blob.clear();
+    }
+
+    return blob;
 }
 
 }

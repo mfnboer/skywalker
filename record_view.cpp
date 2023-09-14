@@ -67,7 +67,7 @@ QList<ImageView> RecordView::getImages() const
 
     // TODO: there is a list of embeds; can there be more than 1?
     const auto& embed = mRecord->mEmbeds[0];
-    if (embed->mType != ATProto::AppBskyEmbed::EmbedType::IMAGES_VIEW)
+    if (embed->mType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
         return {};
 
     const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::Ptr>(embed->mEmbed);
@@ -86,7 +86,7 @@ QVariant RecordView::getExternal() const
 
     // TODO: there is a list of embeds; can there be more than 1?
     const auto& embed = mRecord->mEmbeds[0];
-    if (embed->mType != ATProto::AppBskyEmbed::EmbedType::EXTERNAL_VIEW)
+    if (embed->mType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::Ptr>(embed->mEmbed)->mExternal;

@@ -276,13 +276,13 @@ Rectangle {
                 }
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: postReposted ? "red" : "grey"
+                    iconColor: postReposted ? "palevioletred" : "grey"
                     svg: svgOutline.repost
                     statistic: postRepostCount
                 }
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: postLiked ? "red" : "grey"
+                    iconColor: postLiked ? "palevioletred" : "grey"
                     svg: postLiked ? svgFilled.like : svgOutline.like
                     statistic: postLikeCount
                 }

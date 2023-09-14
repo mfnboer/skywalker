@@ -16,7 +16,7 @@ RecordView RecordWithMediaView::getRecord() const
 
 QList<ImageView> RecordWithMediaView::getImages() const
 {
-    if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedType::IMAGES_VIEW)
+    if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
         return {};
 
     const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::Ptr>(mView->mMedia);
@@ -30,7 +30,7 @@ QList<ImageView> RecordWithMediaView::getImages() const
 
 QVariant RecordWithMediaView::getExternal() const
 {
-    if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedType::EXTERNAL_VIEW)
+    if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::Ptr>(mView->mMedia)->mExternal;

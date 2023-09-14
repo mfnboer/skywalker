@@ -44,7 +44,7 @@ Page {
             }
 
             enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
-            onClicked: skywalker.post(postText.text);
+            onClicked: skywalker.post(postText.text, images);
         }
     }
 
@@ -158,7 +158,8 @@ Page {
                         width: imageScroller.imgWidth
                         height: imageScroller.height
                         fillMode: Image.PreserveAspectCrop
-                        source: modelData
+                        autoTransform: true
+                        source: "file://" + modelData
 
                         RoundButton {
                             Material.background: "black"
@@ -196,17 +197,20 @@ Page {
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        onAccepted: photoPicked(selectedFile)
+        onAccepted: {
+            let fileName = selectedFile.toString()
+            if (fileName.startsWith("file://"))
+                fileName = fileName.substr(7)
+
+            photoPicked(fileName)
+        }
     }
 
-    function photoPicked(file) {
-        page.images.push(file)
+    function photoPicked(fileName) {
+        console.debug("IMAGE:", fileName)
+        page.images.push(fileName)
         let scrollBar = imageScroller.ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
-    }
-
-    function photoNamePicked(filename) {
-        photoPicked("file://" + filename)
     }
 
     function postDone() {
@@ -214,12 +218,12 @@ Page {
     }
 
     Component.onDestruction: {
-        skywalker.photoPicked.disconnect(photoNamePicked)
+        skywalker.photoPicked.disconnect(photoPicked)
         skywalker.postOk.disconnect(postDone)
     }
 
     Component.onCompleted: {
-        skywalker.photoPicked.connect(photoNamePicked)
+        skywalker.photoPicked.connect(photoPicked)
         skywalker.postOk.connect(postDone)
     }
 }
