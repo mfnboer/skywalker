@@ -10,7 +10,7 @@ Popup {
     height: 50
 
     background: Rectangle {
-        color: ["ligthcyan", "red"][level]
+        color: ["lightcyan", "red"][level]
         border.width: 1
         border.color: "grey"
         radius: 5
