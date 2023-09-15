@@ -507,24 +507,22 @@ void Skywalker::post(const QString& text, const QStringList& imageFileNames)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Posting:" << text;
-    auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
-    post->mText = text;
-    post->mCreatedAt = QDateTime::currentDateTimeUtc();
+    auto post = mBsky->createPost(text);
     continuePost(imageFileNames, post);
 }
 
-void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgNum)
 {
     if (imageFileNames.empty())
     {
+        emit postProgress(tr("Posting"));
         mBsky->post(*post,
             [this]{
                 emit postOk();
             },
             [this](const QString& error){
                 qDebug() << "Post failed:" << error;
-                emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
-                emit postFailed();
+                emit postFailed(error);
             });
 
         return;
@@ -534,34 +532,23 @@ void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
     const auto& blob = createBlob(fileName);
     if (blob.isEmpty())
     {
-        emit statusMessage(tr("Could not load image") + ": " + QFileInfo(fileName).fileName());
-        emit postFailed();
+        const QString error = tr("Could not load image") + ": " + QFileInfo(fileName).fileName();
+        emit postFailed(error);
         return;
     }
 
-    if (!post->mEmbed)
-    {
-        post->mEmbed = std::make_unique<ATProto::AppBskyEmbed::Embed>();
-        post->mEmbed->mType = ATProto::AppBskyEmbed::EmbedType::IMAGES;
-        post->mEmbed->mEmbed = std::make_unique<ATProto::AppBskyEmbed::Images>();
-    }
+    emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgNum));
 
     mBsky->uploadBlob(blob, "image/jpeg",
-        [this, imageFileNames, post](auto blob){
-            auto image = std::make_unique<ATProto::AppBskyEmbed::Image>();
-            image->mImage = std::move(blob);
-            image->mAlt = ""; // TODO
-            auto& images = std::get<ATProto::AppBskyEmbed::Images::Ptr>(post->mEmbed->mEmbed);
-            images->mImages.push_back(std::move(image));
-
+        [this, imageFileNames, post, imgNum](auto blob){
+            mBsky->addImageToPost(*post, std::move(blob));
             auto remaining = imageFileNames;
             remaining.erase(imageFileNames.begin());
-            continuePost(remaining, post);
+            continuePost(remaining, post, imgNum + 1);
         },
         [this](const QString& error){
             qDebug() << "Post failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
-            emit postFailed();
+            emit postFailed(error);
         });
 }
 

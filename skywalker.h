@@ -60,7 +60,8 @@ signals:
     void avatarUrlChanged();
     void photoPicked(QString filename);
     void postOk();
-    void postFailed();
+    void postFailed(QString error);
+    void postProgress(QString msg);
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
@@ -70,7 +71,7 @@ private:
     void startRefreshTimer();
     void stopRefreshTimer();
     void refreshSession();
-    void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgNum = 1);
     void saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session);
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);

@@ -33,6 +33,7 @@ Page {
         }
 
         Button {
+            id: postButton
             anchors.rightMargin: 10
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -44,7 +45,10 @@ Page {
             }
 
             enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
-            onClicked: skywalker.post(postText.text, images);
+            onClicked: {
+                postButton.enabled = false
+                skywalker.post(postText.text, images);
+            }
         }
     }
 
@@ -194,9 +198,14 @@ Page {
         }
     }
 
+    StatusPopup {
+        id: statusPopup
+    }
+
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+        nameFilters: ["Image files (*.jpg *.jpeg *.png)"]
         onAccepted: {
             let fileName = selectedFile.toString()
             if (fileName.startsWith("file://"))
@@ -204,6 +213,17 @@ Page {
 
             photoPicked(fileName)
         }
+    }
+
+    function postFailed(error) {
+        console.debug(error)
+        statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        postButton.enabled = true
+    }
+
+    function postProgress(msg) {
+        console.debug(msg)
+        statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
     function photoPicked(fileName) {
@@ -220,10 +240,14 @@ Page {
     Component.onDestruction: {
         skywalker.photoPicked.disconnect(photoPicked)
         skywalker.postOk.disconnect(postDone)
+        skywalker.postFailed.disconnect(postFailed)
+        skywalker.postProgress.disconnect(postProgress)
     }
 
     Component.onCompleted: {
         skywalker.photoPicked.connect(photoPicked)
         skywalker.postOk.connect(postDone)
+        skywalker.postFailed.connect(postFailed)
+        skywalker.postProgress.connect(postProgress)
     }
 }
