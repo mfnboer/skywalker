@@ -61,10 +61,13 @@ Page {
         flickableDirection: Flickable.VerticalFlick
 
         TextArea {
+            property string prevText
+
             id: postText
             width: page.width
             placeholderText: textLength() === 0 ? "Say something nice" : ""
             placeholderTextColor: "grey"
+            textFormat: TextEdit.RichText
             wrapMode: TextEdit.Wrap
             font.pointSize: root.scaledFont(9/8)
             clip: true
@@ -72,6 +75,17 @@ Page {
             background: Rectangle { border.color: "transparent" }
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+            Keys.onReleased: {
+                let curText = getText(0, length)
+
+                if (curText !== prevText)
+                {
+                    let pos = cursorPosition
+                    text = skywalker.highlightMentionsAndLinks(curText)
+                    cursorPosition = pos
+                    prevText = curText
+                }
+            }
 
             function textLength() {
                 return length + preeditText.length

@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void pickPhoto();
     Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames);
+    Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);

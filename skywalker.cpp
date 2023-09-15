@@ -513,6 +513,7 @@ void Skywalker::post(const QString& text, const QStringList& imageFileNames)
 
 void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgNum)
 {
+    // TODO: no need to remove entries for imageFileNames, we can use imgNum as index
     if (imageFileNames.empty())
     {
         emit postProgress(tr("Posting"));
@@ -550,6 +551,26 @@ void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
             qDebug() << "Post failed:" << error;
             emit postFailed(error);
         });
+}
+
+QString Skywalker::highlightMentionsAndLinks(const QString& text)
+{
+    // TODO: replace space by non-breakable space
+    const auto facets = mBsky->parseFacets(text);
+    QString highlighted;
+    int pos = 0;
+
+    for (const auto& facet : facets)
+    {
+        const auto before = text.sliced(pos, facet.mStartIndex - pos);
+        highlighted.append(before.toHtmlEscaped());
+        QString highlight = QString("<font color=\"blue\">%1</font>").arg(facet.mMatch);
+        highlighted.append(highlight);
+        pos = facet.mEndIndex;
+    }
+
+    highlighted.append(text.sliced(pos).toHtmlEscaped());
+    return highlighted;
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
