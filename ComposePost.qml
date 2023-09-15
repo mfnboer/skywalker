@@ -165,7 +165,7 @@ Page {
                         autoTransform: true
                         source: "file://" + modelData
 
-                        onStateChanged: {
+                        onStatusChanged: {
                             if (status === Image.Error)
                             {
                                 statusPopup.show(qsTr("Cannot load image"), QEnums.STATUS_LEVEL_ERROR);
