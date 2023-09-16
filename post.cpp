@@ -127,13 +127,13 @@ QString Post::getText() const
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
 
         if (record->mFacets.empty())
-            return record->mText.toHtmlEscaped().replace('\n', "<br>");
+            return record->mText.toHtmlEscaped().replace(' ', "&nbsp;").replace('\n', "<br>");
         else
             return ATProto::AppBskyRichtext::applyFacets(record->mText, record->mFacets);
     }
 
     QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;
-    return text.toHtmlEscaped().replace('\n', "<br>");
+    return text.toHtmlEscaped().replace(' ', "&nbsp;").replace('\n', "<br>");
 }
 
 BasicProfile Post::getAuthor() const

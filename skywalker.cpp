@@ -503,18 +503,19 @@ void Skywalker::pickPhoto()
     ::Skywalker::pickPhoto();
 }
 
-void Skywalker::post(const QString& text, const QStringList& imageFileNames)
+void Skywalker::post(QString text, const QStringList& imageFileNames)
 {
     Q_ASSERT(mBsky);
+    text.replace("\u00A0", " "); // replace nbsp by normal space
     qDebug() << "Posting:" << text;
-    auto post = mBsky->createPost(text);
-    continuePost(imageFileNames, post);
+
+    mBsky->createPost(text, [this, imageFileNames](auto post){
+        continuePost(imageFileNames, post); });
 }
 
-void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgNum)
+void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex)
 {
-    // TODO: no need to remove entries for imageFileNames, we can use imgNum as index
-    if (imageFileNames.empty())
+    if (imgIndex >= imageFileNames.size())
     {
         emit postProgress(tr("Posting"));
         mBsky->post(*post,
@@ -529,7 +530,7 @@ void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         return;
     }
 
-    const auto& fileName = imageFileNames[0];
+    const auto& fileName = imageFileNames[imgIndex];
     const auto& blob = createBlob(fileName);
     if (blob.isEmpty())
     {
@@ -538,14 +539,12 @@ void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         return;
     }
 
-    emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgNum));
+    emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
 
     mBsky->uploadBlob(blob, "image/jpeg",
-        [this, imageFileNames, post, imgNum](auto blob){
+        [this, imageFileNames, post, imgIndex](auto blob){
             mBsky->addImageToPost(*post, std::move(blob));
-            auto remaining = imageFileNames;
-            remaining.erase(imageFileNames.begin());
-            continuePost(remaining, post, imgNum + 1);
+            continuePost(imageFileNames, post, imgIndex + 1);
         },
         [this](const QString& error){
             qDebug() << "Post failed:" << error;
@@ -555,7 +554,6 @@ void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
 
 QString Skywalker::highlightMentionsAndLinks(const QString& text)
 {
-    // TODO: replace space by non-breakable space
     const auto facets = mBsky->parseFacets(text);
     QString highlighted;
     int pos = 0;
@@ -563,13 +561,13 @@ QString Skywalker::highlightMentionsAndLinks(const QString& text)
     for (const auto& facet : facets)
     {
         const auto before = text.sliced(pos, facet.mStartIndex - pos);
-        highlighted.append(before.toHtmlEscaped());
+        highlighted.append(before.toHtmlEscaped().replace(' ', "&nbsp;"));
         QString highlight = QString("<font color=\"blue\">%1</font>").arg(facet.mMatch);
         highlighted.append(highlight);
         pos = facet.mEndIndex;
     }
 
-    highlighted.append(text.sliced(pos).toHtmlEscaped());
+    highlighted.append(text.sliced(pos).toHtmlEscaped().replace(' ', "&nbsp;"));
     return highlighted;
 }
 

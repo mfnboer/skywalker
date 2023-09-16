@@ -47,7 +47,7 @@ Page {
             enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
             onClicked: {
                 postButton.enabled = false
-                skywalker.post(postText.text, images);
+                skywalker.post(postText.getPlainText(), images);
             }
         }
     }
@@ -76,7 +76,7 @@ Page {
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
             Keys.onReleased: {
-                let curText = getText(0, length)
+                let curText = getPlainText()
 
                 if (curText !== prevText)
                 {
@@ -85,6 +85,10 @@ Page {
                     cursorPosition = pos
                     prevText = curText
                 }
+            }
+
+            function getPlainText() {
+                return getText(0, length)
             }
 
             function textLength() {
@@ -101,6 +105,7 @@ Page {
             z: 10
             color: "transparent"
 
+            // TODO: get grapheme length of post
             ProgressBar {
                 id: textLengthBar
                 anchors.left: parent.left
@@ -259,6 +264,7 @@ Page {
         page.closed()
     }
 
+    // TODO: refactor into PhotoPicker class
     Component.onDestruction: {
         skywalker.photoPicked.disconnect(photoPicked)
         skywalker.postOk.disconnect(postDone)
