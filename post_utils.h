@@ -18,10 +18,10 @@ public:
     explicit PostUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE void post(QString text, const QStringList& imageFileNames);
-    Q_INVOKABLE void pickPhoto();
+    Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text);
-    Q_INVOKABLE int graphemeLength(const QString& text);
-    Q_INVOKABLE int getLinkShorteningReduction() { return mLinkShorteningReduction; };
+    Q_INVOKABLE int graphemeLength(const QString& text) const;
+    Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);

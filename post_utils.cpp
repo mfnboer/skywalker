@@ -38,7 +38,6 @@ void PostUtils::setSkywalker(Skywalker* skywalker)
 void PostUtils::post(QString text, const QStringList& imageFileNames)
 {
     Q_ASSERT(mSkywalker);
-    text.replace("\u00A0", " "); // replace nbsp by normal space
     qDebug() << "Posting:" << text;
 
     bskyClient()->createPost(text, [this, imageFileNames](auto post){
@@ -84,7 +83,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         });
 }
 
-void PostUtils::pickPhoto()
+void PostUtils::pickPhoto() const
 {
     ::Skywalker::pickPhoto();
 }
@@ -123,7 +122,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text)
         }
 
         const auto before = text.sliced(pos, facet.mStartIndex - pos);
-        highlighted.append(before.toHtmlEscaped().replace(' ', "&nbsp;"));
+        highlighted.append(before.toHtmlEscaped());
         QString highlight = QString("<font color=\"blue\">%1</font>").arg(facet.mMatch);
         highlighted.append(highlight);
         pos = facet.mEndIndex;
@@ -132,11 +131,11 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text)
     if (!webLinkFound)
         setFirstWebLink(QString());
 
-    highlighted.append(text.sliced(pos).toHtmlEscaped().replace(' ', "&nbsp;"));
+    highlighted.append(text.sliced(pos).toHtmlEscaped());
     return highlighted;
 }
 
-int PostUtils::graphemeLength(const QString& text)
+int PostUtils::graphemeLength(const QString& text) const
 {
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
     int length = 0;

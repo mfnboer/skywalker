@@ -110,7 +110,6 @@ Page {
             z: 10
             color: "transparent"
 
-            // TODO: get grapheme length of post
             ProgressBar {
                 id: textLengthBar
                 anchors.left: parent.left
@@ -133,7 +132,7 @@ Page {
                 width: 34
                 height: 34
                 id: homeButton
-                color: page.images.length < maxImages ? "blue" : "lightgrey"
+                color: page.images.length < maxImages && imageScroller.visible ? "blue" : "lightgrey"
                 svg: svgOutline.addImage
 
                 MouseArea {
@@ -164,12 +163,13 @@ Page {
             property int imgWidth: 240
 
             id: imageScroller
-            height: 180
+            height: visible ? 180 : 0
             width: page.width
             horizontalPadding: 10
             anchors.top: textFooter.bottom
             contentWidth: imageRow.width
             contentHeight: height
+            visible: !linkCard.visible
 
             Row {
                 id: imageRow
@@ -222,6 +222,39 @@ Page {
             }
         }
 
+        LinkCardView {
+            property var card: null
+
+            id: linkCard
+            x: 10
+            width: page.width - 20
+            height: columnHeight
+            anchors.top: imageScroller.bottom
+            uri: card ? card.link : ""
+            title: card ? card.title : ""
+            description: card ? card.description : ""
+            thumbUrl: card ? card.thumb : ""
+            visible: card
+
+            function show(card) {
+                linkCard.card = card
+            }
+
+            function hide() {
+                linkCard.card = null
+            }
+
+            SvgButton {
+                x: parent.width - width
+                height: width
+                iconColor: "white"
+                Material.background: "black"
+                opacity: 1
+                svg: svgOutline.close
+                onClicked: linkCard.hide()
+            }
+        }
+
         function ensureVisible(r) {
             if (contentY >= r.y)
                 contentY = r.y;
@@ -247,6 +280,21 @@ Page {
         }
     }
 
+    LinkCardReader {
+        id: linkCardReader
+        onLinkCard: (card) => {
+                        console.debug("Got card:", card.link, card.title, card.thumb)
+                        console.debug(card.description)
+                        linkCard.show(card)
+                    }
+    }
+
+    Timer {
+        id: linkCardTimer;
+        interval: 1000
+        onTriggered: linkCardReader.getLinkCard(postUtils.firstWebLink)
+    }
+
     PostUtils {
         id: postUtils
         skywalker: page.skywalker
@@ -255,6 +303,19 @@ Page {
         onPostFailed: (error) => page.postFailed(error)
         onPostProgress: (msg) => page.postProgress(msg)
         onPhotoPicked: (fileName) => page.photoPicked(fileName)
+
+        onFirstWebLinkChanged: {
+            if (firstWebLink)
+            {
+                linkCard.hide()
+                linkCardTimer.start()
+            }
+            else
+            {
+                linkCard.hide()
+                linkCardTimer.stop()
+            }
+        }
     }
 
     function postFailed(error) {

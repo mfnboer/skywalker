@@ -86,6 +86,10 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/FileUtils.java
         SOURCES post_utils.h
         SOURCES post_utils.cpp
+        SOURCES link_card_reader.h
+        SOURCES link_card_reader.cpp
+        SOURCES link_card.h
+        QML_FILES LinkCardView.qml
 )
 
 set_target_properties(appskywalker PROPERTIES
