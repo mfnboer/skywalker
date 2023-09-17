@@ -34,8 +34,6 @@ public:
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
-    Q_INVOKABLE void pickPhoto();
-    Q_INVOKABLE void post(QString text, const QStringList& imageFileNames);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);
@@ -59,10 +57,7 @@ signals:
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);
     void avatarUrlChanged();
-    void photoPicked(QString filename);
-    void postOk();
-    void postFailed(QString error);
-    void postProgress(QString msg);
+
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
@@ -72,7 +67,6 @@ private:
     void startRefreshTimer();
     void stopRefreshTimer();
     void refreshSession();
-    void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 1);
     void saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session);
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);

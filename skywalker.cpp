@@ -1,8 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "skywalker.h"
-#include "jni_callback.h"
-#include "photo_picker.h"
 #include <QSettings>
 
 namespace Skywalker {
@@ -20,17 +18,6 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineModel(mUserDid, mUserFollows, this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
-
-    auto& jniCallbackListener = JNICallbackListener::getInstance();
-    QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
-                     this, [this](const QString& uri){
-                        qDebug() << "PHOTO PICKED:" << uri;
-                        QString fileName = resolveContentUriToFile(uri);
-                        qDebug() << "PHOTO FILE NAME:" << fileName;
-                        QFile file(fileName);
-                        qDebug() << "File exists:" << file.exists() << ",size:" << file.size();
-                        emit photoPicked(fileName);
-                     });
 }
 
 Skywalker::~Skywalker()
@@ -496,60 +483,6 @@ void Skywalker::removePostThreadModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mPostThreadModels.erase(id);
-}
-
-void Skywalker::pickPhoto()
-{
-    ::Skywalker::pickPhoto();
-}
-
-void Skywalker::post(QString text, const QStringList& imageFileNames)
-{
-    Q_ASSERT(mBsky);
-    text.replace("\u00A0", " "); // replace nbsp by normal space
-    qDebug() << "Posting:" << text;
-
-    mBsky->createPost(text, [this, imageFileNames](auto post){
-        continuePost(imageFileNames, post); });
-}
-
-void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex)
-{
-    if (imgIndex >= imageFileNames.size())
-    {
-        emit postProgress(tr("Posting"));
-        mBsky->post(*post,
-            [this]{
-                emit postOk();
-            },
-            [this](const QString& error){
-                qDebug() << "Post failed:" << error;
-                emit postFailed(error);
-            });
-
-        return;
-    }
-
-    const auto& fileName = imageFileNames[imgIndex];
-    const auto& blob = createBlob(fileName);
-    if (blob.isEmpty())
-    {
-        const QString error = tr("Could not load image") + ": " + QFileInfo(fileName).fileName();
-        emit postFailed(error);
-        return;
-    }
-
-    emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
-
-    mBsky->uploadBlob(blob, "image/jpeg",
-        [this, imageFileNames, post, imgIndex](auto blob){
-            mBsky->addImageToPost(*post, std::move(blob));
-            continuePost(imageFileNames, post, imgIndex + 1);
-        },
-        [this](const QString& error){
-            qDebug() << "Post failed:" << error;
-            emit postFailed(error);
-        });
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

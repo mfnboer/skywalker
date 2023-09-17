@@ -48,7 +48,7 @@ Page {
             enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
             onClicked: {
                 postButton.enabled = false
-                skywalker.post(postText.getPlainText(), images);
+                postUtils.post(postText.getPlainText(), images);
             }
         }
     }
@@ -250,6 +250,11 @@ Page {
     PostUtils {
         id: postUtils
         skywalker: page.skywalker
+
+        onPostOk: postDone()
+        onPostFailed: (error) => page.postFailed(error)
+        onPostProgress: (msg) => page.postProgress(msg)
+        onPhotoPicked: (fileName) => page.photoPicked(fileName)
     }
 
     function postFailed(error) {
@@ -272,20 +277,5 @@ Page {
 
     function postDone() {
         page.closed()
-    }
-
-    // TODO: refactor into PhotoPicker class
-    Component.onDestruction: {
-        skywalker.photoPicked.disconnect(photoPicked)
-        skywalker.postOk.disconnect(postDone)
-        skywalker.postFailed.disconnect(postFailed)
-        skywalker.postProgress.disconnect(postProgress)
-    }
-
-    Component.onCompleted: {
-        skywalker.photoPicked.connect(photoPicked)
-        skywalker.postOk.connect(postDone)
-        skywalker.postFailed.connect(postFailed)
-        skywalker.postProgress.connect(postProgress)
     }
 }
