@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "skywalker.h"
+#include <QLoggingCategory>
 #include <QSettings>
 
 namespace Skywalker {
@@ -182,7 +183,7 @@ void Skywalker::syncTimeline(int maxPages)
 {
     const auto timestamp = getSyncTimestamp();
 
-    // TODO: if (!timestamp.isValid())
+    if (!timestamp.isValid())
     {
         qInfo() << "No timestamp saved";
         getTimeline(TIMELINE_ADD_PAGE_SIZE);
@@ -190,6 +191,7 @@ void Skywalker::syncTimeline(int maxPages)
         return;
     }
 
+    disableDebugLogging(); // sync can cause a lot of logging
     syncTimeline(timestamp, maxPages);
 }
 
@@ -214,6 +216,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
             if (lastTimestamp.isNull())
             {
+                restoreDebugLogging();
                 qWarning() << "Feed is empty";
                 emit timelineSyncFailed();
                 return;
@@ -221,8 +224,9 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
             if (lastTimestamp < tillTimestamp)
             {
+                restoreDebugLogging();
                 const auto index = mTimelineModel.findTimestamp(tillTimestamp);
-                qInfo() << "Timeline synced, last timestamp:" << lastTimestamp << "index:"
+                qDebug() << "Timeline synced, last timestamp:" << lastTimestamp << "index:"
                         << index << ",feed size:" << mTimelineModel.rowCount()
                         << ",pages left:" << maxPages;
 
@@ -236,7 +240,8 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
             if (maxPages == 1)
             {
-                qInfo() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+                restoreDebugLogging();
+                qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
                 emit timelineSyncOK(mTimelineModel.rowCount() - 1);
                 return;
             }
@@ -244,15 +249,18 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             const QString& newCursor = mTimelineModel.getLastCursor();
             if (newCursor.isEmpty())
             {
-                qInfo() << "Last page reached, no more cursor";
+                restoreDebugLogging();
+                qDebug() << "Last page reached, no more cursor";
                 emit timelineSyncOK(mTimelineModel.rowCount() - 1);
                 return;
             }
 
+            qInfo() << "Last timestamp:" << lastTimestamp;
             syncTimeline(tillTimestamp, maxPages - 1, newCursor);
         },
         [this](const QString& error){
-            qInfo() << "syncTimeline FAILED:" << error;
+            restoreDebugLogging();
+            qWarning() << "syncTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
             emit timelineSyncFailed();
@@ -519,6 +527,17 @@ void Skywalker::saveSyncTimestamp(int postIndex)
 QDateTime Skywalker::getSyncTimestamp() const
 {
     return mSettings.value("syncTimestamp").toDateTime();
+}
+
+void Skywalker::disableDebugLogging()
+{
+    mDebugLogging = QLoggingCategory::defaultCategory()->isDebugEnabled();
+    QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, false);
+}
+
+void Skywalker::restoreDebugLogging()
+{
+    QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, mDebugLogging);
 }
 
 }

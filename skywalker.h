@@ -25,7 +25,7 @@ public:
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
     Q_INVOKABLE void resumeSession();
     Q_INVOKABLE void getUserProfileAndFollows();
-    Q_INVOKABLE void syncTimeline(int maxPages = 40);
+    Q_INVOKABLE void syncTimeline(int maxPages = 50);
     Q_INVOKABLE void getTimeline(int limit, const QString& cursor = {});
     Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0);
@@ -58,7 +58,6 @@ signals:
     void postThreadOk(int id, int postEntryIndex);
     void avatarUrlChanged();
 
-
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
@@ -71,6 +70,8 @@ private:
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
+    void disableDebugLogging();
+    void restoreDebugLogging();
 
     std::unique_ptr<ATProto::Client> mBsky;
     QString mAvatarUrl;
@@ -85,6 +86,7 @@ private:
     std::unordered_map<int, PostThreadModel::Ptr> mPostThreadModels;
     int mNextPostThreadModelId = 1;
     QSettings mSettings;
+    bool mDebugLogging = false;
 };
 
 }

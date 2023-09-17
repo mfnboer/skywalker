@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include <QGuiApplication>
-#include <QLoggingCategory>
 #include <QQmlApplicationEngine>
 #include <QFont>
 
@@ -12,8 +11,6 @@ int main(int argc, char *argv[])
     app.setOrganizationName("Skywalker");
     app.setOrganizationDomain("skywalker.foo");
     app.setApplicationName("Skywalker");
-
-    //QLoggingCategory::setFilterRules("*.debug=false");
 
     qDebug() << "Font size:" << app.font();
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
