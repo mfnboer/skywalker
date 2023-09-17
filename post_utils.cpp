@@ -89,20 +89,48 @@ void PostUtils::pickPhoto()
     ::Skywalker::pickPhoto();
 }
 
+void PostUtils::setFirstWebLink(const QString& link)
+{
+    if (link == mFirstWebLink)
+        return;
+
+    mFirstWebLink = link;
+    emit firstWebLinkChanged();
+}
+
 QString PostUtils::highlightMentionsAndLinks(const QString& text)
 {
     const auto facets = bskyClient()->parseFacets(text);
     QString highlighted;
     int pos = 0;
+    bool webLinkFound = false;
+    mLinkShorteningReduction = 0;
 
     for (const auto& facet : facets)
     {
+        if (facet.mType == ATProto::Client::ParsedMatch::Type::LINK)
+        {
+            if (!webLinkFound)
+            {
+                setFirstWebLink(facet.mMatch);
+                webLinkFound = true;
+            }
+
+            const auto shortLink = ATProto::Client::shortenWebLink(facet.mMatch);
+            const int reduction = graphemeLength(facet.mMatch) - graphemeLength(shortLink);
+            qDebug() << "SHORT:" << shortLink << "reduction:" << reduction;
+            mLinkShorteningReduction += reduction;
+        }
+
         const auto before = text.sliced(pos, facet.mStartIndex - pos);
         highlighted.append(before.toHtmlEscaped().replace(' ', "&nbsp;"));
         QString highlight = QString("<font color=\"blue\">%1</font>").arg(facet.mMatch);
         highlighted.append(highlight);
         pos = facet.mEndIndex;
     }
+
+    if (!webLinkFound)
+        setFirstWebLink(QString());
 
     highlighted.append(text.sliced(pos).toHtmlEscaped().replace(' ', "&nbsp;"));
     return highlighted;

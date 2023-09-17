@@ -11,6 +11,7 @@ class PostUtils : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
+    Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -20,9 +21,13 @@ public:
     Q_INVOKABLE void pickPhoto();
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text);
     Q_INVOKABLE int graphemeLength(const QString& text);
+    Q_INVOKABLE int getLinkShorteningReduction() { return mLinkShorteningReduction; };
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
+
+    const QString& getFirstWebLink() const { return mFirstWebLink; }
+    void setFirstWebLink(const QString& link);
 
 signals:
     void skywalkerChanged();
@@ -30,12 +35,15 @@ signals:
     void postFailed(QString error);
     void postProgress(QString msg);
     void photoPicked(QString filename);
+    void firstWebLinkChanged();
 
 private:
     void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
-
     ATProto::Client* bskyClient();
+
     Skywalker* mSkywalker = nullptr;
+    QString mFirstWebLink;
+    int mLinkShorteningReduction = 0;
 };
 
 }

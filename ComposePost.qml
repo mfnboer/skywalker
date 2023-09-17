@@ -118,7 +118,7 @@ Page {
                 anchors.top: parent.top
                 from: 0
                 to: page.maxPostLength
-                value: postText.graphemeLength()
+                value: postText.graphemeLength() - postUtils.getLinkShorteningReduction()
 
                 contentItem: Rectangle {
                     width: textLengthBar.visualPosition * parent.width
