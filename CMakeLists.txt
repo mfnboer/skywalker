@@ -84,6 +84,8 @@ qt_add_qml_module(appskywalker
         qtquickcontrols2.conf
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         RESOURCES android/src/com/gmail/mfnboer/FileUtils.java
+        SOURCES post_utils.h
+        SOURCES post_utils.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

@@ -100,7 +100,7 @@ ApplicationWindow {
 
     function composePost() {
         let component = Qt.createComponent("ComposePost.qml")
-        let page = component.createObject(root)
+        let page = component.createObject(root, { skywalker: skywalker })
         page.onClosed.connect(() => { popStack() })
         stack.push(page)
     }

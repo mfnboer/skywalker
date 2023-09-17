@@ -552,25 +552,6 @@ void Skywalker::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         });
 }
 
-QString Skywalker::highlightMentionsAndLinks(const QString& text)
-{
-    const auto facets = mBsky->parseFacets(text);
-    QString highlighted;
-    int pos = 0;
-
-    for (const auto& facet : facets)
-    {
-        const auto before = text.sliced(pos, facet.mStartIndex - pos);
-        highlighted.append(before.toHtmlEscaped().replace(' ', "&nbsp;"));
-        QString highlight = QString("<font color=\"blue\">%1</font>").arg(facet.mMatch);
-        highlighted.append(highlight);
-        pos = facet.mEndIndex;
-    }
-
-    highlighted.append(text.sliced(pos).toHtmlEscaped().replace(' ', "&nbsp;"));
-    return highlighted;
-}
-
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
 {
     // TODO: secure storage

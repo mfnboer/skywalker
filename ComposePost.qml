@@ -5,6 +5,7 @@ import QtQuick.Dialogs
 import skywalker
 
 Page {
+    required property var skywalker
     property int maxPostLength: 300
     property int maxImages: 4
     property list<string> images
@@ -81,7 +82,7 @@ Page {
                 if (curText !== prevText)
                 {
                     let pos = cursorPosition
-                    text = skywalker.highlightMentionsAndLinks(curText)
+                    text = postUtils.highlightMentionsAndLinks(curText)
                     cursorPosition = pos
                     prevText = curText
                 }
@@ -93,6 +94,10 @@ Page {
 
             function textLength() {
                 return length + preeditText.length
+            }
+
+            function graphemeLength() {
+                return postUtils.graphemeLength(getPlainText()) + postUtils.graphemeLength(preeditText)
             }
         }
 
@@ -113,12 +118,12 @@ Page {
                 anchors.top: parent.top
                 from: 0
                 to: page.maxPostLength
-                value: postText.textLength()
+                value: postText.graphemeLength()
 
                 contentItem: Rectangle {
                     width: textLengthBar.visualPosition * parent.width
                     height: parent.height
-                    color: postText.textLength() <= maxPostLength ? "blue" : "red"
+                    color: textLengthBar.value <= maxPostLength ? "blue" : "red"
                 }
             }
 
@@ -151,7 +156,7 @@ Page {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 color: postText.textLength() <= maxPostLength ? Material.foreground : "red"
-                text: maxPostLength - postText.textLength()
+                text: maxPostLength - textLengthBar.value
             }
         }
 
@@ -240,6 +245,11 @@ Page {
 
             photoPicked(fileName)
         }
+    }
+
+    PostUtils {
+        id: postUtils
+        skywalker: page.skywalker
     }
 
     function postFailed(error) {

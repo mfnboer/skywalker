@@ -36,7 +36,6 @@ public:
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void pickPhoto();
     Q_INVOKABLE void post(QString text, const QStringList& imageFileNames);
-    Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);
@@ -44,6 +43,7 @@ public:
     void setGetPostThreadInProgress(bool inProgress);
     const QString& getAvatarUrl() const { return mAvatarUrl; }
     void setAvatarUrl(const QString& avatarUrl);
+    ATProto::Client* getBskyClient() const { return mBsky.get(); }
 
 signals:
     void loginOk();
