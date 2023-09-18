@@ -80,7 +80,19 @@ QByteArray createBlob(const QString& fileName)
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
     QImage img = reader.read();
-    qDebug() << "Original image:" << fileName << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
+
+    if (img.isNull())
+    {
+        qWarning() << "Failed to read:" << fileName;
+        return {};
+    }
+
+    return createBlob(img, fileName);
+}
+
+QByteArray createBlob(QImage img, const QString& name)
+{
+    qDebug() << "Original image:" << name << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
 
     if (std::max(img.width(), img.height()) > MAX_IMAGE_PIXEL_SIZE)
     {
@@ -96,14 +108,14 @@ QByteArray createBlob(const QString& fileName)
 
     if (!img.save(&buffer, "jpg"))
     {
-        qWarning() << "Failed to write blob:" << fileName;
+        qWarning() << "Failed to write blob:" << name;
         blob.clear();
     }
 
     qDebug() << "Blob size:" << blob.size();
     if (blob.size() > MAX_IMAGE_BYTES)
     {
-        qWarning() << "Image too large:" << fileName << "blob bytes:" << blob.size();
+        qWarning() << "Image too large:" << name << "blob bytes:" << blob.size();
         blob.clear();
     }
 

@@ -90,6 +90,8 @@ qt_add_qml_module(appskywalker
         SOURCES link_card_reader.cpp
         SOURCES link_card.h
         QML_FILES LinkCardView.qml
+        SOURCES image_reader.h
+        SOURCES image_reader.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

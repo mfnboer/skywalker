@@ -29,6 +29,14 @@ ATProto::Client* PostUtils::bskyClient()
     return client;
 }
 
+ImageReader* PostUtils::imageReader()
+{
+    if (!mImageReader)
+        mImageReader = std::make_unique<ImageReader>();
+
+    return mImageReader.get();
+}
+
 void PostUtils::setSkywalker(Skywalker* skywalker)
 {
     mSkywalker = skywalker;
@@ -48,16 +56,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
 {
     if (imgIndex >= imageFileNames.size())
     {
-        emit postProgress(tr("Posting"));
-        bskyClient()->post(*post,
-            [this]{
-                emit postOk();
-            },
-            [this](const QString& error){
-                qDebug() << "Post failed:" << error;
-                emit postFailed(error);
-            });
-
+        continuePost(post);
         return;
     }
 
@@ -76,6 +75,79 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         [this, imageFileNames, post, imgIndex](auto blob){
             bskyClient()->addImageToPost(*post, std::move(blob));
             continuePost(imageFileNames, post, imgIndex + 1);
+        },
+        [this](const QString& error){
+            qDebug() << "Post failed:" << error;
+            emit postFailed(error);
+        });
+}
+
+void PostUtils::post(QString text, const LinkCard* card)
+{
+    Q_ASSERT(card);
+    Q_ASSERT(mSkywalker);
+    qDebug() << "Posting:" << text;
+
+    bskyClient()->createPost(text, [this, card](auto post){
+        continuePost(card, post); });
+}
+
+void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+{
+    Q_ASSERT(card);
+    if (card->getThumb().isEmpty())
+    {
+        continuePost(card, QImage(), post);
+        return;
+    }
+
+    emit postProgress(tr("Retrieving card image"));
+
+    imageReader()->getImage(card->getThumb(),
+        [this, card, post](auto image){
+            continuePost(card, image, post);
+        },
+        [this](const QString& error){
+            qDebug() << "Post failed:" << error;
+            emit postFailed(error);
+        });
+}
+
+void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+{
+    Q_ASSERT(card);
+    QByteArray blob;
+
+    if (!thumb.isNull())
+        blob = createBlob(thumb, card->getThumb());
+
+    if (blob.isEmpty())
+    {
+        bskyClient()->addExternalToPost(*post, card->getLink(), card->getTitle(), card->getDescription());
+        continuePost(post);
+        return;
+    }
+
+    emit postProgress(tr("Uploading card image"));
+
+    bskyClient()->uploadBlob(blob, "image/jpeg",
+        [this, card, post](auto blob){
+            bskyClient()->addExternalToPost(*post, card->getLink(), card->getTitle(),
+                    card->getDescription(), std::move(blob));
+            continuePost(post);
+        },
+        [this](const QString& error){
+            qDebug() << "Post failed:" << error;
+            emit postFailed(error);
+        });
+}
+
+void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+{
+    emit postProgress(tr("Posting"));
+    bskyClient()->post(*post,
+        [this]{
+            emit postOk();
         },
         [this](const QString& error){
             qDebug() << "Post failed:" << error;
@@ -144,6 +216,13 @@ int PostUtils::graphemeLength(const QString& text) const
         ++length;
 
     return length;
+}
+
+// In the Post Compose page the text area is in HTML.
+// In the plain text we get some cruft is still left.
+QString PostUtils::cleanText(QString text)
+{
+    return text.replace(QChar(QChar::ParagraphSeparator), "\n");
 }
 
 }

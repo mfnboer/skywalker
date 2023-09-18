@@ -209,7 +209,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, makeOptionalCursor(cursor),
-        [this, tillTimestamp, maxPages](auto feed){
+        [this, tillTimestamp, maxPages, cursor](auto feed){
             mTimelineModel.addFeed(std::move(feed));
             setGetTimelineInProgress(false);
             const auto lastTimestamp = mTimelineModel.lastTimestamp();
@@ -253,6 +253,14 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
                 qDebug() << "Last page reached, no more cursor";
                 emit timelineSyncOK(mTimelineModel.rowCount() - 1);
                 return;
+            }
+
+            if (newCursor == cursor)
+            {
+                restoreDebugLogging();
+                qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
+                qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+                emit timelineSyncOK(mTimelineModel.rowCount() - 1);
             }
 
             qInfo() << "Last timestamp:" << lastTimestamp;

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <QImage>
 #include <QString>
 
 namespace Skywalker {
@@ -13,6 +14,7 @@ void pickPhoto();
 // The image will be rotated according to EXIF meta data.
 // EXIF meta data will be stripped from the blob.
 QByteArray createBlob(const QString& fileName);
+QByteArray createBlob(QImage img, const QString& fileName = "");
 
 QString resolveContentUriToFile(const QString& contentUri);
 

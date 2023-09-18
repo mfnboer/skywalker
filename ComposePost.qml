@@ -48,7 +48,12 @@ Page {
             enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
             onClicked: {
                 postButton.enabled = false
-                postUtils.post(postText.getPlainText(), images);
+
+                if (!linkCard.card) {
+                    postUtils.post(postText.getCleanPlainText(), images);
+                } else {
+                    postUtils.post(postText.getCleanPlainText(), linkCard.card)
+                }
             }
         }
     }
@@ -90,6 +95,10 @@ Page {
 
             function getPlainText() {
                 return getText(0, length)
+            }
+
+            function getCleanPlainText() {
+                return postUtils.cleanText(getPlainText())
             }
 
             function textLength() {

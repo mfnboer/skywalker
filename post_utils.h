@@ -1,7 +1,10 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "image_reader.h"
+#include "link_card.h"
 #include "skywalker.h"
+#include <QImage>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -18,10 +21,12 @@ public:
     explicit PostUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE void post(QString text, const QStringList& imageFileNames);
+    Q_INVOKABLE void post(QString text, const LinkCard* card);
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
+    Q_INVOKABLE QString cleanText(QString text);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
@@ -39,11 +44,16 @@ signals:
 
 private:
     void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
+    void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     ATProto::Client* bskyClient();
+    ImageReader* imageReader();
 
     Skywalker* mSkywalker = nullptr;
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;
+    std::unique_ptr<ImageReader> mImageReader;
 };
 
 }
