@@ -58,12 +58,69 @@ Page {
         }
     }
 
+    footer: Rectangle {
+        id: textFooter
+        anchors.top: postText.bottom
+        width: page.width
+        height: root.footerHeight + Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
+        z: 10
+        color: "transparent"
+
+        ProgressBar {
+            id: textLengthBar
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            from: 0
+            to: page.maxPostLength
+            value: postText.graphemeLength() - postUtils.getLinkShorteningReduction()
+
+            contentItem: Rectangle {
+                width: textLengthBar.visualPosition * parent.width
+                height: parent.height
+                color: textLengthBar.value <= maxPostLength ? "blue" : "red"
+            }
+        }
+
+        SvgImage {
+            x: 10
+            y: height + 5
+            width: 34
+            height: 34
+            id: homeButton
+            color: page.images.length < maxImages && imageScroller.visible ? "blue" : "lightgrey"
+            svg: svgOutline.addImage
+
+            MouseArea {
+                y: -parent.y
+                width: parent.width
+                height: parent.height
+                visible: page.images.length < maxImages
+
+                onClicked: {
+                    if (Qt.platform.os === "android")
+                        postUtils.pickPhoto()
+                    else
+                        fileDialog.open()
+                }
+            }
+        }
+
+        Text {
+            y: 10
+            anchors.rightMargin: 10
+            anchors.right: parent.right
+            color: postText.textLength() <= maxPostLength ? Material.foreground : "red"
+            text: maxPostLength - textLengthBar.value
+        }
+    }
+
     Flickable {
         id: flick
         anchors.fill: parent
         clip: true
         contentWidth: postText.width
-        contentHeight: postText.height + textFooter.totalHeight() + imageScroller.height + linkCard.height
+        contentHeight: postText.height + imageScroller.height + linkCard.height
         flickableDirection: Flickable.VerticalFlick
 
         TextArea {
@@ -123,68 +180,6 @@ Page {
             }
         }
 
-        Rectangle {
-            id: textFooter
-            anchors.top: postText.bottom
-            anchors.topMargin: 30
-            width: page.width
-            height: root.footerHeight
-            z: 10
-            color: "transparent"
-
-            function totalHeight() {
-                return height + anchors.topMargin
-            }
-
-            ProgressBar {
-                id: textLengthBar
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                from: 0
-                to: page.maxPostLength
-                value: postText.graphemeLength() - postUtils.getLinkShorteningReduction()
-
-                contentItem: Rectangle {
-                    width: textLengthBar.visualPosition * parent.width
-                    height: parent.height
-                    color: textLengthBar.value <= maxPostLength ? "blue" : "red"
-                }
-            }
-
-            SvgImage {
-                x: 10
-                y: height + 5
-                width: 34
-                height: 34
-                id: homeButton
-                color: page.images.length < maxImages && imageScroller.visible ? "blue" : "lightgrey"
-                svg: svgOutline.addImage
-
-                MouseArea {
-                    y: -parent.y
-                    width: parent.width
-                    height: parent.height
-                    visible: page.images.length < maxImages
-
-                    onClicked: {
-                        if (Qt.platform.os === "android")
-                            postUtils.pickPhoto()
-                        else
-                            fileDialog.open()
-                    }
-                }
-            }
-
-            Text {
-                anchors.rightMargin: 10
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                color: postText.textLength() <= maxPostLength ? Material.foreground : "red"
-                text: maxPostLength - textLengthBar.value
-            }
-        }
-
         ScrollView {
             property int imgWidth: 240
 
@@ -192,7 +187,7 @@ Page {
             height: visible ? 180 : 0
             width: page.width
             horizontalPadding: 10
-            anchors.top: textFooter.bottom
+            anchors.top: postText.bottom
             contentWidth: imageRow.width
             contentHeight: height
             visible: !linkCard.visible
@@ -281,12 +276,12 @@ Page {
         }
 
         function ensureVisible(r) {
-            let visibleHeight = height - Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
+            let visibleHeight = height //- Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
 
             if (contentY >= r.y)
                 contentY = r.y;
-            else if (contentY + visibleHeight <= r.y + r.height + textFooter.totalHeight())
-                contentY = r.y + r.height + textFooter.totalHeight() - visibleHeight;
+            else if (contentY + visibleHeight <= r.y + r.height)
+                contentY = r.y + r.height - visibleHeight;
         }
     }
 
