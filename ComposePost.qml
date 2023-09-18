@@ -60,7 +60,6 @@ Page {
 
     footer: Rectangle {
         id: textFooter
-        anchors.top: postText.bottom
         width: page.width
         height: root.footerHeight + Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
         z: 10
@@ -142,13 +141,19 @@ Page {
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
 
             onPreeditTextChanged: {
-                if (preeditText.length === 0)
-                    highlightFacets()
+                if (Qt.platform.os === "android") {
+                    console.debug("PRE-EDIT:", preeditText)
+                    if (preeditText.length === 0)
+                        highlightFacets()
+                }
             }
 
             Keys.onReleased: {
-                if (preeditText.length === 0)
-                    highlightFacets()
+                if (Qt.platform.os !== "android") {
+                    console.debug("KEY RELEASED")
+                    if (preeditText.length === 0)
+                        highlightFacets()
+                }
             }
 
             function highlightFacets() {
@@ -312,9 +317,15 @@ Page {
     }
 
     Timer {
-        id: linkCardTimer;
+        id: linkCardTimer
         interval: 1000
         onTriggered: linkCardReader.getLinkCard(postUtils.firstWebLink)
+    }
+
+    Timer {
+        id: textHighlightTimer
+        interval: 500
+        onTriggered: postText.highlightFacets()
     }
 
     PostUtils {
