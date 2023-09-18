@@ -15,18 +15,22 @@ RoundedFrame {
     border.width: 1
     border.color: "lightgrey"
 
+    function getColumnHeight() {
+        console.debug(card.height, thumbImg.implicitHeight, linkText.height, titleText.height, descriptionText.height)
+        return externalColumn.height
+    }
+
     Column {
         id: externalColumn
         width: parent.width
         spacing: 5
-        visible: false
 
         Image {
             id: thumbImg
             width: parent.width
             source: card.thumbUrl
             fillMode: Image.PreserveAspectFit
-            visible: source
+            //visible: source
         }
         Text {
             id: linkText

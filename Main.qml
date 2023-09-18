@@ -25,7 +25,7 @@ ApplicationWindow {
 
     StackView {
         id: stack
-        initialItem: timelineView
+        //initialItem: timelineView
         anchors.fill: parent
     }
 
@@ -75,13 +75,18 @@ ApplicationWindow {
         }
 
         onTimelineSyncOK: (index) => {
+            stack.push(timelineView)
+
             if (index >= 0)
                 getTimelineView().moveToPost(index)
 
             timelineUpdateTimer.start()
         }
 
-        onTimelineSyncFailed: console.warn("SYNC FAILED")
+        onTimelineSyncFailed: {
+            stack.push(timelineView)
+            console.warn("SYNC FAILED")
+        }
 
         function start() {
             skywalker.getUserProfileAndFollows()

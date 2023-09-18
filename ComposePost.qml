@@ -63,7 +63,7 @@ Page {
         anchors.fill: parent
         clip: true
         contentWidth: postText.width
-        contentHeight: postText.height + imageScroller.height
+        contentHeight: postText.height + textFooter.totalHeight() + imageScroller.height + linkCard.height
         flickableDirection: Flickable.VerticalFlick
 
         TextArea {
@@ -71,6 +71,8 @@ Page {
 
             id: postText
             width: page.width
+            leftPadding: 10
+            rightPadding: 10
             placeholderText: textLength() === 0 ? "Say something nice" : ""
             placeholderTextColor: "grey"
             textFormat: TextEdit.RichText
@@ -81,7 +83,18 @@ Page {
             background: Rectangle { border.color: "transparent" }
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+
+            onPreeditTextChanged: {
+                if (preeditText.length === 0)
+                    highlightFacets()
+            }
+
             Keys.onReleased: {
+                if (preeditText.length === 0)
+                    highlightFacets()
+            }
+
+            function highlightFacets() {
                 let curText = getPlainText()
 
                 if (curText !== prevText)
@@ -119,6 +132,10 @@ Page {
             z: 10
             color: "transparent"
 
+            function totalHeight() {
+                return height + anchors.topMargin
+            }
+
             ProgressBar {
                 id: textLengthBar
                 anchors.left: parent.left
@@ -152,7 +169,7 @@ Page {
 
                     onClicked: {
                         if (Qt.platform.os === "android")
-                            skywalker.pickPhoto()
+                            postUtils.pickPhoto()
                         else
                             fileDialog.open()
                     }
@@ -237,7 +254,6 @@ Page {
             id: linkCard
             x: 10
             width: page.width - 20
-            height: columnHeight
             anchors.top: imageScroller.bottom
             uri: card ? card.link : ""
             title: card ? card.title : ""
@@ -265,10 +281,12 @@ Page {
         }
 
         function ensureVisible(r) {
+            let visibleHeight = height - Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
+
             if (contentY >= r.y)
                 contentY = r.y;
-            else if (contentY + height <= r.y + r.height)
-                contentY = r.y + r.height - height;
+            else if (contentY + visibleHeight <= r.y + r.height + textFooter.totalHeight())
+                contentY = r.y + r.height + textFooter.totalHeight() - visibleHeight;
         }
     }
 

@@ -7,6 +7,7 @@ Rectangle {
     id: frame
     color: "transparent"
     radius: 10
+    height: objectToRound.height
 
     Rectangle {
         id: mask
