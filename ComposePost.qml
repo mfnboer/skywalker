@@ -2,6 +2,7 @@ import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
+import QtQuick.Layouts
 import skywalker
 
 Page {
@@ -9,6 +10,13 @@ Page {
     property int maxPostLength: 300
     property int maxImages: 4
     property list<string> images
+
+    // Reply-to
+    property basicprofile replyToAuthor
+    property string replyToPostUri
+    property string replyToPostText
+    property date replyToPostDateTime
+
     signal closed
 
     id: page
@@ -42,7 +50,7 @@ Page {
 
             contentItem: Text {
                 color: "white"
-                text: qsTr("Post", "verb on post button")
+                text: replyToPostUri ? qsTr("Reply", "verb on reply button") : qsTr("Post", "verb on post button")
             }
 
             enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
@@ -119,13 +127,56 @@ Page {
         anchors.fill: parent
         clip: true
         contentWidth: postText.width
-        contentHeight: postText.height + imageScroller.height + linkCard.height
+        contentHeight: postText.y + postText.height + imageScroller.height + linkCard.height
         flickableDirection: Flickable.VerticalFlick
+
+        // Reply-to
+        Rectangle {
+            anchors.fill: replyToColumn
+            border.width: 2
+            color: "azure"
+            visible: replyToColumn.visible
+        }
+        Column {
+            id: replyToColumn
+            width: parent.width - 10
+            padding: 10
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: replyToPostUri
+
+            RowLayout {
+                width: parent.width - 20
+
+                Avatar {
+                    id: avatar
+                    width: 15
+                    Layout.alignment: Qt.AlignTop
+                    avatarUrl: replyToAuthor.avatarUrl
+                }
+
+                PostHeader {
+                    Layout.fillWidth: true
+                    authorName: replyToAuthor.name
+                    authorHandle: replyToAuthor.handle
+                    postThreadType: QEnums.THREAD_NONE
+                    postIndexedSecondsAgo: (new Date() - replyToPostDateTime) / 1000
+                }
+            }
+
+            PostBody {
+                width: parent.width - 20
+                postText: replyToPostText
+                postImages: []
+                postDateTime: replyToPostDateTime
+                maxTextLines: 5
+            }
+        }
 
         TextArea {
             property string prevText
 
             id: postText
+            y: replyToColumn.visible ? replyToColumn.height + 5 : 0
             width: page.width
             leftPadding: 10
             rightPadding: 10
@@ -278,11 +329,13 @@ Page {
             }
         }
 
-        function ensureVisible(r) {
-            if (contentY >= r.y)
-                contentY = r.y;
-            else if (contentY + height <= r.y + r.height)
-                contentY = r.y + r.height - height;
+        function ensureVisible(cursor) {
+            let cursorY = cursor.y + postText.y
+
+            if (contentY >= cursorY)
+                contentY = cursorY;
+            else if (contentY + height <= cursorY + cursor.height)
+                contentY = cursorY + cursor.height - height;
         }
     }
 

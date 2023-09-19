@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
-    required property string postUri
     required property string postText
     required property list<imageview> postImages
     required property date postDateTime

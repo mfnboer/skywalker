@@ -6,7 +6,9 @@ Rectangle {
     property int statistic: -1
     property svgimage svg
     property string iconColor
+    property var onClicked
 
+    id: control
     height: statText.height
     color: "transparent"
 
@@ -28,5 +30,9 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            if (control.onClicked)
+                control.onClicked()
+        }
     }
 }

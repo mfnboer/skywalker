@@ -101,7 +101,22 @@ ApplicationWindow {
 
     function composePost() {
         let component = Qt.createComponent("ComposePost.qml")
-        let page = component.createObject(root, { skywalker: skywalker })
+        let page = component.createObject(root, {
+                skywalker: skywalker,
+        })
+        page.onClosed.connect(() => { popStack() })
+        stack.push(page)
+    }
+
+    function composeReply(replyToUri, replyToText, replyToDateTime, replyToAuthor) {
+        let component = Qt.createComponent("ComposePost.qml")
+        let page = component.createObject(root, {
+                skywalker: skywalker,
+                replyToPostUri: replyToUri,
+                replyToPostText: replyToText,
+                replyToPostDateTime: replyToDateTime,
+                replyToAuthor: replyToAuthor
+        })
         page.onClosed.connect(() => { popStack() })
         stack.push(page)
     }

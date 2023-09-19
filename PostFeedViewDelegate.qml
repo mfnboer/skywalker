@@ -233,7 +233,6 @@ Rectangle {
 
             PostBody {
                 width: parent.width
-                postUri: postEntry.postUri
                 postText: postEntry.postText
                 postImages: postEntry.postImages
                 postExternal: postEntry.postExternal
@@ -273,6 +272,7 @@ Rectangle {
                     iconColor: "grey"
                     svg: svgOutline.reply
                     statistic: postReplyCount
+                    onClicked: () => root.composeReply(postUri, postText, postIndexedDateTime, author)
                 }
                 StatIcon {
                     width: parent.width / 4
