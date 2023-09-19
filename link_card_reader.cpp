@@ -58,9 +58,9 @@ void LinkCardReader::getLinkCard(const QString& link)
 
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
-    static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name)=[\"']og:title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
-    static const QRegularExpression ogDescription(R"(<meta [^>]*(property|name)=[\"']og:description[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
-    static const QRegularExpression ogImage(R"(<meta [^>]*(property|name)=[\"']og:image[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogDescription(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogImage(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
 
     mInProgress = nullptr;
 
@@ -75,17 +75,17 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     auto match = ogTitleRE.match(data);
 
     if (match.hasMatch())
-        card->setTitle(match.captured(2));
+        card->setTitle(match.captured(3));
 
     match = ogDescription.match(data);
     if (match.hasMatch())
-        card->setDescription(match.captured(2));
+        card->setDescription(match.captured(3));
 
     const auto& url = reply->request().url();
     match = ogImage.match(data);
     if (match.hasMatch())
     {
-        const auto imgUrl = match.captured(2);
+        const auto imgUrl = match.captured(3);
         if (imgUrl.startsWith("/"))
             card->setThumb(url.toString() + imgUrl);
         else

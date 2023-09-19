@@ -24,13 +24,13 @@ RoundedFrame {
         id: externalColumn
         width: parent.width
         spacing: 5
+        visible: false
 
         Image {
             id: thumbImg
             width: parent.width
             source: card.thumbUrl
             fillMode: Image.PreserveAspectFit
-            //visible: source
         }
         Text {
             id: linkText
