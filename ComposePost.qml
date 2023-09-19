@@ -13,7 +13,10 @@ Page {
 
     // Reply-to
     property basicprofile replyToAuthor
-    property string replyToPostUri
+    property string replyToPostUri: ""
+    property string replyToPostCid: ""
+    property string replyRootPostUri: ""
+    property string replyRootPostCid: ""
     property string replyToPostText
     property date replyToPostDateTime
 
@@ -58,9 +61,13 @@ Page {
                 postButton.enabled = false
 
                 if (!linkCard.card) {
-                    postUtils.post(postText.getCleanPlainText(), images);
+                    postUtils.post(postText.getCleanPlainText(), images,
+                                   replyToPostUri, replyToPostCid,
+                                   replyRootPostUri, replyRootPostCid);
                 } else {
-                    postUtils.post(postText.getCleanPlainText(), linkCard.card)
+                    postUtils.post(postText.getCleanPlainText(), linkCard.card,
+                                   replyToPostUri, replyToPostCid,
+                                   replyRootPostUri, replyRootPostCid)
                 }
             }
         }
@@ -168,7 +175,7 @@ Page {
                 postText: replyToPostText
                 postImages: []
                 postDateTime: replyToPostDateTime
-                maxTextLines: 5
+                maxTextLines: 6
             }
         }
 

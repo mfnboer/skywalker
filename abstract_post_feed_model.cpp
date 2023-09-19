@@ -78,6 +78,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getText();
     case Role::PostUri:
         return post.getUri();
+    case Role::PostCid:
+        return post.getCid();
     case Role::PostIndexedDateTime:
         return post.getIndexedAt();
     case Role::PostImages:
@@ -133,6 +135,10 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const auto& author = post.getReplyToAuthor();
         return author ? QVariant::fromValue(*author) : QVariant();
     }
+    case Role::PostReplyRootCid:
+        return post.getReplyRootCid();
+    case Role::PostReplyRootUri:
+        return post.getReplyRootUri();
     case Role::PostReplyCount:
         return post.getReplyCount();
     case Role::PostRepostCount:
@@ -158,6 +164,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
     static const QHash<int, QByteArray> roles{
         { int(Role::Author), "author" },
         { int(Role::PostUri), "postUri" },
+        { int(Role::PostCid), "postCid" },
         { int(Role::PostText), "postText" },
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
         { int(Role::PostRepostedByName), "postRepostedByName" },
@@ -176,6 +183,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIsReply), "postIsReply" },
         { int(Role::PostParentInThread), "postParentInThread" },
         { int(Role::PostReplyToAuthor), "postReplyToAuthor" },
+        { int(Role::PostReplyRootUri), "postReplyRootUri" },
+        { int(Role::PostReplyRootCid), "postReplyRootCid" },
         { int(Role::PostReplyCount), "postReplyCount" },
         { int(Role::PostRepostCount), "postRepostCount" },
         { int(Role::PostLikeCount), "postLikeCount" },

@@ -56,8 +56,14 @@ public:
     bool isReply() const;
     std::optional<PostReplyRef> getViewPostReplyRef() const;
     std::optional<BasicProfile> getReplyToAuthor() const;
+    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyToRef() const;
     QString getReplyToCid() const;
+    QString getReplyToUri() const;
     QString getReplyToAuthorDid() const;
+    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyRootRef() const;
+    QString getReplyRootCid() const;
+    QString getReplyRootUri() const;
+
 
     std::vector<ImageView::Ptr> getImages() const;
     ExternalView::Ptr getExternalView() const;

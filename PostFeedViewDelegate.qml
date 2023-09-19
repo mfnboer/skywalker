@@ -11,6 +11,7 @@ Rectangle {
     required property int index
     required property basicprofile author
     required property string postUri
+    required property string postCid
     required property string postText
     required property date postIndexedDateTime
     required property string postRepostedByName
@@ -29,6 +30,8 @@ Rectangle {
     required property bool postIsReply
     required property bool postParentInThread
     required property basicprofile postReplyToAuthor
+    required property string postReplyRootUri
+    required property string postReplyRootCid
     required property int postReplyCount
     required property int postRepostCount
     required property int postLikeCount
@@ -272,7 +275,10 @@ Rectangle {
                     iconColor: "grey"
                     svg: svgOutline.reply
                     statistic: postReplyCount
-                    onClicked: () => root.composeReply(postUri, postText, postIndexedDateTime, author)
+                    onClicked: () => {
+                        root.composeReply(postUri, postCid, postText, postIndexedDateTime,
+                                          author, postReplyRootUri, postReplyRootCid)
+                    }
                 }
                 StatIcon {
                     width: parent.width / 4

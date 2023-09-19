@@ -43,12 +43,35 @@ void PostUtils::setSkywalker(Skywalker* skywalker)
     emit skywalkerChanged();
 }
 
-void PostUtils::post(QString text, const QStringList& imageFileNames)
+static ATProto::AppBskyFeed::PostReplyRef::Ptr createReplyRef(
+        const QString& replyToUri, const QString& replyToCid,
+        const QString& replyRootUri, const QString& replyRootCid)
+{
+    if (replyToUri.isEmpty() || replyToCid.isEmpty())
+        return nullptr;
+
+    auto replyRef = std::make_unique<ATProto::AppBskyFeed::PostReplyRef>();
+
+    replyRef->mParent = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
+    replyRef->mParent->mUri = replyToUri;
+    replyRef->mParent->mCid = replyToCid;
+
+    replyRef->mRoot = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
+    replyRef->mRoot->mUri = replyRootUri.isEmpty() ? replyToUri : replyRootUri;
+    replyRef->mRoot->mCid = replyRootCid.isEmpty() ? replyToCid : replyRootCid;
+
+    return replyRef;
+}
+
+void PostUtils::post(QString text, const QStringList& imageFileNames,
+                     const QString& replyToUri, const QString& replyToCid,
+                     const QString& replyRootUri, const QString& replyRootCid)
 {
     Q_ASSERT(mSkywalker);
     qDebug() << "Posting:" << text;
+    auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-    bskyClient()->createPost(text, [this, imageFileNames](auto post){
+    bskyClient()->createPost(text, std::move(replyRef), [this, imageFileNames](auto post){
         continuePost(imageFileNames, post); });
 }
 
@@ -84,13 +107,16 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         });
 }
 
-void PostUtils::post(QString text, const LinkCard* card)
+void PostUtils::post(QString text, const LinkCard* card,
+                     const QString& replyToUri, const QString& replyToCid,
+                     const QString& replyRootUri, const QString& replyRootCid)
 {
     Q_ASSERT(card);
     Q_ASSERT(mSkywalker);
     qDebug() << "Posting:" << text;
+    auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-    bskyClient()->createPost(text, [this, card](auto post){
+    bskyClient()->createPost(text, std::move(replyRef), [this, card](auto post){
         continuePost(card, post); });
 }
 

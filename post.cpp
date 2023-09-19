@@ -241,33 +241,48 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
     return mReplyToAuthor;
 }
 
-QString Post::getReplyToCid() const
+ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyToRef() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
         if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
             const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
-            return postView->mCid;
+            auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
+            ref->mCid = postView->mCid;
+            ref->mUri = postView->mUri;
+            return std::move(ref);
         }
         else
         {
-            return {};
+            return nullptr;
         }
     }
 
     if (!mPost)
-        return {};
+        return nullptr;
 
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
-        return {};
+        return nullptr;
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
 
     if (!record->mReply)
-        return {};
+        return nullptr;
 
-    return record->mReply->mParent->mCid;
+    return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*record->mReply->mParent);
+}
+
+QString Post::getReplyToCid() const
+{
+    const auto& ref = getReplyToRef();
+    return ref ? ref->mCid : QString();
+}
+
+QString Post::getReplyToUri() const
+{
+    const auto& ref = getReplyToRef();
+    return ref ? ref->mUri : QString();
 }
 
 QString Post::getReplyToAuthorDid() const
@@ -308,6 +323,50 @@ QString Post::getReplyToAuthorDid() const
     const auto did = uri.sliced(5, end - 5);
     qDebug() << "Extracted did from uri:" << uri << "did:" << did;
     return did;
+}
+
+ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyRootRef() const
+{
+    if (mFeedViewPost && mFeedViewPost->mReply)
+    {
+        if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        {
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mRoot->mPost).get();
+            auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
+            ref->mCid = postView->mCid;
+            ref->mUri = postView->mUri;
+            return std::move(ref);
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+    if (!mPost)
+        return nullptr;
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return nullptr;
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+
+    if (!record->mReply)
+        return nullptr;
+
+    return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*record->mReply->mRoot);
+}
+
+QString Post::getReplyRootCid() const
+{
+    const auto& ref = getReplyRootRef();
+    return ref ? ref->mCid : QString();
+}
+
+QString Post::getReplyRootUri() const
+{
+    const auto& ref = getReplyRootRef();
+    return ref ? ref->mUri : QString();
 }
 
 std::vector<ImageView::Ptr> Post::getImages() const

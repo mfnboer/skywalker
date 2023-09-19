@@ -20,8 +20,12 @@ class PostUtils : public QObject
 public:
     explicit PostUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void post(QString text, const QStringList& imageFileNames);
-    Q_INVOKABLE void post(QString text, const LinkCard* card);
+    Q_INVOKABLE void post(QString text, const QStringList& imageFileNames,
+                          const QString& replyToUri, const QString& replyToCid,
+                          const QString& replyRootUri, const QString& replyRootCid);
+    Q_INVOKABLE void post(QString text, const LinkCard* card,
+                          const QString& replyToUri, const QString& replyToCid,
+                          const QString& replyRootUri, const QString& replyRootCid);
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text);
     Q_INVOKABLE int graphemeLength(const QString& text) const;

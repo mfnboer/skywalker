@@ -21,6 +21,7 @@ public:
     enum class Role {
         Author = Qt::UserRole + 1,
         PostUri,
+        PostCid,
         PostText,
         PostIndexedDateTime,
         PostRepostedByName,
@@ -39,6 +40,8 @@ public:
         PostIsReply,
         PostParentInThread,
         PostReplyToAuthor,
+        PostReplyRootUri,
+        PostReplyRootCid,
         PostReplyCount,
         PostRepostCount,
         PostLikeCount,

@@ -108,11 +108,16 @@ ApplicationWindow {
         stack.push(page)
     }
 
-    function composeReply(replyToUri, replyToText, replyToDateTime, replyToAuthor) {
+    function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                          replyRootUri, replyRootCid)
+    {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 replyToPostUri: replyToUri,
+                replyToPostCid: replyToCid,
+                replyRootPostUri: replyRootUri,
+                replyRootPostCid: replyRootCid,
                 replyToPostText: replyToText,
                 replyToPostDateTime: replyToDateTime,
                 replyToAuthor: replyToAuthor
