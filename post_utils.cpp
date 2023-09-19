@@ -61,7 +61,9 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
     }
 
     const auto& fileName = imageFileNames[imgIndex];
-    const auto& blob = createBlob(fileName);
+    QByteArray blob;
+    const QString mimeType = createBlob(blob, fileName);
+
     if (blob.isEmpty())
     {
         const QString error = tr("Could not load image") + ": " + QFileInfo(fileName).fileName();
@@ -71,7 +73,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
 
     emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
 
-    bskyClient()->uploadBlob(blob, "image/jpeg",
+    bskyClient()->uploadBlob(blob, mimeType,
         [this, imageFileNames, post, imgIndex](auto blob){
             bskyClient()->addImageToPost(*post, std::move(blob));
             continuePost(imageFileNames, post, imgIndex + 1);
@@ -117,9 +119,10 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 {
     Q_ASSERT(card);
     QByteArray blob;
+    QString mimeType;
 
     if (!thumb.isNull())
-        blob = createBlob(thumb, card->getThumb());
+        mimeType = createBlob(blob, thumb, card->getThumb());
 
     if (blob.isEmpty())
     {
@@ -130,7 +133,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 
     emit postProgress(tr("Uploading card image"));
 
-    bskyClient()->uploadBlob(blob, "image/jpeg",
+    bskyClient()->uploadBlob(blob, mimeType,
         [this, card, post](auto blob){
             bskyClient()->addExternalToPost(*post, card->getLink(), card->getTitle(),
                     card->getDescription(), std::move(blob));

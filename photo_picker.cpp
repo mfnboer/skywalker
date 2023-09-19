@@ -75,7 +75,7 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
-QByteArray createBlob(const QString& fileName)
+QString createBlob(QByteArray& blob, const QString& fileName)
 {
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
@@ -87,10 +87,10 @@ QByteArray createBlob(const QString& fileName)
         return {};
     }
 
-    return createBlob(img, fileName);
+    return createBlob(blob, img, fileName);
 }
 
-QByteArray createBlob(QImage img, const QString& name)
+QString createBlob(QByteArray& blob, QImage img, const QString& name)
 {
     qDebug() << "Original image:" << name << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
 
@@ -102,24 +102,33 @@ QByteArray createBlob(QImage img, const QString& name)
             img = img.scaledToHeight(MAX_IMAGE_PIXEL_SIZE, Qt::SmoothTransformation);
     }
 
-    QByteArray blob;
     QBuffer buffer(&blob);
     buffer.open(QIODevice::WriteOnly);
 
-    if (!img.save(&buffer, "jpg"))
+    const char* format = "png";
+    QString mimeType = "image/png";
+
+    if (name.endsWith(".jpg", Qt::CaseInsensitive) || name.endsWith(".jpeg", Qt::CaseInsensitive))
     {
-        qWarning() << "Failed to write blob:" << name;
+        format = "jpg";
+        mimeType = "image/jpeg";
+    }
+
+    if (!img.save(&buffer, format))
+    {
+        qWarning() << "Failed to write blob:" << name << "format:" << format;
         blob.clear();
     }
 
-    qDebug() << "Blob size:" << blob.size();
+    qDebug() << "Blob created, bytes:" << blob.size() << "format:" << format << "mimetype:" << mimeType;
+
     if (blob.size() > MAX_IMAGE_BYTES)
     {
         qWarning() << "Image too large:" << name << "blob bytes:" << blob.size();
         blob.clear();
     }
 
-    return blob;
+    return mimeType;
 }
 
 }
