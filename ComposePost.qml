@@ -142,7 +142,6 @@ Page {
 
             onPreeditTextChanged: {
                 if (Qt.platform.os === "android") {
-                    console.debug("PRE-EDIT:", preeditText)
                     if (preeditText.length === 0)
                         highlightFacets()
                 }
@@ -150,7 +149,6 @@ Page {
 
             Keys.onReleased: {
                 if (Qt.platform.os !== "android") {
-                    console.debug("KEY RELEASED")
                     if (preeditText.length === 0)
                         highlightFacets()
                 }
@@ -281,12 +279,10 @@ Page {
         }
 
         function ensureVisible(r) {
-            let visibleHeight = height //- Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
-
             if (contentY >= r.y)
                 contentY = r.y;
-            else if (contentY + visibleHeight <= r.y + r.height)
-                contentY = r.y + r.height - visibleHeight;
+            else if (contentY + height <= r.y + r.height)
+                contentY = r.y + r.height - height;
         }
     }
 

@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 ListView {
+    property bool inSync: false
     property int margin: 8
     property int unreadPosts: 0
 
@@ -121,6 +122,9 @@ ListView {
     }
 
     onCountChanged: {
+        if (!inSync)
+            return
+
         let firstVisibleIndex = indexAt(0, contentY)
         let lastVisibleIndex = indexAt(0, contentY + height - 1)
         console.debug("COUNT CHANGED First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count)
@@ -130,6 +134,9 @@ ListView {
     }
 
     onMovementEnded: {
+        if (!inSync)
+            return
+
         let firstVisibleIndex = indexAt(0, contentY)
         let lastVisibleIndex = indexAt(0, contentY + height - 1)
         console.info("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count, "AtBegin:", atYBeginning)
@@ -138,6 +145,9 @@ ListView {
     }
 
     onVerticalOvershootChanged: {
+        if (!inSync)
+            return
+
         if (verticalOvershoot < 0)  {
             if (!inTopOvershoot && !skywalker.getTimelineInProgress) {
                 gettingNewPosts = true
@@ -176,11 +186,9 @@ ListView {
         updateUnreadPosts(index)
     }
 
-    Component.onCompleted: {
-        skywalker.onGetTimeLineInProgressChanged.connect(() => {
-                if (!skywalker.getTimelineInProgress)
-                    gettingNewPosts = false
-            })
+    function setInSync(index) {
+        moveToPost(index)
+        inSync = true
 
         model.onRowsAboutToBeInserted.connect((parent, start, end) => {
                 console.debug("ROWS TO INSERT:", start, end, "AtBegin:", atYBeginning)
@@ -202,6 +210,13 @@ ListView {
 
                 let firstVisibleIndex = indexAt(0, contentY)
                 updateUnreadPosts(firstVisibleIndex)
+            })
+    }
+
+    Component.onCompleted: {
+        skywalker.onGetTimeLineInProgressChanged.connect(() => {
+                if (!skywalker.getTimelineInProgress)
+                    gettingNewPosts = false
             })
     }
 }

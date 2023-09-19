@@ -25,7 +25,7 @@ ApplicationWindow {
 
     StackView {
         id: stack
-        //initialItem: timelineView
+        initialItem: timelineView
         anchors.fill: parent
     }
 
@@ -75,17 +75,13 @@ ApplicationWindow {
         }
 
         onTimelineSyncOK: (index) => {
-            stack.push(timelineView)
-
-            if (index >= 0)
-                getTimelineView().moveToPost(index)
-
+            getTimelineView().setInSync(index)
             timelineUpdateTimer.start()
         }
 
         onTimelineSyncFailed: {
-            stack.push(timelineView)
             console.warn("SYNC FAILED")
+            getTimelineView().setInSync(0)
         }
 
         function start() {
