@@ -61,11 +61,11 @@ Page {
                 postButton.enabled = false
 
                 if (!linkCard.card) {
-                    postUtils.post(postText.getCleanPlainText(), images,
+                    postUtils.post(postText.text, images,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid);
                 } else {
-                    postUtils.post(postText.getCleanPlainText(), linkCard.card,
+                    postUtils.post(postText.text, linkCard.card,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid)
                 }
@@ -156,7 +156,7 @@ Page {
 
                 Avatar {
                     id: avatar
-                    width: 15
+                    width: 24
                     Layout.alignment: Qt.AlignTop
                     avatarUrl: replyToAuthor.avatarUrl
                 }
@@ -179,8 +179,9 @@ Page {
             }
         }
 
+        // Post text
         TextArea {
-            property string prevText
+            property string highlightedText: ""
 
             id: postText
             y: replyToColumn.visible ? replyToColumn.height + 5 : 0
@@ -189,58 +190,46 @@ Page {
             rightPadding: 10
             placeholderText: textLength() === 0 ? "Say something nice" : ""
             placeholderTextColor: "grey"
-            textFormat: TextEdit.RichText
+            textFormat: TextEdit.PlainText
             wrapMode: TextEdit.Wrap
             font.pointSize: root.scaledFont(9/8)
             clip: true
             focus: true
+            color: "transparent" // HACK: the highlighted text is show by displayText
             background: Rectangle { border.color: "transparent" }
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
 
-            onPreeditTextChanged: {
-                if (Qt.platform.os === "android") {
-                    if (preeditText.length === 0)
-                        highlightFacets()
-                }
-            }
-
-            Keys.onReleased: {
-                if (Qt.platform.os !== "android") {
-                    if (preeditText.length === 0)
-                        highlightFacets()
-                }
-            }
-
             function highlightFacets() {
-                let curText = getPlainText()
-
-                if (curText !== prevText)
-                {
-                    let pos = cursorPosition
-                    text = postUtils.highlightMentionsAndLinks(curText)
-                    cursorPosition = pos
-                    prevText = curText
-                }
+                let p = cursorPosition
+                highlightedText = postUtils.highlightMentionsAndLinks(postText.text, postText.preeditText, p)
             }
 
-            function getPlainText() {
-                return getText(0, length)
-            }
-
-            function getCleanPlainText() {
-                return postUtils.cleanText(getPlainText())
-            }
+            onTextChanged: highlightFacets()
 
             function textLength() {
                 return length + preeditText.length
             }
 
             function graphemeLength() {
-                return postUtils.graphemeLength(getPlainText()) + postUtils.graphemeLength(preeditText)
+                return postUtils.graphemeLength(postText.text) + postUtils.graphemeLength(preeditText)
+            }
+
+            // This Text element overlays the invisible TextArea to show the highlighted
+            // content.
+            Text {
+                id: displayText
+                anchors.fill: parent
+                leftPadding: postText.leftPadding
+                rightPadding: postText.rightPadding
+                textFormat: TextEdit.RichText
+                wrapMode: postText.wrapMode
+                font.pointSize: postText.font.pointSize
+                text: postText.highlightedText
             }
         }
 
+        // Image attachments
         ScrollView {
             property int imgWidth: 240
 
@@ -304,6 +293,7 @@ Page {
             }
         }
 
+        // Link card attachment
         LinkCardView {
             property var card: null
 
@@ -378,12 +368,6 @@ Page {
         onTriggered: linkCardReader.getLinkCard(postUtils.firstWebLink)
     }
 
-    Timer {
-        id: textHighlightTimer
-        interval: 500
-        onTriggered: postText.highlightFacets()
-    }
-
     PostUtils {
         id: postUtils
         skywalker: page.skywalker
@@ -427,5 +411,9 @@ Page {
 
     function postDone() {
         page.closed()
+    }
+
+    Component.onCompleted: {
+        postText.focus = true
     }
 }

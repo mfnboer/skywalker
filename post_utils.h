@@ -27,10 +27,9 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid);
     Q_INVOKABLE void pickPhoto() const;
-    Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text);
+    Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text, const QString& preeditText, int cursor);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
-    Q_INVOKABLE QString cleanText(QString text);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);

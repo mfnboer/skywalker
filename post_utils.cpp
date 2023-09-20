@@ -198,10 +198,16 @@ void PostUtils::setFirstWebLink(const QString& link)
     emit firstWebLinkChanged();
 }
 
-QString PostUtils::highlightMentionsAndLinks(const QString& text)
+QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString& preeditText, int cursor)
 {
-    const auto facets = bskyClient()->parseFacets(text);
-    QString highlighted;
+    const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
+
+    const auto facets = bskyClient()->parseFacets(fullText);
+
+    // Keep all white space as the user is editing plain text.
+    // We only use HTML for highlighting links and mentions
+    QString highlighted = "<span style=\"white-space: pre-wrap\">";
+
     int pos = 0;
     bool webLinkFound = false;
     mLinkShorteningReduction = 0;
@@ -222,7 +228,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text)
             mLinkShorteningReduction += reduction;
         }
 
-        const auto before = text.sliced(pos, facet.mStartIndex - pos);
+        const auto before = fullText.sliced(pos, facet.mStartIndex - pos);
         highlighted.append(before.toHtmlEscaped());
         QString highlight = QString("<font color=\"blue\">%1</font>").arg(facet.mMatch);
         highlighted.append(highlight);
@@ -232,7 +238,8 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text)
     if (!webLinkFound)
         setFirstWebLink(QString());
 
-    highlighted.append(text.sliced(pos).toHtmlEscaped());
+    highlighted.append(fullText.sliced(pos).toHtmlEscaped());
+    highlighted.append("</span>");
     return highlighted;
 }
 
@@ -245,13 +252,6 @@ int PostUtils::graphemeLength(const QString& text) const
         ++length;
 
     return length;
-}
-
-// In the Post Compose page the text area is in HTML.
-// In the plain text we get some cruft is still left.
-QString PostUtils::cleanText(QString text)
-{
-    return text.replace(QChar(QChar::ParagraphSeparator), "\n");
 }
 
 }

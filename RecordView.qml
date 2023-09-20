@@ -20,7 +20,7 @@ Item {
 
             Avatar {
                 id: avatar
-                width: 15
+                width: 24
                 Layout.alignment: Qt.AlignTop
                 avatarUrl: record.author.avatarUrl
             }
