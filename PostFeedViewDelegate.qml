@@ -285,6 +285,11 @@ Rectangle {
                     iconColor: postReposted ? "palevioletred" : "grey"
                     svg: svgOutline.repost
                     statistic: postRepostCount
+                    onClicked: () => {
+                        // TODO: popup for repost / quote post
+                        root.composeQuote(postUri, postCid, postText, postIndexedDateTime,
+                                          author)
+                    }
                 }
                 StatIcon {
                     width: parent.width / 4

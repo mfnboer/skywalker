@@ -15,11 +15,6 @@ RoundedFrame {
     border.width: 1
     border.color: "lightgrey"
 
-    function getColumnHeight() {
-        console.debug(card.height, thumbImg.implicitHeight, linkText.height, titleText.height, descriptionText.height)
-        return externalColumn.height
-    }
-
     Column {
         id: externalColumn
         width: parent.width

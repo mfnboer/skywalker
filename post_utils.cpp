@@ -65,14 +65,81 @@ static ATProto::AppBskyFeed::PostReplyRef::Ptr createReplyRef(
 
 void PostUtils::post(QString text, const QStringList& imageFileNames,
                      const QString& replyToUri, const QString& replyToCid,
-                     const QString& replyRootUri, const QString& replyRootCid)
+                     const QString& replyRootUri, const QString& replyRootCid,
+                     const QString& quoteUri, const QString& quoteCid)
 {
     Q_ASSERT(mSkywalker);
     qDebug() << "Posting:" << text;
-    auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-    bskyClient()->createPost(text, std::move(replyRef), [this, imageFileNames](auto post){
-        continuePost(imageFileNames, post); });
+    if (replyToUri.isEmpty())
+    {
+        bskyClient()->createPost(text, nullptr, [this, imageFileNames, quoteUri, quoteCid](auto post){
+            continuePost(imageFileNames, post, quoteUri, quoteCid); });
+        return;
+    }
+
+    bskyClient()->checkPostExists(replyToUri, replyToCid,
+        [this, text, imageFileNames, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
+        {
+            auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+
+            bskyClient()->createPost(text, std::move(replyRef), [this, imageFileNames, quoteUri, quoteCid](auto post){
+                continuePost(imageFileNames, post, quoteUri, quoteCid); });
+        },
+        [this] (const QString& error){
+            qDebug() << "Post not found:" << error;
+            emit postFailed(tr("It seems the post you reply to has been deleted."));
+        });
+}
+
+void PostUtils::post(QString text, const LinkCard* card,
+                     const QString& replyToUri, const QString& replyToCid,
+                     const QString& replyRootUri, const QString& replyRootCid,
+                     const QString& quoteUri, const QString& quoteCid)
+{
+    Q_ASSERT(card);
+    Q_ASSERT(mSkywalker);
+    qDebug() << "Posting:" << text;
+
+    if (replyToUri.isEmpty())
+    {
+        bskyClient()->createPost(text, nullptr, [this, card, quoteUri, quoteCid](auto post){
+            continuePost(card, post, quoteUri, quoteCid); });
+        return;
+    }
+
+    bskyClient()->checkPostExists(replyToUri, replyToCid,
+        [this, text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
+        {
+            auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+
+            bskyClient()->createPost(text, std::move(replyRef), [this, card, quoteUri, quoteCid](auto post){
+                continuePost(card, post, quoteUri, quoteCid); });
+        },
+        [this](const QString& error){
+            qDebug() << "Post not found:" << error;
+            emit postFailed(tr("It seems the post you reply to has been deleted."));
+        });
+}
+
+void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const QString& quoteUri, const QString& quoteCid)
+{
+    if (quoteUri.isEmpty())
+    {
+        continuePost(imageFileNames, post);
+        return;
+    }
+
+    bskyClient()->checkPostExists(quoteUri, quoteCid,
+        [this, imageFileNames, post, quoteUri, quoteCid]{
+            bskyClient()->addQuoteToPost(*post, quoteUri, quoteCid);
+            continuePost(imageFileNames, post);
+        },
+        [this](const QString& error){
+            qDebug() << "Post not found:" << error;
+            emit postFailed(tr("It seems the quoted post has been deleted."));
+        });
 }
 
 void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex)
@@ -107,17 +174,24 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         });
 }
 
-void PostUtils::post(QString text, const LinkCard* card,
-                     const QString& replyToUri, const QString& replyToCid,
-                     const QString& replyRootUri, const QString& replyRootCid)
+void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const QString& quoteUri, const QString& quoteCid)
 {
-    Q_ASSERT(card);
-    Q_ASSERT(mSkywalker);
-    qDebug() << "Posting:" << text;
-    auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+    if (quoteUri.isEmpty())
+    {
+        continuePost(card, post);
+        return;
+    }
 
-    bskyClient()->createPost(text, std::move(replyRef), [this, card](auto post){
-        continuePost(card, post); });
+    bskyClient()->checkPostExists(quoteUri, quoteCid,
+        [this, card, post, quoteUri, quoteCid]{
+            bskyClient()->addQuoteToPost(*post, quoteUri, quoteCid);
+            continuePost(card, post);
+        },
+        [this](const QString& error){
+            qDebug() << "Post not found:" << error;
+            emit postFailed(tr("It seems the quoted post has been deleted."));
+        });
 }
 
 void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post)

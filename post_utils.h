@@ -22,10 +22,12 @@ public:
 
     Q_INVOKABLE void post(QString text, const QStringList& imageFileNames,
                           const QString& replyToUri, const QString& replyToCid,
-                          const QString& replyRootUri, const QString& replyRootCid);
+                          const QString& replyRootUri, const QString& replyRootCid,
+                          const QString& quoteUri, const QString& quoteCid);
     Q_INVOKABLE void post(QString text, const LinkCard* card,
                           const QString& replyToUri, const QString& replyToCid,
-                          const QString& replyRootUri, const QString& replyRootCid);
+                          const QString& replyRootUri, const QString& replyRootCid,
+                          const QString& quoteUri, const QString& quoteCid);
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text, const QString& preeditText, int cursor);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
@@ -46,7 +48,11 @@ signals:
     void firstWebLinkChanged();
 
 private:
+    void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const QString& quoteUri, const QString& quoteCid);
     void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
+    void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const QString& quoteUri, const QString& quoteCid);
     void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);

@@ -123,6 +123,20 @@ ApplicationWindow {
         stack.push(page)
     }
 
+    function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
+        let component = Qt.createComponent("ComposePost.qml")
+        let page = component.createObject(root, {
+                skywalker: skywalker,
+                quoteUri: quoteUri,
+                quoteCid: quoteCid,
+                quoteText: quoteText,
+                quoteDateTime: quoteDateTime,
+                quoteAuthor: quoteAuthor
+        })
+        page.onClosed.connect(() => { popStack() })
+        stack.push(page)
+    }
+
     function viewPostThread(modelId, postEntryIndex) {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })

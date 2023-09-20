@@ -23,7 +23,7 @@ Popup {
         anchors.right: closeButton.left
         anchors.verticalCenter: parent.verticalCenter
         wrapMode: Text.Wrap
-        maximumLineCount: 2
+        maximumLineCount: 4
         elide: Text.ElideRight
         text: "Status"
     }

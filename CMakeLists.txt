@@ -92,6 +92,7 @@ qt_add_qml_module(appskywalker
         QML_FILES LinkCardView.qml
         SOURCES image_reader.h
         SOURCES image_reader.cpp
+        QML_FILES QuotePost.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

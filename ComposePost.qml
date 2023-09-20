@@ -20,6 +20,13 @@ Page {
     property string replyToPostText
     property date replyToPostDateTime
 
+    // Quote post
+    property basicprofile quoteAuthor
+    property string quoteUri: ""
+    property string quoteCid: ""
+    property string quoteText
+    property date quoteDateTime
+
     signal closed
 
     id: page
@@ -63,11 +70,13 @@ Page {
                 if (!linkCard.card) {
                     postUtils.post(postText.text, images,
                                    replyToPostUri, replyToPostCid,
-                                   replyRootPostUri, replyRootPostCid);
+                                   replyRootPostUri, replyRootPostCid,
+                                   quoteUri, quoteCid);
                 } else {
                     postUtils.post(postText.text, linkCard.card,
                                    replyToPostUri, replyToPostCid,
-                                   replyRootPostUri, replyRootPostCid)
+                                   replyRootPostUri, replyRootPostCid,
+                                   quoteUri, quoteCid)
                 }
             }
         }
@@ -134,7 +143,7 @@ Page {
         anchors.fill: parent
         clip: true
         contentWidth: postText.width
-        contentHeight: postText.y + postText.height + imageScroller.height + linkCard.height
+        contentHeight: quoteColumn.y + (quoteColumn.visible ? quoteColumn.height : 0)
         flickableDirection: Flickable.VerticalFlick
 
         // Reply-to
@@ -144,39 +153,14 @@ Page {
             color: "azure"
             visible: replyToColumn.visible
         }
-        Column {
+        QuotePost {
             id: replyToColumn
-            width: parent.width - 10
-            padding: 10
+            width: parent.width - 20
             anchors.horizontalCenter: parent.horizontalCenter
+            author: replyToAuthor
+            postText: replyToPostText
+            postDateTime: replyToPostDateTime
             visible: replyToPostUri
-
-            RowLayout {
-                width: parent.width - 20
-
-                Avatar {
-                    id: avatar
-                    width: 24
-                    Layout.alignment: Qt.AlignTop
-                    avatarUrl: replyToAuthor.avatarUrl
-                }
-
-                PostHeader {
-                    Layout.fillWidth: true
-                    authorName: replyToAuthor.name
-                    authorHandle: replyToAuthor.handle
-                    postThreadType: QEnums.THREAD_NONE
-                    postIndexedSecondsAgo: (new Date() - replyToPostDateTime) / 1000
-                }
-            }
-
-            PostBody {
-                width: parent.width - 20
-                postText: replyToPostText
-                postImages: []
-                postDateTime: replyToPostDateTime
-                maxTextLines: 6
-            }
         }
 
         // Post text
@@ -234,7 +218,7 @@ Page {
             property int imgWidth: 240
 
             id: imageScroller
-            height: visible ? 180 : 0
+            height: visible && page.images.length > 0 ? 180 : 0
             width: page.width
             horizontalPadding: 10
             anchors.top: postText.bottom
@@ -300,6 +284,7 @@ Page {
             id: linkCard
             x: 10
             width: page.width - 20
+            height: card ? columnHeight : 0
             anchors.top: imageScroller.bottom
             uri: card ? card.link : ""
             title: card ? card.title : ""
@@ -324,6 +309,25 @@ Page {
                 svg: svgOutline.close
                 onClicked: linkCard.hide()
             }
+        }
+
+        // Quote post
+        Rectangle {
+            anchors.fill: quoteColumn
+            border.width: 2
+            color: "azure"
+            visible: quoteColumn.visible
+        }
+        QuotePost {
+            id: quoteColumn
+            width: parent.width - 20
+            anchors.top: linkCard.bottom
+            anchors.topMargin: 5
+            anchors.horizontalCenter: parent.horizontalCenter
+            author: quoteAuthor
+            postText: quoteText
+            postDateTime: quoteDateTime
+            visible: quoteUri
         }
 
         function ensureVisible(cursor) {
