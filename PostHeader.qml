@@ -20,7 +20,7 @@ GridLayout {
     }
     Text {
         text: durationToString(postIndexedSecondsAgo)
-        font.pointSize: root.scaledFont(7/8)
+        font.pointSize: guiSettings.scaledFont(7/8)
         color: Material.color(Material.Grey)
     }
 
@@ -29,9 +29,13 @@ GridLayout {
         bottomPadding: 5
         elide: Text.ElideRight
         text: "@" + authorHandle
-        font.pointSize: root.scaledFont(7/8)
+        font.pointSize: guiSettings.scaledFont(7/8)
         color: Material.color(Material.Grey)
         visible: postThreadType & QEnums.THREAD_ENTRY
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 
     function durationToString(duration) {

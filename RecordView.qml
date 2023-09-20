@@ -68,7 +68,7 @@ Item {
             wrapMode: Text.Wrap
             maximumLineCount: 2
             elide: Text.ElideRight
-            font.pointSize: root.scaledFont(7/8)
+            font.pointSize: guiSettings.scaledFont(7/8)
             text: record.unsupportedType
             visible: record.notSupported
         }
@@ -88,5 +88,9 @@ Item {
             if (record.postUri)
                 skywalker.getPostThread(record.postUri)
         }
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

@@ -28,9 +28,9 @@ Page {
 
     header: Rectangle {
         width: parent.width
-        height: root.headerHeight
-        z: 10
-        color: "black"
+        height: guiSettings.headerHeight
+        z: guiSettings.headerZLevel
+        color: guiSettings.headerColor
 
         Button {
             anchors.left: parent.left
@@ -76,9 +76,9 @@ Page {
     footer: Rectangle {
         id: textFooter
         width: page.width
-        height: root.footerHeight + Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
-        z: 10
-        color: "transparent"
+        height: guiSettings.footerHeight + Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
+        z: guiSettings.footerZLevel
+        color: guiSettings.footerColor
 
         ProgressBar {
             id: textLengthBar
@@ -192,7 +192,7 @@ Page {
             placeholderTextColor: "grey"
             textFormat: TextEdit.PlainText
             wrapMode: TextEdit.Wrap
-            font.pointSize: root.scaledFont(9/8)
+            font.pointSize: guiSettings.scaledFont(9/8)
             clip: true
             focus: true
             color: "transparent" // HACK: the highlighted text is show by displayText
@@ -273,7 +273,7 @@ Page {
                             contentItem: Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: "white"
-                                font.pointSize: root.scaledFont(7/8)
+                                font.pointSize: guiSettings.scaledFont(7/8)
                                 font.bold: true
                                 text: qsTr("+ALT", "add alternative text button")
                             }
@@ -389,6 +389,10 @@ Page {
                 linkCardTimer.stop()
             }
         }
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 
     function postFailed(error) {

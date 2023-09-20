@@ -25,9 +25,6 @@ qt_add_qml_module(appskywalker
     URI skywalker
     VERSION ${PROJECT_VERSION}
     NO_RESOURCE_TARGET_PATH
-    QML_FILES
-        Main.qml
-        Login.qml
     SOURCES
         skywalker.h
         skywalker.cpp
@@ -59,6 +56,8 @@ qt_add_qml_module(appskywalker
         jni_callback.h
         jni_callback.cpp
     QML_FILES
+        Main.qml
+        Login.qml
         Avatar.qml
         ImagePreview1.qml
         ImagePreview2.qml
@@ -80,6 +79,7 @@ qt_add_qml_module(appskywalker
         PostFeedViewDelegate.qml
         PostThreadView.qml
         ComposePost.qml
+        GuiSettings.qml
     RESOURCES
         qtquickcontrols2.conf
         android/src/com/gmail/mfnboer/QPhotoPicker.java

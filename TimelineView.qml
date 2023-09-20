@@ -19,21 +19,21 @@ ListView {
 
     header: Rectangle {
         width: parent.width
-        height: root.headerHeight
-        z: 10
-        color: "black"
+        height: guiSettings.headerHeight
+        z: guiSettings.headerZLevel
+        color: guiSettings.headerColor
 
         RowLayout {
             id: headerRow
             width: parent.width
-            height: root.headerHeight
+            height: guiSettings.headerHeight
 
             Text {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
                 leftPadding: 8
                 font.bold: true
-                font.pointSize: root.scaledFont(10/8)
+                font.pointSize: guiSettings.scaledFont(10/8)
                 color: "white"
                 text: qsTr("Following timeline")
             }
@@ -57,17 +57,17 @@ ListView {
     footer: Rectangle {
         id: viewFooter
         width: parent.width
-        height: root.footerHeight
-        z: 10
-        color: "white"
+        height: guiSettings.footerHeight
+        z: guiSettings.footerZLevel
+        color: guiSettings.footerColor
 
         Row {
             width: parent.width
 
             SvgImage {
                 y: height + 5
-                width: 34
-                height: 34
+                width: height
+                height: guiSettings.footerHeight - 10
                 id: homeButton
                 color: "black"
                 svg: svgOutline.home
@@ -87,7 +87,7 @@ ListView {
                         id: unreadCountText
                         anchors.centerIn: parent
                         font.bold: true
-                        font.pointSize: root.scaledFont(6/8)
+                        font.pointSize: guiSettings.scaledFont(6/8)
                         color: "white"
                         text: timelineView.unreadPosts
                     }
@@ -172,9 +172,13 @@ ListView {
 
     BusyIndicator {
         id: busyTopIndicator
-        y: parent.y + root.headerHeight
+        y: parent.y + guiSettings.headerHeight
         anchors.horizontalCenter: parent.horizontalCenter
         running: gettingNewPosts
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 
     function updateUnreadPosts(firstIndex) {

@@ -6,9 +6,6 @@ import QtQuick.Window
 import skywalker
 
 ApplicationWindow {
-    property int headerHeight: 44
-    property int footerHeight: 44
-
     id: root
     width: 480
     height: 960
@@ -147,10 +144,6 @@ ApplicationWindow {
     function popStack() {
         let item = stack.pop()
         item.destroy()
-    }
-
-    function scaledFont(scaleFactor) {
-        return Application.font.pointSize * scaleFactor;
     }
 
     Component.onCompleted: {

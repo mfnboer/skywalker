@@ -15,9 +15,9 @@ ListView {
 
     header: Rectangle {
         width: parent.width
-        height: root.headerHeight
-        z: 10
-        color: "black"
+        height: guiSettings.headerHeight
+        z: guiSettings.headerZLevel
+        color: guiSettings.headerColor
 
         RowLayout
         {
@@ -34,7 +34,7 @@ ListView {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
                 font.bold: true
-                font.pointSize: root.scaledFont(10/8)
+                font.pointSize: guiSettings.scaledFont(10/8)
                 color: "white"
                 text: qsTr("Post thread")
             }
@@ -44,6 +44,10 @@ ListView {
 
     delegate: PostFeedViewDelegate {
         viewWidth: view.width
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 
     Component.onCompleted: {

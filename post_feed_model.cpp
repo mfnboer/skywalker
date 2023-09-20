@@ -423,7 +423,7 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
     if (mOnlyRepliesToFollowing)
     {
         // In case of blocked posts there is no reply ref.
-        // Sure someone that blocks you is not a friend of yours.
+        // Surely someone that blocks you is not a friend of yours.
         if (!replyRef)
             return false;
 
@@ -435,6 +435,12 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
 
         // Always show replies to the user
         if (parentDid == mUserDid)
+            return true;
+
+        const auto rootDid = replyRef->mRoot.getAuthor().getDid();
+
+        // Always show replies in a thread from the user
+        if (rootDid == mUserDid)
             return true;
 
         if (!mFollowing.contains(parentDid))

@@ -129,7 +129,7 @@ Rectangle {
             text: qsTr(`Reposted by ${postRepostedByName}`)
             color: Material.color(Material.Grey)
             font.bold: true
-            font.pointSize: root.scaledFont(7/8)
+            font.pointSize: guiSettings.scaledFont(7/8)
             visible: postRepostedByName && !postGapId
         }
 
@@ -227,7 +227,7 @@ Rectangle {
                     width: parent.width
                     elide: Text.ElideRight
                     color: Material.color(Material.Grey)
-                    font.pointSize: root.scaledFont(7/8)
+                    font.pointSize: guiSettings.scaledFont(7/8)
                     text: qsTr(`Reply to ${postReplyToAuthor.name}`)
                 }
 
@@ -364,7 +364,7 @@ Rectangle {
             maximumLineCount: 2
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
-            font.pointSize: root.scaledFont(7/8)
+            font.pointSize: guiSettings.scaledFont(7/8)
             text: postUnsupportedType
             visible: postNotSupported
         }
@@ -437,5 +437,9 @@ Rectangle {
             if (postUri)
                 skywalker.getPostThread(postUri)
         }
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }
