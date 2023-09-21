@@ -29,13 +29,13 @@ Item {
         width: parent.width
         height: parent.height
         radius: height / 2
-        color: "blue"
+        color: guiSettings.buttonColor
         visible: !avatarFrame.visible
 
         SvgImage {
             width: parent.width
             height: parent.height
-            color: "white"
+            color: guiSettings.buttonTextColor
             svg: svgFilled.unknownAvatar
         }
     }
@@ -45,5 +45,9 @@ Item {
             console.debug("Avatar clicked");
             avatarItem.clicked()
         }
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

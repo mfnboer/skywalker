@@ -42,9 +42,9 @@ Page {
         Button {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            Material.background: "blue"
+            Material.background: guiSettings.buttonColor
             contentItem: Text {
-                color: "white"
+                color: guiSettings.buttonTextColor
                 text: qsTr("Cancel")
             }
 
@@ -185,8 +185,8 @@ Page {
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
 
             function highlightFacets() {
-                let p = cursorPosition
-                highlightedText = postUtils.highlightMentionsAndLinks(postText.text, postText.preeditText, p)
+                highlightedText = postUtils.highlightMentionsAndLinks(postText.text,
+                        postText.preeditText, cursorPosition, guiSettings.linkColor)
             }
 
             onTextChanged: highlightFacets()

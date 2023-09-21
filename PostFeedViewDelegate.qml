@@ -65,12 +65,12 @@ Rectangle {
             spacing: 0
 
             Repeater {
-                model: 11
+                model: guiSettings.threadBarWidth
 
                 Rectangle {
                     required property int index
 
-                    width: avatar.width / 11
+                    width: avatar.width / guiSettings.threadBarWidth
                     Layout.preferredHeight: topLeftSpace.height
                     color: {
                         switch (postType) {
@@ -136,7 +136,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            width: 55
+            width: guiSettings.threadBarWidth * 5
             Layout.fillHeight: true
             opacity: 0.9
 

@@ -73,13 +73,13 @@ ListView {
                 svg: svgOutline.home
 
                 Rectangle {
-                    x: parent.width - 14
-                    y: -parent.y + 5
-                    width: Math.max(unreadCountText.width + 10, 18)
-                    height: 18
+                    x: parent.width - 17
+                    y: -parent.y + 6
+                    width: Math.max(unreadCountText.width + 10, height)
+                    height: 20
                     radius: 8
-                    color: "blue"
-                    border.color: "white"
+                    color: guiSettings.badgeColor
+                    border.color: guiSettings.badgeBorderColor
                     border.width: 2
                     visible: timelineView.unreadPosts > 0
 
@@ -88,7 +88,7 @@ ListView {
                         anchors.centerIn: parent
                         font.bold: true
                         font.pointSize: guiSettings.scaledFont(6/8)
-                        color: "white"
+                        color: guiSettings.badgeTextColor
                         text: timelineView.unreadPosts
                     }
                 }
@@ -107,8 +107,8 @@ ListView {
             y: -height - 10
             width: 70
             height: width
-            iconColor: "white"
-            Material.background: "blue"
+            iconColor: guiSettings.buttonTextColor
+            Material.background: guiSettings.buttonColor
             opacity: 0.6
             imageMargin: 20
             svg: svgOutline.chat

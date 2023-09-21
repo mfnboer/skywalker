@@ -34,7 +34,7 @@ RoundedFrame {
             rightPadding: 5
             text: card.uri ? new URL(card.uri).hostname : ""
             elide: Text.ElideRight
-            color: "blue"
+            color: guiSettings.linkColor
         }
         Text {
             id: titleText
@@ -60,5 +60,9 @@ RoundedFrame {
             maximumLineCount: 5
             elide: Text.ElideRight
         }
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

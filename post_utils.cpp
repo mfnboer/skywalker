@@ -272,7 +272,8 @@ void PostUtils::setFirstWebLink(const QString& link)
     emit firstWebLinkChanged();
 }
 
-QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString& preeditText, int cursor)
+QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString& preeditText,
+                                             int cursor, const QString& color)
 {
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
 
@@ -304,7 +305,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
 
         const auto before = fullText.sliced(pos, facet.mStartIndex - pos);
         highlighted.append(before.toHtmlEscaped());
-        QString highlight = QString("<font color=\"blue\">%1</font>").arg(facet.mMatch);
+        QString highlight = QString("<font color=\"%1\">%2</font>").arg(color, facet.mMatch);
         highlighted.append(highlight);
         pos = facet.mEndIndex;
     }

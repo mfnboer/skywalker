@@ -29,7 +29,8 @@ public:
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
     Q_INVOKABLE void pickPhoto() const;
-    Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text, const QString& preeditText, int cursor);
+    Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text,const QString& preeditText,
+                                                  int cursor, const QString& color);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
 
