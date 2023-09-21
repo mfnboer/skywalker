@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "link_card_reader.h"
+#include <QTextDocument>
 #include <QRegularExpression>
 
 namespace Skywalker {
@@ -56,6 +57,20 @@ void LinkCardReader::getLinkCard(const QString& link)
     connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ requestSslFailed(reply); });
 }
 
+QString LinkCardReader::toPlainText(const QString& text) const
+{
+    static const QRegularExpression htmlEmtity(R"(&([a-z]+)|(#[0-9]+);)");
+
+    auto match = htmlEmtity.match(text);
+
+    if (!match.hasMatch())
+        return text;
+
+    QTextDocument doc;
+    doc.setHtml(text);
+    return doc.toPlainText();
+}
+
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
     static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
@@ -75,11 +90,11 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     auto match = ogTitleRE.match(data);
 
     if (match.hasMatch())
-        card->setTitle(match.captured(3));
+        card->setTitle(toPlainText(match.captured(3)));
 
     match = ogDescription.match(data);
     if (match.hasMatch())
-        card->setDescription(match.captured(3));
+        card->setDescription(toPlainText(match.captured(3)));
 
     const auto& url = reply->request().url();
     match = ogImage.match(data);
