@@ -4,6 +4,7 @@
 #include "image_reader.h"
 #include "link_card.h"
 #include "skywalker.h"
+#include <atproto/lib/post_master.h>
 #include <QImage>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -61,6 +62,7 @@ private:
     ImageReader* imageReader();
 
     Skywalker* mSkywalker = nullptr;
+    std::unique_ptr<ATProto::PostMaster> mPostMaster;
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;

@@ -39,7 +39,10 @@ ImageReader* PostUtils::imageReader()
 
 void PostUtils::setSkywalker(Skywalker* skywalker)
 {
+    Q_ASSERT(skywalker);
     mSkywalker = skywalker;
+    Q_ASSERT(mSkywalker->getBskyClient());
+    mPostMaster = std::make_unique<ATProto::PostMaster>(*mSkywalker->getBskyClient());
     emit skywalkerChanged();
 }
 
@@ -68,22 +71,22 @@ void PostUtils::post(QString text, const QStringList& imageFileNames,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid)
 {
-    Q_ASSERT(mSkywalker);
+    Q_ASSERT(mPostMaster);
     qDebug() << "Posting:" << text;
 
     if (replyToUri.isEmpty())
     {
-        bskyClient()->createPost(text, nullptr, [this, imageFileNames, quoteUri, quoteCid](auto post){
+        mPostMaster->createPost(text, nullptr, [this, imageFileNames, quoteUri, quoteCid](auto post){
             continuePost(imageFileNames, post, quoteUri, quoteCid); });
         return;
     }
 
-    bskyClient()->checkPostExists(replyToUri, replyToCid,
+    mPostMaster->checkPostExists(replyToUri, replyToCid,
         [this, text, imageFileNames, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            bskyClient()->createPost(text, std::move(replyRef), [this, imageFileNames, quoteUri, quoteCid](auto post){
+            mPostMaster->createPost(text, std::move(replyRef), [this, imageFileNames, quoteUri, quoteCid](auto post){
                 continuePost(imageFileNames, post, quoteUri, quoteCid); });
         },
         [this] (const QString& error){
@@ -98,22 +101,22 @@ void PostUtils::post(QString text, const LinkCard* card,
                      const QString& quoteUri, const QString& quoteCid)
 {
     Q_ASSERT(card);
-    Q_ASSERT(mSkywalker);
+    Q_ASSERT(mPostMaster);
     qDebug() << "Posting:" << text;
 
     if (replyToUri.isEmpty())
     {
-        bskyClient()->createPost(text, nullptr, [this, card, quoteUri, quoteCid](auto post){
+        mPostMaster->createPost(text, nullptr, [this, card, quoteUri, quoteCid](auto post){
             continuePost(card, post, quoteUri, quoteCid); });
         return;
     }
 
-    bskyClient()->checkPostExists(replyToUri, replyToCid,
+    mPostMaster->checkPostExists(replyToUri, replyToCid,
         [this, text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            bskyClient()->createPost(text, std::move(replyRef), [this, card, quoteUri, quoteCid](auto post){
+            mPostMaster->createPost(text, std::move(replyRef), [this, card, quoteUri, quoteCid](auto post){
                 continuePost(card, post, quoteUri, quoteCid); });
         },
         [this](const QString& error){
@@ -131,9 +134,9 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         return;
     }
 
-    bskyClient()->checkPostExists(quoteUri, quoteCid,
+    mPostMaster->checkPostExists(quoteUri, quoteCid,
         [this, imageFileNames, post, quoteUri, quoteCid]{
-            bskyClient()->addQuoteToPost(*post, quoteUri, quoteCid);
+            mPostMaster->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(imageFileNames, post);
         },
         [this](const QString& error){
@@ -165,7 +168,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
 
     bskyClient()->uploadBlob(blob, mimeType,
         [this, imageFileNames, post, imgIndex](auto blob){
-            bskyClient()->addImageToPost(*post, std::move(blob));
+            mPostMaster->addImageToPost(*post, std::move(blob));
             continuePost(imageFileNames, post, imgIndex + 1);
         },
         [this](const QString& error){
@@ -183,9 +186,9 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
         return;
     }
 
-    bskyClient()->checkPostExists(quoteUri, quoteCid,
+    mPostMaster->checkPostExists(quoteUri, quoteCid,
         [this, card, post, quoteUri, quoteCid]{
-            bskyClient()->addQuoteToPost(*post, quoteUri, quoteCid);
+            mPostMaster->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(card, post);
         },
         [this](const QString& error){
@@ -226,7 +229,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 
     if (blob.isEmpty())
     {
-        bskyClient()->addExternalToPost(*post, card->getLink(), card->getTitle(), card->getDescription());
+        mPostMaster->addExternalToPost(*post, card->getLink(), card->getTitle(), card->getDescription());
         continuePost(post);
         return;
     }
@@ -235,7 +238,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 
     bskyClient()->uploadBlob(blob, mimeType,
         [this, card, post](auto blob){
-            bskyClient()->addExternalToPost(*post, card->getLink(), card->getTitle(),
+            mPostMaster->addExternalToPost(*post, card->getLink(), card->getTitle(),
                     card->getDescription(), std::move(blob));
             continuePost(post);
         },
@@ -248,7 +251,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 {
     emit postProgress(tr("Posting"));
-    bskyClient()->post(*post,
+    mPostMaster->post(*post,
         [this]{
             emit postOk();
         },
@@ -277,7 +280,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
 {
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
 
-    const auto facets = bskyClient()->parseFacets(fullText);
+    const auto facets = mPostMaster->parseFacets(fullText);
 
     // Keep all white space as the user is editing plain text.
     // We only use HTML for highlighting links and mentions
@@ -289,7 +292,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
 
     for (const auto& facet : facets)
     {
-        if (facet.mType == ATProto::Client::ParsedMatch::Type::LINK)
+        if (facet.mType == ATProto::PostMaster::ParsedMatch::Type::LINK)
         {
             if (!webLinkFound)
             {
@@ -297,7 +300,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
                 webLinkFound = true;
             }
 
-            const auto shortLink = ATProto::Client::shortenWebLink(facet.mMatch);
+            const auto shortLink = ATProto::PostMaster::shortenWebLink(facet.mMatch);
             const int reduction = graphemeLength(facet.mMatch) - graphemeLength(shortLink);
             qDebug() << "SHORT:" << shortLink << "reduction:" << reduction;
             mLinkShorteningReduction += reduction;
