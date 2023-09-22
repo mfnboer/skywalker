@@ -45,8 +45,9 @@ public:
         PostReplyCount,
         PostRepostCount,
         PostLikeCount,
-        PostReposted,
+        PostRepostUri,
         PostLiked,
+        PostLocallyDeleted,
         EndOfFeed
     };
 

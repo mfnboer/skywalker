@@ -437,13 +437,13 @@ int Post::getLikeCount() const
     return mPost ? mPost->mLikeCount : 0;
 }
 
-bool Post::hasReposted() const
+QString Post::repostUri() const
 {
     if (!mPost || !mPost->mViewer)
-        return false;
+        return {};
 
     const auto& repost = mPost->mViewer->mRepost;
-    return repost && !repost->isEmpty();
+    return repost ? *repost : QString();
 }
 
 bool Post::hasLiked() const

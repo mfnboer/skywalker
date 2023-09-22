@@ -22,14 +22,7 @@ ApplicationWindow {
 
     StackView {
         id: stack
-        initialItem: timelineView
         anchors.fill: parent
-    }
-
-    Component {
-        id: timelineView
-
-        TimelineView {}
     }
 
     SvgOutline {
@@ -137,6 +130,11 @@ ApplicationWindow {
         stack.push(page)
     }
 
+    function repost(repostUri, uri, cid, text, dateTime, author) {
+        let timeline = getTimelineView()
+        timeline.repost(timelineIndex, repostUri, uri, cid, text, dateTime, author)
+    }
+
     function viewPostThread(modelId, postEntryIndex) {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
@@ -161,6 +159,10 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+        let component = Qt.createComponent("TimelineView.qml")
+        let view = component.createObject(root, { skywalker: skywalker })
+        stack.push(view)
+
         // Try to resume the previous session. If that fails, then ask the user to login.
         skywalker.resumeSession()
     }

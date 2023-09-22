@@ -44,14 +44,15 @@ Popup {
 
     Timer {
         id: closeTimer
-        interval: 30000
         onTriggered: statusPopup.close()
     }
 
-    function show(msg, level = QEnums.STATUS_LEVEL_INFO) {
+    function show(msg, level = QEnums.STATUS_LEVEL_INFO, intervalSec = 30) {
+        console.debug("Level:", level, "Msg:", msg);
         statusPopup.level = level
         statusText.text = msg;
         open()
+        closeTimer.interval = intervalSec * 1000
         closeTimer.restart()
     }
 }

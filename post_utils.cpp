@@ -30,6 +30,18 @@ ATProto::Client* PostUtils::bskyClient()
     return client;
 }
 
+ATProto::PostMaster* PostUtils::postMaster()
+{
+    if (!mPostMaster)
+    {
+        Q_ASSERT(mSkywalker);
+        Q_ASSERT(mSkywalker->getBskyClient());
+        mPostMaster = std::make_unique<ATProto::PostMaster>(*mSkywalker->getBskyClient());
+    }
+
+    return mPostMaster.get();
+}
+
 ImageReader* PostUtils::imageReader()
 {
     if (!mImageReader)
@@ -42,8 +54,6 @@ void PostUtils::setSkywalker(Skywalker* skywalker)
 {
     Q_ASSERT(skywalker);
     mSkywalker = skywalker;
-    Q_ASSERT(mSkywalker->getBskyClient());
-    mPostMaster = std::make_unique<ATProto::PostMaster>(*mSkywalker->getBskyClient());
     emit skywalkerChanged();
 }
 
@@ -72,12 +82,11 @@ void PostUtils::post(QString text, const QStringList& imageFileNames,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid)
 {
-    Q_ASSERT(mPostMaster);
     qDebug() << "Posting:" << text;
 
     if (replyToUri.isEmpty())
     {
-        mPostMaster->createPost(text, nullptr,
+        postMaster()->createPost(text, nullptr,
             [this, presence=getPresence(), imageFileNames, quoteUri, quoteCid](auto post){
                 if (presence)
                     continuePost(imageFileNames, post, quoteUri, quoteCid);
@@ -85,7 +94,7 @@ void PostUtils::post(QString text, const QStringList& imageFileNames,
         return;
     }
 
-    mPostMaster->checkPostExists(replyToUri, replyToCid,
+    postMaster()->checkPostExists(replyToUri, replyToCid,
         [this, presence=getPresence(), text, imageFileNames, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
             if (!presence)
@@ -93,7 +102,7 @@ void PostUtils::post(QString text, const QStringList& imageFileNames,
 
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            mPostMaster->createPost(text, std::move(replyRef),
+            postMaster()->createPost(text, std::move(replyRef),
                 [this, presence, imageFileNames, quoteUri, quoteCid](auto post){
                     if (presence)
                         continuePost(imageFileNames, post, quoteUri, quoteCid);
@@ -114,12 +123,11 @@ void PostUtils::post(QString text, const LinkCard* card,
                      const QString& quoteUri, const QString& quoteCid)
 {
     Q_ASSERT(card);
-    Q_ASSERT(mPostMaster);
     qDebug() << "Posting:" << text;
 
     if (replyToUri.isEmpty())
     {
-        mPostMaster->createPost(text, nullptr,
+        postMaster()->createPost(text, nullptr,
             [this, presence=getPresence(), card, quoteUri, quoteCid](auto post){
                 if (presence)
                     continuePost(card, post, quoteUri, quoteCid);
@@ -127,7 +135,7 @@ void PostUtils::post(QString text, const LinkCard* card,
         return;
     }
 
-    mPostMaster->checkPostExists(replyToUri, replyToCid,
+    postMaster()->checkPostExists(replyToUri, replyToCid,
         [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
             if (!presence)
@@ -135,7 +143,7 @@ void PostUtils::post(QString text, const LinkCard* card,
 
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            mPostMaster->createPost(text, std::move(replyRef),
+            postMaster()->createPost(text, std::move(replyRef),
                 [this, presence, card, quoteUri, quoteCid](auto post){
                     if (presence)
                         continuePost(card, post, quoteUri, quoteCid);
@@ -159,12 +167,12 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         return;
     }
 
-    mPostMaster->checkPostExists(quoteUri, quoteCid,
+    postMaster()->checkPostExists(quoteUri, quoteCid,
         [this, presence=getPresence(), imageFileNames, post, quoteUri, quoteCid]{
             if (!presence)
                 return;
 
-            mPostMaster->addQuoteToPost(*post, quoteUri, quoteCid);
+            postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(imageFileNames, post);
         },
         [this, presence=getPresence()](const QString& error){
@@ -202,7 +210,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
             if (!presence)
                 return;
 
-            mPostMaster->addImageToPost(*post, std::move(blob));
+            postMaster()->addImageToPost(*post, std::move(blob));
             continuePost(imageFileNames, post, imgIndex + 1);
         },
         [this, presence=getPresence()](const QString& error){
@@ -223,12 +231,12 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
         return;
     }
 
-    mPostMaster->checkPostExists(quoteUri, quoteCid,
+    postMaster()->checkPostExists(quoteUri, quoteCid,
         [this, presence=getPresence(), card, post, quoteUri, quoteCid]{
             if (!presence)
                 return;
 
-            mPostMaster->addQuoteToPost(*post, quoteUri, quoteCid);
+            postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(card, post);
         },
         [this, presence=getPresence()](const QString& error){
@@ -276,7 +284,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 
     if (blob.isEmpty())
     {
-        mPostMaster->addExternalToPost(*post, card->getLink(), card->getTitle(), card->getDescription());
+        postMaster()->addExternalToPost(*post, card->getLink(), card->getTitle(), card->getDescription());
         continuePost(post);
         return;
     }
@@ -288,7 +296,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
             if (!presence)
                 return;
 
-            mPostMaster->addExternalToPost(*post, card->getLink(), card->getTitle(),
+            postMaster()->addExternalToPost(*post, card->getLink(), card->getTitle(),
                     card->getDescription(), std::move(blob));
             continuePost(post);
         },
@@ -304,7 +312,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 {
     emit postProgress(tr("Posting"));
-    mPostMaster->post(*post,
+    postMaster()->post(*post,
         [this, presence=getPresence()]{
             if (presence)
                 emit postOk();
@@ -315,6 +323,56 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 
             qDebug() << "Post failed:" << error;
             emit postFailed(error);
+        });
+}
+
+void PostUtils::repost(const QString& uri, const QString& cid)
+{
+    emit repostProgress(tr("Reposting"));
+
+    postMaster()->checkPostExists(uri, cid,
+        [this, presence=getPresence(), uri, cid]{
+            if (presence)
+                continueRepost(uri, cid);
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "Repost failed:" << error;
+            emit repostFailed(error);
+        });
+}
+
+void PostUtils::continueRepost(const QString& uri, const QString& cid)
+{
+    postMaster()->repost(uri, cid,
+        [this, presence=getPresence()]{
+            if (presence)
+                emit repostOk();
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "Repost failed:" << error;
+            emit repostFailed(error);
+        });
+}
+
+void PostUtils::undoRepost(const QString& uri)
+{
+    postMaster()->undoRepost(uri,
+        [this, presence=getPresence()]{
+            if (presence)
+                emit undoRepostOk();
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo repost failed:" << error;
+            emit undoRepostFailed(error);
         });
 }
 
@@ -337,7 +395,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
 {
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
 
-    const auto facets = mPostMaster->parseFacets(fullText);
+    const auto facets = postMaster()->parseFacets(fullText);
 
     // Keep all white space as the user is editing plain text.
     // We only use HTML for highlighting links and mentions

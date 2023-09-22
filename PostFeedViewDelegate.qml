@@ -35,9 +35,10 @@ Rectangle {
     required property int postReplyCount
     required property int postRepostCount
     required property int postLikeCount
-    required property bool postReposted
+    required property string postRepostUri
     required property bool postLiked
-    required property bool endOfFeed;
+    required property bool postLocallyDeleted
+    required property bool endOfFeed
 
     id: postEntry
     width: grid.width
@@ -111,7 +112,7 @@ Rectangle {
             width: avatar.width
             height: repostedByText.height
             color: "transparent"
-            visible: postRepostedByName && !postGapId
+            visible: postRepostedByName && !postGapId && !postLocallyDeleted
 
             SvgImage {
                 anchors.right: parent.right
@@ -130,7 +131,7 @@ Rectangle {
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            visible: postRepostedByName && !postGapId
+            visible: postRepostedByName && !postGapId && !postLocallyDeleted
         }
 
         // Author and content
@@ -194,13 +195,13 @@ Rectangle {
                 y: postHeader.y + 5 // For some reaon "avatar.y + 5" does not work when it is a repost
                 width: parent.width - 13
                 avatarUrl: author.avatarUrl
-                visible: !postIsPlaceHolder
+                visible: !postIsPlaceHolder && !postLocallyDeleted
             }
         }
         Column {
             id: postColumn
             width: parent.width - avatar.width - postEntry.margin * 2
-            visible: !postIsPlaceHolder
+            visible: !postIsPlaceHolder && !postLocallyDeleted
 
             PostHeader {
                 id: postHeader
@@ -282,13 +283,11 @@ Rectangle {
                 }
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: postReposted ? "palevioletred" : "grey"
+                    iconColor: postRepostUri ? "palevioletred" : "grey"
                     svg: svgOutline.repost
                     statistic: postRepostCount
                     onClicked: () => {
-                        // TODO: popup for repost / quote post
-                        root.composeQuote(postUri, postCid, postText, postIndexedDateTime,
-                                          author)
+                        root.repost(postRepostUri, postUri, postCid, postText, postIndexedDateTime, author)
                     }
                 }
                 StatIcon {
@@ -417,7 +416,7 @@ Rectangle {
             Layout.fillWidth: true
             color: "lightgrey"
             visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType) ||
-            (postThreadType & QEnums.THREAD_LEAF)
+                (postThreadType & QEnums.THREAD_LEAF)
         }
 
         // End of feed indication

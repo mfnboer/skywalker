@@ -64,7 +64,6 @@ public:
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
 
-
     std::vector<ImageView::Ptr> getImages() const;
     ExternalView::Ptr getExternalView() const;
     RecordView::Ptr getRecordView() const;
@@ -73,7 +72,7 @@ public:
     int getReplyCount() const;
     int getRepostCount() const;
     int getLikeCount() const;
-    bool hasReposted() const;
+    QString repostUri() const;
     bool hasLiked() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
@@ -88,6 +87,10 @@ public:
     bool isBlocked() const { return mBlocked; }
     bool isNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
+
+    // Local changes
+    bool isLocallyDeleted() const { return mLocallyDeleted; }
+    void setLocallyDeleted(bool deleted) { mLocallyDeleted = true; }
 
 private:
     struct HyperLink
@@ -127,6 +130,9 @@ private:
     bool mNotFound = false;
     bool mNotSupported = false;
     QString mUnsupportedType;
+
+    // Local changes
+    bool mLocallyDeleted = false;
 
     static int sNextGapId;
 };

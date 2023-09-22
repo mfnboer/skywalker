@@ -145,10 +145,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getRepostCount();
     case Role::PostLikeCount:
         return post.getLikeCount();
-    case Role::PostReposted:
-        return post.hasReposted();
+    case Role::PostRepostUri:
+        return post.repostUri();
     case Role::PostLiked:
         return post.hasLiked();
+    case Role::PostLocallyDeleted:
+        return post.isLocallyDeleted();
     case Role::EndOfFeed:
         return post.isEndOfFeed();
     default:
@@ -188,8 +190,9 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostReplyCount), "postReplyCount" },
         { int(Role::PostRepostCount), "postRepostCount" },
         { int(Role::PostLikeCount), "postLikeCount" },
-        { int(Role::PostReposted), "postReposted" },
+        { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLiked), "postLiked" },
+        { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
 

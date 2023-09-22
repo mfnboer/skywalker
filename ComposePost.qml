@@ -400,13 +400,11 @@ Page {
     }
 
     function postFailed(error) {
-        console.debug(error)
         statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         postButton.enabled = true
     }
 
     function postProgress(msg) {
-        console.debug(msg)
         statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
     }
 

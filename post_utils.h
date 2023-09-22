@@ -30,6 +30,8 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
+    Q_INVOKABLE void repost(const QString& uri, const QString& cid);
+    Q_INVOKABLE void undoRepost(const QString& uri);
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text,const QString& preeditText,
                                                   int cursor, const QString& color);
@@ -47,6 +49,11 @@ signals:
     void postOk();
     void postFailed(QString error);
     void postProgress(QString msg);
+    void repostOk();
+    void repostFailed(QString error);
+    void repostProgress(QString msg);
+    void undoRepostOk();
+    void undoRepostFailed(QString error);
     void photoPicked(QString filename);
     void firstWebLinkChanged();
 
@@ -59,7 +66,9 @@ private:
     void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continueRepost(const QString& uri, const QString& cid);
     ATProto::Client* bskyClient();
+    ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
 
     Skywalker* mSkywalker = nullptr;
