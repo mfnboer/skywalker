@@ -7,7 +7,8 @@
 namespace Skywalker {
 
 PostUtils::PostUtils(QObject* parent) :
-    QObject(parent)
+    QObject(parent),
+    Presence()
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
     QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
@@ -76,20 +77,32 @@ void PostUtils::post(QString text, const QStringList& imageFileNames,
 
     if (replyToUri.isEmpty())
     {
-        mPostMaster->createPost(text, nullptr, [this, imageFileNames, quoteUri, quoteCid](auto post){
-            continuePost(imageFileNames, post, quoteUri, quoteCid); });
+        mPostMaster->createPost(text, nullptr,
+            [this, presence=getPresence(), imageFileNames, quoteUri, quoteCid](auto post){
+                if (presence)
+                    continuePost(imageFileNames, post, quoteUri, quoteCid);
+            });
         return;
     }
 
     mPostMaster->checkPostExists(replyToUri, replyToCid,
-        [this, text, imageFileNames, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
+        [this, presence=getPresence(), text, imageFileNames, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
+            if (!presence)
+                return;
+
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            mPostMaster->createPost(text, std::move(replyRef), [this, imageFileNames, quoteUri, quoteCid](auto post){
-                continuePost(imageFileNames, post, quoteUri, quoteCid); });
+            mPostMaster->createPost(text, std::move(replyRef),
+                [this, presence, imageFileNames, quoteUri, quoteCid](auto post){
+                    if (presence)
+                        continuePost(imageFileNames, post, quoteUri, quoteCid);
+                });
         },
-        [this] (const QString& error){
+        [this, presence=getPresence()] (const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post not found:" << error;
             emit postFailed(tr("It seems the post you reply to has been deleted."));
         });
@@ -106,20 +119,32 @@ void PostUtils::post(QString text, const LinkCard* card,
 
     if (replyToUri.isEmpty())
     {
-        mPostMaster->createPost(text, nullptr, [this, card, quoteUri, quoteCid](auto post){
-            continuePost(card, post, quoteUri, quoteCid); });
+        mPostMaster->createPost(text, nullptr,
+            [this, presence=getPresence(), card, quoteUri, quoteCid](auto post){
+                if (presence)
+                    continuePost(card, post, quoteUri, quoteCid);
+            });
         return;
     }
 
     mPostMaster->checkPostExists(replyToUri, replyToCid,
-        [this, text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
+        [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
+            if (!presence)
+                return;
+
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            mPostMaster->createPost(text, std::move(replyRef), [this, card, quoteUri, quoteCid](auto post){
-                continuePost(card, post, quoteUri, quoteCid); });
+            mPostMaster->createPost(text, std::move(replyRef),
+                [this, presence, card, quoteUri, quoteCid](auto post){
+                    if (presence)
+                        continuePost(card, post, quoteUri, quoteCid);
+                });
         },
-        [this](const QString& error){
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post not found:" << error;
             emit postFailed(tr("It seems the post you reply to has been deleted."));
         });
@@ -135,11 +160,17 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
     }
 
     mPostMaster->checkPostExists(quoteUri, quoteCid,
-        [this, imageFileNames, post, quoteUri, quoteCid]{
+        [this, presence=getPresence(), imageFileNames, post, quoteUri, quoteCid]{
+            if (!presence)
+                return;
+
             mPostMaster->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(imageFileNames, post);
         },
-        [this](const QString& error){
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post not found:" << error;
             emit postFailed(tr("It seems the quoted post has been deleted."));
         });
@@ -167,11 +198,17 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
     emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
 
     bskyClient()->uploadBlob(blob, mimeType,
-        [this, imageFileNames, post, imgIndex](auto blob){
+        [this, presence=getPresence(), imageFileNames, post, imgIndex](auto blob){
+            if (!presence)
+                return;
+
             mPostMaster->addImageToPost(*post, std::move(blob));
             continuePost(imageFileNames, post, imgIndex + 1);
         },
-        [this](const QString& error){
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post failed:" << error;
             emit postFailed(error);
         });
@@ -187,11 +224,17 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
     }
 
     mPostMaster->checkPostExists(quoteUri, quoteCid,
-        [this, card, post, quoteUri, quoteCid]{
+        [this, presence=getPresence(), card, post, quoteUri, quoteCid]{
+            if (!presence)
+                return;
+
             mPostMaster->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(card, post);
         },
-        [this](const QString& error){
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post not found:" << error;
             emit postFailed(tr("It seems the quoted post has been deleted."));
         });
@@ -209,10 +252,14 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
     emit postProgress(tr("Retrieving card image"));
 
     imageReader()->getImage(card->getThumb(),
-        [this, card, post](auto image){
-            continuePost(card, image, post);
+        [this, presence=getPresence(), card, post](auto image){
+            if (presence)
+                continuePost(card, image, post);
         },
-        [this](const QString& error){
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post failed:" << error;
             emit postFailed(error);
         });
@@ -237,12 +284,18 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
     emit postProgress(tr("Uploading card image"));
 
     bskyClient()->uploadBlob(blob, mimeType,
-        [this, card, post](auto blob){
+        [this, presence=getPresence(), card, post](auto blob){
+            if (!presence)
+                return;
+
             mPostMaster->addExternalToPost(*post, card->getLink(), card->getTitle(),
                     card->getDescription(), std::move(blob));
             continuePost(post);
         },
-        [this](const QString& error){
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post failed:" << error;
             emit postFailed(error);
         });
@@ -252,10 +305,14 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 {
     emit postProgress(tr("Posting"));
     mPostMaster->post(*post,
-        [this]{
-            emit postOk();
+        [this, presence=getPresence()]{
+            if (presence)
+                emit postOk();
         },
-        [this](const QString& error){
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
             qDebug() << "Post failed:" << error;
             emit postFailed(error);
         });

@@ -93,6 +93,7 @@ qt_add_qml_module(appskywalker
         SOURCES image_reader.h
         SOURCES image_reader.cpp
         QML_FILES QuotePost.qml
+        SOURCES presence.h
 )
 
 set_target_properties(appskywalker PROPERTIES

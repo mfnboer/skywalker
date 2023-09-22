@@ -3,6 +3,7 @@
 #pragma once
 #include "image_reader.h"
 #include "link_card.h"
+#include "presence.h"
 #include "skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <QImage>
@@ -11,7 +12,7 @@
 
 namespace Skywalker {
 
-class PostUtils : public QObject
+class PostUtils : public QObject, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
