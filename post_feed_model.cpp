@@ -173,30 +173,34 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     qDebug() << "Add raw posts:" << feed->mFeed.size();
 
     if (feed->mFeed.empty())
-        return;
-
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
-
-    if (page->mFeed.empty())
     {
-        qWarning() << "Page has no posts";
+        qWarning() << "Received empty feed!";
         return;
     }
 
-    const size_t newRowCount = mFeed.size() + page->mFeed.size();
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 
-    beginInsertRows({}, mFeed.size(), newRowCount - 1);
-    insertPage(mFeed.end(), *page, page->mFeed.size());
+    if (!page->mFeed.empty())
+    {
+        const size_t newRowCount = mFeed.size() + page->mFeed.size();
+
+        beginInsertRows({}, mFeed.size(), newRowCount - 1);
+        insertPage(mFeed.end(), *page, page->mFeed.size());
+        mIndexRawFeedMap[mFeed.size() - 1] = std::move(page->mRawFeed);
+        endInsertRows();
+
+        qDebug() << "New feed size:" << mFeed.size();
+    }
+    else
+    {
+        qDebug() << "All posts have been filtered from page";
+    }
 
     if (!page->mCursorNextPage.isEmpty())
         mIndexCursorMap[mFeed.size() - 1] = page->mCursorNextPage;
     else
         setEndOfFeed(true);
 
-    mIndexRawFeedMap[mFeed.size() - 1] = std::move(page->mRawFeed);
-    endInsertRows();
-
-    qDebug() << "New feed size:" << mFeed.size();
     logIndices();
 }
 
