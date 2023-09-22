@@ -13,6 +13,8 @@ class ImageView
     Q_PROPERTY(QString thumbUrl READ getThumbUrl FINAL)
     Q_PROPERTY(QString fullSizeUrl READ getFullSizeUrl FINAL)
     Q_PROPERTY(QString alt READ getAlt FINAL)
+    Q_PROPERTY(int width READ getWidth FINAL)
+    Q_PROPERTY(int height READ getHeight FINAL)
     QML_VALUE_TYPE(imageview)
 
 public:
@@ -26,6 +28,9 @@ public:
     QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : QString(); }
     QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : QString(); }
     QString getAlt() const { return mViewImage ? mViewImage->mAlt : QString(); }
+    const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mViewImage ? mViewImage->mAspectRatio.get() : nullptr; }
+    int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
+    int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
 
 private:
     const ATProto::AppBskyEmbed::ImagesViewImage* mViewImage = nullptr;
