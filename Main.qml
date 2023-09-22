@@ -132,7 +132,7 @@ ApplicationWindow {
 
     function repost(repostUri, uri, cid, text, dateTime, author) {
         let timeline = getTimelineView()
-        timeline.repost(timelineIndex, repostUri, uri, cid, text, dateTime, author)
+        timeline.repost(repostUri, uri, cid, text, dateTime, author)
     }
 
     function viewPostThread(modelId, postEntryIndex) {
