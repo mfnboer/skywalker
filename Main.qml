@@ -92,6 +92,81 @@ ApplicationWindow {
         }
     }
 
+    Drawer {
+        property string repostedAlreadyUri
+        property string repostUri
+        property string repostCid
+        property string repostText
+        property date repostDateTime
+        property basicprofile repostAuthor
+
+        id: repostDrawer
+        width: parent.width
+        edge: Qt.BottomEdge
+
+        Column {
+            width: parent.width
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                Material.background: guiSettings.buttonColor
+                contentItem: Text {
+                    color: guiSettings.buttonTextColor
+                    text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
+                }
+                onClicked: {
+                    if (repostDrawer.repostedAlreadyUri) {
+                        postUtils.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
+                    } else {
+                        postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid)
+                    }
+
+                    repostDrawer.close()
+                }
+            }
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                Material.background: guiSettings.buttonColor
+                contentItem: Text {
+                    color: guiSettings.buttonTextColor
+                    text: qsTr("Quote post")
+                }
+                onClicked: {
+                    root.composeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
+                                      repostDrawer.repostText, repostDrawer.repostDateTime,
+                                      repostDrawer.repostAuthor)
+                    repostDrawer.close()
+                }
+            }
+        }
+
+        function show(hasRepostedUri, uri, cid, text, dateTime, author) {
+            repostedAlreadyUri =  hasRepostedUri
+            repostUri = uri
+            repostCid = cid
+            repostText = text
+            repostDateTime = dateTime
+            repostAuthor = author
+            open()
+        }
+    }
+
+
+    PostUtils {
+        id: postUtils
+        skywalker: skywalker
+
+        onRepostOk: statusPopup.show(qsTr("Reposted"), QEnums.STATUS_LEVEL_INFO, 2)
+        onRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onRepostProgress: (msg) => statusPopup.show(qsTr("Reposting"), QEnums.STATUS_LEVEL_INFO)
+        onUndoRepostOk: statusPopup.show(qsTr("Repost undone"), QEnums.STATUS_LEVEL_INFO, 2)
+        onUndoRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    GuiSettings {
+        id: guiSettings
+    }
+
     function composePost() {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -135,8 +210,7 @@ ApplicationWindow {
     }
 
     function repost(repostUri, uri, cid, text, dateTime, author) {
-        let timeline = getTimelineView()
-        timeline.repost(repostUri, uri, cid, text, dateTime, author)
+        repostDrawer.show(repostUri, uri, cid, text, dateTime, author)
     }
 
     function viewPostThread(modelId, postEntryIndex) {
