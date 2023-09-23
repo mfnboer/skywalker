@@ -88,10 +88,6 @@ public:
     bool isNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
 
-    // Local changes
-    bool isLocallyDeleted() const { return mLocallyDeleted; }
-    void setLocallyDeleted(bool deleted) { mLocallyDeleted = true; }
-
 private:
     struct HyperLink
     {
@@ -130,9 +126,6 @@ private:
     bool mNotFound = false;
     bool mNotSupported = false;
     QString mUnsupportedType;
-
-    // Local changes
-    bool mLocallyDeleted = false;
 
     static int sNextGapId;
 };

@@ -2,7 +2,6 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
-#include "profile_store.h"
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
@@ -84,9 +83,6 @@ private:
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
-
-    const QString& mUserDid;
-    const IProfileStore& mFollowing;
 
     // Show only replies to people in your following list.
     bool mOnlyRepliesToFollowing = true;

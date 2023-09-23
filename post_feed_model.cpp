@@ -5,9 +5,7 @@
 namespace Skywalker {
 
 PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent) :
-    AbstractPostFeedModel(parent),
-    mUserDid(userDid),
-    mFollowing(following)
+    AbstractPostFeedModel(userDid, following, parent)
 {}
 
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)

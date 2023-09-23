@@ -317,7 +317,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
             if (post->mReply && post->mReply->mParent)
             {
                 mSkywalker->makeLocalModelChange(
-                    [post](AbstractPostFeedModel* model){
+                    [post](auto* model){
                         model->updateReplyCountDelta(post->mReply->mParent->mCid, 1);
                     });
             }
@@ -355,7 +355,13 @@ void PostUtils::repost(const QString& uri, const QString& cid)
 void PostUtils::continueRepost(const QString& uri, const QString& cid)
 {
     postMaster()->repost(uri, cid,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), cid](const auto& repostUri, const auto&){
+            mSkywalker->makeLocalModelChange(
+                [cid, repostUri](auto* model){
+                    model->updateRepostCountDelta(cid, 1);
+                    model->updateRepostUri(cid, repostUri);
+                });
+
             if (presence)
                 emit repostOk();
         },
@@ -368,10 +374,16 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid)
         });
 }
 
-void PostUtils::undoRepost(const QString& uri)
+void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
 {
-    postMaster()->undoRepost(uri,
-        [this, presence=getPresence()]{
+    postMaster()->undoRepost(repostUri,
+        [this, presence=getPresence(), origPostCid]{
+            mSkywalker->makeLocalModelChange(
+                [origPostCid](auto* model){
+                    model->updateRepostCountDelta(origPostCid, -1);
+                    model->updateRepostUri(origPostCid, "");
+                });
+
             if (presence)
                 emit undoRepostOk();
         },

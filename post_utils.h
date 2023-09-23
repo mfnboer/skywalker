@@ -31,7 +31,7 @@ public:
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid);
-    Q_INVOKABLE void undoRepost(const QString& uri);
+    Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text,const QString& preeditText,
                                                   int cursor, const QString& color);

@@ -459,7 +459,7 @@ void Skywalker::getPostThread(const QString& uri)
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
             setGetPostThreadInProgress(false);
-            auto model = std::make_unique<PostThreadModel>(this);
+            auto model = std::make_unique<PostThreadModel>(mUserDid, mUserFollows, this);
             int postEntryIndex = model->setPostThread(std::move(thread));
 
             if (postEntryIndex < 0)

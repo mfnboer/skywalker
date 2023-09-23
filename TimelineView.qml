@@ -195,7 +195,7 @@ ListView {
                 }
                 onClicked: {
                     if (repostDrawer.repostedAlreadyUri) {
-                        postUtils.undoRepost(repostDrawer.repostedAlreadyUri)
+                        postUtils.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
                     } else {
                         postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid)
                     }

@@ -4,6 +4,7 @@
 
 #include "local_post_model_changes.h"
 #include "post.h"
+#include "profile_store.h"
 #include <QAbstractListModel>
 #include <QCache>
 #include <deque>
@@ -54,7 +55,7 @@ public:
 
     using Ptr = std::unique_ptr<AbstractPostFeedModel>;
 
-    explicit AbstractPostFeedModel(QObject* parent = nullptr);
+    explicit AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -62,6 +63,8 @@ public:
     const Post& getPost(int index) const { return mFeed.at(index); }
     void updatePostIndexTimestamps();
     void updateReplyCountDelta(const QString& cid, int delta);
+    void updateRepostCountDelta(const QString& cid, int delta);
+    void updateRepostUri(const QString& cid, const QString& repostUri);
 
 protected:
     static void cacheAuthorProfile(const QString& did, const BasicProfile& profile);
@@ -78,6 +81,9 @@ protected:
 
     using TimelineFeed = std::deque<Post>;
     TimelineFeed mFeed;
+
+    const QString& mUserDid;
+    const IProfileStore& mFollowing;
 
 private:
     void changeData(const QList<int>& roles);

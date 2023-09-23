@@ -11,7 +11,7 @@ class PostThreadModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostThreadModel>;
 
-    explicit PostThreadModel(QObject* parent = nullptr);
+    explicit PostThreadModel(const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
 
     // Returns index of the entry post
     int setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);

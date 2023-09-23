@@ -372,6 +372,17 @@ Rectangle {
             visible: postNotSupported
         }
 
+        // Locally deleted
+        Text {
+            width: parent.width
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            text: qsTr("DELETED")
+            visible: postLocallyDeleted
+        }
+
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Rectangle {

@@ -13,8 +13,10 @@ void AbstractPostFeedModel::cacheAuthorProfile(const QString& did, const BasicPr
     sAuthorCache.insert(did, new CachedBasicProfile(profile));
 }
 
-AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
-    QAbstractListModel(parent)
+AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent) :
+    QAbstractListModel(parent),
+    mUserDid(userDid),
+    mFollowing(following)
 {}
 
 void AbstractPostFeedModel::clearFeed()
@@ -144,15 +146,27 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostReplyCount:
         return post.getReplyCount() + (change ? change->mReplyCountDelta : 0);
     case Role::PostRepostCount:
-        return post.getRepostCount();
+        return post.getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::PostLikeCount:
         return post.getLikeCount();
     case Role::PostRepostUri:
-        return post.repostUri();
+        return change && change->mRepostUri ? *change->mRepostUri : post.repostUri();
     case Role::PostLiked:
         return post.hasLiked();
     case Role::PostLocallyDeleted:
-        return post.isLocallyDeleted();
+    {
+        if (!change || !change->mRepostUri)
+            return false;
+
+        auto repostedBy = post.getRepostedBy();
+        if (!repostedBy)
+            return false;
+
+        if (repostedBy->getDid() != mUserDid)
+            return false;
+
+        return post.repostUri() != *change->mRepostUri;
+    }
     case Role::EndOfFeed:
         return post.isEndOfFeed();
     default:
@@ -216,6 +230,20 @@ void AbstractPostFeedModel::updateReplyCountDelta(const QString& cid, int delta)
     auto& change = mLocalChanges.getChangeForUpdate(cid);
     change.mReplyCountDelta += delta;
     changeData({ int(Role::PostReplyCount) });
+}
+
+void AbstractPostFeedModel::updateRepostCountDelta(const QString& cid, int delta)
+{
+    auto& change = mLocalChanges.getChangeForUpdate(cid);
+    change.mRepostCountDelta += delta;
+    changeData({ int(Role::PostRepostCount) });
+}
+
+void AbstractPostFeedModel::updateRepostUri(const QString& cid, const QString& repostUri)
+{
+    auto& change = mLocalChanges.getChangeForUpdate(cid);
+    change.mRepostUri = repostUri;
+    changeData({ int(Role::PostRepostUri), int(Role::PostLocallyDeleted) });
 }
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)

@@ -14,6 +14,8 @@ public:
     struct Change
     {
         int mReplyCountDelta = 0;
+        int mRepostCountDelta = 0;
+        std::optional<QString> mRepostUri;
     };
 
     LocalPostModelChanges() = default;
