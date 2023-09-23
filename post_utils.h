@@ -17,6 +17,7 @@ class PostUtils : public QObject, public Presence
     Q_OBJECT
     Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
+    Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -37,12 +38,15 @@ public:
                                                   int cursor, const QString& color);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
+    Q_INVOKABLE void getQuotePost(const QString& httpsUri);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
 
     const QString& getFirstWebLink() const { return mFirstWebLink; }
     void setFirstWebLink(const QString& link);
+    const QString& getFirstPostLink() const { return mFirstPostLink; }
+    void setFirstPostLink(const QString& link);
 
 signals:
     void skywalkerChanged();
@@ -56,6 +60,8 @@ signals:
     void undoRepostFailed(QString error);
     void photoPicked(QString filename);
     void firstWebLinkChanged();
+    void firstPostLinkChanged();
+    void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
 
 private:
     void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
@@ -73,6 +79,7 @@ private:
 
     Skywalker* mSkywalker = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
+    QString mFirstPostLink; // HTTPS link to a post
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;

@@ -123,6 +123,7 @@ ApplicationWindow {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                openedAsQuotePost: true,
                 quoteUri: quoteUri,
                 quoteCid: quoteCid,
                 quoteText: quoteText,

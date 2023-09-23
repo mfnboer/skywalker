@@ -21,6 +21,7 @@ Page {
     property date replyToPostDateTime
 
     // Quote post
+    property bool openedAsQuotePost: false
     property basicprofile quoteAuthor
     property string quoteUri: ""
     property string quoteCid: ""
@@ -382,17 +383,35 @@ Page {
         onPhotoPicked: (fileName) => page.photoPicked(fileName)
 
         onFirstWebLinkChanged: {
-            if (firstWebLink)
-            {
-                linkCard.hide()
+            linkCard.hide()
+
+            if (firstWebLink) {
                 linkCardTimer.start()
-            }
-            else
-            {
-                linkCard.hide()
+            } else {
                 linkCardTimer.stop()
             }
         }
+
+        onFirstPostLinkChanged: {
+            if (page.openedAsQuotePost)
+                return
+
+            quoteUri = ""
+            if (firstPostLink) {
+                postUtils.getQuotePost(firstPostLink)
+            }
+        }
+
+        onQuotePost: (uri, cid, text, author, timestamp) => {
+                if (!firstPostLink)
+                    return
+
+                page.quoteUri = uri
+                page.quoteCid = cid
+                page.quoteText = text
+                page.quoteAuthor = author
+                page.quoteDateTime = timestamp
+            }
     }
 
     GuiSettings {

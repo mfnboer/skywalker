@@ -410,6 +410,15 @@ void PostUtils::setFirstWebLink(const QString& link)
     emit firstWebLinkChanged();
 }
 
+void PostUtils::setFirstPostLink(const QString& link)
+{
+    if (link == mFirstPostLink)
+        return;
+
+    mFirstPostLink = link;
+    emit firstPostLinkChanged();
+}
+
 QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString& preeditText,
                                              int cursor, const QString& color)
 {
@@ -423,13 +432,23 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
 
     int pos = 0;
     bool webLinkFound = false;
+    bool postLinkFound = false;
     mLinkShorteningReduction = 0;
 
     for (const auto& facet : facets)
     {
         if (facet.mType == ATProto::PostMaster::ParsedMatch::Type::LINK)
         {
-            if (!webLinkFound)
+            const auto atUri = ATProto::ATUri::fromHttpsUri(facet.mMatch);
+            if (atUri.isValid())
+            {
+                if (!postLinkFound)
+                {
+                    setFirstPostLink(facet.mMatch);
+                    postLinkFound = true;
+                }
+            }
+            else if (!webLinkFound)
             {
                 setFirstWebLink(facet.mMatch);
                 webLinkFound = true;
@@ -451,6 +470,9 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
     if (!webLinkFound)
         setFirstWebLink(QString());
 
+    if (!postLinkFound)
+        setFirstPostLink(QString());
+
     highlighted.append(fullText.sliced(pos).toHtmlEscaped());
     highlighted.append("</span>");
     return highlighted;
@@ -465,6 +487,13 @@ int PostUtils::graphemeLength(const QString& text) const
         ++length;
 
     return length;
+}
+
+void PostUtils::getQuotePost(const QString& httpsUri)
+{
+    postMaster()->getPost(httpsUri, [this](const auto& uri, const auto& cid, auto post){
+        emit quotePost(uri, cid, post->mText, {}, post->mCreatedAt);
+    });
 }
 
 }
