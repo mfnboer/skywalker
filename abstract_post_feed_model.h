@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 
+#include "local_post_model_changes.h"
 #include "post.h"
 #include <QAbstractListModel>
 #include <QCache>
@@ -58,6 +59,10 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
+    const Post& getPost(int index) const { return mFeed.at(index); }
+    void updatePostIndexTimestamps();
+    void updateReplyCountDelta(const QString& cid, int delta);
+
 protected:
     static void cacheAuthorProfile(const QString& did, const BasicProfile& profile);
     static QCache<QString, CachedBasicProfile> sAuthorCache;
@@ -75,12 +80,16 @@ protected:
     TimelineFeed mFeed;
 
 private:
+    void changeData(const QList<int>& roles);
+
     // TODO: change to QCache
     // CID of posts stored in the timeline.
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;
 
     bool mEndOfFeed = false;
+
+    LocalPostModelChanges mLocalChanges;
 };
 
 }

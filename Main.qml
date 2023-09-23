@@ -86,7 +86,10 @@ ApplicationWindow {
         interval: 91000
         running: false
         repeat: true
-        onTriggered: skywalker.getTimelinePrepend(2)
+        onTriggered: {
+            skywalker.getTimelinePrepend(2)
+            skywalker.updatePostIndexTimestamps()
+        }
     }
 
     function composePost() {

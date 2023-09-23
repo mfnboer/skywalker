@@ -313,7 +313,15 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 {
     emit postProgress(tr("Posting"));
     postMaster()->post(*post,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), post]{
+            if (post->mReply && post->mReply->mParent)
+            {
+                mSkywalker->makeLocalModelChange(
+                    [post](AbstractPostFeedModel* model){
+                        model->updateReplyCountDelta(post->mReply->mParent->mCid, 1);
+                    });
+            }
+
             if (presence)
                 emit postOk();
         },

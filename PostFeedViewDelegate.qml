@@ -6,7 +6,6 @@ import skywalker
 Rectangle {
     property int margin: 8
     property int viewWidth
-    property date now: new Date()
 
     required property int index
     required property basicprofile author
@@ -209,7 +208,7 @@ Rectangle {
                 authorName: author.name
                 authorHandle: author.handle
                 postThreadType: postEntry.postThreadType
-                postIndexedSecondsAgo: (postEntry.now - postEntry.postIndexedDateTime) / 1000
+                postIndexedSecondsAgo: (new Date() - postEntry.postIndexedDateTime) / 1000
             }
 
             // Reply to

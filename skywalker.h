@@ -34,6 +34,9 @@ public:
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
+    Q_INVOKABLE void updatePostIndexTimestamps();
+
+    void makeLocalModelChange(const std::function<void(AbstractPostFeedModel*)>& update);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     void setGetTimelineInProgress(bool inProgress);

@@ -501,6 +501,22 @@ void Skywalker::removePostThreadModel(int id)
     mPostThreadModels.erase(id);
 }
 
+void Skywalker::updatePostIndexTimestamps()
+{
+    makeLocalModelChange([](auto* model){ model->updatePostIndexTimestamps(); });
+}
+
+void Skywalker::makeLocalModelChange(const std::function<void(AbstractPostFeedModel*)>& update)
+{
+    // Apply change to all active models. When a model gets refreshed (after clear)
+    // or deleted, then the local changes will disapper.
+
+    update(&mTimelineModel);
+
+    for (auto& [_, model] : mPostThreadModels)
+        update(model.get());
+}
+
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
 {
     // TODO: secure storage

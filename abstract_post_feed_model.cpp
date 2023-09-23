@@ -23,6 +23,7 @@ void AbstractPostFeedModel::clearFeed()
     mStoredCids.clear();
     mStoredCidQueue = {};
     mEndOfFeed = false;
+    mLocalChanges.clear();
 }
 
 void AbstractPostFeedModel::storeCid(const QString& cid)
@@ -69,6 +70,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& post = mFeed[index.row()];
+    const auto* change = mLocalChanges.getChange(post.getCid());
 
     switch (Role(role))
     {
@@ -140,7 +142,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostReplyRootUri:
         return post.getReplyRootUri();
     case Role::PostReplyCount:
-        return post.getReplyCount();
+        return post.getReplyCount() + (change ? change->mReplyCountDelta : 0);
     case Role::PostRepostCount:
         return post.getRepostCount();
     case Role::PostLikeCount:
@@ -197,6 +199,28 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
     };
 
     return roles;
+}
+
+void AbstractPostFeedModel::updatePostIndexTimestamps()
+{
+    changeData({ int(Role::PostIndexedDateTime) });
+}
+
+// For a change on a single post a single row change would be sufficient.
+// However the model may have changed while waiting for a confirmation from the
+// network about the change, so we don't know which row this CID is anymore.
+// Also for reposts a CID may apply to multiple rows. Therefor all rows
+// are marked as change. Performance seems not an issue.
+void AbstractPostFeedModel::updateReplyCountDelta(const QString& cid, int delta)
+{
+    auto& change = mLocalChanges.getChangeForUpdate(cid);
+    change.mReplyCountDelta += delta;
+    changeData({ int(Role::PostReplyCount) });
+}
+
+void AbstractPostFeedModel::changeData(const QList<int>& roles)
+{
+    emit dataChanged(createIndex(0, 0), createIndex(mFeed.size() - 1, 0), roles);
 }
 
 }
