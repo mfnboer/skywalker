@@ -13,6 +13,8 @@ class  LocalPostModelChanges
 public:
     struct Change
     {
+        int mLikeCountDelta = 0;
+        std::optional<QString> mLikeUri;
         int mReplyCountDelta = 0;
         int mRepostCountDelta = 0;
         std::optional<QString> mRepostUri;

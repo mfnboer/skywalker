@@ -72,8 +72,8 @@ public:
     int getReplyCount() const;
     int getRepostCount() const;
     int getLikeCount() const;
-    QString repostUri() const;
-    bool hasLiked() const;
+    QString getRepostUri() const;
+    QString getLikeUri() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
     void setPostType(QEnums::PostType postType) { mPostType = postType; }

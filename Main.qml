@@ -176,6 +176,8 @@ ApplicationWindow {
         onRepostProgress: (msg) => statusPopup.show(qsTr("Reposting"), QEnums.STATUS_LEVEL_INFO)
         onUndoRepostOk: statusPopup.show(qsTr("Repost undone"), QEnums.STATUS_LEVEL_INFO, 2)
         onUndoRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     GuiSettings {
@@ -226,6 +228,13 @@ ApplicationWindow {
 
     function repost(repostUri, uri, cid, text, dateTime, author) {
         repostDrawer.show(repostUri, uri, cid, text, dateTime, author)
+    }
+
+    function like(likeUri, uri, cid) {
+        if (likeUri)
+            postUtils.undoLike(likeUri, cid)
+        else
+            postUtils.like(uri, cid)
     }
 
     function viewPostThread(modelId, postEntryIndex) {

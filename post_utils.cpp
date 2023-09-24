@@ -376,7 +376,7 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid)
 
 void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
 {
-    postMaster()->undoRepost(repostUri,
+    postMaster()->undo(repostUri,
         [this, presence=getPresence(), origPostCid]{
             mSkywalker->makeLocalModelChange(
                 [origPostCid](auto* model){
@@ -393,6 +393,50 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
 
             qDebug() << "Undo repost failed:" << error;
             emit undoRepostFailed(error);
+        });
+}
+
+void PostUtils::like(const QString& uri, const QString& cid)
+{
+    postMaster()->like(uri, cid,
+        [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
+            mSkywalker->makeLocalModelChange(
+                [cid, likeUri](auto* model){
+                    model->updateLikeCountDelta(cid, 1);
+                    model->updateLikeUri(cid, likeUri);
+                });
+
+            if (presence)
+                emit likeOk();
+        },
+        [this, presence=getPresence()](const QString& error){
+          if (!presence)
+              return;
+
+          qDebug() << "Like failed:" << error;
+          emit likeFailed(error);
+        });
+}
+
+void PostUtils::undoLike(const QString& likeUri, const QString& cid)
+{
+    postMaster()->undo(likeUri,
+        [this, presence=getPresence(), cid]{
+            mSkywalker->makeLocalModelChange(
+                [cid](auto* model){
+                    model->updateLikeCountDelta(cid, -1);
+                    model->updateLikeUri(cid, "");
+                });
+
+            if (presence)
+                emit undoLikeOk();
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo like failed:" << error;
+            emit undoLikeFailed(error);
         });
 }
 

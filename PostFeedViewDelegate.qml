@@ -35,7 +35,7 @@ Rectangle {
     required property int postRepostCount
     required property int postLikeCount
     required property string postRepostUri
-    required property bool postLiked
+    required property string postLikeUri
     required property bool postLocallyDeleted
     required property bool endOfFeed
 
@@ -268,7 +268,7 @@ Rectangle {
             // Stats
             Row {
                 width: parent.width
-                topPadding: 5
+                topPadding: 10
 
                 StatIcon {
                     width: parent.width / 4
@@ -291,9 +291,10 @@ Rectangle {
                 }
                 StatIcon {
                     width: parent.width / 4
-                    iconColor: postLiked ? "palevioletred" : "grey"
-                    svg: postLiked ? svgFilled.like : svgOutline.like
+                    iconColor: postLikeUri ? "palevioletred" : "grey"
+                    svg: postLikeUri ? svgFilled.like : svgOutline.like
                     statistic: postLikeCount
+                    onClicked: () => { root.like(postLikeUri, postUri, postCid) }
                 }
                 StatIcon {
                     width: parent.width / 4

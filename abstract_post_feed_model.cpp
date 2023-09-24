@@ -148,11 +148,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostRepostCount:
         return post.getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::PostLikeCount:
-        return post.getLikeCount();
+        return post.getLikeCount() + (change ? change->mLikeCountDelta : 0);
     case Role::PostRepostUri:
-        return change && change->mRepostUri ? *change->mRepostUri : post.repostUri();
-    case Role::PostLiked:
-        return post.hasLiked();
+        return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
+    case Role::PostLikeUri:
+        return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
     case Role::PostLocallyDeleted:
     {
         if (!change || !change->mRepostUri)
@@ -165,7 +165,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         if (repostedBy->getDid() != mUserDid)
             return false;
 
-        return post.repostUri() != *change->mRepostUri;
+        return post.getRepostUri() != *change->mRepostUri;
     }
     case Role::EndOfFeed:
         return post.isEndOfFeed();
@@ -207,7 +207,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostRepostCount), "postRepostCount" },
         { int(Role::PostLikeCount), "postLikeCount" },
         { int(Role::PostRepostUri), "postRepostUri" },
-        { int(Role::PostLiked), "postLiked" },
+        { int(Role::PostLikeUri), "postLikeUri" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
@@ -244,6 +244,20 @@ void AbstractPostFeedModel::updateRepostUri(const QString& cid, const QString& r
     auto& change = mLocalChanges.getChangeForUpdate(cid);
     change.mRepostUri = repostUri;
     changeData({ int(Role::PostRepostUri), int(Role::PostLocallyDeleted) });
+}
+
+void AbstractPostFeedModel::updateLikeCountDelta(const QString& cid, int delta)
+{
+    auto& change = mLocalChanges.getChangeForUpdate(cid);
+    change.mLikeCountDelta += delta;
+    changeData({ int(Role::PostLikeCount) });
+}
+
+void AbstractPostFeedModel::updateLikeUri(const QString& cid, const QString& likeUri)
+{
+    auto& change = mLocalChanges.getChangeForUpdate(cid);
+    change.mLikeUri = likeUri;
+    changeData({ int(Role::PostLikeUri) });
 }
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)

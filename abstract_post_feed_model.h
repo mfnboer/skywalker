@@ -48,7 +48,7 @@ public:
         PostRepostCount,
         PostLikeCount,
         PostRepostUri,
-        PostLiked,
+        PostLikeUri,
         PostLocallyDeleted,
         EndOfFeed
     };
@@ -65,6 +65,8 @@ public:
     void updateReplyCountDelta(const QString& cid, int delta);
     void updateRepostCountDelta(const QString& cid, int delta);
     void updateRepostUri(const QString& cid, const QString& repostUri);
+    void updateLikeCountDelta(const QString& cid, int delta);
+    void updateLikeUri(const QString& cid, const QString& likeUri);
 
 protected:
     static void cacheAuthorProfile(const QString& did, const BasicProfile& profile);
