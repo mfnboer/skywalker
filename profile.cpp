@@ -10,9 +10,10 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profil
     Q_ASSERT(mProfile);
 }
 
-BasicProfile::BasicProfile(const QString& handle, const QString& displayName) :
+BasicProfile::BasicProfile(const QString& handle, const QString& displayName, const QString& avatarUrl) :
     mHandle(handle),
-    mDisplayName(displayName)
+    mDisplayName(displayName),
+    mAvatarUrl(avatarUrl)
 {
 }
 
@@ -50,7 +51,7 @@ QString BasicProfile::getHandle() const
 
 QString BasicProfile::getAvatarUrl() const
 {
-    return (mProfile && mProfile->mAvatar) ? *mProfile->mAvatar : QString();
+    return (mProfile && mProfile->mAvatar) ? *mProfile->mAvatar : mAvatarUrl;
 }
 
 CachedBasicProfile::CachedBasicProfile(const BasicProfile& profile) :

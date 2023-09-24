@@ -18,7 +18,7 @@ class BasicProfile
 public:
     BasicProfile() = default;
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
-    BasicProfile(const QString& handle, const QString& displayName);
+    BasicProfile(const QString& handle, const QString& displayName, const QString& avatarUrl = "");
     BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
     QString getDid() const;
@@ -31,6 +31,7 @@ private:
     QString mDid;
     QString mHandle;
     QString mDisplayName;
+    QString mAvatarUrl;
 };
 
 class CachedBasicProfile : public QObject
