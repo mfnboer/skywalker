@@ -105,23 +105,38 @@ ApplicationWindow {
         edge: Qt.BottomEdge
 
         Column {
+            id: menuColumn
             width: parent.width
 
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.buttonColor
-                contentItem: Text {
-                    color: guiSettings.buttonTextColor
-                    text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
-                }
-                onClicked: {
-                    if (repostDrawer.repostedAlreadyUri) {
-                        postUtils.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
-                    } else {
-                        postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid)
-                    }
+            Item {
+                width: parent.width
+                height: closeButton.height
 
-                    repostDrawer.close()
+                SvgButton {
+                    id: closeButton
+                    anchors.right: parent.right
+                    iconColor: guiSettings.textColor
+                    Material.background: "transparent"
+                    svg: svgOutline.close
+                    onClicked: repostDrawer.close()
+                }
+
+                Button {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    Material.background: guiSettings.buttonColor
+                    contentItem: Text {
+                        color: guiSettings.buttonTextColor
+                        text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
+                    }
+                    onClicked: {
+                        if (repostDrawer.repostedAlreadyUri) {
+                            postUtils.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
+                        } else {
+                            postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid)
+                        }
+
+                        repostDrawer.close()
+                    }
                 }
             }
             Button {
