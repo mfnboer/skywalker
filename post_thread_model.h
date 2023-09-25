@@ -33,6 +33,7 @@ private:
     Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
+    // This must be kept alive as long as there are posts in the feed dependend on it
     ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
 };
 
