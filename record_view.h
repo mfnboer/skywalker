@@ -13,7 +13,7 @@ class RecordView
 {
     Q_GADGET
     Q_PROPERTY(QString postUri READ getUri FINAL)
-    Q_PROPERTY(QString postText READ getText FINAL)
+    Q_PROPERTY(QString postTextFormatted READ getFormattedText FINAL)
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
@@ -32,7 +32,7 @@ public:
     explicit RecordView(const ATProto::AppBskyEmbed::RecordView& view);
 
     QString getUri() const;
-    QString getText() const;
+    QString getFormattedText() const;
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;

@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post.h"
 #include "post_feed_model.h"
+#include <atproto/lib/post_master.h>
 
 namespace Skywalker {
 
@@ -125,15 +126,28 @@ QString Post::getText() const
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+        return record->mText;
+    }
 
-        if (record->mFacets.empty())
-            return record->mText.toHtmlEscaped().replace('\n', "<br>");
-        else
-            return ATProto::AppBskyRichtext::applyFacets(record->mText, record->mFacets);
+    qWarning() << "Record type not supported:" << mPost->mRawRecordType;
+    return NO_STRING;
+}
+
+QString Post::getFormattedText() const
+{
+    static const QString NO_STRING;
+
+    if (!mPost)
+        return NO_STRING;
+
+    if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    {
+        const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+        return ATProto::PostMaster::getFormattedPostText(*record);
     }
 
     QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;
-    return text.toHtmlEscaped().replace('\n', "<br>");
+    return ATProto::PostMaster::plainToHtml(text);
 }
 
 BasicProfile Post::getAuthor() const

@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "record_view.h"
 #include "external_view.h"
+#include <atproto/lib/post_master.h>
 
 using namespace std::chrono_literals;
 
@@ -40,10 +41,13 @@ QString RecordView::getUri() const
     return mRecord ? mRecord->mUri : QString();
 }
 
-QString RecordView::getText() const
+QString RecordView::getFormattedText() const
 {
     if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
-        return std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue)->mText;
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
+        return ATProto::PostMaster::getFormattedPostText(*recordValue);
+    }
 
     return {};
 }

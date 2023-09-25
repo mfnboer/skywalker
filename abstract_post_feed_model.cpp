@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "abstract_post_feed_model.h"
+#include <atproto/lib/post_master.h>
 
 namespace Skywalker {
 
@@ -79,7 +80,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::Author:
         return QVariant::fromValue(post.getAuthor());
     case Role::PostText:
-        return post.getText();
+        return post.getFormattedText();
     case Role::PostUri:
         return post.getUri();
     case Role::PostCid:

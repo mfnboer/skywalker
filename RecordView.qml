@@ -36,7 +36,7 @@ Item {
 
         PostBody {
             width: parent.width
-            postText: record.postText
+            postText: record.postTextFormatted
             postImages: record.images
             postExternal: record.external
             postDateTime: record.postDateTime

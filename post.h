@@ -49,6 +49,7 @@ public:
     void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
 
     QString getText() const;
+    QString getFormattedText() const;
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
     bool isRepost() const;

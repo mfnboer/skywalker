@@ -22,7 +22,7 @@ Column {
         wrapMode: Text.Wrap
         maximumLineCount: maxTextLines
         elide: Text.ElideRight
-        textFormat: Text.StyledText
+        textFormat: Text.RichText
         color: Material.foreground
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0

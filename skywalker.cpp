@@ -232,7 +232,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
                 Q_ASSERT(index >= 0);
                 const auto& post = mTimelineModel.getPost(index);
-                qInfo() << post.getTimelineTimestamp() << post.getText();
+                qDebug() << post.getTimelineTimestamp() << post.getText();
 
                 emit timelineSyncOK(index);
                 return;
