@@ -19,6 +19,7 @@ class AbstractPostFeedModel : public QAbstractListModel
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
     static const QCache<QString, CachedBasicProfile>& getAuthorCache() { return sAuthorCache; }
+    static void cacheAuthorProfile(const QString& did, const BasicProfile& profile);
 
     enum class Role {
         Author = Qt::UserRole + 1,
@@ -69,7 +70,6 @@ public:
     void updateLikeUri(const QString& cid, const QString& likeUri);
 
 protected:
-    static void cacheAuthorProfile(const QString& did, const BasicProfile& profile);
     static QCache<QString, CachedBasicProfile> sAuthorCache;
 
     QHash<int, QByteArray> roleNames() const override;

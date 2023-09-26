@@ -17,7 +17,7 @@ Notification::Reason Notification::getReason() const
 
 QString Notification::getReasonSubjectUri() const
 {
-    return mNotification ? *mNotification->mReasonSubject : QString();
+    return mNotification ? mNotification->mReasonSubject.value_or(QString()) : QString();
 }
 
 BasicProfile Notification::getAuthor() const

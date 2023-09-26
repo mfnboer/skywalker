@@ -6,9 +6,6 @@ import QtQuick.Window
 import skywalker
 
 ApplicationWindow {
-    property var notificationsComponent
-    property var notificationsView
-
     id: root
     width: 480
     height: 960
@@ -23,9 +20,18 @@ ApplicationWindow {
         }
     }
 
-    StackView {
-        id: stack
+    StackLayout {
+        id: stackLayout
         anchors.fill: parent
+        currentIndex: 0
+
+        StackView {
+            id: stack
+            //anchors.fill: parent
+        }
+        StackView {
+            id: notificationStack
+        }
     }
 
     SvgOutline {
@@ -255,16 +261,10 @@ ApplicationWindow {
     }
 
     function viewNotifications() {
-        if (!notificationsView) {
-            console.debug("Create notifications view")
-            notificationsView = notificationsComponent.createObject(root, { skywalker: skywalker })
-            notificationsView.onClosed.connect(() => { stack.pop() })
-        }
+        stackLayout.currentIndex = 1
 
         if (!skywalker.notificationListModel.notificationsLoaded())
             skywalker.getNotifications(50)
-
-        stack.push(notificationsView)
     }
 
     function getTimelineView() {
@@ -281,7 +281,10 @@ ApplicationWindow {
         let view = component.createObject(root, { skywalker: skywalker })
         stack.push(view)
 
-        notificationsComponent = Qt.createComponent("NotificationListView.qml")
+        let notificationsComponent = Qt.createComponent("NotificationListView.qml")
+        let notificationsView = notificationsComponent.createObject(root, { skywalker: skywalker })
+        notificationsView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
+        notificationStack.push(notificationsView)
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         skywalker.resumeSession()

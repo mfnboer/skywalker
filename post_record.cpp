@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_record.h"
+#include "abstract_post_feed_model.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -43,6 +44,29 @@ ATProto::ComATProtoRepo::StrongRef::Ptr PostRecord::getReplyRootRef() const
         return nullptr;
 
     return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*mRecord->mReply->mRoot);
+}
+
+BasicProfile PostRecord::getReplyToAuthor() const
+{
+    const auto replyToRef = getReplyToRef();
+    if (!replyToRef)
+        return {};
+
+    ATProto::ATUri atUri(replyToRef->mUri);
+    if (!atUri.isValid())
+    {
+        qWarning() << "Not a valid at-uri:" << replyToRef->mUri;
+        return {};
+    }
+
+    const auto did = atUri.getAuthority();
+    const auto& authorCache = AbstractPostFeedModel::getAuthorCache();
+    auto* author = authorCache[did];
+
+    if (!author)
+        return {};
+
+    return author->getProfile();
 }
 
 }

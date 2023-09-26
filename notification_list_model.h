@@ -19,6 +19,7 @@ public:
         NotificationTimestamp,
         NotificationIsRead,
         NotificationPostText,
+        ReplyToAuthor,
         EndOfList
     };
 

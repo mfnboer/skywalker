@@ -14,6 +14,7 @@ Rectangle {
     required property date notificationTimestamp
     required property bool notificationIsRead
     required property string notificationPostText
+    required property basicprofile replyToAuthor
     required property bool endOfList
 
     id: notification
@@ -96,6 +97,28 @@ Rectangle {
                 authorHandle: notificationAuthor.handle
                 postThreadType: QEnums.THREAD_NONE
                 postIndexedSecondsAgo: (new Date() - notificationTimestamp) / 1000
+            }
+
+            // Reply to
+            Row {
+                width: parent.width
+                visible: notificationReason === QEnums.NOTIFICATION_REASON_REPLY
+
+                SvgImage {
+                    width: replyToText.height
+                    height: replyToText.height
+                    color: Material.color(Material.Grey)
+                    svg: svgOutline.reply
+                }
+
+                Text {
+                    id: replyToText
+                    width: parent.width
+                    elide: Text.ElideRight
+                    color: Material.color(Material.Grey)
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: qsTr(`Reply to ${replyToAuthor.name}`)
+                }
             }
 
             PostBody {

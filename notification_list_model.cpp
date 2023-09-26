@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "notification_list_model.h"
+#include "abstract_post_feed_model.h"
 #include "enums.h"
 #include <unordered_map>
 
@@ -60,6 +61,7 @@ NotificationListModel::NotificationList NotificationListModel::createNotifcation
         case Notification::Reason::REPOST:
         {
             const auto& uri = notification.getReasonSubjectUri();
+            qDebug() << "SUBJECT URI:" << uri << "REASON:" << int(notification.getReason());
 
             auto& aggregateMap = aggregate[notification.getReason()];
             auto it = aggregateMap.find(uri);
@@ -81,6 +83,10 @@ NotificationListModel::NotificationList NotificationListModel::createNotifcation
             notifications.push_back(notification);
             break;
         }
+
+        const auto& author = rawNotification->mAuthor;
+        const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
+        AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
     }
 
     return notifications;
@@ -115,6 +121,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.isRead();
     case Role::NotificationPostText:
         return notification.getPostRecord().getFormattedText();
+    case Role::ReplyToAuthor:
+        return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::EndOfList:
         return notification.isEndOfList();
     }
@@ -133,6 +141,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
         { int(Role::NotificationPostText), "notificationPostText" },
+        { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::EndOfList), "endOfList" }
     };
 

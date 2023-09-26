@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "profile.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 
 namespace Skywalker {
@@ -16,6 +17,7 @@ public:
     QString getFormattedText() const;
     ATProto::ComATProtoRepo::StrongRef::Ptr getReplyToRef() const;
     ATProto::ComATProtoRepo::StrongRef::Ptr getReplyRootRef() const;
+    BasicProfile getReplyToAuthor() const;
 
 private:
     ATProto::AppBskyFeed::Record::Post* mRecord = nullptr;
