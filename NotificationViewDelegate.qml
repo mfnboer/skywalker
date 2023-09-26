@@ -8,6 +8,7 @@ Rectangle {
     required property int viewWidth
 
     required property basicprofile notificationAuthor
+    required property list<basicprofile> notificationOtherAuthors
     required property int notificationReason // QEnums::NotificationReason
     required property string notificationReasonSubjectUri
     required property date notificationTimestamp
@@ -24,7 +25,7 @@ Rectangle {
         id: grid
         columns: 2
         width: viewWidth
-        rowSpacing: 0
+        rowSpacing: 5
 
         // Author and content
         Rectangle {
@@ -85,6 +86,7 @@ Rectangle {
             id: postColumn
             width: parent.width - avatar.width - notification.margin * 2
             visible: showPost()
+            topPadding: 5
 
             PostHeader {
                 id: postHeader
@@ -106,14 +108,33 @@ Rectangle {
             }
         }
         Column {
-            id: followersColumn
-            width: parent.width
-            visible: notificationReason === QEnums.NOTIFICATION_REASON_FOLLOW
+            width: parent.width - avatar.width - notification.margin * 2
+            topPadding: 5
+            visible: isAggregatableReason()
 
-            Avatar {
-                width: 24
-                height: width
-                avatarUrl: notificationAuthor.avatarUrl
+            Row {
+                spacing: 5
+                Avatar {
+                    width: 24
+                    height: width
+                    avatarUrl: notificationAuthor.avatarUrl
+                }
+                Repeater {
+                    model: Math.min(notificationOtherAuthors.length, 4)
+
+                    Avatar {
+                        required property int index
+
+                        width: 24
+                        height: width
+                        avatarUrl: notificationOtherAuthors[index].avatarUrl
+                    }
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: `+${(notificationOtherAuthors.length - 5)}`
+                    visible: notificationOtherAuthors.length > 5
+                }
             }
 
             RowLayout {
@@ -121,60 +142,16 @@ Rectangle {
 
                 Text {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    text: `<b>${notificationAuthor.name}</b> ` + qsTr("started following you")
-                }
-                Text {
-                    text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    color: Material.color(Material.Grey)
-                }
-            }
-        }
-        Column {
-            id: likeColumn
-            width: parent.width
-            visible: notificationReason === QEnums.NOTIFICATION_REASON_LIKE
-
-            Avatar {
-                width: 24
-                height: width
-                avatarUrl: notificationAuthor.avatarUrl
-            }
-
-            RowLayout {
-                width: parent.width
-
-                Text {
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    text: `<b>${notificationAuthor.name}</b> ` + qsTr("liked your post")
-                }
-                Text {
-                    text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    color: Material.color(Material.Grey)
-                }
-            }
-        }
-        Column {
-            id: repostColumn
-            width: parent.width
-            visible: notificationReason === QEnums.NOTIFICATION_REASON_REPOST
-
-            Avatar {
-                width: 24
-                height: width
-                avatarUrl: notificationAuthor.avatarUrl
-            }
-
-            RowLayout {
-                width: parent.width
-
-                Text {
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    text: `<b>${notificationAuthor.name}</b> ` + qsTr("reposted your post")
+                    wrapMode: Text.Wrap
+                    text: {
+                        `<b>${notificationAuthor.name}</b> ` +
+                        (notificationOtherAuthors.length > 0 ?
+                            (notificationOtherAuthors.length > 1 ?
+                                qsTr(`and ${(notificationOtherAuthors.length)} others `) :
+                                qsTr(`and <b>${(notificationOtherAuthors[0].name)}</b> `)) :
+                            "") +
+                        reasonText()
+                    }
                 }
                 Text {
                     text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
@@ -215,5 +192,25 @@ Rectangle {
                        QEnums.NOTIFICATION_REASON_REPLY,
                        QEnums.NOTIFICATION_REASON_QUOTE]
         return reasons.includes(notificationReason)
+    }
+
+    function isAggregatableReason() {
+        let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
+                       QEnums.NOTIFICATION_REASON_FOLLOW,
+                       QEnums.NOTIFICATION_REASON_REPOST]
+        return reasons.includes(notificationReason)
+    }
+
+    function reasonText() {
+        switch (notificationReason) {
+        case QEnums.NOTIFICATION_REASON_LIKE:
+            return qsTr("liked your post")
+        case QEnums.NOTIFICATION_REASON_FOLLOW:
+            return qsTr("started following you")
+        case QEnums.NOTIFICATION_REASON_REPOST:
+            return qsTr("reposted your post")
+        default:
+            return "UNKNOW REASON: " + notificationReason
+        }
     }
 }

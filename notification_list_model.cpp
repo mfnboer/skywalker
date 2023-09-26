@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "notification_list_model.h"
 #include "enums.h"
+#include <unordered_map>
 
 namespace Skywalker {
 
@@ -32,19 +33,57 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
         return;
     }
 
-    const size_t newRowCount = mList.size() + notifications->mNotifications.size();
+    const auto notificationList = createNotifcationList(notifications->mNotifications);
+    const size_t newRowCount = mList.size() + notificationList.size();
 
-    // TODO: collapse similar notifications into one.
     beginInsertRows({}, mList.size(), newRowCount - 1);
-    for (const auto& rawNotification : notifications->mNotifications)
-    {
-        Notification notification(rawNotification.get());
-        mList.push_back(notification);
-    }
+    mList.insert(mList.end(), notificationList.begin(), notificationList.cend());
     endInsertRows();
 
     mRawNotifications.push_back(std::move(notifications));
     qDebug() << "New list size:" << mList.size();
+}
+
+NotificationListModel::NotificationList NotificationListModel::createNotifcationList(const ATProto::AppBskyNotification::NotificationList& rawList) const
+{
+    NotificationList notifications;
+    std::unordered_map<Notification::Reason, std::unordered_map<QString, int>> aggregate;
+
+    for (const auto& rawNotification : rawList)
+    {
+        Notification notification(rawNotification.get());
+
+        switch (notification.getReason())
+        {
+        case Notification::Reason::LIKE:
+        case Notification::Reason::FOLLOW:
+        case Notification::Reason::REPOST:
+        {
+            const auto& uri = notification.getReasonSubjectUri();
+
+            auto& aggregateMap = aggregate[notification.getReason()];
+            auto it = aggregateMap.find(uri);
+
+            if (it != aggregateMap.end())
+            {
+                auto& aggregateNotification = notifications[it->second];
+                aggregateNotification.addOtherAuthor(notification.getAuthor());
+            }
+            else
+            {
+                notifications.push_back(notification);
+                aggregateMap[uri] = notifications.size() - 1;
+            }
+
+            break;
+        }
+        default:
+            notifications.push_back(notification);
+            break;
+        }
+    }
+
+    return notifications;
 }
 
 int NotificationListModel::rowCount(const QModelIndex& parent) const
@@ -64,6 +103,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     {
     case Role::NotificationAuthor:
         return QVariant::fromValue(notification.getAuthor());
+    case Role::NotificationOtherAuthors:
+        return QVariant::fromValue(notification.getOtherAuthors());
     case Role::NotificationReason:
         return static_cast<QEnums::NotificationReason>(int(notification.getReason()));
     case Role::NotificationReasonSubjectUri:
@@ -86,6 +127,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::NotificationAuthor), "notificationAuthor" },
+        { int(Role::NotificationOtherAuthors), "notificationOtherAuthors" },
         { int(Role::NotificationReason), "notificationReason" },
         { int(Role::NotificationReasonSubjectUri), "notificationReasonSubjectUri" },
         { int(Role::NotificationTimestamp), "notificationTimestamp" },

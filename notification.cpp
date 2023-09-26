@@ -51,4 +51,9 @@ QDateTime Notification::getTimestamp() const
     return mNotification ? mNotification->mIndexedAt : QDateTime();
 }
 
+void Notification::addOtherAuthor(const BasicProfile& author)
+{
+    mOtherAuthors.push_back(author);
+}
+
 }

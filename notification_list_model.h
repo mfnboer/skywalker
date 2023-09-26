@@ -13,6 +13,7 @@ class NotificationListModel : public QAbstractListModel
 public:
     enum class Role {
         NotificationAuthor = Qt::UserRole + 1,
+        NotificationOtherAuthors,
         NotificationReason,
         NotificationReasonSubjectUri,
         NotificationTimestamp,
@@ -31,11 +32,16 @@ public:
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
+    Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
     using NotificationList = std::deque<Notification>;
+
+    NotificationList createNotifcationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
+
     NotificationList mList;
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
     QString mCursor;

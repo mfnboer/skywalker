@@ -6,6 +6,9 @@ import QtQuick.Window
 import skywalker
 
 ApplicationWindow {
+    property var notificationsComponent
+    property var notificationsView
+
     id: root
     width: 480
     height: 960
@@ -252,16 +255,14 @@ ApplicationWindow {
     }
 
     function viewNotifications() {
-        var notificationsComponent
-        var notificationsView
-
-        if (!notificationsComponent) {
+        if (!notificationsView) {
             console.debug("Create notifications view")
-            notificationsComponent = Qt.createComponent("NotificationListView.qml")
             notificationsView = notificationsComponent.createObject(root, { skywalker: skywalker })
             notificationsView.onClosed.connect(() => { stack.pop() })
-            skywalker.getNotifications(50)
         }
+
+        if (!skywalker.notificationListModel.notificationsLoaded())
+            skywalker.getNotifications(50)
 
         stack.push(notificationsView)
     }
@@ -279,6 +280,8 @@ ApplicationWindow {
         let component = Qt.createComponent("TimelineView.qml")
         let view = component.createObject(root, { skywalker: skywalker })
         stack.push(view)
+
+        notificationsComponent = Qt.createComponent("NotificationListView.qml")
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         skywalker.resumeSession()

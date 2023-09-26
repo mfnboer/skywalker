@@ -17,14 +17,18 @@ public:
     Reason getReason() const;
     QString getReasonSubjectUri() const;
     BasicProfile getAuthor() const;
+    const QList<BasicProfile>& getOtherAuthors() const { return mOtherAuthors; }
     PostRecord getPostRecord() const;
     bool isRead() const;
     QDateTime getTimestamp() const;
     bool isEndOfList() const { return mEndOfList; }
     void setEndOfList(bool endOfFeed) { mEndOfList = endOfFeed; }
 
+    void addOtherAuthor(const BasicProfile& author);
+
 private:
     const ATProto::AppBskyNotification::Notification* mNotification = nullptr;
+    QList<BasicProfile> mOtherAuthors;
     bool mEndOfList = false;
 };
 
