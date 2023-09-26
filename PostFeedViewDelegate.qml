@@ -43,7 +43,7 @@ Rectangle {
     height: grid.height
     color: {
         if (postThreadType & QEnums.THREAD_ENTRY)
-            return "azure"
+            return guiSettings.postHighLightColor
         else
             return "transparent"
     }

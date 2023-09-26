@@ -260,7 +260,7 @@ ApplicationWindow {
             notificationsComponent = Qt.createComponent("NotificationListView.qml")
             notificationsView = notificationsComponent.createObject(root, { skywalker: skywalker })
             notificationsView.onClosed.connect(() => { stack.pop() })
-            skywalker.getNotifications(25)
+            skywalker.getNotifications(50)
         }
 
         stack.push(notificationsView)

@@ -151,7 +151,7 @@ Page {
         Rectangle {
             anchors.fill: replyToColumn
             border.width: 2
-            color: "azure"
+            color: guiSettings.postHighLightColor
             visible: replyToColumn.visible
         }
         QuotePost {
@@ -316,7 +316,7 @@ Page {
         Rectangle {
             anchors.fill: quoteColumn
             border.width: 2
-            color: "azure"
+            color: guiSettings.postHighLightColor
             visible: quoteColumn.visible
         }
         QuotePost {
@@ -440,5 +440,6 @@ Page {
 
     Component.onCompleted: {
         postText.focus = true
+        flick.ensureVisible(postText.cursorRectangle)
     }
 }

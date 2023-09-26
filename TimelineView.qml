@@ -71,7 +71,7 @@ ListView {
                 width: height
                 height: guiSettings.footerHeight - 10
                 Layout.fillWidth: true
-                color: "black"
+                color: guiSettings.textColor
                 svg: svgOutline.home
 
                 Rectangle {
@@ -109,7 +109,7 @@ ListView {
                 width: height
                 height: guiSettings.footerHeight - 10
                 Layout.fillWidth: true
-                color: "black"
+                color: guiSettings.textColor
                 svg: svgOutline.notifications
 
                 Rectangle {

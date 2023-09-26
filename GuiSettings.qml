@@ -18,9 +18,34 @@ Item {
     readonly property string footerColor: "white"
     readonly property string headerColor: "black"
     readonly property string linkColor: "blue"
+    readonly property string postHighLightColor: "aliceblue"
     readonly property string textColor: Material.foreground
 
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;
+    }
+
+    function durationToString(duration) {
+        if (duration < 59.5)
+            return duration + qsTr("s", "seconds")
+
+        duration = duration / 60
+        if (duration < 59.5)
+            return Math.round(duration) + qsTr("m", "minutes")
+
+        duration = duration / 60
+        if (duration < 23.5)
+            return Math.round(duration) + qsTr("h", "hours")
+
+        duration = duration / 24
+        if (duration < 30.4368499)
+            return Math.round(duration) + qsTr("d", "days")
+
+        duration = duration / 30.4368499
+        if (duration < 35.5)
+            return Math.round(duration) + qsTr("mo", "months")
+
+        duration = duration / 12
+        return Math.round(duration) + qsTr("yr", "years")
     }
 }
