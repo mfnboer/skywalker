@@ -170,11 +170,9 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::EndOfFeed:
         return post.isEndOfFeed();
-    default:
-        qWarning() << "Uknown role requested:" << role;
-        break;
     }
 
+    qWarning() << "Uknown role requested:" << role;
     return {};
 }
 

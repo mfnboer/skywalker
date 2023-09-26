@@ -5,9 +5,15 @@
 namespace Skywalker {
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile) :
-    mProfile(profile)
+    mProfileBasicView(profile)
 {
-    Q_ASSERT(mProfile);
+    Q_ASSERT(mProfileBasicView);
+}
+
+BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView* profile) :
+    mProfileView(profile)
+{
+    Q_ASSERT(mProfileView);
 }
 
 BasicProfile::BasicProfile(const QString& handle, const QString& displayName, const QString& avatarUrl) :
@@ -26,32 +32,37 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :
 
 QString BasicProfile::getDid() const
 {
-    return mProfile ? mProfile->mDid : mDid;
+    return mProfileBasicView ? mProfileBasicView->mDid :
+               mProfileView ? mProfileView->mDid : QString();
+}
+
+static QString createName(const QString& handle, const std::optional<QString>& displayName)
+{
+    const QString name = displayName.value_or("").trimmed();
+    return name.isEmpty() ? handle : name;
 }
 
 QString BasicProfile::getName() const
 {
-    if (mProfile)
-    {
-        const QString name = mProfile->mDisplayName.value_or("").trimmed();
-        return name.isEmpty() ? mProfile->mHandle : name;
-    }
+    return createName(getHandle(), getDisplayName());
+}
 
-    const QString name = mDisplayName.trimmed();
-    if (!name.isEmpty())
-        return name.trimmed();
-
-    return mHandle;
+std::optional<QString> BasicProfile::getDisplayName() const
+{
+    return mProfileBasicView ? mProfileBasicView->mDisplayName :
+               mProfileView? mProfileView->mDisplayName : mDisplayName;
 }
 
 QString BasicProfile::getHandle() const
 {
-    return mProfile ? mProfile->mHandle : mHandle;
+    return mProfileBasicView ? mProfileBasicView->mHandle :
+               mProfileView? mProfileView->mHandle : mHandle;
 }
 
 QString BasicProfile::getAvatarUrl() const
 {
-    return (mProfile && mProfile->mAvatar) ? *mProfile->mAvatar : mAvatarUrl;
+    return (mProfileBasicView && mProfileBasicView->mAvatar) ? *mProfileBasicView->mAvatar :
+               (mProfileView && mProfileView->mAvatar) ? *mProfileView->mAvatar : mAvatarUrl;
 }
 
 CachedBasicProfile::CachedBasicProfile(const BasicProfile& profile) :

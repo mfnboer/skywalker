@@ -13,6 +13,7 @@ static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
+static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
@@ -279,11 +280,11 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 void Skywalker::getTimeline(int limit, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qInfo() << "Get timeline:" << cursor;
+    qDebug() << "Get timeline:" << cursor;
 
     if (mGetTimelineInProgress)
     {
-        qInfo() << "Get timeline still in progress";
+        qDebug() << "Get timeline still in progress";
         return;
     }
 
@@ -419,6 +420,11 @@ void Skywalker::setGetPostThreadInProgress(bool inProgress)
     mGetPostThreadInProgress = inProgress;
 }
 
+void Skywalker::setGetNotificationsInProgress(bool inProgress)
+{
+    mGetNotificationsInProgress = inProgress;
+}
+
 void Skywalker::setAvatarUrl(const QString& avatarUrl)
 {
     mAvatarUrl = avatarUrl;
@@ -515,6 +521,45 @@ void Skywalker::makeLocalModelChange(const std::function<void(AbstractPostFeedMo
 
     for (auto& [_, model] : mPostThreadModels)
         update(model.get());
+}
+
+void Skywalker::getNotifications(int limit, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get notifications:" << cursor;
+
+    if (mGetNotificationsInProgress)
+    {
+        qDebug() << "Get notifications still in progress";
+        return;
+    }
+
+    setGetNotificationsInProgress(true);
+    mBsky->listNotifications(limit, makeOptionalCursor(cursor), {},
+        [this, cursor](auto list){
+            if (cursor.isEmpty())
+                mNotificationListModel.clear();
+
+            mNotificationListModel.addNotifications(std::move(list));
+            setGetNotificationsInProgress(false);
+        },
+        [this](const QString& error){
+            qInfo() << "getNotifications FAILED:" << error;
+            setGetNotificationsInProgress(false);
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getNotificationsNextPage()
+{
+    const QString& cursor = mNotificationListModel.getCursor();
+    if (cursor.isEmpty())
+    {
+        qInfo() << "Last page reached, no more cursor";
+        return;
+    }
+
+    getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, cursor);
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

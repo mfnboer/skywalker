@@ -43,6 +43,18 @@ public:
         STATUS_LEVEL_ERROR
     };
     Q_ENUM(StatusLevel)
+
+    enum NotificationReason
+    {
+        NOTIFICATION_REASON_LIKE = 0,
+        NOTIFICATION_REASON_REPOST,
+        NOTIFICATION_REASON_FOLLOW,
+        NOTIFICATION_REASON_MENTION,
+        NOTIFICATION_REASON_REPLY,
+        NOTIFICATION_REASON_QUOTE,
+        NOTIFICATION_REASON_UNKNOWN
+    };
+    Q_ENUM(NotificationReason)
 };
 
 }

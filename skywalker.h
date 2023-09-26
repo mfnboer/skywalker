@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "notification_list_model.h"
 #include "post_feed_model.h"
 #include "post_thread_model.h"
 #include "profile_store.h"
@@ -15,6 +16,7 @@ class Skywalker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
+    Q_PROPERTY(const NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     QML_ELEMENT
@@ -35,13 +37,17 @@ public:
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updatePostIndexTimestamps();
+    Q_INVOKABLE void getNotifications(int limit, const QString& cursor = {});
+    Q_INVOKABLE void getNotificationsNextPage();
 
     void makeLocalModelChange(const std::function<void(AbstractPostFeedModel*)>& update);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
+    const NotificationListModel* getNotificationListModel() const { return &mNotificationListModel; }
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
+    void setGetNotificationsInProgress(bool inProgress);
     const QString& getAvatarUrl() const { return mAvatarUrl; }
     void setAvatarUrl(const QString& avatarUrl);
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
@@ -88,6 +94,10 @@ private:
 
     std::unordered_map<int, PostThreadModel::Ptr> mPostThreadModels;
     int mNextPostThreadModelId = 1;
+
+    NotificationListModel mNotificationListModel;
+    bool mGetNotificationsInProgress = false;
+
     QSettings mSettings;
     bool mDebugLogging = false;
 };

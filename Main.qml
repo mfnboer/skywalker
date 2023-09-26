@@ -251,6 +251,21 @@ ApplicationWindow {
         stack.push(view)
     }
 
+    function viewNotifications() {
+        var notificationsComponent
+        var notificationsView
+
+        if (!notificationsComponent) {
+            console.debug("Create notifications view")
+            notificationsComponent = Qt.createComponent("NotificationListView.qml")
+            notificationsView = notificationsComponent.createObject(root, { skywalker: skywalker })
+            notificationsView.onClosed.connect(() => { stack.pop() })
+            skywalker.getNotifications(25)
+        }
+
+        stack.push(notificationsView)
+    }
+
     function getTimelineView() {
         return stack.get(0)
     }

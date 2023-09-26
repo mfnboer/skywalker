@@ -66,10 +66,11 @@ ListView {
             width: parent.width
 
             SvgImage {
+                id: homeButton
                 y: height + 5
                 width: height
                 height: guiSettings.footerHeight - 10
-                id: homeButton
+                Layout.fillWidth: true
                 color: "black"
                 svg: svgOutline.home
 
@@ -99,6 +100,44 @@ ListView {
                     width: parent.width
                     height: parent.height
                     onClicked: moveToPost(0)
+                }
+            }
+
+            SvgImage {
+                id: notificationsButton
+                y: height + 5
+                width: height
+                height: guiSettings.footerHeight - 10
+                Layout.fillWidth: true
+                color: "black"
+                svg: svgOutline.notifications
+
+                Rectangle {
+                    x: parent.width - 17
+                    y: -parent.y + 6
+                    width: Math.max(unreadNotificationsText.width + 10, height)
+                    height: 20
+                    radius: 8
+                    color: guiSettings.badgeColor
+                    border.color: guiSettings.badgeBorderColor
+                    border.width: 2
+                    visible: false // TODO
+
+                    Text {
+                        id: unreadNotificationsText
+                        anchors.centerIn: parent
+                        font.bold: true
+                        font.pointSize: guiSettings.scaledFont(6/8)
+                        color: guiSettings.badgeTextColor
+                        text: "0" // TODO
+                    }
+                }
+
+                MouseArea {
+                    y: -parent.y
+                    width: parent.width
+                    height: parent.height
+                    onClicked: root.viewNotifications()
                 }
             }
         }

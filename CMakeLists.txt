@@ -96,6 +96,14 @@ qt_add_qml_module(appskywalker
         SOURCES presence.h
         SOURCES local_post_model_changes.h
         SOURCES local_post_model_changes.cpp
+        SOURCES notification.h
+        SOURCES notification.cpp
+        SOURCES post_record.h
+        SOURCES post_record.cpp
+        SOURCES notification_list_model.h
+        SOURCES notification_list_model.cpp
+        QML_FILES NotificationViewDelegate.qml
+        QML_FILES NotificationListView.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

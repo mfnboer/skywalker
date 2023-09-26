@@ -7,6 +7,7 @@
 
 namespace Skywalker {
 
+// TODO rename
 class BasicProfile
 {
     Q_GADGET
@@ -18,16 +19,19 @@ class BasicProfile
 public:
     BasicProfile() = default;
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
+    explicit BasicProfile(const ATProto::AppBskyActor::ProfileView* profile);
     BasicProfile(const QString& handle, const QString& displayName, const QString& avatarUrl = "");
     BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
     QString getDid() const;
     QString getName() const;
+    std::optional<QString> getDisplayName() const;
     QString getHandle() const;
     QString getAvatarUrl() const;
 
 private:
-    const ATProto::AppBskyActor::ProfileViewBasic* mProfile = nullptr;
+    const ATProto::AppBskyActor::ProfileViewBasic* mProfileBasicView = nullptr;
+    const ATProto::AppBskyActor::ProfileView* mProfileView = nullptr;
     QString mDid;
     QString mHandle;
     QString mDisplayName;
