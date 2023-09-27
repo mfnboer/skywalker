@@ -2,6 +2,8 @@
 // License: GPLv3
 #pragma once
 #include "notification.h"
+#include "post_cache.h"
+#include <atproto/lib/client.h>
 #include <QAbstractListModel>
 #include <deque>
 
@@ -16,6 +18,10 @@ public:
         NotificationOtherAuthors,
         NotificationReason,
         NotificationReasonSubjectUri,
+        NotificationReasonPostText,
+        NotificationReasonPostTimestamp,
+        NotificationReasonPostImages,
+        NotificationReasonPostExternal,
         NotificationTimestamp,
         NotificationIsRead,
         NotificationPostText,
@@ -29,7 +35,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void clear();
-    void addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications);
+    void addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications, ATProto::Client& bsky);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
@@ -41,11 +47,18 @@ protected:
 private:
     using NotificationList = std::deque<Notification>;
 
-    NotificationList createNotifcationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
+    NotificationList createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
+    void addNotificationList(const NotificationList& list);
+
+    // Get the posts for LIKE, FOLLOW and REPOST notifications
+    void getPosts(ATProto::Client& bsky, const NotificationList& list, const std::function<void()>& cb);
+    void getPosts(ATProto::Client& bsky, std::unordered_set<QString> uris, const std::function<void()>& cb);
 
     NotificationList mList;
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
     QString mCursor;
+
+    PostCache mPostCache;
 };
 
 }

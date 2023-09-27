@@ -540,7 +540,7 @@ void Skywalker::getNotifications(int limit, const QString& cursor)
             if (cursor.isEmpty())
                 mNotificationListModel.clear();
 
-            mNotificationListModel.addNotifications(std::move(list));
+            mNotificationListModel.addNotifications(std::move(list), *mBsky);
             setGetNotificationsInProgress(false);
         },
         [this](const QString& error){

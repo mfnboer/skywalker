@@ -13,10 +13,18 @@ ApplicationWindow {
     title: "Skywalker"
 
     onClosing: (event) => {
+        if (Qt.platform.os !== "android")
+            return
+
         // This catches the back-button on Android
-        if (stack.depth > 1) {
+        if (currentStack().depth > 1) {
             event.accepted = false
             popStack()
+        }
+        else {
+            // Do not close the app as the back  button does
+            // not terminate it.
+            hide()
         }
     }
 
@@ -26,8 +34,7 @@ ApplicationWindow {
         currentIndex: 0
 
         StackView {
-            id: stack
-            //anchors.fill: parent
+            id: timelineStack
         }
         StackView {
             id: notificationStack
@@ -199,7 +206,7 @@ ApplicationWindow {
                 skywalker: skywalker,
         })
         page.onClosed.connect(() => { popStack() })
-        stack.push(page)
+        currentStack().push(page)
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
@@ -217,7 +224,7 @@ ApplicationWindow {
                 replyToAuthor: replyToAuthor
         })
         page.onClosed.connect(() => { popStack() })
-        stack.push(page)
+        currentStack().push(page)
     }
 
     function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
@@ -232,7 +239,7 @@ ApplicationWindow {
                 quoteAuthor: quoteAuthor
         })
         page.onClosed.connect(() => { popStack() })
-        stack.push(page)
+        currentStack().push(page)
     }
 
     function repost(repostUri, uri, cid, text, dateTime, author) {
@@ -250,17 +257,18 @@ ApplicationWindow {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
         view.onClosed.connect(() => { popStack() })
-        stack.push(view)
+        currentStack().push(view)
     }
 
     function viewFullImage(imageList, currentIndex) {
         let component = Qt.createComponent("FullImageView.qml")
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() })
-        stack.push(view)
+        currentStack().push(view)
     }
 
     function viewNotifications() {
+        unwindStack()
         stackLayout.currentIndex = 1
 
         if (!skywalker.notificationListModel.notificationsLoaded())
@@ -268,18 +276,31 @@ ApplicationWindow {
     }
 
     function getTimelineView() {
-        return stack.get(0)
+        return currentStack().get(0)
+    }
+
+    function currentStack() {
+        return stackLayout.children[stackLayout.currentIndex]
     }
 
     function popStack() {
-        let item = stack.pop()
+        let item = currentStack().pop()
         item.destroy()
+    }
+
+    function pushStack(item) {
+        currentStack().push(item)
+    }
+
+    function unwindStack() {
+        while (currentStack().depth > 1)
+            popStack()
     }
 
     Component.onCompleted: {
         let component = Qt.createComponent("TimelineView.qml")
         let view = component.createObject(root, { skywalker: skywalker })
-        stack.push(view)
+        timelineStack.push(view)
 
         let notificationsComponent = Qt.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root, { skywalker: skywalker })

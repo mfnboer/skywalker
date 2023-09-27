@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "notification.h"
+#include "post_cache.h"
 
 namespace Skywalker {
 
@@ -39,6 +40,19 @@ PostRecord Notification::getPostRecord() const
     }
 
     return PostRecord(rawRecord);
+}
+
+Post Notification::getPost(const PostCache& cache) const
+{
+    if (!mNotification)
+        return Post::createNotFound();
+
+    const QString& uri = getReasonSubjectUri();
+    if (uri.isEmpty())
+        return Post::createNotFound();
+
+    const Post* post = cache.get(uri);
+    return post ? *post : Post::createNotFound();
 }
 
 bool Notification::isRead() const

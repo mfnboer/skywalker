@@ -104,6 +104,8 @@ qt_add_qml_module(appskywalker
         SOURCES notification_list_model.cpp
         QML_FILES NotificationViewDelegate.qml
         QML_FILES NotificationListView.qml
+        SOURCES post_cache.h
+        SOURCES post_cache.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

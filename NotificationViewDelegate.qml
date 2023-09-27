@@ -11,6 +11,10 @@ Rectangle {
     required property list<basicprofile> notificationOtherAuthors
     required property int notificationReason // QEnums::NotificationReason
     required property string notificationReasonSubjectUri
+    required property string notificationReasonPostText
+    required property list<imageview> notificationReasonPostImages
+    required property var notificationReasonPostExternal // externalview (var allows NULL)
+    required property date notificationReasonPostTimestamp
     required property date notificationTimestamp
     required property bool notificationIsRead
     required property string notificationPostText
@@ -148,7 +152,7 @@ Rectangle {
                     Avatar {
                         required property int index
 
-                        width: 24
+                        width: 30
                         height: width
                         avatarUrl: notificationOtherAuthors[index].avatarUrl
                     }
@@ -181,6 +185,15 @@ Rectangle {
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: Material.color(Material.Grey)
                 }
+            }
+
+            PostBody {
+                width: parent.width
+                Layout.fillWidth: true
+                postText: notificationReasonPostText
+                postImages: notificationReasonPostImages
+                postDateTime: notificationReasonPostTimestamp
+                postExternal: notificationReasonPostExternal
             }
         }
 
