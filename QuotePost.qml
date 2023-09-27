@@ -34,6 +34,6 @@ Column {
         postText: quoteColumn.postText
         postImages: []
         postDateTime: postDateTime
-        maxTextLines: 6
+        maxTextLines: 5
     }
 }
