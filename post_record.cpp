@@ -69,4 +69,9 @@ BasicProfile PostRecord::getReplyToAuthor() const
     return author->getProfile();
 }
 
+bool PostRecord::hasEmbeddedContent() const
+{
+    return mRecord ? mRecord->mEmbed != nullptr : false;
+}
+
 }

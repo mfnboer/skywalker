@@ -14,10 +14,18 @@ Rectangle {
     required property string notificationReasonPostText
     required property list<imageview> notificationReasonPostImages
     required property var notificationReasonPostExternal // externalview (var allows NULL)
+    required property var notificationReasonPostRecord // recordview
+    required property var notificationReasonPostRecordWithMedia // record_with_media_view
     required property date notificationReasonPostTimestamp
+    required property bool notificationReasonPostNotFound
     required property date notificationTimestamp
     required property bool notificationIsRead
+    required property string notificationPostUri
     required property string notificationPostText
+    required property list<imageview> notificationPostImages
+    required property var notificationPostExternal // externalview (var allows NULL)
+    required property var notificationPostRecord // recordview
+    required property var notificationPostRecordWithMedia // record_with_media_view
     required property basicprofile replyToAuthor
     required property bool endOfList
 
@@ -130,7 +138,10 @@ Rectangle {
                 width: parent.width
                 Layout.fillWidth: true
                 postText: notificationPostText
-                postImages: []
+                postImages: notificationPostImages
+                postExternal: notificationPostExternal
+                postRecord: notificationPostRecord
+                postRecordWithMedia: notificationPostRecordWithMedia
                 postDateTime: notificationTimestamp
             }
         }
@@ -142,7 +153,8 @@ Rectangle {
             Row {
                 spacing: 5
                 Avatar {
-                    width: 24
+                    id: authorAvatar
+                    width: 30
                     height: width
                     avatarUrl: notificationAuthor.avatarUrl
                 }
@@ -152,7 +164,7 @@ Rectangle {
                     Avatar {
                         required property int index
 
-                        width: 30
+                        width: authorAvatar.width
                         height: width
                         avatarUrl: notificationOtherAuthors[index].avatarUrl
                     }
@@ -190,10 +202,12 @@ Rectangle {
             PostBody {
                 width: parent.width
                 Layout.fillWidth: true
-                postText: notificationReasonPostText
+                postText: notificationReasonPostNotFound ? "NOT FOUND" : notificationReasonPostText
                 postImages: notificationReasonPostImages
                 postDateTime: notificationReasonPostTimestamp
                 postExternal: notificationReasonPostExternal
+                postRecord: notificationReasonPostRecord
+                postRecordWithMedia: notificationReasonPostRecordWithMedia
             }
         }
 
@@ -216,6 +230,16 @@ Rectangle {
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfList
+        }
+    }
+
+    MouseArea {
+        z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
+        anchors.fill: parent
+        onClicked: {
+            console.debug("POST CLICKED:", notificationPostUri)
+            if (notificationPostUri)
+                skywalker.getPostThread(notificationPostUri)
         }
     }
 

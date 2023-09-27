@@ -22,9 +22,17 @@ public:
         NotificationReasonPostTimestamp,
         NotificationReasonPostImages,
         NotificationReasonPostExternal,
+        NotificationReasonPostRecord,
+        NotificationReasonPostRecordWithMedia,
+        NotificationReasonPostNotFound,
         NotificationTimestamp,
         NotificationIsRead,
+        NotificationPostUri,
         NotificationPostText,
+        NotificationPostImages,
+        NotificationPostExternal,
+        NotificationPostRecord,
+        NotificationPostRecordWithMedia,
         ReplyToAuthor,
         EndOfList
     };

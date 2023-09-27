@@ -11,6 +11,11 @@ Notification::Notification(const ATProto::AppBskyNotification::Notification* not
     Q_ASSERT(notification);
 }
 
+QString Notification::getUri() const
+{
+    return mNotification ? mNotification->mUri : QString();
+}
+
 Notification::Reason Notification::getReason() const
 {
     return mNotification ? mNotification->mReason : Reason::UNKNOWN;
@@ -42,12 +47,24 @@ PostRecord Notification::getPostRecord() const
     return PostRecord(rawRecord);
 }
 
-Post Notification::getPost(const PostCache& cache) const
+Post Notification::getReasonPost(const PostCache& cache) const
 {
     if (!mNotification)
         return Post::createNotFound();
 
-    const QString& uri = getReasonSubjectUri();
+    return getPost(cache, getReasonSubjectUri());
+}
+
+Post Notification::getNotificationPost(const PostCache& cache) const
+{
+    if (!mNotification)
+        return Post::createNotFound();
+
+    return getPost(cache, getUri());
+}
+
+Post Notification::getPost(const PostCache& cache, const QString& uri) const
+{
     if (uri.isEmpty())
         return Post::createNotFound();
 
@@ -63,6 +80,29 @@ bool Notification::isRead() const
 QDateTime Notification::getTimestamp() const
 {
     return mNotification ? mNotification->mIndexedAt : QDateTime();
+}
+
+QString Notification::getPostUri() const
+{
+    switch (getReason())
+    {
+    case Reason::LIKE:
+    case Reason::FOLLOW:
+    case Reason::REPOST:
+        return getReasonSubjectUri();
+        break;
+    case Reason::REPLY:
+    case Reason::MENTION:
+    case Reason::QUOTE:
+        return getUri();
+        break;
+    case Reason::UNKNOWN:
+        return getUri();
+        break;
+    }
+
+    qWarning() << "Invalid reasone:" << (int)getReason();
+    return {};
 }
 
 void Notification::addOtherAuthor(const BasicProfile& author)

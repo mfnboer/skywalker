@@ -118,6 +118,25 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
 
             break;
         }
+        case Notification::Reason::REPLY:
+        case Notification::Reason::MENTION:
+            if (notification.getPostRecord().hasEmbeddedContent())
+            {
+                const auto& uri = notification.getUri();
+
+                if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
+                    uris.insert(uri);
+            }
+            break;
+        case Notification::Reason::QUOTE:
+        {
+            const auto& uri = notification.getUri();
+
+            if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
+                uris.insert(uri);
+
+            break;
+        }
         default:
             break;
         }
@@ -190,10 +209,10 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationReasonSubjectUri:
         return notification.getReasonSubjectUri();
     case Role::NotificationReasonPostText:
-        return notification.getPost(mPostCache).getFormattedText();
+        return notification.getReasonPost(mPostCache).getFormattedText();
     case Role::NotificationReasonPostImages:
     {
-        const auto& post = notification.getPost(mPostCache);
+        const auto& post = notification.getReasonPost(mPostCache);
         QList<ImageView> images;
         for (const auto& img : post.getImages())
             images.push_back(*img);
@@ -202,18 +221,61 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     }
     case Role::NotificationReasonPostExternal:
     {
-        const auto& post = notification.getPost(mPostCache);
+        const auto& post = notification.getReasonPost(mPostCache);
         auto external = post.getExternalView();
         return external ? QVariant::fromValue(*external) : QVariant();
     }
+    case Role::NotificationReasonPostRecord:
+    {
+        const auto& post = notification.getReasonPost(mPostCache);
+        auto record = post.getRecordView();
+        return record ? QVariant::fromValue(*record) : QVariant();
+    }
+    case Role::NotificationReasonPostRecordWithMedia:
+    {
+        const auto& post = notification.getReasonPost(mPostCache);
+        auto record = post.getRecordWithMediaView();
+        return record ? QVariant::fromValue(*record) : QVariant();
+    }
     case Role::NotificationReasonPostTimestamp:
-        return notification.getPost(mPostCache).getTimelineTimestamp();
+        return notification.getReasonPost(mPostCache).getTimelineTimestamp();
+    case Role::NotificationReasonPostNotFound:
+        return notification.getReasonPost(mPostCache).isNotFound();
     case Role::NotificationTimestamp:
         return notification.getTimestamp();
     case Role::NotificationIsRead:
         return notification.isRead();
+    case Role::NotificationPostUri:
+        return notification.getPostUri();
     case Role::NotificationPostText:
         return notification.getPostRecord().getFormattedText();
+    case Role::NotificationPostImages:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        QList<ImageView> images;
+        for (const auto& img : post.getImages())
+            images.push_back(*img);
+
+        return QVariant::fromValue(images);
+    }
+    case Role::NotificationPostExternal:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        auto external = post.getExternalView();
+        return external ? QVariant::fromValue(*external) : QVariant();
+    }
+    case Role::NotificationPostRecord:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        auto record = post.getRecordView();
+        return record ? QVariant::fromValue(*record) : QVariant();
+    }
+    case Role::NotificationPostRecordWithMedia:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        auto record = post.getRecordWithMediaView();
+        return record ? QVariant::fromValue(*record) : QVariant();
+    }
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::EndOfList:
@@ -235,9 +297,17 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostImages), "notificationReasonPostImages" },
         { int(Role::NotificationReasonPostTimestamp), "notificationReasonPostTimestamp" },
         { int(Role::NotificationReasonPostExternal), "notificationReasonPostExternal" },
+        { int(Role::NotificationReasonPostRecord), "notificationReasonPostRecord" },
+        { int(Role::NotificationReasonPostRecordWithMedia), "notificationReasonPostRecordWithMedia" },
+        { int(Role::NotificationReasonPostNotFound), "notificationReasonPostNotFound" },
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
+        { int(Role::NotificationPostUri), "notificationPostUri" },
         { int(Role::NotificationPostText), "notificationPostText" },
+        { int(Role::NotificationPostImages), "notificationPostImages" },
+        { int(Role::NotificationPostExternal), "notificationPostExternal" },
+        { int(Role::NotificationPostRecord), "notificationPostRecord" },
+        { int(Role::NotificationPostRecordWithMedia), "notificationPostRecordWithMedia" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::EndOfList), "endOfList" }
     };

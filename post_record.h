@@ -18,6 +18,7 @@ public:
     ATProto::ComATProtoRepo::StrongRef::Ptr getReplyToRef() const;
     ATProto::ComATProtoRepo::StrongRef::Ptr getReplyRootRef() const;
     BasicProfile getReplyToAuthor() const;
+    bool hasEmbeddedContent() const;
 
 private:
     ATProto::AppBskyFeed::Record::Post* mRecord = nullptr;

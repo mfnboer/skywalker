@@ -17,20 +17,27 @@ public:
 
     explicit Notification(const ATProto::AppBskyNotification::Notification* notification);
 
+    QString getUri() const;
     Reason getReason() const;
     QString getReasonSubjectUri() const;
     BasicProfile getAuthor() const;
     const QList<BasicProfile>& getOtherAuthors() const { return mOtherAuthors; }
     PostRecord getPostRecord() const;
-    Post getPost(const PostCache&) const;
+    Post getReasonPost(const PostCache&) const;
+    Post getNotificationPost(const PostCache&) const;
     bool isRead() const;
     QDateTime getTimestamp() const;
     bool isEndOfList() const { return mEndOfList; }
     void setEndOfList(bool endOfFeed) { mEndOfList = endOfFeed; }
 
+    // Get the URI of the post to be displayed, e.g. the uri or subjectReasonUri
+    QString getPostUri() const;
+
     void addOtherAuthor(const BasicProfile& author);
 
 private:
+    Post getPost(const PostCache& cache, const QString& uri) const;
+
     const ATProto::AppBskyNotification::Notification* mNotification = nullptr;
     QList<BasicProfile> mOtherAuthors;
     bool mEndOfList = false;
