@@ -59,13 +59,17 @@ void LinkCardReader::getLinkCard(const QString& link)
 
 QString LinkCardReader::toPlainText(const QString& text) const
 {
+    // Maybe we can simple assume all text as HTML and convert it.
+    // Let's try that for a while.
+    // TODO: remove
+#if 0
     static const QRegularExpression htmlEmtity(R"(&([a-z]+)|(#[0-9]+);)");
 
     auto match = htmlEmtity.match(text);
 
     if (!match.hasMatch())
         return text;
-
+#endif
     QTextDocument doc;
     doc.setHtml(text);
     return doc.toPlainText();

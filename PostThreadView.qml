@@ -53,6 +53,7 @@ ListView {
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
         positionViewAtIndex(postEntryIndex, ListView.Center)
+        flick(0, 0.1) // HACK: this seems to make the entry move into the visible view
     }
     Component.onDestruction: skywalker.removePostThreadModel(modelId)
 }
