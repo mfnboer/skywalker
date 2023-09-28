@@ -265,41 +265,26 @@ Rectangle {
             }
 
             // Stats
-            Row {
+            PostStats {
                 width: parent.width
                 topPadding: 10
+                replyCount: postReplyCount
+                repostCount: postRepostCount
+                likeCount: postLikeCount
+                repostUri: postRepostUri
+                likeUri: postLikeUri
 
-                StatIcon {
-                    width: parent.width / 4
-                    iconColor: "grey"
-                    svg: svgOutline.reply
-                    statistic: postReplyCount
-                    onClicked: () => {
-                        root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                                          author, postReplyRootUri, postReplyRootCid)
-                    }
+                onReply: {
+                    root.composeReply(postUri, postCid, postText, postIndexedDateTime,
+                                      author, postReplyRootUri, postReplyRootCid)
                 }
-                StatIcon {
-                    width: parent.width / 4
-                    iconColor: postRepostUri ? "palevioletred" : "grey"
-                    svg: svgOutline.repost
-                    statistic: postRepostCount
-                    onClicked: () => {
-                        root.repost(postRepostUri, postUri, postCid, postText, postIndexedDateTime, author)
-                    }
+
+                onRepost: {
+                    root.repost(postRepostUri, postUri, postCid, postText,
+                                postIndexedDateTime, author)
                 }
-                StatIcon {
-                    width: parent.width / 4
-                    iconColor: postLikeUri ? "palevioletred" : "grey"
-                    svg: postLikeUri ? svgFilled.like : svgOutline.like
-                    statistic: postLikeCount
-                    onClicked: () => { root.like(postLikeUri, postUri, postCid) }
-                }
-                StatIcon {
-                    width: parent.width / 4
-                    iconColor: "grey"
-                    svg: svgOutline.moreVert
-                }
+
+                onLike: root.like(postLikeUri, postUri, postCid)
             }
         }
 

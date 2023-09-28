@@ -11,6 +11,7 @@ Rectangle {
     required property list<basicprofile> notificationOtherAuthors
     required property int notificationReason // QEnums::NotificationReason
     required property string notificationReasonSubjectUri
+    required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
     required property list<imageview> notificationReasonPostImages
     required property var notificationReasonPostExternal // externalview (var allows NULL)
@@ -21,11 +22,21 @@ Rectangle {
     required property date notificationTimestamp
     required property bool notificationIsRead
     required property string notificationPostUri
+    required property string notificationCid
     required property string notificationPostText
+    required property date notificationPostTimestamp
     required property list<imageview> notificationPostImages
     required property var notificationPostExternal // externalview (var allows NULL)
     required property var notificationPostRecord // recordview
     required property var notificationPostRecordWithMedia // record_with_media_view
+    required property string notificationPostReplyRootUri
+    required property string notificationPostReplyRootCid
+    required property string notificationPostRepostUri
+    required property string notificationPostLikeUri
+    required property int notificationPostRepostCount
+    required property int notificationPostLikeCount
+    required property int notificationPostReplyCount
+    required property bool notificationPostNotFound
     required property basicprofile replyToAuthor
     required property bool endOfList
 
@@ -142,7 +153,32 @@ Rectangle {
                 postExternal: notificationPostExternal
                 postRecord: notificationPostRecord
                 postRecordWithMedia: notificationPostRecordWithMedia
-                postDateTime: notificationTimestamp
+                postDateTime: notificationPostTimestamp
+            }
+
+            PostStats {
+                width: parent.width
+                topPadding: 10
+                replyCount: notificationPostReplyCount
+                repostCount: notificationPostRepostCount
+                likeCount: notificationPostLikeCount
+                repostUri: notificationPostRepostUri
+                likeUri: notificationPostLikeUri
+                visible: !notificationPostNotFound
+
+                onReply: {
+                    root.composeReply(notificationPostUri, notificationCid, notificationPostText,
+                                      notificationPostTimestamp, notificationAuthor,
+                                      notificationPostReplyRootUri, notificationPostReplyRootCid)
+                }
+
+                onRepost: {
+                    root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
+                                notificationPostText, notificationPostTimestamp,
+                                notificationAuthor)
+                }
+
+                onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
             }
         }
         Column {

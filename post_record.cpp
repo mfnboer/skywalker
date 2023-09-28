@@ -46,6 +46,18 @@ ATProto::ComATProtoRepo::StrongRef::Ptr PostRecord::getReplyRootRef() const
     return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*mRecord->mReply->mRoot);
 }
 
+QString PostRecord::getReplyRootCid() const
+{
+    const auto& ref = getReplyRootRef();
+    return ref ? ref->mCid : QString();
+}
+
+QString PostRecord::getReplyRootUri() const
+{
+    const auto& ref = getReplyRootRef();
+    return ref ? ref->mUri : QString();
+}
+
 BasicProfile PostRecord::getReplyToAuthor() const
 {
     const auto replyToRef = getReplyToRef();

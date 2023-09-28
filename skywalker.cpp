@@ -423,6 +423,7 @@ void Skywalker::setGetPostThreadInProgress(bool inProgress)
 void Skywalker::setGetNotificationsInProgress(bool inProgress)
 {
     mGetNotificationsInProgress = inProgress;
+    emit getNotificationsInProgressChanged();
 }
 
 void Skywalker::setAvatarUrl(const QString& avatarUrl)

@@ -12,6 +12,7 @@ ListView {
     property bool inTopOvershoot: false
     property bool gettingNewPosts: false
     property bool inBottomOvershoot: false
+    property bool gettingNextPage: false
 
     id: timelineView
     spacing: 0
@@ -201,6 +202,7 @@ ListView {
 
         if (verticalOvershoot > 0) {
             if (!inBottomOvershoot && !skywalker.getTimelineInProgress) {
+                gettingNextPage = true
                 skywalker.getTimelineNextPage()
             }
 
@@ -215,6 +217,13 @@ ListView {
         y: parent.y + guiSettings.headerHeight
         anchors.horizontalCenter: parent.horizontalCenter
         running: gettingNewPosts
+    }
+
+    BusyIndicator {
+        id: busyBottomIndicator
+        y: parent.y + parent.height - height - guiSettings.footerHeight
+        anchors.horizontalCenter: parent.horizontalCenter
+        running: gettingNextPage
     }
 
     GuiSettings {
@@ -261,6 +270,7 @@ ListView {
         skywalker.onGetTimeLineInProgressChanged.connect(() => {
                 if (!skywalker.getTimelineInProgress)
                     gettingNewPosts = false
+                    gettingNextPage = false
             })
     }
 }

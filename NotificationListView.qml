@@ -9,7 +9,9 @@ ListView {
     property int margin: 8
 
     property bool inTopOvershoot: false
+    property bool gettingNewNotifications: false
     property bool inBottomOvershoot: false
+    property bool gettingNextPage: false
 
     signal closed
 
@@ -51,7 +53,54 @@ ListView {
         viewWidth: notificationListView.width
     }
 
+    onVerticalOvershootChanged: {
+        if (verticalOvershoot < 0)  {
+            if (!inTopOvershoot && !skywalker.getNotificationsInProgress) {
+                gettingNewNotifications = true
+                skywalker.getNotifications(50)
+            }
+
+            inTopOvershoot = true
+        } else {
+            inTopOvershoot = false
+        }
+
+        if (verticalOvershoot > 0) {
+            if (!inBottomOvershoot && !skywalker.getNotificationsInProgress) {
+                gettingNextPage = true
+                skywalker.getNotificationsNextPage()
+            }
+
+            inBottomOvershoot = true;
+        } else {
+            inBottomOvershoot = false;
+        }
+    }
+
+    BusyIndicator {
+        id: busyTopIndicator
+        y: parent.y + guiSettings.headerHeight
+        anchors.horizontalCenter: parent.horizontalCenter
+        running: gettingNewNotifications
+    }
+
+    BusyIndicator {
+        id: busyBottomIndicator
+        y: parent.y + parent.height - height - guiSettings.footerHeight
+        anchors.horizontalCenter: parent.horizontalCenter
+        running: gettingNextPage
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onCompleted: {
+        skywalker.onGetNotificationsInProgressChanged.connect(() => {
+            if (!skywalker.getNotificationsInProgress) {
+                gettingNewNotifications = false
+                gettingNextPage = false
+            }
+        })
     }
 }

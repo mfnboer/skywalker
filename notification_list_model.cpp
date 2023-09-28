@@ -120,14 +120,6 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
         }
         case Notification::Reason::REPLY:
         case Notification::Reason::MENTION:
-            if (notification.getPostRecord().hasEmbeddedContent())
-            {
-                const auto& uri = notification.getUri();
-
-                if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
-                    uris.insert(uri);
-            }
-            break;
         case Notification::Reason::QUOTE:
         {
             const auto& uri = notification.getUri();
@@ -160,7 +152,7 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
         uriList.resize(bsky.MAX_URIS_GET_POSTS);
 
         for (const auto& uri : uriList)
-            uris.equal_range(uri);
+            uris.erase(uri);
     }
     else
     {
@@ -208,6 +200,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return static_cast<QEnums::NotificationReason>(int(notification.getReason()));
     case Role::NotificationReasonSubjectUri:
         return notification.getReasonSubjectUri();
+    case Role::NotificationReasonSubjectCid:
+        return notification.getNotificationPost(mPostCache).getCid();
     case Role::NotificationReasonPostText:
         return notification.getReasonPost(mPostCache).getFormattedText();
     case Role::NotificationReasonPostImages:
@@ -247,8 +241,15 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.isRead();
     case Role::NotificationPostUri:
         return notification.getPostUri();
+    case Role::NotificationCid:
+        return notification.getCid();
     case Role::NotificationPostText:
         return notification.getPostRecord().getFormattedText();
+    case Role::NotificationPostTimestamp:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        return post.isNotFound() ? notification.getTimestamp() : post.getTimelineTimestamp();
+    }
     case Role::NotificationPostImages:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
@@ -276,6 +277,22 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         auto record = post.getRecordWithMediaView();
         return record ? QVariant::fromValue(*record) : QVariant();
     }
+    case Role::NotificationPostReplyRootUri:
+        return notification.getPostRecord().getReplyRootUri();
+    case Role::NotificationPostReplyRootCid:
+        return notification.getPostRecord().getReplyRootCid();
+    case Role::NotificationPostRepostUri:
+        return notification.getNotificationPost(mPostCache).getRepostUri();
+    case Role::NotificationPostLikeUri:
+        return notification.getNotificationPost(mPostCache).getLikeUri();
+    case Role::NotificationPostRepostCount:
+        return notification.getNotificationPost(mPostCache).getRepostCount();
+    case Role::NotificationPostLikeCount:
+        return notification.getNotificationPost(mPostCache).getLikeCount();
+    case Role::NotificationPostReplyCount:
+        return notification.getNotificationPost(mPostCache).getReplyCount();
+    case Role::NotificationPostNotFound:
+        return notification.getNotificationPost(mPostCache).isNotFound();
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::EndOfList:
@@ -293,6 +310,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationOtherAuthors), "notificationOtherAuthors" },
         { int(Role::NotificationReason), "notificationReason" },
         { int(Role::NotificationReasonSubjectUri), "notificationReasonSubjectUri" },
+        { int(Role::NotificationReasonSubjectCid), "notificationReasonSubjectCid" },
         { int(Role::NotificationReasonPostText), "notificationReasonPostText" },
         { int(Role::NotificationReasonPostImages), "notificationReasonPostImages" },
         { int(Role::NotificationReasonPostTimestamp), "notificationReasonPostTimestamp" },
@@ -303,11 +321,21 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
         { int(Role::NotificationPostUri), "notificationPostUri" },
+        { int(Role::NotificationCid), "notificationCid" },
         { int(Role::NotificationPostText), "notificationPostText" },
+        { int(Role::NotificationPostTimestamp), "notificationPostTimestamp" },
         { int(Role::NotificationPostImages), "notificationPostImages" },
         { int(Role::NotificationPostExternal), "notificationPostExternal" },
         { int(Role::NotificationPostRecord), "notificationPostRecord" },
         { int(Role::NotificationPostRecordWithMedia), "notificationPostRecordWithMedia" },
+        { int(Role::NotificationPostReplyRootUri), "notificationPostReplyRootUri" },
+        { int(Role::NotificationPostReplyRootCid), "notificationPostReplyRootCid" },
+        { int(Role::NotificationPostRepostUri), "notificationPostRepostUri" },
+        { int(Role::NotificationPostLikeUri), "notificationPostLikeUri" },
+        { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
+        { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
+        { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
+        { int(Role::NotificationPostNotFound), "notificationPostNotFound" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::EndOfList), "endOfList" }
     };

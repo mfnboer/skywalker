@@ -17,6 +17,8 @@ public:
     QString getFormattedText() const;
     ATProto::ComATProtoRepo::StrongRef::Ptr getReplyToRef() const;
     ATProto::ComATProtoRepo::StrongRef::Ptr getReplyRootRef() const;
+    QString getReplyRootCid() const;
+    QString getReplyRootUri() const;
     BasicProfile getReplyToAuthor() const;
     bool hasEmbeddedContent() const;
 

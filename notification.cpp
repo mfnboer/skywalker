@@ -16,6 +16,11 @@ QString Notification::getUri() const
     return mNotification ? mNotification->mUri : QString();
 }
 
+QString Notification::getCid() const
+{
+    return mNotification ? mNotification->mCid : QString();
+}
+
 Notification::Reason Notification::getReason() const
 {
     return mNotification ? mNotification->mReason : Reason::UNKNOWN;
@@ -101,7 +106,7 @@ QString Notification::getPostUri() const
         break;
     }
 
-    qWarning() << "Invalid reasone:" << (int)getReason();
+    qWarning() << "Invalid reason:" << (int)getReason();
     return {};
 }
 

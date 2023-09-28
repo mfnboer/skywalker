@@ -8,6 +8,8 @@ Rectangle {
     property string iconColor
     property var onClicked
 
+    signal clicked()
+
     id: control
     height: statText.height
     color: "transparent"
@@ -30,9 +32,6 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            if (control.onClicked)
-                control.onClicked()
-        }
+        onClicked: control.clicked()
     }
 }

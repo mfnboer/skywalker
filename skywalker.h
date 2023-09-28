@@ -18,6 +18,7 @@ class Skywalker : public QObject
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(const NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
+    Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     QML_ELEMENT
 public:
@@ -48,6 +49,7 @@ public:
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
     void setGetNotificationsInProgress(bool inProgress);
+    bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
     const QString& getAvatarUrl() const { return mAvatarUrl; }
     void setAvatarUrl(const QString& avatarUrl);
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
@@ -62,6 +64,7 @@ signals:
     void getUserProfileOK();
     void getUserProfileFailed();
     void getTimeLineInProgressChanged();
+    void getNotificationsInProgressChanged();
     void sessionExpired(QString error);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);

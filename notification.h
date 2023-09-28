@@ -18,6 +18,7 @@ public:
     explicit Notification(const ATProto::AppBskyNotification::Notification* notification);
 
     QString getUri() const;
+    QString getCid() const;
     Reason getReason() const;
     QString getReasonSubjectUri() const;
     BasicProfile getAuthor() const;
