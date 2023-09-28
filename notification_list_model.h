@@ -87,7 +87,12 @@ private:
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
     QString mCursor;
 
+    // This cache must be emptied when the notifications are refreshed, because
+    // the counts (like, reposts, replies) will change over time and are displayed.
     PostCache mPostCache;
+
+    // Posts in this cache can be kept for a long time
+    PostCache mReasonPostCache;
 };
 
 }

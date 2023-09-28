@@ -14,18 +14,19 @@ public:
     {
     public:
         Entry() = default;
-        Entry(ATProto::AppBskyFeed::PostView::Ptr rawPostView, const Post& post);
+        Entry(const ATProto::AppBskyFeed::PostView::SharedPtr& rawPostView, const Post& post);
 
         const Post& getPost() const { return mPost; }
 
     private:
-        ATProto::AppBskyFeed::PostView::Ptr mRawPostView;
+        ATProto::AppBskyFeed::PostView::SharedPtr mRawPostView;
         Post mPost;
     };
 
     PostCache();
 
-    void put(ATProto::AppBskyFeed::PostView::Ptr rawPostView, const Post& post);
+    void clear();
+    void put(const ATProto::AppBskyFeed::PostView::SharedPtr& rawPostView, const Post& post);
     const Post* get(const QString& uri) const;
     bool contains(const QString& uri) const;
 

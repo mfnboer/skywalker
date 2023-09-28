@@ -18,6 +18,7 @@ void NotificationListModel::clear()
     beginRemoveRows({}, 0, mList.size() - 1);
     mList.clear();
     mCursor.clear();
+    mPostCache.clear();
     clearLocalChanges();
     endRemoveRows();
 }
@@ -113,7 +114,7 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
         {
             const auto& uri = notification.getReasonSubjectUri();
 
-            if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
+            if (ATProto::ATUri(uri).isValid() && !mReasonPostCache.contains(uri))
                 uris.insert(uri);
 
             break;
@@ -164,8 +165,12 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
         {
             for (auto& postView : postViewList)
             {
+                // Store post view in both caches. The post cache will be cleared
+                // on refresh.
                 Post post(postView.get(), -1);
-                mPostCache.put(std::move(postView), post);
+                ATProto::AppBskyFeed::PostView::SharedPtr sharedRaw(postView.release());
+                mPostCache.put(sharedRaw, post);
+                mReasonPostCache.put(sharedRaw, post);
             }
 
             getPosts(bsky, uris, cb);
@@ -202,12 +207,12 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationReasonSubjectUri:
         return notification.getReasonSubjectUri();
     case Role::NotificationReasonSubjectCid:
-        return notification.getNotificationPost(mPostCache).getCid();
+        return notification.getReasonPost(mReasonPostCache).getCid();
     case Role::NotificationReasonPostText:
-        return notification.getReasonPost(mPostCache).getFormattedText();
+        return notification.getReasonPost(mReasonPostCache).getFormattedText();
     case Role::NotificationReasonPostImages:
     {
-        const auto& post = notification.getReasonPost(mPostCache);
+        const auto& post = notification.getReasonPost(mReasonPostCache);
         QList<ImageView> images;
         for (const auto& img : post.getImages())
             images.push_back(*img);
@@ -216,26 +221,26 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     }
     case Role::NotificationReasonPostExternal:
     {
-        const auto& post = notification.getReasonPost(mPostCache);
+        const auto& post = notification.getReasonPost(mReasonPostCache);
         auto external = post.getExternalView();
         return external ? QVariant::fromValue(*external) : QVariant();
     }
     case Role::NotificationReasonPostRecord:
     {
-        const auto& post = notification.getReasonPost(mPostCache);
+        const auto& post = notification.getReasonPost(mReasonPostCache);
         auto record = post.getRecordView();
         return record ? QVariant::fromValue(*record) : QVariant();
     }
     case Role::NotificationReasonPostRecordWithMedia:
     {
-        const auto& post = notification.getReasonPost(mPostCache);
+        const auto& post = notification.getReasonPost(mReasonPostCache);
         auto record = post.getRecordWithMediaView();
         return record ? QVariant::fromValue(*record) : QVariant();
     }
     case Role::NotificationReasonPostTimestamp:
-        return notification.getReasonPost(mPostCache).getTimelineTimestamp();
+        return notification.getReasonPost(mReasonPostCache).getTimelineTimestamp();
     case Role::NotificationReasonPostNotFound:
-        return notification.getReasonPost(mPostCache).isNotFound();
+        return notification.getReasonPost(mReasonPostCache).isNotFound();
     case Role::NotificationTimestamp:
         return notification.getTimestamp();
     case Role::NotificationIsRead:

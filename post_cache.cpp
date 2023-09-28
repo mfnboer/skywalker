@@ -4,8 +4,8 @@
 
 namespace Skywalker {
 
-PostCache::Entry::Entry(ATProto::AppBskyFeed::PostView::Ptr rawPostView, const Post& post) :
-    mRawPostView(std::move(rawPostView)),
+PostCache::Entry::Entry(const ATProto::AppBskyFeed::PostView::SharedPtr& rawPostView, const Post& post) :
+    mRawPostView(rawPostView),
     mPost(post)
 {
     Q_ASSERT(mRawPostView);
@@ -15,9 +15,14 @@ PostCache::PostCache() :
     mCache(500)
 {}
 
-void PostCache::put(ATProto::AppBskyFeed::PostView::Ptr rawPostView, const Post& post)
+void PostCache::clear()
 {
-    auto* entry = new Entry(std::move(rawPostView), post);
+    mCache.clear();
+}
+
+void PostCache::put(const ATProto::AppBskyFeed::PostView::SharedPtr& rawPostView, const Post& post)
+{
+    auto* entry = new Entry(rawPostView, post);
     mCache.insert(post.getUri(), entry);
     qDebug() << "Cached:" << post.getUri() << "size:" << mCache.size();
 }
