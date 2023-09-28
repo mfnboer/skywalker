@@ -267,6 +267,11 @@ ApplicationWindow {
         currentStack().push(view)
     }
 
+    function viewTimeline() {
+        unwindStack()
+        stackLayout.currentIndex = 0
+    }
+
     function viewNotifications() {
         unwindStack()
         stackLayout.currentIndex = 1
@@ -298,12 +303,13 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        let component = Qt.createComponent("TimelineView.qml")
-        let view = component.createObject(root, { skywalker: skywalker })
-        timelineStack.push(view)
+        let timelineComponent = Qt.createComponent("TimelineView.qml")
+        let timelineView = timelineComponent.createObject(root, { skywalker: skywalker })
+        timelineStack.push(timelineView)
 
         let notificationsComponent = Qt.createComponent("NotificationListView.qml")
-        let notificationsView = notificationsComponent.createObject(root, { skywalker: skywalker })
+        let notificationsView = notificationsComponent.createObject(root,
+                { skywalker: skywalker, timeline: timelineView })
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
         notificationStack.push(notificationsView)
 

@@ -6,6 +6,7 @@ import skywalker
 ListView {
 
     required property var skywalker
+    required property var timeline
     property int margin: 8
 
     property bool inTopOvershoot: false
@@ -26,20 +27,15 @@ ListView {
         z: guiSettings.headerZLevel
         color: guiSettings.headerColor
 
-        RowLayout
-        {
+        RowLayout {
             id: headerRow
+            width: parent.width
+            height: guiSettings.headerHeight
 
-            SvgButton {
-                id: backButton
-                iconColor: "white"
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                onClicked: notificationListView.closed()
-            }
             Text {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
+                leftPadding: 10
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
                 color: "white"
@@ -48,6 +44,14 @@ ListView {
         }
     }
     headerPositioning: ListView.OverlayHeader
+
+    footer: SkyFooter {
+        id: viewFooter
+        timeline: notificationListView.timeline
+        onHomeClicked: root.viewTimeline()
+        onNotificationsClicked: positionViewAtBeginning()
+    }
+    footerPositioning: ListView.OverlayFooter
 
     delegate: NotificationViewDelegate {
         viewWidth: notificationListView.width

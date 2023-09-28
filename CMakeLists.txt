@@ -107,6 +107,7 @@ qt_add_qml_module(appskywalker
         SOURCES post_cache.h
         SOURCES post_cache.cpp
         QML_FILES PostStats.qml
+        QML_FILES SkyFooter.qml
 )
 
 set_target_properties(appskywalker PROPERTIES
