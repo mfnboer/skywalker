@@ -59,6 +59,7 @@ ListView {
     footer: SkyFooter {
         id: viewFooter
         timeline: timelineView
+        homeActive: true
         onHomeClicked: moveToPost(0)
         onNotificationsClicked: root.viewNotifications()
     }

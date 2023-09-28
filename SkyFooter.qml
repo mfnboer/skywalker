@@ -5,6 +5,8 @@ import skywalker
 
 Rectangle {
     required property var timeline
+    property bool homeActive: false
+    property bool notificationsActive: false
 
     signal homeClicked()
     signal notificationsClicked()
@@ -14,81 +16,91 @@ Rectangle {
     z: guiSettings.footerZLevel
     color: guiSettings.footerColor
 
-    Row {
+    RowLayout {
         width: parent.width
+        height: parent.height
 
-        SvgImage {
-            id: homeButton
-            y: height + 5
-            width: height
-            height: guiSettings.footerHeight - 10
+
+        Rectangle {
+            height: parent.height
             Layout.fillWidth: true
-            color: guiSettings.textColor
-            svg: svgOutline.home
+            color: homeActive ? "transparent" : "lightgrey"
 
-            Rectangle {
-                x: parent.width - 17
-                y: -parent.y + 6
-                width: Math.max(unreadCountText.width + 10, height)
-                height: 20
-                radius: 8
-                color: guiSettings.badgeColor
-                border.color: guiSettings.badgeBorderColor
-                border.width: 2
-                visible: timeline.unreadPosts > 0
+            SvgImage {
+                id: homeButton
+                y: height + 5
+                width: height
+                height: parent.height - 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: guiSettings.textColor
+                svg: svgOutline.home
 
-                Text {
-                    id: unreadCountText
-                    anchors.centerIn: parent
-                    font.bold: true
-                    font.pointSize: guiSettings.scaledFont(6/8)
-                    color: guiSettings.badgeTextColor
-                    text: timeline.unreadPosts
+                Rectangle {
+                    x: parent.width - 17
+                    y: -parent.y + 6
+                    width: Math.max(unreadCountText.width + 10, height)
+                    height: 20
+                    radius: 8
+                    color: guiSettings.badgeColor
+                    border.color: homeActive ? guiSettings.badgeBorderColor : "lightgrey"
+                    border.width: 2
+                    visible: timeline.unreadPosts > 0
+
+                    Text {
+                        id: unreadCountText
+                        anchors.centerIn: parent
+                        font.bold: true
+                        font.pointSize: guiSettings.scaledFont(6/8)
+                        color: guiSettings.badgeTextColor
+                        text: timeline.unreadPosts
+                    }
                 }
             }
 
             MouseArea {
-                y: -parent.y
-                width: parent.width
-                height: parent.height
+                anchors.fill: parent
                 onClicked: homeClicked()
             }
         }
 
-        SvgImage {
-            id: notificationsButton
-            y: height + 5
-            width: height
-            height: guiSettings.footerHeight - 10
+        Rectangle {
+            height: parent.height
             Layout.fillWidth: true
-            color: guiSettings.textColor
-            svg: svgOutline.notifications
+            color: notificationsActive ? "transparent" : "lightgrey"
 
-            Rectangle {
-                x: parent.width - 17
-                y: -parent.y + 6
-                width: Math.max(unreadNotificationsText.width + 10, height)
-                height: 20
-                radius: 8
-                color: guiSettings.badgeColor
-                border.color: guiSettings.badgeBorderColor
-                border.width: 2
-                visible: false // TODO
+            SvgImage {
+                id: notificationsButton
+                y: height + 5
+                width: height
+                height: parent.height - 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: guiSettings.textColor
+                svg: svgOutline.notifications
 
-                Text {
-                    id: unreadNotificationsText
-                    anchors.centerIn: parent
-                    font.bold: true
-                    font.pointSize: guiSettings.scaledFont(6/8)
-                    color: guiSettings.badgeTextColor
-                    text: "0" // TODO
+                Rectangle {
+                    x: parent.width - 17
+                    y: -parent.y + 6
+                    width: Math.max(unreadNotificationsText.width + 10, height)
+                    height: 20
+                    radius: 8
+                    color: guiSettings.badgeColor
+                    border.color: guiSettings.badgeBorderColor
+                    border.width: 2
+                    visible: false // TODO
+
+                    Text {
+                        id: unreadNotificationsText
+                        anchors.centerIn: parent
+                        font.bold: true
+                        font.pointSize: guiSettings.scaledFont(6/8)
+                        color: guiSettings.badgeTextColor
+                        text: "0" // TODO
+                    }
                 }
             }
 
             MouseArea {
-                y: -parent.y
-                width: parent.width
-                height: parent.height
+                anchors.fill: parent
                 onClicked: notificationsClicked()
             }
         }
