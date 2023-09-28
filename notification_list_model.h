@@ -55,7 +55,8 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void clear();
-    void addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications, ATProto::Client& bsky);
+    void addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
+                          ATProto::Client& bsky, bool clearFirst = false);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
@@ -75,7 +76,7 @@ private:
     using NotificationList = std::deque<Notification>;
 
     NotificationList createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
-    void addNotificationList(const NotificationList& list);
+    void addNotificationList(const NotificationList& list, bool clearFirst);
 
     // Get the posts for LIKE, FOLLOW and REPOST notifications
     void getPosts(ATProto::Client& bsky, const NotificationList& list, const std::function<void()>& cb);

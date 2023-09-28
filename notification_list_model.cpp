@@ -23,7 +23,8 @@ void NotificationListModel::clear()
     endRemoveRows();
 }
 
-void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications, ATProto::Client& bsky)
+void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
+                                             ATProto::Client& bsky, bool clearFirst)
 {
     qDebug() << "Add notifications:" << notifications->mNotifications.size();
 
@@ -34,19 +35,26 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
     if (notifications->mNotifications.empty())
     {
         qWarning() << "No notifications!";
+
+        if (clearFirst)
+            clear();
+
         return;
     }
 
     const auto notificationList = createNotificationList(notifications->mNotifications);
     mRawNotifications.push_back(std::move(notifications));
 
-    getPosts(bsky, notificationList, [this, notificationList]{
-        addNotificationList(notificationList);
+    getPosts(bsky, notificationList, [this, notificationList, clearFirst]{
+        addNotificationList(notificationList, clearFirst);
     });
 }
 
-void NotificationListModel::addNotificationList(const NotificationList& list)
+void NotificationListModel::addNotificationList(const NotificationList& list, bool clearFirst)
 {
+    if (clearFirst)
+        clear();
+
     const size_t newRowCount = mList.size() + list.size();
 
     beginInsertRows({}, mList.size(), newRowCount - 1);
