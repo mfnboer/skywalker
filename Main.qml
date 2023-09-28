@@ -21,10 +21,9 @@ ApplicationWindow {
             event.accepted = false
             popStack()
         }
-        else {
-            // Do not close the app as the back  button does
-            // not terminate it.
-            hide()
+        else if (stackLayout.currentIndex > 0) {
+            event.accepted = false
+            viewTimeline()
         }
     }
 
@@ -276,8 +275,16 @@ ApplicationWindow {
         unwindStack()
         stackLayout.currentIndex = 1
 
-        if (!skywalker.notificationListModel.notificationsLoaded())
-            skywalker.getNotifications(50)
+        let loadCount = 25
+        if (skywalker.unreadNotificationCount > 0) {
+            if (skywalker.unreadNotificationCount > loadCount)
+                loadCount = Math.min(skywalker.unreadNotificationCount + 5, 100)
+
+            skywalker.getNotifications(loadCount, true)
+        }
+        else if (!skywalker.notificationListModel.notificationsLoaded()) {
+            skywalker.getNotifications(loadCount)
+        }
     }
 
     function getTimelineView() {

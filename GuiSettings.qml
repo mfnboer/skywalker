@@ -27,7 +27,7 @@ Item {
 
     function durationToString(duration) {
         if (duration < 59.5)
-            return duration + qsTr("s", "seconds")
+            return Math.round(duration) + qsTr("s", "seconds")
 
         duration = duration / 60
         if (duration < 59.5)

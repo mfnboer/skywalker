@@ -62,7 +62,7 @@ ListView {
         if (verticalOvershoot < 0)  {
             if (!inTopOvershoot && !skywalker.getNotificationsInProgress) {
                 gettingNewNotifications = true
-                skywalker.getNotifications(50)
+                skywalker.getNotifications(25, true)
             }
 
             inTopOvershoot = true

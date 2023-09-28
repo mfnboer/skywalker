@@ -20,7 +20,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
-    Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
+    Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     QML_ELEMENT
 public:
     explicit Skywalker(QObject* parent = nullptr);
@@ -39,7 +39,7 @@ public:
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updatePostIndexTimestamps();
-    Q_INVOKABLE void getNotifications(int limit, const QString& cursor = {});
+    Q_INVOKABLE void getNotifications(int limit, bool updateSeen = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage();
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);

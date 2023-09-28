@@ -550,7 +550,7 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
         update(model.get());
 }
 
-void Skywalker::getNotifications(int limit, const QString& cursor)
+void Skywalker::getNotifications(int limit, bool updateSeen, const QString& cursor)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get notifications:" << cursor;
@@ -574,7 +574,11 @@ void Skywalker::getNotifications(int limit, const QString& cursor)
             qInfo() << "getNotifications FAILED:" << error;
             setGetNotificationsInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
-        });
+        },
+        updateSeen);
+
+    if (updateSeen)
+        setUnreadNotificationCount(0);
 }
 
 void Skywalker::getNotificationsNextPage()
@@ -586,7 +590,7 @@ void Skywalker::getNotificationsNextPage()
         return;
     }
 
-    getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, cursor);
+    getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, cursor);
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
