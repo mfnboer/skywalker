@@ -46,14 +46,24 @@ ListView {
         viewWidth: view.width
     }
 
+    Timer {
+        id: syncTimer
+        interval: 100
+        onTriggered: positionViewAtIndex(postEntryIndex, ListView.Center)
+    }
+
     GuiSettings {
         id: guiSettings
     }
 
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
-        positionViewAtIndex(postEntryIndex, ListView.Center)
-        flick(0, 0.1) // HACK: this seems to make the entry move into the visible view
+
+        // As not all entries have the same height, positioning at an index
+        // is fickle. By moving to the end and then wait a bit before positioning
+        // at the index entry, it seems to work.
+        positionViewAtEnd()
+        syncTimer.start()
     }
     Component.onDestruction: skywalker.removePostThreadModel(modelId)
 }
