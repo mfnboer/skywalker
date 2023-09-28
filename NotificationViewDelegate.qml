@@ -244,6 +244,7 @@ Rectangle {
                 postExternal: notificationReasonPostExternal
                 postRecord: notificationReasonPostRecord
                 postRecordWithMedia: notificationReasonPostRecordWithMedia
+                visible: showPostForAggregatableReason()
             }
         }
 
@@ -293,6 +294,12 @@ Rectangle {
     function isAggregatableReason() {
         let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
                        QEnums.NOTIFICATION_REASON_FOLLOW,
+                       QEnums.NOTIFICATION_REASON_REPOST]
+        return reasons.includes(notificationReason)
+    }
+
+    function showPostForAggregatableReason() {
+        let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
                        QEnums.NOTIFICATION_REASON_REPOST]
         return reasons.includes(notificationReason)
     }

@@ -281,7 +281,11 @@ ApplicationWindow {
     }
 
     function getTimelineView() {
-        return currentStack().get(0)
+        return timelineStack.get(0)
+    }
+
+    function getNotificationsView() {
+        return notificationStack.get(0)
     }
 
     function currentStack() {

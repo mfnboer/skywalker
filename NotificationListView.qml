@@ -46,8 +46,8 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     footer: SkyFooter {
-        id: viewFooter
         timeline: notificationListView.timeline
+        skywalker: notificationListView.skywalker
         notificationsActive: true
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: positionViewAtBeginning()

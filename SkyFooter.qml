@@ -5,8 +5,10 @@ import skywalker
 
 Rectangle {
     required property var timeline
+    required property var skywalker
     property bool homeActive: false
     property bool notificationsActive: false
+    property int unreadNotifications: 0
 
     signal homeClicked()
     signal notificationsClicked()
@@ -19,7 +21,6 @@ Rectangle {
     RowLayout {
         width: parent.width
         height: parent.height
-
 
         Rectangle {
             height: parent.height
@@ -84,9 +85,9 @@ Rectangle {
                     height: 20
                     radius: 8
                     color: guiSettings.badgeColor
-                    border.color: guiSettings.badgeBorderColor
+                    border.color: notificationsActive ? guiSettings.badgeBorderColor : "lightgrey"
                     border.width: 2
-                    visible: false // TODO
+                    visible: skywalker.unreadNotificationCount > 0
 
                     Text {
                         id: unreadNotificationsText
@@ -94,7 +95,7 @@ Rectangle {
                         font.bold: true
                         font.pointSize: guiSettings.scaledFont(6/8)
                         color: guiSettings.badgeTextColor
-                        text: "0" // TODO
+                        text: skywalker.unreadNotificationCount
                     }
                 }
             }

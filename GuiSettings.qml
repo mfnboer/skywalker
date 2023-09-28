@@ -18,7 +18,7 @@ Item {
     readonly property string footerColor: "white"
     readonly property string headerColor: "black"
     readonly property string linkColor: "blue"
-    readonly property string postHighLightColor: "aqua"
+    readonly property string postHighLightColor: "aliceblue"
     readonly property string textColor: Material.foreground
 
     function scaledFont(scaleFactor) {

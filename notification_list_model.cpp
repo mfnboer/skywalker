@@ -109,7 +109,6 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
         switch (notification.getReason())
         {
         case Notification::Reason::LIKE:
-        case Notification::Reason::FOLLOW:
         case Notification::Reason::REPOST:
         {
             const auto& uri = notification.getReasonSubjectUri();

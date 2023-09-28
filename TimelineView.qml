@@ -57,8 +57,8 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     footer: SkyFooter {
-        id: viewFooter
         timeline: timelineView
+        skywalker: timelineView.skywalker
         homeActive: true
         onHomeClicked: moveToPost(0)
         onNotificationsClicked: root.viewNotifications()

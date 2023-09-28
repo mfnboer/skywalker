@@ -9,6 +9,7 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
+static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 29s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
@@ -20,6 +21,7 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineModel(mUserDid, mUserFollows, this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
+    connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
 }
 
 Skywalker::~Skywalker()
@@ -38,7 +40,7 @@ void Skywalker::login(const QString user, QString password, const QString host)
             saveSession(host, *mBsky->getSession());
             mUserDid = mBsky->getSession()->mDid;
             emit loginOk();
-            startRefreshTimer();
+            startRefreshTimers();
         },
         [this, user](const QString& error){
             qInfo() << "Login" << user << "failed:" << error;
@@ -69,7 +71,7 @@ void Skywalker::resumeSession()
             mUserDid = mBsky->getSession()->mDid;
             emit resumeSessionOk();
             refreshSession();
-            startRefreshTimer();
+            startRefreshTimers();
         },
         [this](const QString& error){
             qInfo() << "Session could not be resumed:" << error;
@@ -77,16 +79,19 @@ void Skywalker::resumeSession()
         });
 }
 
-void Skywalker::startRefreshTimer()
+void Skywalker::startRefreshTimers()
 {
-    qInfo() << "Refresh timer started";
+    qInfo() << "Refresh timers started";
     mRefreshTimer.start(SESSION_REFRESH_INTERVAL);
+    refreshNotificationCount();
+    mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
 }
 
-void Skywalker::stopRefreshTimer()
+void Skywalker::stopRefreshTimers()
 {
-    qInfo() << "Refresh timer stopped";
+    qInfo() << "Refresh timers stopped";
     mRefreshTimer.stop();
+    mRefreshNotificationTimer.stop();
 }
 
 void Skywalker::refreshSession()
@@ -98,7 +103,7 @@ void Skywalker::refreshSession()
     if (!session)
     {
         qWarning() << "No session to refresh.";
-        stopRefreshTimer();
+        stopRefreshTimers();
         return;
     }
 
@@ -110,7 +115,22 @@ void Skywalker::refreshSession()
         [this](const QString& error){
             qDebug() << "Session could not be refreshed:" << error;
             emit sessionExpired(error);
-            stopRefreshTimer();
+            stopRefreshTimers();
+        });
+}
+
+void Skywalker::refreshNotificationCount()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Refresh notification count";
+
+    mBsky->getUnreadNotificationCount({},
+        [this](int unread){
+            qDebug() << "Unread notification count:" << unread;
+            setUnreadNotificationCount(unread);
+        },
+        [this](const QString& error){
+            qWarning() << "Failed to get unread notification count";
         });
 }
 
@@ -432,6 +452,11 @@ void Skywalker::setAvatarUrl(const QString& avatarUrl)
     emit avatarUrlChanged();
 }
 
+void Skywalker::setUnreadNotificationCount(int unread)
+{
+    mUnreadNotificationCount = unread;
+    emit unreadNotificationCountChanged();
+}
 
 // NOTE: indices can be -1 if the UI cannot determine the index
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)

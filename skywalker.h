@@ -20,6 +20,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
+    Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     QML_ELEMENT
 public:
     explicit Skywalker(QObject* parent = nullptr);
@@ -52,6 +53,8 @@ public:
     bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
     const QString& getAvatarUrl() const { return mAvatarUrl; }
     void setAvatarUrl(const QString& avatarUrl);
+    int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
+    void setUnreadNotificationCount(int unread);
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
 
 signals:
@@ -69,15 +72,17 @@ signals:
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);
     void avatarUrlChanged();
+    void unreadNotificationCountChanged();
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
-    void startRefreshTimer();
-    void stopRefreshTimer();
+    void startRefreshTimers();
+    void stopRefreshTimers();
     void refreshSession();
+    void refreshNotificationCount();
     void saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session);
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
@@ -94,12 +99,14 @@ private:
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
     QTimer mRefreshTimer;
+    QTimer mRefreshNotificationTimer;
 
     std::unordered_map<int, PostThreadModel::Ptr> mPostThreadModels;
     int mNextPostThreadModelId = 1;
 
     NotificationListModel mNotificationListModel;
     bool mGetNotificationsInProgress = false;
+    int mUnreadNotificationCount = 0;
 
     QSettings mSettings;
     bool mDebugLogging = false;
