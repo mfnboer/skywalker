@@ -4,20 +4,51 @@
 
 namespace Skywalker {
 
-const LocalPostModelChanges::Change* LocalPostModelChanges::getChange(const QString& cid) const
+const LocalPostModelChanges::Change* LocalPostModelChanges::getLocalChange(const QString& cid) const
 {
     auto it = mChanges.find(cid);
     return it != mChanges.end() ? &it->second : nullptr;
 }
 
-LocalPostModelChanges::Change& LocalPostModelChanges::getChangeForUpdate(const QString& cid)
-{
-    return mChanges[cid];
-}
-
-void LocalPostModelChanges::clear()
+void LocalPostModelChanges::clearLocalChanges()
 {
     mChanges.clear();
+}
+
+void LocalPostModelChanges::updatePostIndexTimestamps()
+{
+    // No real changes, just signal change to refresh
+    postIndexTimestampChanged();
+}
+
+void LocalPostModelChanges::updateReplyCountDelta(const QString& cid, int delta)
+{
+    mChanges[cid].mReplyCountDelta += delta;
+    replyCountChanged();
+}
+
+void LocalPostModelChanges::updateRepostCountDelta(const QString& cid, int delta)
+{
+    mChanges[cid].mRepostCountDelta += delta;
+    repostCountChanged();
+}
+
+void LocalPostModelChanges::updateRepostUri(const QString& cid, const QString& repostUri)
+{
+    mChanges[cid].mRepostUri = repostUri;
+    repostUriChanged();
+}
+
+void LocalPostModelChanges::updateLikeCountDelta(const QString& cid, int delta)
+{
+    mChanges[cid].mLikeCountDelta += delta;
+    likeCountChanged();
+}
+
+void LocalPostModelChanges::updateLikeUri(const QString& cid, const QString& likeUri)
+{
+    mChanges[cid].mLikeUri = likeUri;
+    likeUriChanged();
 }
 
 }

@@ -41,7 +41,7 @@ public:
     Q_INVOKABLE void getNotifications(int limit, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage();
 
-    void makeLocalModelChange(const std::function<void(AbstractPostFeedModel*)>& update);
+    void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     const NotificationListModel* getNotificationListModel() const { return &mNotificationListModel; }

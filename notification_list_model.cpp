@@ -18,6 +18,7 @@ void NotificationListModel::clear()
     beginRemoveRows({}, 0, mList.size() - 1);
     mList.clear();
     mCursor.clear();
+    clearLocalChanges();
     endRemoveRows();
 }
 
@@ -189,6 +190,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& notification = mList[index.row()];
+    const auto* change = getLocalChange(notification.getCid());
 
     switch (Role(role))
     {
@@ -282,15 +284,15 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostReplyRootCid:
         return notification.getPostRecord().getReplyRootCid();
     case Role::NotificationPostRepostUri:
-        return notification.getNotificationPost(mPostCache).getRepostUri();
+        return change && change->mRepostUri ? *change->mRepostUri : notification.getNotificationPost(mPostCache).getRepostUri();
     case Role::NotificationPostLikeUri:
-        return notification.getNotificationPost(mPostCache).getLikeUri();
+        return change && change->mLikeUri ? *change->mLikeUri : notification.getNotificationPost(mPostCache).getLikeUri();
     case Role::NotificationPostRepostCount:
-        return notification.getNotificationPost(mPostCache).getRepostCount();
+        return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:
-        return notification.getNotificationPost(mPostCache).getLikeCount();
+        return notification.getNotificationPost(mPostCache).getLikeCount() + (change ? change->mLikeCountDelta : 0);
     case Role::NotificationPostReplyCount:
-        return notification.getNotificationPost(mPostCache).getReplyCount();
+        return notification.getNotificationPost(mPostCache).getReplyCount() + (change ? change->mReplyCountDelta : 0);
     case Role::NotificationPostNotFound:
         return notification.getNotificationPost(mPostCache).isNotFound();
     case Role::ReplyToAuthor:
@@ -341,6 +343,41 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
     };
 
     return roles;
+}
+
+void NotificationListModel::postIndexTimestampChanged()
+{
+    changeData({ int(Role::NotificationTimestamp) });
+}
+
+void NotificationListModel::likeCountChanged()
+{
+    changeData({ int(Role::NotificationPostLikeCount) });
+}
+
+void NotificationListModel::likeUriChanged()
+{
+    changeData({ int(Role::NotificationPostLikeUri) });
+}
+
+void NotificationListModel::replyCountChanged()
+{
+    changeData({ int(Role::NotificationPostReplyCount) });
+}
+
+void NotificationListModel::repostCountChanged()
+{
+    changeData({ int(Role::NotificationPostRepostCount) });
+}
+
+void NotificationListModel::repostUriChanged()
+{
+    changeData({ int(Role::NotificationPostRepostUri) });
+}
+
+void NotificationListModel::changeData(const QList<int>& roles)
+{
+    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 }

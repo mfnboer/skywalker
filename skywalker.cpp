@@ -513,12 +513,13 @@ void Skywalker::updatePostIndexTimestamps()
     makeLocalModelChange([](auto* model){ model->updatePostIndexTimestamps(); });
 }
 
-void Skywalker::makeLocalModelChange(const std::function<void(AbstractPostFeedModel*)>& update)
+void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update)
 {
     // Apply change to all active models. When a model gets refreshed (after clear)
     // or deleted, then the local changes will disapper.
 
     update(&mTimelineModel);
+    update(&mNotificationListModel);
 
     for (auto& [_, model] : mPostThreadModels)
         update(model.get());

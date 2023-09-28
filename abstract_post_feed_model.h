@@ -13,7 +13,7 @@
 
 namespace Skywalker {
 
-class AbstractPostFeedModel : public QAbstractListModel
+class AbstractPostFeedModel : public QAbstractListModel, public LocalPostModelChanges
 {
     Q_OBJECT
 public:
@@ -63,11 +63,6 @@ public:
 
     const Post& getPost(int index) const { return mFeed.at(index); }
     void updatePostIndexTimestamps();
-    void updateReplyCountDelta(const QString& cid, int delta);
-    void updateRepostCountDelta(const QString& cid, int delta);
-    void updateRepostUri(const QString& cid, const QString& repostUri);
-    void updateLikeCountDelta(const QString& cid, int delta);
-    void updateLikeUri(const QString& cid, const QString& likeUri);
 
 protected:
     static QCache<QString, CachedBasicProfile> sAuthorCache;
@@ -80,6 +75,13 @@ protected:
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
     bool isEndOfFeed() const { return mEndOfFeed; }
     void setEndOfFeed(bool endOfFeed) { mEndOfFeed = endOfFeed; }
+
+    virtual void postIndexTimestampChanged() override;
+    virtual void likeCountChanged() override;
+    virtual void likeUriChanged() override;
+    virtual void replyCountChanged() override;
+    virtual void repostCountChanged() override;
+    virtual void repostUriChanged() override;
 
     using TimelineFeed = std::deque<Post>;
     TimelineFeed mFeed;
@@ -96,8 +98,6 @@ private:
     std::queue<QString> mStoredCidQueue;
 
     bool mEndOfFeed = false;
-
-    LocalPostModelChanges mLocalChanges;
 };
 
 }

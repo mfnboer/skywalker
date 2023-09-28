@@ -26,7 +26,7 @@ void AbstractPostFeedModel::clearFeed()
     mStoredCids.clear();
     mStoredCidQueue = {};
     mEndOfFeed = false;
-    mLocalChanges.clear();
+    clearLocalChanges();
 }
 
 void AbstractPostFeedModel::storeCid(const QString& cid)
@@ -73,7 +73,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& post = mFeed[index.row()];
-    const auto* change = mLocalChanges.getChange(post.getCid());
+    const auto* change = getLocalChange(post.getCid());
 
     switch (Role(role))
     {
@@ -214,7 +214,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
     return roles;
 }
 
-void AbstractPostFeedModel::updatePostIndexTimestamps()
+void AbstractPostFeedModel::postIndexTimestampChanged()
 {
     changeData({ int(Role::PostIndexedDateTime) });
 }
@@ -224,39 +224,29 @@ void AbstractPostFeedModel::updatePostIndexTimestamps()
 // network about the change, so we don't know which row this CID is anymore.
 // Also for reposts a CID may apply to multiple rows. Therefor all rows
 // are marked as change. Performance seems not an issue.
-void AbstractPostFeedModel::updateReplyCountDelta(const QString& cid, int delta)
+void AbstractPostFeedModel::likeCountChanged()
 {
-    auto& change = mLocalChanges.getChangeForUpdate(cid);
-    change.mReplyCountDelta += delta;
-    changeData({ int(Role::PostReplyCount) });
-}
-
-void AbstractPostFeedModel::updateRepostCountDelta(const QString& cid, int delta)
-{
-    auto& change = mLocalChanges.getChangeForUpdate(cid);
-    change.mRepostCountDelta += delta;
-    changeData({ int(Role::PostRepostCount) });
-}
-
-void AbstractPostFeedModel::updateRepostUri(const QString& cid, const QString& repostUri)
-{
-    auto& change = mLocalChanges.getChangeForUpdate(cid);
-    change.mRepostUri = repostUri;
-    changeData({ int(Role::PostRepostUri), int(Role::PostLocallyDeleted) });
-}
-
-void AbstractPostFeedModel::updateLikeCountDelta(const QString& cid, int delta)
-{
-    auto& change = mLocalChanges.getChangeForUpdate(cid);
-    change.mLikeCountDelta += delta;
     changeData({ int(Role::PostLikeCount) });
 }
 
-void AbstractPostFeedModel::updateLikeUri(const QString& cid, const QString& likeUri)
+void AbstractPostFeedModel::likeUriChanged()
 {
-    auto& change = mLocalChanges.getChangeForUpdate(cid);
-    change.mLikeUri = likeUri;
     changeData({ int(Role::PostLikeUri) });
+}
+
+void AbstractPostFeedModel::replyCountChanged()
+{
+    changeData({ int(Role::PostReplyCount) });
+}
+
+void AbstractPostFeedModel::repostCountChanged()
+{
+    changeData({ int(Role::PostRepostCount) });
+}
+
+void AbstractPostFeedModel::repostUriChanged()
+{
+    changeData({ int(Role::PostRepostUri), int(Role::PostLocallyDeleted) });
 }
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)

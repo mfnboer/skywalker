@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "local_post_model_changes.h"
 #include "notification.h"
 #include "post_cache.h"
 #include <atproto/lib/client.h>
@@ -9,7 +10,7 @@
 
 namespace Skywalker {
 
-class NotificationListModel : public QAbstractListModel
+class NotificationListModel : public QAbstractListModel, public LocalPostModelChanges
 {
     Q_OBJECT
 public:
@@ -61,6 +62,13 @@ public:
     Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
 
 protected:
+    virtual void postIndexTimestampChanged() override;
+    virtual void likeCountChanged() override;
+    virtual void likeUriChanged() override;
+    virtual void replyCountChanged() override;
+    virtual void repostCountChanged() override;
+    virtual void repostUriChanged() override;
+
     QHash<int, QByteArray> roleNames() const override;
 
 private:
@@ -72,6 +80,8 @@ private:
     // Get the posts for LIKE, FOLLOW and REPOST notifications
     void getPosts(ATProto::Client& bsky, const NotificationList& list, const std::function<void()>& cb);
     void getPosts(ATProto::Client& bsky, std::unordered_set<QString> uris, const std::function<void()>& cb);
+
+    void changeData(const QList<int>& roles);
 
     NotificationList mList;
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
