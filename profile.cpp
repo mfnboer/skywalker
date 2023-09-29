@@ -28,6 +28,8 @@ BasicProfile::BasicProfile(const QString& did, const QString& handle, const QStr
     mDisplayName(displayName),
     mAvatarUrl(avatarUrl)
 {
+    Q_ASSERT(!mDid.isEmpty());
+    Q_ASSERT(!mHandle.isEmpty());
 }
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :
@@ -117,7 +119,7 @@ bool BasicProfile::isVolatile() const
 
 BasicProfile BasicProfile::nonVolatileCopy() const
 {
-    BasicProfile profile(mDid, mHandle, mDisplayName, mAvatarUrl);
+    BasicProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl());
     return profile;
 }
 
