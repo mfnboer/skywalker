@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "image_view.h"
 #include <atproto/lib/lexicon/app_bsky_actor.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -15,6 +16,7 @@ class BasicProfile
     Q_PROPERTY(QString displayName READ getDisplayName FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
+    Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     QML_VALUE_TYPE(basicprofile)
 
 public:
@@ -30,6 +32,7 @@ public:
     QString getDisplayName() const;
     QString getHandle() const;
     QString getAvatarUrl() const;
+    ImageView getImageView() const;
 
     // The profile is volatile if it depends on pointers to the raw data.
     bool isVolatile() const;

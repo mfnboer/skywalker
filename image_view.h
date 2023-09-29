@@ -21,19 +21,23 @@ public:
     using Ptr = std::unique_ptr<ImageView>;
 
     ImageView() = default;
+    ImageView(const QString& fullSizeUrl, const QString& alt) : mFullSizeUrl(fullSizeUrl), mAlt(alt) {}
     ImageView(const ATProto::AppBskyEmbed::ImagesViewImage* viewImage) :
         mViewImage(viewImage)
     {}
 
     QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : QString(); }
-    QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : QString(); }
-    QString getAlt() const { return mViewImage ? mViewImage->mAlt : QString(); }
+    QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : mFullSizeUrl; }
+    QString getAlt() const { return mViewImage ? mViewImage->mAlt : mAlt; }
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mViewImage ? mViewImage->mAspectRatio.get() : nullptr; }
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
 
 private:
     const ATProto::AppBskyEmbed::ImagesViewImage* mViewImage = nullptr;
+
+    QString mFullSizeUrl;
+    QString mAlt;
 };
 
 }

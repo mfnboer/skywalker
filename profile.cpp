@@ -105,6 +105,11 @@ QString BasicProfile::getAvatarUrl() const
     return mAvatarUrl;
 }
 
+ImageView BasicProfile::getImageView() const
+{
+    return ImageView(getAvatarUrl(), getName());
+}
+
 bool BasicProfile::isVolatile() const
 {
     return mProfileBasicView || mProfileView || mProfileDetailedView;

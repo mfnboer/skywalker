@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Page {
+    required property var skywalker
     required property detailedprofile author
 
     signal closed
@@ -21,7 +22,8 @@ Page {
             anchors.top: parent.top
             anchors.left: parent.left
             iconColor: "white"
-            Material.background: "transparent"
+            Material.background: "black"
+            opacity: 0.5
             svg: svgOutline.arrowBack
             onClicked: page.closed()
         }
@@ -41,20 +43,21 @@ Page {
             width: parent.width - 4
             height: parent.height - 4
             avatarUrl: author.avatarUrl
+            onClicked: root.viewFullImage([author.imageView], 0)
         }
     }
 
     Column {
         anchors.top: avatar.bottom
         width: parent.width
-        padding: 10
-        spacing: 10
+        leftPadding: 10
+        rightPadding: 10
 
         Text {
             id: nameText
             width: parent.width - 2 * parent.padding
             elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(20/8)
+            font.pointSize: guiSettings.scaledFont(16/8)
             text: author.displayName
         }
 
@@ -69,7 +72,8 @@ Page {
         Row {
             id: statsRow
             width: parent.width - 2 * parent.padding
-            spacing: 20
+            spacing: 15
+            topPadding: 10
 
             Text {
                 color: guiSettings.linkColor
@@ -88,9 +92,23 @@ Page {
         Text {
             id: descriptionText
             width: parent.width - 2 * parent.padding
+            topPadding: 10
             wrapMode: Text.Wrap
-            text: author.description
+            textFormat: Text.RichText
+            text: postUtils.linkiFy(author.description)
+
+            onLinkActivated: (link) => {
+                if (link.startsWith("@"))
+                    console.debug("TODO MENTION:", link)
+                else
+                    Qt.openUrlExternally(link)
+            }
         }
+    }
+
+    PostUtils {
+        id: postUtils
+        skywalker: page.skywalker
     }
 
     GuiSettings {

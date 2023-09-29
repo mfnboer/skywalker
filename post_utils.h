@@ -38,6 +38,7 @@ public:
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text,const QString& preeditText,
                                                   int cursor, const QString& color);
+    Q_INVOKABLE QString linkiFy(const QString& text);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);

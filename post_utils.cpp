@@ -522,6 +522,27 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
     return highlighted;
 }
 
+QString PostUtils::linkiFy(const QString& text)
+{
+    const auto facets = postMaster()->parseFacets(text);
+    QString linkified = "<span style=\"white-space: pre-wrap\">";
+
+    int pos = 0;
+
+    for (const auto& facet : facets)
+    {
+        const auto before = text.sliced(pos, facet.mStartIndex - pos);
+        linkified.append(before.toHtmlEscaped());
+        QString link = QString("<a href=\"%1\">%1</a>").arg(facet.mMatch);
+        linkified.append(link);
+        pos = facet.mEndIndex;
+    }
+
+    linkified.append(text.sliced(pos).toHtmlEscaped());
+    linkified.append("</span>");
+    return linkified;
+}
+
 int PostUtils::graphemeLength(const QString& text) const
 {
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
