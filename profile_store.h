@@ -19,7 +19,7 @@ class ProfileStore : public IProfileStore
 public:
     bool contains(const QString& did) const override;
     const BasicProfile* get(const QString& did) const override;
-    void add(const QString& did, const BasicProfile& profile);
+    void add(const BasicProfile& profile);
     void remove(const QString& did);
     void clear();
     size_t size();

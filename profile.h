@@ -7,7 +7,6 @@
 
 namespace Skywalker {
 
-// TODO rename
 class BasicProfile
 {
     Q_GADGET
@@ -20,7 +19,7 @@ public:
     BasicProfile() = default;
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileView* profile);
-    BasicProfile(const QString& handle, const QString& displayName, const QString& avatarUrl = "");
+    BasicProfile(const QString& did, const QString& handle, const QString& displayName, const QString& avatarUrl);
     BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
     QString getDid() const;
@@ -28,6 +27,11 @@ public:
     std::optional<QString> getDisplayName() const;
     QString getHandle() const;
     QString getAvatarUrl() const;
+
+    // The profile is volatile if it depends on pointers to the raw data.
+    bool isVolatile() const;
+
+    BasicProfile nonVolatileCopy() const;
 
 private:
     const ATProto::AppBskyActor::ProfileViewBasic* mProfileBasicView = nullptr;

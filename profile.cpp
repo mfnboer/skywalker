@@ -16,7 +16,8 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView* profile) :
     Q_ASSERT(mProfileView);
 }
 
-BasicProfile::BasicProfile(const QString& handle, const QString& displayName, const QString& avatarUrl) :
+BasicProfile::BasicProfile(const QString& did, const QString& handle, const QString& displayName, const QString& avatarUrl) :
+    mDid(did),
     mHandle(handle),
     mDisplayName(displayName),
     mAvatarUrl(avatarUrl)
@@ -26,14 +27,15 @@ BasicProfile::BasicProfile(const QString& handle, const QString& displayName, co
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :
     mDid(profile.mDid),
     mHandle(profile.mHandle),
-    mDisplayName(profile.mDisplayName.value_or(QString()))
+    mDisplayName(profile.mDisplayName.value_or(QString())),
+    mAvatarUrl(profile.mAvatar.value_or(QString()))
 {
 }
 
 QString BasicProfile::getDid() const
 {
     return mProfileBasicView ? mProfileBasicView->mDid :
-               mProfileView ? mProfileView->mDid : QString();
+               mProfileView ? mProfileView->mDid : mDid;
 }
 
 static QString createName(const QString& handle, const std::optional<QString>& displayName)
@@ -63,6 +65,17 @@ QString BasicProfile::getAvatarUrl() const
 {
     return (mProfileBasicView && mProfileBasicView->mAvatar) ? *mProfileBasicView->mAvatar :
                (mProfileView && mProfileView->mAvatar) ? *mProfileView->mAvatar : mAvatarUrl;
+}
+
+bool BasicProfile::isVolatile() const
+{
+    return mProfileBasicView || mProfileView;
+}
+
+BasicProfile BasicProfile::nonVolatileCopy() const
+{
+    BasicProfile profile(mDid, mHandle, mDisplayName, mAvatarUrl);
+    return profile;
 }
 
 CachedBasicProfile::CachedBasicProfile(const BasicProfile& profile) :

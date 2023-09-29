@@ -15,9 +15,14 @@ const BasicProfile* ProfileStore::get(const QString& did) const
     return it != mDidProfileMap.end() ? &it->second : nullptr;
 }
 
-void ProfileStore::add(const QString& did, const BasicProfile& profile)
+void ProfileStore::add(const BasicProfile& profile)
 {
-    mDidProfileMap[did] = profile;
+    const QString& did = profile.getDid();
+    Q_ASSERT(!did.isEmpty());
+    if (did.isEmpty())
+        return;
+
+    mDidProfileMap[did] = profile.nonVolatileCopy();
 }
 
 void ProfileStore::remove(const QString& did)

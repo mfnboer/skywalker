@@ -537,7 +537,9 @@ void PostUtils::getQuotePost(const QString& httpsUri)
 {
     postMaster()->getPost(httpsUri,
         [this](const auto& uri, const auto& cid, auto post, auto author){
-            BasicProfile profile(author->mHandle, author->mDisplayName.value_or(""),
+            BasicProfile profile(author->mDid,
+                                 author->mHandle,
+                                 author->mDisplayName.value_or(""),
                                  author->mAvatar.value_or(""));
             emit quotePost(uri, cid, post->mText, profile, post->mCreatedAt);
         });

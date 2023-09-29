@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_record.h"
-#include "abstract_post_feed_model.h"
+#include "author_cache.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -72,13 +72,12 @@ BasicProfile PostRecord::getReplyToAuthor() const
     }
 
     const auto did = atUri.getAuthority();
-    const auto& authorCache = AbstractPostFeedModel::getAuthorCache();
-    auto* author = authorCache[did];
+    auto* author = AuthorCache::instance().get(did);
 
     if (!author)
         return {};
 
-    return author->getProfile();
+    return *author;
 }
 
 bool PostRecord::hasEmbeddedContent() const

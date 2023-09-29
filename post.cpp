@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post.h"
-#include "post_feed_model.h"
+#include "author_cache.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -245,13 +245,11 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
     if (did.isEmpty())
         return {};
 
-    const auto& authorCache = PostFeedModel::getAuthorCache();
-    auto* author = authorCache[did];
-
+    auto* author = AuthorCache::instance().get(did);
     if (!author)
         return {};
 
-    const_cast<Post*>(this)->setReplyToAuthor(author->getProfile());
+    const_cast<Post*>(this)->setReplyToAuthor(*author);
     return mReplyToAuthor;
 }
 

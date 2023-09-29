@@ -7,13 +7,6 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-QCache<QString, CachedBasicProfile> AbstractPostFeedModel::sAuthorCache(1000);
-
-void AbstractPostFeedModel::cacheAuthorProfile(const QString& did, const BasicProfile& profile)
-{
-    sAuthorCache.insert(did, new CachedBasicProfile(profile));
-}
-
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),

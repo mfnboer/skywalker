@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
+#include "author_cache.h"
 
 namespace Skywalker {
 
@@ -469,9 +470,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             if (cidIsStored(post.getCid()))
                 continue;
 
-            const auto& author = *feedEntry->mPost->mAuthor;
-            const BasicProfile authorProfile(author.mHandle, author.mDisplayName.value_or(""));
-            cacheAuthorProfile(author.mDid, authorProfile);
+            const BasicProfile author(feedEntry->mPost->mAuthor.get());
+            AuthorCache::instance().put(author);
 
             const auto& replyRef = post.getViewPostReplyRef();
 
@@ -550,7 +550,6 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             page->mFeed.back().setEndOfFeed(true);
     }
 
-    qDebug() << "Author profile cache size:" << sAuthorCache.size();
     return page;
 }
 

@@ -6,7 +6,6 @@
 #include "post.h"
 #include "profile_store.h"
 #include <QAbstractListModel>
-#include <QCache>
 #include <deque>
 #include <queue>
 #include <unordered_set>
@@ -18,8 +17,6 @@ class AbstractPostFeedModel : public QAbstractListModel, public LocalPostModelCh
     Q_OBJECT
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
-    static const QCache<QString, CachedBasicProfile>& getAuthorCache() { return sAuthorCache; }
-    static void cacheAuthorProfile(const QString& did, const BasicProfile& profile);
 
     enum class Role {
         Author = Qt::UserRole + 1,
@@ -65,8 +62,6 @@ public:
     void updatePostIndexTimestamps();
 
 protected:
-    static QCache<QString, CachedBasicProfile> sAuthorCache;
-
     QHash<int, QByteArray> roleNames() const override;
     void clearFeed();
     void storeCid(const QString& cid);

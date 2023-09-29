@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "skywalker.h"
+#include "author_cache.h"
 #include <QLoggingCategory>
 #include <QSettings>
 
@@ -22,6 +23,7 @@ Skywalker::Skywalker(QObject* parent) :
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
+    AuthorCache::instance().addProfileStore(&mUserFollows);
 }
 
 Skywalker::~Skywalker()
@@ -145,7 +147,7 @@ void Skywalker::getUserProfileAndFollows()
     mBsky->getFollows(session->mDid, 100, {},
         [this](auto follows){
             for (auto& profile : follows->mFollows)
-                mUserFollows.add(profile->mDid, BasicProfile(*profile));
+                mUserFollows.add(BasicProfile(*profile));
 
             const auto& nextCursor = follows->mCursor;
             if (!nextCursor->isEmpty())
@@ -171,7 +173,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
     mBsky->getFollows(session->mDid, 100, cursor,
         [this, maxPages](auto follows){
             for (auto& profile : follows->mFollows)
-                mUserFollows.add(profile->mDid, BasicProfile(*profile));
+                mUserFollows.add(BasicProfile(*profile));
 
             const auto& nextCursor = follows->mCursor;
             if (nextCursor->isEmpty())
@@ -195,6 +197,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
 void Skywalker::signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user)
 {
     qInfo() << "Got user:" << user.mHandle << "#follows:" << mUserFollows.size();
+    AuthorCache::instance().setUser(BasicProfile(user));
     const auto avatar = user.mAvatar ? *user.mAvatar : QString();
     setAvatarUrl(avatar);
     emit getUserProfileOK();

@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "notification_list_model.h"
 #include "abstract_post_feed_model.h"
+#include "author_cache.h"
 #include "enums.h"
 #include <atproto/lib/at_uri.h>
 #include <unordered_map>
@@ -120,9 +121,8 @@ NotificationListModel::NotificationList NotificationListModel::createNotificatio
             break;
         }
 
-        const auto& author = rawNotification->mAuthor;
-        const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
-        AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
+        const BasicProfile author(rawNotification->mAuthor.get());
+        AuthorCache::instance().put(author);
     }
 
     return notifications;

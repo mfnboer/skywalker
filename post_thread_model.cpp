@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_thread_model.h"
+#include "author_cache.h"
 
 namespace Skywalker {
 
@@ -57,8 +58,8 @@ Post& PostThreadModel::Page::addPost(const Post& post)
         const auto& author = postView->mAuthor;
         if (author)
         {
-            const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
-            AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
+            const BasicProfile authorProfile(author.get());
+            AuthorCache::instance().put(authorProfile);
         }
     }
 
@@ -77,8 +78,8 @@ Post& PostThreadModel::Page::prependPost(const Post& post)
         const auto& author = postView->mAuthor;
         if (author)
         {
-            const BasicProfile authorProfile(author->mHandle, author->mDisplayName.value_or(""));
-            AbstractPostFeedModel::cacheAuthorProfile(author->mDid, authorProfile);
+            const BasicProfile authorProfile(author.get());
+            AuthorCache::instance().put(authorProfile);
         }
     }
 
