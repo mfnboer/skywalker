@@ -30,7 +30,7 @@ GridLayout {
         elide: Text.ElideRight
         text: "@" + authorHandle
         font.pointSize: guiSettings.scaledFont(7/8)
-        color: Material.color(Material.Grey)
+        color: guiSettings.handleColor
         visible: postThreadType & QEnums.THREAD_ENTRY
     }
 

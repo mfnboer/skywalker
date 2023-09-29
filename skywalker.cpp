@@ -499,7 +499,7 @@ void Skywalker::getPostThread(const QString& uri)
 
             if (postEntryIndex < 0)
             {
-                qInfo() << "No thread posts";
+                qDebug() << "No thread posts";
                 emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
                 return;
             }
@@ -509,7 +509,7 @@ void Skywalker::getPostThread(const QString& uri)
         },
         [this](const QString& error){
             setGetPostThreadInProgress(false);
-            qInfo() << "getPostThread FAILED:" << error;
+            qDebug() << "getPostThread FAILED:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -572,7 +572,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
             setGetNotificationsInProgress(false);
         },
         [this](const QString& error){
-            qInfo() << "getNotifications FAILED:" << error;
+            qDebug() << "getNotifications FAILED:" << error;
             setGetNotificationsInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         },
@@ -587,11 +587,27 @@ void Skywalker::getNotificationsNextPage()
     const QString& cursor = mNotificationListModel.getCursor();
     if (cursor.isEmpty())
     {
-        qInfo() << "Last page reached, no more cursor";
+        qDebug() << "Last page reached, no more cursor";
         return;
     }
 
     getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, cursor);
+}
+
+void Skywalker::getDetailedProfile(const QString& author)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get detailed profile:" << author;
+
+    mBsky->getProfile(author,
+        [this](auto profile){
+            auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
+            emit getDetailedProfileOK(DetailedProfile(shared));
+        },
+        [this](const QString& error){
+            qDebug() << "getDetailedProfile failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

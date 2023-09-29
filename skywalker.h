@@ -41,6 +41,7 @@ public:
     Q_INVOKABLE void updatePostIndexTimestamps();
     Q_INVOKABLE void getNotifications(int limit, bool updateSeen = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage();
+    Q_INVOKABLE void getDetailedProfile(const QString& author);
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
@@ -73,6 +74,7 @@ signals:
     void postThreadOk(int id, int postEntryIndex);
     void avatarUrlChanged();
     void unreadNotificationCountChanged();
+    void getDetailedProfileOK(DetailedProfile);
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;

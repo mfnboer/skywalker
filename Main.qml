@@ -89,6 +89,8 @@ ApplicationWindow {
             getTimelineView().setInSync(0)
         }
 
+        onGetDetailedProfileOK: (profile) => { viewAuthor(profile) }
+
         function start() {
             skywalker.getUserProfileAndFollows()
         }
@@ -285,6 +287,13 @@ ApplicationWindow {
         else if (!skywalker.notificationListModel.notificationsLoaded()) {
             skywalker.getNotifications(loadCount)
         }
+    }
+
+    function viewAuthor(profile) {
+        let component = Qt.createComponent("AuthorView.qml")
+        let view = component.createObject(root, { author: profile })
+        view.onClosed.connect(() => { popStack() })
+        currentStack().push(view)
     }
 
     function getTimelineView() {

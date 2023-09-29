@@ -110,6 +110,7 @@ qt_add_qml_module(appskywalker
         QML_FILES SkyFooter.qml
         SOURCES author_cache.h
         SOURCES author_cache.cpp
+        QML_FILES AuthorView.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

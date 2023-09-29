@@ -16,6 +16,7 @@ Item {
     readonly property string buttonColor: "blue"
     readonly property string buttonTextColor: "white"
     readonly property string footerColor: "white"
+    readonly property string handleColor: "grey"
     readonly property string headerColor: "black"
     readonly property string linkColor: "blue"
     readonly property string postHighLightColor: "aliceblue"

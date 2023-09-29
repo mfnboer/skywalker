@@ -194,6 +194,8 @@ Rectangle {
                 width: parent.width - 13
                 avatarUrl: author.avatarUrl
                 visible: !postIsPlaceHolder && !postLocallyDeleted
+
+                onClicked: skywalker.getDetailedProfile(author.did)
             }
         }
         Column {

@@ -16,6 +16,12 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView* profile) :
     Q_ASSERT(mProfileView);
 }
 
+BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* profile) :
+    mProfileDetailedView(profile)
+{
+    Q_ASSERT(mProfileDetailedView);
+}
+
 BasicProfile::BasicProfile(const QString& did, const QString& handle, const QString& displayName, const QString& avatarUrl) :
     mDid(did),
     mHandle(handle),
@@ -34,13 +40,21 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :
 
 QString BasicProfile::getDid() const
 {
-    return mProfileBasicView ? mProfileBasicView->mDid :
-               mProfileView ? mProfileView->mDid : mDid;
+    if (mProfileBasicView)
+        return mProfileBasicView->mDid;
+
+    if (mProfileView)
+        return mProfileView->mDid;
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mDid;
+
+    return mDid;
 }
 
-static QString createName(const QString& handle, const std::optional<QString>& displayName)
+static QString createName(const QString& handle, const QString& displayName)
 {
-    const QString name = displayName.value_or("").trimmed();
+    const QString name = displayName.trimmed();
     return name.isEmpty() ? handle : name;
 }
 
@@ -49,27 +63,51 @@ QString BasicProfile::getName() const
     return createName(getHandle(), getDisplayName());
 }
 
-std::optional<QString> BasicProfile::getDisplayName() const
+QString BasicProfile::getDisplayName() const
 {
-    return mProfileBasicView ? mProfileBasicView->mDisplayName :
-               mProfileView? mProfileView->mDisplayName : mDisplayName;
+    if (mProfileBasicView)
+        return mProfileBasicView->mDisplayName.value_or("");
+
+    if (mProfileView)
+        return mProfileView->mDisplayName.value_or("");
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mDisplayName.value_or("");
+
+    return mDisplayName;
 }
 
 QString BasicProfile::getHandle() const
 {
-    return mProfileBasicView ? mProfileBasicView->mHandle :
-               mProfileView? mProfileView->mHandle : mHandle;
+    if (mProfileBasicView)
+        return mProfileBasicView->mHandle;
+
+    if (mProfileView)
+        return mProfileView->mHandle;
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mHandle;
+
+    return mHandle;
 }
 
 QString BasicProfile::getAvatarUrl() const
 {
-    return (mProfileBasicView && mProfileBasicView->mAvatar) ? *mProfileBasicView->mAvatar :
-               (mProfileView && mProfileView->mAvatar) ? *mProfileView->mAvatar : mAvatarUrl;
+    if (mProfileBasicView)
+        return mProfileBasicView->mAvatar.value_or("");
+
+    if (mProfileView)
+        return mProfileView->mAvatar.value_or("");
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mAvatar.value_or("");
+
+    return mAvatarUrl;
 }
 
 bool BasicProfile::isVolatile() const
 {
-    return mProfileBasicView || mProfileView;
+    return mProfileBasicView || mProfileView || mProfileDetailedView;
 }
 
 BasicProfile BasicProfile::nonVolatileCopy() const
@@ -78,10 +116,35 @@ BasicProfile BasicProfile::nonVolatileCopy() const
     return profile;
 }
 
-CachedBasicProfile::CachedBasicProfile(const BasicProfile& profile) :
-    QObject(),
-    mProfile(profile)
+DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
+    BasicProfile(profile.get()),
+    mDetailedProfile(profile)
 {
+}
+
+QString DetailedProfile::getBanner() const
+{
+    return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : QString();
+}
+
+QString DetailedProfile::getDescription() const
+{
+    return mProfileDetailedView ? mProfileDetailedView->mDescription.value_or("") : QString();
+}
+
+int DetailedProfile::getFollowersCount() const
+{
+    return mProfileDetailedView ? mProfileDetailedView->mFollowersCount : 0;
+}
+
+int DetailedProfile::getFollowsCount() const
+{
+    return mProfileDetailedView ? mProfileDetailedView->mFollowsCount : 0;
+}
+
+int DetailedProfile::getPostsCount() const
+{
+    return mProfileDetailedView ? mProfileDetailedView->mPostsCount : 0;
 }
 
 }
