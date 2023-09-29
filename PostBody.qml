@@ -28,10 +28,12 @@ Column {
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
 
         onLinkActivated: (link) => {
-            if (link.startsWith("did:"))
-                console.debug("TODO MENTION", link)
-            else
+            if (link.startsWith("did:")) {
+                console.debug("MENTION", link)
+                skywalker.getDetailedProfile(link)
+            } else {
                 Qt.openUrlExternally(link)
+            }
         }
     }
 

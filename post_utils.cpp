@@ -533,7 +533,9 @@ QString PostUtils::linkiFy(const QString& text)
     {
         const auto before = text.sliced(pos, facet.mStartIndex - pos);
         linkified.append(before.toHtmlEscaped());
-        QString link = QString("<a href=\"%1\">%1</a>").arg(facet.mMatch);
+        const QString ref = facet.mType == ATProto::PostMaster::ParsedMatch::Type::MENTION || facet.mMatch.startsWith("http") ?
+                                facet.mMatch : "https://" + facet.mMatch;
+        QString link = QString("<a href=\"%1\">%2</a>").arg(ref, facet.mMatch);
         linkified.append(link);
         pos = facet.mEndIndex;
     }

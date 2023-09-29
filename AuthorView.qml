@@ -17,7 +17,7 @@ Page {
         width: parent.width
         source: author.banner
         fillMode: Image.PreserveAspectFit
-        visible: author.banner
+        visible: author.banner && status === Image.Ready
     }
 
     Rectangle {
@@ -26,7 +26,7 @@ Page {
         width: parent.width
         height: width / 3
         color: "blue"
-        visible: !author.banner
+        visible: !bannerImg.visible
     }
 
     SvgButton {
@@ -42,7 +42,7 @@ Page {
     Rectangle {
         id: avatar
         x: parent.width - width - 10
-        y: (author.banner ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height) - height / 2
+        y: (bannerImg.visible ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height) - height / 2
         width: 104
         height: width
         radius: width / 2
@@ -68,7 +68,7 @@ Page {
             width: parent.width - (parent.leftPadding + parent.rightPadding)
             elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(16/8)
-            text: author.displayName
+            text: author.name
         }
 
         Text {
@@ -107,10 +107,12 @@ Page {
             text: postUtils.linkiFy(author.description)
 
             onLinkActivated: (link) => {
-                if (link.startsWith("@"))
-                    console.debug("TODO MENTION:", link)
-                else
+                if (link.startsWith("@")) {
+                    console.debug("MENTION:", link)
+                    skywalker.getDetailedProfile(link.slice(1))
+                } else {
                     Qt.openUrlExternally(link)
+                }
             }
         }
     }
