@@ -348,7 +348,7 @@ Page {
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        nameFilters: ["Image files (*.jpg *.jpeg *.png)"]
+        nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp)"]
         onAccepted: {
             let fileName = selectedFile.toString()
             if (fileName.startsWith("file://"))
@@ -414,6 +414,15 @@ Page {
             }
     }
 
+    Timer {
+        id: focusTimer
+        interval: 100
+        onTriggered: {
+            flick.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
+            postText.focus = true
+        }
+    }
+
     GuiSettings {
         id: guiSettings
     }
@@ -439,7 +448,8 @@ Page {
     }
 
     Component.onCompleted: {
-        postText.focus = true
-        flick.ensureVisible(postText.cursorRectangle)
+        // Wait a bit for the window to render.
+        // Then make sue the text field is in the visible area.
+        focusTimer.start()
     }
 }

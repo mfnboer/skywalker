@@ -236,6 +236,7 @@ Rectangle {
             }
 
             PostBody {
+                topPadding: 5
                 width: parent.width
                 Layout.fillWidth: true
                 postText: notificationReasonPostNotFound ? "NOT FOUND" : notificationReasonPostText

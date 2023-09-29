@@ -15,18 +15,37 @@ NotificationListModel::NotificationListModel(QObject* parent) :
 
 void NotificationListModel::clear()
 {
-    beginRemoveRows({}, 0, mList.size() - 1);
-    mList.clear();
+    clearRows();
+    clearLocalState();
+}
+
+void NotificationListModel::clearLocalState()
+{
     mCursor.clear();
     mPostCache.clear();
     clearLocalChanges();
+}
+
+void NotificationListModel::clearRows()
+{
+    beginRemoveRows({}, 0, mList.size() - 1);
+    mList.clear();
     endRemoveRows();
 }
+
 
 void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
                                              ATProto::Client& bsky, bool clearFirst)
 {
     qDebug() << "Add notifications:" << notifications->mNotifications.size();
+
+    // Keep the rows in place while retrieving posts from the network.
+    // This avoids flashing of the notifications window while refreshing.
+    // Erasing the cache may lead to NOT FOUND entries if the user scrolls
+    // during this period. If that happens we can improve this. Sofar it
+    // seems not needed.
+    if (clearFirst)
+        clearLocalState();
 
     mCursor = notifications->mCursor.value_or(QString());
     if (isEndOfList() && !mList.empty())
@@ -37,7 +56,7 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
         qWarning() << "No notifications!";
 
         if (clearFirst)
-            clear();
+            clearRows();
 
         return;
     }
@@ -53,7 +72,7 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
 void NotificationListModel::addNotificationList(const NotificationList& list, bool clearFirst)
 {
     if (clearFirst)
-        clear();
+        clearRows();
 
     const size_t newRowCount = mList.size() + list.size();
 

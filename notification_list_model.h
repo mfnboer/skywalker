@@ -83,6 +83,8 @@ private:
     void getPosts(ATProto::Client& bsky, std::unordered_set<QString> uris, const std::function<void()>& cb);
 
     void changeData(const QList<int>& roles);
+    void clearLocalState();
+    void clearRows();
 
     NotificationList mList;
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
