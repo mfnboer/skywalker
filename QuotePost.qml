@@ -18,6 +18,8 @@ Column {
             width: 24
             Layout.alignment: Qt.AlignTop
             avatarUrl: author.avatarUrl
+
+            onClicked: skywalker.getDetailedProfile(author.did)
         }
 
         PostHeader {

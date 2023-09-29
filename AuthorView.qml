@@ -17,22 +17,32 @@ Page {
         width: parent.width
         source: author.banner
         fillMode: Image.PreserveAspectFit
+        visible: author.banner
+    }
 
-        SvgButton {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            iconColor: "white"
-            Material.background: "black"
-            opacity: 0.5
-            svg: svgOutline.arrowBack
-            onClicked: page.closed()
-        }
+    Rectangle {
+        id: noBanner
+        anchors.top: parent.top
+        width: parent.width
+        height: width / 3
+        color: "blue"
+        visible: !author.banner
+    }
+
+    SvgButton {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        iconColor: "white"
+        Material.background: "black"
+        opacity: 0.5
+        svg: svgOutline.arrowBack
+        onClicked: page.closed()
     }
 
     Rectangle {
         id: avatar
         x: parent.width - width - 10
-        y: bannerImg.y + bannerImg.height - height / 2
+        y: (author.banner ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height) - height / 2
         width: 104
         height: width
         radius: width / 2
@@ -55,7 +65,7 @@ Page {
 
         Text {
             id: nameText
-            width: parent.width - 2 * parent.padding
+            width: parent.width - (parent.leftPadding + parent.rightPadding)
             elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(16/8)
             text: author.displayName
@@ -63,7 +73,7 @@ Page {
 
         Text {
             id: handleText
-            width: parent.width - 2 * parent.padding
+            width: parent.width - (parent.leftPadding + parent.rightPadding)
             elide: Text.ElideRight
             color: guiSettings.handleColor
             text: `@${author.handle}`
@@ -71,7 +81,7 @@ Page {
 
         Row {
             id: statsRow
-            width: parent.width - 2 * parent.padding
+            width: parent.width - (parent.leftPadding + parent.rightPadding)
             spacing: 15
             topPadding: 10
 
@@ -84,14 +94,13 @@ Page {
                 text: qsTr(`<b>${author.followsCount}</b> following`)
             }
             Text {
-                color: guiSettings.linkColor
                 text: qsTr(`<b>${author.postsCount}</b> posts`)
             }
         }
 
         Text {
             id: descriptionText
-            width: parent.width - 2 * parent.padding
+            width: parent.width - (parent.leftPadding + parent.rightPadding)
             topPadding: 10
             wrapMode: Text.Wrap
             textFormat: Text.RichText

@@ -67,6 +67,8 @@ Rectangle {
                 height: width
                 avatarUrl: notificationAuthor.avatarUrl
                 visible: showPost()
+
+                onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
             }
             SvgImage {
                 x: parent.x + 14
@@ -193,6 +195,8 @@ Rectangle {
                     width: 30
                     height: width
                     avatarUrl: notificationAuthor.avatarUrl
+
+                    onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
                 }
                 Repeater {
                     model: Math.min(notificationOtherAuthors.length, 4)
@@ -203,12 +207,14 @@ Rectangle {
                         width: authorAvatar.width
                         height: width
                         avatarUrl: notificationOtherAuthors[index].avatarUrl
+
+                        onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
                     }
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: `+${(notificationOtherAuthors.length - 5)}`
-                    visible: notificationOtherAuthors.length > 5
+                    text: `+${(notificationOtherAuthors.length - 4)}`
+                    visible: notificationOtherAuthors.length > 4
                 }
             }
 

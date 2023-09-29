@@ -23,6 +23,8 @@ Item {
                 width: 24
                 Layout.alignment: Qt.AlignTop
                 avatarUrl: record.author.avatarUrl
+
+                onClicked: skywalker.getDetailedProfile(record.author.did)
             }
 
             PostHeader {
