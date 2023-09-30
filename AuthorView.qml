@@ -11,54 +11,56 @@ Page {
 
     id: page
 
-    Image {
-        id: bannerImg
-        anchors.top: parent.top
-        width: parent.width
-        source: author.banner
-        fillMode: Image.PreserveAspectFit
-        visible: author.banner && status === Image.Ready
-    }
+    header: Rectangle {
+        Image {
+            id: bannerImg
+            anchors.top: parent.top
+            width: parent.width
+            source: author.banner
+            fillMode: Image.PreserveAspectFit
+            visible: author.banner && status === Image.Ready
+        }
 
-    Rectangle {
-        id: noBanner
-        anchors.top: parent.top
-        width: parent.width
-        height: width / 3
-        color: "blue"
-        visible: !bannerImg.visible
-    }
+        Rectangle {
+            id: noBanner
+            anchors.top: parent.top
+            width: parent.width
+            height: width / 3
+            color: "blue"
+            visible: !bannerImg.visible
+        }
 
-    SvgButton {
-        anchors.top: parent.top
-        anchors.left: parent.left
-        iconColor: "white"
-        Material.background: "black"
-        opacity: 0.5
-        svg: svgOutline.arrowBack
-        onClicked: page.closed()
-    }
+        SvgButton {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            iconColor: "white"
+            Material.background: "black"
+            opacity: 0.5
+            svg: svgOutline.arrowBack
+            onClicked: page.closed()
+        }
 
-    Rectangle {
-        id: avatar
-        x: parent.width - width - 10
-        y: (bannerImg.visible ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height) - height / 2
-        width: 104
-        height: width
-        radius: width / 2
-        color: "white"
+        Rectangle {
+            id: avatar
+            x: parent.width - width - 10
+            y: (bannerImg.visible ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height) - height / 2
+            width: 104
+            height: width
+            radius: width / 2
+            color: "white"
 
-        Avatar {
-            anchors.centerIn: parent
-            width: parent.width - 4
-            height: parent.height - 4
-            avatarUrl: author.avatarUrl
-            onClicked: root.viewFullImage([author.imageView], 0)
+            Avatar {
+                anchors.centerIn: parent
+                width: parent.width - 4
+                height: parent.height - 4
+                avatarUrl: author.avatarUrl
+                onClicked: root.viewFullImage([author.imageView], 0)
+            }
         }
     }
 
     Column {
-        anchors.top: avatar.bottom
+        y: avatar.y + avatar.height
         width: parent.width
         leftPadding: 10
         rightPadding: 10

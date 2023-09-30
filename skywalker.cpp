@@ -451,6 +451,12 @@ void Skywalker::setGetNotificationsInProgress(bool inProgress)
     emit getNotificationsInProgressChanged();
 }
 
+void Skywalker::setGetAuthorFeedInProgress(bool inProgress)
+{
+    mGetAuthorFeedInProgress = inProgress;
+    emit getAuthorFeedInProgressChanged();
+}
+
 void Skywalker::setAvatarUrl(const QString& avatarUrl)
 {
     mAvatarUrl = avatarUrl;
@@ -484,11 +490,11 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
 void Skywalker::getPostThread(const QString& uri)
 {
     Q_ASSERT(mBsky);
-    qInfo() << "Get post thread:" << uri;
+    qDebug() << "Get post thread:" << uri;
 
     if (mGetPostThreadInProgress)
     {
-        qInfo() << "Get post thread still in progress";
+        qDebug() << "Get post thread still in progress";
         return;
     }
 
@@ -617,8 +623,16 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(const QString& author, int limit, cons
     Q_ASSERT(mBsky);
     qDebug() << "Get author feed:" << author;
 
+    if (mGetAuthorFeedInProgress)
+    {
+        qDebug() << "Get author feed still in progress";
+        return;
+    }
+
+    setGetAuthorFeedInProgress(true);
     mBsky->getAuthorFeed(author, limit, makeOptionalCursor(cursor),
         [this, author](auto feed){
+            setGetAuthorFeedInProgress(false);
             auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, this);
             const bool added = model->setFeed(std::move(feed));
             const int id = mAuthorFeedModels.put(std::move(model));
@@ -628,6 +642,7 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(const QString& author, int limit, cons
                 getAuthorFeedNextPage(id);
         },
         [this](const QString& error){
+            setGetAuthorFeedInProgress(false);
             qDebug() << "getAuthorFeed failed:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -635,6 +650,12 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(const QString& author, int limit, cons
 
 void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
 {
+    if (mGetAuthorFeedInProgress)
+    {
+        qDebug() << "Get author feed still in progress";
+        return;
+    }
+
     if (maxPages <= 0)
     {
         // Protection against infinite loop.
@@ -663,17 +684,33 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
 
     qDebug() << "Get next author feed page:" << author << "cursor:" << cursor;
 
+    setGetAuthorFeedInProgress(true);
     mBsky->getAuthorFeed(author, AUTHOR_ADD_PAGE_SIZE, makeOptionalCursor(cursor),
         [this, id, maxPages, authorFeedModel](auto feed){
+            setGetAuthorFeedInProgress(false);
             bool added = authorFeedModel->addFeed(std::move(feed));
 
             if (!added)
                 getAuthorFeedNextPage(id, maxPages - 1);
         },
         [this](const QString& error){
+            setGetAuthorFeedInProgress(false);
             qDebug() << "getAuthorFeedNextPage failed:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
+}
+
+Q_INVOKABLE const AuthorFeedModel* Skywalker::getAuthorFeedModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mAuthorFeedModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+Q_INVOKABLE void Skywalker::removeAuthorFeedModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mAuthorFeedModels.remove(id);
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

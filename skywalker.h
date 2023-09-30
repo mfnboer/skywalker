@@ -21,6 +21,7 @@ class Skywalker : public QObject
     Q_PROPERTY(const NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
+    Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     QML_ELEMENT
@@ -46,6 +47,8 @@ public:
     Q_INVOKABLE void getDetailedProfile(const QString& author);
     Q_INVOKABLE void getAuthorFeed(const QString& author, int limit, const QString& cursor = {});
     Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 50);
+    Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
+    Q_INVOKABLE void removeAuthorFeedModel(int id);
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
@@ -56,6 +59,8 @@ public:
     void setGetPostThreadInProgress(bool inProgress);
     void setGetNotificationsInProgress(bool inProgress);
     bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
+    void setGetAuthorFeedInProgress(bool inProgress);
+    bool isGetAuthorFeedInProgress() const { return mGetAuthorFeedInProgress; }
     const QString& getAvatarUrl() const { return mAvatarUrl; }
     void setAvatarUrl(const QString& avatarUrl);
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
@@ -80,6 +85,7 @@ signals:
     void unreadNotificationCountChanged();
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorFeedOK(int id);
+    void getAuthorFeedInProgressChanged();
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
@@ -105,6 +111,7 @@ private:
     PostFeedModel mTimelineModel;
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
+    bool mGetAuthorFeedInProgress = false;
     QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
 
