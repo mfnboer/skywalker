@@ -90,7 +90,11 @@ ApplicationWindow {
             getTimelineView().setInSync(0)
         }
 
-        onGetDetailedProfileOK: (profile) => { viewAuthor(profile) }
+        onGetDetailedProfileOK: (profile) => {
+            let modelId = skywalker.createAuthorFeedModel(profile.did)
+            viewAuthor(profile, modelId)
+            skywalker.getAuthorFeed(modelId, 50)
+        }
 
         function start() {
             skywalker.getUserProfileAndFollows()
@@ -290,9 +294,9 @@ ApplicationWindow {
         }
     }
 
-    function viewAuthor(profile) {
+    function viewAuthor(profile, modelId) {
         let component = Qt.createComponent("AuthorView.qml")
-        let view = component.createObject(root, { author: profile, skywalker: skywalker })
+        let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() })
         currentStack().push(view)
     }

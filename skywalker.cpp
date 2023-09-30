@@ -16,7 +16,7 @@ static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
-static constexpr int AUTHOR_ADD_PAGE_SIZE = 50;
+static constexpr int AUTHOR_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
@@ -618,10 +618,10 @@ void Skywalker::getDetailedProfile(const QString& author)
         });
 }
 
-Q_INVOKABLE void Skywalker::getAuthorFeed(const QString& author, int limit, const QString& cursor)
+Q_INVOKABLE void Skywalker::getAuthorFeed(int id, int limit, int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get author feed:" << author;
+    qDebug() << "Get author feed model:" << id << "cursor:" << cursor << "max pages:" << maxPages;
 
     if (mGetAuthorFeedInProgress)
     {
@@ -629,17 +629,28 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(const QString& author, int limit, cons
         return;
     }
 
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    const auto& author = (*model)->getAuthor();
+    qDebug() << "Get author feed:" << author;
+
     setGetAuthorFeedInProgress(true);
     mBsky->getAuthorFeed(author, limit, makeOptionalCursor(cursor),
-        [this, author](auto feed){
+        [this, author, id, model, maxPages, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
-            auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, this);
-            const bool added = model->setFeed(std::move(feed));
-            const int id = mAuthorFeedModels.put(std::move(model));
-            emit getAuthorFeedOK(id);
+            bool feedAdded = cursor.isEmpty() ?
+                    (*model)->setFeed(std::move(feed)) :
+                    (*model)->addFeed(std::move(feed));
 
-            if (!added)
-                getAuthorFeedNextPage(id);
+            if (!feedAdded)
+                getAuthorFeedNextPage(id, maxPages - 1);
         },
         [this](const QString& error){
             setGetAuthorFeedInProgress(false);
@@ -650,6 +661,8 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(const QString& author, int limit, cons
 
 void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
 {
+    qDebug() << "Get author feed next page, model:" << id << "max pages:" << maxPages;
+
     if (mGetAuthorFeedInProgress)
     {
         qDebug() << "Get author feed still in progress";
@@ -673,7 +686,6 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
     }
 
     auto* authorFeedModel = (*model).get();
-    const auto& author = authorFeedModel->getAuthor();
     const auto& cursor = authorFeedModel->getCursorNextPage();
 
     if (cursor.isEmpty())
@@ -682,32 +694,24 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
         return;
     }
 
-    qDebug() << "Get next author feed page:" << author << "cursor:" << cursor;
-
-    setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author, AUTHOR_ADD_PAGE_SIZE, makeOptionalCursor(cursor),
-        [this, id, maxPages, authorFeedModel](auto feed){
-            setGetAuthorFeedInProgress(false);
-            bool added = authorFeedModel->addFeed(std::move(feed));
-
-            if (!added)
-                getAuthorFeedNextPage(id, maxPages - 1);
-        },
-        [this](const QString& error){
-            setGetAuthorFeedInProgress(false);
-            qDebug() << "getAuthorFeedNextPage failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
-        });
+    getAuthorFeed(id, AUTHOR_ADD_PAGE_SIZE, maxPages, cursor);
 }
 
-Q_INVOKABLE const AuthorFeedModel* Skywalker::getAuthorFeedModel(int id) const
+int Skywalker::createAuthorFeedModel(const QString& author)
+{
+    auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, this);
+    const int id = mAuthorFeedModels.put(std::move(model));
+    return id;
+}
+
+const AuthorFeedModel* Skywalker::getAuthorFeedModel(int id) const
 {
     qDebug() << "Get model:" << id;
     auto* model = mAuthorFeedModels.get(id);
     return model ? model->get() : nullptr;
 }
 
-Q_INVOKABLE void Skywalker::removeAuthorFeedModel(int id)
+void Skywalker::removeAuthorFeedModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mAuthorFeedModels.remove(id);

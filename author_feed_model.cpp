@@ -72,7 +72,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
         {
             Post post(feedEntry.get(), i);
 
-            if (post.isReply())
+            if (post.isReply() && !post.isRepost())
                 continue;
 
             page->addPost(post);
@@ -84,7 +84,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
         }
     }
 
-    qDebug() << "Created page:" << page->mFeed.max_size() << "posts";
+    qDebug() << "Created page:" << page->mFeed.size() << "posts";
     return page;
 }
 

@@ -6,6 +6,13 @@ import skywalker
 Page {
     required property var skywalker
     required property detailedprofile author
+    required property int modelId
+    property int margin: 8
+
+    property bool inTopOvershoot: false
+    property bool gettingNewPosts: false
+    property bool inBottomOvershoot: false
+    property bool gettingNextPage: false
 
     signal closed
 
@@ -59,63 +66,129 @@ Page {
         }
     }
 
-    Column {
+    ListView {
+        id: authorFeedView
         y: avatar.y + avatar.height
         width: parent.width
-        leftPadding: 10
-        rightPadding: 10
+        height: parent.height - avatar.y - avatar.height
+        spacing: 0
+        model: skywalker.getAuthorFeedModel(page.modelId)
+        ScrollIndicator.vertical: ScrollIndicator {}
 
-        Text {
-            id: nameText
-            width: parent.width - (parent.leftPadding + parent.rightPadding)
-            elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(16/8)
-            text: author.name
-        }
-
-        Text {
-            id: handleText
-            width: parent.width - (parent.leftPadding + parent.rightPadding)
-            elide: Text.ElideRight
-            color: guiSettings.handleColor
-            text: `@${author.handle}`
-        }
-
-        Row {
-            id: statsRow
-            width: parent.width - (parent.leftPadding + parent.rightPadding)
-            spacing: 15
-            topPadding: 10
+        header: Column {
+            width: parent.width
+            leftPadding: 10
+            rightPadding: 10
 
             Text {
-                color: guiSettings.linkColor
-                text: qsTr(`<b>${author.followersCount}</b> followers`)
+                id: nameText
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(16/8)
+                text: author.name
             }
-            Text {
-                color: guiSettings.linkColor
-                text: qsTr(`<b>${author.followsCount}</b> following`)
-            }
-            Text {
-                text: qsTr(`<b>${author.postsCount}</b> posts`)
-            }
-        }
 
-        Text {
-            id: descriptionText
-            width: parent.width - (parent.leftPadding + parent.rightPadding)
-            topPadding: 10
-            wrapMode: Text.Wrap
-            textFormat: Text.RichText
-            text: postUtils.linkiFy(author.description)
+            Text {
+                id: handleText
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                elide: Text.ElideRight
+                color: guiSettings.handleColor
+                text: `@${author.handle}`
+            }
 
-            onLinkActivated: (link) => {
-                if (link.startsWith("@")) {
-                    console.debug("MENTION:", link)
-                    skywalker.getDetailedProfile(link.slice(1))
-                } else {
-                    Qt.openUrlExternally(link)
+            Row {
+                id: statsRow
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                spacing: 15
+                topPadding: 10
+
+                Text {
+                    color: guiSettings.linkColor
+                    text: qsTr(`<b>${author.followersCount}</b> followers`)
+                }
+                Text {
+                    color: guiSettings.linkColor
+                    text: qsTr(`<b>${author.followsCount}</b> following`)
+                }
+                Text {
+                    text: qsTr(`<b>${author.postsCount}</b> posts`)
                 }
             }
+
+            Text {
+                id: descriptionText
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                wrapMode: Text.Wrap
+                textFormat: Text.RichText
+                text: postUtils.linkiFy(author.description)
+
+                onLinkActivated: (link) => {
+                                     if (link.startsWith("@")) {
+                                         console.debug("MENTION:", link)
+                                         skywalker.getDetailedProfile(link.slice(1))
+                                     } else {
+                                         Qt.openUrlExternally(link)
+                                     }
+                                 }
+            }
+
+            Text {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                bottomPadding: 10
+                font.bold: true
+                text: qsTr("Posts")
+            }
+
+            Rectangle {
+                x: -parent.leftPadding
+                width: parent.width
+                height: 1
+                color: "lightgrey"
+            }
+        }
+
+        delegate: PostFeedViewDelegate {
+            viewWidth: authorFeedView.width
+        }
+
+        onVerticalOvershootChanged: {
+            if (verticalOvershoot < 0)  {
+                if (!inTopOvershoot && !skywalker.getAuthorFeedInProgress) {
+                    gettingNewPosts = true
+                    skywalker.getAuthorFeed(modelId, 100)
+                }
+
+                inTopOvershoot = true
+            } else {
+                inTopOvershoot = false
+            }
+
+            if (verticalOvershoot > 0) {
+                if (!inBottomOvershoot && !skywalker.getAuthorFeedInProgress) {
+                    gettingNextPage = true
+                    skywalker.getAuthorFeedNextPage(modelId)
+                }
+
+                inBottomOvershoot = true;
+            } else {
+                inBottomOvershoot = false;
+            }
+        }
+
+        BusyIndicator {
+            id: busyTopIndicator
+            y: parent.y + guiSettings.headerHeight
+            anchors.horizontalCenter: parent.horizontalCenter
+            running: gettingNewPosts
+        }
+
+        BusyIndicator {
+            id: busyBottomIndicator
+            y: parent.y + parent.height - height - guiSettings.footerHeight
+            anchors.horizontalCenter: parent.horizontalCenter
+            running: gettingNextPage
         }
     }
 
@@ -126,5 +199,20 @@ Page {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function feedInProgressChanged() {
+        if (!skywalker.getAuthorFeedInProgress) {
+            gettingNewPosts = false
+            gettingNextPage = false
+        }
+    }
+
+    Component.onCompleted: {
+        skywalker.onGetAuthorFeedInProgressChanged.connect(feedInProgressChanged)
+    }
+    Component.onDestruction: {
+        skywalker.onGetAuthorFeedInProgressChanged.disconnect(feedInProgressChanged)
+        skywalker.removeAuthorFeedModel(modelId)
     }
 }
