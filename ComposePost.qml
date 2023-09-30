@@ -64,7 +64,7 @@ Page {
                 text: replyToPostUri ? qsTr("Reply", "verb on reply button") : qsTr("Post", "verb on post button")
             }
 
-            enabled: postText.textLength() <= maxPostLength && (postText.textLength() > 0 || page.images.length > 0)
+            enabled: postText.graphemeLength <= maxPostLength && (postText.graphemeLength > 0 || page.images.length > 0)
             onClicked: {
                 postButton.enabled = false
 
@@ -96,13 +96,13 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             from: 0
-            to: page.maxPostLength
-            value: postText.graphemeLength() - postUtils.getLinkShorteningReduction()
+            to: Math.max(page.maxPostLength, postText.graphemeLength)
+            value: postText.graphemeLength
 
             contentItem: Rectangle {
                 width: textLengthBar.visualPosition * parent.width
                 height: parent.height
-                color: textLengthBar.value <= maxPostLength ? "blue" : "red"
+                color: postText.graphemeLength <= maxPostLength ? "blue" : "red"
             }
         }
 
@@ -134,8 +134,8 @@ Page {
             y: 10
             anchors.rightMargin: 10
             anchors.right: parent.right
-            color: postText.textLength() <= maxPostLength ? Material.foreground : "red"
-            text: maxPostLength - textLengthBar.value
+            color: postText.graphemeLength <= maxPostLength ? Material.foreground : "red"
+            text: maxPostLength - postText.graphemeLength
         }
     }
 
@@ -167,13 +167,14 @@ Page {
         // Post text
         TextArea {
             property string highlightedText: ""
+            property int graphemeLength: 0
 
             id: postText
             y: replyToColumn.visible ? replyToColumn.height + 5 : 0
             width: page.width
             leftPadding: 10
             rightPadding: 10
-            placeholderText: textLength() === 0 ? "Say something nice" : ""
+            placeholderText: graphemeLength === 0 ? "Say something nice" : ""
             placeholderTextColor: "grey"
             textFormat: TextEdit.PlainText
             wrapMode: TextEdit.Wrap
@@ -185,19 +186,22 @@ Page {
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
 
+            onTextChanged: {
+                highlightFacets()
+                updateGraphemeLength()
+            }
+
+            onPreeditTextChanged: updateGraphemeLength()
+
             function highlightFacets() {
                 highlightedText = postUtils.highlightMentionsAndLinks(postText.text,
                         postText.preeditText, cursorPosition, guiSettings.linkColor)
             }
 
-            onTextChanged: highlightFacets()
-
-            function textLength() {
-                return length + preeditText.length
-            }
-
-            function graphemeLength() {
-                return postUtils.graphemeLength(postText.text) + postUtils.graphemeLength(preeditText)
+            function updateGraphemeLength() {
+                graphemeLength = postUtils.graphemeLength(postText.text) +
+                        postUtils.graphemeLength(preeditText) -
+                        postUtils.getLinkShorteningReduction()
             }
 
             // This Text element overlays the invisible TextArea to show the highlighted

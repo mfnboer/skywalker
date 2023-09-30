@@ -16,6 +16,7 @@ static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
+static constexpr int AUTHOR_ADD_PAGE_SIZE = 50;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
@@ -29,6 +30,7 @@ Skywalker::Skywalker(QObject* parent) :
 Skywalker::~Skywalker()
 {
     Q_ASSERT(mPostThreadModels.empty());
+    Q_ASSERT(mAuthorFeedModels.empty());
 }
 
 void Skywalker::login(const QString user, QString password, const QString host)
@@ -504,8 +506,8 @@ void Skywalker::getPostThread(const QString& uri)
                 return;
             }
 
-            mPostThreadModels[mNextPostThreadModelId++] = std::move(model);
-            emit postThreadOk(mNextPostThreadModelId - 1, postEntryIndex);
+            int id = mPostThreadModels.put(std::move(model));
+            emit postThreadOk(id, postEntryIndex);
         },
         [this](const QString& error){
             setGetPostThreadInProgress(false);
@@ -526,14 +528,14 @@ std::optional<QString> Skywalker::makeOptionalCursor(const QString& cursor) cons
 const PostThreadModel* Skywalker::getPostThreadModel(int id) const
 {
     qDebug() << "Get model:" << id;
-    auto it = mPostThreadModels.find(id);
-    return it != mPostThreadModels.end() ? it->second.get() : nullptr;
+    auto* model = mPostThreadModels.get(id);
+    return model ? model->get() : nullptr;
 }
 
 void Skywalker::removePostThreadModel(int id)
 {
     qDebug() << "Remove model:" << id;
-    mPostThreadModels.erase(id);
+    mPostThreadModels.remove(id);
 }
 
 void Skywalker::updatePostIndexTimestamps()
@@ -549,7 +551,7 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
     update(&mTimelineModel);
     update(&mNotificationListModel);
 
-    for (auto& [_, model] : mPostThreadModels)
+    for (auto& [_, model] : mPostThreadModels.items())
         update(model.get());
 }
 
@@ -606,6 +608,70 @@ void Skywalker::getDetailedProfile(const QString& author)
         },
         [this](const QString& error){
             qDebug() << "getDetailedProfile failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+Q_INVOKABLE void Skywalker::getAuthorFeed(const QString& author, int limit, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get author feed:" << author;
+
+    mBsky->getAuthorFeed(author, limit, makeOptionalCursor(cursor),
+        [this, author](auto feed){
+            auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, this);
+            const bool added = model->setFeed(std::move(feed));
+            const int id = mAuthorFeedModels.put(std::move(model));
+            emit getAuthorFeedOK(id);
+
+            if (!added)
+                getAuthorFeedNextPage(id);
+        },
+        [this](const QString& error){
+            qDebug() << "getAuthorFeed failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
+{
+    if (maxPages <= 0)
+    {
+        // Protection against infinite loop.
+        qWarning() << "Maximum pages reached!";
+        return;
+    }
+
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    auto* authorFeedModel = (*model).get();
+    const auto& author = authorFeedModel->getAuthor();
+    const auto& cursor = authorFeedModel->getCursorNextPage();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of page reached.";
+        return;
+    }
+
+    qDebug() << "Get next author feed page:" << author << "cursor:" << cursor;
+
+    mBsky->getAuthorFeed(author, AUTHOR_ADD_PAGE_SIZE, makeOptionalCursor(cursor),
+        [this, id, maxPages, authorFeedModel](auto feed){
+            bool added = authorFeedModel->addFeed(std::move(feed));
+
+            if (!added)
+                getAuthorFeedNextPage(id, maxPages - 1);
+        },
+        [this](const QString& error){
+            qDebug() << "getAuthorFeedNextPage failed:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
 }

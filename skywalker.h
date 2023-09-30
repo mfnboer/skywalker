@@ -1,6 +1,8 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "author_feed_model.h"
+#include "item_store.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
 #include "post_thread_model.h"
@@ -42,6 +44,8 @@ public:
     Q_INVOKABLE void getNotifications(int limit, bool updateSeen = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage();
     Q_INVOKABLE void getDetailedProfile(const QString& author);
+    Q_INVOKABLE void getAuthorFeed(const QString& author, int limit, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 50);
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
@@ -75,6 +79,7 @@ signals:
     void avatarUrlChanged();
     void unreadNotificationCountChanged();
     void getDetailedProfileOK(DetailedProfile);
+    void getAuthorFeedOK(int id);
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
@@ -103,9 +108,8 @@ private:
     QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
 
-    std::unordered_map<int, PostThreadModel::Ptr> mPostThreadModels;
-    int mNextPostThreadModelId = 1;
-
+    ItemStore<PostThreadModel::Ptr> mPostThreadModels;
+    ItemStore<AuthorFeedModel::Ptr> mAuthorFeedModels;
     NotificationListModel mNotificationListModel;
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;

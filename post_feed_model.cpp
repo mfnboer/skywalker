@@ -11,6 +11,8 @@ PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& follow
 
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
+    // TODO: can the network send an empty page and a cursor for the next page??
+    // Or maybe an empty feed without cursor, indicating there is nothing more.
     if (feed->mFeed.empty())
     {
         qDebug() << "Trying to set an empty feed";

@@ -111,6 +111,9 @@ qt_add_qml_module(appskywalker
         SOURCES author_cache.h
         SOURCES author_cache.cpp
         QML_FILES AuthorView.qml
+        SOURCES author_feed_model.h
+        SOURCES author_feed_model.cpp
+        SOURCES item_store.h
 )
 
 set_target_properties(appskywalker PROPERTIES
