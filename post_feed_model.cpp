@@ -11,14 +11,6 @@ PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& follow
 
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
-    // TODO: can the network send an empty page and a cursor for the next page??
-    // Or maybe an empty feed without cursor, indicating there is nothing more.
-    if (feed->mFeed.empty())
-    {
-        qDebug() << "Trying to set an empty feed";
-        return;
-    }
-
     if (mFeed.empty())
     {
         addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
@@ -172,13 +164,6 @@ void PostFeedModel::clear()
 void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
-
-    if (feed->mFeed.empty())
-    {
-        qWarning() << "Received empty feed!";
-        return;
-    }
-
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 
     if (!page->mFeed.empty())
@@ -198,9 +183,21 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     }
 
     if (!page->mCursorNextPage.isEmpty())
+    {
         mIndexCursorMap[mFeed.size() - 1] = page->mCursorNextPage;
+    }
     else
+    {
         setEndOfFeed(true);
+
+        if (page->mFeed.empty() && !mFeed.empty())
+        {
+            // Set end of feed indication on existing row.
+            mFeed.back().setEndOfFeed(true);
+            const auto index = createIndex(mFeed.size() - 1, 0);
+            emit dataChanged(index, index, { int(Role::EndOfFeed) });
+        }
+    }
 
     logIndices();
 }

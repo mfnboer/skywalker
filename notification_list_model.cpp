@@ -49,8 +49,6 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
         clearLocalState();
 
     mCursor = notifications->mCursor.value_or(QString());
-    if (isEndOfList() && !mList.empty())
-        mList.back().setEndOfList(true);
 
     if (notifications->mNotifications.empty())
     {
@@ -58,6 +56,13 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
 
         if (clearFirst)
             clearRows();
+
+        if (isEndOfList() && !mList.empty())
+        {
+            mList.back().setEndOfList(true);
+            const auto index = createIndex(mList.size() - 1, 0);
+            emit dataChanged(index, index, { int(Role::EndOfList) });
+        }
 
         return;
     }
@@ -79,6 +84,10 @@ void NotificationListModel::addNotificationList(const NotificationList& list, bo
 
     beginInsertRows({}, mList.size(), newRowCount - 1);
     mList.insert(mList.end(), list.begin(), list.cend());
+
+    if (isEndOfList())
+        mList.back().setEndOfList(true);
+
     endInsertRows();
 
     qDebug() << "New list size:" << mList.size();

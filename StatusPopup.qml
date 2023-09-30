@@ -7,7 +7,8 @@ Popup {
 
     id: statusPopup
     width: parent.width
-    height: 50
+    height: 80
+    z: 200
 
     background: Rectangle {
         color: ["lightcyan", "crimson"][level]

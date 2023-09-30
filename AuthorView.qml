@@ -84,6 +84,8 @@ Page {
                 id: nameText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 elide: Text.ElideRight
+                wrapMode: Text.Wrap
+                maximumLineCount: 2
                 font.pointSize: guiSettings.scaledFont(16/8)
                 text: author.name
             }

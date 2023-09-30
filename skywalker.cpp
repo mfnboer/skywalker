@@ -559,6 +559,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
 
     for (auto& [_, model] : mPostThreadModels.items())
         update(model.get());
+
+    for (auto& [_, model] : mAuthorFeedModels.items())
+        update(model.get());
 }
 
 void Skywalker::getNotifications(int limit, bool updateSeen, const QString& cursor)

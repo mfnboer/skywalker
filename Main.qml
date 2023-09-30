@@ -50,7 +50,6 @@ ApplicationWindow {
     StatusPopup {
         id: statusPopup
         y: guiSettings.headerHeight
-        z: 100
     }
 
     Login {

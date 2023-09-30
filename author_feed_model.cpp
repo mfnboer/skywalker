@@ -35,12 +35,21 @@ bool AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 
     mCursorNextPage = feed->mCursor.value_or("");
+
     if (mCursorNextPage.isEmpty())
         setEndOfFeed(true);
 
     if (page->mFeed.empty())
     {
         qDebug() << "All posts have been filtered from page";
+
+        if (mCursorNextPage.isEmpty() && !mFeed.empty())
+        {
+            mFeed.back().setEndOfFeed(true);
+            const auto index = createIndex(mFeed.size() - 1, 0);
+            emit dataChanged(index, index, { int(Role::EndOfFeed) });
+        }
+
         return false;
     }
 
@@ -49,6 +58,10 @@ bool AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
     mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
     mRawFeed.push_back(std::move(feed));
+
+    if (mCursorNextPage.isEmpty())
+        mFeed.back().setEndOfFeed(true);
+
     endInsertRows();
 
     qDebug() << "New feed size:" << mFeed.size();
