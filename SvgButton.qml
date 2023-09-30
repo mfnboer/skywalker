@@ -9,7 +9,7 @@ RoundButton {
     property int imageMargin: 10
 
     Material.background: "black"
-    opacity: 0.7
+    opacity: 1
 
     SvgImage {
         width: button.width - 2 * button.imageMargin

@@ -50,6 +50,7 @@ public:
     Q_INVOKABLE int createAuthorFeedModel(const QString& author);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
+    Q_INVOKABLE QString getUserDid() const { return mUserDid; }
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 

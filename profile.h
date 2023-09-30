@@ -8,6 +8,37 @@
 
 namespace Skywalker {
 
+class ProfileViewerState
+{
+    Q_GADGET
+    Q_PROPERTY(bool valid READ isValid FINAL)
+    Q_PROPERTY(bool muted READ isMuted FINAL)
+    Q_PROPERTY(bool blockedBy READ isBlockedBy FINAL)
+    Q_PROPERTY(QString blocking READ getBlocking FINAL)
+    Q_PROPERTY(QString following READ getFollowing FINAL)
+    Q_PROPERTY(QString followedBy READ getFollowedBy FINAL)
+    QML_VALUE_TYPE(profileviewerstate)
+
+public:
+    ProfileViewerState() = default;
+    explicit ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState);
+
+    bool isValid() const { return mValid; }
+    bool isMuted() const { return mMuted; }
+    bool isBlockedBy() const { return mBlockedBy; }
+    const QString& getBlocking() const { return mBlocking; }
+    const QString& getFollowing() const { return mFollowing; }
+    const QString& getFollowedBy() const { return mFollowedBy; }
+
+private:
+    bool mValid = false;
+    bool mMuted = false;
+    bool mBlockedBy = false;
+    QString mBlocking;
+    QString mFollowing;
+    QString mFollowedBy;
+};
+
 class BasicProfile
 {
     Q_GADGET
@@ -17,6 +48,7 @@ class BasicProfile
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
+    Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
     QML_VALUE_TYPE(basicprofile)
 
 public:
@@ -33,6 +65,7 @@ public:
     QString getHandle() const;
     QString getAvatarUrl() const;
     ImageView getImageView() const;
+    ProfileViewerState getViewer() const;
 
     // The profile is volatile if it depends on pointers to the raw data.
     bool isVolatile() const;
@@ -49,6 +82,7 @@ private:
     QString mHandle;
     QString mDisplayName;
     QString mAvatarUrl;
+    ProfileViewerState mViewer;
 };
 
 class DetailedProfile : public BasicProfile
@@ -77,5 +111,6 @@ private:
 
 }
 
+Q_DECLARE_METATYPE(Skywalker::ProfileViewerState)
 Q_DECLARE_METATYPE(Skywalker::BasicProfile)
 Q_DECLARE_METATYPE(Skywalker::DetailedProfile)

@@ -4,6 +4,16 @@
 
 namespace Skywalker {
 
+ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState) :
+    mValid(true),
+    mMuted(viewerState.mMuted),
+    mBlockedBy(viewerState.mBlockedBy),
+    mBlocking(viewerState.mBlocking.value_or("")),
+    mFollowing(viewerState.mFollowing.value_or("")),
+    mFollowedBy(viewerState.mFollowedBy.value_or(""))
+{
+}
+
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile) :
     mProfileBasicView(profile)
 {
@@ -112,6 +122,20 @@ ImageView BasicProfile::getImageView() const
     return ImageView(getAvatarUrl(), getName());
 }
 
+ProfileViewerState BasicProfile::getViewer() const
+{
+    if (mProfileBasicView)
+        return mProfileBasicView->mViewer ? ProfileViewerState(*mProfileBasicView->mViewer) : ProfileViewerState{};
+
+    if (mProfileView)
+        return mProfileView->mViewer ? ProfileViewerState(*mProfileView->mViewer) : ProfileViewerState{};
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mViewer ? ProfileViewerState(*mProfileDetailedView->mViewer) : ProfileViewerState{};
+
+    return mViewer;
+}
+
 bool BasicProfile::isVolatile() const
 {
     return mProfileBasicView || mProfileView || mProfileDetailedView;
@@ -120,6 +144,7 @@ bool BasicProfile::isVolatile() const
 BasicProfile BasicProfile::nonVolatileCopy() const
 {
     BasicProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl());
+    profile.mViewer = getViewer();
     return profile;
 }
 

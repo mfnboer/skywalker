@@ -68,9 +68,9 @@ Page {
 
     ListView {
         id: authorFeedView
-        y: avatar.y + avatar.height
+        y: avatar.y + avatar.height / 2 + 10
         width: parent.width
-        height: parent.height - avatar.y - avatar.height
+        height: parent.height - y
         spacing: 0
         model: skywalker.getAuthorFeedModel(page.modelId)
         ScrollIndicator.vertical: ScrollIndicator {}
@@ -79,6 +79,31 @@ Page {
             width: parent.width
             leftPadding: 10
             rightPadding: 10
+
+            RowLayout {
+                Button {
+                    Material.background: guiSettings.buttonColor
+                    contentItem: Text {
+                        color: guiSettings.buttonTextColor
+                        text: qsTr("Follow")
+                    }
+                    visible: !author.viewer.following && skywalker.getUserDid() !== author.did
+                }
+                Button {
+                    flat: true
+                    Material.background: guiSettings.labelColor
+                    contentItem: Text {
+                        color: guiSettings.textColor
+                        text: qsTr("following")
+                    }
+                    visible: author.viewer.following && skywalker.getUserDid() !== author.did
+                }
+                SvgButton {
+                    Material.background: guiSettings.buttonColor
+                    iconColor: guiSettings.buttonTextColor
+                    svg: svgOutline.moreVert
+                }
+            }
 
             Text {
                 id: nameText
@@ -90,12 +115,23 @@ Page {
                 text: author.name
             }
 
-            Text {
-                id: handleText
+            RowLayout {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
-                elide: Text.ElideRight
-                color: guiSettings.handleColor
-                text: `@${author.handle}`
+
+                Text {
+                    id: handleText
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    color: guiSettings.handleColor
+                    text: `@${author.handle}`
+                }
+                Label {
+                    padding: 3
+                    background: Rectangle { color: guiSettings.labelColor }
+                    font.pointSize: guiSettings.labelFontSize
+                    text: qsTr("follows you")
+                    visible: author.viewer.followedBy
+                }
             }
 
             Row {

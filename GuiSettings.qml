@@ -18,9 +18,13 @@ Item {
     readonly property string footerColor: "white"
     readonly property string handleColor: "grey"
     readonly property string headerColor: "black"
+    readonly property string labelColor: "linen"
     readonly property string linkColor: "blue"
     readonly property string postHighLightColor: "aliceblue"
     readonly property string textColor: Material.foreground
+
+    // Font size
+    readonly property double labelFontSize: scaledFont(7/8)
 
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;

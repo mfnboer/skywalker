@@ -53,6 +53,7 @@ Page {
     SvgButton {
         iconColor: "white"
         Material.background: "black"
+        opacity: 0.7
         svg: svgOutline.arrowBack
         onClicked: page.closed()
     }

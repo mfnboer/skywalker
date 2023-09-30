@@ -273,7 +273,6 @@ Page {
                             height: width
                             iconColor: "white"
                             Material.background: "black"
-                            opacity: 1
                             svg: svgOutline.close
                             onClicked: page.images.splice(index, 1)
                         }
@@ -310,7 +309,6 @@ Page {
                 height: width
                 iconColor: "white"
                 Material.background: "black"
-                opacity: 1
                 svg: svgOutline.close
                 onClicked: linkCard.hide()
             }
