@@ -7,12 +7,13 @@ Page {
     required property var skywalker
     required property detailedprofile author
     required property int modelId
-    property int margin: 8
 
+    property int margin: 8
     property bool inTopOvershoot: false
     property bool gettingNewPosts: false
     property bool inBottomOvershoot: false
     property bool gettingNextPage: false
+    property string following: author.viewer.following
 
     signal closed
 
@@ -87,18 +88,23 @@ Page {
                         color: guiSettings.buttonTextColor
                         text: qsTr("Follow")
                     }
-                    visible: !author.viewer.following && skywalker.getUserDid() !== author.did
+                    visible: !following && authorIsUser()
+
+                    onClicked: graphUtils.follow(author.did)
                 }
                 Button {
                     flat: true
                     Material.background: guiSettings.labelColor
                     contentItem: Text {
                         color: guiSettings.textColor
-                        text: qsTr("following")
+                        text: qsTr("Following")
                     }
-                    visible: author.viewer.following && skywalker.getUserDid() !== author.did
+                    visible: following && authorIsUser()
+
+                    onClicked: graphUtils.unfollow(following)
                 }
                 SvgButton {
+                    Layout.fillHeight: true
                     Material.background: guiSettings.buttonColor
                     iconColor: guiSettings.buttonTextColor
                     svg: svgOutline.moreVert
@@ -230,13 +236,31 @@ Page {
         }
     }
 
+    StatusPopup {
+        id: statusPopup
+    }
+
     PostUtils {
         id: postUtils
         skywalker: page.skywalker
     }
 
+    GraphUtils {
+        id: graphUtils
+        skywalker: page.skywalker
+
+        onFollowOk: (uri) => { following = uri }
+        onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnfollowOk: following = ""
+        onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    function authorIsUser() {
+        return skywalker.getUserDid() !== author.did
     }
 
     function feedInProgressChanged() {

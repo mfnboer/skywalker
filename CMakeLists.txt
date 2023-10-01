@@ -114,6 +114,8 @@ qt_add_qml_module(appskywalker
         SOURCES author_feed_model.h
         SOURCES author_feed_model.cpp
         SOURCES item_store.h
+        SOURCES graph_utils.h
+        SOURCES graph_utils.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

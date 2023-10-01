@@ -7,7 +7,7 @@ Popup {
 
     id: statusPopup
     width: parent.width
-    height: 80
+    height: 60
     z: 200
 
     background: Rectangle {
