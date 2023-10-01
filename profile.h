@@ -74,10 +74,11 @@ public:
 
 protected:
     const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;
+    const ATProto::AppBskyActor::ProfileView* mProfileView = nullptr;
 
 private:
     const ATProto::AppBskyActor::ProfileViewBasic* mProfileBasicView = nullptr;
-    const ATProto::AppBskyActor::ProfileView* mProfileView = nullptr;
+
     QString mDid;
     QString mHandle;
     QString mDisplayName;
@@ -85,11 +86,24 @@ private:
     ProfileViewerState mViewer;
 };
 
-class DetailedProfile : public BasicProfile
+class Profile : public BasicProfile
+{
+    Q_GADGET
+    Q_PROPERTY(QString description READ getDescription FINAL)
+    QML_VALUE_TYPE(profile)
+
+public:
+    Profile() = default;
+    Profile(const ATProto::AppBskyActor::ProfileView* profile);
+    Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
+
+    QString getDescription() const;
+};
+
+class DetailedProfile : public Profile
 {
     Q_GADGET
     Q_PROPERTY(QString banner READ getBanner FINAL)
-    Q_PROPERTY(QString description READ getDescription FINAL)
     Q_PROPERTY(int followersCount READ getFollowersCount FINAL)
     Q_PROPERTY(int followsCount READ getFollowsCount FINAL)
     Q_PROPERTY(int postsCount READ getPostsCount FINAL)
@@ -100,7 +114,6 @@ public:
     DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
 
     QString getBanner() const;
-    QString getDescription() const;
     int getFollowersCount() const;
     int getFollowsCount() const;
     int getPostsCount() const;
@@ -113,4 +126,5 @@ private:
 
 Q_DECLARE_METATYPE(Skywalker::ProfileViewerState)
 Q_DECLARE_METATYPE(Skywalker::BasicProfile)
+Q_DECLARE_METATYPE(Skywalker::Profile)
 Q_DECLARE_METATYPE(Skywalker::DetailedProfile)

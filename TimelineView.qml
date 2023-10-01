@@ -10,9 +10,7 @@ ListView {
     property int unreadPosts: 0
 
     property bool inTopOvershoot: false
-    property bool gettingNewPosts: false
     property bool inBottomOvershoot: false
-    property bool gettingNextPage: false
 
     id: timelineView
     spacing: 0
@@ -42,7 +40,7 @@ ListView {
             Item {
                 Layout.rightMargin: 10
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                height: parent.height - 20
+                height: parent.height - 10
                 width: height
 
                 Avatar {
@@ -98,7 +96,6 @@ ListView {
 
         if (verticalOvershoot < 0)  {
             if (!inTopOvershoot && !skywalker.getTimelineInProgress) {
-                gettingNewPosts = true
                 skywalker.getTimeline(50)
             }
 
@@ -109,7 +106,6 @@ ListView {
 
         if (verticalOvershoot > 0) {
             if (!inBottomOvershoot && !skywalker.getTimelineInProgress) {
-                gettingNextPage = true
                 skywalker.getTimelineNextPage()
             }
 
@@ -120,17 +116,9 @@ ListView {
     }
 
     BusyIndicator {
-        id: busyTopIndicator
-        y: parent.y + guiSettings.headerHeight
-        anchors.horizontalCenter: parent.horizontalCenter
-        running: gettingNewPosts
-    }
-
-    BusyIndicator {
-        id: busyBottomIndicator
-        y: parent.y + parent.height - height - guiSettings.footerHeight
-        anchors.horizontalCenter: parent.horizontalCenter
-        running: gettingNextPage
+        id: busyIndicator
+        anchors.centerIn: parent
+        running: skywalker.getTimelineInProgress
     }
 
     GuiSettings {
@@ -170,14 +158,6 @@ ListView {
 
                 let firstVisibleIndex = indexAt(0, contentY)
                 updateUnreadPosts(firstVisibleIndex)
-            })
-    }
-
-    Component.onCompleted: {
-        skywalker.onGetTimeLineInProgressChanged.connect(() => {
-                if (!skywalker.getTimelineInProgress)
-                    gettingNewPosts = false
-                    gettingNextPage = false
             })
     }
 }

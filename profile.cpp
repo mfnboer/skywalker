@@ -148,8 +148,29 @@ BasicProfile BasicProfile::nonVolatileCopy() const
     return profile;
 }
 
+Profile::Profile(const ATProto::AppBskyActor::ProfileView* profile) :
+    BasicProfile(profile)
+{
+}
+
+Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile) :
+    BasicProfile(profile)
+{
+}
+
+QString Profile::getDescription() const
+{
+    if (mProfileView)
+        return mProfileView->mDescription.value_or("");
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mDescription.value_or("");
+
+    return {};
+}
+
 DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
-    BasicProfile(profile.get()),
+    Profile(profile.get()),
     mDetailedProfile(profile)
 {
 }
@@ -157,11 +178,6 @@ DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetaile
 QString DetailedProfile::getBanner() const
 {
     return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : QString();
-}
-
-QString DetailedProfile::getDescription() const
-{
-    return mProfileDetailedView ? mProfileDetailedView->mDescription.value_or("") : QString();
 }
 
 int DetailedProfile::getFollowersCount() const

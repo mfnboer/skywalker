@@ -300,6 +300,14 @@ ApplicationWindow {
         currentStack().push(view)
     }
 
+    function viewAuthorList(modelId, title) {
+        let component = Qt.createComponent("AuthorListView.qml")
+        let view = component.createObject(root, { title: title, modelId: modelId, skywalker: skywalker })
+        view.onClosed.connect(() => { popStack() })
+        currentStack().push(view)
+        skywalker.getAuthorList(modelId, 50)
+    }
+
     function getTimelineView() {
         return timelineStack.get(0)
     }

@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "author_feed_model.h"
+#include "author_list_model.h"
 #include "item_store.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
@@ -22,6 +23,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
+    Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     QML_ELEMENT
@@ -50,6 +52,11 @@ public:
     Q_INVOKABLE int createAuthorFeedModel(const QString& author);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
+    Q_INVOKABLE void getAuthorList(int id, int limit, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorListNextPage(int id);
+    Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
+    Q_INVOKABLE const AuthorListModel* getAuthorListModel(int id) const;
+    Q_INVOKABLE void removeAuthorListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
@@ -63,6 +70,8 @@ public:
     bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
     void setGetAuthorFeedInProgress(bool inProgress);
     bool isGetAuthorFeedInProgress() const { return mGetAuthorFeedInProgress; }
+    void setGetAuthorListInProgress(bool inProgress);
+    bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
     const QString& getAvatarUrl() const { return mAvatarUrl; }
     void setAvatarUrl(const QString& avatarUrl);
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
@@ -87,6 +96,7 @@ signals:
     void unreadNotificationCountChanged();
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorFeedInProgressChanged();
+    void getAuthorListInProgressChanged();
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
@@ -113,11 +123,13 @@ private:
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
+    bool mGetAuthorListInProgress = false;
     QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
 
     ItemStore<PostThreadModel::Ptr> mPostThreadModels;
     ItemStore<AuthorFeedModel::Ptr> mAuthorFeedModels;
+    ItemStore<AuthorListModel::Ptr> mAuthorListModels;
     NotificationListModel mNotificationListModel;
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;

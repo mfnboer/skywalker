@@ -25,7 +25,6 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
-            color: homeActive ? "transparent" : "lightgrey"
 
             SvgImage {
                 id: homeButton
@@ -34,7 +33,7 @@ Rectangle {
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
-                svg: svgOutline.home
+                svg: homeActive ? svgFilled.home : svgOutline.home
 
                 Rectangle {
                     x: parent.width - 17
@@ -43,7 +42,7 @@ Rectangle {
                     height: 20
                     radius: 8
                     color: guiSettings.badgeColor
-                    border.color: homeActive ? guiSettings.badgeBorderColor : "lightgrey"
+                    border.color: guiSettings.badgeBorderColor
                     border.width: 2
                     visible: timeline.unreadPosts > 0
 
@@ -67,7 +66,6 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
-            color: notificationsActive ? "transparent" : "lightgrey"
 
             SvgImage {
                 id: notificationsButton
@@ -76,7 +74,7 @@ Rectangle {
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
-                svg: svgOutline.notifications
+                svg: notificationsActive ? svgFilled.notifications : svgOutline.notifications
 
                 Rectangle {
                     x: parent.width - 17
@@ -85,7 +83,7 @@ Rectangle {
                     height: 20
                     radius: 8
                     color: guiSettings.badgeColor
-                    border.color: notificationsActive ? guiSettings.badgeBorderColor : "lightgrey"
+                    border.color: guiSettings.badgeBorderColor
                     border.width: 2
                     visible: skywalker.unreadNotificationCount > 0
 

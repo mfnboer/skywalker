@@ -116,6 +116,10 @@ qt_add_qml_module(appskywalker
         SOURCES item_store.h
         SOURCES graph_utils.h
         SOURCES graph_utils.cpp
+        SOURCES author_list_model.h
+        SOURCES author_list_model.cpp
+        QML_FILES AuthorViewDelegate.qml
+        QML_FILES AuthorListView.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

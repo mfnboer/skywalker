@@ -10,9 +10,7 @@ Page {
 
     property int margin: 8
     property bool inTopOvershoot: false
-    property bool gettingNewPosts: false
     property bool inBottomOvershoot: false
-    property bool gettingNextPage: false
     property string following: author.viewer.following
 
     signal closed
@@ -82,32 +80,37 @@ Page {
             rightPadding: 10
 
             RowLayout {
-                Button {
-                    Material.background: guiSettings.buttonColor
-                    contentItem: Text {
-                        color: guiSettings.buttonTextColor
-                        text: qsTr("Follow")
-                    }
-                    visible: !following && authorIsUser()
-
-                    onClicked: graphUtils.follow(author.did)
-                }
-                Button {
-                    flat: true
-                    Material.background: guiSettings.labelColor
-                    contentItem: Text {
-                        color: guiSettings.textColor
-                        text: qsTr("Following")
-                    }
-                    visible: following && authorIsUser()
-
-                    onClicked: graphUtils.unfollow(following)
-                }
                 SvgButton {
-                    Layout.fillHeight: true
                     Material.background: guiSettings.buttonColor
                     iconColor: guiSettings.buttonTextColor
                     svg: svgOutline.moreVert
+                }
+                RoundButton {
+                    id: followButton
+                    Material.background: guiSettings.buttonColor
+                    contentItem: Text {
+                        leftPadding: 10
+                        rightPadding: 10
+                        color: guiSettings.buttonTextColor
+                        text: qsTr("Follow")
+                    }
+                    visible: !following && !authorIsUser()
+
+                    onClicked: graphUtils.follow(author.did)
+                }
+                RoundButton {
+                    id: unfollowButton
+                    flat: true
+                    Material.background: guiSettings.labelColor
+                    contentItem: Text {
+                        leftPadding: 10
+                        rightPadding: 10
+                        color: guiSettings.textColor
+                        text: qsTr("Following")
+                    }
+                    visible: following && !authorIsUser()
+
+                    onClicked: graphUtils.unfollow(following)
                 }
             }
 
@@ -153,6 +156,15 @@ Page {
                 Text {
                     color: guiSettings.linkColor
                     text: qsTr(`<b>${author.followsCount}</b> following`)
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            // TODO: proper enum instead of 0
+                            let modelId = skywalker.createAuthorListModel(0, author.did)
+                            root.viewAuthorList(modelId, qsTr("Following"))
+                        }
+                    }
                 }
                 Text {
                     text: qsTr(`<b>${author.postsCount}</b> posts`)
@@ -200,7 +212,6 @@ Page {
         onVerticalOvershootChanged: {
             if (verticalOvershoot < 0)  {
                 if (!inTopOvershoot && !skywalker.getAuthorFeedInProgress) {
-                    gettingNewPosts = true
                     skywalker.getAuthorFeed(modelId, 100)
                 }
 
@@ -211,7 +222,6 @@ Page {
 
             if (verticalOvershoot > 0) {
                 if (!inBottomOvershoot && !skywalker.getAuthorFeedInProgress) {
-                    gettingNextPage = true
                     skywalker.getAuthorFeedNextPage(modelId)
                 }
 
@@ -222,17 +232,9 @@ Page {
         }
 
         BusyIndicator {
-            id: busyTopIndicator
-            y: parent.y + guiSettings.headerHeight
-            anchors.horizontalCenter: parent.horizontalCenter
-            running: gettingNewPosts
-        }
-
-        BusyIndicator {
-            id: busyBottomIndicator
-            y: parent.y + parent.height - height - guiSettings.footerHeight
-            anchors.horizontalCenter: parent.horizontalCenter
-            running: gettingNextPage
+            id: busyIndicator
+            anchors.centerIn: parent
+            running: skywalker.getAuthorFeedInProgress
         }
     }
 
@@ -260,21 +262,10 @@ Page {
     }
 
     function authorIsUser() {
-        return skywalker.getUserDid() !== author.did
+        return skywalker.getUserDid() === author.did
     }
 
-    function feedInProgressChanged() {
-        if (!skywalker.getAuthorFeedInProgress) {
-            gettingNewPosts = false
-            gettingNextPage = false
-        }
-    }
-
-    Component.onCompleted: {
-        skywalker.onGetAuthorFeedInProgressChanged.connect(feedInProgressChanged)
-    }
     Component.onDestruction: {
-        skywalker.onGetAuthorFeedInProgressChanged.disconnect(feedInProgressChanged)
         skywalker.removeAuthorFeedModel(modelId)
     }
 }

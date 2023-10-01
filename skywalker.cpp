@@ -16,7 +16,8 @@ static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
-static constexpr int AUTHOR_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
+static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
+static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
@@ -31,6 +32,7 @@ Skywalker::~Skywalker()
 {
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
+    Q_ASSERT(mAuthorListModels.empty());
 }
 
 void Skywalker::login(const QString user, QString password, const QString host)
@@ -457,6 +459,12 @@ void Skywalker::setGetAuthorFeedInProgress(bool inProgress)
     emit getAuthorFeedInProgressChanged();
 }
 
+void Skywalker::setGetAuthorListInProgress(bool inProgress)
+{
+    mGetAuthorListInProgress = inProgress;
+    emit getAuthorListInProgressChanged();
+}
+
 void Skywalker::setAvatarUrl(const QString& avatarUrl)
 {
     mAvatarUrl = avatarUrl;
@@ -693,11 +701,11 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
 
     if (cursor.isEmpty())
     {
-        qDebug() << "End of page reached.";
+        qDebug() << "End of feed reached.";
         return;
     }
 
-    getAuthorFeed(id, AUTHOR_ADD_PAGE_SIZE, maxPages, cursor);
+    getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, cursor);
 }
 
 int Skywalker::createAuthorFeedModel(const QString& author)
@@ -718,6 +726,95 @@ void Skywalker::removeAuthorFeedModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mAuthorFeedModels.remove(id);
+}
+
+void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get author list model:" << id << "cursor:" << cursor;
+
+    if (mGetAuthorListInProgress)
+    {
+        qDebug() << "Get author list still in progress";
+        return;
+    }
+
+    const auto* model = mAuthorListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    const AuthorListModel::Type type = (*model)->getType();
+    const auto& atId = (*model)->getAtId();
+    qDebug() << "Get author list:" << atId << "type:" << int(type);
+
+    // TODO: other types
+    setGetAuthorListInProgress(true);
+    mBsky->getFollows(atId, limit, makeOptionalCursor(cursor),
+        [this, atId, id, model, cursor](auto output){
+            setGetAuthorListInProgress(false);
+            (*model)->addAuthors(std::move(output->mFollows), output->mCursor.value_or(""));
+        },
+        [this](const QString& error){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getAuthorFeed failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getAuthorListNextPage(int id)
+{
+    qDebug() << "Get author list next page, model:" << id;
+
+    if (mGetAuthorListInProgress)
+    {
+        qDebug() << "Get author list still in progress";
+        return;
+    }
+
+    const auto* model = mAuthorListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    auto* authorListModel = (*model).get();
+    const auto& cursor = authorListModel->getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of list reached.";
+        return;
+    }
+
+    getAuthorList(id, AUTHOR_LIST_ADD_PAGE_SIZE, cursor);
+}
+
+int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
+{
+    auto model = std::make_unique<AuthorListModel>(type, atId, this);
+    const int id = mAuthorListModels.put(std::move(model));
+    return id;
+}
+
+const AuthorListModel* Skywalker::getAuthorListModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mAuthorListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeAuthorListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mAuthorListModels.remove(id);
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
