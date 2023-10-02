@@ -66,6 +66,8 @@ Rectangle {
         }
 
         Row {
+            Layout.fillHeight: true
+
             SkyButton {
                 text: qsTr("Follow")
                 visible: !followingUri && !isUser(author)

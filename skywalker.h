@@ -104,6 +104,8 @@ private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
     void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
+    void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
+    void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void startRefreshTimers();

@@ -738,13 +738,13 @@ void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QStri
 {
     setGetAuthorListInProgress(true);
     mBsky->getFollows(atId, limit, makeOptionalCursor(cursor),
-        [this, atId, model, cursor](auto output){
+        [this, model](auto output){
             setGetAuthorListInProgress(false);
             model->addAuthors(std::move(output->mFollows), output->mCursor.value_or(""));
         },
         [this](const QString& error){
             setGetAuthorListInProgress(false);
-            qDebug() << "getAuthorFeed failed:" << error;
+            qDebug() << "getFollowsAuthorList failed:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -753,13 +753,48 @@ void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QSt
 {
     setGetAuthorListInProgress(true);
     mBsky->getFollowers(atId, limit, makeOptionalCursor(cursor),
-        [this, atId, model, cursor](auto output){
+        [this, model](auto output){
             setGetAuthorListInProgress(false);
             model->addAuthors(std::move(output->mFollowers), output->mCursor.value_or(""));
         },
         [this](const QString& error){
             setGetAuthorListInProgress(false);
-            qDebug() << "getAuthorFeed failed:" << error;
+            qDebug() << "getFollowersAuthorList failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model)
+{
+    setGetAuthorListInProgress(true);
+    mBsky->getLikes(atId, limit, makeOptionalCursor(cursor),
+        [this, model](auto output){
+            setGetAuthorListInProgress(false);
+            ATProto::AppBskyActor::ProfileViewList profileList;
+
+            for (const auto& like : output->mLikes)
+                profileList.push_back(std::move(like->mActor));
+
+            model->addAuthors(std::move(profileList), output->mCursor.value_or(""));
+        },
+        [this](const QString& error){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getLikesAuthorList failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model)
+{
+    setGetAuthorListInProgress(true);
+    mBsky->getRepostedBy(atId, limit, makeOptionalCursor(cursor),
+        [this, model](auto output){
+            setGetAuthorListInProgress(false);
+            model->addAuthors(std::move(output->mRepostedBy), output->mCursor.value_or(""));
+        },
+        [this](const QString& error){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getRepostsAuthorList failed:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -796,8 +831,13 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
     case AuthorListModel::Type::AUTHOR_LIST_FOLLOWERS:
         getFollowersAuthorList(atId, limit, cursor, model->get());
         break;
+    case AuthorListModel::Type::AUTHOR_LIST_LIKES:
+        getLikesAuthorList(atId, limit, cursor, model->get());
+        break;
+    case AuthorListModel::Type::AUTHOR_LIST_REPOSTS:
+        getRepostsAuthorList(atId, limit, cursor, model->get());
+        break;
     }
-
 }
 
 void Skywalker::getAuthorListNextPage(int id)

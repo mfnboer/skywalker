@@ -59,7 +59,9 @@ public:
     enum AuthorListType
     {
         AUTHOR_LIST_FOLLOWS,
-        AUTHOR_LIST_FOLLOWERS
+        AUTHOR_LIST_FOLLOWERS,
+        AUTHOR_LIST_LIKES,
+        AUTHOR_LIST_REPOSTS
     };
     Q_ENUM(AuthorListType)
 };
