@@ -120,6 +120,10 @@ qt_add_qml_module(appskywalker
         SOURCES author_list_model.cpp
         QML_FILES AuthorViewDelegate.qml
         QML_FILES AuthorListView.qml
+        QML_FILES SkyLabel.qml
+        SOURCES local_author_model_changes.h
+        SOURCES local_author_model_changes.cpp
+        QML_FILES SkyButton.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

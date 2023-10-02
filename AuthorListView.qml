@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-// TODO: follows-you-label, follow/unfollow onClicked
+// TODO: follow/unfollow onClicked
 ListView {
     required property string title
     required property var skywalker
@@ -30,9 +30,17 @@ ListView {
             width: parent.width
             height: guiSettings.headerHeight
 
+            SvgButton {
+                id: backButton
+                iconColor: "white"
+                Material.background: "transparent"
+                svg: svgOutline.arrowBack
+                onClicked: authorListView.closed()
+            }
             Text {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
+                Layout.fillWidth: true
                 leftPadding: 10
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
@@ -45,6 +53,8 @@ ListView {
 
     delegate: AuthorViewDelegate {
         viewWidth: authorListView.width
+        onFollow: (did) => { graphUtils.follow(did) }
+        onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
     }
 
     onVerticalOvershootChanged: {
@@ -57,6 +67,14 @@ ListView {
         } else {
             inBottomOvershoot = false;
         }
+    }
+
+    GraphUtils {
+        id: graphUtils
+        skywalker: authorListView.skywalker
+
+        onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
     BusyIndicator {

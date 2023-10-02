@@ -7,8 +7,11 @@ import skywalker
 Rectangle {
     property int margin: 8
     required property int viewWidth
-
     required property profile author
+    required property string followingUri
+
+    signal follow(string did)
+    signal unfollow(string did, string uri)
 
     width: grid.width
     height: grid.height
@@ -17,7 +20,7 @@ Rectangle {
         id: grid
         columns: 3
         width: viewWidth
-        rowSpacing: 5
+        rowSpacing: 10
         columnSpacing: 10
 
         // Avatar
@@ -35,13 +38,13 @@ Rectangle {
                 width: parent.width - 13
                 height: width
                 avatarUrl: author.avatarUrl
-
                 onClicked: skywalker.getDetailedProfile(author.did)
             }
         }
 
         Column {
             Layout.fillWidth: true
+            spacing: 3
 
             Text {
                 width: parent.width
@@ -54,37 +57,25 @@ Rectangle {
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
-                text: author.handle
+                text: `@${author.handle}`
+            }
+            SkyLabel {
+                text: qsTr("follows you")
+                visible: author.viewer.followedBy
             }
         }
 
         Row {
-            RoundButton {
-                id: followButton
-                Material.background: guiSettings.buttonColor
-                contentItem: Text {
-                    leftPadding: 10
-                    rightPadding: 10
-                    color: guiSettings.buttonTextColor
-                    text: qsTr("Follow")
-                }
-                visible: !author.viewer.following && !isUser(author)
-
-                //onClicked: graphUtils.follow(author.did)
+            SkyButton {
+                text: qsTr("Follow")
+                visible: !followingUri && !isUser(author)
+                onClicked: follow(author.did)
             }
-            RoundButton {
-                id: unfollowButton
+            SkyButton {
                 flat: true
-                Material.background: guiSettings.labelColor
-                contentItem: Text {
-                    leftPadding: 10
-                    rightPadding: 10
-                    color: guiSettings.textColor
-                    text: qsTr("Following")
-                }
-                visible: author.viewer.following && !isUser(author)
-
-                //onClicked: graphUtils.unfollow(following)
+                text: qsTr("Following")
+                visible: followingUri && !isUser(author)
+                onClicked: unfollow(author.did, followingUri)
             }
         }
 
@@ -103,6 +94,11 @@ Rectangle {
             Layout.preferredHeight: 1
             color: "lightgrey"
         }
+    }
+    MouseArea {
+        z: -1
+        anchors.fill: parent
+        onClicked: skywalker.getDetailedProfile(author.did)
     }
 
     GuiSettings {

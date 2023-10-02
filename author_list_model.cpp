@@ -23,11 +23,14 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& author = mList[index.row()];
+    const auto* change = getLocalChange(author.getDid());
 
     switch (Role(role))
     {
     case Role::Author:
         return QVariant::fromValue(author);
+    case Role::FollowingUri:
+        return change && change->mFollowingUri ? *change->mFollowingUri : author.getViewer().getFollowing();
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -38,6 +41,7 @@ void AuthorListModel::clear()
 {
     beginRemoveRows({}, 0, mList.size() - 1);
     mList.clear();
+    clearLocalChanges();
     endRemoveRows();
 
     mCursor.clear();
@@ -63,10 +67,21 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors,
 QHash<int, QByteArray> AuthorListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
-        { int(Role::Author), "author" }
+        { int(Role::Author), "author" },
+        { int(Role::FollowingUri), "followingUri" }
     };
 
     return roles;
+}
+
+void AuthorListModel::followingUriChanged()
+{
+    changeData({ int(Role::FollowingUri) });
+}
+
+void AuthorListModel::changeData(const QList<int>& roles)
+{
+    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 }

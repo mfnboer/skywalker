@@ -41,6 +41,11 @@ void GraphUtils::follow(const QString& did)
 {
     graphMaster()->follow(did,
         [this, presence=getPresence(), did](const auto& followingUri, const auto&){
+            mSkywalker->makeLocalModelChange(
+                [did, followingUri](LocalAuthorModelChanges* model){
+                    model->updateFollowingUri(did, followingUri);
+                });
+
             if (presence)
                 emit followOk(followingUri);
         },
@@ -53,10 +58,14 @@ void GraphUtils::follow(const QString& did)
         });
 }
 
-void GraphUtils::unfollow(const QString& likeUri)
+void GraphUtils::unfollow(const QString& did, const QString& followingUri)
 {
-    graphMaster()->undo(likeUri,
-        [this, presence=getPresence()]{
+    graphMaster()->undo(followingUri,
+        [this, presence=getPresence(), did]{
+            mSkywalker->makeLocalModelChange(
+                [did](LocalAuthorModelChanges* model){
+                    model->updateFollowingUri(did, "");
+                });
 
             if (presence)
                 emit unfollowOk();

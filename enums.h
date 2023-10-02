@@ -55,6 +55,13 @@ public:
         NOTIFICATION_REASON_UNKNOWN
     };
     Q_ENUM(NotificationReason)
+
+    enum AuthorListType
+    {
+        AUTHOR_LIST_FOLLOWS,
+        AUTHOR_LIST_FOLLOWERS
+    };
+    Q_ENUM(AuthorListType)
 };
 
 }

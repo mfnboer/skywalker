@@ -1,24 +1,24 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
+#include "local_author_model_changes.h"
 #include "profile.h"
 #include <QAbstractListModel>
 #include <deque>
 
 namespace Skywalker {
 
-class AuthorListModel : public QAbstractListModel
+class AuthorListModel : public QAbstractListModel, public LocalAuthorModelChanges
 {
     Q_OBJECT
 public:
     enum class Role {
-        Author = Qt::UserRole + 1
+        Author = Qt::UserRole + 1,
+        FollowingUri
     };
 
-    enum class Type {
-        Follows,
-        Followers
-    };
+    using Type = QEnums::AuthorListType;
 
     using Ptr = std::unique_ptr<AuthorListModel>;
 
@@ -35,8 +35,13 @@ public:
     Type getType() const { return mType; }
     const QString& getAtId() const { return mAtId; }
 
-private:
+protected:
     QHash<int, QByteArray> roleNames() const override;
+
+    virtual void followingUriChanged() override;
+
+private:
+    void changeData(const QList<int>& roles);
 
     Type mType;
 

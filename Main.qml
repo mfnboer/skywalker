@@ -187,7 +187,6 @@ ApplicationWindow {
         }
     }
 
-
     PostUtils {
         id: postUtils
         skywalker: skywalker

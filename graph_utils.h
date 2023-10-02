@@ -19,7 +19,7 @@ public:
     explicit GraphUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE void follow(const QString& did);
-    Q_INVOKABLE void unfollow(const QString& likeUri);
+    Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);

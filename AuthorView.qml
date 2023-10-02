@@ -85,32 +85,16 @@ Page {
                     iconColor: guiSettings.buttonTextColor
                     svg: svgOutline.moreVert
                 }
-                RoundButton {
-                    id: followButton
-                    Material.background: guiSettings.buttonColor
-                    contentItem: Text {
-                        leftPadding: 10
-                        rightPadding: 10
-                        color: guiSettings.buttonTextColor
-                        text: qsTr("Follow")
-                    }
-                    visible: !following && !authorIsUser()
-
+                SkyButton {
+                    text: qsTr("Follow")
+                    visible: !following && !isUser(author)
                     onClicked: graphUtils.follow(author.did)
                 }
-                RoundButton {
-                    id: unfollowButton
+                SkyButton {
                     flat: true
-                    Material.background: guiSettings.labelColor
-                    contentItem: Text {
-                        leftPadding: 10
-                        rightPadding: 10
-                        color: guiSettings.textColor
-                        text: qsTr("Following")
-                    }
-                    visible: following && !authorIsUser()
-
-                    onClicked: graphUtils.unfollow(following)
+                    text: qsTr("Following")
+                    visible: following && !isUser(author)
+                    onClicked: graphUtils.unfollow(author.did, following)
                 }
             }
 
@@ -134,10 +118,7 @@ Page {
                     color: guiSettings.handleColor
                     text: `@${author.handle}`
                 }
-                Label {
-                    padding: 3
-                    background: Rectangle { color: guiSettings.labelColor }
-                    font.pointSize: guiSettings.labelFontSize
+                SkyLabel {
                     text: qsTr("follows you")
                     visible: author.viewer.followedBy
                 }
@@ -152,6 +133,15 @@ Page {
                 Text {
                     color: guiSettings.linkColor
                     text: qsTr(`<b>${author.followersCount}</b> followers`)
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            let modelId = skywalker.createAuthorListModel(
+                                    QEnums.AUTHOR_LIST_FOLLOWERS, author.did)
+                            root.viewAuthorList(modelId, qsTr("Followers"))
+                        }
+                    }
                 }
                 Text {
                     color: guiSettings.linkColor
@@ -160,8 +150,8 @@ Page {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            // TODO: proper enum instead of 0
-                            let modelId = skywalker.createAuthorListModel(0, author.did)
+                            let modelId = skywalker.createAuthorListModel(
+                                    QEnums.AUTHOR_LIST_FOLLOWS, author.did)
                             root.viewAuthorList(modelId, qsTr("Following"))
                         }
                     }
@@ -261,7 +251,7 @@ Page {
         id: guiSettings
     }
 
-    function authorIsUser() {
+    function isUser(author) {
         return skywalker.getUserDid() === author.did
     }
 

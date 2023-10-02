@@ -317,7 +317,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
             if (post->mReply && post->mReply->mParent)
             {
                 mSkywalker->makeLocalModelChange(
-                    [post](auto* model){
+                    [post](LocalPostModelChanges* model){
                         model->updateReplyCountDelta(post->mReply->mParent->mCid, 1);
                     });
             }
@@ -357,7 +357,7 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid)
     postMaster()->repost(uri, cid,
         [this, presence=getPresence(), cid](const auto& repostUri, const auto&){
             mSkywalker->makeLocalModelChange(
-                [cid, repostUri](auto* model){
+                [cid, repostUri](LocalPostModelChanges* model){
                     model->updateRepostCountDelta(cid, 1);
                     model->updateRepostUri(cid, repostUri);
                 });
@@ -379,7 +379,7 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
     postMaster()->undo(repostUri,
         [this, presence=getPresence(), origPostCid]{
             mSkywalker->makeLocalModelChange(
-                [origPostCid](auto* model){
+                [origPostCid](LocalPostModelChanges* model){
                     model->updateRepostCountDelta(origPostCid, -1);
                     model->updateRepostUri(origPostCid, "");
                 });
@@ -401,7 +401,7 @@ void PostUtils::like(const QString& uri, const QString& cid)
     postMaster()->like(uri, cid,
         [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
             mSkywalker->makeLocalModelChange(
-                [cid, likeUri](auto* model){
+                [cid, likeUri](LocalPostModelChanges* model){
                     model->updateLikeCountDelta(cid, 1);
                     model->updateLikeUri(cid, likeUri);
                 });
@@ -423,7 +423,7 @@ void PostUtils::undoLike(const QString& likeUri, const QString& cid)
     postMaster()->undo(likeUri,
         [this, presence=getPresence(), cid]{
             mSkywalker->makeLocalModelChange(
-                [cid](auto* model){
+                [cid](LocalPostModelChanges* model){
                     model->updateLikeCountDelta(cid, -1);
                     model->updateLikeUri(cid, "");
                 });

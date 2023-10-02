@@ -60,6 +60,7 @@ public:
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
+    void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     const NotificationListModel* getNotificationListModel() const { return &mNotificationListModel; }
@@ -101,6 +102,8 @@ signals:
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
+    void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
+    void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void startRefreshTimers();

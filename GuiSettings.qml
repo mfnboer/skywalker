@@ -24,7 +24,7 @@ Item {
     readonly property string textColor: Material.foreground
 
     // Font size
-    readonly property double labelFontSize: scaledFont(7/8)
+    readonly property double labelFontSize: scaledFont(6/8)
 
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;
