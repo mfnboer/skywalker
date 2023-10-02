@@ -255,11 +255,13 @@ Rectangle {
 
                Text {
                    rightPadding: 30
+                   color: guiSettings.linkColor
                    textFormat: Text.StyledText
                    text: postRepostCount > 1 ? qsTr(`<b>${postRepostCount}</b> reposts`) : qsTr(`<b>${postRepostCount}</b> repost`)
                    visible: postRepostCount
                }
                Text {
+                   color: guiSettings.linkColor
                    textFormat: Text.StyledText
                    text: postLikeCount > 1 ? qsTr(`<b>${postLikeCount}</b> likes`) : qsTr(`<b>${postLikeCount}</b> like`)
                    visible: postLikeCount
