@@ -49,7 +49,7 @@ Page {
                 text: qsTr("Cancel")
             }
 
-            onClicked: page.closed()
+            onClicked: page.cancel()
         }
 
         Button {
@@ -64,7 +64,7 @@ Page {
                 text: replyToPostUri ? qsTr("Reply", "verb on reply button") : qsTr("Post", "verb on post button")
             }
 
-            enabled: postText.graphemeLength <= maxPostLength && (postText.graphemeLength > 0 || page.images.length > 0)
+            enabled: postText.graphemeLength <= maxPostLength && page.hasContent()
             onClicked: {
                 postButton.enabled = false
 
@@ -181,7 +181,7 @@ Page {
             font.pointSize: guiSettings.scaledFont(9/8)
             clip: true
             focus: true
-            color: "transparent" // HACK: the highlighted text is show by displayText
+            color: "transparent" // HACK: the highlighted text is shown by displayText
             background: Rectangle { border.color: "transparent" }
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
@@ -347,6 +347,12 @@ Page {
         id: statusPopup
     }
 
+    BusyIndicator {
+        id: busyIndicator
+        anchors.centerIn: parent
+        running: false
+    }
+
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
@@ -382,6 +388,7 @@ Page {
         onPostOk: postDone()
         onPostFailed: (error) => page.postFailed(error)
         onPostProgress: (msg) => page.postProgress(msg)
+
         onPhotoPicked: (fileName) => page.photoPicked(fileName)
 
         onFirstWebLinkChanged: {
@@ -430,11 +437,13 @@ Page {
     }
 
     function postFailed(error) {
+        busyIndicator.running = false
         statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         postButton.enabled = true
     }
 
     function postProgress(msg) {
+        busyIndicator.running = true
         statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
@@ -446,7 +455,25 @@ Page {
     }
 
     function postDone() {
+        busyIndicator.running = false
         page.closed()
+    }
+
+    function hasContent() {
+        return postText.graphemeLength > 0 || page.images.length > 0
+    }
+
+    function cancel() {
+        if (!hasContent()) {
+            page.closed()
+            return
+        }
+
+        let component = Qt.createComponent("Message.qml")
+        let message = component.createObject(page, { standardButtons: Dialog.Yes | Dialog.No })
+        message.onAccepted.connect(() => page.closed())
+        message.onRejected.connect(() => message.destroy())
+        message.show(qsTr("Do you really want to discard your draft post?"))
     }
 
     Component.onCompleted: {
