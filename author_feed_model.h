@@ -13,8 +13,9 @@ public:
 
     AuthorFeedModel(const QString& author, const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
 
-    bool setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
-    bool addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    // Returns how many entries have been added.
+    int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    int addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
 
     const QString& getAuthor() const { return mAuthor; }
     const QString& getCursorNextPage() const { return mCursorNextPage; }

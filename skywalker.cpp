@@ -635,10 +635,11 @@ void Skywalker::getDetailedProfile(const QString& author)
         });
 }
 
-Q_INVOKABLE void Skywalker::getAuthorFeed(int id, int limit, int maxPages, const QString& cursor)
+Q_INVOKABLE void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get author feed model:" << id << "cursor:" << cursor << "max pages:" << maxPages;
+    qDebug() << "Get author feed model:" << id << "cursor:" << cursor << "max pages:"
+             << maxPages << "min entries:" << minEntries;
 
     if (mGetAuthorFeedInProgress)
     {
@@ -660,14 +661,17 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(int id, int limit, int maxPages, const
 
     setGetAuthorFeedInProgress(true);
     mBsky->getAuthorFeed(author, limit, makeOptionalCursor(cursor),
-        [this, author, id, model, maxPages, cursor](auto feed){
+        [this, author, id, model, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
-            bool feedAdded = cursor.isEmpty() ?
+            int added = cursor.isEmpty() ?
                     (*model)->setFeed(std::move(feed)) :
                     (*model)->addFeed(std::move(feed));
 
-            if (!feedAdded)
-                getAuthorFeedNextPage(id, maxPages - 1);
+            // When replies are filtered out, a page can easily become empty
+            int entriesToAdd = minEntries - added;
+
+            if (entriesToAdd > 0)
+                getAuthorFeedNextPage(id, maxPages - 1, entriesToAdd);
         },
         [this](const QString& error){
             setGetAuthorFeedInProgress(false);
@@ -676,9 +680,10 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(int id, int limit, int maxPages, const
         });
 }
 
-void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
+void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
 {
-    qDebug() << "Get author feed next page, model:" << id << "max pages:" << maxPages;
+    qDebug() << "Get author feed next page, model:" << id << "max pages:" << maxPages
+             << "min entries:" << minEntries;
 
     if (mGetAuthorFeedInProgress)
     {
@@ -711,7 +716,7 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages)
         return;
     }
 
-    getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, cursor);
+    getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
 int Skywalker::createAuthorFeedModel(const QString& author)

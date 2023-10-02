@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-// TODO: follow/unfollow onClicked
 ListView {
     required property string title
     required property var skywalker

@@ -47,8 +47,8 @@ public:
     Q_INVOKABLE void getNotifications(int limit, bool updateSeen = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage();
     Q_INVOKABLE void getDetailedProfile(const QString& author);
-    Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 50, const QString& cursor = {});
-    Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 50);
+    Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 50, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 50, int minEntries = 10);
     Q_INVOKABLE int createAuthorFeedModel(const QString& author);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);

@@ -21,7 +21,7 @@ void AuthorFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-bool AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     if (!mFeed.empty())
         clear();
@@ -29,7 +29,7 @@ bool AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 }
 
-bool AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
@@ -50,7 +50,7 @@ bool AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
             emit dataChanged(index, index, { int(Role::EndOfFeed) });
         }
 
-        return false;
+        return 0;
     }
 
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
@@ -65,7 +65,7 @@ bool AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     endInsertRows();
 
     qDebug() << "New feed size:" << mFeed.size();
-    return true;
+    return page->mFeed.size();
 }
 
 void AuthorFeedModel::Page::addPost(const Post& post)
