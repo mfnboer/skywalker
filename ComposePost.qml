@@ -147,6 +147,8 @@ Page {
         contentHeight: quoteColumn.y + (quoteColumn.visible ? quoteColumn.height : 0)
         flickableDirection: Flickable.VerticalFlick
 
+        onHeightChanged: ensureVisible(postText.cursorRectangle)
+
         // Reply-to
         Rectangle {
             anchors.fill: replyToColumn
