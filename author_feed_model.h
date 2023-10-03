@@ -16,6 +16,7 @@ public:
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     int addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    void clear();
 
     const BasicProfile& getAuthor() const { return mAuthor; }
     const QString& getCursorNextPage() const { return mCursorNextPage; }
@@ -28,7 +29,6 @@ private:
         void addPost(const Post& post);
     };
 
-    void clear();
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
 
     BasicProfile mAuthor;

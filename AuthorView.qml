@@ -12,6 +12,7 @@ Page {
     property bool inTopOvershoot: false
     property bool inBottomOvershoot: false
     property string following: author.viewer.following
+    property string blocking: author.viewer.blocking
 
     signal closed
 
@@ -81,9 +82,33 @@ Page {
 
             RowLayout {
                 SvgButton {
+                    id: moreButton
                     Material.background: guiSettings.buttonColor
                     iconColor: guiSettings.buttonTextColor
                     svg: svgOutline.moreVert
+                    onClicked: moreMenu.open()
+
+                    Menu {
+                        id: moreMenu
+                        MenuItem {
+                            text: qsTr("Mute account")
+                            onTriggered: console.debug("MUTE")
+                        }
+                        MenuItem {
+                            text: blocking ? qsTr("Unblock account") : qsTr("Block account")
+                            onTriggered: {
+                                if (blocking) {
+                                    graphUtils.unblock(author.did, blocking)
+                                } else {
+                                    graphUtils.block(author.did)
+                                }
+                            }
+                        }
+                        MenuItem {
+                            text: qsTr("Report account")
+                            onTriggered: console.debug("REPORT")
+                        }
+                    }
                 }
                 SkyButton {
                     text: qsTr("Follow")
@@ -237,7 +262,7 @@ Page {
             anchors.horizontalCenter: parent.horizontalCenter
             color: "grey"
             svg: {
-                if (author.viewer.blockedBy || author.viewer.blocking) {
+                if (author.viewer.blockedBy || blocking) {
                     return svgOutline.block
                 } else if (author.viewer.muted) {
                     return svgOutline.muted
@@ -253,7 +278,7 @@ Page {
             font.pointSize: guiSettings.scaledFont(10/8)
             color: "grey"
             text: {
-                if (author.viewer.blocking) {
+                if (blocking) {
                     return "You blocked this account"
                 } else if (author.viewer.blockedBy) {
                     return "You are blocked"
@@ -284,6 +309,20 @@ Page {
         onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
         onUnfollowOk: following = ""
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+
+        onBlockOk: (uri) => {
+                       blocking = uri
+                       skywalker.clearAuthorFeed(modelId)
+                   }
+
+        onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+
+        onUnblockOk: {
+            blocking = ""
+            skywalker.getAuthorFeed(modelId, 100)
+        }
+
+        onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
     GuiSettings {

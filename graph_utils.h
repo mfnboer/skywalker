@@ -32,6 +32,10 @@ signals:
     void followFailed(QString error);
     void unfollowOk();
     void unfollowFailed(QString error);
+    void blockOk(QString uri);
+    void blockFailed(QString error);
+    void unblockOk();
+    void unblockFailed(QString error);
 
 private:
     ATProto::Client* bskyClient();

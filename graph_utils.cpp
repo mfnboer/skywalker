@@ -95,14 +95,14 @@ void GraphUtils::block(const QString& did)
                     model->updateBlockingUri(did, blockingUri);
                 });
 
-            emit followOk(blockingUri);
+            emit blockOk(blockingUri);
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
                 return;
 
-            qDebug() << "Follow failed:" << error;
-            emit followFailed(error);
+            qDebug() << "Block failed:" << error;
+            emit blockFailed(error);
         });
 }
 
@@ -118,14 +118,14 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
                     model->updateFollowingUri(did, "");
                 });
 
-            emit unfollowOk();
+            emit unblockOk();
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
                 return;
 
-            qDebug() << "Unfollow failed:" << error;
-            emit unfollowFailed(error);
+            qDebug() << "Unblock failed:" << error;
+            emit unblockFailed(error);
         });
 }
 

@@ -644,7 +644,30 @@ void Skywalker::getDetailedProfile(const QString& author)
         });
 }
 
-Q_INVOKABLE void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, const QString& cursor)
+void Skywalker::clearAuthorFeed(int id)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Clear author feed model:" << id;
+
+    if (mGetAuthorFeedInProgress)
+    {
+        qDebug() << "Get author feed still in progress";
+        return;
+    }
+
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    (*model)->clear();
+}
+
+void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, const QString& cursor)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get author feed model:" << id << "cursor:" << cursor << "max pages:"

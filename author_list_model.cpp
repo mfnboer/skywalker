@@ -71,7 +71,7 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
     static const QHash<int, QByteArray> roles{
         { int(Role::Author), "author" },
         { int(Role::FollowingUri), "followingUri" },
-        { int(Role::FollowingUri), "blockingUri" }
+        { int(Role::BlockingUri), "blockingUri" }
     };
 
     return roles;
