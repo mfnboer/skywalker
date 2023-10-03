@@ -105,16 +105,8 @@ Rectangle {
         }
     }
 
-    SvgButton {
+    PostButton {
         x: parent.width - width - 10
         y: -height - 10
-        width: 70
-        height: width
-        iconColor: guiSettings.buttonTextColor
-        Material.background: guiSettings.buttonColor
-        opacity: 0.6
-        imageMargin: 20
-        svg: svgOutline.chat
-        onClicked: root.composePost()
     }
 }

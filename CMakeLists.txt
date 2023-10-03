@@ -125,6 +125,7 @@ qt_add_qml_module(appskywalker
         SOURCES local_author_model_changes.cpp
         QML_FILES SkyButton.qml
         QML_FILES Message.qml
+        QML_FILES PostButton.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

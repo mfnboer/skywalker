@@ -67,6 +67,16 @@ Page {
         }
     }
 
+    footer: Rectangle {
+        width: parent.width
+
+        PostButton {
+            x: parent.width - width - 10
+            y: -height - 10
+            initialText: isUser(author) ? "" : `@${author.handle} `
+        }
+    }
+
     ListView {
         id: authorFeedView
         y: avatar.y + avatar.height / 2 + 10

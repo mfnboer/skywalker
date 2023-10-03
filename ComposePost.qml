@@ -7,6 +7,8 @@ import skywalker
 
 Page {
     required property var skywalker
+    property string initialText
+
     property int maxPostLength: 300
     property int maxImages: 4
     property list<string> images
@@ -185,6 +187,7 @@ Page {
             focus: true
             color: "transparent" // HACK: the highlighted text is shown by displayText
             background: Rectangle { border.color: "transparent" }
+            text: initialText
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
 
@@ -429,6 +432,7 @@ Page {
         id: focusTimer
         interval: 100
         onTriggered: {
+            postText.cursorPosition = initialText.length
             flick.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
             postText.focus = true
         }

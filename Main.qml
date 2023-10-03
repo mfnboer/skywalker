@@ -203,10 +203,11 @@ ApplicationWindow {
         id: guiSettings
     }
 
-    function composePost() {
+    function composePost(initialText) {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                initialText: initialText
         })
         page.onClosed.connect(() => { popStack() })
         currentStack().push(page)
