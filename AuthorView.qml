@@ -24,7 +24,7 @@ Page {
             width: parent.width
             source: author.banner
             fillMode: Image.PreserveAspectFit
-            visible: author.banner && status === Image.Ready
+            visible: author.banner && !author.viewer.blockedBy && status === Image.Ready
         }
 
         Rectangle {
@@ -59,7 +59,7 @@ Page {
                 anchors.centerIn: parent
                 width: parent.width - 4
                 height: parent.height - 4
-                avatarUrl: author.avatarUrl
+                avatarUrl: author.viewer.blockedBy ? "" : author.avatarUrl
                 onClicked: root.viewFullImage([author.imageView], 0)
             }
         }
@@ -87,13 +87,13 @@ Page {
                 }
                 SkyButton {
                     text: qsTr("Follow")
-                    visible: !following && !isUser(author)
+                    visible: !following && !isUser(author) && !author.viewer.blockedBy
                     onClicked: graphUtils.follow(author.did)
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
-                    visible: following && !isUser(author)
+                    visible: following && !isUser(author) && !author.viewer.blockedBy
                     onClicked: graphUtils.unfollow(author.did, following)
                 }
             }
@@ -129,6 +129,7 @@ Page {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 spacing: 15
                 topPadding: 10
+                visible: !author.viewer.blockedBy
 
                 Text {
                     color: guiSettings.linkColor
@@ -168,6 +169,7 @@ Page {
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
                 text: postUtils.linkiFy(author.description)
+                visible: !author.viewer.blockedBy
 
                 onLinkActivated: (link) => {
                                      if (link.startsWith("@")) {
@@ -225,6 +227,43 @@ Page {
             id: busyIndicator
             anchors.centerIn: parent
             running: skywalker.getAuthorFeedInProgress
+        }
+
+        SvgImage {
+            id: noPostImage
+            width: 150
+            height: 150
+            y: height + (parent.headerItem ? parent.headerItem.height : 0)
+            anchors.horizontalCenter: parent.horizontalCenter
+            color: "grey"
+            svg: {
+                if (author.viewer.blockedBy || author.viewer.blocking) {
+                    return svgOutline.block
+                } else if (author.viewer.muted) {
+                    return svgOutline.muted
+                }
+
+                return svgOutline.noPosts
+            }
+            visible: authorFeedView.count === 0
+        }
+        Text {
+            y: noPostImage.y
+            anchors.horizontalCenter: parent.horizontalCenter
+            font.pointSize: guiSettings.scaledFont(10/8)
+            color: "grey"
+            text: {
+                if (author.viewer.blocking) {
+                    return "You blocked this account"
+                } else if (author.viewer.blockedBy) {
+                    return "You are blocked"
+                } else if (author.viewer.muted) {
+                    return "You muted this account"
+                }
+
+                return "No posts"
+            }
+            visible: authorFeedView.count === 0
         }
     }
 

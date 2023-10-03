@@ -11,13 +11,13 @@ class AuthorFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
-    AuthorFeedModel(const QString& author, const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
+    AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
 
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     int addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
 
-    const QString& getAuthor() const { return mAuthor; }
+    const BasicProfile& getAuthor() const { return mAuthor; }
     const QString& getCursorNextPage() const { return mCursorNextPage; }
 
 private:
@@ -31,7 +31,7 @@ private:
     void clear();
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
 
-    QString mAuthor;
+    BasicProfile mAuthor;
 
     // This must be kept alive as long as there are posts in the feed dependend on it
     std::vector<ATProto::AppBskyFeed::OutputFeed::Ptr> mRawFeed;

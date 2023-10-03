@@ -4,9 +4,9 @@
 
 namespace Skywalker {
 
-AuthorFeedModel::AuthorFeedModel(const QString& author, const QString& userDid, const IProfileStore& following, QObject* parent) :
+AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following, QObject* parent) :
     AbstractPostFeedModel(userDid, following, parent),
-    mAuthor(author)
+    mAuthor(author.nonVolatileCopy())
 {
 }
 

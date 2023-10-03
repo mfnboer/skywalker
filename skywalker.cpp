@@ -657,11 +657,18 @@ Q_INVOKABLE void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int m
     }
 
     const auto& author = (*model)->getAuthor();
-    qDebug() << "Get author feed:" << author;
+    qDebug() << "Get author feed:" << author.getHandle();
+
+    const auto& viewer = author.getViewer();
+    if (viewer.isBlockedBy() || !viewer.getBlocking().isEmpty() || viewer.isMuted())
+    {
+        qDebug() << "Blocked or muted, no need to try and fetch feed";
+        return;
+    }
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author, limit, makeOptionalCursor(cursor),
-        [this, author, id, model, maxPages, minEntries, cursor](auto feed){
+    mBsky->getAuthorFeed(author.getDid(), limit, makeOptionalCursor(cursor),
+        [this, id, model, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             int added = cursor.isEmpty() ?
                     (*model)->setFeed(std::move(feed)) :
@@ -719,7 +726,7 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
-int Skywalker::createAuthorFeedModel(const QString& author)
+int Skywalker::createAuthorFeedModel(const BasicProfile& author)
 {
     auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, this);
     const int id = mAuthorFeedModels.put(std::move(model));
