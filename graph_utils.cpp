@@ -129,4 +129,36 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
         });
 }
 
+void GraphUtils::mute(const QString& did)
+{
+    bskyClient()->muteActor(did,
+        [this, presence=getPresence()]{
+            if (presence)
+                emit muteOk();
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "Mute failed failed:" << error;
+            emit muteFailed(error);
+        });
+}
+
+void GraphUtils::unmute(const QString& did)
+{
+    bskyClient()->unmuteActor(did,
+        [this, presence=getPresence()]{
+            if (presence)
+                emit unmuteOk();
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "Unmute failed failed:" << error;
+            emit unmuteFailed(error);
+        });
+}
+
 }

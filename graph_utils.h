@@ -22,6 +22,8 @@ public:
     Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
     Q_INVOKABLE void block(const QString& did);
     Q_INVOKABLE void unblock(const QString& did, const QString& blockingUri);
+    Q_INVOKABLE void mute(const QString& did);
+    Q_INVOKABLE void unmute(const QString& did);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
@@ -36,6 +38,10 @@ signals:
     void blockFailed(QString error);
     void unblockOk();
     void unblockFailed(QString error);
+    void muteOk();
+    void muteFailed(QString error);
+    void unmuteOk();
+    void unmuteFailed(QString error);
 
 private:
     ATProto::Client* bskyClient();

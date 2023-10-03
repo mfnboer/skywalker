@@ -691,13 +691,6 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     const auto& author = (*model)->getAuthor();
     qDebug() << "Get author feed:" << author.getHandle();
 
-    const auto& viewer = author.getViewer();
-    if (viewer.isBlockedBy() || !viewer.getBlocking().isEmpty() || viewer.isMuted())
-    {
-        qDebug() << "Blocked or muted, no need to try and fetch feed";
-        return;
-    }
-
     setGetAuthorFeedInProgress(true);
     mBsky->getAuthorFeed(author.getDid(), limit, makeOptionalCursor(cursor),
         [this, id, model, maxPages, minEntries, cursor](auto feed){

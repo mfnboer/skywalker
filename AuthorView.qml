@@ -13,6 +13,7 @@ Page {
     property bool inBottomOvershoot: false
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
+    property bool authorMuted: author.viewer.muted
 
     signal closed
 
@@ -91,21 +92,31 @@ Page {
                     Menu {
                         id: moreMenu
                         MenuItem {
-                            text: qsTr("Mute account")
-                            onTriggered: console.debug("MUTE")
+                            text: qsTr("Share")
+                        }
+                        MenuItem {
+                            text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
+                            enabled: !isUser(author)
+                            onTriggered: {
+                                if (authorMuted)
+                                    graphUtils.unmute(author.did)
+                                else
+                                    graphUtils.mute(author.did)
+                            }
                         }
                         MenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
+                            enabled: !isUser(author)
                             onTriggered: {
-                                if (blocking) {
+                                if (blocking)
                                     graphUtils.unblock(author.did, blocking)
-                                } else {
+                                else
                                     graphUtils.block(author.did)
-                                }
                             }
                         }
                         MenuItem {
                             text: qsTr("Report account")
+                            enabled: !isUser(author)
                             onTriggered: console.debug("REPORT")
                         }
                     }
@@ -229,7 +240,7 @@ Page {
         onVerticalOvershootChanged: {
             if (verticalOvershoot < 0)  {
                 if (!inTopOvershoot && !skywalker.getAuthorFeedInProgress) {
-                    skywalker.getAuthorFeed(modelId, 100)
+                    getFeed()
                 }
 
                 inTopOvershoot = true
@@ -239,7 +250,7 @@ Page {
 
             if (verticalOvershoot > 0) {
                 if (!inBottomOvershoot && !skywalker.getAuthorFeedInProgress) {
-                    skywalker.getAuthorFeedNextPage(modelId)
+                    getFeed()
                 }
 
                 inBottomOvershoot = true;
@@ -264,8 +275,8 @@ Page {
             svg: {
                 if (author.viewer.blockedBy || blocking) {
                     return svgOutline.block
-                } else if (author.viewer.muted) {
-                    return svgOutline.muted
+                } else if (authorMuted) {
+                    return svgOutline.mute
                 }
 
                 return svgOutline.noPosts
@@ -282,7 +293,7 @@ Page {
                     return "You blocked this account"
                 } else if (author.viewer.blockedBy) {
                     return "You are blocked"
-                } else if (author.viewer.muted) {
+                } else if (authorMuted) {
                     return "You muted this account"
                 }
 
@@ -319,18 +330,50 @@ Page {
 
         onUnblockOk: {
             blocking = ""
-            skywalker.getAuthorFeed(modelId, 100)
+            getFeed()
         }
 
         onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+
+        onMuteOk: {
+            authorMuted = true
+            skywalker.clearAuthorFeed(modelId)
+        }
+
+        onMuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+
+        onUnmuteOk: {
+            authorMuted = false
+            getFeed()
+        }
+
+        onUnmuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
     GuiSettings {
         id: guiSettings
     }
 
+    function getFeed() {
+        if (mustGetFeed())
+            skywalker.getAuthorFeed(modelId, 100)
+    }
+
+    function getFeedNextPage() {
+        if (mustGetFeed())
+            skywalker.getAuthorFeedNextPage(modelId)
+    }
+
+    function mustGetFeed() {
+        return !authorMuted && !author.viewer.blockedBy && !blocking
+    }
+
     function isUser(author) {
         return skywalker.getUserDid() === author.did
+    }
+
+    Component.onCompleted: {
+        getFeed()
     }
 
     Component.onDestruction: {

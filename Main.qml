@@ -92,7 +92,6 @@ ApplicationWindow {
         onGetDetailedProfileOK: (profile) => {
             let modelId = skywalker.createAuthorFeedModel(profile)
             viewAuthor(profile, modelId)
-            skywalker.getAuthorFeed(modelId, 50)
         }
 
         function start() {
