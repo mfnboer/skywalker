@@ -118,7 +118,7 @@ ListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: skywalker.getTimelineInProgress
+        running: skywalker.getTimelineInProgress && !skywalker.autoUpdateTimelineInProgress
     }
 
     GuiSettings {

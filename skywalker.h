@@ -20,6 +20,7 @@ class Skywalker : public QObject
     Q_OBJECT
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(const NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
+    Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
@@ -64,6 +65,8 @@ public:
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     const NotificationListModel* getNotificationListModel() const { return &mNotificationListModel; }
+    void setAutoUpdateTimelineInProgress(bool inProgress);
+    bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
@@ -88,6 +91,7 @@ signals:
     void timelineSyncFailed();
     void getUserProfileOK();
     void getUserProfileFailed();
+    void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
     void getNotificationsInProgressChanged();
     void sessionExpired(QString error);
@@ -125,6 +129,7 @@ private:
     ProfileStore mUserFollows;
 
     PostFeedModel mTimelineModel;
+    bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;

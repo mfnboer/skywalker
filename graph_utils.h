@@ -20,6 +20,8 @@ public:
 
     Q_INVOKABLE void follow(const QString& did);
     Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
+    Q_INVOKABLE void block(const QString& did);
+    Q_INVOKABLE void unblock(const QString& did, const QString& blockingUri);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);

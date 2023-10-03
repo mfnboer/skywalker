@@ -31,6 +31,8 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(author);
     case Role::FollowingUri:
         return change && change->mFollowingUri ? *change->mFollowingUri : author.getViewer().getFollowing();
+    case Role::BlockingUri:
+        return change && change->mBlockingUri ? *change->mBlockingUri : author.getViewer().getBlocking();
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -68,10 +70,16 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::Author), "author" },
-        { int(Role::FollowingUri), "followingUri" }
+        { int(Role::FollowingUri), "followingUri" },
+        { int(Role::FollowingUri), "blockingUri" }
     };
 
     return roles;
+}
+
+void AuthorListModel::blockingUriChanged()
+{
+    changeData({ int(Role::BlockingUri) });
 }
 
 void AuthorListModel::followingUriChanged()

@@ -351,10 +351,12 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
     }
 
     setGetTimelineInProgress(true);
+    setAutoUpdateTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, {},
         [this, autoGapFill](auto feed){
             const int gapId = mTimelineModel.prependFeed(std::move(feed));
             setGetTimelineInProgress(false);
+            setAutoUpdateTimelineInProgress(false);
 
             if (gapId > 0)
             {
@@ -367,6 +369,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
         [this](const QString& error){
             qDebug() << "getTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
+            setAutoUpdateTimelineInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         }
         );
@@ -434,6 +437,12 @@ void Skywalker::getTimelineNextPage()
         mTimelineModel.removeHeadPosts(TIMELINE_ADD_PAGE_SIZE);
 
     getTimeline(TIMELINE_ADD_PAGE_SIZE, cursor);
+}
+
+void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)
+{
+    mAutoUpdateTimelineInProgress = inProgress;
+    emit autoUpdateTimeLineInProgressChanged();
 }
 
 void Skywalker::setGetTimelineInProgress(bool inProgress)

@@ -15,7 +15,8 @@ class AuthorListModel : public QAbstractListModel, public LocalAuthorModelChange
 public:
     enum class Role {
         Author = Qt::UserRole + 1,
-        FollowingUri
+        FollowingUri,
+        BlockingUri,
     };
 
     using Type = QEnums::AuthorListType;
@@ -38,6 +39,7 @@ public:
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
+    virtual void blockingUriChanged() override;
     virtual void followingUriChanged() override;
 
 private:

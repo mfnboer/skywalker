@@ -314,6 +314,9 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
     emit postProgress(tr("Posting"));
     postMaster()->post(*post,
         [this, presence=getPresence(), post]{
+            if (!presence)
+                return;
+
             if (post->mReply && post->mReply->mParent)
             {
                 mSkywalker->makeLocalModelChange(
@@ -322,8 +325,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
                     });
             }
 
-            if (presence)
-                emit postOk();
+            emit postOk();
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
@@ -356,14 +358,16 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid)
 {
     postMaster()->repost(uri, cid,
         [this, presence=getPresence(), cid](const auto& repostUri, const auto&){
+            if (!presence)
+                return;
+
             mSkywalker->makeLocalModelChange(
                 [cid, repostUri](LocalPostModelChanges* model){
                     model->updateRepostCountDelta(cid, 1);
                     model->updateRepostUri(cid, repostUri);
                 });
 
-            if (presence)
-                emit repostOk();
+            emit repostOk();
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
@@ -378,14 +382,16 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
 {
     postMaster()->undo(repostUri,
         [this, presence=getPresence(), origPostCid]{
+            if (!presence)
+                return;
+
             mSkywalker->makeLocalModelChange(
                 [origPostCid](LocalPostModelChanges* model){
                     model->updateRepostCountDelta(origPostCid, -1);
                     model->updateRepostUri(origPostCid, "");
                 });
 
-            if (presence)
-                emit undoRepostOk();
+            emit undoRepostOk();
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
@@ -400,21 +406,23 @@ void PostUtils::like(const QString& uri, const QString& cid)
 {
     postMaster()->like(uri, cid,
         [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
+            if (!presence)
+                return;
+
             mSkywalker->makeLocalModelChange(
                 [cid, likeUri](LocalPostModelChanges* model){
                     model->updateLikeCountDelta(cid, 1);
                     model->updateLikeUri(cid, likeUri);
                 });
 
-            if (presence)
-                emit likeOk();
+            emit likeOk();
         },
         [this, presence=getPresence()](const QString& error){
-          if (!presence)
-              return;
+            if (!presence)
+                return;
 
-          qDebug() << "Like failed:" << error;
-          emit likeFailed(error);
+            qDebug() << "Like failed:" << error;
+            emit likeFailed(error);
         });
 }
 
@@ -422,14 +430,16 @@ void PostUtils::undoLike(const QString& likeUri, const QString& cid)
 {
     postMaster()->undo(likeUri,
         [this, presence=getPresence(), cid]{
+            if (!presence)
+                return;
+
             mSkywalker->makeLocalModelChange(
                 [cid](LocalPostModelChanges* model){
                     model->updateLikeCountDelta(cid, -1);
                     model->updateLikeUri(cid, "");
                 });
 
-            if (presence)
-                emit undoLikeOk();
+            emit undoLikeOk();
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)

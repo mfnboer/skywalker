@@ -15,6 +15,12 @@ void LocalAuthorModelChanges::clearLocalChanges()
     mChanges.clear();
 }
 
+void LocalAuthorModelChanges::updateBlockingUri(const QString& did, const QString& blockingUri)
+{
+    mChanges[did].mBlockingUri = blockingUri;
+    blockingUriChanged();
+}
+
 void LocalAuthorModelChanges::updateFollowingUri(const QString& did, const QString& followingUri)
 {
     mChanges[did].mFollowingUri = followingUri;

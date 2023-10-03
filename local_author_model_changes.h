@@ -13,6 +13,7 @@ class LocalAuthorModelChanges
 public:
     struct Change
     {
+        std::optional<QString> mBlockingUri;
         std::optional<QString> mFollowingUri;
     };
 
@@ -22,9 +23,11 @@ public:
     const Change* getLocalChange(const QString& did) const;
     void clearLocalChanges();
 
+    void updateBlockingUri(const QString& did, const QString& blockingUri);
     void updateFollowingUri(const QString& did, const QString& followingUri);
 
 protected:
+    virtual void blockingUriChanged() = 0;
     virtual void followingUriChanged() = 0;
 
 private:
