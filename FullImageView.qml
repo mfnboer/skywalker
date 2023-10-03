@@ -30,11 +30,15 @@ Page {
                 color: "black"
 
                 Image {
+                    y: (parent.height - altText.height - height) / 2
                     width: parent.width
-                    anchors.top: parent.top
-                    anchors.bottom: altText.top
+                    height: parent.height - altText.height
                     fillMode: Image.PreserveAspectFit
                     source: images[index].fullSizeUrl
+
+                    PinchHandler {
+                        rotationAxis.enabled: false
+                    }
                 }
                 Text {
                     id: altText
