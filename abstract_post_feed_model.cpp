@@ -149,7 +149,13 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
     case Role::PostLocallyDeleted:
     {
-        if (!change || !change->mRepostUri)
+        if (!change)
+            return false;
+
+        if (change->mPostDeleted)
+            return true;
+
+        if (!change->mRepostUri)
             return false;
 
         auto repostedBy = post.getRepostedBy();
@@ -240,6 +246,11 @@ void AbstractPostFeedModel::repostCountChanged()
 void AbstractPostFeedModel::repostUriChanged()
 {
     changeData({ int(Role::PostRepostUri), int(Role::PostLocallyDeleted) });
+}
+
+void AbstractPostFeedModel::postDeletedChanged()
+{
+    changeData({ int(Role::PostLocallyDeleted) });
 }
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)

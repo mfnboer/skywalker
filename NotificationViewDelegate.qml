@@ -19,6 +19,7 @@ Rectangle {
     required property var notificationReasonPostRecordWithMedia // record_with_media_view
     required property date notificationReasonPostTimestamp
     required property bool notificationReasonPostNotFound
+    required property bool notificationReasonPostLocallyDeleted
     required property date notificationTimestamp
     required property bool notificationIsRead
     required property string notificationPostUri
@@ -167,6 +168,7 @@ Rectangle {
                 repostUri: notificationPostRepostUri
                 likeUri: notificationPostLikeUri
                 visible: !notificationPostNotFound
+                authorIsUser: false
 
                 onReply: {
                     root.composeReply(notificationPostUri, notificationCid, notificationPostText,
@@ -181,6 +183,8 @@ Rectangle {
                 }
 
                 onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
+
+                onShare: console.debug("TODO: share post")
             }
         }
         Column {
@@ -245,7 +249,14 @@ Rectangle {
                 topPadding: 5
                 width: parent.width
                 Layout.fillWidth: true
-                postText: notificationReasonPostNotFound ? "NOT FOUND" : notificationReasonPostText
+                postText: {
+                    if (notificationReasonPostLocallyDeleted)
+                        return "DELETED"
+                    else if (notificationReasonPostNotFound)
+                        return "NOT FOUND"
+
+                    return notificationReasonPostText
+                }
                 postImages: notificationReasonPostImages
                 postDateTime: notificationReasonPostTimestamp
                 postExternal: notificationReasonPostExternal

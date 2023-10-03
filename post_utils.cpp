@@ -450,6 +450,29 @@ void PostUtils::undoLike(const QString& likeUri, const QString& cid)
         });
 }
 
+void PostUtils::deletePost(const QString& postUri, const QString& cid)
+{
+    postMaster()->undo(postUri,
+        [this, presence=getPresence(), cid]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalPostModelChanges* model){
+                    model->updatePostDeleted(cid);
+                });
+
+            emit postDeletedOk();
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "deletePost failed:" << error;
+            emit postDeletedFailed(error);
+        });
+}
+
 void PostUtils::pickPhoto() const
 {
     ::Skywalker::pickPhoto();

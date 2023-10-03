@@ -231,6 +231,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
     const auto& notification = mList[index.row()];
     const auto* change = getLocalChange(notification.getCid());
+    const auto* reasonChange = getLocalChange(notification.getReasonPost(mReasonPostCache).getCid());
 
     switch (Role(role))
     {
@@ -277,6 +278,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReasonPost(mReasonPostCache).getTimelineTimestamp();
     case Role::NotificationReasonPostNotFound:
         return notification.getReasonPost(mReasonPostCache).isNotFound();
+    case Role::NotificationReasonPostLocallyDeleted:
+        return reasonChange ? reasonChange->mPostDeleted : false;
     case Role::NotificationTimestamp:
         return notification.getTimestamp();
     case Role::NotificationIsRead:
@@ -360,6 +363,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostRecord), "notificationReasonPostRecord" },
         { int(Role::NotificationReasonPostRecordWithMedia), "notificationReasonPostRecordWithMedia" },
         { int(Role::NotificationReasonPostNotFound), "notificationReasonPostNotFound" },
+        { int(Role::NotificationReasonPostLocallyDeleted), "notificationReasonPostLocallyDeleted" },
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
         { int(Role::NotificationPostUri), "notificationPostUri" },
@@ -413,6 +417,11 @@ void NotificationListModel::repostCountChanged()
 void NotificationListModel::repostUriChanged()
 {
     changeData({ int(Role::NotificationPostRepostUri) });
+}
+
+void NotificationListModel::postDeletedChanged()
+{
+    changeData({ int(Role::NotificationReasonPostLocallyDeleted) });
 }
 
 void NotificationListModel::changeData(const QList<int>& roles)

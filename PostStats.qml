@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 Row {
@@ -7,11 +8,13 @@ Row {
     required property int likeCount
     required property string repostUri
     required property string likeUri
+    required property bool authorIsUser
 
     signal reply()
     signal repost()
     signal like()
-    signal more()
+    signal share()
+    signal deletePost()
 
     StatIcon {
         width: parent.width / 4
@@ -38,6 +41,20 @@ Row {
         width: parent.width / 4
         iconColor: "grey"
         svg: svgOutline.moreVert
-        onClicked: more()
+        onClicked: moreMenu.open()
+
+        Menu {
+            id: moreMenu
+
+            MenuItem {
+                text: qsTr("Share")
+                onTriggered: share()
+            }
+            MenuItem {
+                text: qsTr("Delete")
+                enabled: authorIsUser
+                onTriggered: deletePost()
+            }
+        }
     }
 }

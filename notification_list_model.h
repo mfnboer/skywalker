@@ -27,6 +27,7 @@ public:
         NotificationReasonPostRecord,
         NotificationReasonPostRecordWithMedia,
         NotificationReasonPostNotFound,
+        NotificationReasonPostLocallyDeleted,
         NotificationTimestamp,
         NotificationIsRead,
         NotificationPostUri,
@@ -69,6 +70,7 @@ protected:
     virtual void replyCountChanged() override;
     virtual void repostCountChanged() override;
     virtual void repostUriChanged() override;
+    virtual void postDeletedChanged() override;
 
     QHash<int, QByteArray> roleNames() const override;
 

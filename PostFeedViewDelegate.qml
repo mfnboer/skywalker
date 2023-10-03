@@ -295,6 +295,7 @@ Rectangle {
                 likeCount: postLikeCount
                 repostUri: postRepostUri
                 likeUri: postLikeUri
+                authorIsUser: isUser(author)
 
                 onReply: {
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
@@ -307,6 +308,10 @@ Rectangle {
                 }
 
                 onLike: root.like(postLikeUri, postUri, postCid)
+
+                onShare: console.debug("TODO: share post")
+
+                onDeletePost: root.deletePost(postUri, postCid)
             }
         }
 
@@ -464,5 +469,9 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function isUser(author) {
+        return skywalker.getUserDid() === author.did
     }
 }

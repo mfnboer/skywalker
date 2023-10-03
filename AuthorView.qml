@@ -114,11 +114,6 @@ Page {
                                     graphUtils.block(author.did)
                             }
                         }
-                        MenuItem {
-                            text: qsTr("Report account")
-                            enabled: !isUser(author)
-                            onTriggered: console.debug("REPORT")
-                        }
                     }
                 }
                 SkyButton {

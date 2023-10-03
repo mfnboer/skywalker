@@ -256,6 +256,10 @@ ApplicationWindow {
             postUtils.like(uri, cid)
     }
 
+    function deletePost(uri, cid) {
+        postUtils.deletePost(uri, cid)
+    }
+
     function viewPostThread(modelId, postEntryIndex) {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })

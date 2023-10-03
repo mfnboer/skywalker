@@ -51,4 +51,10 @@ void LocalPostModelChanges::updateLikeUri(const QString& cid, const QString& lik
     likeUriChanged();
 }
 
+void LocalPostModelChanges::updatePostDeleted(const QString& cid)
+{
+    mChanges[cid].mPostDeleted = true;
+    postDeletedChanged();
+}
+
 }

@@ -35,6 +35,7 @@ public:
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
+    Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text,const QString& preeditText,
                                                   int cursor, const QString& color);
@@ -65,6 +66,8 @@ signals:
     void likeFailed(QString error);
     void undoLikeOk();
     void undoLikeFailed(QString error);
+    void postDeletedOk();
+    void postDeletedFailed(QString error);
     void photoPicked(QString filename);
     void firstWebLinkChanged();
     void firstPostLinkChanged();

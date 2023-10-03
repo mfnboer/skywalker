@@ -22,6 +22,8 @@ public:
         int mReplyCountDelta = 0;
         int mRepostCountDelta = 0;
         std::optional<QString> mRepostUri;
+
+        bool mPostDeleted = false;
     };
 
     LocalPostModelChanges() = default;
@@ -36,6 +38,7 @@ public:
     void updateRepostUri(const QString& cid, const QString& repostUri);
     void updateLikeCountDelta(const QString& cid, int delta);
     void updateLikeUri(const QString& cid, const QString& likeUri);
+    void updatePostDeleted(const QString& cid);
 
 protected:
     virtual void postIndexTimestampChanged() = 0;
@@ -44,6 +47,7 @@ protected:
     virtual void replyCountChanged() = 0;
     virtual void repostCountChanged() = 0;
     virtual void repostUriChanged() = 0;
+    virtual void postDeletedChanged() = 0;
 
 private:
     // Mapping from post CID to change
