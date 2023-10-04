@@ -48,6 +48,7 @@ public:
         PostLikeCount,
         PostRepostUri,
         PostLikeUri,
+        PostLabels,
         PostLocallyDeleted,
         EndOfFeed
     };

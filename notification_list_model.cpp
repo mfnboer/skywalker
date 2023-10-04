@@ -280,6 +280,21 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReasonPost(mReasonPostCache).getTimelineTimestamp();
     case Role::NotificationReasonPostNotFound:
         return notification.getReasonPost(mReasonPostCache).isNotFound();
+    case Role::NotificationReasonPostLabels:
+    {
+        // TODO: move to some label processing class
+        QStringList labelTexts;
+
+        for (const auto& label : notification.getReasonPost(mReasonPostCache).getLabels())
+        {
+            if (!label->mNeg)
+                labelTexts.append(label->mVal);
+            else
+                labelTexts.removeAll(label->mVal);
+        }
+
+        return labelTexts;
+    }
     case Role::NotificationReasonPostLocallyDeleted:
         return reasonChange ? reasonChange->mPostDeleted : false;
     case Role::NotificationTimestamp:
@@ -342,6 +357,21 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getNotificationPost(mPostCache).getReplyCount() + (change ? change->mReplyCountDelta : 0);
     case Role::NotificationPostNotFound:
         return notification.getNotificationPost(mPostCache).isNotFound();
+    case Role::NotificationPostLabels:
+    {
+        // TODO: move to some label processing class
+        QStringList labelTexts;
+
+        for (const auto& label : notification.getNotificationPost(mPostCache).getLabels())
+        {
+            if (!label->mNeg)
+                labelTexts.append(label->mVal);
+            else
+                labelTexts.removeAll(label->mVal);
+        }
+
+        return labelTexts;
+    }
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::EndOfList:
@@ -368,6 +398,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostRecord), "notificationReasonPostRecord" },
         { int(Role::NotificationReasonPostRecordWithMedia), "notificationReasonPostRecordWithMedia" },
         { int(Role::NotificationReasonPostNotFound), "notificationReasonPostNotFound" },
+        { int(Role::NotificationReasonPostLabels), "notificationReasonPostLabels" },
         { int(Role::NotificationReasonPostLocallyDeleted), "notificationReasonPostLocallyDeleted" },
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
@@ -388,6 +419,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
         { int(Role::NotificationPostNotFound), "notificationPostNotFound" },
+        { int(Role::NotificationPostLabels), "notificationPostLabels" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::EndOfList), "endOfList" }
     };

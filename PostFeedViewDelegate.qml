@@ -36,6 +36,7 @@ Rectangle {
     required property int postLikeCount
     required property string postRepostUri
     required property string postLikeUri
+    required property list<string> postLabels
     required property bool postLocallyDeleted
     required property bool endOfFeed
 
@@ -246,6 +247,10 @@ Rectangle {
                 postRecordWithMedia: postEntry.postRecordWithMedia
                 postDateTime: postEntry.postIndexedDateTime
                 detailedView: postThreadType & QEnums.THREAD_ENTRY
+            }
+
+            ContentLabels {
+                contentLabels: postLabels
             }
 
             // Reposts and likes in detailed view of post entry in thread view

@@ -467,5 +467,10 @@ QString Post::getLikeUri() const
     return like ? *like : QString();
 }
 
+const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
+{
+    static const std::vector<ATProto::ComATProtoLabel::Label::Ptr> NO_LABELS;
+    return mPost ? mPost->mLabels : NO_LABELS;
+}
 
 }

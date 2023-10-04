@@ -20,6 +20,7 @@ Rectangle {
     required property var notificationReasonPostRecordWithMedia // record_with_media_view
     required property date notificationReasonPostTimestamp
     required property bool notificationReasonPostNotFound
+    required property list<string> notificationReasonPostLabels
     required property bool notificationReasonPostLocallyDeleted
     required property date notificationTimestamp
     required property bool notificationIsRead
@@ -40,6 +41,7 @@ Rectangle {
     required property int notificationPostLikeCount
     required property int notificationPostReplyCount
     required property bool notificationPostNotFound
+    required property list<string> notificationPostLabels
     required property basicprofile replyToAuthor
     required property bool endOfList
 
@@ -162,6 +164,10 @@ Rectangle {
                 postDateTime: notificationPostTimestamp
             }
 
+            ContentLabels {
+                contentLabels: notificationPostLabels
+            }
+
             PostStats {
                 width: parent.width
                 topPadding: 10
@@ -268,6 +274,10 @@ Rectangle {
                 postRecord: notificationReasonPostRecord
                 postRecordWithMedia: notificationReasonPostRecordWithMedia
                 visible: showPostForAggregatableReason()
+            }
+
+            ContentLabels {
+                contentLabels: notificationReasonPostLabels
             }
         }
 

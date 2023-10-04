@@ -28,6 +28,7 @@ public:
         NotificationReasonPostRecord,
         NotificationReasonPostRecordWithMedia,
         NotificationReasonPostNotFound,
+        NotificationReasonPostLabels,
         NotificationReasonPostLocallyDeleted,
         NotificationTimestamp,
         NotificationIsRead,
@@ -48,6 +49,7 @@ public:
         NotificationPostLikeCount,
         NotificationPostReplyCount,
         NotificationPostNotFound,
+        NotificationPostLabels,
         ReplyToAuthor,
         EndOfList
     };

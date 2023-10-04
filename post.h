@@ -9,7 +9,6 @@
 #include "record_with_media_view.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
 
-
 namespace Skywalker {
 
 struct PostReplyRef;
@@ -88,6 +87,8 @@ public:
     bool isBlocked() const { return mBlocked; }
     bool isNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
+
+    const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
 
 private:
     struct HyperLink

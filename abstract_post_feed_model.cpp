@@ -149,6 +149,21 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
     case Role::PostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
+    case Role::PostLabels:
+    {
+        // TODO: move to some label processing class
+        QStringList labelTexts;
+
+        for (const auto& label : post.getLabels())
+        {
+            if (!label->mNeg)
+                labelTexts.append(label->mVal);
+            else
+                labelTexts.removeAll(label->mVal);
+        }
+
+        return labelTexts;
+    }
     case Role::PostLocallyDeleted:
     {
         if (!change)
@@ -209,6 +224,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLikeCount), "postLikeCount" },
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
+        { int(Role::PostLabels), "postLabels" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };

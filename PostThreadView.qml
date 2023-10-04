@@ -42,6 +42,18 @@ ListView {
     }
     headerPositioning: ListView.OverlayHeader
 
+
+    footer: Rectangle {
+        width: parent.width
+        z: guiSettings.footerZLevel
+
+        PostButton {
+            x: parent.width - width - 10
+            y: -height - 10
+        }
+    }
+    footerPositioning: ListView.OverlayFooter
+
     delegate: PostFeedViewDelegate {
         viewWidth: view.width
     }
