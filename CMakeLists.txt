@@ -55,6 +55,37 @@ qt_add_qml_module(appskywalker
         photo_picker.cpp
         jni_callback.h
         jni_callback.cpp
+        post_utils.h
+        post_utils.cpp
+        link_card_reader.h
+        link_card_reader.cpp
+        link_card.h
+        image_reader.h
+        image_reader.cpp
+        presence.h
+        local_post_model_changes.h
+        local_post_model_changes.cpp
+        notification.h
+        notification.cpp
+        post_record.h
+        post_record.cpp
+        notification_list_model.h
+        notification_list_model.cpp
+        post_cache.h
+        post_cache.cpp
+        author_cache.h
+        author_cache.cpp
+        author_feed_model.h
+        author_feed_model.cpp
+        item_store.h
+        graph_utils.h
+        graph_utils.cpp
+        author_list_model.h
+        author_list_model.cpp
+        local_author_model_changes.h
+        local_author_model_changes.cpp
+        font_downloader.h
+        font_downloader.cpp
     QML_FILES
         Main.qml
         Login.qml
@@ -80,52 +111,25 @@ qt_add_qml_module(appskywalker
         PostThreadView.qml
         ComposePost.qml
         GuiSettings.qml
+        LinkCardView.qml
+        QuotePost.qml
+        NotificationViewDelegate.qml
+        NotificationListView.qml
+        PostStats.qml
+        SkyFooter.qml
+        AuthorView.qml
+        AuthorViewDelegate.qml
+        AuthorListView.qml
+        SkyLabel.qml
+        SkyButton.qml
+        Message.qml
+        PostButton.qml
     RESOURCES
         qtquickcontrols2.conf
         android/src/com/gmail/mfnboer/QPhotoPicker.java
-        RESOURCES android/src/com/gmail/mfnboer/FileUtils.java
-        SOURCES post_utils.h
-        SOURCES post_utils.cpp
-        SOURCES link_card_reader.h
-        SOURCES link_card_reader.cpp
-        SOURCES link_card.h
-        QML_FILES LinkCardView.qml
-        SOURCES image_reader.h
-        SOURCES image_reader.cpp
-        QML_FILES QuotePost.qml
-        SOURCES presence.h
-        SOURCES local_post_model_changes.h
-        SOURCES local_post_model_changes.cpp
-        SOURCES notification.h
-        SOURCES notification.cpp
-        SOURCES post_record.h
-        SOURCES post_record.cpp
-        SOURCES notification_list_model.h
-        SOURCES notification_list_model.cpp
-        QML_FILES NotificationViewDelegate.qml
-        QML_FILES NotificationListView.qml
-        SOURCES post_cache.h
-        SOURCES post_cache.cpp
-        QML_FILES PostStats.qml
-        QML_FILES SkyFooter.qml
-        SOURCES author_cache.h
-        SOURCES author_cache.cpp
-        QML_FILES AuthorView.qml
-        SOURCES author_feed_model.h
-        SOURCES author_feed_model.cpp
-        SOURCES item_store.h
-        SOURCES graph_utils.h
-        SOURCES graph_utils.cpp
-        SOURCES author_list_model.h
-        SOURCES author_list_model.cpp
-        QML_FILES AuthorViewDelegate.qml
-        QML_FILES AuthorListView.qml
-        QML_FILES SkyLabel.qml
-        SOURCES local_author_model_changes.h
-        SOURCES local_author_model_changes.cpp
-        QML_FILES SkyButton.qml
-        QML_FILES Message.qml
-        QML_FILES PostButton.qml
+        android/src/com/gmail/mfnboer/FileUtils.java
+        android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java
+        fonts/NotoSansMath-Regular.ttf
 )
 
 set_target_properties(appskywalker PROPERTIES
