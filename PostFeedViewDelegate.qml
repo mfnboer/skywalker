@@ -316,7 +316,7 @@ Rectangle {
 
                 onLike: root.like(postLikeUri, postUri, postCid)
 
-                onShare: console.debug("TODO: share post")
+                onShare: skywalker.sharePost(postUri, author.handle)
 
                 onDeletePost: root.deletePost(postUri, postCid)
             }

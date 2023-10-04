@@ -60,6 +60,7 @@ public:
     Q_INVOKABLE const AuthorListModel* getAuthorListModel(int id) const;
     Q_INVOKABLE void removeAuthorListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
+    Q_INVOKABLE void sharePost(const QString& postUri, const QString& authorHandle);
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);

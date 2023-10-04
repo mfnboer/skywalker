@@ -70,7 +70,7 @@ ApplicationWindow {
             loginDialog.show()
         }
 
-        onStatusMessage: (msg, level) => statusPopup.show(msg, level)
+        onStatusMessage: (msg, level) => statusPopup.show(msg, level, level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
         onGetUserProfileOK: () => skywalker.syncTimeline()
 

@@ -2,6 +2,9 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include <atproto/lib/at_uri.h>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QSettings>
 
@@ -926,6 +929,33 @@ void Skywalker::removeAuthorListModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mAuthorListModels.remove(id);
+}
+
+void Skywalker::sharePost(const QString& postUri, const QString& authorHandle)
+{
+    qDebug() << "Share post:" << postUri;
+    ATProto::ATUri atUri(postUri);
+
+    if (!atUri.isValid())
+        return;
+
+    QString shareUri = QString("https://bsky.app/profile/%1/post/%2")
+                           .arg(authorHandle, atUri.getRkey());
+
+#ifdef Q_OS_ANDROID
+    QJniObject jShareUri = QJniObject::fromString(shareUri);
+    QJniObject jSubject = QJniObject::fromString("post");
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareLink",
+                                       "(Ljava/lang/String;Ljava/lang/String;)V",
+                                       jShareUri.object<jstring>(),
+                                       jSubject.object<jstring>());
+#else
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(shareUri);
+    emit statusMessage(tr("Post copied to clipboard"));
+#endif
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

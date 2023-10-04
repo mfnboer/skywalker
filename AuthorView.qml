@@ -255,7 +255,7 @@ Page {
 
             if (verticalOvershoot > 0) {
                 if (!inBottomOvershoot && !skywalker.getAuthorFeedInProgress) {
-                    getFeed()
+                    getFeedNextPage()
                 }
 
                 inBottomOvershoot = true;

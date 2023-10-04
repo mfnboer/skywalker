@@ -193,7 +193,7 @@ Rectangle {
 
                 onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
 
-                onShare: console.debug("TODO: share post")
+                onShare: skywalker.sharePost(notificationPostUri, notificationAuthor.handle)
             }
         }
         Column {

@@ -131,6 +131,7 @@ qt_add_qml_module(appskywalker
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java
         fonts/NotoSansMath-Regular.ttf
         QML_FILES ContentLabels.qml
+        RESOURCES android/src/com/gmail/mfnboer/ShareUtils.java
 )
 
 set_target_properties(appskywalker PROPERTIES

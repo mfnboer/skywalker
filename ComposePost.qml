@@ -42,29 +42,19 @@ Page {
         z: guiSettings.headerZLevel
         color: guiSettings.headerColor
 
-        Button {
+        SkyButton {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            Material.background: guiSettings.buttonColor
-            contentItem: Text {
-                color: guiSettings.buttonTextColor
-                text: qsTr("Cancel")
-            }
-
+            text: qsTr("Cancel")
             onClicked: page.cancel()
         }
 
-        Button {
+        SkyButton {
             id: postButton
             anchors.rightMargin: 10
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            Material.background: "blue"
-
-            contentItem: Text {
-                color: "white"
-                text: replyToPostUri ? qsTr("Reply", "verb on reply button") : qsTr("Post", "verb on post button")
-            }
+            text: replyToPostUri ? qsTr("Reply", "verb on reply button") : qsTr("Post", "verb on post button")
 
             enabled: postText.graphemeLength <= maxPostLength && page.hasContent()
             onClicked: {
