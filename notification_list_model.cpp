@@ -247,6 +247,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReasonPost(mReasonPostCache).getCid();
     case Role::NotificationReasonPostText:
         return notification.getReasonPost(mReasonPostCache).getFormattedText();
+    case Role::NotificationReasonPostPlainText:
+        return notification.getReasonPost(mReasonPostCache).getText();
     case Role::NotificationReasonPostImages:
     {
         const auto& post = notification.getReasonPost(mReasonPostCache);
@@ -290,6 +292,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getCid();
     case Role::NotificationPostText:
         return notification.getPostRecord().getFormattedText();
+    case Role::NotificationPostPlainText:
+        return notification.getPostRecord().getText();
     case Role::NotificationPostTimestamp:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
@@ -357,6 +361,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonSubjectUri), "notificationReasonSubjectUri" },
         { int(Role::NotificationReasonSubjectCid), "notificationReasonSubjectCid" },
         { int(Role::NotificationReasonPostText), "notificationReasonPostText" },
+        { int(Role::NotificationReasonPostPlainText), "notificationReasonPostPlainText" },
         { int(Role::NotificationReasonPostImages), "notificationReasonPostImages" },
         { int(Role::NotificationReasonPostTimestamp), "notificationReasonPostTimestamp" },
         { int(Role::NotificationReasonPostExternal), "notificationReasonPostExternal" },
@@ -369,6 +374,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostUri), "notificationPostUri" },
         { int(Role::NotificationCid), "notificationCid" },
         { int(Role::NotificationPostText), "notificationPostText" },
+        { int(Role::NotificationPostPlainText), "notificationPostPlainText" },
         { int(Role::NotificationPostTimestamp), "notificationPostTimestamp" },
         { int(Role::NotificationPostImages), "notificationPostImages" },
         { int(Role::NotificationPostExternal), "notificationPostExternal" },

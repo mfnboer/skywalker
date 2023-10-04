@@ -7,6 +7,7 @@ Column {
     required property string postText
     required property list<imageview> postImages
     required property date postDateTime
+    property string postPlainText
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
     property var postRecordWithMedia // record_with_media_view
@@ -24,6 +25,7 @@ Column {
         elide: Text.ElideRight
         textFormat: Text.RichText
         color: Material.foreground
+        font.pointSize: guiSettings.scaledFont(onlyEmojisPost() ? 3 : 1)
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
 
@@ -52,6 +54,16 @@ Column {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function onlyEmojisPost() {
+        if (!postPlainText)
+            return false
+
+        if (postUtils.graphemeLength(postPlainText.length) > 5)
+            return false
+
+        return postUtils.onlyEmojis(postPlainText)
     }
 
     Component.onCompleted: {

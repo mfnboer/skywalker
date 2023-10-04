@@ -601,4 +601,34 @@ void PostUtils::getQuotePost(const QString& httpsUri)
         });
 }
 
+bool PostUtils::onlyEmojis(const QString& text)
+{
+    for (const auto c : text.toUcs4())
+    {
+        if (!isEmoji(c))
+            return false;
+    }
+
+    return true;
+}
+
+bool PostUtils::isEmoji(uint c)
+{
+    static const std::map<uint, uint> RANGES = {
+        {0x1F600, 0x1F64F},
+        {0x1F300, 0x1F5FF},
+        {0x1F680, 0x1F6C5},
+        {0x1F700, 0x1FAFF}
+    };
+
+    auto it = RANGES.upper_bound(c);
+
+    if (it == RANGES.begin())
+        return false;
+
+    --it;
+
+    return c >= it->first && c <= it->second;
+}
+
 }

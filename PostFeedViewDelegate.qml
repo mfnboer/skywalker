@@ -11,6 +11,7 @@ Rectangle {
     required property string postUri
     required property string postCid
     required property string postText
+    required property string postPlainText
     required property date postIndexedDateTime
     required property string postRepostedByName
     required property list<imageview> postImages
@@ -238,6 +239,7 @@ Rectangle {
             PostBody {
                 width: parent.width
                 postText: postEntry.postText
+                postPlainText: postEntry.postPlainText
                 postImages: postEntry.postImages
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord

@@ -74,6 +74,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(post.getAuthor());
     case Role::PostText:
         return post.getFormattedText();
+    case Role::PostPlainText:
+        return post.getText();
     case Role::PostUri:
         return post.getUri();
     case Role::PostCid:
@@ -182,6 +184,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostUri), "postUri" },
         { int(Role::PostCid), "postCid" },
         { int(Role::PostText), "postText" },
+        { int(Role::PostPlainText), "postPlainText" },
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
         { int(Role::PostRepostedByName), "postRepostedByName" },
         { int(Role::PostImages), "postImages" },

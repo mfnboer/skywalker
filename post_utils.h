@@ -43,6 +43,7 @@ public:
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
+    Q_INVOKABLE static bool onlyEmojis(const QString& text);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
@@ -83,6 +84,8 @@ private:
     void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continueRepost(const QString& uri, const QString& cid);
+    static bool isEmoji(uint c);
+
     ATProto::Client* bskyClient();
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();

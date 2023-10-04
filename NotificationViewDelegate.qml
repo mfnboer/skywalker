@@ -13,6 +13,7 @@ Rectangle {
     required property string notificationReasonSubjectUri
     required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
+    required property string notificationReasonPostPlainText
     required property list<imageview> notificationReasonPostImages
     required property var notificationReasonPostExternal // externalview (var allows NULL)
     required property var notificationReasonPostRecord // recordview
@@ -25,6 +26,7 @@ Rectangle {
     required property string notificationPostUri
     required property string notificationCid
     required property string notificationPostText
+    required property string notificationPostPlainText
     required property date notificationPostTimestamp
     required property list<imageview> notificationPostImages
     required property var notificationPostExternal // externalview (var allows NULL)
@@ -152,6 +154,7 @@ Rectangle {
                 width: parent.width
                 Layout.fillWidth: true
                 postText: notificationPostText
+                postPlainText: notificationPostPlainText
                 postImages: notificationPostImages
                 postExternal: notificationPostExternal
                 postRecord: notificationPostRecord
@@ -196,7 +199,7 @@ Rectangle {
                 spacing: 5
                 Avatar {
                     id: authorAvatar
-                    width: 30
+                    width: 34
                     height: width
                     avatarUrl: notificationAuthor.avatarUrl
 
@@ -257,6 +260,8 @@ Rectangle {
 
                     return notificationReasonPostText
                 }
+                postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
+                                   notificationReasonPostPlainText : ""
                 postImages: notificationReasonPostImages
                 postDateTime: notificationReasonPostTimestamp
                 postExternal: notificationReasonPostExternal
