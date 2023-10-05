@@ -956,7 +956,27 @@ void Skywalker::sharePost(const QString& postUri, const QString& authorHandle)
 #else
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
-    emit statusMessage(tr("Post copied to clipboard"));
+    emit statusMessage(tr("Post link copied to clipboard"));
+#endif
+}
+
+void Skywalker::shareAuthor(const QString& authorHandle)
+{
+    QString shareUri = QString("https://bsky.app/profile/%1").arg(authorHandle);
+
+#ifdef Q_OS_ANDROID
+    QJniObject jShareUri = QJniObject::fromString(shareUri);
+    QJniObject jSubject = QJniObject::fromString("author profile");
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareLink",
+                                       "(Ljava/lang/String;Ljava/lang/String;)V",
+                                       jShareUri.object<jstring>(),
+                                       jSubject.object<jstring>());
+#else
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(shareUri);
+    emit statusMessage(tr("Author link copied to clipboard"));
 #endif
 }
 

@@ -103,6 +103,7 @@ Page {
                         id: moreMenu
                         MenuItem {
                             text: qsTr("Share")
+                            onTriggered: skywalker.shareAuthor(author.handle)
                         }
                         MenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
