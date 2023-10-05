@@ -113,6 +113,7 @@ signals:
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
+    // TODO: pass model id instead of model. model may be delete when user closes the view
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
     void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);

@@ -703,8 +703,13 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
 
     setGetAuthorFeedInProgress(true);
     mBsky->getAuthorFeed(author.getDid(), limit, makeOptionalCursor(cursor),
-        [this, id, model, maxPages, minEntries, cursor](auto feed){
+        [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
+            const auto* model = mAuthorFeedModels.get(id);
+
+            if (!model)
+                return; // user has closed the view
+
             int added = cursor.isEmpty() ?
                     (*model)->setFeed(std::move(feed)) :
                     (*model)->addFeed(std::move(feed));

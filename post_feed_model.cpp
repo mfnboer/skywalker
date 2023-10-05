@@ -519,6 +519,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // may have had before.
                 const int rootTopNIndex = topNPostIndex(replyRef->mRoot, false);
                 const int parentTopNIndex = topNPostIndex(replyRef->mParent, false);
+                const bool allOutSideTopN = postTopNIndex == -1 && rootTopNIndex == -1 && parentTopNIndex == -1;
+                const bool allInTopN = postTopNIndex >=0 && rootTopNIndex >= 0 && parentTopNIndex >= 0;
 
                 if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid))
                 {
@@ -526,8 +528,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                     // These were visible to the user before refreshing the timeline.
                     // Changing the order of these posts is annoying to the user.
 
-                    if ((postTopNIndex == -1 && rootTopNIndex == -1) ||
-                        (postTopNIndex >= 0 && rootTopNIndex >= 0 && rootTopNIndex < postTopNIndex))
+                    if (allOutSideTopN || (allInTopN && rootTopNIndex < postTopNIndex))
                     {
                         page->addPost(replyRef->mRoot);
                         page->mFeed.back().setPostType(QEnums::POST_ROOT);
@@ -539,8 +540,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // again for consistency of the thread.
                 if ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded)
                 {
-                    if ((postTopNIndex == -1 && parentTopNIndex == -1) ||
-                        (postTopNIndex >= 0 && parentTopNIndex >= 0 && parentTopNIndex < postTopNIndex))
+                    if (allOutSideTopN || (allInTopN && parentTopNIndex < postTopNIndex))
                     {
                         page->addPost(replyRef->mParent, true);
                         auto& parentPost = page->mFeed.back();

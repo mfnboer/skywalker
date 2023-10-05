@@ -5,16 +5,19 @@ import skywalker
 Row {
     required property string authorName
 
+    id: row
+
     SvgImage {
         id: replyImg
-        width: replyToText.height
-        height: replyToText.height
+        width: 18 //replyToText.height
+        height: width
         color: "grey"
         svg: svgOutline.reply
     }
 
     Text {
         id: replyToText
+        anchors.verticalCenter: parent.verticalCenter
         width: parent.width - replyImg.width
         elide: Text.ElideRight
         color: "grey"
