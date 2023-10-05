@@ -215,25 +215,9 @@ Rectangle {
             }
 
             // Reply to
-            Row {
+            ReplyToRow {
                 width: parent.width
-
-                SvgImage {
-                    width: replyToText.height
-                    height: replyToText.height
-                    color: Material.color(Material.Grey)
-                    svg: svgOutline.reply
-                }
-
-                Text {
-                    id: replyToText
-                    width: parent.width
-                    elide: Text.ElideRight
-                    color: Material.color(Material.Grey)
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    text: qsTr(`Reply to ${postReplyToAuthor.name}`)
-                }
-
+                authorName: postReplyToAuthor.name
                 visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT)
             }
 

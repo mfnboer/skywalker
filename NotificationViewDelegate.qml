@@ -130,25 +130,10 @@ Rectangle {
             }
 
             // Reply to
-            Row {
+            ReplyToRow {
                 width: parent.width
+                authorName: replyToAuthor.name
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_REPLY
-
-                SvgImage {
-                    width: replyToText.height
-                    height: replyToText.height
-                    color: Material.color(Material.Grey)
-                    svg: svgOutline.reply
-                }
-
-                Text {
-                    id: replyToText
-                    width: parent.width
-                    elide: Text.ElideRight
-                    color: Material.color(Material.Grey)
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    text: qsTr(`Reply to ${replyToAuthor.name}`)
-                }
             }
 
             PostBody {

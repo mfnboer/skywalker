@@ -132,6 +132,7 @@ qt_add_qml_module(appskywalker
         fonts/NotoSansMath-Regular.ttf
         QML_FILES ContentLabels.qml
         RESOURCES android/src/com/gmail/mfnboer/ShareUtils.java
+        QML_FILES ReplyToRow.qml
 )
 
 set_target_properties(appskywalker PROPERTIES
