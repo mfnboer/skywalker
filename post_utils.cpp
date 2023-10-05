@@ -516,7 +516,7 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
     {
         if (facet.mType == ATProto::PostMaster::ParsedMatch::Type::LINK)
         {
-            const auto atUri = ATProto::ATUri::fromHttpsUri(facet.mMatch);
+            const auto atUri = ATProto::ATUri::fromHttpsPostUri(facet.mMatch);
             if (atUri.isValid())
             {
                 if (!postLinkFound)

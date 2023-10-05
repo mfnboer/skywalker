@@ -19,6 +19,13 @@ ApplicationWindow {
         // This catches the back-button on Android
         if (currentStack().depth > 1) {
             event.accepted = false
+            let item = currentStack()[currentStack().depth - 1]
+
+            if (item.cancel) {
+                item.cancel()
+                return
+            }
+
             popStack()
         }
         else if (stackLayout.currentIndex > 0) {
@@ -45,6 +52,13 @@ ApplicationWindow {
     }
     SvgFilled {
         id: svgFilled
+    }
+
+    BusyIndicator {
+        id: busyIndicator
+        z: 200
+        anchors.centerIn: parent
+        running: skywalker.getPostThreadInProgress
     }
 
     StatusPopup {

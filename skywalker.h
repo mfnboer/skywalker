@@ -22,6 +22,7 @@ class Skywalker : public QObject
     Q_PROPERTY(const NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
+    Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
@@ -72,6 +73,7 @@ public:
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
+    bool isGetPostThreadInProgress() const { return mGetPostThreadInProgress; }
     void setGetNotificationsInProgress(bool inProgress);
     bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
     void setGetAuthorFeedInProgress(bool inProgress);
@@ -104,6 +106,7 @@ signals:
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorFeedInProgressChanged();
     void getAuthorListInProgressChanged();
+    void getPostThreadInProgressChanged();
 
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;

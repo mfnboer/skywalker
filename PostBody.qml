@@ -25,7 +25,7 @@ Column {
         elide: Text.ElideRight
         textFormat: Text.RichText
         color: Material.foreground
-        font.pointSize: guiSettings.scaledFont(onlyEmojisPost() ? 3 : 1)
+        font.pointSize: getPostFontSize()
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
 
@@ -56,11 +56,17 @@ Column {
         id: guiSettings
     }
 
+    function getPostFontSize() {
+        return onlyEmojisPost() ?
+                    guiSettings.scaledFont(postUtils.graphemeLength(postPlainText) === 1 ? 9 : 3) :
+                    guiSettings.scaledFont(1)
+    }
+
     function onlyEmojisPost() {
         if (!postPlainText)
             return false
 
-        if (postUtils.graphemeLength(postPlainText.length) > 5)
+        if (postUtils.graphemeLength(postPlainText) > 5)
             return false
 
         return postUtils.onlyEmojis(postPlainText)

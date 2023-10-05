@@ -353,8 +353,9 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
         return;
     }
 
-    setGetTimelineInProgress(true);
     setAutoUpdateTimelineInProgress(true);
+    setGetTimelineInProgress(true);
+
     mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, {},
         [this, autoGapFill](auto feed){
             const int gapId = mTimelineModel.prependFeed(std::move(feed));
@@ -457,6 +458,7 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
 void Skywalker::setGetPostThreadInProgress(bool inProgress)
 {
     mGetPostThreadInProgress = inProgress;
+    emit getPostThreadInProgressChanged();
 }
 
 void Skywalker::setGetNotificationsInProgress(bool inProgress)

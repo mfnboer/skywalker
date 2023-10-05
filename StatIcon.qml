@@ -25,6 +25,8 @@ Rectangle {
     Text {
         id: statText
         anchors.left: statIcon.right
+        topPadding: 2
+        bottomPadding: 2
         color: iconColor
         text: statistic
         visible: statistic >= 0

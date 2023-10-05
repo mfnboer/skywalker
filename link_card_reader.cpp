@@ -78,8 +78,11 @@ QString LinkCardReader::toPlainText(const QString& text) const
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
     static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
-    static const QRegularExpression ogDescription(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
-    static const QRegularExpression ogImage(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogTitleRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'][^>]*>)");
+    static const QRegularExpression ogDescriptionRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogDescriptionRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'][^>]*>)");
+    static const QRegularExpression ogImageRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogImageRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'][^>]*>)");
 
     mInProgress = nullptr;
 
@@ -94,17 +97,46 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     auto match = ogTitleRE.match(data);
 
     if (match.hasMatch())
+    {
         card->setTitle(toPlainText(match.captured(3)));
+    }
+    else
+    {
+        match = ogTitleRE2.match(data);
+        if (match.hasMatch())
+            card->setTitle(toPlainText(match.captured(1)));
+    }
 
-    match = ogDescription.match(data);
-    if (match.hasMatch())
-        card->setDescription(toPlainText(match.captured(3)));
+    match = ogDescriptionRE.match(data);
 
-    const auto& url = reply->request().url();
-    match = ogImage.match(data);
     if (match.hasMatch())
     {
-        const auto imgUrl = match.captured(3);
+        card->setDescription(toPlainText(match.captured(3)));
+    }
+    else
+    {
+        match = ogDescriptionRE2.match(data);
+        if (match.hasMatch())
+            card->setDescription(toPlainText(match.captured(1)));
+    }
+
+    QString imgUrl;
+    const auto& url = reply->request().url();
+    match = ogImageRE.match(data);
+
+    if (match.hasMatch())
+    {
+        imgUrl = match.captured(3);
+    }
+    else
+    {
+        match = ogImageRE2.match(data);
+        if (match.hasMatch())
+            imgUrl = match.captured(1);
+    }
+
+    if (!imgUrl.isEmpty())
+    {
         if (imgUrl.startsWith("/"))
             card->setThumb(url.toString() + imgUrl);
         else
