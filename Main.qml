@@ -96,6 +96,13 @@ ApplicationWindow {
             getTimelineView().setInSync(0)
         }
 
+        onTimelineRefreshed: (prevTopPostIndex) => {
+            console.debug("Time line refreshed, prev top post index:", prevTopPostIndex)
+
+            if (prevTopPostIndex > 0)
+                getTimelineView().moveToPost(prevTopPostIndex - 1)
+        }
+
         onGetDetailedProfileOK: (profile) => {
             let modelId = skywalker.createAuthorFeedModel(profile)
             viewAuthor(profile, modelId)

@@ -10,16 +10,37 @@ PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& follow
     AbstractPostFeedModel(userDid, following, parent)
 {}
 
-void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     if (mFeed.empty())
     {
         addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
-        return;
+        return -1;
     }
 
+    setTopNCids();
     clear();
     addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+
+    int prevTopIndex = -1;
+
+    if (!mTopNCids.empty())
+    {
+        const QString& topCid = mTopNCids.front().mCid;
+
+        for (int i = 0; i < mFeed.size(); ++i)
+        {
+            if (topCid == mFeed[i].getCid())
+            {
+                prevTopIndex = i;
+                break;
+            }
+        }
+
+        mTopNCids.clear();
+    }
+
+    return prevTopIndex;
 }
 
 int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
@@ -152,8 +173,6 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
 
 void PostFeedModel::clear()
 {
-    setTopNCids();
-
     beginRemoveRows({}, 0, mFeed.size() - 1);
     clearFeed();
     mIndexCursorMap.clear();
@@ -475,17 +494,6 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             const BasicProfile author(feedEntry->mPost->mAuthor.get());
             AuthorCache::instance().put(author);
 
-            // Do not allow reordering (replies/parent/root) for the top-N posts.
-            // These were visible to the user before refreshing the timeline.
-            // Changing the order of these posts is annoying to the user.
-            const auto* topNPost = isTopNPost(post);
-            if (topNPost)
-            {
-                post.setPostType(topNPost->mPostType);
-                page->addPost(post);
-                continue;
-            }
-
             const auto& replyRef = post.getViewPostReplyRef();
 
             // Reposted replies are displayed without thread context
@@ -493,7 +501,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             {
                 // If a reply fits in an existing thread then always show it as it provides
                 // context to the user. The leaf of this thread is a reply that passed
-                // throught the filter settings.
+                // through the filter settings.
                 if (page->tryAddToExistingThread(post, *replyRef))
                     continue;
 
@@ -504,30 +512,50 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 const auto& rootCid = replyRef->mRoot.getCid();
                 const auto& parentCid = replyRef->mParent.getCid();
 
-                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid) && !isTopNPost(replyRef->mRoot))
+                const int postTopNIndex = topNPostIndex(post, true);
+
+                // Do not check the timestamp of root and parent as these are set
+                // to the timestamp of the post itself and not the timestamp that they
+                // may have had before.
+                const int rootTopNIndex = topNPostIndex(replyRef->mRoot, false);
+                const int parentTopNIndex = topNPostIndex(replyRef->mParent, false);
+
+                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid))
                 {
-                    page->addPost(replyRef->mRoot);
-                    page->mFeed.back().setPostType(QEnums::POST_ROOT);
-                    rootAdded = true;
+                    // Do not allow reordering (replies/parent/root) for the top-N posts.
+                    // These were visible to the user before refreshing the timeline.
+                    // Changing the order of these posts is annoying to the user.
+
+                    if ((postTopNIndex == -1 && rootTopNIndex == -1) ||
+                        (postTopNIndex >= 0 && rootTopNIndex >= 0 && rootTopNIndex < postTopNIndex))
+                    {
+                        page->addPost(replyRef->mRoot);
+                        page->mFeed.back().setPostType(QEnums::POST_ROOT);
+                        rootAdded = true;
+                    }
                 }
 
                 // If the parent was seen already, but the root not, then show the parent
                 // again for consistency of the thread.
-                if ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid) && !isTopNPost(replyRef->mParent)) || rootAdded)
+                if ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded)
                 {
-                    page->addPost(replyRef->mParent, true);
-                    auto& parentPost = page->mFeed.back();
-                    parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
-
-                    // Determine author of the parent's parent
-                    if (parentPost.getReplyToCid() == rootCid)
+                    if ((postTopNIndex == -1 && parentTopNIndex == -1) ||
+                        (postTopNIndex >= 0 && parentTopNIndex >= 0 && parentTopNIndex < postTopNIndex))
                     {
-                        parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
-                        parentPost.setParentInThread(rootAdded);
-                    }
+                        page->addPost(replyRef->mParent, true);
+                        auto& parentPost = page->mFeed.back();
+                        parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
 
-                    post.setPostType(QEnums::POST_LAST_REPLY);
-                    post.setParentInThread(true);
+                        // Determine author of the parent's parent
+                        if (parentPost.getReplyToCid() == rootCid)
+                        {
+                            parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
+                            parentPost.setParentInThread(rootAdded);
+                        }
+
+                        post.setPostType(QEnums::POST_LAST_REPLY);
+                        post.setParentInThread(true);
+                    }
                 }
             }
             else if (post.isReply() && !post.isRepost())
@@ -718,34 +746,36 @@ void PostFeedModel::setTopNCids()
     }
 }
 
-const PostFeedModel::CidTimestamp* PostFeedModel::isTopNPost(const Post& post) const
+int PostFeedModel::topNPostIndex(const Post& post, bool checkTimestamp) const
 {
     if (mTopNCids.empty())
-        return nullptr;
+        return -1;
 
-    const auto timestamp = post.getTimelineTimestamp();
-
-    if (timestamp > mTopNCids.front().mTimestamp)
-        return nullptr;
-
-    if (timestamp < mTopNCids.back().mTimestamp)
-        return nullptr;
-
-    for (const auto& topNPost : mTopNCids)
+    if (checkTimestamp)
     {
+        const auto timestamp = post.getTimelineTimestamp();
+
+        if (timestamp > mTopNCids.front().mTimestamp)
+            return -1;
+
+        if (timestamp < mTopNCids.back().mTimestamp)
+            return -1;
+    }
+
+    for (int i = 0; i < mTopNCids.size(); ++i)
+    {
+        const auto& topNPost = mTopNCids[i];
         const auto repostedBy = post.getRepostedBy();
         const QString didRepostedBy = repostedBy ? repostedBy->getDid() : QString();
 
         if (topNPost.mCid == post.getCid() && topNPost.mRepostedByDid == didRepostedBy)
-            return &topNPost;
+            return i;
     }
 
-#ifdef QT_DEBUG
-    if (!post.isReply())
-        qDebug() << "Post is in top-N time interval, but not present:" << post.getCid() << post.getText();
-#endif
+    if (checkTimestamp)
+        qDebug() << "Post is in top-N time interval, but not present:" << post.getCid() << post.isReply() << post.getText();
 
-    return nullptr;
+    return -1;
 }
 
 }

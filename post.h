@@ -116,7 +116,7 @@ private:
     QEnums::PostType mPostType = QEnums::POST_STANDALONE;
     int mThreadType = QEnums::THREAD_NONE;
 
-    // Timestamp to keep reply referenes in time sequence for the timeline
+    // Timestamp to keep reply references in time sequence for the timeline
     QDateTime mReplyRefTimestamp;
 
     // For posts not having all parent informations, the reply-to-author may

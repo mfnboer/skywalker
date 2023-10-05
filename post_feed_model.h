@@ -16,7 +16,10 @@ public:
 
     explicit PostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
 
-    void setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    // Return the new index of the current top post.
+    // If the feed was empty then -1 is returned.
+    int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+
     void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
 
     // Returns gap id if prepending created a gap in the feed.
@@ -80,7 +83,7 @@ private:
     void addToIndices(size_t offset, size_t startAtIndex);
     void logIndices() const;
     void setTopNCids();
-    const CidTimestamp* isTopNPost(const Post& post) const;
+    int topNPostIndex(const Post& post, bool checkTimestamp) const;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.

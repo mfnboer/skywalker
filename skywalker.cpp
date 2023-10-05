@@ -321,12 +321,17 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
     setGetTimelineInProgress(true);
     mBsky->getTimeline(limit, makeOptionalCursor(cursor),
        [this, cursor](auto feed){
+            int topPostIndex = -1;
+
             if (cursor.isEmpty())
-                mTimelineModel.setFeed(std::move(feed));
+                topPostIndex = mTimelineModel.setFeed(std::move(feed));
             else
                 mTimelineModel.addFeed(std::move(feed));
 
             setGetTimelineInProgress(false);
+
+            if (topPostIndex >= 0)
+                emit timelineRefreshed(topPostIndex);
        },
        [this](const QString& error){
             qInfo() << "getTimeline FAILED:" << error;

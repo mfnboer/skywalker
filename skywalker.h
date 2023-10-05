@@ -94,6 +94,7 @@ signals:
     void resumeSessionFailed();
     void timelineSyncOK(int index);
     void timelineSyncFailed();
+    void timelineRefreshed(int prevTopPostIndex);
     void getUserProfileOK();
     void getUserProfileFailed();
     void autoUpdateTimeLineInProgressChanged();
