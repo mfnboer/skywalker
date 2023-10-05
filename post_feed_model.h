@@ -41,6 +41,14 @@ public:
     int findTimestamp(QDateTime timestamp) const;
 
 private:
+    struct CidTimestamp
+    {
+        QString mCid;
+        QDateTime mTimestamp;
+        QString mRepostedByDid;
+        QEnums::PostType mPostType;
+    };
+
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
@@ -71,6 +79,8 @@ private:
 
     void addToIndices(size_t offset, size_t startAtIndex);
     void logIndices() const;
+    void setTopNCids();
+    const CidTimestamp* isTopNPost(const Post& post) const;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.
@@ -83,6 +93,9 @@ private:
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
+
+    // The top N cids from the posts in the feed before last clear.
+    std::vector<CidTimestamp> mTopNCids;
 
     // Show only replies to people in your following list.
     bool mOnlyRepliesToFollowing = true;

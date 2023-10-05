@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post_feed_model.h"
 #include "author_cache.h"
+#include <algorithm>
 
 namespace Skywalker {
 
@@ -151,13 +152,15 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
 
 void PostFeedModel::clear()
 {
+    setTopNCids();
+
     beginRemoveRows({}, 0, mFeed.size() - 1);
     clearFeed();
     mIndexCursorMap.clear();
     mIndexRawFeedMap.clear();
     mGapIdIndexMap.clear();
-
     endRemoveRows();
+
     qDebug() << "All posts removed";
 }
 
@@ -472,6 +475,17 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             const BasicProfile author(feedEntry->mPost->mAuthor.get());
             AuthorCache::instance().put(author);
 
+            // Do not allow reordering (replies/parent/root) for the top-N posts.
+            // These were visible to the user before refreshing the timeline.
+            // Changing the order of these posts is annoying to the user.
+            const auto* topNPost = isTopNPost(post);
+            if (topNPost)
+            {
+                post.setPostType(topNPost->mPostType);
+                page->addPost(post);
+                continue;
+            }
+
             const auto& replyRef = post.getViewPostReplyRef();
 
             // Reposted replies are displayed without thread context
@@ -490,7 +504,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 const auto& rootCid = replyRef->mRoot.getCid();
                 const auto& parentCid = replyRef->mParent.getCid();
 
-                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid))
+                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid) && !isTopNPost(replyRef->mRoot))
                 {
                     page->addPost(replyRef->mRoot);
                     page->mFeed.back().setPostType(QEnums::POST_ROOT);
@@ -499,7 +513,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                 // If the parent was seen already, but the root not, then show the parent
                 // again for consistency of the thread.
-                if ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded)
+                if ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid) && !isTopNPost(replyRef->mParent)) || rootAdded)
                 {
                     page->addPost(replyRef->mParent, true);
                     auto& parentPost = page->mFeed.back();
@@ -680,6 +694,58 @@ void PostFeedModel::logIndices() const
     qDebug() << "GAP INDEX MAP:";
     for (const auto& [gapId, index] : mGapIdIndexMap)
         qDebug() << "Gap:" << gapId << "Index:" << index;
+}
+
+void PostFeedModel::setTopNCids()
+{
+    mTopNCids.clear();
+
+    for (size_t i = 0; i < std::min(10, (int)mFeed.size()); ++i)
+    {
+        const auto& post = mFeed[i];
+        const QString& cid = post.getCid();
+
+        if (!cid.isEmpty())
+        {
+            const auto repostedBy = post.getRepostedBy();
+            const QString didRepostedBy = repostedBy ? repostedBy->getDid() : QString();
+            mTopNCids.push_back(CidTimestamp{
+                                             cid,
+                                             post.getTimelineTimestamp(),
+                                             didRepostedBy,
+                                             post.getPostType() });
+        }
+    }
+}
+
+const PostFeedModel::CidTimestamp* PostFeedModel::isTopNPost(const Post& post) const
+{
+    if (mTopNCids.empty())
+        return nullptr;
+
+    const auto timestamp = post.getTimelineTimestamp();
+
+    if (timestamp > mTopNCids.front().mTimestamp)
+        return nullptr;
+
+    if (timestamp < mTopNCids.back().mTimestamp)
+        return nullptr;
+
+    for (const auto& topNPost : mTopNCids)
+    {
+        const auto repostedBy = post.getRepostedBy();
+        const QString didRepostedBy = repostedBy ? repostedBy->getDid() : QString();
+
+        if (topNPost.mCid == post.getCid() && topNPost.mRepostedByDid == didRepostedBy)
+            return &topNPost;
+    }
+
+#ifdef QT_DEBUG
+    if (!post.isReply())
+        qDebug() << "Post is in top-N time interval, but not present:" << post.getCid() << post.getText();
+#endif
+
+    return nullptr;
 }
 
 }
