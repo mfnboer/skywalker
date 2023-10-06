@@ -52,7 +52,7 @@ ListView {
 
     delegate: AuthorViewDelegate {
         viewWidth: authorListView.width
-        onFollow: (did) => { graphUtils.follow(did) }
+        onFollow: (profile) => { graphUtils.follow(profile) }
         onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
     }
 

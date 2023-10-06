@@ -17,6 +17,7 @@ const BasicProfile* ProfileStore::get(const QString& did) const
 
 void ProfileStore::add(const BasicProfile& profile)
 {
+    qDebug() << "Add profile:" << profile.getDid() << profile.getHandle();
     const QString& did = profile.getDid();
     Q_ASSERT(!did.isEmpty());
     if (did.isEmpty())
@@ -27,6 +28,7 @@ void ProfileStore::add(const BasicProfile& profile)
 
 void ProfileStore::remove(const QString& did)
 {
+    qDebug() << "Remove profile:" << did;
     mDidProfileMap.erase(did);
 }
 

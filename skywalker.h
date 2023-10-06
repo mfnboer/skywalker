@@ -85,6 +85,7 @@ public:
     void setAvatarUrl(const QString& avatarUrl);
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
+    ProfileStore& getUserFollows() { return mUserFollows; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
 
 signals:
@@ -113,11 +114,10 @@ signals:
 private:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
-    // TODO: pass model id instead of model. model may be delete when user closes the view
-    void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
-    void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
-    void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
-    void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model);
+    void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void startRefreshTimers();

@@ -130,7 +130,7 @@ Page {
                 SkyButton {
                     text: qsTr("Follow")
                     visible: !following && !isUser(author) && !author.viewer.blockedBy
-                    onClicked: graphUtils.follow(author.did)
+                    onClicked: graphUtils.follow(author)
                 }
                 SkyButton {
                     flat: true

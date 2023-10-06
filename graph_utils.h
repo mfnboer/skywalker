@@ -18,7 +18,7 @@ class GraphUtils : public QObject, public Presence
 public:
     explicit GraphUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void follow(const QString& did);
+    Q_INVOKABLE void follow(const BasicProfile& profile);
     Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
     Q_INVOKABLE void block(const QString& did);
     Q_INVOKABLE void unblock(const QString& did, const QString& blockingUri);

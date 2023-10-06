@@ -37,17 +37,19 @@ void GraphUtils::setSkywalker(Skywalker* skywalker)
     emit skywalkerChanged();
 }
 
-void GraphUtils::follow(const QString& did)
+void GraphUtils::follow(const BasicProfile& profile)
 {
-    graphMaster()->follow(did,
-        [this, presence=getPresence(), did](const auto& followingUri, const auto&){
+    graphMaster()->follow(profile.getDid(),
+        [this, presence=getPresence(), profile](const auto& followingUri, const auto&){
             if (!presence)
                 return;
 
             mSkywalker->makeLocalModelChange(
-                [did, followingUri](LocalAuthorModelChanges* model){
+                [did=profile.getDid(), followingUri](LocalAuthorModelChanges* model){
                     model->updateFollowingUri(did, followingUri);
                 });
+
+            mSkywalker->getUserFollows().add(profile);
 
             emit followOk(followingUri);
         },
@@ -71,6 +73,8 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
                 [did](LocalAuthorModelChanges* model){
                     model->updateFollowingUri(did, "");
                 });
+
+            mSkywalker->getUserFollows().remove(did);
 
             emit unfollowOk();
         },

@@ -786,13 +786,17 @@ void Skywalker::removeAuthorFeedModel(int id)
     mAuthorFeedModels.remove(id);
 }
 
-void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model)
+void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
     mBsky->getFollows(atId, limit, makeOptionalCursor(cursor),
-        [this, model](auto output){
-            setGetAuthorListInProgress(false);
-            model->addAuthors(std::move(output->mFollows), output->mCursor.value_or(""));
+        [this, modelId](auto output){
+            const auto* model = mAuthorListModels.get(modelId);
+            if (model)
+            {
+                setGetAuthorListInProgress(false);
+                (*model)->addAuthors(std::move(output->mFollows), output->mCursor.value_or(""));
+            }
         },
         [this](const QString& error){
             setGetAuthorListInProgress(false);
@@ -801,13 +805,17 @@ void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QStri
         });
 }
 
-void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model)
+void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
     mBsky->getFollowers(atId, limit, makeOptionalCursor(cursor),
-        [this, model](auto output){
-            setGetAuthorListInProgress(false);
-            model->addAuthors(std::move(output->mFollowers), output->mCursor.value_or(""));
+        [this, modelId](auto output){
+            const auto* model = mAuthorListModels.get(modelId);
+            if (model)
+            {
+                setGetAuthorListInProgress(false);
+                (*model)->addAuthors(std::move(output->mFollowers), output->mCursor.value_or(""));
+            }
         },
         [this](const QString& error){
             setGetAuthorListInProgress(false);
@@ -816,18 +824,23 @@ void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QSt
         });
 }
 
-void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model)
+void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
     mBsky->getLikes(atId, limit, makeOptionalCursor(cursor),
-        [this, model](auto output){
+        [this, modelId](auto output){
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (!model)
+                return;
+
             setGetAuthorListInProgress(false);
             ATProto::AppBskyActor::ProfileViewList profileList;
 
             for (const auto& like : output->mLikes)
                 profileList.push_back(std::move(like->mActor));
 
-            model->addAuthors(std::move(profileList), output->mCursor.value_or(""));
+            (*model)->addAuthors(std::move(profileList), output->mCursor.value_or(""));
         },
         [this](const QString& error){
             setGetAuthorListInProgress(false);
@@ -836,13 +849,17 @@ void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString
         });
 }
 
-void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, AuthorListModel* model)
+void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
     mBsky->getRepostedBy(atId, limit, makeOptionalCursor(cursor),
-        [this, model](auto output){
-            setGetAuthorListInProgress(false);
-            model->addAuthors(std::move(output->mRepostedBy), output->mCursor.value_or(""));
+        [this, modelId](auto output){
+            const auto* model = mAuthorListModels.get(modelId);
+            if (model)
+            {
+                setGetAuthorListInProgress(false);
+                (*model)->addAuthors(std::move(output->mRepostedBy), output->mCursor.value_or(""));
+            }
         },
         [this](const QString& error){
             setGetAuthorListInProgress(false);
@@ -878,16 +895,16 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
     switch (type)
     {
     case AuthorListModel::Type::AUTHOR_LIST_FOLLOWS:
-        getFollowsAuthorList(atId, limit, cursor, model->get());
+        getFollowsAuthorList(atId, limit, cursor, id);
         break;
     case AuthorListModel::Type::AUTHOR_LIST_FOLLOWERS:
-        getFollowersAuthorList(atId, limit, cursor, model->get());
+        getFollowersAuthorList(atId, limit, cursor, id);
         break;
     case AuthorListModel::Type::AUTHOR_LIST_LIKES:
-        getLikesAuthorList(atId, limit, cursor, model->get());
+        getLikesAuthorList(atId, limit, cursor, id);
         break;
     case AuthorListModel::Type::AUTHOR_LIST_REPOSTS:
-        getRepostsAuthorList(atId, limit, cursor, model->get());
+        getRepostsAuthorList(atId, limit, cursor, id);
         break;
     }
 }

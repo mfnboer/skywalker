@@ -10,7 +10,7 @@ Rectangle {
     required property profile author
     required property string followingUri
 
-    signal follow(string did)
+    signal follow(basicprofile profile)
     signal unfollow(string did, string uri)
 
     width: grid.width
@@ -71,7 +71,7 @@ Rectangle {
             SkyButton {
                 text: qsTr("Follow")
                 visible: !followingUri && !isUser(author)
-                onClicked: follow(author.did)
+                onClicked: follow(author)
             }
             SkyButton {
                 flat: true
