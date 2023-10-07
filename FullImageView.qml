@@ -15,9 +15,12 @@ Page {
     background: Rectangle { color: "black" }
 
     SwipeView {
+        property bool zooming: false
+
         id: view
         anchors.fill: parent
         currentIndex: imageIndex
+        interactive: !zooming
 
         Repeater {
             model: images.length
@@ -45,7 +48,12 @@ Page {
                         yAxis.enabled: false
 
                         onScaleChanged: (delta) => {
+                            let dx = centroid.position.x - img.getCenter().x
+                            let dy = centroid.position.y - img.getCenter().y
+
                             img.scale *= delta
+                            imgTranslation.x -= dx * delta - dx
+                            imgTranslation.y -= dy * delta - dy
 
                             if (img.scale < 1)
                                 img.scale = 1
@@ -55,8 +63,7 @@ Page {
 
                         onGrabChanged: (transition, point) => {
                             if (transition === PointerDevice.UngrabPassive) {
-                                view.interactive = img.scale === 1
-                                imgDrag.enabled = !view.interactive
+                                view.zooming = img.scale > 1
                             }
                         }
                     }
@@ -68,7 +75,7 @@ Page {
                         scaleAxis.enabled: false
                         minimumPointCount: 1
                         maximumPointCount: 1
-                        enabled: false
+                        enabled: view.zooming
 
                         onTranslationChanged: (delta) => {
                             imgTranslation.x += delta.x
@@ -98,6 +105,10 @@ Page {
                             imgTranslation.y = maxYDrag
                         else if (imgTranslation.y < -maxYDrag)
                             imgTranslation.y = -maxYDrag
+                    }
+
+                    function getCenter() {
+                        return Qt.point(width / 2, height / 2)
                     }
                 }
                 Text {
