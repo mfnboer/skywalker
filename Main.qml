@@ -19,6 +19,13 @@ ApplicationWindow {
         // This catches the back-button on Android
         if (currentStack().depth > 1) {
             event.accepted = false
+
+            let item = currentStackItem()
+            if (item instanceof ComposePost) {
+                item.cancel()
+                return
+            }
+
             popStack()
         }
         else if (stackLayout.currentIndex > 0) {
@@ -335,6 +342,15 @@ ApplicationWindow {
 
     function currentStack() {
         return stackLayout.children[stackLayout.currentIndex]
+    }
+
+    function currentStackItem() {
+        let stack = currentStack()
+
+        if (stack.depth > 0)
+            return stack.get(stack.depth - 1)
+
+        return null
     }
 
     function popStack() {
