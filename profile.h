@@ -49,6 +49,7 @@ class BasicProfile
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
+    Q_PROPERTY(QStringList labels READ getLabelTexts FINAL)
     QML_VALUE_TYPE(basicprofile)
 
 public:
@@ -66,6 +67,7 @@ public:
     QString getAvatarUrl() const;
     ImageView getImageView() const;
     ProfileViewerState getViewer() const;
+    QStringList getLabelTexts() const;
 
     // The profile is volatile if it depends on pointers to the raw data.
     bool isVolatile() const;
@@ -84,6 +86,7 @@ private:
     QString mDisplayName;
     QString mAvatarUrl;
     ProfileViewerState mViewer;
+    QStringList mLabelTexts;
 };
 
 class Profile : public BasicProfile

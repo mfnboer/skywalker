@@ -166,6 +166,18 @@ Page {
                 }
             }
 
+            Rectangle {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                height: contentLabels.height
+
+                ContentLabels {
+                    id: contentLabels
+                    anchors.left: parent.left
+                    anchors.right: undefined
+                    contentLabels: author.labels
+                }
+            }
+
             Row {
                 id: statsRow
                 width: parent.width - (parent.leftPadding + parent.rightPadding)

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "profile.h"
+#include "content_filter.h"
 
 namespace Skywalker {
 
@@ -136,6 +137,23 @@ ProfileViewerState BasicProfile::getViewer() const
     return mViewer;
 }
 
+QStringList BasicProfile::getLabelTexts() const
+{
+    const ContentFilter::LabelList* labels = nullptr;
+
+    if (mProfileBasicView)
+        labels = &mProfileBasicView->mLabels;
+    else if (mProfileView)
+        labels = &mProfileView->mLabels;
+    else if (mProfileDetailedView)
+        labels = &mProfileDetailedView->mLabels;
+
+    if (!labels)
+        return mLabelTexts;
+
+    return ContentFilter(*labels).getLabelTexts();
+}
+
 bool BasicProfile::isVolatile() const
 {
     return mProfileBasicView || mProfileView || mProfileDetailedView;
@@ -145,6 +163,7 @@ BasicProfile BasicProfile::nonVolatileCopy() const
 {
     BasicProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl());
     profile.mViewer = getViewer();
+    profile.mLabelTexts = getLabelTexts();
     return profile;
 }
 
