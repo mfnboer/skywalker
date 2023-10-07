@@ -40,6 +40,7 @@ Item {
             width: parent.width
             postText: record.postTextFormatted
             postImages: record.images
+            postContentLabels: record.contentLabels
             postExternal: record.external
             postDateTime: record.postDateTime
             maxTextLines: 6

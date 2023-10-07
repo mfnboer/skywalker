@@ -226,15 +226,12 @@ Rectangle {
                 postText: postEntry.postText
                 postPlainText: postEntry.postPlainText
                 postImages: postEntry.postImages
+                postContentLabels: postLabels
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia
                 postDateTime: postEntry.postIndexedDateTime
                 detailedView: postThreadType & QEnums.THREAD_ENTRY
-            }
-
-            ContentLabels {
-                contentLabels: postLabels
             }
 
             // Reposts and likes in detailed view of post entry in thread view

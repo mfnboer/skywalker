@@ -7,6 +7,7 @@ Column {
     required property string postText
     required property list<imageview> postImages
     required property date postDateTime
+    required property list<string> postContentLabels
     property string postPlainText
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
@@ -80,6 +81,11 @@ Column {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             let component = Qt.createComponent(qmlFile)
             component.createObject(postBody, {images: postImages})
+        }
+
+        if (postContentLabels.length > 0) {
+            let component = Qt.createComponent("ContentLabels.qml")
+            component.createObject(postBody, {contentLabels: postContentLabels})
         }
 
         if (postExternal) {

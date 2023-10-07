@@ -97,4 +97,23 @@ QVariant RecordView::getExternal() const
     return QVariant::fromValue(ExternalView(external.get()));
 }
 
+QStringList RecordView::getLabels() const
+{
+    if (!mRecord)
+        return {};
+
+    QStringList labelTexts;
+
+    // TODO: move to some label processing class
+    for (const auto& label : mRecord->mLabels)
+    {
+        if (!label->mNeg)
+            labelTexts.append(label->mVal);
+        else
+            labelTexts.removeAll(label->mVal);
+    }
+
+    return labelTexts;
+}
+
 }

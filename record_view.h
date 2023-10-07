@@ -17,6 +17,7 @@ class RecordView
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
+    Q_PROPERTY(QStringList contentLabels READ getLabels FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
@@ -37,6 +38,7 @@ public:
     QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
+    QStringList getLabels() const;
 
     bool getNotFound() const { return mNotFound; }
     bool getBlocked() const { return mBlocked; }

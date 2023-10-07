@@ -35,6 +35,7 @@ Column {
         width: parent.width - 20
         postText: quoteColumn.postText
         postImages: []
+        postContentLabels: []
         postDateTime: postDateTime
         maxTextLines: 5
     }

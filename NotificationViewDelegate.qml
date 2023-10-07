@@ -143,14 +143,11 @@ Rectangle {
                 postText: notificationPostText
                 postPlainText: notificationPostPlainText
                 postImages: notificationPostImages
+                postContentLabels: notificationPostLabels
                 postExternal: notificationPostExternal
                 postRecord: notificationPostRecord
                 postRecordWithMedia: notificationPostRecordWithMedia
                 postDateTime: notificationPostTimestamp
-            }
-
-            ContentLabels {
-                contentLabels: notificationPostLabels
             }
 
             PostStats {
@@ -254,15 +251,12 @@ Rectangle {
                 postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
                                    notificationReasonPostPlainText : ""
                 postImages: notificationReasonPostImages
+                postContentLabels: notificationReasonPostLabels
                 postDateTime: notificationReasonPostTimestamp
                 postExternal: notificationReasonPostExternal
                 postRecord: notificationReasonPostRecord
                 postRecordWithMedia: notificationReasonPostRecordWithMedia
                 visible: showPostForAggregatableReason()
-            }
-
-            ContentLabels {
-                contentLabels: notificationReasonPostLabels
             }
         }
 
