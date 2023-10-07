@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "record_view.h"
+#include "content_filter.h"
 #include "external_view.h"
 #include <atproto/lib/post_master.h>
 
@@ -102,18 +103,7 @@ QStringList RecordView::getLabels() const
     if (!mRecord)
         return {};
 
-    QStringList labelTexts;
-
-    // TODO: move to some label processing class
-    for (const auto& label : mRecord->mLabels)
-    {
-        if (!label->mNeg)
-            labelTexts.append(label->mVal);
-        else
-            labelTexts.removeAll(label->mVal);
-    }
-
-    return labelTexts;
+    return ContentFilter(mRecord->mLabels).getLabelTexts();
 }
 
 }

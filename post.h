@@ -64,7 +64,7 @@ public:
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
 
-    std::vector<ImageView::Ptr> getImages() const;
+    QList<ImageView> getImages() const;
     ExternalView::Ptr getExternalView() const;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;

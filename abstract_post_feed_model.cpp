@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "abstract_post_feed_model.h"
+#include "content_filter.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -83,13 +84,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostIndexedDateTime:
         return post.getIndexedAt();
     case Role::PostImages:
-    {
-        QList<ImageView> images;
-        for (const auto& img : post.getImages())
-            images.push_back(*img);
-
-        return QVariant::fromValue(images);
-    }
+        return QVariant::fromValue(post.getImages());
     case Role::PostExternal:
     {
         auto external = post.getExternalView();
@@ -150,20 +145,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
     case Role::PostLabels:
-    {
-        // TODO: move to some label processing class
-        QStringList labelTexts;
-
-        for (const auto& label : post.getLabels())
-        {
-            if (!label->mNeg)
-                labelTexts.append(label->mVal);
-            else
-                labelTexts.removeAll(label->mVal);
-        }
-
-        return labelTexts;
-    }
+        return ContentFilter(post.getLabels()).getLabelTexts();
     case Role::PostLocallyDeleted:
     {
         if (!change)

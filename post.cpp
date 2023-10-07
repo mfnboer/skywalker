@@ -381,7 +381,7 @@ QString Post::getReplyRootUri() const
     return ref ? ref->mUri : QString();
 }
 
-std::vector<ImageView::Ptr> Post::getImages() const
+QList<ImageView> Post::getImages() const
 {
     if (!mPost)
         return {};
@@ -390,10 +390,10 @@ std::vector<ImageView::Ptr> Post::getImages() const
         return {};
 
     const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::Ptr>(mPost->mEmbed->mEmbed);
-    std::vector<ImageView::Ptr> images;
+    QList<ImageView> images;
 
     for (const auto& img : imagesView->mImages)
-        images.push_back(std::make_unique<ImageView>(img.get()));
+        images.push_back(ImageView(img.get()));
 
     return images;
 }

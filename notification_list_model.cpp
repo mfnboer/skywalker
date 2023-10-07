@@ -3,6 +3,7 @@
 #include "notification_list_model.h"
 #include "abstract_post_feed_model.h"
 #include "author_cache.h"
+#include "content_filter.h"
 #include "enums.h"
 #include <atproto/lib/at_uri.h>
 #include <unordered_map>
@@ -250,14 +251,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationReasonPostPlainText:
         return notification.getReasonPost(mReasonPostCache).getText();
     case Role::NotificationReasonPostImages:
-    {
-        const auto& post = notification.getReasonPost(mReasonPostCache);
-        QList<ImageView> images;
-        for (const auto& img : post.getImages())
-            images.push_back(*img);
-
-        return QVariant::fromValue(images);
-    }
+        return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getImages());
     case Role::NotificationReasonPostExternal:
     {
         const auto& post = notification.getReasonPost(mReasonPostCache);
@@ -281,20 +275,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationReasonPostNotFound:
         return notification.getReasonPost(mReasonPostCache).isNotFound();
     case Role::NotificationReasonPostLabels:
-    {
-        // TODO: move to some label processing class
-        QStringList labelTexts;
-
-        for (const auto& label : notification.getReasonPost(mReasonPostCache).getLabels())
-        {
-            if (!label->mNeg)
-                labelTexts.append(label->mVal);
-            else
-                labelTexts.removeAll(label->mVal);
-        }
-
-        return labelTexts;
-    }
+        return ContentFilter(notification.getReasonPost(mReasonPostCache).getLabels()).getLabelTexts();
     case Role::NotificationReasonPostLocallyDeleted:
         return reasonChange ? reasonChange->mPostDeleted : false;
     case Role::NotificationTimestamp:
@@ -315,14 +296,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return post.isNotFound() ? notification.getTimestamp() : post.getTimelineTimestamp();
     }
     case Role::NotificationPostImages:
-    {
-        const auto& post = notification.getNotificationPost(mPostCache);
-        QList<ImageView> images;
-        for (const auto& img : post.getImages())
-            images.push_back(*img);
-
-        return QVariant::fromValue(images);
-    }
+        return QVariant::fromValue(notification.getNotificationPost(mPostCache).getImages());
     case Role::NotificationPostExternal:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
@@ -358,20 +332,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostNotFound:
         return notification.getNotificationPost(mPostCache).isNotFound();
     case Role::NotificationPostLabels:
-    {
-        // TODO: move to some label processing class
-        QStringList labelTexts;
-
-        for (const auto& label : notification.getNotificationPost(mPostCache).getLabels())
-        {
-            if (!label->mNeg)
-                labelTexts.append(label->mVal);
-            else
-                labelTexts.removeAll(label->mVal);
-        }
-
-        return labelTexts;
-    }
+        return ContentFilter(notification.getNotificationPost(mPostCache).getLabels()).getLabelTexts();
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::EndOfList:
