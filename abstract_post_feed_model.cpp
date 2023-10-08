@@ -8,10 +8,11 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent) :
+AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
-    mFollowing(following)
+    mFollowing(following),
+    mContentFilter(contentFilter)
 {}
 
 void AbstractPostFeedModel::clearFeed()
@@ -146,6 +147,22 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
     case Role::PostLabels:
         return ContentFilter::getLabelTexts(post.getLabels());
+    case Role::PostContentVisibility:
+    {
+        if (post.getAuthor().getName() == "Hester Loeff")
+            return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+
+        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+        return visibility;
+    }
+    case Role::PostContentWarning:
+    {
+        if (post.getAuthor().getName() == "Hester Loeff")
+            return "FOOBAR";
+
+        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+        return warning;
+    }
     case Role::PostLocallyDeleted:
     {
         if (!change)
@@ -207,6 +224,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
         { int(Role::PostLabels), "postLabels" },
+        { int(Role::PostContentVisibility), "postContentVisibility" },
+        { int(Role::PostContentWarning), "postContentWarning" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };

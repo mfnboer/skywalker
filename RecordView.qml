@@ -41,6 +41,8 @@ Item {
             postText: record.postTextFormatted
             postImages: record.images
             postContentLabels: record.contentLabels
+            postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // TODO: proper filtering
+            postContentWarning: ""
             postExternal: record.external
             postDateTime: record.postDateTime
             maxTextLines: 6

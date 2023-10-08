@@ -36,6 +36,8 @@ Column {
         postText: quoteColumn.postText
         postImages: []
         postContentLabels: []
+        postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
+        postContentWarning: ""
         postDateTime: postDateTime
         maxTextLines: 5
     }

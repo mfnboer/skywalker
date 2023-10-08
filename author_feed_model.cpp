@@ -4,8 +4,8 @@
 
 namespace Skywalker {
 
-AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, parent),
+AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
+    AbstractPostFeedModel(userDid, following, contentFilter, parent),
     mAuthor(author.nonVolatileCopy())
 {
 }
@@ -87,6 +87,14 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
 
             if (post.isReply() && !post.isRepost())
                 continue;
+
+            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+            
+            if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
+            {
+                qDebug() << "Hide post:" << post.getCid() << warning;
+                continue;
+            }
 
             page->addPost(post);
         }

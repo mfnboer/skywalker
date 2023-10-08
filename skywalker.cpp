@@ -24,7 +24,9 @@ static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
-    mTimelineModel(mUserDid, mUserFollows, this)
+    mContentFilter(mUserPreferences),
+    mTimelineModel(mUserDid, mUserFollows, mContentFilter, this),
+    mNotificationListModel(mContentFilter, this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
@@ -218,7 +220,7 @@ void Skywalker::getUserPreferences()
     // Get profile and follows in one go. We do not need detailed profile data.
     mBsky->getPreferences(
         [this](auto prefs){
-            mUserPreferences = std::make_unique<ATProto::UserPreferences>(prefs);
+            mUserPreferences = prefs;
             emit getUserPreferencesOK();
         },
         [this](const QString& error){
@@ -546,7 +548,7 @@ void Skywalker::getPostThread(const QString& uri)
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
             setGetPostThreadInProgress(false);
-            auto model = std::make_unique<PostThreadModel>(mUserDid, mUserFollows, this);
+            auto model = std::make_unique<PostThreadModel>(mUserDid, mUserFollows, mContentFilter, this);
             int postEntryIndex = model->setPostThread(std::move(thread));
 
             if (postEntryIndex < 0)
@@ -785,7 +787,7 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
 
 int Skywalker::createAuthorFeedModel(const BasicProfile& author)
 {
-    auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, this);
+    auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, mContentFilter, this);
     const int id = mAuthorFeedModels.put(std::move(model));
     return id;
 }

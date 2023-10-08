@@ -19,7 +19,9 @@ Item {
             if (record.images.length > 0) {
                 let qmlFile = `ImagePreview${(record.images.length)}.qml`
                 let component = Qt.createComponent(qmlFile)
-                component.createObject(recordColumn, {images: record.images})
+                component.createObject(recordColumn, {images: record.images,
+                                                      contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW,
+                                                      contentWarning: ""}) // TODO: proper visibility
             }
 
             if (record.external) {

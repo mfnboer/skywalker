@@ -5,8 +5,8 @@
 
 namespace Skywalker {
 
-PostThreadModel::PostThreadModel(const QString& userDid, const IProfileStore& following, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, parent)
+PostThreadModel::PostThreadModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
+    AbstractPostFeedModel(userDid, following, contentFilter, parent)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)

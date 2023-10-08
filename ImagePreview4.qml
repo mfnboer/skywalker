@@ -3,11 +3,16 @@ import QtQuick.Layouts
 import skywalker
 
 RoundedFrame {
+    required property int contentVisibility
+    required property string contentWarning
     property list<imageview> images
+    property bool showWarnedMedia: false
+    property imageview nullImage
 
     objectToRound: imgGrid
     width: parent.width
-    height: width
+    height: imageVisible() ? width :
+                contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnText.height : hideText.height
 
     Grid {
         id: imgGrid
@@ -21,7 +26,7 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            imageView: images[0]
+            imageView: imageVisible() ? images[0] : nullImage
         }
 
         ThumbImageView {
@@ -30,7 +35,7 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            imageView: images[1]
+            imageView: imageVisible() ? images[1] : nullImage
         }
 
         ThumbImageView {
@@ -39,7 +44,7 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            imageView: images[2]
+            imageView: imageVisible() ? images[2] : nullImage
         }
 
         ThumbImageView {
@@ -48,7 +53,7 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            imageView: images[3]
+            imageView: imageVisible() ? images[3] : nullImage
         }
     }
     MouseArea {
@@ -70,6 +75,39 @@ RoundedFrame {
             if (index >= 0)
                 root.viewFullImage(images, index)
         }
+    }
+
+    Text {
+        id: warnText
+        width: parent.width
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        elide: Text.ElideRight
+        textFormat: Text.RichText
+        color: "red"
+        // TODO: icon
+        text: qsTr("WARNING") + ": " + postContentWarning + "<br><a href=\"show\">" + qsTr("Show pictures") + "</a>"
+        visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
+        onLinkActivated: showWarnedMedia = true
+    }
+
+    Text {
+        id: hideText
+        width: parent.width
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        elide: Text.ElideRight
+        textFormat: Text.RichText
+        color: "red"
+        // TODO: icon
+        text: qsTr("HIDDEN PICTURES") + ": " + contentWarning
+        visible: contentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+    }
+
+    function imageVisible() {
+        return ![QEnums.CONTENT_VISIBILITY_HIDE_MEDIA,
+                 QEnums.CONTENT_VISIBILITY_WARN_MEDIA].includes(contentVisibility) ||
+               showWarnedMedia
     }
 }
 

@@ -64,6 +64,16 @@ public:
         AUTHOR_LIST_REPOSTS
     };
     Q_ENUM(AuthorListType)
+
+    enum ContentVisibility
+    {
+        CONTENT_VISIBILITY_SHOW,
+        CONTENT_VISIBILITY_WARN_MEDIA,
+        CONTENT_VISIBILITY_WARN_POST,
+        CONTENT_VISIBILITY_HIDE_MEDIA,
+        CONTENT_VISIBILITY_HIDE_POST
+    };
+    Q_ENUM(ContentVisibility)
 };
 
 }

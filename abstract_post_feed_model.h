@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-
+#include "content_filter.h"
 #include "local_post_model_changes.h"
 #include "post.h"
 #include "profile_store.h"
@@ -49,13 +49,15 @@ public:
         PostRepostUri,
         PostLikeUri,
         PostLabels,
+        PostContentVisibility,
+        PostContentWarning,
         PostLocallyDeleted,
         EndOfFeed
     };
 
     using Ptr = std::unique_ptr<AbstractPostFeedModel>;
 
-    explicit AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
+    AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -86,6 +88,7 @@ protected:
 
     const QString& mUserDid;
     const IProfileStore& mFollowing;
+    const ContentFilter& mContentFilter;
 
 private:
     void changeData(const QList<int>& roles);

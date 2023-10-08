@@ -42,6 +42,8 @@ Rectangle {
     required property int notificationPostReplyCount
     required property bool notificationPostNotFound
     required property list<string> notificationPostLabels
+    required property int notificationPostContentVisibility // QEnums::PostContentVisibility
+    required property string notificationPostContentWarning
     required property basicprofile replyToAuthor
     required property bool endOfList
 
@@ -144,6 +146,8 @@ Rectangle {
                 postPlainText: notificationPostPlainText
                 postImages: notificationPostImages
                 postContentLabels: notificationPostLabels
+                postContentVisibility: notificationPostContentVisibility
+                postContentWarning: notificationPostContentWarning
                 postExternal: notificationPostExternal
                 postRecord: notificationPostRecord
                 postRecordWithMedia: notificationPostRecordWithMedia

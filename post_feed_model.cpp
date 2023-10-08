@@ -6,8 +6,8 @@
 
 namespace Skywalker {
 
-PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, parent)
+PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
+    AbstractPostFeedModel(userDid, following, contentFilter, parent)
 {}
 
 int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
@@ -490,6 +490,14 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             // Due to reposting a post can show up multiple times in the feed.
             if (cidIsStored(post.getCid()))
                 continue;
+
+            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+
+            if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
+            {
+                qDebug() << "Hide post:" << post.getCid() << warning;
+                continue;
+            }
 
             const BasicProfile author(feedEntry->mPost->mAuthor.get());
             AuthorCache::instance().put(author);

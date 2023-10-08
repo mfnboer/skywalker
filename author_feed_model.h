@@ -11,7 +11,7 @@ class AuthorFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
-    AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
+    AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);

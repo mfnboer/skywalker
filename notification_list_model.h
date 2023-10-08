@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "content_filter.h"
 #include "local_post_model_changes.h"
 #include "notification.h"
 #include "post_cache.h"
@@ -50,11 +51,13 @@ public:
         NotificationPostReplyCount,
         NotificationPostNotFound,
         NotificationPostLabels,
+        NotificationPostContentVisibility,
+        NotificationPostContentWarning,
         ReplyToAuthor,
         EndOfList
     };
 
-    explicit NotificationListModel(QObject* parent = nullptr);
+    explicit NotificationListModel(const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -82,6 +85,7 @@ private:
     using NotificationList = std::deque<Notification>;
 
     NotificationList createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
+    void filterNotificationList(NotificationList& list) const;
     void addNotificationList(const NotificationList& list, bool clearFirst);
 
     // Get the posts for LIKE, FOLLOW and REPOST notifications
@@ -92,6 +96,7 @@ private:
     void clearLocalState();
     void clearRows();
 
+    const ContentFilter& mContentFilter;
     NotificationList mList;
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
     QString mCursor;

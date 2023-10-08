@@ -8,12 +8,15 @@ Column {
     required property list<imageview> postImages
     required property date postDateTime
     required property list<string> postContentLabels
+    required property int postContentVisibility // QEnums::PostContentVisibility
+    required property string postContentWarning
     property string postPlainText
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
     property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
     property int maxTextLines: 1000
+    property bool showWarnedPost: false
 
     id: postBody
 
@@ -29,6 +32,7 @@ Column {
         font.pointSize: getPostFontSize()
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
+        visible: postVisible()
 
         onLinkActivated: (link) => {
             if (link.startsWith("did:")) {
@@ -38,6 +42,36 @@ Column {
                 Qt.openUrlExternally(link)
             }
         }
+    }
+
+    Text {
+        id: warnText
+        width: parent.width
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        elide: Text.ElideRight
+        textFormat: Text.RichText
+        color: "red"
+        // TODO: icon
+        text: qsTr("WARNING") + ": " + postContentWarning + "<br><a href=\"show\">" + qsTr("Show post") + "</a>"
+        visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost
+        onLinkActivated: {
+            showWarnedPost = true
+            showPostAttachements()
+        }
+    }
+
+    Text {
+        id: hideText
+        width: parent.width
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        elide: Text.ElideRight
+        textFormat: Text.RichText
+        color: "red"
+        // TODO: icon
+        text: qsTr("HIDDEN") + ": " + postContentWarning
+        visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
     }
 
     Component {
@@ -57,6 +91,12 @@ Column {
         id: guiSettings
     }
 
+    function postVisible() {
+        return ![QEnums.CONTENT_VISIBILITY_HIDE_POST,
+                 QEnums.CONTENT_VISIBILITY_WARN_POST].includes(postContentVisibility) ||
+               showWarnedPost
+    }
+
     function getPostFontSize() {
         return onlyEmojisPost() ?
                     guiSettings.scaledFont(postUtils.graphemeLength(postPlainText) === 1 ? 9 : 3) :
@@ -73,14 +113,13 @@ Column {
         return postUtils.onlyEmojis(postPlainText)
     }
 
-    Component.onCompleted: {
-        if (!postBody.visible)
-            return
-
+    function showPostAttachements() {
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             let component = Qt.createComponent(qmlFile)
-            component.createObject(postBody, {images: postImages})
+            component.createObject(postBody, {images: postImages,
+                                              contentVisibility: postContentVisibility,
+                                              contentWarning: postContentWarning})
         }
 
         if (postContentLabels.length > 0) {
@@ -102,6 +141,14 @@ Column {
             let component = Qt.createComponent("RecordWithMediaView.qml")
             component.createObject(postBody, {record: postRecordWithMedia})
         }
+    }
+
+    Component.onCompleted: {
+        if (!postBody.visible)
+            return
+
+        if (postVisible())
+            showPostAttachements()
 
         if (detailedView)
             dateTimeComp.createObject(postBody)

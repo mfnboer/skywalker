@@ -37,6 +37,8 @@ Rectangle {
     required property string postRepostUri
     required property string postLikeUri
     required property list<string> postLabels
+    required property int postContentVisibility // QEnums::PostContentVisibility
+    required property string postContentWarning
     required property bool postLocallyDeleted
     required property bool endOfFeed
 
@@ -227,6 +229,8 @@ Rectangle {
                 postPlainText: postEntry.postPlainText
                 postImages: postEntry.postImages
                 postContentLabels: postLabels
+                postContentVisibility: postEntry.postContentVisibility
+                postContentWarning: postEntry.postContentWarning
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia

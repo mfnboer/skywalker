@@ -14,7 +14,7 @@ class PostFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
 
-    explicit PostFeedModel(const QString& userDid, const IProfileStore& following, QObject* parent = nullptr);
+    explicit PostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.

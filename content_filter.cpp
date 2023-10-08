@@ -14,7 +14,7 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
             "Sexually Explicit",
             {"porn", "nsfw"},
             true,
-            ATProto::UserPreferences::LabelVisibility::WARN
+      QEnums::CONTENT_VISIBILITY_WARN_MEDIA
         }
     },
     {
@@ -26,7 +26,7 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
             "Nudity",
             {"nudity"},
             true,
-            ATProto::UserPreferences::LabelVisibility::WARN
+      QEnums::CONTENT_VISIBILITY_WARN_MEDIA
         }
     },
     {
@@ -38,7 +38,7 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
             "Sexually Suggestive",
             {"sexual"},
             true,
-            ATProto::UserPreferences::LabelVisibility::WARN
+      QEnums::CONTENT_VISIBILITY_WARN_MEDIA
         }
     },
     {
@@ -50,7 +50,7 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
             "Violence",
             {"gore", "self-harm", "torture", "nsfl", "corpse"},
             true,
-            ATProto::UserPreferences::LabelVisibility::HIDE
+      QEnums::CONTENT_VISIBILITY_HIDE_MEDIA
         }
     },
     {
@@ -62,7 +62,7 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
             "Hate Groups",
             {"icon-kkk", "icon-nazi", "icon-intolerant", "behavior-intolerant"},
             false,
-            ATProto::UserPreferences::LabelVisibility::HIDE
+      QEnums::CONTENT_VISIBILITY_HIDE_POST
         }
     },
     {
@@ -74,7 +74,7 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
             "Spam",
             {"spam"},
             false,
-            ATProto::UserPreferences::LabelVisibility::HIDE
+      QEnums::CONTENT_VISIBILITY_HIDE_POST
         }
     },
     {
@@ -86,10 +86,29 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
             "Impersonation",
             {"impersonation"},
             false,
-            ATProto::UserPreferences::LabelVisibility::WARN
+      QEnums::CONTENT_VISIBILITY_WARN_POST
         }
     }
 };
+
+QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const
+{
+    switch (visibility)
+    {
+    case ATProto::UserPreferences::LabelVisibility::SHOW:
+        return QEnums::CONTENT_VISIBILITY_SHOW;
+    case ATProto::UserPreferences::LabelVisibility::WARN:
+        return isPostLevel() ? QEnums::CONTENT_VISIBILITY_WARN_POST : QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
+    case ATProto::UserPreferences::LabelVisibility::HIDE:
+        return isPostLevel() ? QEnums::CONTENT_VISIBILITY_HIDE_POST : QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+    case ATProto::UserPreferences::LabelVisibility::UNKNOWN:
+        Q_ASSERT(false);
+        return QEnums::CONTENT_VISIBILITY_SHOW;
+    }
+
+    Q_ASSERT(false);
+    return QEnums::CONTENT_VISIBILITY_SHOW;
+}
 
 std::unordered_map<QString, QString> ContentFilter::sLabelGroupMap;
 
@@ -124,22 +143,22 @@ QStringList ContentFilter::getLabelTexts(const LabelList& labels)
     return labelTexts;
 }
 
-ContentFilter::Visibility ContentFilter::getVisibility(const QString& label) const
+QEnums::ContentVisibility ContentFilter::getVisibility(const QString& label) const
 {
     auto it = sLabelGroupMap.find(label);
 
     if (it == sLabelGroupMap.end())
     {
         qDebug() << "Undefined label:" << label;
-        return Visibility::SHOW;
+        return QEnums::CONTENT_VISIBILITY_SHOW;
     }
 
     const auto visibility = mUserPreferences.getLabelVisibility(it->second);
-
-    if (visibility != Visibility::UNKNOWN)
-        return visibility;
-
     const auto& group = CONTENT_GROUPS.at(it->second);
+
+    if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+        return group.getContentVisibility(visibility);
+
     return group.mDefaultVisibility;
 }
 
@@ -155,6 +174,26 @@ QString ContentFilter::getWarning(const QString& label) const
 
     const auto& group = CONTENT_GROUPS.at(it->second);
     return group.mWarning;
+}
+
+std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const
+{
+    QEnums::ContentVisibility visibility = QEnums::CONTENT_VISIBILITY_SHOW;
+    QString warning;
+    const auto labelTexts = getLabelTexts(labels);
+
+    for (const auto& labelText : labelTexts)
+    {
+        const auto v = getVisibility(labelText);
+
+        if (v <= visibility)
+            continue;
+
+        visibility = v;
+        warning = getWarning(labelText);
+    }
+
+    return {visibility, warning};
 }
 
 }

@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "notification_list_model.h"
-#include "abstract_post_feed_model.h"
 #include "author_cache.h"
 #include "content_filter.h"
 #include "enums.h"
@@ -10,8 +9,9 @@
 
 namespace Skywalker {
 
-NotificationListModel::NotificationListModel(QObject* parent) :
-    QAbstractListModel(parent)
+NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, QObject* parent) :
+    QAbstractListModel(parent),
+    mContentFilter(contentFilter)
 {
 }
 
@@ -68,12 +68,33 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
         return;
     }
 
-    const auto notificationList = createNotificationList(notifications->mNotifications);
+    auto notificationList = createNotificationList(notifications->mNotifications);
     mRawNotifications.push_back(std::move(notifications));
 
     getPosts(bsky, notificationList, [this, notificationList, clearFirst]{
-        addNotificationList(notificationList, clearFirst);
+        auto list = std::move(notificationList);
+        filterNotificationList(list);
+        addNotificationList(list, clearFirst);
     });
+}
+
+void NotificationListModel::filterNotificationList(NotificationList& list) const
+{
+    for (auto it = list.begin(); it != list.end();)
+    {
+        const auto& post = it->getNotificationPost(mPostCache);
+        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+
+        if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
+        {
+            qDebug() << "Hide post:" << post.getCid() << warning;
+            ++it;
+        }
+        else
+        {
+            it = list.erase(it);
+        }
+    }
 }
 
 void NotificationListModel::addNotificationList(const NotificationList& list, bool clearFirst)
@@ -333,6 +354,18 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getNotificationPost(mPostCache).isNotFound();
     case Role::NotificationPostLabels:
         return ContentFilter::getLabelTexts(notification.getNotificationPost(mPostCache).getLabels());
+    case Role::NotificationPostContentVisibility:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+        return visibility;
+    }
+    case Role::NotificationPostContentWarning:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+        return warning;
+    }
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::EndOfList:
@@ -381,6 +414,8 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
         { int(Role::NotificationPostNotFound), "notificationPostNotFound" },
         { int(Role::NotificationPostLabels), "notificationPostLabels" },
+        { int(Role::NotificationPostContentVisibility), "notificationPostContentVisibility" },
+        { int(Role::NotificationPostContentWarning), "notificationPostContentWarning" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::EndOfList), "endOfList" }
     };

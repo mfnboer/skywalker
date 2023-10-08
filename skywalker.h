@@ -139,7 +139,8 @@ private:
     QString mAvatarUrl;
     QString mUserDid;
     ProfileStore mUserFollows;
-    std::unique_ptr<ATProto::UserPreferences> mUserPreferences;
+    ATProto::UserPreferences mUserPreferences;
+    ContentFilter mContentFilter;
 
     PostFeedModel mTimelineModel;
     bool mAutoUpdateTimelineInProgress = false;
