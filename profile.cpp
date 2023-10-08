@@ -151,7 +151,7 @@ QStringList BasicProfile::getLabelTexts() const
     if (!labels)
         return mLabelTexts;
 
-    return ContentFilter(*labels).getLabelTexts();
+    return ContentFilter::getLabelTexts(*labels);
 }
 
 bool BasicProfile::isVolatile() const

@@ -145,7 +145,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
     case Role::PostLabels:
-        return ContentFilter(post.getLabels()).getLabelTexts();
+        return ContentFilter::getLabelTexts(post.getLabels());
     case Role::PostLocallyDeleted:
     {
         if (!change)

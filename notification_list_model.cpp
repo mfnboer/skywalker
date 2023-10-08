@@ -275,7 +275,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationReasonPostNotFound:
         return notification.getReasonPost(mReasonPostCache).isNotFound();
     case Role::NotificationReasonPostLabels:
-        return ContentFilter(notification.getReasonPost(mReasonPostCache).getLabels()).getLabelTexts();
+        return ContentFilter::getLabelTexts(notification.getReasonPost(mReasonPostCache).getLabels());
     case Role::NotificationReasonPostLocallyDeleted:
         return reasonChange ? reasonChange->mPostDeleted : false;
     case Role::NotificationTimestamp:
@@ -332,7 +332,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostNotFound:
         return notification.getNotificationPost(mPostCache).isNotFound();
     case Role::NotificationPostLabels:
-        return ContentFilter(notification.getNotificationPost(mPostCache).getLabels()).getLabelTexts();
+        return ContentFilter::getLabelTexts(notification.getNotificationPost(mPostCache).getLabels());
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::EndOfList:

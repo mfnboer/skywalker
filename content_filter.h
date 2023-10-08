@@ -1,21 +1,42 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <atproto/lib/user_preferences.h>
 #include <atproto/lib/lexicon/com_atproto_label.h>
 #include <QStringList>
 
 namespace Skywalker {
 
+struct ContentGroup
+{
+    QString mId;
+    QString mTitle;
+    QString mSubTitle;
+    QString mWarning;
+    std::vector<QString> mLabelValues;
+    bool mAdultImages;
+    ATProto::UserPreferences::LabelVisibility mDefaultVisibility;
+};
+
 class ContentFilter {
 public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
+    using Visibility = ATProto::UserPreferences::LabelVisibility;
 
-    explicit ContentFilter(const LabelList& labels);
+    static const std::unordered_map<QString, ContentGroup> CONTENT_GROUPS;
 
-    QStringList getLabelTexts() const;
+    static QStringList getLabelTexts(const LabelList& labels);
+
+    explicit ContentFilter(ATProto::UserPreferences& userPreferences);
+
+    Visibility getVisibility(const QString& label) const;
+    QString getWarning(const QString& label) const;
 
 private:
-    const LabelList& mLabels;
+    static void initLabelGroupMap();
+
+    static std::unordered_map<QString, QString> sLabelGroupMap;
+    ATProto::UserPreferences& mUserPreferences;
 };
 
 }

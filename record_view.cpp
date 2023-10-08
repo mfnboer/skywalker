@@ -103,7 +103,7 @@ QStringList RecordView::getLabels() const
     if (!mRecord)
         return {};
 
-    return ContentFilter(mRecord->mLabels).getLabelTexts();
+    return ContentFilter::getLabelTexts(mRecord->mLabels);
 }
 
 }

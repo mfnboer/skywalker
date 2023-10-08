@@ -135,6 +135,7 @@ qt_add_qml_module(appskywalker
         QML_FILES ReplyToRow.qml
         SOURCES content_filter.h
         SOURCES content_filter.cpp
+        SOURCES
 )
 
 set_target_properties(appskywalker PROPERTIES

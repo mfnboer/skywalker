@@ -8,6 +8,7 @@
 #include "post_feed_model.h"
 #include "post_thread_model.h"
 #include "profile_store.h"
+#include "user_preferences.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QTimer>
@@ -36,6 +37,7 @@ public:
     Q_INVOKABLE void login(const QString user, QString password, const QString host);
     Q_INVOKABLE void resumeSession();
     Q_INVOKABLE void getUserProfileAndFollows();
+    Q_INVOKABLE void getUserPreferences();
     Q_INVOKABLE void syncTimeline(int maxPages = 50);
     Q_INVOKABLE void getTimeline(int limit, const QString& cursor = {});
     Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
@@ -98,6 +100,8 @@ signals:
     void timelineRefreshed(int prevTopPostIndex);
     void getUserProfileOK();
     void getUserProfileFailed();
+    void getUserPreferencesOK();
+    void getUserPreferencesFailed();
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
     void getNotificationsInProgressChanged();
@@ -135,6 +139,7 @@ private:
     QString mAvatarUrl;
     QString mUserDid;
     ProfileStore mUserFollows;
+    std::unique_ptr<ATProto::UserPreferences> mUserPreferences;
 
     PostFeedModel mTimelineModel;
     bool mAutoUpdateTimelineInProgress = false;

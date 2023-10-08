@@ -86,11 +86,20 @@ ApplicationWindow {
 
         onStatusMessage: (msg, level) => statusPopup.show(msg, level, level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
-        onGetUserProfileOK: () => skywalker.syncTimeline()
+        onGetUserProfileOK: () => skywalker.getUserPreferences()
 
         onGetUserProfileFailed: {
             // TODO: retry
             console.warn("FAILED TO LOAD USER PROFILE")
+            statusPopup.show("FAILED TO LOAD USER PROFILE", QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onGetUserPreferencesOK: () => skywalker.syncTimeline()
+
+        onGetUserPreferencesFailed: {
+            // TODO: retry
+            console.warn("FAILED TO LOAD USER PREFERENCES")
+            statusPopup.show("FAILED TO LOAD USER PREFERENCES", QEnums.STATUS_LEVEL_ERROR)
         }
 
         onTimelineSyncOK: (index) => {

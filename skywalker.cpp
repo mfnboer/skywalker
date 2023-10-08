@@ -148,7 +148,7 @@ void Skywalker::getUserProfileAndFollows()
     Q_ASSERT(mBsky);
     const auto* session = mBsky->getSession();
     Q_ASSERT(session);
-    qInfo() << "Get user profile, handle:" << session->mHandle << "did:" << session->mDid;
+    qDebug() << "Get user profile, handle:" << session->mHandle << "did:" << session->mDid;
 
     // Get profile and follows in one go. We do not need detailed profile data.
     mBsky->getFollows(session->mDid, 100, {},
@@ -174,7 +174,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
     Q_ASSERT(mBsky);
     const auto* session = mBsky->getSession();
     Q_ASSERT(session);
-    qInfo() << "Get user profile next page:" << cursor << ",handle:" << session->mHandle <<
+    qDebug() << "Get user profile next page:" << cursor << ",handle:" << session->mHandle <<
             ",did:" << session->mDid << ",max pages:" << maxPages;
 
     mBsky->getFollows(session->mDid, 100, cursor,
@@ -203,11 +203,28 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
 
 void Skywalker::signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user)
 {
-    qInfo() << "Got user:" << user.mHandle << "#follows:" << mUserFollows.size();
+    qDebug() << "Got user:" << user.mHandle << "#follows:" << mUserFollows.size();
     AuthorCache::instance().setUser(BasicProfile(user));
     const auto avatar = user.mAvatar ? *user.mAvatar : QString();
     setAvatarUrl(avatar);
     emit getUserProfileOK();
+}
+
+void Skywalker::getUserPreferences()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get user preferences";
+
+    // Get profile and follows in one go. We do not need detailed profile data.
+    mBsky->getPreferences(
+        [this](auto prefs){
+            mUserPreferences = std::make_unique<ATProto::UserPreferences>(prefs);
+            emit getUserPreferencesOK();
+        },
+        [this](const QString& error){
+            qWarning() << error;
+            emit getUserPreferencesFailed();
+        });
 }
 
 void Skywalker::syncTimeline(int maxPages)
