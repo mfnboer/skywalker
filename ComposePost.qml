@@ -12,6 +12,7 @@ Page {
     property int maxPostLength: 300
     property int maxImages: 4
     property list<string> images
+    property bool pickingImage: false
 
     // Reply-to
     property basicprofile replyToAuthor
@@ -103,21 +104,23 @@ Page {
             y: height + 5
             width: 34
             height: 34
-            id: homeButton
-            color: page.images.length < maxImages && imageScroller.visible ? "blue" : "lightgrey"
+            color: page.images.length < maxImages && imageScroller.visible && !pickingImage ? "blue" : "lightgrey"
+            opacity: 1
             svg: svgOutline.addImage
 
             MouseArea {
                 y: -parent.y
                 width: parent.width
                 height: parent.height
-                visible: page.images.length < maxImages
+                enabled: page.images.length < maxImages && !pickingImage
 
                 onClicked: {
-                    if (Qt.platform.os === "android")
+                    if (Qt.platform.os === "android") {
+                        pickingImage = true
                         postUtils.pickPhoto()
-                    else
+                    } else {
                         fileDialog.open()
+                    }
                 }
             }
         }
@@ -384,7 +387,14 @@ Page {
         onPostFailed: (error) => page.postFailed(error)
         onPostProgress: (msg) => page.postProgress(msg)
 
-        onPhotoPicked: (fileName) => page.photoPicked(fileName)
+        onPhotoPicked: (fileName) => {
+            pickingImage = false
+            page.photoPicked(fileName)
+        }
+
+        onPhotoPickCanceled: {
+            pickingImage = false
+        }
 
         onFirstWebLinkChanged: {
             linkCard.hide()

@@ -11,6 +11,7 @@ PostUtils::PostUtils(QObject* parent) :
     Presence()
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
+
     QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
                      this, [this](const QString& uri){
                          qDebug() << "PHOTO PICKED:" << uri;
@@ -20,6 +21,9 @@ PostUtils::PostUtils(QObject* parent) :
                          qDebug() << "File exists:" << file.exists() << ",size:" << file.size();
                          emit photoPicked(fileName);
                      });
+
+    QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
+                     this, [this]{ emit photoPickCanceled(); });
 }
 
 ATProto::Client* PostUtils::bskyClient()

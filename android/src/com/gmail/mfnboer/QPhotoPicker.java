@@ -20,6 +20,7 @@ public class QPhotoPicker extends AppCompatActivity {
     private static final String LOGTAG = "QPhotoPicker";
 
     public static native void emitPhotoPicked(String uri);
+    public static native void emitPhotoPickCanceled();
 
     public static void start() {
         Context context = QtNative.getContext();
@@ -42,6 +43,7 @@ public class QPhotoPicker extends AppCompatActivity {
                 emitPhotoPicked(uri.toString());
             } else {
                 Log.d("PhotoPicker", "No media selected");
+                emitPhotoPickCanceled();
             }
 
             finish();

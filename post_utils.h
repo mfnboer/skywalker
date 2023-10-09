@@ -70,6 +70,7 @@ signals:
     void postDeletedOk();
     void postDeletedFailed(QString error);
     void photoPicked(QString filename);
+    void photoPickCanceled();
     void firstWebLinkChanged();
     void firstPostLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);

@@ -22,6 +22,14 @@ void _handlePhotoPicked(JNIEnv* env, jobject, jstring jsUri)
     if (instance)
         instance->handlePhotoPicked(uri);
 }
+
+void _handlePhotoPickCanceled(JNIEnv* env, jobject)
+{
+    qDebug() << "Photo pick canceled";
+    auto& instance = *gTheInstance;
+    if (instance)
+        instance->handlePhotoPickCanceled();
+}
 #endif
 
 }
@@ -41,15 +49,21 @@ JNICallbackListener::JNICallbackListener() : QObject()
     QJniEnvironment jni;
 
     const JNINativeMethod photoPickerCallbacks[] = {
-        { "emitPhotoPicked", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handlePhotoPicked) }
+        { "emitPhotoPicked", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handlePhotoPicked) },
+        { "emitPhotoPickCanceled", "()V", reinterpret_cast<void *>(_handlePhotoPickCanceled) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/QPhotoPicker", photoPickerCallbacks, 1);
+    jni.registerNativeMethods("com/gmail/mfnboer/QPhotoPicker", photoPickerCallbacks, 2);
 #endif
 }
 
 void JNICallbackListener::handlePhotoPicked(const QString contentUri)
 {
     emit photoPicked(contentUri);
+}
+
+void JNICallbackListener::handlePhotoPickCanceled()
+{
+    emit photoPickCanceled();
 }
 
 }

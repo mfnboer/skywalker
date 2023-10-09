@@ -326,7 +326,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
         );
 }
 
-void Skywalker::getTimeline(int limit, const QString& cursor)
+void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QString& cursor)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline:" << cursor;
@@ -337,17 +337,35 @@ void Skywalker::getTimeline(int limit, const QString& cursor)
         return;
     }
 
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
     setGetTimelineInProgress(true);
     mBsky->getTimeline(limit, makeOptionalCursor(cursor),
-       [this, cursor](auto feed){
+       [this, maxPages, minEntries, cursor](auto feed){
+            setGetTimelineInProgress(false);
             int topPostIndex = -1;
+            int addedPosts = 0;
 
             if (cursor.isEmpty())
+            {
                 topPostIndex = mTimelineModel.setFeed(std::move(feed));
+                addedPosts = mTimelineModel.rowCount();
+            }
             else
+            {
+                const int oldRowCount = mTimelineModel.rowCount();
                 mTimelineModel.addFeed(std::move(feed));
+                addedPosts = mTimelineModel.rowCount() - oldRowCount;
+            }
 
-            setGetTimelineInProgress(false);
+            const int postsToAdd = minEntries - addedPosts;
+
+            if (postsToAdd > 0)
+                getTimelineNextPage(maxPages - 1, postsToAdd);
 
             if (topPostIndex >= 0)
                 emit timelineRefreshed(topPostIndex);
@@ -452,8 +470,14 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
         );
 }
 
-void Skywalker::getTimelineNextPage()
+void Skywalker::getTimelineNextPage(int maxPages, int minEntries)
 {
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
     const QString& cursor = mTimelineModel.getLastCursor();
     if (cursor.isEmpty())
     {
@@ -464,7 +488,7 @@ void Skywalker::getTimelineNextPage()
     if (mTimelineModel.rowCount() >= PostFeedModel::MAX_TIMELINE_SIZE)
         mTimelineModel.removeHeadPosts(TIMELINE_ADD_PAGE_SIZE);
 
-    getTimeline(TIMELINE_ADD_PAGE_SIZE, cursor);
+    getTimeline(TIMELINE_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
 void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)

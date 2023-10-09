@@ -12,9 +12,11 @@ public:
     static JNICallbackListener& getInstance();
 
     void handlePhotoPicked(const QString contentUri);
+    void handlePhotoPickCanceled();
 
 signals:
     void photoPicked(const QString contentUri);
+    void photoPickCanceled();
 
 private:
     JNICallbackListener();
