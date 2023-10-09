@@ -44,34 +44,48 @@ Column {
         }
     }
 
-    Text {
-        id: warnText
+    Row {
         width: parent.width
-        Layout.fillWidth: true
-        wrapMode: Text.Wrap
-        elide: Text.ElideRight
-        textFormat: Text.RichText
-        color: "red"
-        // TODO: icon
-        text: qsTr("WARNING") + ": " + postContentWarning + "<br><a href=\"show\">" + qsTr("Show post") + "</a>"
-        visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost
-        onLinkActivated: {
-            showWarnedPost = true
-            showPostAttachements()
-        }
-    }
+        spacing: 10
 
-    Text {
-        id: hideText
-        width: parent.width
-        Layout.fillWidth: true
-        wrapMode: Text.Wrap
-        elide: Text.ElideRight
-        textFormat: Text.RichText
-        color: "red"
-        // TODO: icon
-        text: qsTr("HIDDEN") + ": " + postContentWarning
-        visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
+        SvgImage {
+            id: imgIcon
+            width: 30
+            height: width
+            color: "grey"
+            svg: svgOutline.hideVisibility
+            visible: !postVisible()
+        }
+
+        Text {
+            id: warnText
+            width: parent.width
+            Layout.fillWidth: true
+            anchors.verticalCenter: parent.verticalCenter
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            color: "grey"
+            text: postContentWarning + "<br><a href=\"show\">" + qsTr("Show post") + "</a>"
+            visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost
+            onLinkActivated: {
+                showWarnedPost = true
+                showPostAttachements()
+            }
+        }
+
+        Text {
+            id: hideText
+            width: parent.width
+            Layout.fillWidth: true
+            anchors.verticalCenter: parent.verticalCenter
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            color: "grey"
+            text: postContentWarning
+            visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
+        }
     }
 
     Component {
@@ -139,7 +153,9 @@ Column {
 
         if (postRecordWithMedia) {
             let component = Qt.createComponent("RecordWithMediaView.qml")
-            component.createObject(postBody, {record: postRecordWithMedia})
+            component.createObject(postBody, {record: postRecordWithMedia,
+                                              contentVisibility: postContentVisibility,
+                                              contentWarning: postContentWarning})
         }
     }
 

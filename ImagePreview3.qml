@@ -7,14 +7,11 @@ RoundedFrame {
     required property string contentWarning
     property list<imageview> images
     property int spacing: 4
-    property bool showWarnedMedia: false
-    property imageview nullImage
 
     id: frame
     objectToRound: imgGrid
     width: parent.width
-    height: imageVisible() ? parent.width / 1.5 :
-                contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnText.height : hideText.height
+    height: filter.imageVisible() ? parent.width / 1.5 : filter.height
 
     Item {
         id: imgGrid
@@ -29,7 +26,7 @@ RoundedFrame {
             height: parent.height
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            imageView: imageVisible() ? images[0] : nullImage
+            imageView: filter.getImage(0)
         }
 
         ThumbImageView {
@@ -40,7 +37,7 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            imageView: imageVisible() ? images[1] : nullImage
+            imageView: filter.getImage(1)
         }
 
         ThumbImageView {
@@ -51,11 +48,12 @@ RoundedFrame {
             height: width
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
-            imageView: imageVisible() ? images[2] : nullImage
+            imageView: filter.getImage(2)
         }
 
     }
     MouseArea {
+        enabled: filter.imageVisible()
         anchors.fill: imgGrid
         cursorShape: Qt.PointingHandCursor
         onClicked: {
@@ -74,36 +72,11 @@ RoundedFrame {
         }
     }
 
-    Text {
-        id: warnText
+    FilteredImageWarning {
+        id: filter
         width: parent.width
-        Layout.fillWidth: true
-        wrapMode: Text.Wrap
-        elide: Text.ElideRight
-        textFormat: Text.RichText
-        color: "red"
-        // TODO: icon
-        text: qsTr("WARNING") + ": " + postContentWarning + "<br><a href=\"show\">" + qsTr("Show pictures") + "</a>"
-        visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
-        onLinkActivated: showWarnedMedia = true
-    }
-
-    Text {
-        id: hideText
-        width: parent.width
-        Layout.fillWidth: true
-        wrapMode: Text.Wrap
-        elide: Text.ElideRight
-        textFormat: Text.RichText
-        color: "red"
-        // TODO: icon
-        text: qsTr("HIDDEN PICTURES") + ": " + contentWarning
-        visible: contentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
-    }
-
-    function imageVisible() {
-        return ![QEnums.CONTENT_VISIBILITY_HIDE_MEDIA,
-                 QEnums.CONTENT_VISIBILITY_WARN_MEDIA].includes(contentVisibility) ||
-               showWarnedMedia
+        contentVisibiliy: frame.contentVisibility
+        contentWarning: frame.contentWarning
+        images: frame.images
     }
 }

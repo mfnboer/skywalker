@@ -88,11 +88,11 @@ void NotificationListModel::filterNotificationList(NotificationList& list) const
         if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
         {
             qDebug() << "Hide post:" << post.getCid() << warning;
-            ++it;
+            it = list.erase(it);
         }
         else
         {
-            it = list.erase(it);
+            ++it;
         }
     }
 }
@@ -283,13 +283,30 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     {
         const auto& post = notification.getReasonPost(mReasonPostCache);
         auto record = post.getRecordView();
-        return record ? QVariant::fromValue(*record) : QVariant();
+
+        if (record)
+        {
+            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
+            record->setContentVisibility(visibility);
+            record->setContentWarning(warning);
+            return QVariant::fromValue(*record);
+        }
+
+        return QVariant();
     }
     case Role::NotificationReasonPostRecordWithMedia:
     {
         const auto& post = notification.getReasonPost(mReasonPostCache);
-        auto record = post.getRecordWithMediaView();
-        return record ? QVariant::fromValue(*record) : QVariant();
+        auto recordWithMedia = post.getRecordWithMediaView();
+
+        if (!recordWithMedia)
+            return QVariant();
+
+        auto& record = recordWithMedia->getRecord();
+        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
+        record.setContentVisibility(visibility);
+        record.setContentWarning(warning);
+        return QVariant::fromValue(*recordWithMedia);
     }
     case Role::NotificationReasonPostTimestamp:
         return notification.getReasonPost(mReasonPostCache).getTimelineTimestamp();
@@ -328,13 +345,30 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     {
         const auto& post = notification.getNotificationPost(mPostCache);
         auto record = post.getRecordView();
-        return record ? QVariant::fromValue(*record) : QVariant();
+
+        if (record)
+        {
+            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
+            record->setContentVisibility(visibility);
+            record->setContentWarning(warning);
+            return QVariant::fromValue(*record);
+        }
+
+        return QVariant();
     }
     case Role::NotificationPostRecordWithMedia:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
-        auto record = post.getRecordWithMediaView();
-        return record ? QVariant::fromValue(*record) : QVariant();
+        auto recordWithMedia = post.getRecordWithMediaView();
+
+        if (!recordWithMedia)
+            return QVariant();
+
+        auto& record = recordWithMedia->getRecord();
+        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
+        record.setContentVisibility(visibility);
+        record.setContentWarning(warning);
+        return QVariant::fromValue(*recordWithMedia);
     }
     case Role::NotificationPostReplyRootUri:
         return notification.getPostRecord().getReplyRootUri();

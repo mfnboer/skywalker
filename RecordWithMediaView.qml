@@ -5,7 +5,10 @@ import skywalker
 
 Item {
     required property record_with_media_view record
+    required property int contentVisibility // QEnums::ContentVisibility
+    required property string contentWarning
 
+    id: recordItem
     width: parent.width
     height: recordColumn.height + 10
 
@@ -19,9 +22,10 @@ Item {
             if (record.images.length > 0) {
                 let qmlFile = `ImagePreview${(record.images.length)}.qml`
                 let component = Qt.createComponent(qmlFile)
+
                 component.createObject(recordColumn, {images: record.images,
-                                                      contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW,
-                                                      contentWarning: ""}) // TODO: proper visibility
+                                                      contentVisibility: recordItem.contentVisibility,
+                                                      contentWarning: recordItem.contentWarning})
             }
 
             if (record.external) {

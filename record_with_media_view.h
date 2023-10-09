@@ -20,12 +20,13 @@ public:
     RecordWithMediaView() = default;
     RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView* view);
 
-    RecordView getRecord() const;
+    RecordView& getRecord() const;
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
 
 private:
     const ATProto::AppBskyEmbed::RecordWithMediaView* mView = nullptr;
+    std::shared_ptr<RecordView> mRecordView;
 };
 
 }

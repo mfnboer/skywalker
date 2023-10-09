@@ -99,12 +99,29 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostRecord:
     {
         auto record = post.getRecordView();
-        return record ? QVariant::fromValue(*record) : QVariant();
+
+        if (record)
+        {
+            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
+            record->setContentVisibility(visibility);
+            record->setContentWarning(warning);
+            return QVariant::fromValue(*record);
+        }
+
+        return QVariant();
     }
     case Role::PostRecordWithMedia:
     {
-        auto record = post.getRecordWithMediaView();
-        return record ? QVariant::fromValue(*record) : QVariant();
+        auto recordWithMedia = post.getRecordWithMediaView();
+
+        if (!recordWithMedia)
+            return QVariant();
+
+        auto& record = recordWithMedia->getRecord();
+        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
+        record.setContentVisibility(visibility);
+        record.setContentWarning(warning);
+        return QVariant::fromValue(*recordWithMedia);
     }
     case Role::PostType:
         return post.getPostType();
@@ -149,17 +166,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return ContentFilter::getLabelTexts(post.getLabels());
     case Role::PostContentVisibility:
     {
-        if (post.getAuthor().getName() == "Hester Loeff")
-            return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
-
         const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabels());
         return visibility;
     }
     case Role::PostContentWarning:
     {
-        if (post.getAuthor().getName() == "Hester Loeff")
-            return "FOOBAR";
-
         const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
         return warning;
     }

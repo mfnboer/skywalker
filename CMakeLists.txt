@@ -136,6 +136,7 @@ qt_add_qml_module(appskywalker
         SOURCES content_filter.h
         SOURCES content_filter.cpp
         SOURCES
+        QML_FILES FilteredImageWarning.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

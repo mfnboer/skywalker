@@ -9,9 +9,18 @@ RecordWithMediaView::RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWith
     mView(view)
 {}
 
-RecordView RecordWithMediaView::getRecord() const
+RecordView& RecordWithMediaView::getRecord() const
 {
-    return mView ? RecordView(*mView->mRecord) : RecordView();
+    static RecordView NULL_RECORD_VIEW;
+
+    if (mRecordView)
+        return *mRecordView;
+
+    if (!mView)
+        return NULL_RECORD_VIEW;
+
+    const_cast<RecordWithMediaView*>(this)->mRecordView = std::make_shared<RecordView>(*mView->mRecord);
+    return *mRecordView;
 }
 
 QList<ImageView> RecordWithMediaView::getImages() const

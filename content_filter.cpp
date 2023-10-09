@@ -9,9 +9,9 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
         "nsfw",
         {
             "nsfw",
-            "Explicit Sexual Images",
-            "i.e. pornography",
-            "Sexually Explicit",
+            QObject::tr("Explicit Sexual Images"),
+            QObject::tr("i.e. pornography"),
+            QObject::tr("Sexually Explicit"),
             {"porn", "nsfw"},
             true,
       QEnums::CONTENT_VISIBILITY_WARN_MEDIA
@@ -21,9 +21,9 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
         "nudity",
         {
             "nudity",
-            "Other Nudity",
-            "Including non-sexual and artistic",
-            "Nudity",
+            QObject::tr("Other Nudity"),
+            QObject::tr("Including non-sexual and artistic"),
+            QObject::tr("Nudity"),
             {"nudity"},
             true,
       QEnums::CONTENT_VISIBILITY_WARN_MEDIA
@@ -33,9 +33,9 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
         "suggestive",
         {
             "suggestive",
-            "Sexually Suggestive",
-            "Does not include nudity",
-            "Sexually Suggestive",
+            QObject::tr("Sexually Suggestive"),
+            QObject::tr("Does not include nudity"),
+            QObject::tr("Sexually Suggestive"),
             {"sexual"},
             true,
       QEnums::CONTENT_VISIBILITY_WARN_MEDIA
@@ -45,9 +45,9 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
         "gore",
         {
             "gore",
-            "Violent / Bloody",
-            "Gore, self-harm, torture",
-            "Violence",
+            QObject::tr("Violent / Bloody"),
+            QObject::tr("Gore, self-harm, torture"),
+            QObject::tr("Violence"),
             {"gore", "self-harm", "torture", "nsfl", "corpse"},
             true,
       QEnums::CONTENT_VISIBILITY_HIDE_MEDIA
@@ -57,9 +57,9 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
         "hate",
         {
             "hate",
-            "Hate Group Iconography",
-            "Images of terror groups, articles covering events, etc.",
-            "Hate Groups",
+            QObject::tr("Hate Group Iconography"),
+            QObject::tr("Images of terror groups, articles covering events, etc."),
+            QObject::tr("Hate Groups"),
             {"icon-kkk", "icon-nazi", "icon-intolerant", "behavior-intolerant"},
             false,
       QEnums::CONTENT_VISIBILITY_HIDE_POST
@@ -69,9 +69,9 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
          "spam",
         {
             "spam",
-            "Spam",
-            "Excessive unwanted interactions",
-            "Spam",
+            QObject::tr("Spam"),
+            QObject::tr("Excessive unwanted interactions"),
+            QObject::tr("Spam"),
             {"spam"},
             false,
       QEnums::CONTENT_VISIBILITY_HIDE_POST
@@ -81,9 +81,9 @@ const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = 
         "impersonation",
         {
             "impersonation",
-            "Impersonation",
-            "Accounts falsely claiming to be people or orgs",
-            "Impersonation",
+            QObject::tr("Impersonation"),
+            QObject::tr("Accounts falsely claiming to be people or orgs"),
+            QObject::tr("Impersonation"),
             {"impersonation"},
             false,
       QEnums::CONTENT_VISIBILITY_WARN_POST
@@ -153,8 +153,12 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const QString& label) con
         return QEnums::CONTENT_VISIBILITY_SHOW;
     }
 
-    const auto visibility = mUserPreferences.getLabelVisibility(it->second);
     const auto& group = CONTENT_GROUPS.at(it->second);
+
+    if (group.mAdultImages && !mUserPreferences.getAdultContent())
+        return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+
+    const auto visibility = mUserPreferences.getLabelVisibility(it->second);
 
     if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
         return group.getContentVisibility(visibility);
@@ -173,6 +177,10 @@ QString ContentFilter::getWarning(const QString& label) const
     }
 
     const auto& group = CONTENT_GROUPS.at(it->second);
+
+    if (group.mAdultImages && !mUserPreferences.getAdultContent())
+        return QObject::tr("Adult content");
+
     return group.mWarning;
 }
 

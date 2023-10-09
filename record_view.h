@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include "image_view.h"
 #include "profile.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
@@ -17,7 +18,9 @@ class RecordView
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
-    Q_PROPERTY(QStringList contentLabels READ getLabels FINAL)
+    Q_PROPERTY(QStringList contentLabels READ getLabelTexts FINAL)
+    Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility FINAL)
+    Q_PROPERTY(QString contentWarning READ getContentWarning FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
@@ -38,7 +41,10 @@ public:
     QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
-    QStringList getLabels() const;
+    QStringList getLabelTexts() const;
+    const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }
+    const QString& getContentWarning() const { return mContentWarning; }
 
     bool getNotFound() const { return mNotFound; }
     bool getBlocked() const { return mBlocked; }
@@ -46,12 +52,17 @@ public:
     const QString& getUnsupportedType() const { return mUnsupportedType; }
     bool getAvailable() const { return !mNotFound && !mBlocked && !mNotSupported; }
 
+    void setContentVisibility(QEnums::ContentVisibility visibility) { mContentVisibility = visibility; }
+    void setContentWarning(const QString& warning) { mContentWarning = warning; }
+
 private:
     const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;
     bool mNotFound = false;
     bool mBlocked = false;
     bool mNotSupported = false;
     QString mUnsupportedType;
+    QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
+    QString mContentWarning = "NOT INITIALIZED";
 };
 
 }

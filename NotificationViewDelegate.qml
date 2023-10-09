@@ -256,6 +256,8 @@ Rectangle {
                                    notificationReasonPostPlainText : ""
                 postImages: notificationReasonPostImages
                 postContentLabels: notificationReasonPostLabels
+                postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
+                postContentWarning: ""
                 postDateTime: notificationReasonPostTimestamp
                 postExternal: notificationReasonPostExternal
                 postRecord: notificationReasonPostRecord
