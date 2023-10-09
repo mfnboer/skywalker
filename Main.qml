@@ -229,8 +229,20 @@ ApplicationWindow {
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    LinkUtils {
+        id: linkUtils
+
+        onWebLink: (link) => Qt.openUrlExternally(link)
+        onPostLink: (atUri) => skywalker.getPostThread(atUri)
+        onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    function openLink(link) {
+        linkUtils.openLink(link)
     }
 
     function composePost(initialText) {

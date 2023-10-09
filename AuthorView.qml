@@ -233,7 +233,7 @@ Page {
                                          console.debug("MENTION:", link)
                                          skywalker.getDetailedProfile(link.slice(1))
                                      } else {
-                                         Qt.openUrlExternally(link)
+                                         root.openLink(link)
                                      }
                                  }
             }

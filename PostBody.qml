@@ -39,7 +39,7 @@ Column {
                 console.debug("MENTION", link)
                 skywalker.getDetailedProfile(link)
             } else {
-                Qt.openUrlExternally(link)
+                root.openLink(link)
             }
         }
     }
