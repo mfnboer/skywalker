@@ -102,30 +102,51 @@ QString createBlob(QByteArray& blob, QImage img, const QString& name)
             img = img.scaledToHeight(MAX_IMAGE_PIXEL_SIZE, Qt::SmoothTransformation);
     }
 
-    QBuffer buffer(&blob);
-    buffer.open(QIODevice::WriteOnly);
 
-    const char* format = "png";
-    QString mimeType = "image/png";
 
-    if (name.endsWith(".jpg", Qt::CaseInsensitive) || name.endsWith(".jpeg", Qt::CaseInsensitive))
+    const char* format = "jpg";
+    QString mimeType = "image/jpeg";
+
+    if (name.endsWith(".png", Qt::CaseInsensitive))
     {
-        format = "jpg";
-        mimeType = "image/jpeg";
+        format = "png";
+        mimeType = "image/png";
     }
 
-    if (!img.save(&buffer, format))
-    {
-        qWarning() << "Failed to write blob:" << name << "format:" << format;
-        blob.clear();
-    }
+    int quality = 75;
 
-    qDebug() << "Blob created, bytes:" << blob.size() << "format:" << format << "mimetype:" << mimeType;
-
-    if (blob.size() > MAX_IMAGE_BYTES)
+    while (quality > 0)
     {
-        qWarning() << "Image too large:" << name << "blob bytes:" << blob.size();
-        blob.clear();
+        QBuffer buffer(&blob);
+        buffer.open(QIODevice::WriteOnly);
+
+        if (!img.save(&buffer, format, quality))
+        {
+            qWarning() << "Failed to write blob:" << name << "format:" << format;
+            blob.clear();
+            break;
+        }
+
+        qDebug() << "Blob created, bytes:" << blob.size() << "format:" << format << "mimetype:" << mimeType << "quality:" << quality;
+
+        if (blob.size() > MAX_IMAGE_BYTES)
+        {
+            qDebug() << "Image too large:" << name << "blob bytes:" << blob.size();
+            blob.clear();
+            quality -= 25;
+
+            if (quality <= 0 && mimeType == "image/png")
+            {
+                // PNG compression does not compress well. Try JPG
+                format = "jpg";
+                mimeType = "image/jpeg";
+                quality = 75;
+            }
+
+            continue;
+        }
+
+        break;
     }
 
     return mimeType;
