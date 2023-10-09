@@ -9,6 +9,7 @@ Rectangle {
     required property int viewWidth
     required property profile author
     required property string followingUri
+    property bool showAuthor: authorVisible()
 
     signal follow(basicprofile profile)
     signal unfollow(string did, string uri)
@@ -37,7 +38,7 @@ Rectangle {
                 y: parent.y + 5
                 width: parent.width - 13
                 height: width
-                avatarUrl: author.avatarUrl
+                avatarUrl: showAuthor ? author.avatarUrl : ""
                 onClicked: skywalker.getDetailedProfile(author.did)
             }
         }
@@ -70,13 +71,13 @@ Rectangle {
 
             SkyButton {
                 text: qsTr("Follow")
-                visible: !followingUri && !isUser(author)
+                visible: !followingUri && !isUser(author) && showAuthor
                 onClicked: follow(author)
             }
             SkyButton {
                 flat: true
                 text: qsTr("Following")
-                visible: followingUri && !isUser(author)
+                visible: followingUri && !isUser(author) && showAuthor
                 onClicked: unfollow(author.did, followingUri)
             }
         }
@@ -88,6 +89,7 @@ Rectangle {
             wrapMode: Text.Wrap
             textFormat: Text.RichText
             text: author.description
+            visible: showAuthor
         }
 
         Rectangle {
@@ -105,6 +107,12 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function authorVisible()
+    {
+        let visibility = skywalker.getContentVisibility(author.labels)
+        return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
     function isUser(author) {

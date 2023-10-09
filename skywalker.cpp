@@ -961,7 +961,7 @@ void Skywalker::getAuthorListNextPage(int id)
 
 int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
 {
-    auto model = std::make_unique<AuthorListModel>(type, atId, this);
+    auto model = std::make_unique<AuthorListModel>(type, atId, mContentFilter, this);
     const int id = mAuthorListModels.put(std::move(model));
     return id;
 }
@@ -1024,6 +1024,18 @@ void Skywalker::shareAuthor(const QString& authorHandle)
     clipboard->setText(shareUri);
     emit statusMessage(tr("Author link copied to clipboard"));
 #endif
+}
+
+QEnums::ContentVisibility Skywalker::getContentVisibility(const QStringList& labelTexts) const
+{
+    const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(labelTexts);
+    return visibility;
+}
+
+QString Skywalker::getContentWarning(const QStringList& labelTexts) const
+{
+    const auto [_, warning] = mContentFilter.getVisibilityAndWarning(labelTexts);
+    return warning;
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "content_filter.h"
 #include "enums.h"
 #include "local_author_model_changes.h"
 #include "profile.h"
@@ -23,7 +24,7 @@ public:
 
     using Ptr = std::unique_ptr<AuthorListModel>;
 
-    AuthorListModel(Type type, const QString& atId, QObject* parent = nullptr);
+    AuthorListModel(Type type, const QString& atId, const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -43,16 +44,18 @@ protected:
     virtual void followingUriChanged() override;
 
 private:
+    using AuthorList = std::deque<Profile>;
+    AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const;
     void changeData(const QList<int>& roles);
 
     Type mType;
+    QString mAtId;
+    const ContentFilter& mContentFilter;
 
-    using AuthorList = std::deque<Profile>;
     AuthorList mList;
     std::deque<ATProto::AppBskyActor::ProfileViewList> mRawLists;
 
     QString mCursor;
-    QString mAtId;
 };
 
 }

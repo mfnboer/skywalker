@@ -186,9 +186,14 @@ QString ContentFilter::getWarning(const QString& label) const
 
 std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const
 {
+    const auto labelTexts = getLabelTexts(labels);
+    return getVisibilityAndWarning(labelTexts);
+}
+
+std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const QStringList& labelTexts) const
+{
     QEnums::ContentVisibility visibility = QEnums::CONTENT_VISIBILITY_SHOW;
     QString warning;
-    const auto labelTexts = getLabelTexts(labels);
 
     for (const auto& labelText : labelTexts)
     {

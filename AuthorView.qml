@@ -14,6 +14,9 @@ Page {
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
     property bool authorMuted: author.viewer.muted
+    property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
+    property string contentWarning: ""
+    property bool showWarnedMedia: false
 
     signal closed
 
@@ -26,7 +29,7 @@ Page {
             width: parent.width
             source: author.banner
             fillMode: Image.PreserveAspectFit
-            visible: author.banner && !author.viewer.blockedBy && status === Image.Ready
+            visible: author.banner && contentVisible() && status === Image.Ready
         }
 
         Rectangle {
@@ -61,7 +64,7 @@ Page {
                 anchors.centerIn: parent
                 width: parent.width - 4
                 height: parent.height - 4
-                avatarUrl: author.viewer.blockedBy ? "" : author.avatarUrl
+                avatarUrl: !contentVisible() ? "" : author.avatarUrl
                 onClicked: root.viewFullImage([author.imageView], 0)
             }
         }
@@ -129,13 +132,13 @@ Page {
                 }
                 SkyButton {
                     text: qsTr("Follow")
-                    visible: !following && !isUser(author) && !author.viewer.blockedBy
+                    visible: !following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.follow(author)
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
-                    visible: following && !isUser(author) && !author.viewer.blockedBy
+                    visible: following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.unfollow(author.did, following)
                 }
             }
@@ -183,7 +186,7 @@ Page {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 spacing: 15
                 topPadding: 10
-                visible: !author.viewer.blockedBy
+                visible: contentVisible()
 
                 Text {
                     color: guiSettings.linkColor
@@ -223,7 +226,7 @@ Page {
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
                 text: postUtils.linkiFy(author.description)
-                visible: !author.viewer.blockedBy
+                visible: contentVisible()
 
                 onLinkActivated: (link) => {
                                      if (link.startsWith("@")) {
@@ -295,6 +298,8 @@ Page {
                     return svgOutline.block
                 } else if (authorMuted) {
                     return svgOutline.mute
+                } else if (!contentVisible()) {
+                    return svgOutline.hideVisibility
                 }
 
                 return svgOutline.noPosts
@@ -302,10 +307,12 @@ Page {
             visible: authorFeedView.count === 0
         }
         Text {
+            id: noPostText
             y: noPostImage.y
             anchors.horizontalCenter: parent.horizontalCenter
             font.pointSize: guiSettings.scaledFont(10/8)
             color: "grey"
+            elide: Text.ElideRight
             text: {
                 if (blocking) {
                     return "You blocked this account"
@@ -313,11 +320,26 @@ Page {
                     return "You are blocked"
                 } else if (authorMuted) {
                     return "You muted this account"
+                } else if (!contentVisible()) {
+                    return contentWarning
                 }
 
                 return "No posts"
             }
             visible: authorFeedView.count === 0
+        }
+        Text {
+            anchors.top: noPostText.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            text: "<br><a href=\"show\">" + qsTr("Show profile") + "</a>"
+            visible: authorFeedView.count === 0 && !blocking && !author.viewer.blockedBy &&
+                     !authorMuted && contentVisibilityIsWarning()
+            onLinkActivated: {
+                showWarnedMedia = true
+                getFeed()
+            }
         }
     }
 
@@ -383,7 +405,19 @@ Page {
     }
 
     function mustGetFeed() {
-        return !authorMuted && !author.viewer.blockedBy && !blocking
+        return !authorMuted && !blocking && contentVisible()
+    }
+
+    function contentVisible() {
+        if (author.viewer.blockedBy)
+            return false
+
+        return contentVisibility === QEnums.CONTENT_VISIBILITY_SHOW || showWarnedMedia
+    }
+
+    function contentVisibilityIsWarning() {
+        return [QEnums.CONTENT_VISIBILITY_WARN_MEDIA,
+                QEnums.CONTENT_VISIBILITY_WARN_POST].includes(contentVisibility) && !showWarnedMedia
     }
 
     function isUser(author) {
@@ -391,6 +425,8 @@ Page {
     }
 
     Component.onCompleted: {
+        contentVisibility = skywalker.getContentVisibility(author.labels)
+        contentWarning = skywalker.getContentWarning(author.labels)
         getFeed()
     }
 

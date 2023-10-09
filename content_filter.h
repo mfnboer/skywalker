@@ -39,6 +39,7 @@ public:
     QString getWarning(const QString& label) const;
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const;
+    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const QStringList& labelTexts) const;
 
 private:
     static void initLabelGroupMap();

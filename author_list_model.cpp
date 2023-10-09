@@ -4,10 +4,11 @@
 
 namespace Skywalker {
 
-AuthorListModel::AuthorListModel(Type type, const QString& atId, QObject* parent) :
+AuthorListModel::AuthorListModel(Type type, const QString& atId, const ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
-    mAtId(atId)
+    mAtId(atId),
+    mContentFilter(contentFilter)
 {
 }
 
@@ -53,17 +54,36 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors,
 {
     qDebug() << "Add authors:" << authors.size() << "cursor:" << cursor;
     mCursor = cursor;
-    const size_t newRowCount = mList.size() + authors.size();
+
+    const auto list = filterAuthors(authors);
+    const size_t newRowCount = mList.size() + list.size();
 
     beginInsertRows({}, mList.size(), newRowCount - 1);
-
-    for (const auto& author : authors)
-        mList.push_back(Profile(author.get()));
-
+    mList.insert(mList.end(), list.begin(), list.end());
     endInsertRows();
 
     mRawLists.push_back(std::forward<ATProto::AppBskyActor::ProfileViewList>(authors));
     qDebug() << "New list size:" << mList.size();
+}
+
+AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const
+{
+    AuthorList list;
+
+    for (const auto& author : authors)
+    {
+        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(author->mLabels);
+
+        if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST || visibility == QEnums::CONTENT_VISIBILITY_HIDE_MEDIA)
+        {
+            qDebug() << "Filter author:" << author->mHandle << warning;
+            continue;
+        }
+
+        list.push_back(Profile(author.get()));
+    }
+
+    return list;
 }
 
 QHash<int, QByteArray> AuthorListModel::roleNames() const
