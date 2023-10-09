@@ -112,7 +112,7 @@ QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPrefer
 
 std::unordered_map<QString, QString> ContentFilter::sLabelGroupMap;
 
-ContentFilter::ContentFilter(ATProto::UserPreferences& userPreferences) :
+ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences) :
     mUserPreferences(userPreferences)
 {
     if (sLabelGroupMap.empty())

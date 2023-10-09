@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include <atproto/lib/user_preferences.h>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
@@ -14,7 +15,10 @@ class PostFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
 
-    explicit PostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent = nullptr);
+    explicit PostFeedModel(const QString& userDid, const IProfileStore& following,
+                           const ContentFilter& contentFilter,
+                           const ATProto::UserPreferences& userPrefs,
+                           QObject* parent = nullptr);
 
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
@@ -85,6 +89,8 @@ private:
     void setTopNCids();
     int topNPostIndex(const Post& post, bool checkTimestamp) const;
 
+    const ATProto::UserPreferences& mUserPreferences;
+
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.
     std::map<size_t, QString> mIndexCursorMap; // cursor to post at next index
@@ -99,12 +105,6 @@ private:
 
     // The top N cids from the posts in the feed before last clear.
     std::vector<CidTimestamp> mTopNCids;
-
-    // Show only replies to people in your following list.
-    bool mOnlyRepliesToFollowing = true;
-
-    // Minimum likes for a reply to be shown.
-    int mMinReplyLikes = 0;
 };
 
 }

@@ -6,8 +6,14 @@
 
 namespace Skywalker {
 
-PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, contentFilter, parent)
+static constexpr char const* HOME_FEED = "home";
+
+PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following,
+                             const ContentFilter& contentFilter,
+                             const ATProto::UserPreferences& userPrefs,
+                             QObject* parent) :
+    AbstractPostFeedModel(userDid, following, contentFilter, parent),
+    mUserPreferences(userPrefs)
 {}
 
 int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
@@ -437,14 +443,16 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
 
 bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(HOME_FEED);
+
+    if (feedViewPref.mHideReplies)
+        return false;
+
     // Always show the replies of the user.
     if (post.getAuthor().getDid() == mUserDid)
         return true;
 
-    if (post.getLikeCount() < mMinReplyLikes)
-        return false;
-
-    if (mOnlyRepliesToFollowing)
+    if (feedViewPref.mHideRepliesByUnfollowed)
     {
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.
@@ -476,6 +484,7 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(HOME_FEED);
     auto page = std::make_unique<Page>();
     page->mRawFeed = std::forward<ATProto::AppBskyFeed::PostFeed>(feed->mFeed);
 
@@ -489,6 +498,12 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
             // Due to reposting a post can show up multiple times in the feed.
             if (cidIsStored(post.getCid()))
+                continue;
+
+            if (feedViewPref.mHideReposts && post.isRepost())
+                continue;
+
+            if (feedViewPref.mHideQuotePosts && post.isQuotePost())
                 continue;
 
             const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());

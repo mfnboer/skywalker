@@ -33,7 +33,7 @@ public:
 
     static QStringList getLabelTexts(const LabelList& labels);
 
-    explicit ContentFilter(ATProto::UserPreferences& userPreferences);
+    explicit ContentFilter(const ATProto::UserPreferences& userPreferences);
 
     QEnums::ContentVisibility getVisibility(const QString& label) const;
     QString getWarning(const QString& label) const;
@@ -45,7 +45,7 @@ private:
     static void initLabelGroupMap();
 
     static std::unordered_map<QString, QString> sLabelGroupMap;
-    ATProto::UserPreferences& mUserPreferences;
+    const ATProto::UserPreferences& mUserPreferences;
 };
 
 }

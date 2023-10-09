@@ -25,7 +25,7 @@ static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
-    mTimelineModel(mUserDid, mUserFollows, mContentFilter, this),
+    mTimelineModel(mUserDid, mUserFollows, mContentFilter, mUserPreferences, this),
     mNotificationListModel(mContentFilter, this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });

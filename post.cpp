@@ -434,6 +434,18 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
     return std::make_unique<RecordWithMediaView>(recordView.get());
 }
 
+bool Post::isQuotePost() const
+{
+    if (!mPost)
+        return {};
+
+    if (!mPost->mEmbed)
+        return {};
+
+    return mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW ||
+           mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+}
+
 int Post::getReplyCount() const
 {
     return mPost ? mPost->mReplyCount : 0;

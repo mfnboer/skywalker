@@ -35,7 +35,7 @@ ListView {
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
                 color: "white"
-                text: qsTr("Following timeline")
+                text: qsTr("Home feed")
             }
             Item {
                 Layout.rightMargin: 10
