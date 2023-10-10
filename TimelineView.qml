@@ -48,6 +48,7 @@ ListView {
                     width: parent.width
                     height: parent.height
                     avatarUrl: skywalker.avatarUrl
+                    onClicked: root.showSettingsDrawer()
                 }
             }
         }

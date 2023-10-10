@@ -142,6 +142,23 @@ ApplicationWindow {
         }
     }
 
+    SettingsDrawer {
+        id: settingsDrawer
+        height: parent.height
+        edge: Qt.RightEdge
+
+        onProfile: {
+            let did = skywalker.getUserDid()
+            skywalker.getDetailedProfile(did)
+            close()
+        }
+
+        function show() {
+            user = skywalker.getUser()
+            open()
+        }
+    }
+
     Drawer {
         property string repostedAlreadyUri
         property string repostUri
@@ -239,6 +256,10 @@ ApplicationWindow {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function showSettingsDrawer() {
+        settingsDrawer.show()
     }
 
     function openLink(link) {

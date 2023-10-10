@@ -5,12 +5,21 @@
 #include <atproto/lib/user_preferences.h>
 #include <atproto/lib/lexicon/com_atproto_label.h>
 #include <QStringList>
+#include <QObject>
+#include <QtQmlIntegration>
 #include <tuple>
 
 namespace Skywalker {
 
-struct ContentGroup
+class ContentGroup
 {
+    Q_GADGET
+    Q_PROPERTY(QString title MEMBER mTitle CONSTANT FINAL)
+    Q_PROPERTY(QString subTitle MEMBER mSubTitle CONSTANT FINAL)
+    Q_PROPERTY(bool isAdult MEMBER mAdultImages CONSTANT FINAL)
+    QML_VALUE_TYPE(contentgroup)
+
+public:
     QString mId;
     QString mTitle;
     QString mSubTitle;
@@ -49,3 +58,5 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(Skywalker::ContentGroup)

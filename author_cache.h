@@ -30,6 +30,7 @@ public:
     const BasicProfile* get(const QString& did) const;
     bool contains(const QString& did) const;
 
+    const BasicProfile& getUser() const { return mUser; }
     void setUser(const BasicProfile& user);
     void addProfileStore(const IProfileStore* store);
 

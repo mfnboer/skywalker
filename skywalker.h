@@ -63,6 +63,7 @@ public:
     Q_INVOKABLE const AuthorListModel* getAuthorListModel(int id) const;
     Q_INVOKABLE void removeAuthorListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
+    Q_INVOKABLE BasicProfile getUser() const;
     Q_INVOKABLE void sharePost(const QString& postUri, const QString& authorHandle);
     Q_INVOKABLE void shareAuthor(const QString& authorHandle);
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const QStringList& labelTexts) const;

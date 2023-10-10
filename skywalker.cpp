@@ -1003,6 +1003,11 @@ void Skywalker::removeAuthorListModel(int id)
     mAuthorListModels.remove(id);
 }
 
+BasicProfile Skywalker::getUser() const
+{
+    return AuthorCache::instance().getUser();
+}
+
 void Skywalker::sharePost(const QString& postUri, const QString& authorHandle)
 {
     qDebug() << "Share post:" << postUri;

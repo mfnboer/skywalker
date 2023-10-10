@@ -25,7 +25,7 @@ RoundedFrame {
         function setHeight() {
             let image = images[0]
             if (image.width > 0 && image.height > 0)
-                heigth = image.height / image.width * width
+                height = image.height / image.width * width
         }
     }
     MouseArea {

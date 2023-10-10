@@ -139,6 +139,11 @@ qt_add_qml_module(appskywalker
         QML_FILES FilteredImageWarning.qml
         SOURCES link_utils.h
         SOURCES link_utils.cpp
+        SOURCES edit_user_preferences.h
+        SOURCES content_group_list_model.h
+        SOURCES content_group_list_model.cpp
+        SOURCES edit_user_preferences.cpp
+        QML_FILES SettingsDrawer.qml
 )
 
 set_target_properties(appskywalker PROPERTIES
