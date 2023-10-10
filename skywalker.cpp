@@ -1067,6 +1067,16 @@ QString Skywalker::getContentWarning(const QStringList& labelTexts) const
     return warning;
 }
 
+EditUserPrefences* Skywalker::getEditUserPreferences()
+{
+    Q_ASSERT(mBsky);
+    Q_ASSERT(mBsky->getSession());
+    mEditUserPreferences = std::make_unique<EditUserPrefences>(this);
+    mEditUserPreferences->setEmail(mBsky->getSession()->mEmail.value_or(""));
+    mEditUserPreferences->setUserPreferences(mUserPreferences);
+    return mEditUserPreferences.get();
+}
+
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
 {
     // TODO: secure storage

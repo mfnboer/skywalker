@@ -4,13 +4,60 @@
 
 namespace Skywalker {
 
-EditUserPrefences::EditUserPrefences(ATProto::UserPreferences& userPrefs, const QString& email, QObject* parent) :
-    QObject(parent),
-    mUserPreferences(userPrefs),
-    mEmail(email)
+EditUserPrefences::EditUserPrefences(QObject* parent) :
+    QObject(parent)
 {
-    mBirthDate = userPrefs.getBirthDate();
-    mHomeFeedPref = userPrefs.getFeedViewPref("home");
+}
+
+const QString EditUserPrefences::getBirthDate() const
+{
+    if (!mBirthDate)
+        return {};
+
+    const auto date = mBirthDate->date();
+    return date.toString(QLocale().dateFormat(QLocale::ShortFormat));
+}
+
+void EditUserPrefences::setUserPreferences(const ATProto::UserPreferences& userPreferences)
+{
+    mBirthDate = userPreferences.getBirthDate();
+    mHomeFeedPref = userPreferences.getFeedViewPref("home");
+}
+
+void EditUserPrefences::setHideReplies(bool hide)
+{
+    if (hide != mHomeFeedPref.mHideReplies)
+    {
+        mHomeFeedPref.mHideReplies = hide;
+        emit hideRepliesChanged();
+    }
+}
+
+void EditUserPrefences::setHideRepliesByUnfollowed(bool hide)
+{
+    if (hide != mHomeFeedPref.mHideRepliesByUnfollowed)
+    {
+        mHomeFeedPref.mHideRepliesByUnfollowed = hide;
+        emit hideRepliesByUnfollowedChanged();
+    }
+}
+
+void EditUserPrefences::setHideReposts(bool hide)
+{
+    if (hide != mHomeFeedPref.mHideReposts)
+    {
+        mHomeFeedPref.mHideReposts = hide;
+        emit hideRepostsChanged();
+    }
+}
+
+void EditUserPrefences::setHideQuotePosts(bool hide)
+{
+    if (hide != mHomeFeedPref.mHideQuotePosts)
+    {
+        mHomeFeedPref.mHideQuotePosts = hide;
+        emit hideQuotePostsChanged();
+    }
 }
 
 }

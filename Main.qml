@@ -153,6 +153,11 @@ ApplicationWindow {
             close()
         }
 
+        onSettings: {
+            editSettings()
+            close()
+        }
+
         function show() {
             user = skywalker.getUser()
             open()
@@ -372,6 +377,14 @@ ApplicationWindow {
         view.onClosed.connect(() => { popStack() })
         currentStack().push(view)
         skywalker.getAuthorList(modelId, 50)
+    }
+
+    function editSettings() {
+        let component = Qt.createComponent("SettingsForm.qml")
+        let userPrefs = skywalker.getEditUserPreferences()
+        let form = component.createObject(root, { userPrefs: userPrefs })
+        form.onClosed.connect(() => { popStack() })
+        currentStack().push(form)
     }
 
     function getTimelineView() {

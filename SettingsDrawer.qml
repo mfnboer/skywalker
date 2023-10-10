@@ -9,12 +9,16 @@ Drawer {
     readonly property real menuFontSize: guiSettings.scaledFont(10/8)
 
     signal profile()
+    signal moderation()
+    signal settings()
 
-    padding: 10
+    width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
+    padding: 20
 
     Column {
         id: userColumn
         anchors.top: parent.top
+        width: Math.max(profileItem.width, moderationItem.width, settingsItem.width) + 70
         spacing: 5
 
         Avatar {
@@ -36,68 +40,33 @@ Drawer {
             elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
-            text: user.handle
+            text: `@${user.handle}`
         }
 
         Rectangle {
-            height: 40
+            width: 30
+            height: width
         }
 
-        Row {
-            id: profileRow
-            spacing: 20
-
-            SvgImage {
-                y: height
-                width: iconSize
-                height: width
-                svg: svgOutline.user
-            }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                Layout.fillWidth: true
-                font.pointSize: menuFontSize
-                text: qsTr("Profile")
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: profile()
-                }
-            }
+        SkyMenuItem {
+            id: profileItem
+            icon: svgOutline.user
+            text: qsTr("Profile")
+            onClicked: profile()
         }
 
-        Row {
-            spacing: 20
-
-            SvgImage {
-                y: height
-                width: iconSize
-                height: width
-                svg: svgOutline.visibility
-            }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                Layout.fillWidth: true
-                font.pointSize: menuFontSize
-                text: qsTr("Moderation")
-            }
+        SkyMenuItem {
+            id: moderationItem
+            icon: svgOutline.visibility
+            text: qsTr("Moderation")
+            onClicked: moderation()
         }
 
-        Row {
-            spacing: 20
-
-            SvgImage {
-                y: height
-                width: iconSize
-                height: width
-                svg: svgOutline.settings
-            }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                Layout.fillWidth: true
-                font.pointSize: menuFontSize
-                text: qsTr("Settings")
-            }
+        SkyMenuItem {
+            id: settingsItem
+            icon: svgOutline.settings
+            text: qsTr("Settings")
+            onClicked: settings()
         }
     }
 

@@ -3,6 +3,7 @@
 #pragma once
 #include "author_feed_model.h"
 #include "author_list_model.h"
+#include "edit_user_preferences.h"
 #include "item_store.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
@@ -68,6 +69,7 @@ public:
     Q_INVOKABLE void shareAuthor(const QString& authorHandle);
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const QStringList& labelTexts) const;
     Q_INVOKABLE QString getContentWarning(const QStringList& labelTexts) const;
+    Q_INVOKABLE EditUserPrefences* getEditUserPreferences();
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
@@ -143,6 +145,7 @@ private:
     QString mUserDid;
     ProfileStore mUserFollows;
     ATProto::UserPreferences mUserPreferences;
+    std::unique_ptr<EditUserPrefences> mEditUserPreferences;
     ContentFilter mContentFilter;
 
     PostFeedModel mTimelineModel;

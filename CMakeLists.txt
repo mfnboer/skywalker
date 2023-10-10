@@ -144,6 +144,8 @@ qt_add_qml_module(appskywalker
         SOURCES content_group_list_model.cpp
         SOURCES edit_user_preferences.cpp
         QML_FILES SettingsDrawer.qml
+        QML_FILES SkyMenuItem.qml
+        QML_FILES SettingsForm.qml
 )
 
 set_target_properties(appskywalker PROPERTIES
