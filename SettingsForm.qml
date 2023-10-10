@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Page {
-    required property EditUserPrefences userPrefs
+    required property EditUserPreferences userPrefs
 
     id: page
     padding: 10
@@ -109,5 +109,10 @@ Page {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onDestruction: {
+        console.debug("Save settings");
+        skywalker.saveUserPreferences();
     }
 }

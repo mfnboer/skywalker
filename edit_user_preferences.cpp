@@ -4,12 +4,12 @@
 
 namespace Skywalker {
 
-EditUserPrefences::EditUserPrefences(QObject* parent) :
+EditUserPreferences::EditUserPreferences(QObject* parent) :
     QObject(parent)
 {
 }
 
-const QString EditUserPrefences::getBirthDate() const
+const QString EditUserPreferences::getBirthDate() const
 {
     if (!mBirthDate)
         return {};
@@ -18,44 +18,53 @@ const QString EditUserPrefences::getBirthDate() const
     return date.toString(QLocale().dateFormat(QLocale::ShortFormat));
 }
 
-void EditUserPrefences::setUserPreferences(const ATProto::UserPreferences& userPreferences)
+void EditUserPreferences::setUserPreferences(const ATProto::UserPreferences& userPreferences)
 {
     mBirthDate = userPreferences.getBirthDate();
     mHomeFeedPref = userPreferences.getFeedViewPref("home");
 }
 
-void EditUserPrefences::setHideReplies(bool hide)
+void EditUserPreferences::saveTo(ATProto::UserPreferences& userPreferences)
+{
+    userPreferences.setFeedViewPref(mHomeFeedPref);
+}
+
+void EditUserPreferences::setHideReplies(bool hide)
 {
     if (hide != mHomeFeedPref.mHideReplies)
     {
         mHomeFeedPref.mHideReplies = hide;
+        mModified = true;
         emit hideRepliesChanged();
     }
 }
 
-void EditUserPrefences::setHideRepliesByUnfollowed(bool hide)
+void EditUserPreferences::setHideRepliesByUnfollowed(bool hide)
 {
     if (hide != mHomeFeedPref.mHideRepliesByUnfollowed)
     {
         mHomeFeedPref.mHideRepliesByUnfollowed = hide;
+        mModified = true;
         emit hideRepliesByUnfollowedChanged();
     }
 }
 
-void EditUserPrefences::setHideReposts(bool hide)
+void EditUserPreferences::setHideReposts(bool hide)
 {
     if (hide != mHomeFeedPref.mHideReposts)
     {
         mHomeFeedPref.mHideReposts = hide;
+        mModified = true;
         emit hideRepostsChanged();
     }
 }
 
-void EditUserPrefences::setHideQuotePosts(bool hide)
+void EditUserPreferences::setHideQuotePosts(bool hide)
 {
     if (hide != mHomeFeedPref.mHideQuotePosts)
     {
         mHomeFeedPref.mHideQuotePosts = hide;
+        mModified = true;
         emit hideQuotePostsChanged();
     }
 }

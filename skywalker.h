@@ -69,7 +69,8 @@ public:
     Q_INVOKABLE void shareAuthor(const QString& authorHandle);
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const QStringList& labelTexts) const;
     Q_INVOKABLE QString getContentWarning(const QStringList& labelTexts) const;
-    Q_INVOKABLE EditUserPrefences* getEditUserPreferences();
+    Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
+    Q_INVOKABLE void saveUserPreferences();
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
@@ -145,7 +146,7 @@ private:
     QString mUserDid;
     ProfileStore mUserFollows;
     ATProto::UserPreferences mUserPreferences;
-    std::unique_ptr<EditUserPrefences> mEditUserPreferences;
+    std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     ContentFilter mContentFilter;
 
     PostFeedModel mTimelineModel;

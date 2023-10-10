@@ -1067,14 +1067,45 @@ QString Skywalker::getContentWarning(const QStringList& labelTexts) const
     return warning;
 }
 
-EditUserPrefences* Skywalker::getEditUserPreferences()
+EditUserPreferences* Skywalker::getEditUserPreferences()
 {
     Q_ASSERT(mBsky);
     Q_ASSERT(mBsky->getSession());
-    mEditUserPreferences = std::make_unique<EditUserPrefences>(this);
+    mEditUserPreferences = std::make_unique<EditUserPreferences>(this);
     mEditUserPreferences->setEmail(mBsky->getSession()->mEmail.value_or(""));
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     return mEditUserPreferences.get();
+}
+
+void Skywalker::saveUserPreferences()
+{
+    Q_ASSERT(mBsky);
+    Q_ASSERT(mEditUserPreferences);
+
+    if (!mEditUserPreferences)
+    {
+        qWarning() << "No preferences to save";
+        return;
+    }
+
+    if (!mEditUserPreferences->isModified())
+    {
+        qDebug() << "User preferences not modified.";
+        return;
+    }
+
+    auto prefs = mUserPreferences;
+    mEditUserPreferences->saveTo(prefs);
+
+    mBsky->putPreferences(prefs,
+        [this, prefs]{
+            qDebug() << "saveUserPreferences ok";
+            mUserPreferences = prefs;
+        },
+        [this](const QString& error){
+            qDebug() << "saveUserPreferences failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

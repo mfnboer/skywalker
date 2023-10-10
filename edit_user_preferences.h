@@ -7,7 +7,7 @@
 
 namespace Skywalker {
 
-class EditUserPrefences : public QObject
+class EditUserPreferences : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString email READ getEmail CONSTANT FINAL)
@@ -19,9 +19,10 @@ class EditUserPrefences : public QObject
     QML_ELEMENT
 
 public:
-    EditUserPrefences(QObject* parent = nullptr);
+    EditUserPreferences(QObject* parent = nullptr);
 
     void setUserPreferences(const ATProto::UserPreferences& userPreferences);
+    void saveTo(ATProto::UserPreferences& userPreferences);
 
     const QString& getEmail() const { return mEmail; }
     void setEmail(const QString& email) { mEmail = email; }
@@ -40,6 +41,8 @@ public:
     bool getHideQuotePosts() const { return mHomeFeedPref.mHideQuotePosts; }
     void setHideQuotePosts(bool hide);
 
+    bool isModified() const { return mModified; }
+
 signals:
     void hideRepliesChanged();
     void hideRepliesByUnfollowedChanged();
@@ -54,6 +57,8 @@ private:
 
     // Content filtering
     bool mAdultContent;
+
+    bool mModified = false;
 };
 
 }
