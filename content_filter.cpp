@@ -4,92 +4,87 @@
 
 namespace Skywalker {
 
-const std::unordered_map<QString, ContentGroup> ContentFilter::CONTENT_GROUPS = {
+const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
     {
         "nsfw",
-        {
-            "nsfw",
-            QObject::tr("Explicit Sexual Images"),
-            QObject::tr("i.e. pornography"),
-            QObject::tr("Sexually Explicit"),
-            {"porn", "nsfw"},
-            true,
-      QEnums::CONTENT_VISIBILITY_WARN_MEDIA
-        }
+        QObject::tr("Explicit Sexual Images"),
+        QObject::tr("i.e. pornography"),
+        QObject::tr("Sexually Explicit"),
+        {"porn", "nsfw"},
+        true,
+        QEnums::CONTENT_VISIBILITY_WARN_MEDIA
     },
     {
         "nudity",
-        {
-            "nudity",
-            QObject::tr("Other Nudity"),
-            QObject::tr("Including non-sexual and artistic"),
-            QObject::tr("Nudity"),
-            {"nudity"},
-            true,
-      QEnums::CONTENT_VISIBILITY_WARN_MEDIA
-        }
+        QObject::tr("Other Nudity"),
+        QObject::tr("Including non-sexual and artistic"),
+        QObject::tr("Nudity"),
+        {"nudity"},
+        true,
+        QEnums::CONTENT_VISIBILITY_WARN_MEDIA
     },
     {
         "suggestive",
-        {
-            "suggestive",
-            QObject::tr("Sexually Suggestive"),
-            QObject::tr("Does not include nudity"),
-            QObject::tr("Sexually Suggestive"),
-            {"sexual"},
-            true,
-      QEnums::CONTENT_VISIBILITY_WARN_MEDIA
-        }
+        QObject::tr("Sexually Suggestive"),
+        QObject::tr("Does not include nudity"),
+        QObject::tr("Sexually Suggestive"),
+        {"sexual"},
+        true,
+        QEnums::CONTENT_VISIBILITY_WARN_MEDIA
     },
     {
         "gore",
-        {
-            "gore",
-            QObject::tr("Violent / Bloody"),
-            QObject::tr("Gore, self-harm, torture"),
-            QObject::tr("Violence"),
-            {"gore", "self-harm", "torture", "nsfl", "corpse"},
-            true,
-      QEnums::CONTENT_VISIBILITY_HIDE_MEDIA
-        }
+        QObject::tr("Violent / Bloody"),
+        QObject::tr("Gore, self-harm, torture"),
+        QObject::tr("Violence"),
+        {"gore", "self-harm", "torture", "nsfl", "corpse"},
+        true,
+        QEnums::CONTENT_VISIBILITY_HIDE_MEDIA
     },
     {
         "hate",
-        {
-            "hate",
-            QObject::tr("Hate Group Iconography"),
-            QObject::tr("Images of terror groups, articles covering events, etc."),
-            QObject::tr("Hate Groups"),
-            {"icon-kkk", "icon-nazi", "icon-intolerant", "behavior-intolerant"},
-            false,
-      QEnums::CONTENT_VISIBILITY_HIDE_POST
-        }
+        QObject::tr("Hate Group Iconography"),
+        QObject::tr("Images of terror groups, articles covering events, etc."),
+        QObject::tr("Hate Groups"),
+        {"icon-kkk", "icon-nazi", "icon-intolerant", "behavior-intolerant"},
+        false,
+        QEnums::CONTENT_VISIBILITY_HIDE_POST
     },
     {
-         "spam",
-        {
-            "spam",
-            QObject::tr("Spam"),
-            QObject::tr("Excessive unwanted interactions"),
-            QObject::tr("Spam"),
-            {"spam"},
-            false,
-      QEnums::CONTENT_VISIBILITY_HIDE_POST
-        }
+        "spam",
+        QObject::tr("Spam"),
+        QObject::tr("Excessive unwanted interactions"),
+        QObject::tr("Spam"),
+        {"spam"},
+        false,
+        QEnums::CONTENT_VISIBILITY_HIDE_POST
     },
     {
         "impersonation",
-        {
-            "impersonation",
-            QObject::tr("Impersonation"),
-            QObject::tr("Accounts falsely claiming to be people or orgs"),
-            QObject::tr("Impersonation"),
-            {"impersonation"},
-            false,
-      QEnums::CONTENT_VISIBILITY_WARN_POST
-        }
+        QObject::tr("Impersonation"),
+        QObject::tr("Accounts falsely claiming to be people or orgs"),
+        QObject::tr("Impersonation"),
+        {"impersonation"},
+        false,
+        QEnums::CONTENT_VISIBILITY_WARN_POST
     }
 };
+
+ContentFilter::ContentGroupMap ContentFilter::CONTENT_GROUPS;
+
+void ContentFilter::initContentGroups()
+{
+    for (const auto& group : CONTENT_GROUP_LIST)
+        CONTENT_GROUPS[group.mId] = &group;
+}
+
+const ContentFilter::ContentGroupMap& ContentFilter::getContentGroups()
+{
+    if (CONTENT_GROUPS.empty())
+        initContentGroups();
+
+    return CONTENT_GROUPS;
+}
 
 QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const
 {
@@ -121,9 +116,9 @@ ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences) :
 
 void ContentFilter::initLabelGroupMap()
 {
-    for (const auto& [id, group] : CONTENT_GROUPS)
+    for (const auto& [id, group] : getContentGroups())
     {
-        for (const auto& label : group.mLabelValues)
+        for (const auto& label : group->mLabelValues)
             sLabelGroupMap[label] = id;
     }
 }
@@ -143,6 +138,21 @@ QStringList ContentFilter::getLabelTexts(const LabelList& labels)
     return labelTexts;
 }
 
+QEnums::ContentVisibility ContentFilter::getGroupVisibility(const QString& groupId) const
+{
+    const auto& group = getContentGroups().at(groupId);
+
+    if (group->mAdultImages && !mUserPreferences.getAdultContent())
+        return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+
+    const auto visibility = mUserPreferences.getLabelVisibility(groupId);
+
+    if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+        return group->getContentVisibility(visibility);
+
+    return group->mDefaultVisibility;
+}
+
 QEnums::ContentVisibility ContentFilter::getVisibility(const QString& label) const
 {
     auto it = sLabelGroupMap.find(label);
@@ -153,17 +163,9 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const QString& label) con
         return QEnums::CONTENT_VISIBILITY_SHOW;
     }
 
-    const auto& group = CONTENT_GROUPS.at(it->second);
+    return getGroupVisibility(it->second);
 
-    if (group.mAdultImages && !mUserPreferences.getAdultContent())
-        return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
-
-    const auto visibility = mUserPreferences.getLabelVisibility(it->second);
-
-    if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
-        return group.getContentVisibility(visibility);
-
-    return group.mDefaultVisibility;
+    const auto& group = getContentGroups().at(it->second);
 }
 
 QString ContentFilter::getWarning(const QString& label) const
@@ -176,12 +178,12 @@ QString ContentFilter::getWarning(const QString& label) const
         return QObject::tr("Unknown label") + QString(": %1").arg(label);
     }
 
-    const auto& group = CONTENT_GROUPS.at(it->second);
+    const auto& group = getContentGroups().at(it->second);
 
-    if (group.mAdultImages && !mUserPreferences.getAdultContent())
+    if (group->mAdultImages && !mUserPreferences.getAdultContent())
         return QObject::tr("Adult content");
 
-    return group.mWarning;
+    return group->mWarning;
 }
 
 std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const

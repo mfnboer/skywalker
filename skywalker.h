@@ -3,6 +3,7 @@
 #pragma once
 #include "author_feed_model.h"
 #include "author_list_model.h"
+#include "content_group_list_model.h"
 #include "edit_user_preferences.h"
 #include "item_store.h"
 #include "notification_list_model.h"
@@ -69,6 +70,8 @@ public:
     Q_INVOKABLE void shareAuthor(const QString& authorHandle);
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const QStringList& labelTexts) const;
     Q_INVOKABLE QString getContentWarning(const QStringList& labelTexts) const;
+    Q_INVOKABLE const ContentGroupListModel* getContentGroupListModel();
+    Q_INVOKABLE void saveContentFilterPreferences();
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
 
@@ -148,6 +151,7 @@ private:
     ATProto::UserPreferences mUserPreferences;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     ContentFilter mContentFilter;
+    std::unique_ptr<ContentGroupListModel> mContentGroupListModel;
 
     PostFeedModel mTimelineModel;
     bool mAutoUpdateTimelineInProgress = false;

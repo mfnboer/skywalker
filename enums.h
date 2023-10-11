@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-
+#include <atproto/lib/lexicon/app_bsky_actor.h>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -74,6 +74,16 @@ public:
         CONTENT_VISIBILITY_HIDE_POST
     };
     Q_ENUM(ContentVisibility)
+
+    enum ContentPrefVisibility
+    {
+        CONTENT_PREF_VISIBILITY_SHOW = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::SHOW,
+        CONTENT_PREF_VISIBILITY_WARN = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::WARN,
+        CONTENT_PREF_VISIBILITY_HIDE = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::HIDE
+    };
+    Q_ENUM(ContentPrefVisibility)
+
+    static ContentPrefVisibility toContentPrefVisibility(ContentVisibility);
 };
 
 }

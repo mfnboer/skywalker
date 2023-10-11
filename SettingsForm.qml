@@ -123,6 +123,7 @@ Page {
     }
 
     Component.onDestruction: {
+        // TODO: leave page only after saving is done, show busy indicator
         console.debug("Save settings");
         skywalker.saveUserPreferences();
     }

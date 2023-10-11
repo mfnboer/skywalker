@@ -1067,6 +1067,44 @@ QString Skywalker::getContentWarning(const QStringList& labelTexts) const
     return warning;
 }
 
+const ContentGroupListModel* Skywalker::getContentGroupListModel()
+{
+    mContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);
+    mContentGroupListModel->setAdultContent(mUserPreferences.getAdultContent());
+    return mContentGroupListModel.get();
+}
+
+void Skywalker::saveContentFilterPreferences()
+{
+    Q_ASSERT(mBsky);
+    Q_ASSERT(mContentGroupListModel);
+
+    if (!mContentGroupListModel)
+    {
+        qWarning() << "No filter preferences to save";
+        return;
+    }
+
+    if (!mContentGroupListModel->isModified(mUserPreferences))
+    {
+        qDebug() << "Filter preferences not modified.";
+        return;
+    }
+
+    auto prefs = mUserPreferences;
+    mContentGroupListModel->saveTo(prefs);
+
+    mBsky->putPreferences(prefs,
+        [this, prefs]{
+            qDebug() << "saveFilterPreferences ok";
+            mUserPreferences = prefs;
+        },
+        [this](const QString& error){
+            qDebug() << "saveFilterPreferences failed:" << error;
+            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 EditUserPreferences* Skywalker::getEditUserPreferences()
 {
     Q_ASSERT(mBsky);

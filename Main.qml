@@ -153,6 +153,11 @@ ApplicationWindow {
             close()
         }
 
+        onModeration: {
+            editContentFilterSettings()
+            close()
+        }
+
         onSettings: {
             editSettings()
             close()
@@ -383,6 +388,14 @@ ApplicationWindow {
         let component = Qt.createComponent("SettingsForm.qml")
         let userPrefs = skywalker.getEditUserPreferences()
         let form = component.createObject(root, { userPrefs: userPrefs })
+        form.onClosed.connect(() => { popStack() })
+        currentStack().push(form)
+    }
+
+    function editContentFilterSettings() {
+        let component = Qt.createComponent("ContentFilterSettings.qml")
+        let contentGroupListModel = skywalker.getContentGroupListModel()
+        let form = component.createObject(root, { model: contentGroupListModel })
         form.onClosed.connect(() => { popStack() })
         currentStack().push(form)
     }

@@ -146,6 +146,9 @@ qt_add_qml_module(appskywalker
         QML_FILES SettingsDrawer.qml
         QML_FILES SkyMenuItem.qml
         QML_FILES SettingsForm.qml
+        QML_FILES ContentFilterSettings.qml
+        SOURCES enums.cpp
+        QML_FILES SkyRadioButton.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

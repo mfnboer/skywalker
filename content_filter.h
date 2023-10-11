@@ -37,13 +37,16 @@ public:
 class ContentFilter {
 public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
+    using ContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
 
-    static const std::unordered_map<QString, ContentGroup> CONTENT_GROUPS;
+    static const std::vector<ContentGroup> CONTENT_GROUP_LIST;
+    static const ContentGroupMap& getContentGroups();
 
     static QStringList getLabelTexts(const LabelList& labels);
 
     explicit ContentFilter(const ATProto::UserPreferences& userPreferences);
 
+    QEnums::ContentVisibility getGroupVisibility(const QString& groupId) const;
     QEnums::ContentVisibility getVisibility(const QString& label) const;
     QString getWarning(const QString& label) const;
 
@@ -51,6 +54,8 @@ public:
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const QStringList& labelTexts) const;
 
 private:
+    static ContentGroupMap CONTENT_GROUPS;
+    static void initContentGroups();
     static void initLabelGroupMap();
 
     static std::unordered_map<QString, QString> sLabelGroupMap;
