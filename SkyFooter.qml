@@ -18,9 +18,17 @@ Rectangle {
     z: guiSettings.footerZLevel
     color: guiSettings.footerColor
 
-    RowLayout {
+    Rectangle {
+        id: separatorLine
         width: parent.width
-        height: parent.height
+        height: 1
+        color: "lightgrey"
+    }
+
+    RowLayout {
+        anchors.top: separatorLine.bottom
+        width: parent.width
+        height: parent.height - separatorLine.height
 
         Rectangle {
             height: parent.height

@@ -53,14 +53,17 @@ Page {
         Text {
             text: qsTr("Email:")
         }
-        Row {
+        Rectangle {
             Layout.fillWidth: true
+            height: mailText.height
 
             Text {
                 id: mailText
                 text: userPrefs.email
             }
             SvgImage {
+                anchors.left: mailText.right
+                anchors.leftMargin: 5
                 height: mailText.height
                 width: height
                 color: "blue"

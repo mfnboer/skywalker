@@ -1108,9 +1108,11 @@ void Skywalker::saveContentFilterPreferences()
 EditUserPreferences* Skywalker::getEditUserPreferences()
 {
     Q_ASSERT(mBsky);
-    Q_ASSERT(mBsky->getSession());
+    const auto* session = mBsky->getSession();
+    Q_ASSERT(session);
     mEditUserPreferences = std::make_unique<EditUserPreferences>(this);
-    mEditUserPreferences->setEmail(mBsky->getSession()->mEmail.value_or(""));
+    mEditUserPreferences->setEmail(session->mEmail.value_or(""));
+    mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     return mEditUserPreferences.get();
 }

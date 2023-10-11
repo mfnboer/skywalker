@@ -55,13 +55,13 @@ signals:
 
 private:
     QString mEmail;
-    bool mEmailConfirmed;
+    bool mEmailConfirmed = false;
     std::optional<QDateTime> mBirthDate;
 
     ATProto::UserPreferences::FeedViewPref mHomeFeedPref;
 
     // Content filtering
-    bool mAdultContent;
+    bool mAdultContent = false;
 
     bool mModified = false;
 };

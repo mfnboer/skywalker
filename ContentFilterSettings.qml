@@ -54,7 +54,9 @@ Page {
         anchors.top: adultContentSwitch.bottom
         anchors.bottom: parent.bottom
         width: parent.width
-        spacing: 20
+        clip: true
+        spacing: 5
+        boundsBehavior: Flickable.StopAtBounds
         model: page.model
 
         delegate: GridLayout {
@@ -74,7 +76,9 @@ Page {
                 color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : "grey"
             }
             Row {
+                id: buttonRow
                 Layout.rowSpan: 2
+                spacing: -1
 
                 SkyRadioButton {
                     checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE
@@ -113,11 +117,19 @@ Page {
             }
 
             Text {
+                bottomPadding: 5
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
                 text: contentGroup.subTitle
                 color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : "grey"
+            }
+
+            Rectangle {
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: "lightgrey"
             }
         }
 
