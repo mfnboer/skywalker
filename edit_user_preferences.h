@@ -11,6 +11,7 @@ class EditUserPreferences : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString email READ getEmail CONSTANT FINAL)
+    Q_PROPERTY(bool emailConfirmed READ getEmailConfirmed CONSTANT FINAL)
     Q_PROPERTY(QString birthDate READ getBirthDate CONSTANT FINAL)
     Q_PROPERTY(bool hideReplies READ getHideReplies WRITE setHideReplies NOTIFY hideRepliesChanged FINAL)
     Q_PROPERTY(bool hideRepliesByUnfollowed READ getHideRepliesByUnfollowed WRITE setHideRepliesByUnfollowed NOTIFY hideRepliesByUnfollowedChanged FINAL)
@@ -26,6 +27,9 @@ public:
 
     const QString& getEmail() const { return mEmail; }
     void setEmail(const QString& email) { mEmail = email; }
+
+    bool getEmailConfirmed() const { return mEmailConfirmed; }
+    void setEmailConfirmed(bool confirmed) { mEmailConfirmed = confirmed; }
 
     const QString getBirthDate() const;
 
@@ -51,6 +55,7 @@ signals:
 
 private:
     QString mEmail;
+    bool mEmailConfirmed;
     std::optional<QDateTime> mBirthDate;
 
     ATProto::UserPreferences::FeedViewPref mHomeFeedPref;

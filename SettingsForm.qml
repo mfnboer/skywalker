@@ -53,9 +53,20 @@ Page {
         Text {
             text: qsTr("Email:")
         }
-        Text {
+        Row {
             Layout.fillWidth: true
-            text: userPrefs.email
+
+            Text {
+                id: mailText
+                text: userPrefs.email
+            }
+            SvgImage {
+                height: mailText.height
+                width: height
+                color: "blue"
+                svg: svgOutline.check
+                visible: userPrefs.emailConfirmed
+            }
         }
 
         Text {
