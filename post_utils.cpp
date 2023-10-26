@@ -7,8 +7,8 @@
 namespace Skywalker {
 
 PostUtils::PostUtils(QObject* parent) :
-    QObject(parent),
-    Presence()
+    Presence(),
+    QObject(parent)
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 

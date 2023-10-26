@@ -49,6 +49,7 @@ ListView {
         notificationsActive: true
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: positionViewAtBeginning()
+        onSearchClicked: root.viewSearchView()
     }
     footerPositioning: ListView.OverlayFooter
 

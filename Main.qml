@@ -45,6 +45,9 @@ ApplicationWindow {
         StackView {
             id: notificationStack
         }
+        StackView {
+            id: searchStack
+        }
     }
 
     SvgOutline {
@@ -369,6 +372,11 @@ ApplicationWindow {
         }
     }
 
+    function viewSearchView() {
+        unwindStack()
+        stackLayout.currentIndex = 2
+    }
+
     function viewAuthor(profile, modelId) {
         let component = Qt.createComponent("AuthorView.qml")
         let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker })
@@ -445,6 +453,12 @@ ApplicationWindow {
                 { skywalker: skywalker, timeline: timelineView })
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
         notificationStack.push(notificationsView)
+
+        let searchComponent = Qt.createComponent("SearchView.qml")
+        let searchView = searchComponent.createObject(root,
+                { skywalker: skywalker, timeline: timelineView })
+        searchView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
+        searchStack.push(searchView)
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         skywalker.resumeSession()

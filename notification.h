@@ -22,7 +22,7 @@ public:
     Reason getReason() const;
     QString getReasonSubjectUri() const;
     BasicProfile getAuthor() const;
-    const QList<BasicProfile>& getOtherAuthors() const { return mOtherAuthors; }
+    const BasicProfileList& getOtherAuthors() const { return mOtherAuthors; }
     PostRecord getPostRecord() const;
     Post getReasonPost(const PostCache&) const;
     Post getNotificationPost(const PostCache&) const;
@@ -40,7 +40,7 @@ private:
     Post getPost(const PostCache& cache, const QString& uri) const;
 
     const ATProto::AppBskyNotification::Notification* mNotification = nullptr;
-    QList<BasicProfile> mOtherAuthors;
+    BasicProfileList mOtherAuthors;
     bool mEndOfList = false;
 };
 

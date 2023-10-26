@@ -149,6 +149,10 @@ qt_add_qml_module(appskywalker
         QML_FILES ContentFilterSettings.qml
         SOURCES enums.cpp
         QML_FILES SkyRadioButton.qml
+        SOURCES search_utils.h
+        SOURCES search_utils.cpp
+        QML_FILES AuthorTypeaheadListView.qml
+        QML_FILES SearchView.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

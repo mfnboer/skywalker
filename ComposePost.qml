@@ -171,7 +171,7 @@ Page {
             width: page.width
             leftPadding: 10
             rightPadding: 10
-            placeholderText: graphemeLength === 0 ? "Say something nice" : ""
+            placeholderText: graphemeLength === 0 ? qsTr("Say something nice") : ""
             placeholderTextColor: "grey"
             textFormat: TextEdit.PlainText
             wrapMode: TextEdit.Wrap

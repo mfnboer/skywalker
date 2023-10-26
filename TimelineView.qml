@@ -61,6 +61,7 @@ ListView {
         homeActive: true
         onHomeClicked: moveToPost(0)
         onNotificationsClicked: root.viewNotifications()
+        onSearchClicked: root.viewSearchView()
     }
     footerPositioning: ListView.OverlayFooter
 

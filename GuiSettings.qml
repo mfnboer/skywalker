@@ -10,6 +10,7 @@ Item {
     readonly property int threadBarWidth: 12 // In 5px units
 
     // Colors
+    readonly property string backgroundColor: Material.background
     readonly property string badgeBorderColor: "white"
     readonly property string badgeColor: "blue"
     readonly property string badgeTextColor: "white"

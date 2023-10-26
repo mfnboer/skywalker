@@ -89,6 +89,8 @@ private:
     QStringList mLabelTexts;
 };
 
+using BasicProfileList = QList<BasicProfile>;
+
 class Profile : public BasicProfile
 {
     Q_GADGET

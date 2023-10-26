@@ -8,10 +8,12 @@ Rectangle {
     required property var skywalker
     property bool homeActive: false
     property bool notificationsActive: false
+    property bool searchActive: false
     property int unreadNotifications: 0
 
     signal homeClicked()
     signal notificationsClicked()
+    signal searchClicked()
 
     width: parent.width
     height: guiSettings.footerHeight
@@ -68,6 +70,26 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: homeClicked()
+            }
+        }
+
+        Rectangle {
+            height: parent.height
+            Layout.fillWidth: true
+
+            SvgImage {
+                id: searchButton
+                y: height + 5
+                width: height
+                height: parent.height - 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: guiSettings.textColor
+                svg: searchActive ? svgFilled.search : svgOutline.search
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: searchClicked()
             }
         }
 
