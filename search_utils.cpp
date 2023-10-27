@@ -5,35 +5,58 @@
 
 namespace Skywalker {
 
-std::set<QString> SearchUtils::getWords(const QString& text)
+QString SearchUtils::normalizeText(const QString& text)
+{
+    QLocale locale;
+    const QString lowerCase = locale.toLower(text);
+    const QString NFKD = lowerCase.normalized(QString::NormalizationForm_KD);
+    QString normalized;
+
+    for (const auto ch : NFKD)
+    {
+        switch (ch.category())
+        {
+        case QChar::Mark_NonSpacing:
+        case QChar::Mark_SpacingCombining:
+        case QChar::Mark_Enclosing:
+            continue;
+        default:
+            break;
+        }
+
+        normalized.append(ch);
+    }
+
+    return normalized;
+}
+
+std::vector<QString> SearchUtils::getWords(const QString& text)
 {
     if (text.isEmpty())
         return {};
 
-    std::set<QString> words;
-    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Word, text);
-    int startWordPos = -1;
+    const QString normalized = SearchUtils::normalizeText(text);
+    std::vector<QString> words;
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Word, normalized);
+    int startWordPos = 0;
 
-    if (boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem)
-        startWordPos = boundaryFinder.position();
-    else
+    while (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem) && startWordPos != -1)
         startWordPos = boundaryFinder.toNextBoundary();
 
     while (startWordPos != -1)
     {
-        int endWordPos = startWordPos;
-
-        if (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::EndOfItem))
-            endWordPos = boundaryFinder.toNextBoundary();
+        const int endWordPos = boundaryFinder.toNextBoundary();
 
         Q_ASSERT(endWordPos != -1);
         if (endWordPos == -1)
             break;
 
-        const QString word = text.sliced(startWordPos, endWordPos - startWordPos + 1);
-        words.insert(word);
+        const QString word = normalized.sliced(startWordPos, endWordPos - startWordPos);
+        words.push_back(word);
 
         startWordPos = boundaryFinder.toNextBoundary();
+        while (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem) && startWordPos != -1)
+            startWordPos = boundaryFinder.toNextBoundary();
     }
 
     return words;
@@ -58,27 +81,38 @@ void SearchUtils::setAuthorTypeaheadList(const BasicProfileList& list)
     emit authorTypeaheadListChanged();
 }
 
-void SearchUtils::setAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList)
+void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList)
 {
-    BasicProfileList list;
+    if (profileViewBasicList.empty())
+        return;
+
+    std::unordered_set<QString> alreadyFoundDids;
+
+    for (const auto& basicProfile : mAuthorTypeaheadList)
+        alreadyFoundDids.insert(basicProfile.getDid());
 
     for (const auto& profile : profileViewBasicList)
     {
+        if (alreadyFoundDids.count(profile->mDid))
+            continue;
+
         BasicProfile basicProfile(profile.get());
-        list.append(basicProfile.nonVolatileCopy());
+        mAuthorTypeaheadList.append(basicProfile.nonVolatileCopy());
     }
 
-    setAuthorTypeaheadList(list);
+    emit authorTypeaheadListChanged();
 }
 
-void SearchUtils::searchAuthorsTypeahead(const QString& prefix)
+void SearchUtils::searchAuthorsTypeahead(const QString& typed)
 {
-    bskyClient()->searchActorsTypeahead(prefix, 20,
+    localSearchAuthorsTypeahead(typed);
+
+    bskyClient()->searchActorsTypeahead(typed, 10,
         [this, presence=getPresence()](auto searchOutput){
             if (!presence)
                 return;
 
-            setAuthorTypeaheadList(searchOutput->mActors);
+            addAuthorTypeaheadList(searchOutput->mActors);
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
@@ -86,6 +120,18 @@ void SearchUtils::searchAuthorsTypeahead(const QString& prefix)
 
             qWarning() << "Type ahaed search failed:" << error;
         });
+}
+
+void SearchUtils::localSearchAuthorsTypeahead(const QString& typed)
+{
+    const IndexedProfileStore& following = mSkywalker->getUserFollows();
+    const std::unordered_set<const BasicProfile*> profiles = following.findProfiles(typed);
+    BasicProfileList profileList;
+
+    for (const auto* profile : profiles)
+        profileList.append(*profile);
+
+    setAuthorTypeaheadList(profileList);
 }
 
 ATProto::Client* SearchUtils::bskyClient()

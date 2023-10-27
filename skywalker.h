@@ -96,7 +96,7 @@ public:
     void setAvatarUrl(const QString& avatarUrl);
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
-    ProfileStore& getUserFollows() { return mUserFollows; }
+    IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
 
 signals:
@@ -147,7 +147,7 @@ private:
     std::unique_ptr<ATProto::Client> mBsky;
     QString mAvatarUrl;
     QString mUserDid;
-    ProfileStore mUserFollows;
+    IndexedProfileStore mUserFollows;
     ATProto::UserPreferences mUserPreferences;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     ContentFilter mContentFilter;

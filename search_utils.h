@@ -5,7 +5,7 @@
 #include "profile.h"
 #include "skywalker.h"
 #include <QObject>
-#include <set>
+#include <vector>
 
 namespace Skywalker {
 
@@ -17,11 +17,12 @@ class SearchUtils : public QObject, public Presence
     QML_ELEMENT
 
 public:
-    static std::set<QString> getWords(const QString& text);
+    static QString normalizeText(const QString& text);
+    static std::vector<QString> getWords(const QString& text);
 
     explicit SearchUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void searchAuthorsTypeahead(const QString& prefix);
+    Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed);
 
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
@@ -34,7 +35,8 @@ signals:
 
 private:
     ATProto::Client* bskyClient();
-    void setAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList);
+    void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList);
+    void localSearchAuthorsTypeahead(const QString& typed);
 
     Skywalker* mSkywalker = nullptr;
     BasicProfileList mAuthorTypeaheadList;
