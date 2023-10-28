@@ -97,7 +97,10 @@ public:
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
+    const ContentFilter& getContentFilter() const { return mContentFilter; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
+    std::optional<QString> makeOptionalCursor(const QString& cursor) const;
+    void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
 
 signals:
     void loginOk();
@@ -125,7 +128,6 @@ signals:
     void getPostThreadInProgressChanged();
 
 private:
-    std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);

@@ -1,16 +1,15 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
-#include "author_feed_model.h"
+#include "search_post_feed_model.h"
 
 namespace Skywalker {
 
-AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, contentFilter, parent),
-    mAuthor(author.nonVolatileCopy())
+SearchPostFeedModel::SearchPostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
+    AbstractPostFeedModel(userDid, following, contentFilter, parent)
 {
 }
 
-void AuthorFeedModel::clear()
+void SearchPostFeedModel::clear()
 {
     beginRemoveRows({}, 0, mFeed.size() - 1);
     clearFeed();
@@ -21,18 +20,18 @@ void AuthorFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
 {
     if (!mFeed.empty())
         clear();
 
-    return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    return addFeed(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::Ptr>(feed));
 }
 
-int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
 {
-    qDebug() << "Add raw posts:" << feed->mFeed.size();
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    qDebug() << "Add raw posts:" << feed->mPosts.size();
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::Ptr>(feed));
 
     mCursorNextPage = feed->mCursor.value_or("");
 
@@ -68,25 +67,22 @@ int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     return page->mFeed.size();
 }
 
-void AuthorFeedModel::Page::addPost(const Post& post)
+void SearchPostFeedModel::Page::addPost(const Post& post)
 {
     mFeed.push_back(post);
 }
 
-AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
 {
     auto page = std::make_unique<Page>();
 
-    for (size_t i = 0; i < feed->mFeed.size(); ++i)
+    for (size_t i = 0; i < feed->mPosts.size(); ++i)
     {
-        const auto& feedEntry = feed->mFeed[i];
+        const auto& feedEntry = feed->mPosts[i];
 
-        if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+        if (feedEntry->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
             Post post(feedEntry.get(), i);
-
-            if (post.isReply() && !post.isRepost())
-                continue;
 
             if (mustHideContent(post))
                 continue;
@@ -95,8 +91,8 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
         }
         else
         {
-            qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
-            page->addPost(Post::createNotSupported(feedEntry->mPost->mRawRecordType));
+            qWarning() << "Unsupported post record type:" << int(feedEntry->mRecordType);
+            page->addPost(Post::createNotSupported(feedEntry->mRawRecordType));
         }
     }
 

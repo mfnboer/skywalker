@@ -153,6 +153,8 @@ qt_add_qml_module(appskywalker
         SOURCES search_utils.cpp
         QML_FILES AuthorTypeaheadListView.qml
         QML_FILES SearchView.qml
+        SOURCES search_post_feed_model.h
+        SOURCES search_post_feed_model.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

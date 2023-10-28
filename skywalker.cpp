@@ -1195,4 +1195,9 @@ void Skywalker::restoreDebugLogging()
     QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, mDebugLogging);
 }
 
+void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
+{
+    emit statusMessage(msg, level);
+}
+
 }

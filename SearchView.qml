@@ -1,11 +1,13 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.VirtualKeyboard
 import skywalker
 
 Page {
     required property var skywalker
     property var timeline
+    property bool isTyping: true
 
     signal closed
 
@@ -37,15 +39,30 @@ Page {
 
                 TextInput {
                     id: searchText
+                    EnterKeyAction.actionId: EnterKeyAction.Search
                     width: parent.width
                     padding: 5
                     font.pointSize: guiSettings.scaledFont(9/8)
 
-                    onTextChanged: {
-                        if (length > 0)
+                    onDisplayTextChanged: {
+                        page.isTyping = true
+
+                        if (displayText.length > 0) {
                             typeaheadSearchTimer.start()
-                        else
+                        } else {
                             typeaheadSearchTimer.stop()
+                            searchUtils.authorTypeaheadList = []
+                        }
+                    }
+
+                    Keys.onReleased: (event) => {
+                        if (event.key === Qt.Key_Return) {
+                            page.isTyping = false
+
+                            if (displayText.length > 0) {
+                                searchUtils.legacySearchPosts(displayText)
+                            }
+                        }
                     }
                 }
 
@@ -55,7 +72,7 @@ Page {
                     font.pointSize: searchText.font.pointSize
                     color: "grey"
                     text: qsTr("Search")
-                    visible: searchText.length === 0
+                    visible: searchText.displayText.length === 0
                 }
             }
 
@@ -76,16 +93,66 @@ Page {
     }
 
     AuthorTypeaheadListView {
+        id: typeaheadView
         anchors.fill: parent
         model: searchUtils.authorTypeaheadList
+        visible: page.isTyping
+
+        Text {
+            topPadding: 10
+            anchors.horizontalCenter: parent.horizontalCenter
+            color: "grey"
+            elide: Text.ElideRight
+            text: qsTr("No users found")
+            visible: typeaheadView.count === 0
+        }
+    }
+
+    TabBar {
+        id: searchResultsBar
+        width: parent.width
+        visible: !page.isTyping
+
+        TabButton {
+            text: qsTr("Posts")
+        }
+        TabButton {
+            text: qsTr("Users")
+        }
+    }
+
+    StackLayout {
+        anchors.top: searchResultsBar.bottom
+        anchors.bottom: parent.bottom
+        width: parent.width
+        currentIndex: searchResultsBar.currentIndex
+        visible: !page.isTyping
+
+        ListView {
+            id: postsView
+            width: parent.width
+            height: parent.height
+            spacing: 0
+            clip: true
+            model: searchUtils.getSearchPostFeedModel()
+            ScrollIndicator.vertical: ScrollIndicator {}
+
+            delegate: PostFeedViewDelegate {
+                viewWidth: postsView.width
+            }
+        }
+
+        ListView {
+            id: usersView
+        }
     }
 
     Timer {
         id: typeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (searchText.length > 0)
-                searchUtils.searchAuthorsTypeahead(searchText.text)
+            if (searchText.displayText.length > 0)
+                searchUtils.searchAuthorsTypeahead(searchText.displayText)
         }
     }
 

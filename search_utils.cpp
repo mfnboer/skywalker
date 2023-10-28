@@ -134,12 +134,138 @@ void SearchUtils::localSearchAuthorsTypeahead(const QString& typed)
     setAuthorTypeaheadList(profileList);
 }
 
+void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries, const QString& cursor)
+{
+    qDebug() << "Search posts:" << text << "cursor:" << cursor << "max pages:"
+             << maxPages << "min entries:" << minEntries;
+
+    if (mSearchPostsInProgress)
+    {
+        qDebug() << "Search posts still in progress";
+        return;
+    }
+
+    mSearchPostsInProgress = true;
+    bskyClient()->searchPosts(text, {}, mSkywalker->makeOptionalCursor(cursor),
+        [this, text, maxPages, minEntries, cursor](auto feed){
+            mSearchPostsInProgress = false;
+            auto& model = *getSearchPostFeedModel();
+
+            int added = cursor.isEmpty() ?
+                            model.setFeed(std::move(feed)) :
+                            model.addFeed(std::move(feed));
+
+            // Due to content filtering the feed may go empty
+            int entriesToAdd = minEntries - added;
+
+            if (entriesToAdd > 0)
+                getNextPageSearchPosts(text, maxPages - 1, entriesToAdd);
+        },
+        [this](const QString& error){
+            mSearchPostsInProgress = false;
+            qDebug() << "searchPosts failed:" << error;
+            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void SearchUtils::getNextPageSearchPosts(const QString& text, int maxPages, int minEntries)
+{
+    qDebug() << "Get next page search posts:" << "max pages:" << maxPages
+             << "min entries:" << minEntries;
+
+    if (mSearchPostsInProgress)
+    {
+        qDebug() << "Search posts still in progress";
+        return;
+    }
+
+    if (maxPages <= 0)
+    {
+        // Protection against infinite loop.
+        qWarning() << "Maximum pages reached!";
+        return;
+    }
+
+    const auto& model = *getSearchPostFeedModel();
+    const auto& cursor = model.getCursorNextPage();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    searchPosts(text, maxPages, minEntries, cursor);
+}
+
+void SearchUtils::legacySearchPosts(const QString& text)
+{
+    qDebug() << "Legacy search posts:" << text;
+
+    if (mSearchPostsInProgress)
+    {
+        qDebug() << "Search posts still in progress";
+        return;
+    }
+
+    mSearchPostsInProgress = true;
+    bskyClient()->legacySearchPosts(text,
+        [this](auto feed){
+            mSearchPostsInProgress = false;
+            getPosts(feed->mUris);
+        },
+        [this](const QString& error){
+            mSearchPostsInProgress = false;
+            qDebug() << "searchPosts failed:" << error;
+            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void SearchUtils::getPosts(const std::vector<QString>& uris)
+{
+    qDebug() << "Get posts:" << uris.size();
+
+    // Truncate the list. MAX is enough for the legacy search.
+    const int count = std::min(int(uris.size()), bskyClient()->MAX_URIS_GET_POSTS);
+    const std::vector<QString> uriList(uris.begin(), uris.begin() + count);
+
+    bskyClient()->getPosts(uriList,
+        [this](auto postViewList)
+        {
+            auto output = std::make_unique<ATProto::AppBskyFeed::SearchPostsOutput>();
+            output->mPosts = std::move(postViewList);
+            auto& model = *getSearchPostFeedModel();
+            model.setFeed(std::move(output));
+        },
+        [this](const QString& error)
+        {
+            qWarning() << "Failed to get posts:" << error;
+            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 ATProto::Client* SearchUtils::bskyClient()
 {
     Q_ASSERT(mSkywalker);
     auto* client = mSkywalker->getBskyClient();
     Q_ASSERT(client);
     return client;
+}
+
+SearchPostFeedModel* SearchUtils::getSearchPostFeedModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (!mSearchPostFeedModel)
+    {
+        mSearchPostFeedModel = std::make_unique<SearchPostFeedModel>(
+            mSkywalker->getUserDid(),
+            mSkywalker->getUserFollows(),
+            mSkywalker->getContentFilter(),
+            this);
+    }
+
+    return mSearchPostFeedModel.get();
 }
 
 }

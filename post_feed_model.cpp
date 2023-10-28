@@ -506,13 +506,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             if (feedViewPref.mHideQuotePosts && post.isQuotePost())
                 continue;
 
-            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
-
-            if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
-            {
-                qDebug() << "Hide post:" << post.getCid() << warning;
+            if (mustHideContent(post))
                 continue;
-            }
 
             const BasicProfile author(feedEntry->mPost->mAuthor.get());
             AuthorCache::instance().put(author);

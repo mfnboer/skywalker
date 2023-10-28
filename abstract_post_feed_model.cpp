@@ -56,6 +56,19 @@ void AbstractPostFeedModel::cleanupStoredCids()
     qDebug() << "Stored cid set:" << mStoredCids.size() << "cid queue:" << mStoredCidQueue.size();
 }
 
+bool AbstractPostFeedModel::mustHideContent(const Post& post) const
+{
+    const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+
+    if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
+    {
+        qDebug() << "Hide post:" << post.getCid() << warning;
+        return true;
+    }
+
+    return false;
+}
+
 int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
