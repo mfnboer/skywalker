@@ -13,8 +13,9 @@ ApplicationWindow {
     title: "Skywalker"
 
     onClosing: (event) => {
-        if (Qt.platform.os !== "android")
+        if (Qt.platform.os !== "android") {
             return
+        }
 
         // This catches the back-button on Android
         if (currentStack().depth > 1) {
@@ -31,22 +32,6 @@ ApplicationWindow {
         else if (stackLayout.currentIndex > 0) {
             event.accepted = false
             viewTimeline()
-        }
-    }
-
-    StackLayout {
-        id: stackLayout
-        anchors.fill: parent
-        currentIndex: 0
-
-        StackView {
-            id: timelineStack
-        }
-        StackView {
-            id: notificationStack
-        }
-        StackView {
-            id: searchStack
         }
     }
 
@@ -129,6 +114,22 @@ ApplicationWindow {
 
         function start() {
             skywalker.getUserProfileAndFollows()
+        }
+    }
+
+    StackLayout {
+        id: stackLayout
+        anchors.fill: parent
+        currentIndex: 0
+
+        StackView {
+            id: timelineStack
+        }
+        StackView {
+            id: notificationStack
+        }
+        StackView {
+            id: searchStack
         }
     }
 

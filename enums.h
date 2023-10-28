@@ -61,7 +61,8 @@ public:
         AUTHOR_LIST_FOLLOWS,
         AUTHOR_LIST_FOLLOWERS,
         AUTHOR_LIST_LIKES,
-        AUTHOR_LIST_REPOSTS
+        AUTHOR_LIST_REPOSTS,
+        AUTHOR_LIST_SEARCH_RESULTS
     };
     Q_ENUM(AuthorListType)
 

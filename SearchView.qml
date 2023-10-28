@@ -61,6 +61,7 @@ Page {
 
                             if (displayText.length > 0) {
                                 searchUtils.legacySearchPosts(displayText)
+                                searchUtils.legacySearchActors(displayText)
                             }
                         }
                     }
@@ -103,7 +104,7 @@ Page {
             anchors.horizontalCenter: parent.horizontalCenter
             color: "grey"
             elide: Text.ElideRight
-            text: qsTr("No users found")
+            text: qsTr("No matching user name found")
             visible: typeaheadView.count === 0
         }
     }
@@ -140,10 +141,40 @@ Page {
             delegate: PostFeedViewDelegate {
                 viewWidth: postsView.width
             }
+
+            Text {
+                topPadding: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "grey"
+                elide: Text.ElideRight
+                text: qsTr("No posts found")
+                visible: postsView.count === 0
+            }
         }
 
         ListView {
             id: usersView
+            width: parent.width
+            height: parent.height
+            spacing: 0
+            clip: true
+            model: searchUtils.getSearchUsersModel()
+            ScrollIndicator.vertical: ScrollIndicator {}
+
+            delegate: AuthorViewDelegate {
+                viewWidth: postsView.width
+                onFollow: (profile) => { graphUtils.follow(profile) }
+                onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
+            }
+
+            Text {
+                topPadding: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "grey"
+                elide: Text.ElideRight
+                text: qsTr("No users found")
+                visible: usersView.count === 0
+            }
         }
     }
 
@@ -159,6 +190,20 @@ Page {
     SearchUtils {
         id: searchUtils
         skywalker: page.skywalker
+
+        Component.onDestruction: {
+            // The destuctor of SearchUtils is called too late by the QML engine
+            // Remove models now before the Skywalker object is destroyed.
+            searchUtils.removeModels()
+        }
+    }
+
+    GraphUtils {
+        id: graphUtils
+        skywalker: page.skywalker
+
+        onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
     GuiSettings {

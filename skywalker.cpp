@@ -37,6 +37,7 @@ Skywalker::~Skywalker()
 {
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
+    Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
 }
 
@@ -632,6 +633,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
 
     for (auto& [_, model] : mAuthorFeedModels.items())
         update(model.get());
+
+    for (auto& [_, model] : mSearchPostFeedModels.items())
+        update(model.get());
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update)
@@ -829,6 +833,26 @@ void Skywalker::removeAuthorFeedModel(int id)
     mAuthorFeedModels.remove(id);
 }
 
+int Skywalker::createSearchPostFeedModel()
+{
+    auto model = std::make_unique<SearchPostFeedModel>(mUserDid, mUserFollows, mContentFilter, this);
+    const int id = mSearchPostFeedModels.put(std::move(model));
+    return id;
+}
+
+SearchPostFeedModel* Skywalker::getSearchPostFeedModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mSearchPostFeedModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeSearchPostFeedModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mSearchPostFeedModels.remove(id);
+}
+
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
@@ -949,6 +973,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
     case AuthorListModel::Type::AUTHOR_LIST_REPOSTS:
         getRepostsAuthorList(atId, limit, cursor, id);
         break;
+    case AuthorListModel::Type::AUTHOR_LIST_SEARCH_RESULTS:
+        Q_ASSERT(false);
+        break;
     }
 }
 
@@ -990,7 +1017,7 @@ int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& 
     return id;
 }
 
-const AuthorListModel* Skywalker::getAuthorListModel(int id) const
+AuthorListModel* Skywalker::getAuthorListModel(int id) const
 {
     qDebug() << "Get model:" << id;
     auto* model = mAuthorListModels.get(id);

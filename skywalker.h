@@ -10,6 +10,7 @@
 #include "post_feed_model.h"
 #include "post_thread_model.h"
 #include "profile_store.h"
+#include "search_post_feed_model.h"
 #include "user_preferences.h"
 #include <atproto/lib/client.h>
 #include <QObject>
@@ -59,10 +60,13 @@ public:
     Q_INVOKABLE int createAuthorFeedModel(const BasicProfile& author);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
+    Q_INVOKABLE int createSearchPostFeedModel();
+    Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
+    Q_INVOKABLE void removeSearchPostFeedModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit, const QString& cursor = {});
     Q_INVOKABLE void getAuthorListNextPage(int id);
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
-    Q_INVOKABLE const AuthorListModel* getAuthorListModel(int id) const;
+    Q_INVOKABLE AuthorListModel* getAuthorListModel(int id) const;
     Q_INVOKABLE void removeAuthorListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
     Q_INVOKABLE BasicProfile getUser() const;
@@ -166,6 +170,7 @@ private:
 
     ItemStore<PostThreadModel::Ptr> mPostThreadModels;
     ItemStore<AuthorFeedModel::Ptr> mAuthorFeedModels;
+    ItemStore<SearchPostFeedModel::Ptr> mSearchPostFeedModels;
     ItemStore<AuthorListModel::Ptr> mAuthorListModels;
     NotificationListModel mNotificationListModel;
     bool mGetNotificationsInProgress = false;
