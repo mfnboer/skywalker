@@ -482,6 +482,15 @@ void PostUtils::pickPhoto() const
     ::Skywalker::pickPhoto();
 }
 
+void PostUtils::setEditMention(const QString& mention)
+{
+    if (mention == mEditMention)
+        return;
+
+    mEditMention = mention;
+    emit editMentionChanged();
+}
+
 void PostUtils::setFirstWebLink(const QString& link)
 {
     if (link == mFirstWebLink)
@@ -509,16 +518,20 @@ void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& hig
 void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,
                                         int cursor, const QString& color)
 {
+    // TODO: This is not right, edit mention detection does not work when editing existing text
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
     const auto facets = postMaster()->parseFacets(fullText);
 
+    bool editMentionFound = false;
     bool webLinkFound = false;
     bool postLinkFound = false;
     mLinkShorteningReduction = 0;
 
     for (const auto& facet : facets)
     {
-        if (facet.mType == ATProto::PostMaster::ParsedMatch::Type::LINK)
+        switch (facet.mType)
+        {
+        case ATProto::PostMaster::ParsedMatch::Type::LINK:
         {
             const auto atUri = ATProto::ATUri::fromHttpsPostUri(facet.mMatch);
             if (atUri.isValid())
@@ -539,8 +552,23 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
             const int reduction = graphemeLength(facet.mMatch) - graphemeLength(shortLink);
             qDebug() << "SHORT:" << shortLink << "reduction:" << reduction;
             mLinkShorteningReduction += reduction;
+            break;
+        }
+        case ATProto::PostMaster::ParsedMatch::Type::PARTIAL_MENTION:
+        case ATProto::PostMaster::ParsedMatch::Type::MENTION:
+            if (facet.mStartIndex < cursor && cursor <= facet.mEndIndex)
+            {
+                setEditMention(facet.mMatch);
+                editMentionFound = true;
+            }
+            break;
+        case ATProto::PostMaster::ParsedMatch::Type::UNKNOWN:
+            break;
         }
     }
+
+    if (!editMentionFound)
+        setEditMention(QString());
 
     if (!webLinkFound)
         setFirstWebLink(QString());
@@ -558,13 +586,17 @@ QString PostUtils::linkiFy(const QString& text)
 
     for (const auto& facet : facets)
     {
-        const auto before = text.sliced(pos, facet.mStartIndex - pos);
-        linkified.append(before.toHtmlEscaped());
-        const QString ref = facet.mType == ATProto::PostMaster::ParsedMatch::Type::MENTION || facet.mMatch.startsWith("http") ?
-                                facet.mMatch : "https://" + facet.mMatch;
-        QString link = QString("<a href=\"%1\">%2</a>").arg(ref, facet.mMatch);
-        linkified.append(link);
-        pos = facet.mEndIndex;
+        if (facet.mType == ATProto::PostMaster::ParsedMatch::Type::MENTION ||
+            facet.mType == ATProto::PostMaster::ParsedMatch::Type::LINK)
+        {
+            const auto before = text.sliced(pos, facet.mStartIndex - pos);
+            linkified.append(before.toHtmlEscaped());
+            const QString ref = facet.mType == ATProto::PostMaster::ParsedMatch::Type::MENTION || facet.mMatch.startsWith("http") ?
+                                    facet.mMatch : "https://" + facet.mMatch;
+            QString link = QString("<a href=\"%1\">%2</a>").arg(ref, facet.mMatch);
+            linkified.append(link);
+            pos = facet.mEndIndex;
+        }
     }
 
     linkified.append(text.sliced(pos).toHtmlEscaped());

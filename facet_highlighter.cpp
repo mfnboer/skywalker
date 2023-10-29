@@ -21,8 +21,19 @@ void FacetHighlighter::highlightBlock(const QString& text)
 
     for (const auto& facet : facets)
     {
-        const int facetLength = facet.mEndIndex - facet.mStartIndex;
-        setFormat(facet.mStartIndex, facetLength, mHighlightColor);
+        switch (facet.mType)
+        {
+        case ATProto::PostMaster::ParsedMatch::Type::MENTION:
+        case ATProto::PostMaster::ParsedMatch::Type::LINK:
+        {
+            const int facetLength = facet.mEndIndex - facet.mStartIndex;
+            setFormat(facet.mStartIndex, facetLength, mHighlightColor);
+            break;
+        }
+        case ATProto::PostMaster::ParsedMatch::Type::PARTIAL_MENTION:
+        case ATProto::PostMaster::ParsedMatch::Type::UNKNOWN:
+            break;
+        }
     }
 }
 

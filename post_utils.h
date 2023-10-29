@@ -18,6 +18,7 @@ class PostUtils : public QObject, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
+    Q_PROPERTY(QString editMention READ getEditMention WRITE setEditMention NOTIFY editMentionChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
     QML_ELEMENT
@@ -51,6 +52,8 @@ public:
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
 
+    const QString& getEditMention() const { return mEditMention; }
+    void setEditMention(const QString& mention);
     const QString& getFirstWebLink() const { return mFirstWebLink; }
     void setFirstWebLink(const QString& link);
     const QString& getFirstPostLink() const { return mFirstPostLink; }
@@ -74,6 +77,7 @@ signals:
     void postDeletedFailed(QString error);
     void photoPicked(QString filename);
     void photoPickCanceled();
+    void editMentionChanged();
     void firstWebLinkChanged();
     void firstPostLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
@@ -96,6 +100,7 @@ private:
 
     Skywalker* mSkywalker = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
+    QString mEditMention; // Mention currently being edited
     QString mFirstPostLink; // HTTPS link to a post
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;

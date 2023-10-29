@@ -388,6 +388,8 @@ Page {
             pickingImage = false
         }
 
+        onEditMentionChanged: console.debug(editMention)
+
         onFirstWebLinkChanged: {
             linkCard.hide()
 
