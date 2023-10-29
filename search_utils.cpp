@@ -100,6 +100,24 @@ void SearchUtils::setAuthorTypeaheadList(const BasicProfileList& list)
     emit authorTypeaheadListChanged();
 }
 
+void SearchUtils::setSearchPostsInProgress(bool inProgress)
+{
+    if (inProgress != mSearchPostsInProgress)
+    {
+        mSearchPostsInProgress = inProgress;
+        emit searchPostsInProgressChanged();
+    }
+}
+
+void SearchUtils::setSearchActorsInProgress(bool inProgress)
+{
+    if (inProgress != mSearchActorsInProgress)
+    {
+        mSearchActorsInProgress = inProgress;
+        emit searchActorsInProgressChanged();
+    }
+}
+
 void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList)
 {
     if (profileViewBasicList.empty())
@@ -164,13 +182,13 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
         return;
     }
 
-    mSearchPostsInProgress = true;
+    setSearchPostsInProgress(true);
     bskyClient()->searchPosts(text, {}, mSkywalker->makeOptionalCursor(cursor),
         [this, presence=getPresence(), text, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
 
-            mSearchPostsInProgress = false;
+            setSearchPostsInProgress(false);
             auto& model = *getSearchPostFeedModel();
 
             int added = cursor.isEmpty() ?
@@ -187,7 +205,7 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
             if (!presence)
                 return;
 
-            mSearchPostsInProgress = false;
+            setSearchPostsInProgress(false);
             qDebug() << "searchPosts failed:" << error;
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -233,20 +251,19 @@ void SearchUtils::legacySearchPosts(const QString& text)
         return;
     }
 
-    mSearchPostsInProgress = true;
+    setSearchPostsInProgress(true);
     bskyClient()->legacySearchPosts(text,
         [this, presence=getPresence()](auto feed){
             if (!presence)
                 return;
 
-            mSearchPostsInProgress = false;
             getPosts(feed->mUris);
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
                 return;
 
-            mSearchPostsInProgress = false;
+            setSearchPostsInProgress(false);
             qDebug() << "searchPosts failed:" << error;
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -262,20 +279,19 @@ void SearchUtils::legacySearchActors(const QString& text)
         return;
     }
 
-    mSearchActorsInProgress = true;
+    setSearchActorsInProgress(true);
     bskyClient()->legacySearchActors(text,
         [this, presence=getPresence()](auto feed){
             if (!presence)
                 return;
 
-            mSearchActorsInProgress = false;
             getProfiles(feed->mDids);
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
                 return;
 
-            mSearchActorsInProgress = false;
+            setSearchActorsInProgress(false);
             qDebug() << "searchactors failed:" << error;
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -286,7 +302,10 @@ void SearchUtils::getPosts(const std::vector<QString>& uris)
     qDebug() << "Get posts:" << uris.size();
 
     if (uris.empty())
+    {
+        setSearchPostsInProgress(false);
         return;
+    }
 
     // Truncate the list. MAX is enough for the legacy search.
     const int count = std::min(int(uris.size()), bskyClient()->MAX_URIS_GET_POSTS);
@@ -298,6 +317,7 @@ void SearchUtils::getPosts(const std::vector<QString>& uris)
             if (!presence)
                 return;
 
+            setSearchPostsInProgress(false);
             auto output = std::make_unique<ATProto::AppBskyFeed::SearchPostsOutput>();
             output->mPosts = std::move(postViewList);
             auto& model = *getSearchPostFeedModel();
@@ -308,6 +328,7 @@ void SearchUtils::getPosts(const std::vector<QString>& uris)
             if (!presence)
                 return;
 
+            setSearchPostsInProgress(false);
             qWarning() << "Failed to get posts:" << error;
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -318,7 +339,10 @@ void SearchUtils::getProfiles(const std::vector<QString>& users)
     qDebug() << "Get profiles:" << users.size();
 
     if (users.empty())
+    {
+        setSearchActorsInProgress(false);
         return;
+    }
 
     // Truncate the list. MAX is enough for the legacy search.
     const int count = std::min(int(users.size()), bskyClient()->MAX_IDS_GET_PROFILES);
@@ -330,6 +354,7 @@ void SearchUtils::getProfiles(const std::vector<QString>& users)
             if (!presence)
                 return;
 
+            setSearchActorsInProgress(false);
             ATProto::AppBskyActor::ProfileViewList profileViewList;
 
             for (auto& profileViewDetailed : profilesViewDetailedList)
@@ -356,6 +381,7 @@ void SearchUtils::getProfiles(const std::vector<QString>& users)
             if (!presence)
                 return;
 
+            setSearchActorsInProgress(false);
             qWarning() << "Failed to get posts:" << error;
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });

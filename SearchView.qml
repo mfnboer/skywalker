@@ -42,6 +42,7 @@ Page {
                     EnterKeyAction.actionId: EnterKeyAction.Search
                     width: parent.width
                     padding: 5
+                    rightPadding: clearButton.width
                     font.pointSize: guiSettings.scaledFont(9/8)
 
                     onDisplayTextChanged: {
@@ -55,15 +56,25 @@ Page {
                         }
                     }
 
+                    // Does not work with Android
                     Keys.onReleased: (event) => {
                         if (event.key === Qt.Key_Return) {
-                            page.isTyping = false
-
-                            if (displayText.length > 0) {
-                                searchUtils.legacySearchPosts(displayText)
-                                searchUtils.legacySearchActors(displayText)
-                            }
+                            searchUtils.search(displayText)
                         }
+                    }
+
+                    SvgButton {
+                        id: clearButton
+                        anchors.right: parent.right
+                        imageMargin: 8
+                        y: parent.y - parent.padding
+                        width: height
+                        height: parent.height + 10
+                        iconColor: guiSettigs.textColor
+                        Material.background: "transparent"
+                        svg: svgOutline.close
+                        visible: searchText.displayText.length > 0
+                        onClicked: searchText.clear()
                     }
                 }
 
@@ -77,10 +88,16 @@ Page {
                 }
             }
 
-            Rectangle {
-                width: 10
-                height: parent.height
-                color: "transparent"
+            // WORKAROUND for Android
+            // Qt does not catch the signal of the ENTER key from the Android
+            // keyboard, nor can it set the icon to a search icon.
+            SvgButton {
+                id: searchButton
+                iconColor: searchText.displayText.length > 0 ? "white" : "transparent"
+                Material.background: "transparent"
+                svg: svgOutline.search
+                onClicked: searchUtils.search(searchText.displayText)
+                enabled: searchText.displayText.length > 0
             }
         }
     }
@@ -148,7 +165,12 @@ Page {
                 color: "grey"
                 elide: Text.ElideRight
                 text: qsTr("No posts found")
-                visible: postsView.count === 0
+                visible: postsView.count === 0 && !searchUtils.searchPostsInProgress
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: searchUtils.searchPostsInProgress
             }
         }
 
@@ -173,7 +195,12 @@ Page {
                 color: "grey"
                 elide: Text.ElideRight
                 text: qsTr("No users found")
-                visible: usersView.count === 0
+                visible: usersView.count === 0 && !searchUtils.searchActorsInProgress
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: searchUtils.searchActorsInProgress
             }
         }
     }
@@ -190,6 +217,15 @@ Page {
     SearchUtils {
         id: searchUtils
         skywalker: page.skywalker
+
+        function search(query) {
+            page.isTyping = false
+
+            if (query.length > 0) {
+                searchUtils.legacySearchPosts(query)
+                searchUtils.legacySearchActors(query)
+            }
+        }
 
         Component.onDestruction: {
             // The destuctor of SearchUtils is called too late by the QML engine

@@ -15,6 +15,8 @@ class SearchUtils : public QObject, public Presence
     Q_OBJECT
     Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
     Q_PROPERTY(BasicProfileList authorTypeaheadList READ getAuthorTypeaheadList WRITE setAuthorTypeaheadList NOTIFY authorTypeaheadListChanged FINAL)
+    Q_PROPERTY(bool searchPostsInProgress READ getSearchPostsInProgress WRITE setSearchPostsInProgress NOTIFY searchPostsInProgressChanged FINAL)
+    Q_PROPERTY(bool searchActorsInProgress READ getSearchActorsInProgress WRITE setSearchActorsInProgress NOTIFY searchActorsInProgressChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -37,10 +39,16 @@ public:
     void setSkywalker(Skywalker* skywalker);
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);
+    bool getSearchPostsInProgress() const { return mSearchPostsInProgress; }
+    void setSearchPostsInProgress(bool inProgress);
+    bool getSearchActorsInProgress() const { return mSearchActorsInProgress; }
+    void setSearchActorsInProgress(bool inProgress);
 
 signals:
     void skywalkerChanged();
     void authorTypeaheadListChanged();
+    void searchPostsInProgressChanged();
+    void searchActorsInProgressChanged();
 
 private:
     ATProto::Client* bskyClient();
