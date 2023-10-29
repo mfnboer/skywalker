@@ -32,7 +32,7 @@ Page {
                 id: imgRect
                 color: "black"
 
-                Image {
+                ImageAutoRetry {
                     id: img
                     y: (parent.height - altText.height - height) / 2
                     width: parent.width

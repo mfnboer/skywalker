@@ -21,7 +21,7 @@ RoundedFrame {
         spacing: 5
         visible: false
 
-        Image {
+        ImageAutoRetry {
             id: thumbImg
             width: parent.width
             source: card.thumbUrl

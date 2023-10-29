@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Image {
+ImageAutoRetry {
     required property imageview imageView
 
     id: img

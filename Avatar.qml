@@ -18,7 +18,7 @@ Item {
         radius: parent.width / 2
         visible: avatarItem.avatarUrl && avatarImg.status === Image.Ready
 
-        Image {
+        ImageAutoRetry {
             id: avatarImg
             width: parent.width
             source: avatarItem.avatarUrl

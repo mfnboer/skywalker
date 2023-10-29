@@ -155,6 +155,7 @@ qt_add_qml_module(appskywalker
         QML_FILES SearchView.qml
         SOURCES search_post_feed_model.h
         SOURCES search_post_feed_model.cpp
+        QML_FILES ImageAutoRetry.qml
 )
 
 set_target_properties(appskywalker PROPERTIES

@@ -23,7 +23,7 @@ Page {
     id: page
 
     header: Rectangle {
-        Image {
+        ImageAutoRetry {
             id: bannerImg
             anchors.top: parent.top
             width: parent.width
