@@ -27,7 +27,7 @@ public:
     ~SearchUtils();
 
     Q_INVOKABLE void removeModels();
-    Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed);
+    Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20);
     Q_INVOKABLE void searchPosts(const QString& text, int maxPages = 50, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchPosts(const QString& text, int maxPages = 50, int minEntries = 10);
     Q_INVOKABLE void legacySearchPosts(const QString& text);
@@ -53,7 +53,7 @@ signals:
 private:
     ATProto::Client* bskyClient();
     void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList);
-    void localSearchAuthorsTypeahead(const QString& typed);
+    void localSearchAuthorsTypeahead(const QString& typed, int limit);
     void getPosts(const std::vector<QString>& uris);
     void getProfiles(const std::vector<QString>& users);
 

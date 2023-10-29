@@ -116,6 +116,8 @@ Page {
         model: searchUtils.authorTypeaheadList
         visible: page.isTyping
 
+        onAuthorClicked: (profile) => { page.skywalker.getDetailedProfile(profile.did) }
+
         Text {
             topPadding: 10
             anchors.horizontalCenter: parent.horizontalCenter

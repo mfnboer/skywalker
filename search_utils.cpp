@@ -140,11 +140,14 @@ void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileVie
     emit authorTypeaheadListChanged();
 }
 
-void SearchUtils::searchAuthorsTypeahead(const QString& typed)
+void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit)
 {
-    localSearchAuthorsTypeahead(typed);
+    localSearchAuthorsTypeahead(typed, limit);
 
-    bskyClient()->searchActorsTypeahead(typed, 10,
+    if (mAuthorTypeaheadList.size() >= limit)
+        return;
+
+    bskyClient()->searchActorsTypeahead(typed, limit - mAuthorTypeaheadList.size(),
         [this, presence=getPresence()](auto searchOutput){
             if (!presence)
                 return;
@@ -159,10 +162,10 @@ void SearchUtils::searchAuthorsTypeahead(const QString& typed)
         });
 }
 
-void SearchUtils::localSearchAuthorsTypeahead(const QString& typed)
+void SearchUtils::localSearchAuthorsTypeahead(const QString& typed, int limit)
 {
     const IndexedProfileStore& following = mSkywalker->getUserFollows();
-    const std::unordered_set<const BasicProfile*> profiles = following.findProfiles(typed);
+    const std::unordered_set<const BasicProfile*> profiles = following.findProfiles(typed, limit);
     BasicProfileList profileList;
 
     for (const auto* profile : profiles)

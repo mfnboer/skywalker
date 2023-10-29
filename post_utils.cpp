@@ -558,7 +558,8 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
         case ATProto::PostMaster::ParsedMatch::Type::MENTION:
             if (facet.mStartIndex < preeditCursor && preeditCursor <= facet.mEndIndex)
             {
-                setEditMention(facet.mMatch);
+                mEditMentionIndex = facet.mStartIndex + 1;
+                setEditMention(facet.mMatch.sliced(1)); // strip @-symbol
                 editMentionFound = true;
             }
             break;

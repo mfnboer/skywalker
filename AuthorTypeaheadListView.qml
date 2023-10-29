@@ -6,8 +6,10 @@ import skywalker
 ListView {
     required model
 
+    signal authorClicked(basicprofile profile)
+
     id: searchList
-    spacing: 5
+    spacing: 3
 
     delegate: Rectangle {
         required property basicprofile modelData
@@ -21,14 +23,14 @@ ListView {
             id: grid
             width: parent.width
             columns: 2
-            rowSpacing: 5
+            rowSpacing: 0
             columnSpacing: 10
 
             // Avatar
             Rectangle {
                 id: avatar
                 Layout.rowSpan: 2
-                width: 50
+                width: 44
                 height: avatarImg.height
                 Layout.fillHeight: true
                 color: "transparent"
@@ -36,17 +38,16 @@ ListView {
                 Avatar {
                     id: avatarImg
                     x: parent.x + 8
-                    y: parent.y + 5
+                    y: parent.y
                     width: parent.width - 13
                     height: width
                     avatarUrl: authorVisible() ? author.avatarUrl : ""
-                    onClicked: skywalker.getDetailedProfile(author.did)
+                    onClicked: authorClicked(author)
                 }
             }
 
             Text {
                 Layout.fillWidth: true
-                topPadding: 5
                 elide: Text.ElideRight
                 font.bold: true
                 text: author.name
@@ -62,7 +63,7 @@ ListView {
             }
 
             Rectangle {
-                Layout.topMargin: 5
+                Layout.topMargin: 3
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
@@ -72,7 +73,7 @@ ListView {
         MouseArea {
             z: -1
             anchors.fill: parent
-            onClicked: skywalker.getDetailedProfile(author.did)
+            onClicked: authorClicked(author)
         }
 
         function authorVisible()

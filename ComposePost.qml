@@ -177,7 +177,15 @@ Page {
             focus: true
             text: initialText
 
-            onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+            onCursorRectangleChanged: {
+                let editMentionY = postUtils.editMentionCursorY
+                let cursorY = cursorRectangle.y
+
+                if (postUtils.editMention.length > 0 && editMentionY != cursorY)
+                    postUtils.editMention = ""
+
+                flick.ensureVisible(cursorRectangle)
+            }
 
             onTextChanged: {
                 highlightFacets()
@@ -205,6 +213,40 @@ Page {
                 color: "grey"
                 text: qsTr("Say something nice")
                 visible: postText.graphemeLength === 0
+            }
+        }
+
+        AuthorTypeaheadListView {
+            id: typeaheadView
+            y: postText.cursorRectangle.y + postText.cursorRectangle.height + 5
+            width: page.width
+            height: page.footer.y - y - 5
+            model: searchUtils.authorTypeaheadList
+            visible: postUtils.editMention.length > 0
+
+            onVisibleChanged: {
+                if (!visible)
+                    searchUtils.authorTypeaheadList = []
+            }
+
+            onAuthorClicked: (profile) => {
+                console.debug("Selected author:", profile.handle, "edit:", postUtils.editMention)
+                let mentionStartIndex = postUtils.getEditMentionIndex()
+                let mentionEndIndex = mentionStartIndex + postUtils.editMention.length
+                postText.remove(mentionStartIndex, mentionEndIndex)
+
+                // Add space. This causes the cursor to move 1 postion beyond the end
+                // of then mention. That cause the type ahead list to disappear.
+                postText.insert(mentionStartIndex, profile.handle + ' ')
+            }
+
+            Text {
+                topPadding: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "grey"
+                elide: Text.ElideRight
+                text: qsTr("No matching user name found")
+                visible: typeaheadView.count === 0
             }
         }
 
@@ -372,6 +414,8 @@ Page {
     }
 
     PostUtils {
+        property double editMentionCursorY: 0
+
         id: postUtils
         skywalker: page.skywalker
 
@@ -388,7 +432,11 @@ Page {
             pickingImage = false
         }
 
-        onEditMentionChanged: console.debug(editMention)
+        onEditMentionChanged: {
+            console.debug(editMention)
+            editMentionCursorY = postText.cursorRectangle.y
+            typeaheadSearchTimer.start()
+        }
 
         onFirstWebLinkChanged: {
             linkCard.hide()
@@ -420,6 +468,26 @@ Page {
                 page.quoteAuthor = author
                 page.quoteDateTime = timestamp
             }
+    }
+
+    Timer {
+        id: typeaheadSearchTimer
+        interval: 500
+        onTriggered: {
+            if (postUtils.editMention.length > 0)
+                searchUtils.searchAuthorsTypeahead(postUtils.editMention, 10)
+        }
+    }
+
+    SearchUtils {
+        id: searchUtils
+        skywalker: page.skywalker
+
+        Component.onDestruction: {
+            // The destuctor of SearchUtils is called too late by the QML engine
+            // Remove models now before the Skywalker object is destroyed.
+            searchUtils.removeModels()
+        }
     }
 
     Timer {

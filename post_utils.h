@@ -43,6 +43,7 @@ public:
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                                   int cursor, const QString& color);
+    Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE QString linkiFy(const QString& text);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
@@ -100,7 +101,8 @@ private:
 
     Skywalker* mSkywalker = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
-    QString mEditMention; // Mention currently being edited
+    QString mEditMention; // Mention currently being edited (without @-symbol)
+    int mEditMentionIndex = 0;
     QString mFirstPostLink; // HTTPS link to a post
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;

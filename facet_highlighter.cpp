@@ -17,6 +17,7 @@ void FacetHighlighter::setHighlightColor(const QString& colorName)
 
 void FacetHighlighter::highlightBlock(const QString& text)
 {
+    // NOTE: unfortunately the text does not contain text from the preedit buffer.
     const auto facets = ATProto::PostMaster::parseFacets(text);
 
     for (const auto& facet : facets)
