@@ -163,7 +163,6 @@ Page {
 
         // Post text
         TextArea {
-            property string highlightedText: ""
             property int graphemeLength: 0
 
             id: postText
@@ -178,7 +177,6 @@ Page {
             font.pointSize: guiSettings.scaledFont(9/8)
             clip: true
             focus: true
-            color: "transparent" // HACK: the highlighted text is shown by displayText
             background: Rectangle { border.color: "transparent" }
             text: initialText
 
@@ -192,7 +190,7 @@ Page {
             onPreeditTextChanged: updateGraphemeLength()
 
             function highlightFacets() {
-                highlightedText = postUtils.highlightMentionsAndLinks(postText.text,
+                postUtils.extractMentionsAndLinks(postText.text,
                         postText.preeditText, cursorPosition, guiSettings.linkColor)
             }
 
@@ -200,19 +198,6 @@ Page {
                 graphemeLength = postUtils.graphemeLength(postText.text) +
                         postUtils.graphemeLength(preeditText) -
                         postUtils.getLinkShorteningReduction()
-            }
-
-            // This Text element overlays the invisible TextArea to show the highlighted
-            // content.
-            Text {
-                id: displayText
-                anchors.fill: parent
-                leftPadding: postText.leftPadding
-                rightPadding: postText.rightPadding
-                textFormat: TextEdit.RichText
-                wrapMode: postText.wrapMode
-                font.pointSize: postText.font.pointSize
-                text: postText.highlightedText
             }
         }
 
@@ -486,5 +471,6 @@ Page {
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.
         focusTimer.start()
+        postUtils.setHighlightDocument(postText.textDocument, "blue")
     }
 }

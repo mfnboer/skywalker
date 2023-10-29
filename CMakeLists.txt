@@ -156,6 +156,8 @@ qt_add_qml_module(appskywalker
         SOURCES search_post_feed_model.h
         SOURCES search_post_feed_model.cpp
         QML_FILES ImageAutoRetry.qml
+        SOURCES facet_highlighter.h
+        SOURCES facet_highlighter.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

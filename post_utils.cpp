@@ -500,18 +500,18 @@ void PostUtils::setFirstPostLink(const QString& link)
     emit firstPostLinkChanged();
 }
 
-QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString& preeditText,
-                                             int cursor, const QString& color)
+void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor)
+{
+    mFacetHighlighter.setDocument(doc->textDocument());
+    mFacetHighlighter.setHighlightColor(highlightColor);
+}
+
+void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,
+                                        int cursor, const QString& color)
 {
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
-
     const auto facets = postMaster()->parseFacets(fullText);
 
-    // Keep all white space as the user is editing plain text.
-    // We only use HTML for highlighting links and mentions
-    QString highlighted = "<span style=\"white-space: pre-wrap\">";
-
-    int pos = 0;
     bool webLinkFound = false;
     bool postLinkFound = false;
     mLinkShorteningReduction = 0;
@@ -540,12 +540,6 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
             qDebug() << "SHORT:" << shortLink << "reduction:" << reduction;
             mLinkShorteningReduction += reduction;
         }
-
-        const auto before = fullText.sliced(pos, facet.mStartIndex - pos);
-        highlighted.append(before.toHtmlEscaped());
-        QString highlight = QString("<font color=\"%1\">%2</font>").arg(color, facet.mMatch);
-        highlighted.append(highlight);
-        pos = facet.mEndIndex;
     }
 
     if (!webLinkFound)
@@ -553,10 +547,6 @@ QString PostUtils::highlightMentionsAndLinks(const QString& text, const QString&
 
     if (!postLinkFound)
         setFirstPostLink(QString());
-
-    highlighted.append(fullText.sliced(pos).toHtmlEscaped());
-    highlighted.append("</span>");
-    return highlighted;
 }
 
 QString PostUtils::linkiFy(const QString& text)

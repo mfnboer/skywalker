@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "facet_highlighter.h"
 #include "image_reader.h"
 #include "link_card.h"
 #include "presence.h"
@@ -8,6 +9,7 @@
 #include <atproto/lib/post_master.h>
 #include <QImage>
 #include <QObject>
+#include <QQuickTextDocument>
 #include <QtQmlIntegration>
 
 namespace Skywalker {
@@ -37,7 +39,8 @@ public:
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
     Q_INVOKABLE void pickPhoto() const;
-    Q_INVOKABLE QString highlightMentionsAndLinks(const QString& text,const QString& preeditText,
+    Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor);
+    Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                                   int cursor, const QString& color);
     Q_INVOKABLE QString linkiFy(const QString& text);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
@@ -97,6 +100,7 @@ private:
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;
+    FacetHighlighter mFacetHighlighter;
 };
 
 }
