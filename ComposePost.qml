@@ -162,7 +162,7 @@ Page {
         }
 
         // Post text
-        TextArea {
+        TextEdit {
             property int graphemeLength: 0
 
             id: postText
@@ -170,14 +170,11 @@ Page {
             width: page.width
             leftPadding: 10
             rightPadding: 10
-            placeholderText: graphemeLength === 0 ? qsTr("Say something nice") : ""
-            placeholderTextColor: "grey"
             textFormat: TextEdit.PlainText
             wrapMode: TextEdit.Wrap
             font.pointSize: guiSettings.scaledFont(9/8)
             clip: true
             focus: true
-            background: Rectangle { border.color: "transparent" }
             text: initialText
 
             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
@@ -198,6 +195,16 @@ Page {
                 graphemeLength = postUtils.graphemeLength(postText.text) +
                         postUtils.graphemeLength(preeditText) -
                         postUtils.getLinkShorteningReduction()
+            }
+
+            Text {
+                anchors.fill: parent
+                leftPadding: postText.leftPadding
+                rightPadding: postText.rightPadding
+                font.pointSize: postText.font.pointSize
+                color: "grey"
+                text: qsTr("Say something nice")
+                visible: postText.graphemeLength === 0
             }
         }
 
