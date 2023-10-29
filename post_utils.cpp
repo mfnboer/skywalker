@@ -517,11 +517,11 @@ void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& hig
 
 void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,
                                         int cursor, const QString& color)
-{
-    // TODO: This is not right, edit mention detection does not work when editing existing text
+{   
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
     const auto facets = postMaster()->parseFacets(fullText);
 
+    int preeditCursor = cursor + preeditText.length();
     bool editMentionFound = false;
     bool webLinkFound = false;
     bool postLinkFound = false;
@@ -556,7 +556,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
         }
         case ATProto::PostMaster::ParsedMatch::Type::PARTIAL_MENTION:
         case ATProto::PostMaster::ParsedMatch::Type::MENTION:
-            if (facet.mStartIndex < cursor && cursor <= facet.mEndIndex)
+            if (facet.mStartIndex < preeditCursor && preeditCursor <= facet.mEndIndex)
             {
                 setEditMention(facet.mMatch);
                 editMentionFound = true;
