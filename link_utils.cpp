@@ -1,23 +1,22 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "link_utils.h"
-#include <atproto/lib/at_uri.h>
 #include <QRegularExpression>
 
 namespace Skywalker {
 
 LinkUtils::LinkUtils(QObject* parent) :
-    QObject(parent)
+    WrappedSkywalker(parent)
 {
 }
 
 void LinkUtils::openLink(const QString& link)
 {
-    const auto pl = isPostLink(link);
+    const auto atUri = getPostUri(link);
 
-    if (!pl.isEmpty())
+    if (atUri.isValid())
     {
-        emit postLink(pl);
+        openPostLink(atUri);
         return;
     }
 
@@ -32,6 +31,29 @@ void LinkUtils::openLink(const QString& link)
     emit webLink(link);
 }
 
+void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
+{
+    Q_ASSERT(atUri.authorityIsHandle());
+
+    bskyClient()->resolveHandle(atUri.getAuthority(),
+        [this, presence=getPresence(), atUri](const QString& did){
+            if (!presence)
+                return;
+
+            auto postAtUri = atUri;
+            postAtUri.setAuthority(did);
+            postAtUri.setAuthorityIsHandle(false);
+            emit postLink(postAtUri.toString());
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qWarning() << error;
+            mSkywalker->statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 QString LinkUtils::isAuthorLink(const QString& link) const
 {
     static const QRegularExpression authorRE(R"(^https:\/\/bsky.app\/profile\/([a-zA-Z0-9-\._~]+)$)");
@@ -43,13 +65,11 @@ QString LinkUtils::isAuthorLink(const QString& link) const
     return {};
 }
 
-QString LinkUtils::isPostLink(const QString& link) const
+ATProto::ATUri LinkUtils::getPostUri(const QString& link) const
 {
     const auto atUri = ATProto::ATUri::fromHttpsPostUri(link);
-
-    // TODO: resolve handle to did
     if (atUri.isValid())
-        return atUri.toString();
+        return atUri;
 
     return {};
 }

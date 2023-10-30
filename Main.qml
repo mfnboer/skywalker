@@ -262,6 +262,7 @@ ApplicationWindow {
 
     LinkUtils {
         id: linkUtils
+        skywalker: skywalker
 
         onWebLink: (link) => Qt.openUrlExternally(link)
         onPostLink: (atUri) => skywalker.getPostThread(atUri)
