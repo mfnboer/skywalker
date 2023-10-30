@@ -219,6 +219,7 @@ Page {
         AuthorTypeaheadListView {
             id: typeaheadView
             y: postText.cursorRectangle.y + postText.cursorRectangle.height + 5
+            z: 10
             width: page.width
             height: page.footer.y - y - 5
             model: searchUtils.authorTypeaheadList
@@ -230,14 +231,19 @@ Page {
             }
 
             onAuthorClicked: (profile) => {
-                console.debug("Selected author:", profile.handle, "edit:", postUtils.editMention)
-                let mentionStartIndex = postUtils.getEditMentionIndex()
-                let mentionEndIndex = mentionStartIndex + postUtils.editMention.length
-                postText.remove(mentionStartIndex, mentionEndIndex)
+                const textBefore = postText.text.slice(0, postText.cursorPosition)
+                const textBetween = postText.preeditText
+                const textAfter = postText.text.slice(postText.cursorPosition)
+                const fullText = textBefore + textBetween + textAfter
+                const mentionStartIndex = postUtils.getEditMentionIndex()
+                const mentionEndIndex = mentionStartIndex + postUtils.editMention.length
+                postText.clear() // also clears the preedit buffer
 
-                // Add space. This causes the cursor to move 1 postion beyond the end
-                // of then mention. That cause the type ahead list to disappear.
-                postText.insert(mentionStartIndex, profile.handle + ' ')
+                // Add space and move the cursor 1 postion beyond the end
+                // of then mention. That causes the typeahead list to disappear.
+                const newText = fullText.slice(0, mentionStartIndex) + profile.handle + ' ' + fullText.slice(mentionEndIndex)
+                postText.text = newText
+                postText.cursorPosition = mentionStartIndex + profile.handle.length + 1
             }
 
             Text {

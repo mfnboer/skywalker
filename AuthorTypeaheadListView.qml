@@ -9,7 +9,7 @@ ListView {
     signal authorClicked(basicprofile profile)
 
     id: searchList
-    spacing: 3
+    spacing: 0
 
     delegate: Rectangle {
         required property basicprofile modelData
@@ -33,13 +33,12 @@ ListView {
                 width: 44
                 height: avatarImg.height
                 Layout.fillHeight: true
-                color: "transparent"
 
                 Avatar {
                     id: avatarImg
                     x: parent.x + 8
-                    y: parent.y
-                    width: parent.width - 13
+                    y: parent.y + 3
+                    width: parent.width - 12
                     height: width
                     avatarUrl: authorVisible() ? author.avatarUrl : ""
                     onClicked: authorClicked(author)
@@ -47,6 +46,7 @@ ListView {
             }
 
             Text {
+                topPadding: 3
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.bold: true
@@ -54,6 +54,7 @@ ListView {
             }
 
             Text {
+                bottomPadding: 3
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 elide: Text.ElideRight
@@ -63,7 +64,6 @@ ListView {
             }
 
             Rectangle {
-                Layout.topMargin: 3
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
