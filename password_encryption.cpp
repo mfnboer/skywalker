@@ -78,7 +78,7 @@ QByteArray PasswordEncryption::encrypt(const QString& token, const QString& keyA
     return encryptedToken;
 #else
     qWarning() << "Encryption is only implemented for Android";
-    return token;
+    return token.toUtf8();
 #endif
 }
 
