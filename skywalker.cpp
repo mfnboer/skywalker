@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "post_utils.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
 #include <QGuiApplication>
@@ -1080,6 +1081,13 @@ void Skywalker::shareAuthor(const QString& authorHandle)
     clipboard->setText(shareUri);
     emit statusMessage(tr("Author link copied to clipboard"));
 #endif
+}
+
+void Skywalker::copyPostTextToClipboard(const QString& text)
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(PostUtils::toPlainText(text));
+    emit statusMessage(tr("Post text copied to clipboard"));
 }
 
 QEnums::ContentVisibility Skywalker::getContentVisibility(const QStringList& labelTexts) const

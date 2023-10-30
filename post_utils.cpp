@@ -6,6 +6,13 @@
 
 namespace Skywalker {
 
+QString PostUtils::toPlainText(const QString& text)
+{
+    QTextDocument doc;
+    doc.setHtml(text);
+    return doc.toPlainText();
+}
+
 PostUtils::PostUtils(QObject* parent) :
     Presence(),
     WrappedSkywalker(parent)

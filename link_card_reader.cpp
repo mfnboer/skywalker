@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "link_card_reader.h"
-#include <QTextDocument>
+#include "post_utils.h"
 #include <QRegularExpression>
 
 namespace Skywalker {
@@ -57,24 +57,6 @@ void LinkCardReader::getLinkCard(const QString& link)
     connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ requestSslFailed(reply); });
 }
 
-QString LinkCardReader::toPlainText(const QString& text) const
-{
-    // Maybe we can simple assume all text as HTML and convert it.
-    // Let's try that for a while.
-    // TODO: remove
-#if 0
-    static const QRegularExpression htmlEmtity(R"(&([a-z]+)|(#[0-9]+);)");
-
-    auto match = htmlEmtity.match(text);
-
-    if (!match.hasMatch())
-        return text;
-#endif
-    QTextDocument doc;
-    doc.setHtml(text);
-    return doc.toPlainText();
-}
-
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
     static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
@@ -98,26 +80,26 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     if (match.hasMatch())
     {
-        card->setTitle(toPlainText(match.captured(3)));
+        card->setTitle(PostUtils::toPlainText(match.captured(3)));
     }
     else
     {
         match = ogTitleRE2.match(data);
         if (match.hasMatch())
-            card->setTitle(toPlainText(match.captured(1)));
+            card->setTitle(PostUtils::toPlainText(match.captured(1)));
     }
 
     match = ogDescriptionRE.match(data);
 
     if (match.hasMatch())
     {
-        card->setDescription(toPlainText(match.captured(3)));
+        card->setDescription(PostUtils::toPlainText(match.captured(3)));
     }
     else
     {
         match = ogDescriptionRE2.match(data);
         if (match.hasMatch())
-            card->setDescription(toPlainText(match.captured(1)));
+            card->setDescription(PostUtils::toPlainText(match.captured(1)));
     }
 
     QString imgUrl;

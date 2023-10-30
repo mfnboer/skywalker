@@ -15,6 +15,7 @@ Row {
     signal like()
     signal share()
     signal deletePost()
+    signal copyPostText()
 
     StatIcon {
         width: parent.width / 4
@@ -46,6 +47,10 @@ Row {
         Menu {
             id: moreMenu
 
+            MenuItem {
+                text: qsTr("Copy post text")
+                onTriggered: copyPostText()
+            }
             MenuItem {
                 text: qsTr("Share")
                 onTriggered: share()

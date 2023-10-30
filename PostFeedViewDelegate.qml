@@ -304,6 +304,8 @@ Rectangle {
                 onShare: skywalker.sharePost(postUri, author.handle)
 
                 onDeletePost: root.deletePost(postUri, postCid)
+
+                onCopyPostText: skywalker.copyPostTextToClipboard(postText)
             }
         }
 

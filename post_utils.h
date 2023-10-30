@@ -23,6 +23,8 @@ class PostUtils : public WrappedSkywalker, public Presence
 public:
     explicit PostUtils(QObject* parent = nullptr);
 
+    static QString toPlainText(const QString& text);
+
     Q_INVOKABLE void post(QString text, const QStringList& imageFileNames,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
