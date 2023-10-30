@@ -13,7 +13,7 @@ class PasswordEncryption
 public:
     bool init(const QString& keyAlias);
     QByteArray encrypt(const QString& token, const QString& keyAlias);
-    QString decrypt(const QByteArray& token, const QString& keyAlias);
+    QString decrypt(const QByteArray& token, const QString& keyAlias) const;
 
 private:
     std::unordered_map<QString, bool> mKeyAliasIntialized;

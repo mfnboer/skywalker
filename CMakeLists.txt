@@ -163,6 +163,8 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/PasswordStorageHelper.java
         SOURCES password_encryption.h
         SOURCES password_encryption.cpp
+        SOURCES user_settings.h
+        SOURCES user_settings.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

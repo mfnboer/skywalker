@@ -82,9 +82,11 @@ QByteArray PasswordEncryption::encrypt(const QString& token, const QString& keyA
 #endif
 }
 
-QString PasswordEncryption::decrypt(const QByteArray& token, const QString& keyAlias)
+QString PasswordEncryption::decrypt(const QByteArray& token, const QString& keyAlias) const
 {
-    if (!mKeyAliasIntialized[keyAlias])
+    const auto it = mKeyAliasIntialized.find(keyAlias);
+
+    if (it == mKeyAliasIntialized.end() || !it->second)
     {
         qWarning() << "Key store not initialized";
         return {};
