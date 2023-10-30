@@ -8,7 +8,7 @@ namespace Skywalker {
 
 PostUtils::PostUtils(QObject* parent) :
     Presence(),
-    QObject(parent)
+    WrappedSkywalker(parent)
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
@@ -24,14 +24,6 @@ PostUtils::PostUtils(QObject* parent) :
 
     QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
                      this, [this]{ emit photoPickCanceled(); });
-}
-
-ATProto::Client* PostUtils::bskyClient()
-{
-    Q_ASSERT(mSkywalker);
-    auto* client = mSkywalker->getBskyClient();
-    Q_ASSERT(client);
-    return client;
 }
 
 ATProto::PostMaster* PostUtils::postMaster()
@@ -52,13 +44,6 @@ ImageReader* PostUtils::imageReader()
         mImageReader = std::make_unique<ImageReader>();
 
     return mImageReader.get();
-}
-
-void PostUtils::setSkywalker(Skywalker* skywalker)
-{
-    Q_ASSERT(skywalker);
-    mSkywalker = skywalker;
-    emit skywalkerChanged();
 }
 
 static ATProto::AppBskyFeed::PostReplyRef::Ptr createReplyRef(

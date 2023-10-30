@@ -5,36 +5,17 @@
 namespace Skywalker {
 
 GraphUtils::GraphUtils(QObject* parent) :
-    QObject(parent),
+    WrappedSkywalker(parent),
     Presence()
 {
-}
-
-ATProto::Client* GraphUtils::bskyClient()
-{
-    Q_ASSERT(mSkywalker);
-    auto* client = mSkywalker->getBskyClient();
-    Q_ASSERT(client);
-    return client;
 }
 
 ATProto::GraphMaster* GraphUtils::graphMaster()
 {
     if (!mGraphMaster)
-    {
-        Q_ASSERT(mSkywalker);
-        Q_ASSERT(mSkywalker->getBskyClient());
-        mGraphMaster = std::make_unique<ATProto::GraphMaster>(*mSkywalker->getBskyClient());
-    }
+        mGraphMaster = std::make_unique<ATProto::GraphMaster>(*bskyClient());
 
     return mGraphMaster.get();
-}
-
-void GraphUtils::setSkywalker(Skywalker* skywalker)
-{
-    Q_ASSERT(skywalker);
-    mSkywalker = skywalker;
-    emit skywalkerChanged();
 }
 
 void GraphUtils::follow(const BasicProfile& profile)

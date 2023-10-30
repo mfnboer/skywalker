@@ -158,6 +158,8 @@ qt_add_qml_module(appskywalker
         QML_FILES ImageAutoRetry.qml
         SOURCES facet_highlighter.h
         SOURCES facet_highlighter.cpp
+        SOURCES wrapped_skywalker.h
+        SOURCES wrapped_skywalker.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES

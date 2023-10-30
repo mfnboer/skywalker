@@ -2,17 +2,14 @@
 // License: GPLv3
 #pragma once
 #include "presence.h"
-#include "skywalker.h"
+#include "wrapped_skywalker.h"
 #include <atproto/lib/graph_master.h>
-#include <QObject>
-#include <QtQmlIntegration>
 
 namespace Skywalker {
 
-class GraphUtils : public QObject, public Presence
+class GraphUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
-    Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
     QML_ELEMENT
 
 public:
@@ -25,11 +22,7 @@ public:
     Q_INVOKABLE void mute(const QString& did);
     Q_INVOKABLE void unmute(const QString& did);
 
-    Skywalker* getSkywalker() const { return mSkywalker; }
-    void setSkywalker(Skywalker* skywalker);
-
 signals:
-    void skywalkerChanged();
     void followOk(QString uri);
     void followFailed(QString error);
     void unfollowOk();
@@ -44,10 +37,7 @@ signals:
     void unmuteFailed(QString error);
 
 private:
-    ATProto::Client* bskyClient();
     ATProto::GraphMaster* graphMaster();
-
-    Skywalker* mSkywalker = nullptr;
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;
 };
 

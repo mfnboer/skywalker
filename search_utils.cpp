@@ -63,8 +63,7 @@ std::vector<QString> SearchUtils::getWords(const QString& text)
 }
 
 SearchUtils::SearchUtils(QObject* parent) :
-    Presence(),
-    QObject(parent)
+    WrappedSkywalker(parent)
 {
 }
 
@@ -85,13 +84,6 @@ void SearchUtils::removeModels()
         mSkywalker->removeAuthorListModel(mSearchUsersModelId);
         mSearchUsersModelId = -1;
     }
-}
-
-void SearchUtils::setSkywalker(Skywalker* skywalker)
-{
-    Q_ASSERT(skywalker);
-    mSkywalker = skywalker;
-    emit skywalkerChanged();
 }
 
 void SearchUtils::setAuthorTypeaheadList(const BasicProfileList& list)
@@ -388,14 +380,6 @@ void SearchUtils::getProfiles(const std::vector<QString>& users)
             qWarning() << "Failed to get posts:" << error;
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
-}
-
-ATProto::Client* SearchUtils::bskyClient()
-{
-    Q_ASSERT(mSkywalker);
-    auto* client = mSkywalker->getBskyClient();
-    Q_ASSERT(client);
-    return client;
 }
 
 SearchPostFeedModel* SearchUtils::getSearchPostFeedModel()

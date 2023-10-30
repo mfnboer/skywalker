@@ -5,19 +5,16 @@
 #include "image_reader.h"
 #include "link_card.h"
 #include "presence.h"
-#include "skywalker.h"
+#include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <QImage>
-#include <QObject>
 #include <QQuickTextDocument>
-#include <QtQmlIntegration>
 
 namespace Skywalker {
 
-class PostUtils : public QObject, public Presence
+class PostUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
-    Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
     Q_PROPERTY(QString editMention READ getEditMention WRITE setEditMention NOTIFY editMentionChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
@@ -50,9 +47,6 @@ public:
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
 
-    Skywalker* getSkywalker() const { return mSkywalker; }
-    void setSkywalker(Skywalker* skywalker);
-
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);
     const QString& getFirstWebLink() const { return mFirstWebLink; }
@@ -61,7 +55,6 @@ public:
     void setFirstPostLink(const QString& link);
 
 signals:
-    void skywalkerChanged();
     void postOk();
     void postFailed(QString error);
     void postProgress(QString msg);
@@ -95,11 +88,8 @@ private:
     void continueRepost(const QString& uri, const QString& cid);
     static bool isEmoji(uint c);
 
-    ATProto::Client* bskyClient();
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
-
-    Skywalker* mSkywalker = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     QString mEditMention; // Mention currently being edited (without @-symbol)
     int mEditMentionIndex = 0;

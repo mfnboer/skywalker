@@ -47,6 +47,7 @@ QString LinkUtils::isPostLink(const QString& link) const
 {
     const auto atUri = ATProto::ATUri::fromHttpsPostUri(link);
 
+    // TODO: resolve handle to did
     if (atUri.isValid())
         return atUri.toString();
 
