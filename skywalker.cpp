@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "password_encryption.h"
 #include "post_utils.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>

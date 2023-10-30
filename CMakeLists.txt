@@ -160,6 +160,9 @@ qt_add_qml_module(appskywalker
         SOURCES facet_highlighter.cpp
         SOURCES wrapped_skywalker.h
         SOURCES wrapped_skywalker.cpp
+        RESOURCES android/src/com/gmail/mfnboer/PasswordStorageHelper.java
+        SOURCES password_encryption.h
+        SOURCES password_encryption.cpp
 )
 
 set_target_properties(appskywalker PROPERTIES
