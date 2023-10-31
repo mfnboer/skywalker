@@ -20,11 +20,11 @@ void LinkUtils::openLink(const QString& link)
         return;
     }
 
-    const auto handle = isAuthorLink(link);
+    const auto handleOrDid = isAuthorLink(link);
 
-    if (!handle.isEmpty())
+    if (!handleOrDid.isEmpty())
     {
-        emit authorLink(handle);
+        emit authorLink(handleOrDid);
         return;
     }
 
@@ -33,7 +33,11 @@ void LinkUtils::openLink(const QString& link)
 
 void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
 {
-    Q_ASSERT(atUri.authorityIsHandle());
+    if (!atUri.authorityIsHandle())
+    {
+        emit postLink(atUri.toString());
+        return;
+    }
 
     bskyClient()->resolveHandle(atUri.getAuthority(),
         [this, presence=getPresence(), atUri](const QString& did){
@@ -56,9 +60,14 @@ void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
 
 QString LinkUtils::isAuthorLink(const QString& link) const
 {
-    static const QRegularExpression authorRE(R"(^https:\/\/bsky.app\/profile\/([a-zA-Z0-9-\._~]+)$)");
+    static const QRegularExpression authorHandleRE(R"(^https:\/\/bsky.app\/profile\/([a-zA-Z0-9-\._~]+)$)");
+    static const QRegularExpression authorDidRE(R"(^https:\/\/bsky.app\/profile\/(did:plc:[a-zA-Z0-9-\.:_]+)$)");
 
-    const auto match = authorRE.match(link);
+    auto match = authorHandleRE.match(link);
+    if (match.hasMatch())
+        return match.captured(1);
+
+    match = authorDidRE.match(link);
     if (match.hasMatch())
         return match.captured(1);
 

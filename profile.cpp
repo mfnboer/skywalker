@@ -5,6 +5,8 @@
 
 namespace Skywalker {
 
+constexpr char const* INVALID_HANDLE = "handle.invalid";
+
 ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState) :
     mValid(true),
     mMuted(viewerState.mMuted),
@@ -102,6 +104,21 @@ QString BasicProfile::getHandle() const
         return mProfileDetailedView->mHandle;
 
     return mHandle;
+}
+
+bool BasicProfile::hasInvalidHandle() const
+{
+    return getHandle() == INVALID_HANDLE;
+}
+
+QString BasicProfile::getHandleOrDid() const
+{
+    const QString& handle = getHandle();
+
+    if (handle.isEmpty() || handle == INVALID_HANDLE)
+        return getDid();
+
+    return handle;
 }
 
 QString BasicProfile::getAvatarUrl() const

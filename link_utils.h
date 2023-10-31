@@ -19,7 +19,7 @@ public:
 
 signals:
     void webLink(QString uri);
-    void authorLink(QString handle);
+    void authorLink(QString handleOrDid);
     void postLink(QString atUri);
 
 private:

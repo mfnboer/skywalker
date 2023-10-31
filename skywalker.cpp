@@ -1041,7 +1041,7 @@ BasicProfile Skywalker::getUser() const
     return AuthorCache::instance().getUser();
 }
 
-void Skywalker::sharePost(const QString& postUri, const QString& authorHandle)
+void Skywalker::sharePost(const QString& postUri, const BasicProfile& author)
 {
     qDebug() << "Share post:" << postUri;
     ATProto::ATUri atUri(postUri);
@@ -1049,8 +1049,9 @@ void Skywalker::sharePost(const QString& postUri, const QString& authorHandle)
     if (!atUri.isValid())
         return;
 
-    QString shareUri = QString("https://bsky.app/profile/%1/post/%2")
-                           .arg(authorHandle, atUri.getRkey());
+    const QString authorId = author.getHandleOrDid();
+    const QString shareUri = QString("https://bsky.app/profile/%1/post/%2")
+                                .arg(authorId, atUri.getRkey());
 
 #ifdef Q_OS_ANDROID
     QJniObject jShareUri = QJniObject::fromString(shareUri);
@@ -1068,9 +1069,10 @@ void Skywalker::sharePost(const QString& postUri, const QString& authorHandle)
 #endif
 }
 
-void Skywalker::shareAuthor(const QString& authorHandle)
+void Skywalker::shareAuthor(const BasicProfile& author)
 {
-    QString shareUri = QString("https://bsky.app/profile/%1").arg(authorHandle);
+    const QString authorId = author.getHandleOrDid();
+    const QString shareUri = QString("https://bsky.app/profile/%1").arg(authorId);
 
 #ifdef Q_OS_ANDROID
     QJniObject jShareUri = QJniObject::fromString(shareUri);

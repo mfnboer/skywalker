@@ -68,6 +68,10 @@ public:
     ImageView getImageView() const;
     ProfileViewerState getViewer() const;
     QStringList getLabelTexts() const;
+    bool hasInvalidHandle() const;
+
+    // Get the handle, but if it is invalid then get the DID
+    QString getHandleOrDid() const;
 
     // The profile is volatile if it depends on pointers to the raw data.
     bool isVolatile() const;

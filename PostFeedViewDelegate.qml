@@ -301,7 +301,7 @@ Rectangle {
 
                 onLike: root.like(postLikeUri, postUri, postCid)
 
-                onShare: skywalker.sharePost(postUri, author.handle)
+                onShare: skywalker.sharePost(postUri, author)
 
                 onDeletePost: root.deletePost(postUri, postCid)
 
