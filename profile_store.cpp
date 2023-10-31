@@ -179,13 +179,17 @@ std::set<QString> IndexedProfileStore::getWords(const BasicProfile& profile) con
 {
     const std::vector<QString> wordList = SearchUtils::getWords(profile.getDisplayName());
     std::set<QString> words = std::set<QString>(wordList.begin(), wordList.end());
-    const QString handle = profile.getHandle();
-    const int dotIndex = handle.indexOf('.');
 
-    if (dotIndex < 0)
-        words.insert(handle);
-    else if (dotIndex > 0)
-        words.insert(handle.sliced(0, dotIndex));
+    if (!profile.hasInvalidHandle())
+    {
+        const QString handle = profile.getHandle();
+        const int dotIndex = handle.indexOf('.');
+
+        if (dotIndex < 0)
+            words.insert(handle);
+        else if (dotIndex > 0)
+            words.insert(handle.sliced(0, dotIndex));
+    }
 
     return words;
 }
