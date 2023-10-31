@@ -45,12 +45,23 @@ QStringList UserSettings::getUserDidList() const
     return mSettings.value("users").toStringList();
 }
 
-void UserSettings::setActiveUser(const QString& did)
+BasicProfile UserSettings::getUser(const QString& did) const
+{
+    BasicProfile profile(
+        did,
+        getHandle(did),
+        getDisplayName(did),
+        getAvatar(did));
+
+    return profile;
+}
+
+void UserSettings::setActiveUserDid(const QString& did)
 {
     mSettings.setValue("activeUser", did);
 }
 
-QString UserSettings::getActiveUser() const
+QString UserSettings::getActiveUserDid() const
 {
     return mSettings.value("activeUser").toString();
 }
@@ -58,6 +69,13 @@ QString UserSettings::getActiveUser() const
 void UserSettings::addUser(const QString& did, const QString& host)
 {
     auto users = getUserDidList();
+
+    if (users.contains(did))
+    {
+        qDebug() << "User already added:" << did << "host:" << host;
+        return;
+    }
+
     users.append(did);
     users.sort();
     mSettings.setValue("users", users);
@@ -71,9 +89,9 @@ void UserSettings::removeUser(const QString& did)
     mSettings.setValue("users", users);
     clearCredentials(did);
 
-    const auto activeUser = getActiveUser();
+    const auto activeUser = getActiveUserDid();
     if (did == activeUser)
-        setActiveUser("");
+        setActiveUserDid("");
 }
 
 QString UserSettings::getHost(const QString& did) const
@@ -122,15 +140,14 @@ QString UserSettings::getAvatar(const QString& did) const
     return mSettings.value(key(did, "avatar")).toString();
 }
 
-void UserSettings::saveSession(const QString& did, const ATProto::ComATProtoServer::Session& session)
+void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
-    Q_ASSERT(did == session.mDid);
     const QByteArray encryptedAccessToken = mEncryption.encrypt(session.mAccessJwt, KEY_ALIAS_ACCESS_TOKEN);
     const QByteArray encryptedRefreshToken = mEncryption.encrypt(session.mRefreshJwt, KEY_ALIAS_REFRESH_TOKEN);
 
-    mSettings.setValue(key(did, "handle"), session.mHandle);
-    mSettings.setValue(key(did, "access"), encryptedAccessToken);
-    mSettings.setValue(key(did, "refresh"), encryptedRefreshToken);
+    mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
+    mSettings.setValue(key(session.mDid, "access"), encryptedAccessToken);
+    mSettings.setValue(key(session.mDid, "refresh"), encryptedRefreshToken);
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -156,6 +173,16 @@ void UserSettings::clearCredentials(const QString& did)
     mSettings.setValue(key(did, "password"), "");
     mSettings.setValue(key(did, "access"), "");
     mSettings.setValue(key(did, "refresh"), "");
+}
+
+void UserSettings::saveSyncTimestamp(const QString& did, QDateTime timestamp)
+{
+    mSettings.setValue(key(did, "syncTimestamp"), timestamp);
+}
+
+QDateTime UserSettings::getSyncTimestamp(const QString& did) const
+{
+    return mSettings.value(key(did, "syncTimestamp")).toDateTime();
 }
 
 }

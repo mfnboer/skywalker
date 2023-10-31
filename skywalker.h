@@ -12,6 +12,7 @@
 #include "profile_store.h"
 #include "search_post_feed_model.h"
 #include "user_preferences.h"
+#include "user_settings.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QTimer>
@@ -79,6 +80,7 @@ public:
     Q_INVOKABLE void saveContentFilterPreferences();
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
+    Q_INVOKABLE const UserSettings* getUserSettings() const { return &mUserSettings; }
     Q_INVOKABLE bool sendAppToBackground();
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
@@ -110,7 +112,7 @@ public:
 
 signals:
     void loginOk();
-    void loginFailed(QString error);
+    void loginFailed(QString error, QString host, QString handle);
     void resumeSessionOk();
     void resumeSessionFailed();
     void timelineSyncOK(int index);
@@ -145,7 +147,8 @@ private:
     void stopRefreshTimers();
     void refreshSession();
     void refreshNotificationCount();
-    void saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session);
+    void updateUser(const QString& did, const QString& host, const QString& password);
+    void saveSession(const ATProto::ComATProtoServer::Session& session);
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
@@ -178,7 +181,7 @@ private:
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;
 
-    QSettings mSettings;
+    UserSettings mUserSettings;
     bool mDebugLogging = false;
 };
 

@@ -57,18 +57,36 @@ ApplicationWindow {
         y: guiSettings.headerHeight
     }
 
-    Login {
-        id: loginDialog
-        anchors.centerIn: parent
-        onAccepted: skywalker.login(user, password, host)
-    }
-
     Skywalker {
         id: skywalker
         onLoginOk: start()
-        onLoginFailed: (error) => loginDialog.show(error)
+
+        onLoginFailed: (error, host, user) => {
+            loginUser(host, user, error)
+        }
+
         onResumeSessionOk: start()
-        onResumeSessionFailed: loginDialog.show()
+
+        onResumeSessionFailed: {
+            const userSettings = getUserSettings()
+            const did = userSettings.getActiveUserDid()
+
+            if (did) {
+                const user = userSettings.getUser(did)
+                const host = userSettings.getHost(did)
+                const password = userSettings.getPassword(did)
+                skywalker.login(user.handle, password, host)
+                return
+            }
+
+            let userList = userSettings.getUserList()
+            if (userList.length > 0) {
+                selectUser(userList)
+                return
+            }
+
+            newUser()
+        }
 
         onSessionExpired: (error) => {
             timelineUpdateTimer.stop()
@@ -282,6 +300,31 @@ ApplicationWindow {
 
     function openLink(link) {
         linkUtils.openLink(link)
+    }
+
+    function loginUser(host, user, error="") {
+        let component = Qt.createComponent("Login.qml")
+        let page = component.createObject(root, { host: host, user: user, error: error })
+        page.onAccepted.connect((host, user, password) => {
+                skywalker.login(user, password, host)
+                popStack()
+        })
+        currentStack().push(page)
+    }
+
+    function newUser() {
+        let component = Qt.createComponent("Login.qml")
+        let page = component.createObject(root)
+        page.onAccepted.connect((host, user, password) => {
+                skywalker.login(user, password, host)
+                popStack()
+        })
+        currentStack().push(page)
+    }
+
+    function selectUser() {
+        // TODO
+        console.debug("SELECT USER")
     }
 
     function composePost(initialText) {

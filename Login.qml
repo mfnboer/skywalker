@@ -3,19 +3,53 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
-    property string user
-    property string password
+Page {
     property string host
+    property string user
+    property string error
 
-    title: qsTr("Login")
+    signal accepted(string host, string user, string password)
+
+    id: loginPage
     width: parent.width
-    standardButtons: Dialog.Ok
-    modal: true
+
+    header: Rectangle {
+        width: parent.width
+        height: guiSettings.headerHeight
+        z: guiSettings.headerZLevel
+        color: guiSettings.headerColor
+
+        RowLayout {
+            width: parent.width
+            height: guiSettings.headerHeight
+
+            Text {
+                Layout.alignment: Qt.AlignVCenter
+                leftPadding: 10
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(10/8)
+                color: "white"
+                text: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
+            }
+        }
+    }
 
     GridLayout {
+        id: loginForm
         columns: 2
-        anchors.fill: parent
+        width: parent.width
+
+        Label {
+            text: qsTr("Host:")
+        }
+        ComboBox {
+            id: hostField
+            Layout.fillWidth: true
+            model: ["bsky.social"]
+            editable: true
+            editText: host
+            enabled: isNewAccount()
+        }
 
         Label {
             text: qsTr("User:")
@@ -24,6 +58,8 @@ Dialog {
             id: userField
             Layout.fillWidth: true
             focus: true
+            text: user
+            enabled: isNewAccount()
         }
 
         Label {
@@ -36,43 +72,44 @@ Dialog {
         }
 
         Label {
-            text: qsTr("Host:")
-        }
-        TextField {
-            id: hostField
-            Layout.fillWidth: true
-            text: "bsky.social"
-        }
-
-        Label {
             id: msgLabel
             Layout.columnSpan: 2
             Layout.fillWidth: true
             color: "red"
             wrapMode: Text.Wrap
-        }
-
-        Settings {
-            property alias user: userField.text
-            property alias password: passwordField.text
-            property alias host: hostField.text
+            text: error
+            visible: error
         }
     }
 
-    onAccepted: {
-        user = userField.text
-        password = passwordField.text
-        host = hostField.text
+    SkyButton {
+        anchors.top: loginForm.bottom
+        anchors.right: parent.right
+        text: qsTr("OK")
+        enabled: hostField.editText && userField.text
+        onClicked: {
+            const handle = autoCompleteHandle(userField.text, hostField.editText)
+            accepted(hostField.editText, handle, passwordField.text)
+        }
     }
 
-    function show(msg = "") {
-        if (msg) {
-            msgLabel.text = msg
-            msgLabel.visible = true
-        } else {
-            msgLabel.visible = false
-        }
+    GuiSettings {
+        id: guiSettings
+    }
 
-        open()
+    function autoCompleteHandle(handle, host) {
+        let newHandle = handle
+
+        if (newHandle.charAt(0) === "@")
+            newHandle = newHandle.slice(1)
+
+        if (!newHandle.includes("."))
+            newHandle = newHandle + "." + host
+
+        return newHandle
+    }
+
+    function isNewAccount() {
+        return user.length === 0
     }
 }

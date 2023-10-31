@@ -32,7 +32,8 @@ Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
     mTimelineModel(mUserDid, mUserFollows, mContentFilter, mUserPreferences, this),
-    mNotificationListModel(mContentFilter, this)
+    mNotificationListModel(mContentFilter, this),
+    mUserSettings(this)
 {
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
@@ -49,26 +50,27 @@ Skywalker::~Skywalker()
 
 void Skywalker::login(const QString user, QString password, const QString host)
 {
-    qInfo() << "Login:" << user << "host:" << host;
+    qDebug() << "Login:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
     mBsky->createSession(user, password,
-        [this, user, host]{
-            qInfo() << "Login" << user << "succeeded";
-            saveSession(host, *mBsky->getSession());
-            mUserDid = mBsky->getSession()->mDid;
+        [this, host, user, password]{
+            qDebug() << "Login" << user << "succeeded";
+            const auto* session = mBsky->getSession();
+            updateUser(session->mDid, host, password);
+            saveSession(*session);
             emit loginOk();
             startRefreshTimers();
         },
-        [this, user](const QString& error){
-            qInfo() << "Login" << user << "failed:" << error;
-            emit loginFailed(error);
+        [this, host, user](const QString& error){
+            qDebug() << "Login" << user << "failed:" << error;
+            emit loginFailed(error, host, user);
         });
 }
 
 void Skywalker::resumeSession()
 {
-    qInfo() << "Resume session";
+    qDebug() << "Resume session";
     QString host;
     ATProto::ComATProtoServer::Session session;
 
@@ -83,9 +85,9 @@ void Skywalker::resumeSession()
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->resumeSession(session,
-        [this, host] {
+        [this] {
             qInfo() << "Session resumed";
-            saveSession(host, *mBsky->getSession());
+            saveSession(*mBsky->getSession());
             mUserDid = mBsky->getSession()->mDid;
             emit resumeSessionOk();
             refreshSession();
@@ -99,7 +101,7 @@ void Skywalker::resumeSession()
 
 void Skywalker::startRefreshTimers()
 {
-    qInfo() << "Refresh timers started";
+    qDebug() << "Refresh timers started";
     mRefreshTimer.start(SESSION_REFRESH_INTERVAL);
     refreshNotificationCount();
     mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
@@ -128,7 +130,7 @@ void Skywalker::refreshSession()
     mBsky->refreshSession(*session,
         [this]{
             qDebug() << "Session refreshed";
-            saveSession(mBsky->getHost(), *mBsky->getSession());
+            saveSession(*mBsky->getSession());
         },
         [this](const QString& error){
             qDebug() << "Session could not be refreshed:" << error;
@@ -214,6 +216,7 @@ void Skywalker::signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView&
 {
     qDebug() << "Got user:" << user.mHandle << "#follows:" << mUserFollows.size();
     AuthorCache::instance().setUser(BasicProfile(user));
+    mUserSettings.saveDisplayName(mUserDid, user.mDisplayName.value_or(""));
     const auto avatar = user.mAvatar ? *user.mAvatar : QString();
     setAvatarUrl(avatar);
     emit getUserProfileOK();
@@ -536,6 +539,7 @@ void Skywalker::setGetAuthorListInProgress(bool inProgress)
 
 void Skywalker::setAvatarUrl(const QString& avatarUrl)
 {
+    mUserSettings.saveAvatar(mUserDid, avatarUrl);
     mAvatarUrl = avatarUrl;
     emit avatarUrlChanged();
 }
@@ -1207,23 +1211,37 @@ bool Skywalker::sendAppToBackground()
 #endif
 }
 
-void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)
+void Skywalker::updateUser(const QString& did, const QString& host, const QString& password)
 {
-    // TODO: secure storage
-    mSettings.setValue("host", host);
-    mSettings.setValue("did", session.mDid);
-    mSettings.setValue("access", session.mAccessJwt);
-    mSettings.setValue("refresh", session.mRefreshJwt);
+    mUserDid = did;
+    mUserSettings.addUser(did, host);
+    mUserSettings.savePassword(did, password);
+    mUserSettings.setActiveUserDid(did);
+}
+
+void Skywalker::saveSession(const ATProto::ComATProtoServer::Session& session)
+{
+    mUserSettings.saveSession(session);
 }
 
 bool Skywalker::getSession(QString& host, ATProto::ComATProtoServer::Session& session)
 {
-    host = mSettings.value("host").toString();
-    session.mDid = mSettings.value("did").toString();
-    session.mAccessJwt = mSettings.value("access").toString();
-    session.mRefreshJwt = mSettings.value("refresh").toString();
+    const QString did = mUserSettings.getActiveUserDid();
 
-    return !(host.isEmpty() || session.mDid.isEmpty() || session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty());
+    if (did.isEmpty())
+        return false;
+
+    session = mUserSettings.getSession(did);
+
+    if (session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty())
+        return false;
+
+    host = mUserSettings.getHost(did);
+
+    if (host.isEmpty())
+        return false;
+
+    return true;
 }
 
 void Skywalker::saveSyncTimestamp(int postIndex)
@@ -1235,12 +1253,12 @@ void Skywalker::saveSyncTimestamp(int postIndex)
     }
 
     const auto& post = mTimelineModel.getPost(postIndex);
-    mSettings.setValue("syncTimestamp", post.getTimelineTimestamp());
+    mUserSettings.saveSyncTimestamp(mUserDid, post.getTimelineTimestamp());
 }
 
 QDateTime Skywalker::getSyncTimestamp() const
 {
-    return mSettings.value("syncTimestamp").toDateTime();
+    return mUserSettings.getSyncTimestamp(mUserDid);
 }
 
 void Skywalker::disableDebugLogging()

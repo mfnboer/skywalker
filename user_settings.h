@@ -16,23 +16,25 @@ public:
     explicit UserSettings(QObject* parent = nullptr);
 
     Q_INVOKABLE QList<BasicProfile> getUserList() const;
-
     QStringList getUserDidList() const;
-    void setActiveUser(const QString& did);
-    QString getActiveUser() const;
+    Q_INVOKABLE BasicProfile getUser(const QString& did) const;
+    void setActiveUserDid(const QString& did);
+    Q_INVOKABLE QString getActiveUserDid() const;
     void addUser(const QString& did, const QString& host);
     void removeUser(const QString& did);
-    QString getHost(const QString& did) const;
+    Q_INVOKABLE QString getHost(const QString& did) const;
     void savePassword(const QString& did, const QString& password);
-    QString getPassword(const QString& did) const;
+    Q_INVOKABLE QString getPassword(const QString& did) const;
     QString getHandle(const QString& did) const;
     void saveDisplayName(const QString& did, const QString& displayName);
     QString getDisplayName(const QString& did) const;
     void saveAvatar(const QString& did, const QString& avatar);
     QString getAvatar(const QString& did) const;
-    void saveSession(const QString& did, const ATProto::ComATProtoServer::Session& session);
+    void saveSession(const ATProto::ComATProtoServer::Session& session);
     ATProto::ComATProtoServer::Session getSession(const QString& did) const;
     void clearCredentials(const QString& did);
+    void saveSyncTimestamp(const QString& did, QDateTime timestamp);
+    QDateTime getSyncTimestamp(const QString& did) const;
 
 private:
     QString key(const QString& did, const QString& subkey) const;
