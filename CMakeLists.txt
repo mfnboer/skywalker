@@ -165,6 +165,8 @@ qt_add_qml_module(appskywalker
         SOURCES password_encryption.cpp
         SOURCES user_settings.h
         SOURCES user_settings.cpp
+
+
 )
 
 set_target_properties(appskywalker PROPERTIES
