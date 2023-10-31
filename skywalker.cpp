@@ -9,6 +9,11 @@
 #include <QLoggingCategory>
 #include <QSettings>
 
+#ifdef Q_OS_ANDROID
+#include <QJniObject>
+#include <QtCore/private/qandroidextras_p.h>
+#endif
+
 namespace Skywalker {
 
 using namespace std::chrono_literals;
@@ -1181,6 +1186,23 @@ void Skywalker::saveUserPreferences()
             qDebug() << "saveUserPreferences failed:" << error;
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
+}
+
+bool Skywalker::sendAppToBackground()
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return false;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    activity.callMethod<void>("goToBack", "()V");
+    return true;
+#else
+    return false;
+#endif
 }
 
 void Skywalker::saveSession(const QString& host, const ATProto::ComATProtoServer::Session& session)

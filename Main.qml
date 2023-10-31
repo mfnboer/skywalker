@@ -33,6 +33,9 @@ ApplicationWindow {
             event.accepted = false
             viewTimeline()
         }
+        else if (skywalker.sendAppToBackground()) {
+            event.accepted = false
+        }
     }
 
     SvgOutline {
