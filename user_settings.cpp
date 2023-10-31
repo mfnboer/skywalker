@@ -16,19 +16,38 @@ UserSettings::UserSettings(QObject* parent) :
     mEncryption.init(KEY_ALIAS_REFRESH_TOKEN);
 }
 
-QString UserSettings::key(const QString& handle, const QString& subkey) const
+QString UserSettings::key(const QString& did, const QString& subkey) const
 {
-    return QString("%1/%2").arg(handle, subkey);
+    return QString("%1/%2").arg(did, subkey);
 }
 
-QStringList UserSettings::getUsers() const
+QList<BasicProfile> UserSettings::getUserList() const
+{
+    const auto didList = getUserDidList();
+    QList<BasicProfile> userList;
+
+    for (const auto& did : didList)
+    {
+        BasicProfile profile(
+            did,
+            getHandle(did),
+            getDisplayName(did),
+            getAvatar(did));
+
+        userList.append(profile);
+    }
+
+    return userList;
+}
+
+QStringList UserSettings::getUserDidList() const
 {
     return mSettings.value("users").toStringList();
 }
 
-void UserSettings::setActiveUser(const QString& handle)
+void UserSettings::setActiveUser(const QString& did)
 {
-    mSettings.setValue("activeUser", handle);
+    mSettings.setValue("activeUser", did);
 }
 
 QString UserSettings::getActiveUser() const
@@ -36,41 +55,41 @@ QString UserSettings::getActiveUser() const
     return mSettings.value("activeUser").toString();
 }
 
-void UserSettings::addUser(const QString& handle, const QString& host)
+void UserSettings::addUser(const QString& did, const QString& host)
 {
-    auto users = getUsers();
-    users.append(handle);
+    auto users = getUserDidList();
+    users.append(did);
     users.sort();
     mSettings.setValue("users", users);
-    mSettings.setValue(key(handle, "host"), host);
+    mSettings.setValue(key(did, "host"), host);
 }
 
-void UserSettings::removeUser(const QString& handle)
+void UserSettings::removeUser(const QString& did)
 {
-    auto users = getUsers();
-    users.removeOne(handle);
+    auto users = getUserDidList();
+    users.removeOne(did);
     mSettings.setValue("users", users);
-    clearCredentials(handle);
+    clearCredentials(did);
 
     const auto activeUser = getActiveUser();
-    if (handle == activeUser)
+    if (did == activeUser)
         setActiveUser("");
 }
 
-QString UserSettings::getHost(const QString& handle) const
+QString UserSettings::getHost(const QString& did) const
 {
-    return mSettings.value(key(handle, "host")).toString();
+    return mSettings.value(key(did, "host")).toString();
 }
 
-void UserSettings::savePassword(const QString& handle, const QString& password)
+void UserSettings::savePassword(const QString& did, const QString& password)
 {
     const QByteArray encryptedPassword = mEncryption.encrypt(password, KEY_ALIAS_PASSWORD);
-    mSettings.setValue(key(handle, "password"), encryptedPassword);
+    mSettings.setValue(key(did, "password"), encryptedPassword);
 }
 
-QString UserSettings::getPassword(const QString& handle) const
+QString UserSettings::getPassword(const QString& did) const
 {
-    const QByteArray encryptedPassword = mSettings.value(key(handle, "password")).toByteArray();
+    const QByteArray encryptedPassword = mSettings.value(key(did, "password")).toByteArray();
 
     if (encryptedPassword.isEmpty())
         return {};
@@ -78,46 +97,53 @@ QString UserSettings::getPassword(const QString& handle) const
     return mEncryption.decrypt(encryptedPassword, KEY_ALIAS_PASSWORD);
 }
 
-void UserSettings::saveDisplayName(const QString& handle, const QString& displayName)
+QString UserSettings::getHandle(const QString& did) const
 {
-    mSettings.setValue(key(handle, "displayName"), displayName);
+    return mSettings.value(key(did, "handle")).toString();
 }
 
-QString UserSettings::getDisplayName(const QString& handle) const
+void UserSettings::saveDisplayName(const QString& did, const QString& displayName)
 {
-    return mSettings.value(key(handle, "displayName")).toString();
+    mSettings.setValue(key(did, "displayName"), displayName);
 }
 
-void UserSettings::saveAvatar(const QString& handle, const QString& avatar)
+QString UserSettings::getDisplayName(const QString& did) const
 {
-    mSettings.setValue(key(handle, "avatar"), avatar);
+    return mSettings.value(key(did, "displayName")).toString();
 }
 
-QString UserSettings::getAvatar(const QString& handle) const
+void UserSettings::saveAvatar(const QString& did, const QString& avatar)
 {
-    return mSettings.value(key(handle, "avatar")).toString();
+    mSettings.setValue(key(did, "avatar"), avatar);
 }
 
-void UserSettings::saveSession(const QString& handle, const ATProto::ComATProtoServer::Session& session)
+QString UserSettings::getAvatar(const QString& did) const
 {
+    return mSettings.value(key(did, "avatar")).toString();
+}
+
+void UserSettings::saveSession(const QString& did, const ATProto::ComATProtoServer::Session& session)
+{
+    Q_ASSERT(did == session.mDid);
     const QByteArray encryptedAccessToken = mEncryption.encrypt(session.mAccessJwt, KEY_ALIAS_ACCESS_TOKEN);
     const QByteArray encryptedRefreshToken = mEncryption.encrypt(session.mRefreshJwt, KEY_ALIAS_REFRESH_TOKEN);
 
-    mSettings.setValue(key(handle, "did"), session.mDid);
-    mSettings.setValue(key(handle, "access"), encryptedAccessToken);
-    mSettings.setValue(key(handle, "refresh"), encryptedRefreshToken);
+    mSettings.setValue(key(did, "handle"), session.mHandle);
+    mSettings.setValue(key(did, "access"), encryptedAccessToken);
+    mSettings.setValue(key(did, "refresh"), encryptedRefreshToken);
 }
 
-ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& handle) const
+ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
 {
     ATProto::ComATProtoServer::Session session;
-    session.mDid = mSettings.value(key(handle, "did")).toString();
-    const QByteArray encryptedAccessToken = mSettings.value(key(handle, "access")).toByteArray();
+    session.mDid = did;
+    session.mHandle = mSettings.value(key(did, "handle")).toString();
+    const QByteArray encryptedAccessToken = mSettings.value(key(did, "access")).toByteArray();
 
     if (!encryptedAccessToken.isEmpty())
         session.mAccessJwt = mEncryption.decrypt(encryptedAccessToken, KEY_ALIAS_ACCESS_TOKEN);
 
-    const QByteArray encryptedRefreshToken = mSettings.value(key(handle, "refresh")).toByteArray();
+    const QByteArray encryptedRefreshToken = mSettings.value(key(did, "refresh")).toByteArray();
 
     if (!encryptedRefreshToken.isEmpty())
         session.mRefreshJwt = mEncryption.decrypt(encryptedRefreshToken, KEY_ALIAS_REFRESH_TOKEN);
@@ -125,11 +151,11 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& handl
     return session;
 }
 
-void UserSettings::clearCredentials(const QString& handle)
+void UserSettings::clearCredentials(const QString& did)
 {
-    mSettings.setValue(key(handle, "password"), "");
-    mSettings.setValue(key(handle, "access"), "");
-    mSettings.setValue(key(handle, "refresh"), "");
+    mSettings.setValue(key(did, "password"), "");
+    mSettings.setValue(key(did, "access"), "");
+    mSettings.setValue(key(did, "refresh"), "");
 }
 
 }

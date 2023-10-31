@@ -68,7 +68,8 @@ public:
     ImageView getImageView() const;
     ProfileViewerState getViewer() const;
     QStringList getLabelTexts() const;
-    bool hasInvalidHandle() const;
+
+    Q_INVOKABLE bool hasInvalidHandle() const;
 
     // Get the handle, but if it is invalid then get the DID
     QString getHandleOrDid() const;

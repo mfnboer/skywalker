@@ -76,7 +76,7 @@ Page {
         PostButton {
             x: parent.width - width - 10
             y: -height - 10
-            initialText: isUser(author) ? "" : `@${author.handle} `
+            initialText: (isUser(author) || author.hasInvalidHandle()) ? "" : `@${author.handle} `
         }
     }
 

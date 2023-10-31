@@ -218,7 +218,7 @@ Page {
 
         AuthorTypeaheadListView {
             id: typeaheadView
-            y: postText.cursorRectangle.y + postText.cursorRectangle.height + 5
+            y: postText.y + postText.cursorRectangle.y + postText.cursorRectangle.height + 5
             z: 10
             width: page.width
             height: page.footer.y - y - 5
@@ -244,15 +244,6 @@ Page {
                 const newText = fullText.slice(0, mentionStartIndex) + profile.handle + ' ' + fullText.slice(mentionEndIndex)
                 postText.text = newText
                 postText.cursorPosition = mentionStartIndex + profile.handle.length + 1
-            }
-
-            Text {
-                topPadding: 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: "grey"
-                elide: Text.ElideRight
-                text: qsTr("No matching user name found")
-                visible: typeaheadView.count === 0
             }
         }
 
