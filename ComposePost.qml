@@ -216,7 +216,7 @@ Page {
             }
         }
 
-        AuthorTypeaheadListView {
+        SimpleAuthorListView {
             id: typeaheadView
             y: postText.y + postText.cursorRectangle.y + postText.cursorRectangle.height + 5
             z: 10

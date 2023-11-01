@@ -11,6 +11,7 @@ Drawer {
     signal profile()
     signal moderation()
     signal settings()
+    signal switchAccount()
     signal signOut()
 
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
@@ -59,7 +60,7 @@ Drawer {
         SkyMenuItem {
             id: moderationItem
             icon: svgOutline.visibility
-            text: qsTr("Moderation")
+            text: qsTr("Content Filter")
             onClicked: moderation()
         }
 
@@ -68,6 +69,13 @@ Drawer {
             icon: svgOutline.settings
             text: qsTr("Settings")
             onClicked: settings()
+        }
+
+        SkyMenuItem {
+            id: switchAccountItem
+            icon: svgOutline.group
+            text: qsTr("Switch Account")
+            onClicked: switchAccount()
         }
 
         SkyMenuItem {

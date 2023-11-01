@@ -40,7 +40,7 @@ Page {
         }
     }
 
-    AuthorTypeaheadListView {
+    SimpleAuthorListView {
         anchors.fill: parent
         rowPadding: 13
         allowDelete: true

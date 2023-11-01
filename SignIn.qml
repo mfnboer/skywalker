@@ -5,13 +5,17 @@ import QtQuick.Layouts
 Page {
     signal signIn()
 
+    width: parent.width
+    height: parent.height
     background: Rectangle { color: "#0387c7" }
 
-    ColumnLayout {
+    Column {
         width: parent.width
+        height: parent.height
 
         Text {
-            Layout.alignment: Layout.Center
+            id: title
+            anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             color: "white"
             font.bold: true
@@ -19,7 +23,8 @@ Page {
             text: "Skywalker"
         }
         Text {
-            Layout.fillWidth: true
+            id: description
+            width: parent.width
             padding: 10
             wrapMode: Text.Wrap
             elide: Text.ElideRight
@@ -30,12 +35,15 @@ Page {
             onLinkActivated: (link) => { root.openLink(link) }
         }
         Image {
-            Layout.fillWidth: true
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: height
+            height: Math.min(parent.height - title.height - description.height - signInButton.height, parent.width)
             fillMode: Image.PreserveAspectFit
             source: "images/skywalker.png"
         }
         SkyButton {
-            Layout.alignment: Layout.Center
+            id: signInButton
+            anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Sign In")
             onClicked: signIn()
         }

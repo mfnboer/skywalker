@@ -110,7 +110,7 @@ Page {
         onNotificationsClicked: root.viewNotifications()
     }
 
-    AuthorTypeaheadListView {
+    SimpleAuthorListView {
         id: typeaheadView
         anchors.fill: parent
         model: searchUtils.authorTypeaheadList

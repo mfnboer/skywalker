@@ -1279,7 +1279,7 @@ void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
     emit statusMessage(msg, level);
 }
 
-void Skywalker::logout()
+void Skywalker::signOut()
 {
     // TODO: what if requests are still inprog
     qDebug() << "Logout:" << mUserDid;

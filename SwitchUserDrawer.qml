@@ -10,7 +10,7 @@ Drawer {
 
     id: drawer
 
-    AuthorTypeaheadListView {
+    SimpleAuthorListView {
         anchors.fill: parent
         rowPadding: 13
         model: userList
@@ -20,7 +20,7 @@ Drawer {
             anchors.horizontalCenter: parent.horizontalCenter
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
-            text: qsTr("Switch User")
+            text: qsTr("Switch Account")
         }
     }
 

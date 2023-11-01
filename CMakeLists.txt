@@ -151,7 +151,7 @@ qt_add_qml_module(appskywalker
         QML_FILES SkyRadioButton.qml
         SOURCES search_utils.h
         SOURCES search_utils.cpp
-        QML_FILES AuthorTypeaheadListView.qml
+        QML_FILES SimpleAuthorListView.qml
         QML_FILES SearchView.qml
         SOURCES search_post_feed_model.h
         SOURCES search_post_feed_model.cpp

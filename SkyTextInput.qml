@@ -22,6 +22,7 @@ Rectangle {
         leftPadding: icon.width
         activeFocusOnTab: true
         echoMode: skyTextInput.echoMode
+        inputMethodHints: Qt.ImhNoAutoUppercase
         enabled: skyTextInput.enabled
         font.pointSize: guiSettings.scaledFont(9/8)
         text: skyTextInput.initialText

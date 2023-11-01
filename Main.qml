@@ -176,11 +176,15 @@ ApplicationWindow {
             close()
         }
 
-        onSignOut: {
-            timelineUpdateTimer.stop()
-            unwindStack()
-            skywalker.logout()
+        onSwitchAccount: {
+            signOutCurrentUser()
             selectUser()
+            close()
+        }
+
+        onSignOut: {
+            signOutCurrentUser()
+            signIn()
             close()
         }
 
@@ -197,11 +201,12 @@ ApplicationWindow {
         edge: Qt.BottomEdge
 
         onSelectedUser: (profile) => {
-            if (profile.did !== skywalker.getUserDid()) {
-                // TODO duplicate code
-                timelineUpdateTimer.stop()
-                unwindStack()
-                skywalker.logout()
+            if (!profile.did) {
+                signOutCurrentUser()
+                newUser()
+            }
+            else if (profile.did !== skywalker.getUserDid()) {
+                signOutCurrentUser()
                 const userSettings = skywalker.getUserSettings()
                 const host = userSettings.getHost(profile.did)
                 const password = userSettings.getPassword(profile.did)
@@ -213,7 +218,7 @@ ApplicationWindow {
 
         function show() {
             const userSettings = skywalker.getUserSettings()
-            userList = userSettings.getUserList()
+            userList = userSettings.getUserListWithAddAccount()
             open()
         }
     }
@@ -430,6 +435,12 @@ ApplicationWindow {
                 selectUser()
         })
         currentStack().push(page)
+    }
+
+    function signOutCurrentUser() {
+        timelineUpdateTimer.stop()
+        unwindStack()
+        skywalker.signOut()
     }
 
     function composePost(initialText) {
