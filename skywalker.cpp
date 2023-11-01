@@ -65,6 +65,7 @@ void Skywalker::login(const QString user, QString password, const QString host)
         },
         [this, host, user](const QString& error){
             qDebug() << "Login" << user << "failed:" << error;
+            mUserSettings.setActiveUserDid({});
             emit loginFailed(error, host, user);
         });
 }

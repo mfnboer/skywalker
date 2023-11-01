@@ -41,8 +41,6 @@ BasicProfile::BasicProfile(const QString& did, const QString& handle, const QStr
     mDisplayName(displayName),
     mAvatarUrl(avatarUrl)
 {
-    Q_ASSERT(!mDid.isEmpty());
-    Q_ASSERT(!mHandle.isEmpty());
 }
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :

@@ -10,6 +10,7 @@ Page {
     property string error
 
     signal accepted(string host, string handle, string password, string did)
+    signal canceled
 
     id: loginPage
     width: parent.width
@@ -101,12 +102,20 @@ Page {
 
     SkyButton {
         anchors.top: loginForm.bottom
+        anchors.left: parent.left
+        text: qsTr("Cancel")
+        enabled: true
+        onClicked: loginPage.canceled()
+    }
+
+    SkyButton {
+        anchors.top: loginForm.bottom
         anchors.right: parent.right
         text: qsTr("OK")
         enabled: hostField.editText && userField.text
         onClicked: {
             const handle = autoCompleteHandle(userField.text, hostField.editText)
-            accepted(hostField.editText, handle, passwordField.text, loginPage.did)
+            loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did)
         }
     }
 

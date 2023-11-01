@@ -16,6 +16,10 @@ public:
     explicit UserSettings(QObject* parent = nullptr);
 
     Q_INVOKABLE QList<BasicProfile> getUserList() const;
+
+    // Get the user list with a surrogate profile added for adding a new user account
+    Q_INVOKABLE QList<BasicProfile> getUserListWithAddAccount() const;
+
     QStringList getUserDidList() const;
     Q_INVOKABLE BasicProfile getUser(const QString& did) const;
     void setActiveUserDid(const QString& did);

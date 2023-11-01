@@ -167,6 +167,9 @@ qt_add_qml_module(appskywalker
         SOURCES user_settings.cpp
         RESOURCES android/src/com/gmail/mfnboer/SkywalkerActivity.java
         QML_FILES SkyTextInput.qml
+        QML_FILES SignIn.qml
+        RESOURCES images/skywalker.png
+        QML_FILES SelectSignInUser.qml
 
 
 )

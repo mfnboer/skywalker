@@ -81,17 +81,14 @@ ApplicationWindow {
             if (did) {
                 const host = userSettings.getHost(did)
                 const password = userSettings.getPassword(did)
-                skywalker.login(did, password, host)
-                return
+
+                if (host) {
+                    skywalker.login(did, password, host)
+                    return
+                }
             }
 
-            let userList = userSettings.getUserList()
-            if (userList.length > 0) {
-                selectUser(userList)
-                return
-            }
-
-            newUser()
+            signIn()
         }
 
         onSessionExpired: (error) => {
@@ -308,13 +305,36 @@ ApplicationWindow {
         linkUtils.openLink(link)
     }
 
+    function signIn() {
+        let component = Qt.createComponent("SignIn.qml")
+        let page = component.createObject(root)
+        page.onSignIn.connect(() => {
+            popStack()
+
+            const userSettings = skywalker.getUserSettings()
+            const userList = userSettings.getUserList()
+
+            if (userList.length > 0) {
+              selectUser(userSettings.getUserListWithAddAccount())
+              return
+            }
+
+            newUser()
+        })
+        currentStack().push(page)
+    }
+
     function loginUser(host, handle, did, error="") {
         let component = Qt.createComponent("Login.qml")
         let page = component.createObject(root, { host: host, user: handle, did:did, error: error })
+        page.onCanceled.connect(() => {
+                popStack()
+                signIn()
+        })
         page.onAccepted.connect((host, handle, password, did) => {
+                popStack()
                 const user = did ? did : handle
                 skywalker.login(user, password, host)
-                popStack()
         })
         currentStack().push(page)
     }
@@ -322,16 +342,39 @@ ApplicationWindow {
     function newUser() {
         let component = Qt.createComponent("Login.qml")
         let page = component.createObject(root)
-        page.onAccepted.connect((host, handle, password, did) => {
-                skywalker.login(handle, password, host)
+        page.onCanceled.connect(() => {
                 popStack()
+                signIn()
         })
+        page.onAccepted.connect((host, handle, password, did) => {
+                popStack()
+                skywalker.login(handle, password, host)
+        })
+
         currentStack().push(page)
     }
 
-    function selectUser() {
-        // TODO
-        console.debug("SELECT USER")
+    function selectUser(userList) {
+        let component = Qt.createComponent("SelectSignInUser.qml")
+        let page = component.createObject(root, { userList: userList })
+        currentStack().push(page)
+        page.onCanceled.connect(() => {
+                popStack()
+                signIn()
+        })
+        page.onSelectedUser.connect((profile) => {
+                popStack()
+
+                if (!profile.did) {
+                    newUser()
+                    return
+                }
+
+                const userSettings = skywalker.getUserSettings()
+                const host = userSettings.getHost(profile.did)
+                const password = userSettings.getPassword(profile.did)
+                skywalker.login(profile.did, password, host)
+        })
     }
 
     function composePost(initialText) {

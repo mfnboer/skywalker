@@ -5,6 +5,7 @@ import skywalker
 
 ListView {
     required model
+    property int rowPadding: 3
 
     signal authorClicked(basicprofile profile)
 
@@ -37,7 +38,7 @@ ListView {
                 Avatar {
                     id: avatarImg
                     x: parent.x + 8
-                    y: parent.y + 3
+                    y: parent.y + rowPadding
                     width: parent.width - 12
                     height: width
                     avatarUrl: authorVisible() ? author.avatarUrl : ""
@@ -46,7 +47,7 @@ ListView {
             }
 
             Text {
-                topPadding: 3
+                topPadding: rowPadding
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.bold: true
@@ -54,13 +55,13 @@ ListView {
             }
 
             Text {
-                bottomPadding: 3
+                bottomPadding: rowPadding
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
-                text: `@${author.handle}`
+                text: author.handle ? `@${author.handle}` : ""
             }
 
             Rectangle {
