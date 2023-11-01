@@ -163,4 +163,9 @@ ListView {
                 updateUnreadPosts(firstVisibleIndex)
             })
     }
+
+    function stopSync() {
+        // TODO: break connections above
+        inSync = false
+    }
 }

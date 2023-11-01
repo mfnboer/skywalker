@@ -100,7 +100,7 @@ Page {
 
         Switch {
             Material.accent: guiSettings.buttonColor
-            text: qsTr("Followed users only")
+            text: qsTr("Replies to followed users only")
             checked: userPrefs.hideRepliesByUnfollowed
             enabled: !userPrefs.hideReplies
             onCheckedChanged: userPrefs.hideRepliesByUnfollowed = checked

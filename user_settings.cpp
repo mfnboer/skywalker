@@ -5,15 +5,11 @@
 namespace Skywalker {
 
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
-static constexpr char const* KEY_ALIAS_ACCESS_TOKEN = "SkywalkerAccess";
-static constexpr char const* KEY_ALIAS_REFRESH_TOKEN = "SkywalkerRefresh";
 
 UserSettings::UserSettings(QObject* parent) :
     QObject(parent)
 {
     mEncryption.init(KEY_ALIAS_PASSWORD);
-    mEncryption.init(KEY_ALIAS_ACCESS_TOKEN);
-    mEncryption.init(KEY_ALIAS_REFRESH_TOKEN);
 }
 
 QString UserSettings::key(const QString& did, const QString& subkey) const
@@ -111,6 +107,7 @@ void UserSettings::savePassword(const QString& did, const QString& password)
 {
     const QByteArray encryptedPassword = mEncryption.encrypt(password, KEY_ALIAS_PASSWORD);
     mSettings.setValue(key(did, "password"), encryptedPassword);
+    qDebug() << "Password saved:" << encryptedPassword;
 }
 
 QString UserSettings::getPassword(const QString& did) const
@@ -150,12 +147,9 @@ QString UserSettings::getAvatar(const QString& did) const
 
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
-    const QByteArray encryptedAccessToken = mEncryption.encrypt(session.mAccessJwt, KEY_ALIAS_ACCESS_TOKEN);
-    const QByteArray encryptedRefreshToken = mEncryption.encrypt(session.mRefreshJwt, KEY_ALIAS_REFRESH_TOKEN);
-
     mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
-    mSettings.setValue(key(session.mDid, "access"), encryptedAccessToken);
-    mSettings.setValue(key(session.mDid, "refresh"), encryptedRefreshToken);
+    mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
+    mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -163,16 +157,8 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) 
     ATProto::ComATProtoServer::Session session;
     session.mDid = did;
     session.mHandle = mSettings.value(key(did, "handle")).toString();
-    const QByteArray encryptedAccessToken = mSettings.value(key(did, "access")).toByteArray();
-
-    if (!encryptedAccessToken.isEmpty())
-        session.mAccessJwt = mEncryption.decrypt(encryptedAccessToken, KEY_ALIAS_ACCESS_TOKEN);
-
-    const QByteArray encryptedRefreshToken = mSettings.value(key(did, "refresh")).toByteArray();
-
-    if (!encryptedRefreshToken.isEmpty())
-        session.mRefreshJwt = mEncryption.decrypt(encryptedRefreshToken, KEY_ALIAS_REFRESH_TOKEN);
-
+    session.mAccessJwt = mSettings.value(key(did, "access")).toString();
+    session.mRefreshJwt = mSettings.value(key(did, "refresh")).toString();
     return session;
 }
 

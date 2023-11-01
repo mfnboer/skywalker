@@ -197,7 +197,7 @@ ApplicationWindow {
     SwitchUserDrawer {
         id: switchUserDrawer
         width: parent.width
-        height: parent.height / 3
+        height: parent.height * 0.5
         edge: Qt.BottomEdge
 
         onSelectedUser: (profile) => {
@@ -439,6 +439,7 @@ ApplicationWindow {
 
     function signOutCurrentUser() {
         timelineUpdateTimer.stop()
+        getTimelineView().stopSync()
         unwindStack()
         skywalker.signOut()
     }

@@ -555,6 +555,9 @@ void Skywalker::setUnreadNotificationCount(int unread)
 // NOTE: indices can be -1 if the UI cannot determine the index
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
 {
+    if (mSignOutInProgress)
+        return;
+
     if (lastVisibleIndex > -1)
     {
         if (firstVisibleIndex > -1)
@@ -1281,8 +1284,9 @@ void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
 
 void Skywalker::signOut()
 {
-    // TODO: what if requests are still inprog
     qDebug() << "Logout:" << mUserDid;
+    mSignOutInProgress = true;
+
     stopRefreshTimers();
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();
@@ -1299,6 +1303,13 @@ void Skywalker::signOut()
     setUnreadNotificationCount(0);
     mUserSettings.setActiveUserDid({});
     mBsky = nullptr;
+    setAutoUpdateTimelineInProgress(false);
+    setGetTimelineInProgress(false);
+    setGetPostThreadInProgress(false);
+    setGetAuthorFeedInProgress(false);
+    setGetAuthorListInProgress(false);
+
+    mSignOutInProgress = false;
 }
 
 }

@@ -28,7 +28,10 @@ Page {
                 iconColor: "white"
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
-                onClicked: page.closed()
+                onClicked: {
+                    searchText.focus = false
+                    page.closed()
+                }
             }
 
             Rectangle {
@@ -44,6 +47,8 @@ Page {
                     padding: 5
                     rightPadding: clearButton.width
                     font.pointSize: guiSettings.scaledFont(9/8)
+                    inputMethodHints: Qt.ImhNoAutoUppercase
+                    focus: true
 
                     onDisplayTextChanged: {
                         page.isTyping = true

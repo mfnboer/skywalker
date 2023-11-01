@@ -171,6 +171,7 @@ private:
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;
+    bool mSignOutInProgress = false;
     QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
 

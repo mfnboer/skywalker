@@ -32,6 +32,16 @@ Page {
                 id: imgRect
                 color: "black"
 
+                Text {
+                    id: altText
+                    width: parent.width
+                    anchors.bottom: parent.bottom
+                    wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    color: "white"
+                    text: images[index].alt
+                    visible: images[index].alt && isCurrentItem
+                }
                 ImageAutoRetry {
                     id: img
                     y: (parent.height - altText.height - height) / 2
@@ -110,16 +120,6 @@ Page {
                     function getCenter() {
                         return Qt.point(width / 2, height / 2)
                     }
-                }
-                Text {
-                    id: altText
-                    width: parent.width
-                    anchors.bottom: parent.bottom
-                    wrapMode: Text.Wrap
-                    elide: Text.ElideRight
-                    color: "white"
-                    text: images[index].alt
-                    visible: images[index].alt && isCurrentItem
                 }
             }
         }

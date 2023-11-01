@@ -13,6 +13,7 @@ ListView {
 
     id: searchList
     spacing: 0
+    clip: true
 
     delegate: Rectangle {
         required property basicprofile modelData

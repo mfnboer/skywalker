@@ -16,21 +16,29 @@ Drawer {
         model: userList
         onAuthorClicked: (profile) => { selectedUser(profile) }
 
-        header: Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            font.bold: true
-            font.pointSize: guiSettings.scaledFont(10/8)
-            text: qsTr("Switch Account")
-        }
-    }
+        header: Rectangle {
+            height: guiSettings.headerHeight
+            width: parent.width
+            z: guiSettings.headerZLevel
 
-    SvgButton {
-        id: closeButton
-        anchors.right: parent.right
-        iconColor: guiSettings.textColor
-        Material.background: "transparent"
-        svg: svgOutline.close
-        onClicked: drawer.close()
+            Text {
+                anchors.centerIn: parent
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(10/8)
+                text: qsTr("Switch Account")
+            }
+
+            SvgButton {
+                id: closeButton
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                iconColor: guiSettings.textColor
+                Material.background: "transparent"
+                svg: svgOutline.close
+                onClicked: drawer.close()
+            }
+        }
+        headerPositioning: ListView.OverlayHeader
     }
 
     GuiSettings {
