@@ -299,6 +299,8 @@ void SearchUtils::getPosts(const std::vector<QString>& uris)
     if (uris.empty())
     {
         setSearchPostsInProgress(false);
+        auto* model = getSearchPostFeedModel();
+        model->clear();
         return;
     }
 
@@ -315,8 +317,8 @@ void SearchUtils::getPosts(const std::vector<QString>& uris)
             setSearchPostsInProgress(false);
             auto output = std::make_unique<ATProto::AppBskyFeed::SearchPostsOutput>();
             output->mPosts = std::move(postViewList);
-            auto& model = *getSearchPostFeedModel();
-            model.setFeed(std::move(output));
+            auto* model = getSearchPostFeedModel();
+            model->setFeed(std::move(output));
         },
         [this, presence=getPresence()](const QString& error)
         {
@@ -336,6 +338,8 @@ void SearchUtils::getProfiles(const std::vector<QString>& users)
     if (users.empty())
     {
         setSearchActorsInProgress(false);
+        auto* model = getSearchUsersModel();
+        model->clear();
         return;
     }
 
@@ -367,9 +371,9 @@ void SearchUtils::getProfiles(const std::vector<QString>& users)
                 profileViewList.push_back(std::move(profileView));
             }
 
-            auto& model = *getSearchUsersModel();
-            model.clear();
-            model.addAuthors(std::move(profileViewList), "");
+            auto* model = getSearchUsersModel();
+            model->clear();
+            model->addAuthors(std::move(profileViewList), "");
         },
         [this, presence=getPresence()](const QString& error)
         {
