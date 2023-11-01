@@ -48,6 +48,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorListModels.empty());
 }
 
+// NOTE: user can be handle or DID
 void Skywalker::login(const QString user, QString password, const QString host)
 {
     qDebug() << "Login:" << user << "host:" << host;

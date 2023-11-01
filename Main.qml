@@ -61,8 +61,15 @@ ApplicationWindow {
         id: skywalker
         onLoginOk: start()
 
-        onLoginFailed: (error, host, user) => {
-            loginUser(host, user, error)
+        onLoginFailed: (error, host, handleOrDid) => {
+            if (handleOrDid.startsWith("did:")) {
+                const did = handleOrDid
+                const userSettings = getUserSettings()
+                const user = userSettings.getUser(did)
+                loginUser(host, user.handle, did, error)
+            } else {
+                loginUser(host, handleOrDid, "", error)
+            }
         }
 
         onResumeSessionOk: start()
@@ -72,10 +79,9 @@ ApplicationWindow {
             const did = userSettings.getActiveUserDid()
 
             if (did) {
-                const user = userSettings.getUser(did)
                 const host = userSettings.getHost(did)
                 const password = userSettings.getPassword(did)
-                skywalker.login(user.handle, password, host)
+                skywalker.login(did, password, host)
                 return
             }
 
@@ -302,10 +308,11 @@ ApplicationWindow {
         linkUtils.openLink(link)
     }
 
-    function loginUser(host, user, error="") {
+    function loginUser(host, handle, did, error="") {
         let component = Qt.createComponent("Login.qml")
-        let page = component.createObject(root, { host: host, user: user, error: error })
-        page.onAccepted.connect((host, user, password) => {
+        let page = component.createObject(root, { host: host, user: handle, did:did, error: error })
+        page.onAccepted.connect((host, handle, password, did) => {
+                const user = did ? did : handle
                 skywalker.login(user, password, host)
                 popStack()
         })
@@ -315,8 +322,8 @@ ApplicationWindow {
     function newUser() {
         let component = Qt.createComponent("Login.qml")
         let page = component.createObject(root)
-        page.onAccepted.connect((host, user, password) => {
-                skywalker.login(user, password, host)
+        page.onAccepted.connect((host, handle, password, did) => {
+                skywalker.login(handle, password, host)
                 popStack()
         })
         currentStack().push(page)

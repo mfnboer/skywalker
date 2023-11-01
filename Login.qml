@@ -1,14 +1,15 @@
-import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import skywalker
 
 Page {
+    property string did
     property string host
     property string user
     property string error
 
-    signal accepted(string host, string user, string password)
+    signal accepted(string host, string handle, string password, string did)
 
     id: loginPage
     width: parent.width
@@ -34,46 +35,62 @@ Page {
         }
     }
 
-    GridLayout {
+    ColumnLayout {
         id: loginForm
-        columns: 2
         width: parent.width
 
-        Label {
-            text: qsTr("Host:")
+        Text {
+            Layout.fillWidth: true
+            topPadding: 10
+            leftPadding: 10
+            font.bold: true
+            text: qsTr("Sign into")
         }
+
         ComboBox {
             id: hostField
             Layout.fillWidth: true
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
             model: ["bsky.social"]
             editable: true
             editText: host
             enabled: isNewAccount()
+            activeFocusOnTab: false
         }
 
-        Label {
-            text: qsTr("User:")
+        Text {
+            Layout.fillWidth: true
+            topPadding: 10
+            leftPadding: 10
+            font.bold: true
+            text: qsTr("Account")
         }
-        TextField {
+
+        SkyTextInput {
             id: userField
             Layout.fillWidth: true
-            focus: true
-            text: user
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
             enabled: isNewAccount()
+            focus: true
+            svgIcon: svgOutline.atSign
+            initialText: user
+            placeholderText: qsTr("User")
         }
 
-        Label {
-            text: qsTr("Password:")
-        }
-        TextField {
+        SkyTextInput {
             id: passwordField
             Layout.fillWidth: true
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
+            svgIcon: svgFilled.lock
             echoMode: TextInput.Password
+            placeholderText: qsTr("Password")
         }
 
         Label {
             id: msgLabel
-            Layout.columnSpan: 2
             Layout.fillWidth: true
             color: "red"
             wrapMode: Text.Wrap
@@ -89,7 +106,7 @@ Page {
         enabled: hostField.editText && userField.text
         onClicked: {
             const handle = autoCompleteHandle(userField.text, hostField.editText)
-            accepted(hostField.editText, handle, passwordField.text)
+            accepted(hostField.editText, handle, passwordField.text, loginPage.did)
         }
     }
 
@@ -110,6 +127,10 @@ Page {
     }
 
     function isNewAccount() {
-        return user.length === 0
+        return did.length === 0
+    }
+
+    Component.onCompleted: {
+        userField.setFocus()
     }
 }
