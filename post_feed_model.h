@@ -47,6 +47,8 @@ public:
     // Returns the index of the first post <= timestamp
     int findTimestamp(QDateTime timestamp) const;
 
+    void clear();
+
 private:
     struct CidTimestamp
     {
@@ -70,7 +72,6 @@ private:
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
     };
 
-    void clear();
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);

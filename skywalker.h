@@ -82,6 +82,7 @@ public:
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE const UserSettings* getUserSettings() const { return &mUserSettings; }
     Q_INVOKABLE bool sendAppToBackground();
+    Q_INVOKABLE void logout();
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
@@ -119,7 +120,7 @@ signals:
     void timelineSyncFailed();
     void timelineRefreshed(int prevTopPostIndex);
     void getUserProfileOK();
-    void getUserProfileFailed();
+    void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
     void getUserPreferencesFailed();
     void autoUpdateTimeLineInProgressChanged();

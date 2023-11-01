@@ -74,44 +74,29 @@ ApplicationWindow {
 
         onResumeSessionOk: start()
 
-        onResumeSessionFailed: {
-            const userSettings = getUserSettings()
-            const did = userSettings.getActiveUserDid()
-
-            if (did) {
-                const host = userSettings.getHost(did)
-                const password = userSettings.getPassword(did)
-
-                if (host) {
-                    skywalker.login(did, password, host)
-                    return
-                }
-            }
-
-            signIn()
-        }
+        onResumeSessionFailed: loginActiveUser()
 
         onSessionExpired: (error) => {
-            timelineUpdateTimer.stop()
-            loginDialog.show()
+            timelineUpdateTimer.stop() // TODO: why?
+            loginActiveUser()
         }
 
         onStatusMessage: (msg, level) => statusPopup.show(msg, level, level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
         onGetUserProfileOK: () => skywalker.getUserPreferences()
 
-        onGetUserProfileFailed: {
+        onGetUserProfileFailed: (error) => {
             // TODO: retry
-            console.warn("FAILED TO LOAD USER PROFILE")
-            statusPopup.show("FAILED TO LOAD USER PROFILE", QEnums.STATUS_LEVEL_ERROR)
+            console.warn("FAILED TO LOAD USER PROFILE:", error)
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onGetUserPreferencesOK: () => skywalker.syncTimeline()
 
         onGetUserPreferencesFailed: {
-            // TODO: retry
             console.warn("FAILED TO LOAD USER PREFERENCES")
             statusPopup.show("FAILED TO LOAD USER PREFERENCES", QEnums.STATUS_LEVEL_ERROR)
+            signIn()
         }
 
         onTimelineSyncOK: (index) => {
@@ -188,6 +173,14 @@ ApplicationWindow {
 
         onSettings: {
             editSettings()
+            close()
+        }
+
+        onSignOut: {
+            timelineUpdateTimer.stop()
+            unwindStack()
+            skywalker.logout()
+            selectUser()
             close()
         }
 
@@ -315,8 +308,8 @@ ApplicationWindow {
             const userList = userSettings.getUserList()
 
             if (userList.length > 0) {
-              selectUser(userSettings.getUserListWithAddAccount())
-              return
+                selectUser()
+                return
             }
 
             newUser()
@@ -339,6 +332,23 @@ ApplicationWindow {
         currentStack().push(page)
     }
 
+    function loginActiveUser() {
+        const userSettings = skywalker.getUserSettings()
+        const did = userSettings.getActiveUserDid()
+
+        if (did) {
+            const host = userSettings.getHost(did)
+            const password = userSettings.getPassword(did)
+
+            if (host) {
+                skywalker.login(did, password, host)
+                return
+            }
+        }
+
+        signIn()
+    }
+
     function newUser() {
         let component = Qt.createComponent("Login.qml")
         let page = component.createObject(root)
@@ -354,10 +364,12 @@ ApplicationWindow {
         currentStack().push(page)
     }
 
-    function selectUser(userList) {
+    function selectUser() {
+        const userSettings = skywalker.getUserSettings()
+        const userList = userSettings.getUserListWithAddAccount()
+
         let component = Qt.createComponent("SelectSignInUser.qml")
         let page = component.createObject(root, { userList: userList })
-        currentStack().push(page)
         page.onCanceled.connect(() => {
                 popStack()
                 signIn()
@@ -375,6 +387,17 @@ ApplicationWindow {
                 const password = userSettings.getPassword(profile.did)
                 skywalker.login(profile.did, password, host)
         })
+        page.onDeletedUser.connect((profile) => {
+                popStack()
+
+                if (profile.did) {
+                    let userSettings = skywalker.getUserSettings()
+                    userSettings.removeUser(profile.did)
+                }
+
+                selectUser()
+        })
+        currentStack().push(page)
     }
 
     function composePost(initialText) {

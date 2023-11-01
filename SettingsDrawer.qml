@@ -11,6 +11,7 @@ Drawer {
     signal profile()
     signal moderation()
     signal settings()
+    signal signOut()
 
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
     padding: 20
@@ -67,6 +68,13 @@ Drawer {
             icon: svgOutline.settings
             text: qsTr("Settings")
             onClicked: settings()
+        }
+
+        SkyMenuItem {
+            id: signOutItem
+            icon: svgOutline.signOut
+            text: qsTr("Sign Out")
+            onClicked: signOut()
         }
     }
 

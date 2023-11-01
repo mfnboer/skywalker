@@ -6,8 +6,10 @@ import skywalker
 ListView {
     required model
     property int rowPadding: 3
+    property bool allowDelete: false
 
     signal authorClicked(basicprofile profile)
+    signal deleteClicked(basicprofile profile)
 
     id: searchList
     spacing: 0
@@ -23,7 +25,7 @@ ListView {
         GridLayout {
             id: grid
             width: parent.width
-            columns: 2
+            columns: 3
             rowSpacing: 0
             columnSpacing: 10
 
@@ -54,6 +56,19 @@ ListView {
                 text: author.name
             }
 
+            SvgButton {
+                id: deleteButton
+                Layout.rowSpan: 2
+                iconColor: guiSettings.textColor
+                Material.background: "transparent"
+                svg: svgOutline.delete
+                onClicked: deleteClicked(author)
+                visible: allowDelete && author.did
+            }
+            Rectangle {
+                visible: !deleteButton.visible
+            }
+
             Text {
                 bottomPadding: rowPadding
                 Layout.fillWidth: true
@@ -65,7 +80,7 @@ ListView {
             }
 
             Rectangle {
-                Layout.columnSpan: 2
+                Layout.columnSpan: 3
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 color: "lightgrey"

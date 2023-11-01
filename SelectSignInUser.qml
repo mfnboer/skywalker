@@ -7,6 +7,7 @@ Page {
     property list<basicprofile> userList
 
     signal selectedUser(basicprofile user)
+    signal deletedUser(basicprofile user)
     signal canceled
 
     id: page
@@ -42,7 +43,17 @@ Page {
     AuthorTypeaheadListView {
         anchors.fill: parent
         rowPadding: 13
+        allowDelete: true
         model: userList
         onAuthorClicked: (profile) => { selectedUser(profile) }
+        onDeleteClicked: (profile) => { deleteUser(profile) }
+    }
+
+    function deleteUser(profile) {
+        let component = Qt.createComponent("Message.qml")
+        let message = component.createObject(page, { standardButtons: Dialog.Yes | Dialog.No })
+        message.onAccepted.connect(() => page.deletedUser(profile))
+        message.onRejected.connect(() => message.destroy())
+        message.show(qsTr(`Do you really want to delete account "${profile.name}"?`))
     }
 }

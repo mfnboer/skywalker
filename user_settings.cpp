@@ -99,7 +99,7 @@ void UserSettings::removeUser(const QString& did)
 
     const auto activeUser = getActiveUserDid();
     if (did == activeUser)
-        setActiveUserDid("");
+        setActiveUserDid({});
 }
 
 QString UserSettings::getHost(const QString& did) const
@@ -178,9 +178,9 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) 
 
 void UserSettings::clearCredentials(const QString& did)
 {
-    mSettings.setValue(key(did, "password"), "");
-    mSettings.setValue(key(did, "access"), "");
-    mSettings.setValue(key(did, "refresh"), "");
+    mSettings.setValue(key(did, "password"), {});
+    mSettings.setValue(key(did, "access"), {});
+    mSettings.setValue(key(did, "refresh"), {});
 }
 
 void UserSettings::saveSyncTimestamp(const QString& did, QDateTime timestamp)

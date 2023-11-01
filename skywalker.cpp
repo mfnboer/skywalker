@@ -178,7 +178,7 @@ void Skywalker::getUserProfileAndFollows()
         [this](const QString& error){
             qWarning() << error;
             mUserFollows.clear();
-            emit getUserProfileFailed();
+            emit getUserProfileFailed(error);
         });
 }
 
@@ -210,7 +210,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
         [this](const QString& error){
             qWarning() << error;
             mUserFollows.clear();
-            emit getUserProfileFailed();
+            emit getUserProfileFailed(error);
         });
 }
 
@@ -220,6 +220,7 @@ void Skywalker::signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView&
     AuthorCache::instance().setUser(BasicProfile(user));
     mUserSettings.saveDisplayName(mUserDid, user.mDisplayName.value_or(""));
     const auto avatar = user.mAvatar ? *user.mAvatar : QString();
+    mUserSettings.saveAvatar(mUserDid, avatar);
     setAvatarUrl(avatar);
     emit getUserProfileOK();
 }
@@ -541,7 +542,6 @@ void Skywalker::setGetAuthorListInProgress(bool inProgress)
 
 void Skywalker::setAvatarUrl(const QString& avatarUrl)
 {
-    mUserSettings.saveAvatar(mUserDid, avatarUrl);
     mAvatarUrl = avatarUrl;
     emit avatarUrlChanged();
 }
@@ -1277,6 +1277,28 @@ void Skywalker::restoreDebugLogging()
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
 {
     emit statusMessage(msg, level);
+}
+
+void Skywalker::logout()
+{
+    // TODO: what if requests are still inprog
+    qDebug() << "Logout:" << mUserDid;
+    stopRefreshTimers();
+    mPostThreadModels.clear();
+    mAuthorFeedModels.clear();
+    mSearchPostFeedModels.clear();
+    mAuthorListModels.clear();
+    mNotificationListModel.clear();
+    mUserPreferences = ATProto::UserPreferences();
+    mEditUserPreferences = nullptr;
+    mContentGroupListModel = nullptr;
+    mTimelineModel.clear();
+    setAvatarUrl({});
+    mUserDid.clear();
+    mUserFollows.clear();
+    setUnreadNotificationCount(0);
+    mUserSettings.setActiveUserDid({});
+    mBsky = nullptr;
 }
 
 }

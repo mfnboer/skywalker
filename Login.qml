@@ -25,6 +25,13 @@ Page {
             width: parent.width
             height: guiSettings.headerHeight
 
+            SvgButton {
+                id: backButton
+                iconColor: "white"
+                Material.background: "transparent"
+                svg: svgOutline.arrowBack
+                onClicked: loginPage.canceled()
+            }
             Text {
                 Layout.alignment: Qt.AlignVCenter
                 leftPadding: 10
@@ -98,14 +105,6 @@ Page {
             text: error
             visible: error
         }
-    }
-
-    SkyButton {
-        anchors.top: loginForm.bottom
-        anchors.left: parent.left
-        text: qsTr("Cancel")
-        enabled: true
-        onClicked: loginPage.canceled()
     }
 
     SkyButton {
