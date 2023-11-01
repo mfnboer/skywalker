@@ -49,6 +49,10 @@ Page {
         onDeleteClicked: (profile) => { deleteUser(profile) }
     }
 
+    GuiSettings {
+        id: guiSettings
+    }
+
     function deleteUser(profile) {
         let component = Qt.createComponent("Message.qml")
         let message = component.createObject(page, { standardButtons: Dialog.Yes | Dialog.No })

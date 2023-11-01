@@ -49,6 +49,7 @@ ListView {
                     height: parent.height
                     avatarUrl: skywalker.avatarUrl
                     onClicked: root.showSettingsDrawer()
+                    onPressAndHold: root.showSwitchUserDrawer()
                 }
             }
         }

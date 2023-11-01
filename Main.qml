@@ -190,6 +190,34 @@ ApplicationWindow {
         }
     }
 
+    SwitchUserDrawer {
+        id: switchUserDrawer
+        width: parent.width
+        height: parent.height / 3
+        edge: Qt.BottomEdge
+
+        onSelectedUser: (profile) => {
+            if (profile.did !== skywalker.getUserDid()) {
+                // TODO duplicate code
+                timelineUpdateTimer.stop()
+                unwindStack()
+                skywalker.logout()
+                const userSettings = skywalker.getUserSettings()
+                const host = userSettings.getHost(profile.did)
+                const password = userSettings.getPassword(profile.did)
+                skywalker.login(profile.did, password, host)
+            }
+
+            close()
+        }
+
+        function show() {
+            const userSettings = skywalker.getUserSettings()
+            userList = userSettings.getUserList()
+            open()
+        }
+    }
+
     Drawer {
         property string repostedAlreadyUri
         property string repostUri
@@ -292,6 +320,10 @@ ApplicationWindow {
 
     function showSettingsDrawer() {
         settingsDrawer.show()
+    }
+
+    function showSwitchUserDrawer() {
+        switchUserDrawer.show()
     }
 
     function openLink(link) {

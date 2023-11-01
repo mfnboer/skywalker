@@ -170,6 +170,7 @@ qt_add_qml_module(appskywalker
         QML_FILES SignIn.qml
         RESOURCES images/skywalker.png
         QML_FILES SelectSignInUser.qml
+        QML_FILES SwitchUserDrawer.qml
 
 
 )

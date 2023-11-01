@@ -6,6 +6,7 @@ import skywalker
 Item {
     property string avatarUrl
     signal clicked
+    signal pressAndHold
 
     id: avatarItem
     height: width
@@ -44,6 +45,10 @@ Item {
         onClicked: {
             console.debug("Avatar clicked");
             avatarItem.clicked()
+        }
+        onPressAndHold: {
+            console.debug("Avatar press and hold")
+            avatarItem.pressAndHold()
         }
     }
 
