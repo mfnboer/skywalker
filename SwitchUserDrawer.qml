@@ -12,7 +12,7 @@ Drawer {
 
     SimpleAuthorListView {
         anchors.fill: parent
-        rowPadding: 13
+        rowPadding: 9
         model: userList
         onAuthorClicked: (profile) => { selectedUser(profile) }
 

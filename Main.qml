@@ -177,7 +177,6 @@ ApplicationWindow {
         }
 
         onSwitchAccount: {
-            signOutCurrentUser()
             selectUser()
             close()
         }
@@ -197,7 +196,7 @@ ApplicationWindow {
     SwitchUserDrawer {
         id: switchUserDrawer
         width: parent.width
-        height: parent.height * 0.5
+        height: parent.height * 0.7
         edge: Qt.BottomEdge
 
         onSelectedUser: (profile) => {
@@ -409,10 +408,17 @@ ApplicationWindow {
         let page = component.createObject(root, { userList: userList })
         page.onCanceled.connect(() => {
                 popStack()
-                signIn()
+
+                if (!skywalker.isSignedIn())
+                    signIn()
         })
         page.onSelectedUser.connect((profile) => {
                 popStack()
+
+                if (skywalker.isSignedIn() && profile.did === skywalker.getUserDid())
+                    return
+                else
+                    signOutCurrentUser()
 
                 if (!profile.did) {
                     newUser()
@@ -428,11 +434,15 @@ ApplicationWindow {
                 popStack()
 
                 if (profile.did) {
+                    if (profile.did === skywalker.getUserDid())
+                        signOutCurrentUser()
+
                     let userSettings = skywalker.getUserSettings()
                     userSettings.removeUser(profile.did)
                 }
 
-                selectUser()
+                if (!skywalker.isSignedIn())
+                    selectUser()
         })
         currentStack().push(page)
     }
