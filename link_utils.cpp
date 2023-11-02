@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "link_utils.h"
+#include "at_regex.h"
 #include <QRegularExpression>
 
 namespace Skywalker {
@@ -60,16 +61,20 @@ void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
 
 QString LinkUtils::isAuthorLink(const QString& link) const
 {
-    static const QRegularExpression authorHandleRE(R"(^https:\/\/bsky.app\/profile\/([a-zA-Z0-9-\._~]+)$)");
-    static const QRegularExpression authorDidRE(R"(^https:\/\/bsky.app\/profile\/(did:plc:[a-zA-Z0-9-\.:_]+)$)");
+    static const QRegularExpression authorHandleRE(
+            QString(R"(^https:\/\/bsky.app\/profile\/(?<handle>%1)$)").arg(
+                ATProto::ATRegex::HANDLE.pattern()));
+    static const QRegularExpression authorDidRE(
+            QString(R"(^https:\/\/bsky.app\/profile\/(?<did>%2)$)").arg(
+                ATProto::ATRegex::DID.pattern()));
 
     auto match = authorHandleRE.match(link);
     if (match.hasMatch())
-        return match.captured(1);
+        return match.captured("handle");
 
     match = authorDidRE.match(link);
     if (match.hasMatch())
-        return match.captured(1);
+        return match.captured("did");
 
     return {};
 }
