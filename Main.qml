@@ -18,10 +18,22 @@ ApplicationWindow {
         }
 
         // This catches the back-button on Android
+
         if (currentStack().depth > 1) {
+            let item = currentStackItem()
+
+            if (item instanceof SignIn) {
+                // The Sign In page should not be popped from the stack.
+                // The user must sign in or close the app.
+
+                if (skywalker.sendAppToBackground())
+                    event.accepted = false
+
+                return
+            }
+
             event.accepted = false
 
-            let item = currentStackItem()
             if (item instanceof ComposePost) {
                 item.cancel()
                 return
