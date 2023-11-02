@@ -41,7 +41,7 @@ public:
     Q_INVOKABLE void pickPhoto() const;
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
-                                                  int cursor, const QString& color);
+                                             int cursor);
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE QString linkiFy(const QString& text);
     Q_INVOKABLE int graphemeLength(const QString& text) const;

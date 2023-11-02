@@ -14,8 +14,8 @@ QString PostUtils::toPlainText(const QString& text)
 }
 
 PostUtils::PostUtils(QObject* parent) :
-    Presence(),
-    WrappedSkywalker(parent)
+    WrappedSkywalker(parent),
+    Presence()
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
@@ -508,7 +508,7 @@ void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& hig
 }
 
 void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,
-                                        int cursor, const QString& color)
+                                        int cursor)
 {   
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
     const auto facets = postMaster()->parseFacets(fullText);

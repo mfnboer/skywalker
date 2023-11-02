@@ -263,7 +263,7 @@ ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyToRef() const
             auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
-            return std::move(ref);
+            return ref;
         }
         else
         {
@@ -347,7 +347,7 @@ ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyRootRef() const
             auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
-            return std::move(ref);
+            return ref;
         }
         else
         {

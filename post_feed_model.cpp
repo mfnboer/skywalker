@@ -34,7 +34,7 @@ int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     {
         const QString& topCid = mTopNCids.front().mCid;
 
-        for (int i = 0; i < mFeed.size(); ++i)
+        for (int i = 0; i < (int)mFeed.size(); ++i)
         {
             if (topCid == mFeed[i].getCid())
             {
@@ -76,7 +76,7 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int
     const int gapIndex = mGapIdIndexMap[gapId];
     mGapIdIndexMap.erase(gapId);
 
-    if (gapIndex > mFeed.size())
+    if (gapIndex > (int)mFeed.size())
     {
         qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
         return 0;
@@ -163,7 +163,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
     // Remove unused overlap
     int firstUnusedRawIndex = -1;
 
-    for (int i = 0; i < *overlapStart; ++i)
+    for (size_t i = 0; i < *overlapStart; ++i)
         firstUnusedRawIndex = std::max(firstUnusedRawIndex, page->mFeed[i].getRawIndex());
 
     Q_ASSERT(firstUnusedRawIndex >= 0);
@@ -232,7 +232,7 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 
 void PostFeedModel::removeTailPosts(int size)
 {
-    if (size <= 0 || size >= mFeed.size())
+    if (size <= 0 || size >= (int)mFeed.size())
         return;
 
     const auto removeIndexCursorIt = mIndexCursorMap.lower_bound(mFeed.size() - size - 1);
@@ -277,7 +277,7 @@ void PostFeedModel::removeTailPosts(int size)
 
 void PostFeedModel::removeHeadPosts(int size)
 {
-    if (size <= 0 || size >= mFeed.size())
+    if (size <= 0 || size >= (int)mFeed.size())
         return;
 
     size_t removeEndIndex = size - 1;
@@ -318,7 +318,7 @@ void PostFeedModel::removeHeadPosts(int size)
 
 void PostFeedModel::removePosts(int startIndex, int size)
 {
-    Q_ASSERT(startIndex >=0 && startIndex + size <= mFeed.size());
+    Q_ASSERT(startIndex >=0 && startIndex + size <= (int)mFeed.size());
 
     for (int i = startIndex; i < startIndex + size; ++i)
         removeStoredCid(mFeed[i].getCid());
@@ -346,7 +346,7 @@ const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
 
     const int gapIndex = it->second;
 
-    if (gapIndex > mFeed.size())
+    if (gapIndex > (int)mFeed.size())
     {
         qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
         return nullptr;
@@ -397,7 +397,7 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     // The post we add is already in the page, probably as a parent of another post
 
     const int parentIndex = parentIt->second;
-    Q_ASSERT(parentIndex < mFeed.size());
+    Q_ASSERT(parentIndex < (int)mFeed.size());
 
     const auto oldPost = mFeed[parentIndex];
 
@@ -746,7 +746,7 @@ void PostFeedModel::setTopNCids()
 {
     mTopNCids.clear();
 
-    for (size_t i = 0; i < std::min(10, (int)mFeed.size()); ++i)
+    for (int i = 0; i < std::min(10, (int)mFeed.size()); ++i)
     {
         const auto& post = mFeed[i];
         const QString& cid = post.getCid();
@@ -780,7 +780,7 @@ int PostFeedModel::topNPostIndex(const Post& post, bool checkTimestamp) const
             return -1;
     }
 
-    for (int i = 0; i < mTopNCids.size(); ++i)
+    for (int i = 0; i < (int)mTopNCids.size(); ++i)
     {
         const auto& topNPost = mTopNCids[i];
         const auto repostedBy = post.getRepostedBy();

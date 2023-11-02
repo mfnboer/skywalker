@@ -146,7 +146,7 @@ void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit)
 
             addAuthorTypeaheadList(searchOutput->mActors);
         },
-        [this, presence=getPresence()](const QString& error){
+        [presence=getPresence()](const QString& error){
             if (!presence)
                 return;
 

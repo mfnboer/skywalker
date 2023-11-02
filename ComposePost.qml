@@ -196,7 +196,7 @@ Page {
 
             function highlightFacets() {
                 postUtils.extractMentionsAndLinks(postText.text,
-                        postText.preeditText, cursorPosition, guiSettings.linkColor)
+                        postText.preeditText, cursorPosition)
             }
 
             function updateGraphemeLength() {

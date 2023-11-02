@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 project(appskywalker VERSION 0.1 LANGUAGES CXX)
 set(VERSION_CODE 1)
-set(APP_NAME "Skywalker")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
@@ -14,6 +13,13 @@ qt_standard_project_setup()
 
 add_subdirectory(atproto/lib)
 
+add_compile_definitions(APP_VERSION="${PROJECT_VERSION}")
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+    add_compile_definitions(QT_NO_DEBUG_OUTPUT)
+endif()
+
+add_compile_options(-Wall -Wextra -Werror)
 #add_compile_options(-fsanitize=address)
 #add_link_options(-fsanitize=address)
 

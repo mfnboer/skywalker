@@ -23,7 +23,7 @@ void _handlePhotoPicked(JNIEnv* env, jobject, jstring jsUri)
         instance->handlePhotoPicked(uri);
 }
 
-void _handlePhotoPickCanceled(JNIEnv* env, jobject)
+void _handlePhotoPickCanceled(JNIEnv*, jobject)
 {
     qDebug() << "Photo pick canceled";
     auto& instance = *gTheInstance;

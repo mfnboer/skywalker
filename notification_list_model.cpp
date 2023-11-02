@@ -233,7 +233,7 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
 
             getPosts(bsky, uris, cb);
         },
-        [this, cb](const QString& err)
+        [cb](const QString& err)
         {
             qWarning() << "Failed to get posts:" << err;
             cb();
@@ -248,7 +248,7 @@ int NotificationListModel::rowCount(const QModelIndex& parent) const
 
 QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= mList.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
     const auto& notification = mList[index.row()];

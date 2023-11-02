@@ -14,7 +14,7 @@
 
 namespace {
 
-constexpr size_t MAX_IMAGE_BYTES = 1000000;
+constexpr qsizetype MAX_IMAGE_BYTES = 1000000;
 constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
 
 bool checkStoragePermission()
@@ -49,6 +49,7 @@ void pickPhoto()
     QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker",
                                        "start");
 #endif
+    checkStoragePermission();
 }
 
 QString resolveContentUriToFile(const QString &contentUriString) {
@@ -71,6 +72,7 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 
     return result.toString();
 #else
+    Q_UNUSED(contentUriString)
     return {};
 #endif
 }

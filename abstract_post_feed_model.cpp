@@ -77,7 +77,7 @@ int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const
 
 QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= mFeed.size())
+    if (index.row() < 0 || index.row() >= (int)mFeed.size())
         return {};
 
     const auto& post = mFeed[index.row()];

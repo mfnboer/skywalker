@@ -129,7 +129,7 @@ void Skywalker::refreshSession()
         return;
     }
 
-    mBsky->refreshSession(*session,
+    mBsky->refreshSession(
         [this]{
             qDebug() << "Session refreshed";
             saveSession(*mBsky->getSession());
@@ -151,8 +151,8 @@ void Skywalker::refreshNotificationCount()
             qDebug() << "Unread notification count:" << unread;
             setUnreadNotificationCount(unread);
         },
-        [this](const QString& error){
-            qWarning() << "Failed to get unread notification count";
+        [](const QString& error){
+            qWarning() << "Failed to get unread notification count:" << error;
         });
 }
 

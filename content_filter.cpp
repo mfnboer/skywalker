@@ -164,8 +164,6 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const QString& label) con
     }
 
     return getGroupVisibility(it->second);
-
-    const auto& group = getContentGroups().at(it->second);
 }
 
 QString ContentFilter::getWarning(const QString& label) const

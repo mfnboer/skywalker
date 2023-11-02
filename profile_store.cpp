@@ -75,12 +75,12 @@ const std::unordered_set<const BasicProfile*> IndexedProfileStore::findProfiles(
         return {};
 
     if (words.size() == 1)
-        return findWordPrefixMatch(words.front());
+        return findWordPrefixMatch(words.front(), limit);
 
     std::unordered_set<const BasicProfile*> matches = findWordMatch(words.front());
     std::unordered_set<QString> usedWords = {words.front()};
 
-    for (int i = 1; i < words.size() - 1; ++i)
+    for (size_t i = 1; i < words.size() - 1; ++i)
     {
         const QString& word = words[i];
 
@@ -147,7 +147,7 @@ const std::unordered_set<const BasicProfile*> IndexedProfileStore::findWordPrefi
     std::unordered_set<const BasicProfile*> matches;
     const auto& exactMatches = findWordMatch(prefix);
 
-    if (exactMatches.size() >= limit)
+    if (exactMatches.size() >= (size_t)limit)
     {
         auto exactIt = exactMatches.begin();
 
@@ -167,7 +167,7 @@ const std::unordered_set<const BasicProfile*> IndexedProfileStore::findWordPrefi
         {
             matches.insert(profile);
 
-            if (matches.size() >= limit)
+            if (matches.size() >= (size_t)limit)
                 return matches;
         }
     }

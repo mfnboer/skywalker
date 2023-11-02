@@ -20,7 +20,7 @@ int AuthorListModel::rowCount(const QModelIndex& parent) const
 
 QVariant AuthorListModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= mList.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
     const auto& author = mList[index.row()];

@@ -37,7 +37,7 @@ int ContentGroupListModel::rowCount(const QModelIndex&) const
 
 QVariant ContentGroupListModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= mContentGroupList.size())
+    if (index.row() < 0 || index.row() >= (int)mContentGroupList.size())
         return {};
 
     const auto& group = mContentGroupList[index.row()];
@@ -63,7 +63,7 @@ QVariant ContentGroupListModel::data(const QModelIndex& index, int role) const
 
 bool ContentGroupListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (index.row() < 0 || index.row() >= mContentGroupList.size())
+    if (index.row() < 0 || index.row() >= (int)mContentGroupList.size())
         return {};
 
     const auto& group = mContentGroupList[index.row()];
