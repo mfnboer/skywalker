@@ -85,6 +85,9 @@ Page {
             svgIcon: svgOutline.atSign
             initialText: user
             placeholderText: qsTr("User")
+            inputMethodHints: Qt.ImhNoAutoUppercase
+            maximumLength: 253
+            validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
         }
 
         SkyTextInput {
@@ -95,6 +98,8 @@ Page {
             svgIcon: svgFilled.lock
             echoMode: TextInput.Password
             placeholderText: qsTr("Password")
+            inputMethodHints: Qt.ImhNoAutoUppercase
+            maximumLength: 255
         }
 
         Label {

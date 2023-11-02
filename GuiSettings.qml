@@ -54,4 +54,12 @@ Item {
         duration = duration / 12
         return Math.round(duration) + qsTr("yr", "years")
     }
+
+    function askYesNoQuestion(parent, question, onYesCb) {
+        let component = Qt.createComponent("Message.qml")
+        let message = component.createObject(parent, { standardButtons: Dialog.Yes | Dialog.No })
+        message.onAccepted.connect(() => onYesCb())
+        message.onRejected.connect(() => message.destroy())
+        message.show(qsTr("Do you really want to discard your draft post?"))
+    }
 }

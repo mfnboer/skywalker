@@ -6,7 +6,10 @@ Rectangle {
     property svgimage svgIcon
     property string initialText
     property string placeholderText
-    property int echoMode
+    property alias echoMode: textField.echoMode
+    property alias inputMethodHints: textField.inputMethodHints
+    property alias maximumLength: textField.maximumLength
+    property alias validator: textField.validator
     property alias text: textField.text
 
     id: skyTextInput
@@ -21,8 +24,6 @@ Rectangle {
         padding: 10
         leftPadding: icon.width
         activeFocusOnTab: true
-        echoMode: skyTextInput.echoMode
-        inputMethodHints: Qt.ImhNoAutoUppercase
         enabled: skyTextInput.enabled
         font.pointSize: guiSettings.scaledFont(9/8)
         text: skyTextInput.initialText

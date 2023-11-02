@@ -137,35 +137,32 @@ ListView {
         updateUnreadPosts(index)
     }
 
+    function rowsInsertedHandler(parent, start, end) {
+        console.debug("ROWS INSERTED:", start, end, "AtBegin:", atYBeginning)
+        if (atYBeginning) {
+            if (count > end + 1) {
+                // Stay at the current item instead of scrolling to the new top
+                positionViewAtIndex(end, ListView.Beginning)
+            }
+            else {
+                // Avoid the flick to bounce down the timeline
+                cancelFlick()
+                positionViewAtBeginning()
+            }
+        }
+
+        let firstVisibleIndex = indexAt(0, contentY)
+        updateUnreadPosts(firstVisibleIndex)
+    }
+
     function setInSync(index) {
         moveToPost(index)
         inSync = true
-
-        model.onRowsAboutToBeInserted.connect((parent, start, end) => {
-                console.debug("ROWS TO INSERT:", start, end, "AtBegin:", atYBeginning)
-            })
-
-        model.onRowsInserted.connect((parent, start, end) => {
-                console.debug("ROWS INSERTED:", start, end, "AtBegin:", atYBeginning)
-                if (atYBeginning) {
-                    if (count > end + 1) {
-                        // Stay at the current item instead of scrolling to the new top
-                        positionViewAtIndex(end, ListView.Beginning)
-                    }
-                    else {
-                        // Avoid the flick to bounce down the timeline
-                        cancelFlick()
-                        positionViewAtBeginning()
-                    }
-                }
-
-                let firstVisibleIndex = indexAt(0, contentY)
-                updateUnreadPosts(firstVisibleIndex)
-            })
+        model.onRowsInserted.connect(rowsInsertedHandler)
     }
 
     function stopSync() {
-        // TODO: break connections above
         inSync = false
+        model.onRowsInserted.disconnect(rowsInsertedHandler)
     }
 }

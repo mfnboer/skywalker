@@ -534,11 +534,10 @@ Page {
             return
         }
 
-        let component = Qt.createComponent("Message.qml")
-        let message = component.createObject(page, { standardButtons: Dialog.Yes | Dialog.No })
-        message.onAccepted.connect(() => page.closed())
-        message.onRejected.connect(() => message.destroy())
-        message.show(qsTr("Do you really want to discard your draft post?"))
+        guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Do you really want to discard your draft post?"),
+                    () => page.closed())
     }
 
     Component.onCompleted: {

@@ -54,10 +54,9 @@ Page {
     }
 
     function deleteUser(profile) {
-        let component = Qt.createComponent("Message.qml")
-        let message = component.createObject(page, { standardButtons: Dialog.Yes | Dialog.No })
-        message.onAccepted.connect(() => page.deletedUser(profile))
-        message.onRejected.connect(() => message.destroy())
-        message.show(qsTr(`Do you really want to delete account "${profile.name}"?`))
+        guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr(`Do you really want to delete account "${profile.name}"?`),
+                    () => page.deletedUser(profile))
     }
 }

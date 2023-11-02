@@ -48,6 +48,7 @@ Page {
                     rightPadding: clearButton.width
                     font.pointSize: guiSettings.scaledFont(9/8)
                     inputMethodHints: Qt.ImhNoAutoUppercase
+                    maximumLength: 2048
                     focus: true
 
                     onDisplayTextChanged: {
