@@ -216,6 +216,7 @@ Page {
             }
         }
 
+        // Typeahead matches on parital mention
         SimpleAuthorListView {
             id: typeaheadView
             y: postText.y + postText.cursorRectangle.y + postText.cursorRectangle.height + 5
@@ -286,22 +287,15 @@ Page {
                             }
                         }
 
-                        RoundButton {
-                            Material.background: "black"
-                            contentItem: Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                color: "white"
-                                font.pointSize: guiSettings.scaledFont(7/8)
-                                font.bold: true
-                                text: qsTr("+ALT", "add alternative text button")
-                            }
+                        SkyButton {
+                            text: qsTr("+ALT", "add alternative text button")
                         }
 
                         SvgButton {
                             x: parent.width - width
                             height: width
-                            iconColor: "white"
-                            Material.background: "black"
+                            iconColor: guiSettings.buttonTextColor
+                            Material.background: guiSettings.buttonColor
                             svg: svgOutline.close
                             onClicked: page.images.splice(index, 1)
                         }
