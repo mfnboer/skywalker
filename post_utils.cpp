@@ -73,7 +73,7 @@ static ATProto::AppBskyFeed::PostReplyRef::Ptr createReplyRef(
     return replyRef;
 }
 
-void PostUtils::post(QString text, const QStringList& imageFileNames,
+void PostUtils::post(QString text, const QStringList& imageFileNames, const QStringList& altTexts,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid)
@@ -83,15 +83,15 @@ void PostUtils::post(QString text, const QStringList& imageFileNames,
     if (replyToUri.isEmpty())
     {
         postMaster()->createPost(text, nullptr,
-            [this, presence=getPresence(), imageFileNames, quoteUri, quoteCid](auto post){
+            [this, presence=getPresence(), imageFileNames, altTexts, quoteUri, quoteCid](auto post){
                 if (presence)
-                    continuePost(imageFileNames, post, quoteUri, quoteCid);
+                    continuePost(imageFileNames, altTexts, post, quoteUri, quoteCid);
             });
         return;
     }
 
     postMaster()->checkPostExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, imageFileNames, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
+        [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
             if (!presence)
                 return;
@@ -99,9 +99,9 @@ void PostUtils::post(QString text, const QStringList& imageFileNames,
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
             postMaster()->createPost(text, std::move(replyRef),
-                [this, presence, imageFileNames, quoteUri, quoteCid](auto post){
+                [this, presence, imageFileNames, altTexts, quoteUri, quoteCid](auto post){
                     if (presence)
-                        continuePost(imageFileNames, post, quoteUri, quoteCid);
+                        continuePost(imageFileNames, altTexts , post, quoteUri, quoteCid);
                 });
         },
         [this, presence=getPresence()] (const QString& error){
@@ -154,22 +154,22 @@ void PostUtils::post(QString text, const LinkCard* card,
         });
 }
 
-void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+void PostUtils::continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                              const QString& quoteUri, const QString& quoteCid)
 {
     if (quoteUri.isEmpty())
     {
-        continuePost(imageFileNames, post);
+        continuePost(imageFileNames, altTexts, post);
         return;
     }
 
     postMaster()->checkPostExists(quoteUri, quoteCid,
-        [this, presence=getPresence(), imageFileNames, post, quoteUri, quoteCid]{
+        [this, presence=getPresence(), imageFileNames, altTexts, post, quoteUri, quoteCid]{
             if (!presence)
                 return;
 
             postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
-            continuePost(imageFileNames, post);
+            continuePost(imageFileNames, altTexts, post);
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)
@@ -180,7 +180,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
         });
 }
 
-void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex)
+void PostUtils::continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex)
 {
     if (imgIndex >= imageFileNames.size())
     {
@@ -202,12 +202,12 @@ void PostUtils::continuePost(const QStringList& imageFileNames, ATProto::AppBsky
     emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
 
     bskyClient()->uploadBlob(blob, mimeType,
-        [this, presence=getPresence(), imageFileNames, post, imgIndex](auto blob){
+        [this, presence=getPresence(), imageFileNames, altTexts, post, imgIndex](auto blob){
             if (!presence)
                 return;
 
-            postMaster()->addImageToPost(*post, std::move(blob));
-            continuePost(imageFileNames, post, imgIndex + 1);
+            postMaster()->addImageToPost(*post, std::move(blob), altTexts[imgIndex]);
+            continuePost(imageFileNames, altTexts, post, imgIndex + 1);
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)

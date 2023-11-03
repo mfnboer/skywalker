@@ -25,7 +25,7 @@ public:
 
     static QString toPlainText(const QString& text);
 
-    Q_INVOKABLE void post(QString text, const QStringList& imageFileNames,
+    Q_INVOKABLE void post(QString text, const QStringList& imageFileNames, const QStringList& altTexts,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
@@ -79,9 +79,9 @@ signals:
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
 
 private:
-    void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+    void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                       const QString& quoteUri, const QString& quoteCid);
-    void continuePost(const QStringList& imageFileNames, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
+    void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
     void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                       const QString& quoteUri, const QString& quoteCid);
     void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);

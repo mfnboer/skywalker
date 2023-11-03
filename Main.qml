@@ -362,7 +362,7 @@ ApplicationWindow {
 
             newUser()
         })
-        currentStack().push(page)
+        pushStack(page)
     }
 
     function loginUser(host, handle, did, error="") {
@@ -377,7 +377,7 @@ ApplicationWindow {
                 const user = did ? did : handle
                 skywalker.login(user, password, host)
         })
-        currentStack().push(page)
+        pushStack(page)
     }
 
     function loginActiveUser() {
@@ -409,7 +409,7 @@ ApplicationWindow {
                 skywalker.login(handle, password, host)
         })
 
-        currentStack().push(page)
+        pushStack(page)
     }
 
     function selectUser() {
@@ -456,7 +456,7 @@ ApplicationWindow {
                 if (!skywalker.isSignedIn())
                     selectUser()
         })
-        currentStack().push(page)
+        pushStack(page)
     }
 
     function signOutCurrentUser() {
@@ -473,7 +473,7 @@ ApplicationWindow {
                 initialText: initialText
         })
         page.onClosed.connect(() => { popStack() })
-        currentStack().push(page)
+        pushStack(page)
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
@@ -491,7 +491,7 @@ ApplicationWindow {
                 replyToAuthor: replyToAuthor
         })
         page.onClosed.connect(() => { popStack() })
-        currentStack().push(page)
+        pushStack(page)
     }
 
     function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
@@ -506,7 +506,7 @@ ApplicationWindow {
                 quoteAuthor: quoteAuthor
         })
         page.onClosed.connect(() => { popStack() })
-        currentStack().push(page)
+        pushStack(page)
     }
 
     function repost(repostUri, uri, cid, text, dateTime, author) {
@@ -528,14 +528,14 @@ ApplicationWindow {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
         view.onClosed.connect(() => { popStack() })
-        currentStack().push(view)
+        pushStack(view)
     }
 
     function viewFullImage(imageList, currentIndex) {
         let component = Qt.createComponent("FullImageView.qml")
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() })
-        currentStack().push(view)
+        pushStack(view)
     }
 
     function viewTimeline() {
@@ -568,14 +568,14 @@ ApplicationWindow {
         let component = Qt.createComponent("AuthorView.qml")
         let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() })
-        currentStack().push(view)
+        pushStack(view)
     }
 
     function viewAuthorList(modelId, title) {
         let component = Qt.createComponent("AuthorListView.qml")
         let view = component.createObject(root, { title: title, modelId: modelId, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() })
-        currentStack().push(view)
+        pushStack(view)
         skywalker.getAuthorList(modelId, 50)
     }
 
@@ -584,7 +584,7 @@ ApplicationWindow {
         let userPrefs = skywalker.getEditUserPreferences()
         let form = component.createObject(root, { userPrefs: userPrefs })
         form.onClosed.connect(() => { popStack() })
-        currentStack().push(form)
+        pushStack(form)
     }
 
     function editContentFilterSettings() {
@@ -592,7 +592,7 @@ ApplicationWindow {
         let contentGroupListModel = skywalker.getContentGroupListModel()
         let form = component.createObject(root, { model: contentGroupListModel })
         form.onClosed.connect(() => { popStack() })
-        currentStack().push(form)
+        pushStack(form)
     }
 
     function getTimelineView() {

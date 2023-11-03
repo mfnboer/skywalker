@@ -177,6 +177,7 @@ qt_add_qml_module(appskywalker
         RESOURCES images/skywalker.png
         QML_FILES SelectSignInUser.qml
         QML_FILES SwitchUserDrawer.qml
+        QML_FILES AltTextEditor.qml
 
 
 )

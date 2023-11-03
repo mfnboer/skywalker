@@ -12,6 +12,7 @@ Page {
     property int maxPostLength: 300
     property int maxImages: 4
     property list<string> images
+    property list<string> altTexts
     property bool pickingImage: false
 
     // Reply-to
@@ -62,7 +63,7 @@ Page {
                 postButton.enabled = false
 
                 if (!linkCard.card) {
-                    postUtils.post(postText.text, images,
+                    postUtils.post(postText.text, images, altTexts,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
                                    quoteUri, quoteCid);
@@ -255,6 +256,7 @@ Page {
             id: imageScroller
             height: visible && page.images.length > 0 ? 180 : 0
             width: page.width
+            anchors.topMargin: 10
             horizontalPadding: 10
             anchors.top: postText.bottom
             contentWidth: imageRow.width
@@ -283,12 +285,15 @@ Page {
                             if (status === Image.Error)
                             {
                                 statusPopup.show(qsTr("Cannot load image"), QEnums.STATUS_LEVEL_ERROR);
+                                page.altTexts.splice(index, 1)
                                 page.images.splice(index, 1)
                             }
                         }
 
                         SkyButton {
-                            text: qsTr("+ALT", "add alternative text button")
+                            flat: hasAltText(index)
+                            text: hasAltText(index) ? qsTr("ALT") : qsTr("+ALT", "add alternative text button")
+                            onClicked: editAltText(index)
                         }
 
                         SvgButton {
@@ -297,7 +302,10 @@ Page {
                             iconColor: guiSettings.buttonTextColor
                             Material.background: guiSettings.buttonColor
                             svg: svgOutline.close
-                            onClicked: page.images.splice(index, 1)
+                            onClicked: {
+                                page.altTexts.splice(index, 1)
+                                page.images.splice(index, 1)
+                            }
                         }
                     }
                 }
@@ -379,7 +387,7 @@ Page {
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp)"]
+        nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp *.gif)"]
         onAccepted: {
             let fileName = selectedFile.toString()
             if (fileName.startsWith("file://"))
@@ -506,8 +514,16 @@ Page {
         statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
+    function hasAltText(index) {
+        if (index >= altTexts.length)
+            return false
+
+        return altTexts[index].length > 0
+    }
+
     function photoPicked(fileName) {
         console.debug("IMAGE:", fileName)
+        page.altTexts.push("")
         page.images.push(fileName)
         let scrollBar = imageScroller.ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
@@ -532,6 +548,18 @@ Page {
                     page,
                     qsTr("Do you really want to discard your draft post?"),
                     () => page.closed())
+    }
+
+    function editAltText(index) {
+        let component = Qt.createComponent("AltTextEditor.qml")
+        let altPage = component.createObject(page, {
+                imgSource: "file://" + page.images[index],
+                text: page.altTexts[index] })
+        altPage.onAltTextChanged.connect((text) => {
+                page.altTexts[index] = text
+                root.popStack()
+        })
+        root.pushStack(altPage)
     }
 
     Component.onCompleted: {
