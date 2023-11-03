@@ -141,6 +141,8 @@ private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getBlocksAuthorList(int limit, const QString& cursor, int modelId);
+    void getMutesAuthorList(int limit, const QString& cursor, int modelId);
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);

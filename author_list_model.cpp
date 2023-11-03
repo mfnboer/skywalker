@@ -10,6 +10,7 @@ AuthorListModel::AuthorListModel(Type type, const QString& atId, const ContentFi
     mAtId(atId),
     mContentFilter(contentFilter)
 {
+    qDebug() << "New author list model type:" << type << "atId:" << atId;
 }
 
 int AuthorListModel::rowCount(const QModelIndex& parent) const

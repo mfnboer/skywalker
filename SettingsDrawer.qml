@@ -9,7 +9,9 @@ Drawer {
     readonly property real menuFontSize: guiSettings.scaledFont(10/8)
 
     signal profile()
-    signal moderation()
+    signal contentFiltering()
+    signal blockedAccounts()
+    signal mutedAccounts()
     signal settings()
     signal switchAccount()
     signal signOut()
@@ -60,8 +62,25 @@ Drawer {
         SkyMenuItem {
             id: moderationItem
             icon: svgOutline.visibility
-            text: qsTr("Content Filter")
-            onClicked: moderation()
+            text: qsTr("Moderation")
+            onClicked: moderationMenu.open()
+
+            Menu {
+                id: moderationMenu
+
+                MenuItem {
+                    text: qsTr("Content Filtering")
+                    onTriggered: contentFiltering()
+                }
+                MenuItem {
+                    text: qsTr("Blocked Accounts")
+                    onTriggered: blockedAccounts()
+                }
+                MenuItem {
+                    text: qsTr("Muted Accounts")
+                    onTriggered: mutedAccounts()
+                }
+            }
         }
 
         SkyMenuItem {

@@ -178,8 +178,22 @@ ApplicationWindow {
             close()
         }
 
-        onModeration: {
+        onContentFiltering: {
             editContentFilterSettings()
+            close()
+        }
+
+        onBlockedAccounts: {
+            let modelId = skywalker.createAuthorListModel(
+                    QEnums.AUTHOR_LIST_BLOCKS, "")
+            root.viewAuthorList(modelId, qsTr("Blocked Accounts"))
+            close()
+        }
+
+        onMutedAccounts: {
+            let modelId = skywalker.createAuthorListModel(
+                    QEnums.AUTHOR_LIST_MUTES, "")
+            root.viewAuthorList(modelId, qsTr("Muted Accounts"))
             close()
         }
 

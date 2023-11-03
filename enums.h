@@ -58,8 +58,10 @@ public:
 
     enum AuthorListType
     {
-        AUTHOR_LIST_FOLLOWS,
+        AUTHOR_LIST_FOLLOWS = 0,
         AUTHOR_LIST_FOLLOWERS,
+        AUTHOR_LIST_BLOCKS,
+        AUTHOR_LIST_MUTES,
         AUTHOR_LIST_LIKES,
         AUTHOR_LIST_REPOSTS,
         AUTHOR_LIST_SEARCH_RESULTS
@@ -68,7 +70,7 @@ public:
 
     enum ContentVisibility
     {
-        CONTENT_VISIBILITY_SHOW,
+        CONTENT_VISIBILITY_SHOW = 0,
         CONTENT_VISIBILITY_WARN_MEDIA,
         CONTENT_VISIBILITY_WARN_POST,
         CONTENT_VISIBILITY_HIDE_MEDIA,
