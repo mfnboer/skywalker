@@ -186,14 +186,18 @@ ApplicationWindow {
         onBlockedAccounts: {
             let modelId = skywalker.createAuthorListModel(
                     QEnums.AUTHOR_LIST_BLOCKS, "")
-            root.viewAuthorList(modelId, qsTr("Blocked Accounts"))
+            root.viewAuthorList(modelId, qsTr("Blocked Accounts"),
+                    qsTr("Blocked accounts cannot reply in your threads, mention you, or otherwise interact with you. You will not see their content and they will be prevented from seeing yours."),
+                    false)
             close()
         }
 
         onMutedAccounts: {
             let modelId = skywalker.createAuthorListModel(
                     QEnums.AUTHOR_LIST_MUTES, "")
-            root.viewAuthorList(modelId, qsTr("Muted Accounts"))
+            root.viewAuthorList(modelId, qsTr("Muted Accounts"),
+                    qsTr("Muted accounts have their posts removed from your feed and from your notifications. Mutes are completely private."),
+                    false)
             close()
         }
 
@@ -585,9 +589,15 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewAuthorList(modelId, title) {
+    function viewAuthorList(modelId, title, description = "", showFollow = true) {
         let component = Qt.createComponent("AuthorListView.qml")
-        let view = component.createObject(root, { title: title, modelId: modelId, skywalker: skywalker })
+        let view = component.createObject(root, {
+                title: title,
+                modelId: modelId,
+                skywalker: skywalker,
+                description: description,
+                showFollow: showFollow
+        })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
         skywalker.getAuthorList(modelId, 50)

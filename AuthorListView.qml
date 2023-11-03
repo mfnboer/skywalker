@@ -7,8 +7,9 @@ ListView {
     required property string title
     required property var skywalker
     required property int modelId
+    property string description
+    property bool showFollow: true
     property int margin: 8
-
     property bool inBottomOvershoot: false
 
     signal closed
@@ -18,40 +19,60 @@ ListView {
     model: skywalker.getAuthorListModel(modelId)
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    header: Rectangle {
+    header: Column {
         width: parent.width
-        height: guiSettings.headerHeight
         z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
 
-        RowLayout {
-            id: headerRow
+        Rectangle {
             width: parent.width
             height: guiSettings.headerHeight
+            color: guiSettings.headerColor
 
-            SvgButton {
-                id: backButton
-                iconColor: "white"
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                onClicked: authorListView.closed()
+            RowLayout {
+                id: headerRow
+                width: parent.width
+                height: guiSettings.headerHeight
+
+                SvgButton {
+                    id: backButton
+                    iconColor: "white"
+                    Material.background: "transparent"
+                    svg: svgOutline.arrowBack
+                    onClicked: authorListView.closed()
+                }
+                Text {
+                    id: headerTexts
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.fillWidth: true
+                    leftPadding: 10
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(10/8)
+                    color: "white"
+                    text: title
+                }
             }
-            Text {
-                id: headerTexts
-                Layout.alignment: Qt.AlignVCenter
-                Layout.fillWidth: true
-                leftPadding: 10
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: "white"
-                text: title
-            }
+        }
+        Text {
+            id: descriptionText
+            width: parent.width
+            padding: 10
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            text: description
+            visible: description
+        }
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: "lightgrey"
+            visible: description
         }
     }
     headerPositioning: ListView.OverlayHeader
 
     delegate: AuthorViewDelegate {
         viewWidth: authorListView.width
+        showFollow: authorListView.showFollow
         onFollow: (profile) => { graphUtils.follow(profile) }
         onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
     }
@@ -66,6 +87,27 @@ ListView {
         } else {
             inBottomOvershoot = false;
         }
+    }
+
+    SvgImage {
+        id: noAuthorsImage
+        width: 150
+        height: 150
+        y: height + (parent.headerItem ? parent.headerItem.height : 0)
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "grey"
+        svg: svgOutline.noUsers
+        visible: authorListView.count === 0
+    }
+    Text {
+        id: noPostText
+        y: noAuthorsImage.y
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pointSize: guiSettings.scaledFont(10/8)
+        color: "grey"
+        elide: Text.ElideRight
+        text: qsTr("None")
+        visible: authorListView.count === 0
     }
 
     GraphUtils {

@@ -10,6 +10,7 @@ Rectangle {
     required property profile author
     required property string followingUri
     property bool showAuthor: authorVisible()
+    property bool showFollow: true
 
     signal follow(basicprofile profile)
     signal unfollow(string did, string uri)
@@ -60,9 +61,22 @@ Rectangle {
                 color: guiSettings.handleColor
                 text: `@${author.handle}`
             }
-            SkyLabel {
-                text: qsTr("follows you")
-                visible: author.viewer.followedBy
+
+            Row {
+                spacing: 5
+
+                SkyLabel {
+                    text: qsTr("follows you")
+                    visible: author.viewer.followedBy && showFollow
+                }
+                SkyLabel {
+                    text: qsTr("blocked")
+                    visible: author.viewer.blocking
+                }
+                SkyLabel {
+                    text: qsTr("muted")
+                    visible: author.viewer.muted
+                }
             }
         }
 
@@ -71,13 +85,13 @@ Rectangle {
 
             SkyButton {
                 text: qsTr("Follow")
-                visible: !followingUri && !isUser(author) && showAuthor
+                visible: !followingUri && !isUser(author) && showAuthor && showFollow
                 onClicked: follow(author)
             }
             SkyButton {
                 flat: true
                 text: qsTr("Following")
-                visible: followingUri && !isUser(author) && showAuthor
+                visible: followingUri && !isUser(author) && showAuthor && showFollow
                 onClicked: unfollow(author.did, followingUri)
             }
         }

@@ -61,7 +61,7 @@ Drawer {
 
         SkyMenuItem {
             id: moderationItem
-            icon: svgOutline.visibility
+            icon: svgOutline.moderation
             text: qsTr("Moderation")
             onClicked: moderationMenu.open()
 
@@ -71,14 +71,26 @@ Drawer {
                 MenuItem {
                     text: qsTr("Content Filtering")
                     onTriggered: contentFiltering()
+
+                    MenuItemSvg {
+                        svg: svgOutline.visibility
+                    }
                 }
                 MenuItem {
                     text: qsTr("Blocked Accounts")
                     onTriggered: blockedAccounts()
+
+                    MenuItemSvg {
+                        svg: svgOutline.block
+                    }
                 }
                 MenuItem {
                     text: qsTr("Muted Accounts")
                     onTriggered: mutedAccounts()
+
+                    MenuItemSvg {
+                        svg: svgOutline.mute
+                    }
                 }
             }
         }

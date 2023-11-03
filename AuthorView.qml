@@ -107,6 +107,10 @@ Page {
                         MenuItem {
                             text: qsTr("Share")
                             onTriggered: skywalker.shareAuthor(author)
+
+                            MenuItemSvg {
+                                svg: svgOutline.share
+                            }
                         }
                         MenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
@@ -117,6 +121,11 @@ Page {
                                 else
                                     graphUtils.mute(author.did)
                             }
+
+                            MenuItemSvg {
+                                svg: authorMuted ? svgOutline.unmute : svgOutline.mute
+                                visible: parent.enabled
+                            }
                         }
                         MenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
@@ -126,6 +135,11 @@ Page {
                                     graphUtils.unblock(author.did, blocking)
                                 else
                                     graphUtils.block(author.did)
+                            }
+
+                            MenuItemSvg {
+                                svg: blocking ? svgOutline.unblock : svgOutline.block
+                                visible: parent.enabled
                             }
                         }
                     }
@@ -315,16 +329,16 @@ Page {
             elide: Text.ElideRight
             text: {
                 if (blocking) {
-                    return "You blocked this account"
+                    return qsTr("You blocked this account")
                 } else if (author.viewer.blockedBy) {
-                    return "You are blocked"
+                    return qsTr("You are blocked")
                 } else if (authorMuted) {
-                    return "You muted this account"
+                    return qsTr("You muted this account")
                 } else if (!contentVisible()) {
                     return contentWarning
                 }
 
-                return "No posts"
+                return qsTr("No posts")
             }
             visible: authorFeedView.count === 0
         }

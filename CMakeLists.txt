@@ -178,6 +178,7 @@ qt_add_qml_module(appskywalker
         QML_FILES SelectSignInUser.qml
         QML_FILES SwitchUserDrawer.qml
         QML_FILES AltTextEditor.qml
+        QML_FILES MenuItemSvg.qml
 
 
 )

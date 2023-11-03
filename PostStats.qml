@@ -50,15 +50,28 @@ Row {
             MenuItem {
                 text: qsTr("Copy post text")
                 onTriggered: copyPostText()
+
+                MenuItemSvg {
+                    svg: svgOutline.copy
+                }
             }
             MenuItem {
                 text: qsTr("Share")
                 onTriggered: share()
+
+                MenuItemSvg {
+                    svg: svgOutline.share
+                }
             }
             MenuItem {
                 text: qsTr("Delete")
                 enabled: authorIsUser
                 onTriggered: deletePost()
+
+                MenuItemSvg {
+                    svg: svgOutline.delete
+                    visible: parent.enabled
+                }
             }
         }
     }
