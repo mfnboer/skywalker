@@ -106,6 +106,9 @@ private:
 
     // The top N cids from the posts in the feed before last clear.
     std::vector<CidTimestamp> mTopNCids;
+
+    // Number of posts that have been prepended to the feed since the last clear.
+    size_t mPrependPostCount = 0;
 };
 
 }

@@ -24,16 +24,15 @@ int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
         return -1;
     }
 
+    const QString topCid = mFeed.front().getCid();
     setTopNCids();
     clear();
     addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
 
     int prevTopIndex = -1;
 
-    if (!mTopNCids.empty())
+    if (!topCid.isEmpty())
     {
-        const QString& topCid = mTopNCids.front().mCid;
-
         for (int i = 0; i < (int)mFeed.size(); ++i)
         {
             if (topCid == mFeed[i].getCid())
@@ -42,10 +41,9 @@ int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
                 break;
             }
         }
-
-        mTopNCids.clear();
     }
 
+    mTopNCids.clear();
     return prevTopIndex;
 }
 
@@ -57,10 +55,17 @@ int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     if (mFeed.empty())
     {
         setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+        mPrependPostCount = mFeed.size();
+        qDebug() << "Prepened post count:" << mPrependPostCount;
         return 0;
     }
 
-    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), 0);
+    const size_t prevSize = mFeed.size();
+    const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), 0);
+    mPrependPostCount += mFeed.size() - prevSize;
+    qDebug() << "Prepened post count:" << mPrependPostCount;
+
+    return gapId;
 }
 
 int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId)
@@ -186,6 +191,7 @@ void PostFeedModel::clear()
     mGapIdIndexMap.clear();
     endRemoveRows();
 
+    mPrependPostCount = 0;
     qDebug() << "All posts removed";
 }
 
@@ -746,7 +752,7 @@ void PostFeedModel::setTopNCids()
 {
     mTopNCids.clear();
 
-    for (int i = 0; i < std::min(10, (int)mFeed.size()); ++i)
+    for (int i = 0; i < std::min({10, (int)mFeed.size(), (int)mPrependPostCount}); ++i)
     {
         const auto& post = mFeed[i];
         const QString& cid = post.getCid();
