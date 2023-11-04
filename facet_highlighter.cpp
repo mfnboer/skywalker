@@ -31,6 +31,7 @@ void FacetHighlighter::highlightBlock(const QString& text)
             setFormat(facet.mStartIndex, facetLength, mHighlightColor);
             break;
         }
+        case ATProto::PostMaster::ParsedMatch::Type::TAG:
         case ATProto::PostMaster::ParsedMatch::Type::PARTIAL_MENTION:
         case ATProto::PostMaster::ParsedMatch::Type::UNKNOWN:
             break;

@@ -555,6 +555,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                 editMentionFound = true;
             }
             break;
+        case ATProto::PostMaster::ParsedMatch::Type::TAG:
         case ATProto::PostMaster::ParsedMatch::Type::UNKNOWN:
             break;
         }
