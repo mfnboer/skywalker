@@ -1321,6 +1321,12 @@ void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
     emit statusMessage(msg, level);
 }
 
+void Skywalker::clearPassword()
+{
+    if (!mUserDid.isEmpty())
+        mUserSettings.clearCredentials(mUserDid);
+}
+
 void Skywalker::signOut()
 {
     qDebug() << "Logout:" << mUserDid;

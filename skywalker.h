@@ -84,6 +84,7 @@ public:
     Q_INVOKABLE const UserSettings* getUserSettings() const { return &mUserSettings; }
     Q_INVOKABLE bool sendAppToBackground();
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
+    Q_INVOKABLE void clearPassword();
     Q_INVOKABLE void signOut();
 
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);

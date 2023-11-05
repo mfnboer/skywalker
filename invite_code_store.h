@@ -17,6 +17,7 @@ public:
     Q_INVOKABLE void load();
     Q_INVOKABLE int getAvailableCount() const { return mAvailableCount; }
     Q_INVOKABLE const QVariantList getCodes() const;
+    Q_INVOKABLE bool failedToLoad() const { return mFailedToLoad; }
 
     void retrieveUsedByProfile(InviteCode& code);
     void codeCopied();
@@ -27,6 +28,7 @@ signals:
 private:
     InviteCodeList mCodes;
     int mAvailableCount = 0;
+    bool mFailedToLoad = false;
 };
 
 }

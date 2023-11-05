@@ -19,6 +19,7 @@ class InviteCode : public QObject
     Q_PROPERTY(QString usedByDid READ getUsedByDid CONSTANT FINAL)
     Q_PROPERTY(QDateTime usedAt READ getUsedAt CONSTANT FINAL)
     Q_PROPERTY(BasicProfile usedBy READ getUsedBy NOTIFY usedByChanged FINAL)
+    Q_PROPERTY(QDateTime createdAt READ getCreatedAt CONSTANT FINAL)
     QML_ELEMENT
 
 public:
@@ -35,6 +36,7 @@ public:
     QDateTime getUsedAt() const { return mUsedAt; }
     const BasicProfile& getUsedBy();
     void setUsedBy(const BasicProfile& profile);
+    QDateTime getCreatedAt() const { return mCreatedAt; }
     bool getRetrievingUsedByProfile() const { return mRetrievingUsedByProfile; }
     void setRetrievingUsedByProfile(bool retrieving) { mRetrievingUsedByProfile = retrieving; }
 
@@ -49,6 +51,7 @@ private:
     QString mUsedByDid;
     QDateTime mUsedAt;
     BasicProfile mUsedBy;
+    QDateTime mCreatedAt;
     bool mRetrievingUsedByProfile = false;
 };
 

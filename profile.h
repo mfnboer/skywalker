@@ -44,6 +44,7 @@ class BasicProfile
     Q_GADGET
     Q_PROPERTY(QString did READ getDid FINAL)
     Q_PROPERTY(QString handle READ getHandle FINAL)
+    Q_PROPERTY(QString handleOrDid READ getHandleOrDid FINAL)
     Q_PROPERTY(QString displayName READ getDisplayName FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)

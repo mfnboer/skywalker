@@ -5,6 +5,7 @@ import skywalker
 
 ListView {
     required property list<InviteCode> codes
+    required property bool failedToLoad
 
     signal closed
     signal authorClicked(string did)
@@ -52,13 +53,24 @@ ListView {
             id: codeRow
             width: parent.width
 
-            Text {
-                leftPadding: 10
-                topPadding: 10
+            Column {
                 Layout.fillWidth: true
-                font.strikeout: !modelData.available || modelData.disabled
-                color: modelData.disabled ? "grey" : guiSettings.textColor
-                text: modelData.code
+
+                Text {
+                    width: parent.width
+                    leftPadding: 10
+                    topPadding: 10
+                    font.strikeout: !modelData.available || modelData.disabled
+                    color: modelData.disabled ? "grey" : guiSettings.textColor
+                    text: modelData.code
+                }
+                Text {
+                    width: parent.width
+                    leftPadding: 10
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    color: "grey"
+                    text: modelData.createdAt.toLocaleDateString(Qt.locale(), Locale.LongFormat)
+                }
             }
 
             SvgButton {
@@ -69,22 +81,20 @@ ListView {
                 visible: modelData.available && !modelData.disabled
                 onClicked: modelData.copyToClipboard()
             }
-            Rectangle {
-                visible: !copyButton.visible
-            }
         }
         GridLayout {
             id: usedByRow
             anchors.top: codeRow.bottom
             width: parent.width
             columns: 2
+            rowSpacing: 2
 
             // Avatar
             Rectangle {
                 id: avatar
                 Layout.rowSpan: 3
                 width: 65
-                height: avatarImg.height
+                height: avatarImg.height + 20
                 Layout.fillHeight: true
                 visible: modelData.used
 
@@ -100,7 +110,8 @@ ListView {
             }
 
             Text {
-                topPadding: 10
+                id: nameText
+                topPadding: 5
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 text: modelData.usedBy.name
@@ -108,6 +119,7 @@ ListView {
             }
 
             Text {
+                id: handleText
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
@@ -117,7 +129,9 @@ ListView {
             }
 
             Text {
+                id: dateText
                 Layout.fillWidth: true
+                Layout.fillHeight: true
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: "grey"
                 text: modelData.usedAt.toLocaleDateString(Qt.locale(), Locale.LongFormat)
@@ -137,6 +151,26 @@ ListView {
             enabled: modelData.used
             onClicked: authorClicked(modelData.usedByDid)
         }
+    }
+
+    Text {
+        leftPadding: 10
+        y: parent.headerItem ? parent.headerItem.height + 10 : 0
+        width: parent.width
+        wrapMode: Text.WordWrap
+        elide: Text.ElideRight
+        text: qsTr("Could not retrieve invite codes. To retrieve invite codes you need to sign in with your real password, not an app password.")
+        visible: failedToLoad
+    }
+
+    Text {
+        leftPadding: 10
+        y: parent.headerItem ? parent.headerItem.height + 10 : 0
+        width: parent.width
+        wrapMode: Text.WordWrap
+        elide: Text.ElideRight
+        text: qsTr("You do not yet have any invide codes.")
+        visible: !failedToLoad && inviteCodeList.count === 0
     }
 
     GuiSettings {

@@ -20,6 +20,7 @@ int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     if (mFeed.empty())
     {
+        mPrependPostCount = 0;
         addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
         return -1;
     }
@@ -191,7 +192,6 @@ void PostFeedModel::clear()
     mGapIdIndexMap.clear();
     endRemoveRows();
 
-    mPrependPostCount = 0;
     qDebug() << "All posts removed";
 }
 

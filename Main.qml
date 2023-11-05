@@ -186,7 +186,8 @@ ApplicationWindow {
         onInviteCodes: {
             let component = Qt.createComponent("InviteCodesView.qml")
             const codes = inviteCodeStore.getCodes()
-            let page = component.createObject(root, { codes: codes })
+            const failedToLoad = inviteCodeStore.failedToLoad()
+            let page = component.createObject(root, { codes: codes, failedToLoad: failedToLoad })
             page.onClosed.connect(() => { popStack() })
             page.onAuthorClicked.connect((did) => { skywalker.getDetailedProfile(did) })
             pushStack(page)
@@ -227,6 +228,7 @@ ApplicationWindow {
         }
 
         onSignOut: {
+            skywalker.clearPassword()
             signOutCurrentUser()
             signIn()
             close()
@@ -479,6 +481,12 @@ ApplicationWindow {
                 const userSettings = skywalker.getUserSettings()
                 const host = userSettings.getHost(profile.did)
                 const password = userSettings.getPassword(profile.did)
+
+                if (!password) {
+                    loginUser(host, profile.handleOrDid, profile.did)
+                    return
+                }
+
                 skywalker.login(profile.did, password, host)
         })
         page.onDeletedUser.connect((profile) => {

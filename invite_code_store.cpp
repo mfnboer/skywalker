@@ -13,23 +13,36 @@ void InviteCodeStore::load()
 {
     bskyClient()->getAccountInviteCodes(
         [this](auto output){
-            mCodes.clear();
-            mAvailableCount = 0;
+            auto compCreated = [](InviteCode* lhs, InviteCode* rhs){ return lhs->getCreatedAt() > rhs->getCreatedAt(); };
+            std::set<InviteCode*, decltype(compCreated)> availableCodes(compCreated);
+            auto compUsed = [](InviteCode* lhs, InviteCode* rhs){ return lhs->getUsedAt() > rhs->getUsedAt(); };
+            std::set<InviteCode*, decltype(compUsed)> usedCodes(compUsed);
 
             for (const auto& code : output->mCodes)
             {
                 const auto inviteCode = new InviteCode(*code, this);
-                mCodes.prepend(inviteCode);
 
                 if (inviteCode->isAvailable())
-                    ++mAvailableCount;
+                    availableCodes.insert(inviteCode);
+                else
+                    usedCodes.insert(inviteCode);
             }
+
+            mAvailableCount = (int)availableCodes.size();
+            mFailedToLoad = false;
+            mCodes.clear();
+
+            for (auto* code : availableCodes)
+                mCodes.append(code);
+
+            for (auto* code : usedCodes)
+                mCodes.append(code);
 
             emit loaded();
         },
         [this](const QString& error){
-            qDebug() << "load invite codes:" << error;
-            getSkywalker()->statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "Load invite codes failed:" << error;
+            mFailedToLoad = true;
         });
 }
 

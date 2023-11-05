@@ -13,7 +13,8 @@ InviteCode::InviteCode(const ATProto::ComATProtoServer::InviteCode& code, Invite
     mStore(store),
     mCode(code.mCode),
     mAvailable(code.mAvailable > (int)code.mUses.size()),
-    mDisabled(code.mDisabled)
+    mDisabled(code.mDisabled),
+    mCreatedAt(code.mCreatedAt)
 {
     Q_ASSERT(mStore);
 
