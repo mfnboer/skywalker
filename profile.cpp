@@ -51,6 +51,11 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :
 {
 }
 
+bool BasicProfile::isNull() const
+{
+    return getDid().isEmpty();
+}
+
 QString BasicProfile::getDid() const
 {
     if (mProfileBasicView)

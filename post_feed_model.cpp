@@ -56,14 +56,14 @@ int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     {
         setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
         mPrependPostCount = mFeed.size();
-        qDebug() << "Prepened post count:" << mPrependPostCount;
+        qDebug() << "Prepended post count:" << mPrependPostCount;
         return 0;
     }
 
     const size_t prevSize = mFeed.size();
     const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), 0);
     mPrependPostCount += mFeed.size() - prevSize;
-    qDebug() << "Prepened post count:" << mPrependPostCount;
+    qDebug() << "Prepended post count:" << mPrependPostCount;
 
     return gapId;
 }

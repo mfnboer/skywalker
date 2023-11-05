@@ -60,6 +60,7 @@ public:
     BasicProfile(const QString& did, const QString& handle, const QString& displayName, const QString& avatarUrl);
     BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
+    bool isNull() const;
     QString getDid() const;
     QString getName() const;
     QString getDisplayName() const;

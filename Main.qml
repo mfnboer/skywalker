@@ -98,16 +98,21 @@ ApplicationWindow {
         onGetUserProfileOK: () => skywalker.getUserPreferences()
 
         onGetUserProfileFailed: (error) => {
-            // TODO: retry
             console.warn("FAILED TO LOAD USER PROFILE:", error)
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.signOut()
+            signIn()
         }
 
-        onGetUserPreferencesOK: () => skywalker.syncTimeline()
+        onGetUserPreferencesOK: () => {
+            inviteCodeStore.load()
+            skywalker.syncTimeline()
+        }
 
         onGetUserPreferencesFailed: {
             console.warn("FAILED TO LOAD USER PREFERENCES")
             statusPopup.show("FAILED TO LOAD USER PREFERENCES", QEnums.STATUS_LEVEL_ERROR)
+            skywalker.signOut()
             signIn()
         }
 
@@ -178,6 +183,16 @@ ApplicationWindow {
             close()
         }
 
+        onInviteCodes: {
+            let component = Qt.createComponent("InviteCodesView.qml")
+            const codes = inviteCodeStore.getCodes()
+            let page = component.createObject(root, { codes: codes })
+            page.onClosed.connect(() => { popStack() })
+            page.onAuthorClicked.connect((did) => { skywalker.getDetailedProfile(did) })
+            pushStack(page)
+            close()
+        }
+
         onContentFiltering: {
             editContentFilterSettings()
             close()
@@ -219,6 +234,7 @@ ApplicationWindow {
 
         function show() {
             user = skywalker.getUser()
+            inviteCodeCount = inviteCodeStore.getAvailableCount()
             open()
         }
     }
@@ -346,6 +362,11 @@ ApplicationWindow {
         onWebLink: (link) => Qt.openUrlExternally(link)
         onPostLink: (atUri) => skywalker.getPostThread(atUri)
         onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
+    }
+
+    InviteCodeStore {
+        id: inviteCodeStore
+        skywalker: skywalker
     }
 
     GuiSettings {

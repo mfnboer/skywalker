@@ -5,6 +5,7 @@
 #include "author_list_model.h"
 #include "content_group_list_model.h"
 #include "edit_user_preferences.h"
+#include "invite_code.h"
 #include "item_store.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
@@ -136,6 +137,7 @@ signals:
     void getAuthorFeedInProgressChanged();
     void getAuthorListInProgressChanged();
     void getPostThreadInProgressChanged();
+    void inviteCodes(InviteCodeList);
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);

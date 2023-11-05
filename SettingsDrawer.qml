@@ -5,6 +5,7 @@ import skywalker
 
 Drawer {
     property basicprofile user
+    property int inviteCodeCount: 0
     readonly property int iconSize: 30
     readonly property real menuFontSize: guiSettings.scaledFont(10/8)
 
@@ -14,6 +15,7 @@ Drawer {
     signal mutedAccounts()
     signal settings()
     signal switchAccount()
+    signal inviteCodes()
     signal signOut()
 
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
@@ -57,6 +59,13 @@ Drawer {
             icon: svgOutline.user
             text: qsTr("Profile")
             onClicked: profile()
+        }
+
+        SkyMenuItem {
+            id: inviteCodesItem
+            icon: svgOutline.inviteCode
+            text: qsTr("Invite Codes") + ` (${inviteCodeCount})`
+            onClicked: inviteCodes()
         }
 
         SkyMenuItem {
