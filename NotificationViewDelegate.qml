@@ -5,8 +5,8 @@ import skywalker
 
 Rectangle {
     property int margin: 8
+    required property int index
     required property int viewWidth
-
     required property basicprofile notificationAuthor
     required property list<basicprofile> notificationOtherAuthors
     required property int notificationReason // QEnums::NotificationReason
@@ -45,6 +45,8 @@ Rectangle {
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
     required property basicprofile replyToAuthor
+    required property string notificationInviteCode
+    required property basicprofile notificationInviteCodeUsedBy
     required property bool endOfList
 
     id: notification
@@ -94,6 +96,15 @@ Rectangle {
                 color: guiSettings.textColor
                 svg: svgOutline.repost
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_REPOST
+            }
+            SvgImage {
+                x: parent.x + 14
+                y: height + 5
+                width: parent.width - 19
+                height: width
+                color: guiSettings.textColor
+                svg: svgOutline.inviteCode
+                visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
             }
             Rectangle {
                 x: parent.x + 14
@@ -267,6 +278,41 @@ Rectangle {
                 visible: showPostForAggregatableReason()
             }
         }
+        Column {
+            width: parent.width - avatar.width - notification.margin * 2
+            topPadding: 5
+            visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
+
+            RowLayout {
+                width: parent.width
+                Avatar {
+                    id: usedByAvatar
+                    width: 34
+                    height: width
+                    avatarUrl: notificationInviteCodeUsedBy.avatarUrl
+
+                    onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
+                }
+
+                SkyButton {
+                    Layout.alignment: Qt.AlignRight
+                    text: qsTr("Dismiss")
+                    onClicked: {
+                        console.debug("DISMISS:", index)
+                        skywalker.notificationListModel.dismissInviteCodeUsageNotification(index)
+                    }
+                }
+            }
+
+            Text {
+                width: parent.width
+                wrapMode: Text.Wrap
+                text: {
+                    `<b>${notificationInviteCodeUsedBy.name}</b> ` +
+                    qsTr("used your invite code") + ": " + notificationInviteCode
+                }
+            }
+        }
 
         // Separator
         Rectangle {
@@ -296,9 +342,11 @@ Rectangle {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
         onClicked: {
-            console.debug("POST CLICKED:", notificationPostUri)
+            console.debug("NOTIFICATION CLICKED")
             if (notificationPostUri)
                 skywalker.getPostThread(notificationPostUri)
+            else if (notificationInviteCode)
+                skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
         }
     }
 

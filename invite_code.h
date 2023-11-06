@@ -34,7 +34,11 @@ public:
     bool isUsed() const { return !mUsedByDid.isEmpty(); }
     const QString& getUsedByDid() const { return mUsedByDid; }
     QDateTime getUsedAt() const { return mUsedAt; }
+
+    // The profile may not be available yet. In that case you will get an empty
+    // profile. The usedByChanged signal will be emited once the profile is available.
     const BasicProfile& getUsedBy();
+
     void setUsedBy(const BasicProfile& profile);
     QDateTime getCreatedAt() const { return mCreatedAt; }
     bool getRetrievingUsedByProfile() const { return mRetrievingUsedByProfile; }

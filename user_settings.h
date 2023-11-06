@@ -39,6 +39,8 @@ public:
     void clearCredentials(const QString& did);
     void saveSyncTimestamp(const QString& did, QDateTime timestamp);
     QDateTime getSyncTimestamp(const QString& did) const;
+    Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
+    Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did);
 
 private:
     QString key(const QString& did, const QString& subkey) const;

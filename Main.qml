@@ -105,8 +105,12 @@ ApplicationWindow {
         }
 
         onGetUserPreferencesOK: () => {
-            inviteCodeStore.load()
+            const did = skywalker.getUserDid()
+            let userSettings = skywalker.getUserSettings()
+            const lastSignIn = userSettings.getLastSignInTimestamp(did)
+            inviteCodeStore.load(lastSignIn)
             skywalker.syncTimeline()
+            userSettings.updateLastSignInTimestamp(did)
         }
 
         onGetUserPreferencesFailed: {
@@ -369,6 +373,8 @@ ApplicationWindow {
     InviteCodeStore {
         id: inviteCodeStore
         skywalker: skywalker
+
+        onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
     }
 
     GuiSettings {
@@ -510,6 +516,7 @@ ApplicationWindow {
         timelineUpdateTimer.stop()
         getTimelineView().stopSync()
         unwindStack()
+        inviteCodeStore.clear()
         skywalker.signOut()
     }
 

@@ -548,8 +548,13 @@ void Skywalker::setAvatarUrl(const QString& avatarUrl)
 
 void Skywalker::setUnreadNotificationCount(int unread)
 {
-    mUnreadNotificationCount = unread;
-    emit unreadNotificationCountChanged();
+    const int totalUnread = unread + mNotificationListModel.getInviteCodeUsageNotificationCount();
+
+    if (totalUnread != mUnreadNotificationCount)
+    {
+        mUnreadNotificationCount = totalUnread;
+        emit unreadNotificationCountChanged();
+    }
 }
 
 // NOTE: indices can be -1 if the UI cannot determine the index

@@ -11,6 +11,8 @@
 
 namespace Skywalker {
 
+class InviteCodeStore;
+
 class NotificationListModel : public QAbstractListModel, public LocalPostModelChanges
 {
     Q_OBJECT
@@ -54,6 +56,8 @@ public:
         NotificationPostContentVisibility,
         NotificationPostContentWarning,
         ReplyToAuthor,
+        NotificationInviteCode,
+        NotificationInviteCodeUsedBy,
         EndOfList
     };
 
@@ -69,6 +73,9 @@ public:
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
     Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
+    Q_INVOKABLE void addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore);
+    Q_INVOKABLE void dismissInviteCodeUsageNotification(int index);
+    int getInviteCodeUsageNotificationCount() const { return (int)mInviteCodeUsedNotifications.size(); }
 
 protected:
     virtual void postIndexTimestampChanged() override;
@@ -95,6 +102,8 @@ private:
     void changeData(const QList<int>& roles);
     void clearLocalState();
     void clearRows();
+    void addInviteCodeUsageNotificationRows();
+    void updateInviteCodeUser(const BasicProfile& profile);
 
     const ContentFilter& mContentFilter;
     NotificationList mList;
@@ -107,6 +116,8 @@ private:
 
     // Posts in this cache can be kept for a long time
     PostCache mReasonPostCache;
+
+    NotificationList mInviteCodeUsedNotifications;
 };
 
 }

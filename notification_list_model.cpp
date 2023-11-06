@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "enums.h"
+#include "invite_code_store.h"
 #include <atproto/lib/at_uri.h>
 #include <unordered_map>
 
@@ -19,6 +20,7 @@ void NotificationListModel::clear()
 {
     clearRows();
     clearLocalState();
+    mInviteCodeUsedNotifications.clear();
 }
 
 void NotificationListModel::clearLocalState()
@@ -33,6 +35,19 @@ void NotificationListModel::clearRows()
     beginRemoveRows({}, 0, mList.size() - 1);
     mList.clear();
     endRemoveRows();
+}
+
+void NotificationListModel::addInviteCodeUsageNotificationRows()
+{
+    if (mInviteCodeUsedNotifications.empty())
+        return;
+
+    beginInsertRows({}, mList.size(), mList.size() + mInviteCodeUsedNotifications.size() - 1);
+
+    for (const auto& notification : mInviteCodeUsedNotifications)
+        mList.push_back(notification);
+
+    endInsertRows();
 }
 
 
@@ -56,7 +71,10 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
         qWarning() << "No notifications!";
 
         if (clearFirst)
+        {
             clearRows();
+            addInviteCodeUsageNotificationRows();
+        }
 
         if (isEndOfList() && !mList.empty())
         {
@@ -105,7 +123,10 @@ void NotificationListModel::filterNotificationList(NotificationList& list) const
 void NotificationListModel::addNotificationList(const NotificationList& list, bool clearFirst)
 {
     if (clearFirst)
+    {
         clearRows();
+        addInviteCodeUsageNotificationRows();
+    }
 
     const size_t newRowCount = mList.size() + list.size();
 
@@ -243,6 +264,53 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
             qWarning() << "Failed to get posts:" << err;
             cb();
         });
+}
+
+void NotificationListModel::addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore)
+{
+    Q_ASSERT(inviteCodeStore);
+    const auto& usedCodes = inviteCodeStore->getUsedSincePreviousSignIn();
+
+    for (auto* code : usedCodes)
+    {
+        BasicProfile usedBy = code->getUsedBy();
+
+        if (usedBy.isNull())
+        {
+            usedBy = BasicProfile(code->getUsedByDid(), "", "", "");
+            connect(code, &InviteCode::usedByChanged, this, [this, code]{
+                updateInviteCodeUser(code->getUsedBy()); });
+        }
+
+        Notification notification(code->getCode(), usedBy);
+        mInviteCodeUsedNotifications.push_back(notification);
+    }
+}
+
+void NotificationListModel::updateInviteCodeUser(const BasicProfile& profile)
+{
+    for (auto& notification : mInviteCodeUsedNotifications)
+    {
+        if (notification.getInviteCodeUsedBy().getDid() == profile.getDid())
+            notification.setInviteCodeUsedBy(profile);
+    }
+
+    changeData({ int(Role::NotificationInviteCodeUsedBy) });
+}
+
+void NotificationListModel::dismissInviteCodeUsageNotification(int index)
+{
+    if (index < 0 || index >= (int)mInviteCodeUsedNotifications.size())
+        return;
+
+    mInviteCodeUsedNotifications.erase(mInviteCodeUsedNotifications.begin() + index);
+
+    if (index >= (int)mList.size())
+        return;
+
+    beginRemoveRows({}, index, index);
+    mList.erase(mList.begin() + index);
+    endRemoveRows();
 }
 
 int NotificationListModel::rowCount(const QModelIndex& parent) const
@@ -407,6 +475,10 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     }
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
+    case Role::NotificationInviteCode:
+        return notification.getInviteCode();
+    case Role::NotificationInviteCodeUsedBy:
+        return QVariant::fromValue(notification.getInviteCodeUsedBy());
     case Role::EndOfList:
         return notification.isEndOfList();
     }
@@ -456,6 +528,8 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostContentVisibility), "notificationPostContentVisibility" },
         { int(Role::NotificationPostContentWarning), "notificationPostContentWarning" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
+        { int(Role::NotificationInviteCode), "notificationInviteCode" },
+        { int(Role::NotificationInviteCodeUsedBy), "notificationInviteCodeUsedBy" },
         { int(Role::EndOfList), "endOfList" }
     };
 

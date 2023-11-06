@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "invite_code_store.h"
+#include "author_cache.h"
 
 namespace Skywalker {
 
@@ -9,10 +10,21 @@ InviteCodeStore::InviteCodeStore(QObject* parent) :
 {
 }
 
-void InviteCodeStore::load()
+void InviteCodeStore::clear()
 {
+    mAvailableCount = 0;
+    mFailedToLoad = false;
+    mCodes.clear();
+    mUsedSincePreviousSignIn.clear();
+}
+
+void InviteCodeStore::load(QDateTime prevSignIn)
+{
+    qDebug() << "Load invite codes, previous sign in:" << prevSignIn;
+    clear();
+
     bskyClient()->getAccountInviteCodes(
-        [this](auto output){
+        [this, prevSignIn](auto output){
             auto compCreated = [](InviteCode* lhs, InviteCode* rhs){ return lhs->getCreatedAt() > rhs->getCreatedAt(); };
             std::set<InviteCode*, decltype(compCreated)> availableCodes(compCreated);
             auto compUsed = [](InviteCode* lhs, InviteCode* rhs){ return lhs->getUsedAt() > rhs->getUsedAt(); };
@@ -29,14 +41,20 @@ void InviteCodeStore::load()
             }
 
             mAvailableCount = (int)availableCodes.size();
-            mFailedToLoad = false;
-            mCodes.clear();
 
             for (auto* code : availableCodes)
                 mCodes.append(code);
 
             for (auto* code : usedCodes)
+            {
                 mCodes.append(code);
+
+                if (prevSignIn.isValid() && code->getUsedAt() > prevSignIn)
+                {
+                    qInfo() << "New invite code usage:" << code->getCode() << code->getUsedAt() << code->getUsedByDid();
+                    mUsedSincePreviousSignIn.append(code);
+                }
+            }
 
             emit loaded();
         },
@@ -64,6 +82,7 @@ void InviteCodeStore::retrieveUsedByProfile(InviteCode& code)
         [&code](auto profile){
             code.setUsedBy(BasicProfile(profile.get()));
             code.setRetrievingUsedByProfile(false);
+            AuthorCache::instance().put(code.getUsedBy());
         },
         [this, &code](const QString& error){
             qDebug() << "Cannot retrieve usedBy profile:" << error;

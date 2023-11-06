@@ -14,11 +14,13 @@ class InviteCodeStore : public WrappedSkywalker
 public:
     explicit InviteCodeStore(QObject* parent = nullptr);
 
-    Q_INVOKABLE void load();
+    Q_INVOKABLE void clear();
+    Q_INVOKABLE void load(QDateTime prevSignIn);
     Q_INVOKABLE int getAvailableCount() const { return mAvailableCount; }
     Q_INVOKABLE const QVariantList getCodes() const;
     Q_INVOKABLE bool failedToLoad() const { return mFailedToLoad; }
 
+    const InviteCodeList& getUsedSincePreviousSignIn() const { return mUsedSincePreviousSignIn; }
     void retrieveUsedByProfile(InviteCode& code);
     void codeCopied();
 
@@ -27,6 +29,7 @@ signals:
 
 private:
     InviteCodeList mCodes;
+    InviteCodeList mUsedSincePreviousSignIn;
     int mAvailableCount = 0;
     bool mFailedToLoad = false;
 };

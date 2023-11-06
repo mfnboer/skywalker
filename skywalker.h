@@ -25,7 +25,7 @@ class Skywalker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
-    Q_PROPERTY(const NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
+    Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
@@ -81,7 +81,7 @@ public:
     Q_INVOKABLE void saveContentFilterPreferences();
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
-    Q_INVOKABLE const UserSettings* getUserSettings() const { return &mUserSettings; }
+    Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE bool sendAppToBackground();
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void clearPassword();
@@ -91,7 +91,7 @@ public:
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
-    const NotificationListModel* getNotificationListModel() const { return &mNotificationListModel; }
+    NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
     void setAutoUpdateTimelineInProgress(bool inProgress);
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);

@@ -11,6 +11,12 @@ Notification::Notification(const ATProto::AppBskyNotification::Notification* not
     Q_ASSERT(notification);
 }
 
+Notification::Notification(const QString& inviteCode, const BasicProfile& usedBy) :
+    mInviteCode(inviteCode),
+    mInviteCodeUsedBy(usedBy)
+{
+}
+
 QString Notification::getUri() const
 {
     return mNotification ? mNotification->mUri : QString();
@@ -23,7 +29,13 @@ QString Notification::getCid() const
 
 Notification::Reason Notification::getReason() const
 {
-    return mNotification ? mNotification->mReason : Reason::UNKNOWN;
+    if (mNotification)
+        return mNotification->mReason;
+
+    if (!mInviteCode.isEmpty())
+        return Reason::INVITE_CODE_USED;
+
+    return Reason::UNKNOWN;
 }
 
 QString Notification::getReasonSubjectUri() const
@@ -101,6 +113,7 @@ QString Notification::getPostUri() const
     case Reason::QUOTE:
         return getUri();
         break;
+    case Reason::INVITE_CODE_USED:
     case Reason::UNKNOWN:
         return getUri();
         break;

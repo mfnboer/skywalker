@@ -16,6 +16,7 @@ public:
     using Reason = ATProto::AppBskyNotification::NotificationReason;
 
     explicit Notification(const ATProto::AppBskyNotification::Notification* notification);
+    Notification(const QString& inviteCode, const BasicProfile& usedBy);
 
     QString getUri() const;
     QString getCid() const;
@@ -31,6 +32,10 @@ public:
     bool isEndOfList() const { return mEndOfList; }
     void setEndOfList(bool endOfFeed) { mEndOfList = endOfFeed; }
 
+    const QString& getInviteCode() const { return mInviteCode; }
+    const BasicProfile& getInviteCodeUsedBy() const { return mInviteCodeUsedBy; }
+    void setInviteCodeUsedBy(const BasicProfile& profile) { mInviteCodeUsedBy = profile; }
+
     // Get the URI of the post to be displayed, e.g. the uri or subjectReasonUri
     QString getPostUri() const;
 
@@ -41,6 +46,8 @@ private:
 
     const ATProto::AppBskyNotification::Notification* mNotification = nullptr;
     BasicProfileList mOtherAuthors;
+    QString mInviteCode;
+    BasicProfile mInviteCodeUsedBy;
     bool mEndOfList = false;
 };
 

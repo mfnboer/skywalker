@@ -179,4 +179,14 @@ QDateTime UserSettings::getSyncTimestamp(const QString& did) const
     return mSettings.value(key(did, "syncTimestamp")).toDateTime();
 }
 
+void UserSettings::updateLastSignInTimestamp(const QString& did)
+{
+    mSettings.setValue(key(did, "lastSignInTimestamp"), QDateTime::currentDateTime());
+}
+
+QDateTime UserSettings::getLastSignInTimestamp(const QString& did)
+{
+    return mSettings.value(key(did, "lastSignInTimestamp")).toDateTime();
+}
+
 }
