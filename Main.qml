@@ -180,6 +180,7 @@ ApplicationWindow {
         id: settingsDrawer
         height: parent.height
         edge: Qt.RightEdge
+        dragMargin: 0
 
         onProfile: {
             let did = skywalker.getUserDid()
@@ -250,6 +251,7 @@ ApplicationWindow {
         width: parent.width
         height: parent.height * 0.7
         edge: Qt.BottomEdge
+        dragMargin: 0
 
         onSelectedUser: (profile) => {
             if (!profile.did) {
@@ -285,6 +287,7 @@ ApplicationWindow {
         id: repostDrawer
         width: parent.width
         edge: Qt.BottomEdge
+        dragMargin: 0
 
         Column {
             id: menuColumn
