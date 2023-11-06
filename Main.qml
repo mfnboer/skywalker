@@ -199,6 +199,15 @@ ApplicationWindow {
             close()
         }
 
+        onBookmarks: {
+            let component = Qt.createComponent("Bookmarks.qml")
+            let page = component.createObject(root, { skywalker: skywalker })
+            page.onClosed.connect(() => { popStack() })
+            pushStack(page)
+            skywalker.getBookmarksPage()
+            close()
+        }
+
         onContentFiltering: {
             editContentFilterSettings()
             close()

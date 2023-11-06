@@ -176,6 +176,7 @@ Rectangle {
                 likeUri: notificationPostLikeUri
                 visible: !notificationPostNotFound
                 authorIsUser: false
+                isBookmarked: skywalker.bookmarks.isBookmarked(notificationPostUri)
 
                 onReply: {
                     root.composeReply(notificationPostUri, notificationCid, notificationPostText,
@@ -190,6 +191,19 @@ Rectangle {
                 }
 
                 onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
+
+                onBookmark: {
+                    if (isBookmarked) {
+                        skywalker.bookmarks.removeBookmark(notificationPostUri)
+                        isBookmarked = false
+                    }
+                    else {
+                        isBookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
+
+                        if (!isBookmarked)
+                            skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                    }
+                }
 
                 onShare: skywalker.sharePost(notificationPostUri, notificationAuthor)
             }

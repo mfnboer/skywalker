@@ -5,16 +5,14 @@ import skywalker
 
 ListView {
     required property var skywalker
-    required property var timeline
-
     property bool inTopOvershoot: false
     property bool inBottomOvershoot: false
 
     signal closed
 
-    id: notificationListView
+    id: bookmarksView
     spacing: 0
-    model: skywalker.notificationListModel
+    model: skywalker.getBookmarksModel()
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: Rectangle {
@@ -28,6 +26,14 @@ ListView {
             width: parent.width
             height: guiSettings.headerHeight
 
+            SvgButton {
+                id: backButton
+                iconColor: "white"
+                Material.background: "transparent"
+                svg: svgOutline.arrowBack
+                onClicked: bookmarksView.closed()
+            }
+
             Text {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
@@ -35,30 +41,20 @@ ListView {
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
                 color: "white"
-                text: qsTr("Notifications")
+                text: qsTr("Bookmarks") + ` (${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize})`
             }
         }
     }
     headerPositioning: ListView.OverlayHeader
 
-    footer: SkyFooter {
-        timeline: notificationListView.timeline
-        skywalker: notificationListView.skywalker
-        notificationsActive: true
-        onHomeClicked: root.viewTimeline()
-        onNotificationsClicked: positionViewAtBeginning()
-        onSearchClicked: root.viewSearchView()
-    }
-    footerPositioning: ListView.OverlayFooter
-
-    delegate: NotificationViewDelegate {
-        viewWidth: notificationListView.width
+    delegate: PostFeedViewDelegate {
+        viewWidth: bookmarksView.width
     }
 
     onVerticalOvershootChanged: {
         if (verticalOvershoot < 0)  {
-            if (!inTopOvershoot && !skywalker.getNotificationsInProgress) {
-                skywalker.getNotifications(25, true)
+            if (!inTopOvershoot && !model.inProgress) {
+                skywalker.getBookmarksPage(true)
             }
 
             inTopOvershoot = true
@@ -67,8 +63,8 @@ ListView {
         }
 
         if (verticalOvershoot > 0) {
-            if (!inBottomOvershoot && !skywalker.getNotificationsInProgress) {
-                skywalker.getNotificationsNextPage()
+            if (!inBottomOvershoot && !model.inProgress) {
+                skywalker.getBookmarksPage()
             }
 
             inBottomOvershoot = true;
@@ -80,7 +76,7 @@ ListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: skywalker.getNotificationsInProgress
+        running: model.inProgress
     }
 
     GuiSettings {

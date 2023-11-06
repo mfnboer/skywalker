@@ -3,6 +3,8 @@
 #pragma once
 #include "author_feed_model.h"
 #include "author_list_model.h"
+#include "bookmarks.h"
+#include "bookmarks_model.h"
 #include "content_group_list_model.h"
 #include "edit_user_preferences.h"
 #include "invite_code.h"
@@ -26,6 +28,7 @@ class Skywalker : public QObject
     Q_OBJECT
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
+    Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
@@ -35,6 +38,7 @@ class Skywalker : public QObject
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     QML_ELEMENT
+
 public:
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
@@ -55,6 +59,7 @@ public:
     Q_INVOKABLE void updatePostIndexTimestamps();
     Q_INVOKABLE void getNotifications(int limit, bool updateSeen = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage();
+    Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
     Q_INVOKABLE void clearAuthorFeed(int id);
     Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 50, int minEntries = 10, const QString& cursor = {});
@@ -81,7 +86,12 @@ public:
     Q_INVOKABLE void saveContentFilterPreferences();
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
+
+    // NOTE: destroys the previous model
+    Q_INVOKABLE const BookmarksModel* getBookmarksModel();
+
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
+    Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
     Q_INVOKABLE bool sendAppToBackground();
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void clearPassword();
@@ -92,6 +102,7 @@ public:
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
+    Bookmarks* getBookmarks() { return &mBookmarks; }
     void setAutoUpdateTimelineInProgress(bool inProgress);
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
@@ -112,7 +123,6 @@ public:
     const ContentFilter& getContentFilter() const { return mContentFilter; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
-    void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
 
 signals:
     void loginOk();
@@ -188,6 +198,9 @@ private:
     NotificationListModel mNotificationListModel;
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;
+
+    Bookmarks mBookmarks;
+    BookmarksModel::Ptr mBookmarksModel;
 
     UserSettings mUserSettings;
     bool mDebugLogging = false;

@@ -16,6 +16,7 @@ Drawer {
     signal settings()
     signal switchAccount()
     signal inviteCodes()
+    signal bookmarks()
     signal signOut()
 
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
@@ -66,6 +67,13 @@ Drawer {
             icon: svgOutline.inviteCode
             text: qsTr("Invite Codes") + ` (${inviteCodeCount})`
             onClicked: inviteCodes()
+        }
+
+        SkyMenuItem {
+            id: bookmarksItem
+            icon: svgOutline.bookmark
+            text: qsTr("Bookmarks")
+            onClicked: bookmarks()
         }
 
         SkyMenuItem {

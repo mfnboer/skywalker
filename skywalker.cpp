@@ -705,6 +705,29 @@ void Skywalker::getNotificationsNextPage()
     getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, cursor);
 }
 
+void Skywalker::getBookmarksPage(bool clearModel)
+{
+    Q_ASSERT(mBsky);
+    Q_ASSERT(mBookmarksModel);
+
+    if (!mBookmarksModel)
+        return;
+
+    if (clearModel)
+        mBookmarksModel->clear();
+
+    const int pageIndex = mBookmarksModel->rowCount();
+    const auto page = mBookmarks.getPage(pageIndex, BookmarksModel::MAX_PAGE_SIZE);
+
+    if (page.empty())
+    {
+        qDebug() << "No more bookmarks";
+        return;
+    }
+
+    mBookmarksModel->addBookmarks(page, *mBsky);
+}
+
 void Skywalker::getDetailedProfile(const QString& author)
 {
     Q_ASSERT(mBsky);
@@ -1243,6 +1266,16 @@ void Skywalker::saveUserPreferences()
         });
 }
 
+const BookmarksModel* Skywalker::getBookmarksModel()
+{
+    mBookmarksModel = std::make_unique<BookmarksModel>(mUserDid, mUserFollows, mContentFilter, this);
+
+    connect(mBookmarksModel.get(), &BookmarksModel::failure, this,
+            [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
+
+    return mBookmarksModel.get();
+}
+
 bool Skywalker::sendAppToBackground()
 {
 #ifdef Q_OS_ANDROID
@@ -1351,6 +1384,8 @@ void Skywalker::signOut()
     mUserDid.clear();
     mUserFollows.clear();
     setUnreadNotificationCount(0);
+    mBookmarksModel = nullptr;
+    mBookmarks.clear();
     mUserSettings.setActiveUserDid({});
     mBsky = nullptr;
     setAutoUpdateTimelineInProgress(false);

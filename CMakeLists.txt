@@ -184,6 +184,11 @@ qt_add_qml_module(appskywalker
         QML_FILES InviteCodesView.qml
         SOURCES invite_code_store.h
         SOURCES invite_code_store.cpp
+        SOURCES bookmarks.h
+        SOURCES bookmarks.cpp
+        SOURCES bookmarks_model.h
+        SOURCES bookmarks_model.cpp
+        QML_FILES Bookmarks.qml
 
 
 )

@@ -289,6 +289,7 @@ Rectangle {
                 repostUri: postRepostUri
                 likeUri: postLikeUri
                 authorIsUser: isUser(author)
+                isBookmarked: skywalker.bookmarks.isBookmarked(postUri)
 
                 onReply: {
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
@@ -301,6 +302,19 @@ Rectangle {
                 }
 
                 onLike: root.like(postLikeUri, postUri, postCid)
+
+                onBookmark: {
+                    if (isBookmarked) {
+                        skywalker.bookmarks.removeBookmark(postUri)
+                        isBookmarked = false
+                    }
+                    else {
+                        isBookmarked = skywalker.bookmarks.addBookmark(postUri)
+
+                        if (!isBookmarked)
+                            skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                    }
+                }
 
                 onShare: skywalker.sharePost(postUri, author)
 

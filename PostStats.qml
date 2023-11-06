@@ -9,37 +9,45 @@ Row {
     required property string repostUri
     required property string likeUri
     required property bool authorIsUser
+    property bool isBookmarked: false
 
     signal reply()
     signal repost()
     signal like()
+    signal bookmark()
     signal share()
     signal deletePost()
     signal copyPostText()
 
     StatIcon {
-        width: parent.width / 4
+        width: parent.width / 5
         iconColor: "grey"
         svg: svgOutline.reply
         statistic: replyCount
         onClicked: reply()
     }
     StatIcon {
-        width: parent.width / 4
+        width: parent.width / 5
         iconColor: repostUri ? "palevioletred" : "grey"
         svg: svgOutline.repost
         statistic: repostCount
         onClicked: repost()
     }
     StatIcon {
-        width: parent.width / 4
+        width: parent.width / 5
         iconColor: likeUri ? "palevioletred" : "grey"
         svg: likeUri ? svgFilled.like : svgOutline.like
         statistic: likeCount
         onClicked: like()
     }
     StatIcon {
-        width: parent.width / 4
+        width: parent.width / 5
+        iconColor: "grey"
+        svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
+        onClicked: bookmark()
+    }
+    StatIcon {
+        width: parent.width / 5
         iconColor: "grey"
         svg: svgOutline.moreVert
         onClicked: moreMenu.open()
