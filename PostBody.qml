@@ -10,6 +10,7 @@ Column {
     required property list<string> postContentLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property bool postMuted
     property string postPlainText
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
@@ -17,6 +18,7 @@ Column {
     property bool detailedView: false
     property int maxTextLines: 1000
     property bool showWarnedPost: false
+    property bool mutePost: postMuted
 
     id: postBody
 
@@ -53,10 +55,11 @@ Column {
             width: 30
             height: width
             color: "grey"
-            svg: svgOutline.hideVisibility
+            svg: mutePost ? svgOutline.mute : svgOutline.hideVisibility
             visible: !postVisible()
         }
 
+        // The content warning is shown then the post is not muted
         Text {
             id: warnText
             width: parent.width
@@ -67,13 +70,37 @@ Column {
             textFormat: Text.RichText
             color: "grey"
             text: postContentWarning + "<br><a href=\"show\">" + qsTr("Show post") + "</a>"
-            visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost
+            visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
             onLinkActivated: {
                 showWarnedPost = true
-                showPostAttachements()
+
+                if (postVisible())
+                    showPostAttachements()
             }
         }
 
+        // If the post is muted, then this takes precendence over the content warning
+        Text {
+            id: mutedText
+            width: parent.width
+            Layout.fillWidth: true
+            anchors.verticalCenter: parent.verticalCenter
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            color: "grey"
+            text: qsTr("You muted this account") + "<br><a href=\"show\">" + qsTr("Show post") + "</a>"
+            visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
+            onLinkActivated: {
+                mutePost = false
+
+                // The post may still not be visible due to content filtering
+                if (postVisible())
+                    showPostAttachements()
+            }
+        }
+
+        // If a post is hidden then this text will show no matter whether the post is muted
         Text {
             id: hideText
             width: parent.width
@@ -106,6 +133,9 @@ Column {
     }
 
     function postVisible() {
+        if (mutePost)
+            return false
+
         return ![QEnums.CONTENT_VISIBILITY_HIDE_POST,
                  QEnums.CONTENT_VISIBILITY_WARN_POST].includes(postContentVisibility) ||
                showWarnedPost

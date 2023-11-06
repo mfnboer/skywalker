@@ -58,6 +58,12 @@ void AbstractPostFeedModel::cleanupStoredCids()
 
 bool AbstractPostFeedModel::mustHideContent(const Post& post) const
 {
+    if (post.getAuthor().getViewer().isMuted())
+    {
+        qDebug() << "Hide post of muted author:" << post.getAuthor().getHandleOrDid() << post.getCid();
+        return true;
+    }
+
     const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
 
     if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)

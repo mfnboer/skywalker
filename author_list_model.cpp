@@ -77,7 +77,13 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
 
         if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST || visibility == QEnums::CONTENT_VISIBILITY_HIDE_MEDIA)
         {
-            qDebug() << "Filter author:" << author->mHandle << warning;
+            qDebug() << "Filter content of author:" << author->mHandle << author->mDid << warning;
+            continue;
+        }
+
+        if (author->mViewer->mMuted)
+        {
+            qDebug() << "Muted author:" << author->mHandle << author->mDid;
             continue;
         }
 

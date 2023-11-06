@@ -90,6 +90,11 @@ void NotificationListModel::filterNotificationList(NotificationList& list) const
             qDebug() << "Hide post:" << post.getCid() << warning;
             it = list.erase(it);
         }
+        else if (post.getAuthor().getViewer().isMuted())
+        {
+            qDebug() << "Muted author:" << post.getAuthor().getHandleOrDid() << post.getCid();
+            it = list.erase(it);
+        }
         else
         {
             ++it;

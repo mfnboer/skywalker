@@ -231,6 +231,7 @@ Rectangle {
                 postContentLabels: postLabels
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
+                postMuted: postEntry.author.viewer.muted
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia

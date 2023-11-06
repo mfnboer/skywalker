@@ -546,7 +546,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 const bool allOutSideTopN = postTopNIndex == -1 && rootTopNIndex == -1 && parentTopNIndex == -1;
                 const bool allInTopN = postTopNIndex >=0 && rootTopNIndex >= 0 && parentTopNIndex >= 0;
 
-                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid))
+                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid) &&
+                    !mustHideContent(replyRef->mRoot))
                 {
                     // Do not allow reordering (replies/parent/root) for the top-N posts.
                     // These were visible to the user before refreshing the timeline.
@@ -562,7 +563,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                 // If the parent was seen already, but the root not, then show the parent
                 // again for consistency of the thread.
-                if ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded)
+                if (((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded) &&
+                    !mustHideContent(replyRef->mParent))
                 {
                     if (allOutSideTopN || (allInTopN && parentTopNIndex < postTopNIndex))
                     {

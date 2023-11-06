@@ -43,6 +43,7 @@ Item {
             postContentLabels: record.contentLabels
             postContentVisibility: record.contentVisibility
             postContentWarning: record.contentWarning
+            postMuted: record.author.viewer.muted
             postExternal: record.external
             postDateTime: record.postDateTime
             maxTextLines: 6

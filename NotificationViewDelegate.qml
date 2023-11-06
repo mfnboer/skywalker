@@ -148,6 +148,7 @@ Rectangle {
                 postContentLabels: notificationPostLabels
                 postContentVisibility: notificationPostContentVisibility
                 postContentWarning: notificationPostContentWarning
+                postMuted: notificationAuthor.viewer.muted
                 postExternal: notificationPostExternal
                 postRecord: notificationPostRecord
                 postRecordWithMedia: notificationPostRecordWithMedia
@@ -258,6 +259,7 @@ Rectangle {
                 postContentLabels: notificationReasonPostLabels
                 postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                 postContentWarning: ""
+                postMuted: false
                 postDateTime: notificationReasonPostTimestamp
                 postExternal: notificationReasonPostExternal
                 postRecord: notificationReasonPostRecord
