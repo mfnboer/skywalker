@@ -26,6 +26,7 @@ namespace Skywalker {
 class Skywalker : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
@@ -40,6 +41,8 @@ class Skywalker : public QObject
     QML_ELEMENT
 
 public:
+    static constexpr const char* VERSION = APP_VERSION;
+
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
 

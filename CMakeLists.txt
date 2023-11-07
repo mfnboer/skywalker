@@ -189,6 +189,7 @@ qt_add_qml_module(appskywalker
         SOURCES bookmarks_model.h
         SOURCES bookmarks_model.cpp
         QML_FILES Bookmarks.qml
+        QML_FILES About.qml
 
 
 )

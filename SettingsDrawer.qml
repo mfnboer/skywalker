@@ -18,6 +18,7 @@ Drawer {
     signal inviteCodes()
     signal bookmarks()
     signal signOut()
+    signal about()
 
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
     padding: 20
@@ -131,6 +132,13 @@ Drawer {
             icon: svgOutline.signOut
             text: qsTr("Sign Out")
             onClicked: signOut()
+        }
+
+        SkyMenuItem {
+            id: aboutItem
+            icon: svgOutline.info
+            text: qsTr("About")
+            onClicked: about()
         }
     }
 

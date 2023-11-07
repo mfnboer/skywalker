@@ -51,6 +51,16 @@ Page {
         font.pointSize: guiSettings.scaledFont(9/8)
         clip: true
         focus: true
+
+        Text {
+            anchors.fill: parent
+            leftPadding: altText.leftPadding
+            rightPadding: altText.rightPadding
+            font.pointSize: altText.font.pointSize
+            color: "grey"
+            text: qsTr("Describe the image to help users with visual impairments.")
+            visible: altText.length === 0
+        }
     }
 
     Image {

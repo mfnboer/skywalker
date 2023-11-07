@@ -22,6 +22,7 @@ Item {
     readonly property string labelColor: "lightblue"
     readonly property string linkColor: "blue"
     readonly property string postHighLightColor: "aliceblue"
+    readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string textColor: Material.foreground
 
     // Font size

@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import skywalker
 
 Page {
-    signal signIn()
+    signal closed()
 
     width: parent.width
     height: parent.height
@@ -23,29 +24,39 @@ Page {
             text: "Skywalker"
         }
         Text {
-            id: description
-            width: parent.width
+            id: version
+            anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
-            wrapMode: Text.Wrap
-            elide: Text.ElideRight
             color: "white"
+            text: qsTr("Version") + ": " + skywalker.VERSION
+        }
+        Text {
+            id: author
+            anchors.horizontalCenter: parent.horizontalCenter
+            padding: 10
+            color: "white"
+            text: "\u00A9 2023 Michel de Boer"
+        }
+        Text {
+            id: handle
+            anchors.horizontalCenter: parent.horizontalCenter
+            padding: 10
             textFormat: Text.RichText
-            text: qsTr("Explore the <b>Bluesky</b> social media network with Skywalker. To use Skywalker you must have a Bluesky account. If you do not have an account yet, then create one using the official Bluesky app or on <a href=\"https://bsky.app/\" style=\"color: ivory; font-weight: bold;\">https://bsky.app</a>")
-
-            onLinkActivated: (link) => { root.openLink(link) }
+            text: "<a href=\"did:plc:zzmeflm2wzrrgcaam6bw3kaf\" style=\"color: ivory;\">@skywalkerapp.bsky.social</a>"
+            onLinkActivated: (link) => skywalker.getDetailedProfile(link)
         }
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
             width: height
-            height: Math.min(parent.height - title.height - description.height - signInButton.height, parent.width)
+            height: Math.min(parent.height - title.height - version.height - author.height - handle.height - okButton.height, parent.width)
             fillMode: Image.PreserveAspectFit
             source: "images/skywalker.png"
         }
         SkyButton {
-            id: signInButton
+            id: okButton
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Sign In")
-            onClicked: signIn()
+            text: qsTr("OK")
+            onClicked: closed()
         }
     }
 
