@@ -62,6 +62,13 @@ Rectangle {
                 text: `@${author.handle}`
             }
 
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.right: undefined
+                contentLabels: author.labels
+            }
+
             Row {
                 spacing: 5
 
