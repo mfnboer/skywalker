@@ -59,6 +59,7 @@ std::vector<QString> Bookmarks::getPage(int startIndex, int size) const
     std::vector<QString> page;
     page.reserve(size);
 
+    // NOTE: new bookmarks are appended at the end!
     const int start = (int)mBookmarkedPostUris.size() - startIndex - 1;
     const int end = std::max(-1, start - size);
 

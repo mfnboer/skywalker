@@ -29,6 +29,7 @@ public:
     void put(const ATProto::AppBskyFeed::PostView::SharedPtr& rawPostView, const Post& post);
     const Post* get(const QString& uri) const;
     bool contains(const QString& uri) const;
+    std::vector<QString> getNonCachedUris(const std::vector<QString>& uris) const;
 
 private:
     QCache<QString, Entry> mCache; // key is at-uri

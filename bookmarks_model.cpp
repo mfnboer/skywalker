@@ -15,14 +15,12 @@ void BookmarksModel::clear()
 {
     beginRemoveRows({}, 0, mFeed.size() - 1);
     clearFeed();
-    mRawPosts.clear();
     endRemoveRows();
 
     qDebug() << "All bookmarks removed";
-    // TODO: cache
 }
 
-void BookmarksModel::addBookmarks(const std::vector<QString> postUris, ATProto::Client& bsky)
+void BookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto::Client& bsky)
 {
     Q_ASSERT(postUris.size() <= MAX_PAGE_SIZE);
 
@@ -35,10 +33,18 @@ void BookmarksModel::addBookmarks(const std::vector<QString> postUris, ATProto::
         return;
     }
 
+    const std::vector<QString> nonResolvedUris = mPostCache.getNonCachedUris(postUris);
+
+    if (nonResolvedUris.empty())
+    {
+        addPosts(postUris);
+        return;
+    }
+
     setInProgress(true);
 
-    bsky.getPosts(postUris,
-        [this, presence=getPresence()](auto postViewList)
+    bsky.getPosts(nonResolvedUris,
+        [this, presence=getPresence(), postUris](auto postViewList)
         {
             if (!presence)
                 return;
@@ -48,23 +54,18 @@ void BookmarksModel::addBookmarks(const std::vector<QString> postUris, ATProto::
 
             if (postViewList.empty())
             {
-                qWarning() << "Did not get bookmarkedposts!";
+                qWarning() << "Did not get bookmarked posts!";
                 return;
             }
-
-            beginInsertRows({}, mFeed.size(), mFeed.size() + postViewList.size() - 1);
 
             for (auto& postView : postViewList)
             {
                 Post post(postView.get(), -1);
-                mFeed.push_back(post);
-                mRawPosts.push_back(std::move(postView));
+                ATProto::AppBskyFeed::PostView::SharedPtr sharedRaw(postView.release());
+                mPostCache.put(sharedRaw, post);
             }
 
-            if (mFeed.size() == mBookmarks.size())
-                mFeed.back().setEndOfFeed(true);
-
-            endInsertRows();
+            addPosts(postUris);
         },
         [this, presence=getPresence()](const QString& error)
         {
@@ -77,6 +78,25 @@ void BookmarksModel::addBookmarks(const std::vector<QString> postUris, ATProto::
         });
 
     qDebug() << "Bookmarks:" << mFeed.size();
+}
+
+void BookmarksModel::addPosts(const std::vector<QString>& postUris)
+{
+    beginInsertRows({}, mFeed.size(), mFeed.size() + postUris.size() - 1);
+
+    for (const auto& uri : postUris)
+    {
+        const Post* post = mPostCache.get(uri);
+        Q_ASSERT(post);
+
+        if (post)
+            mFeed.push_back(*post);
+    }
+
+    if (mFeed.size() == mBookmarks.size())
+        mFeed.back().setEndOfFeed(true);
+
+    endInsertRows();
 }
 
 void BookmarksModel::setInProgress(bool inProgress)

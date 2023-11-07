@@ -38,4 +38,17 @@ bool PostCache::contains(const QString& uri) const
     return mCache.contains(uri);
 }
 
+std::vector<QString> PostCache::getNonCachedUris(const std::vector<QString>& uris) const
+{
+    std::vector<QString> nonCached;
+
+    for (const auto& uri : uris)
+    {
+        if (!contains(uri))
+            nonCached.push_back(uri);
+    }
+
+    return nonCached;
+}
+
 }

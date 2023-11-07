@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "post_cache.h"
 #include "presence.h"
 #include <atproto/lib/client.h>
 
@@ -22,7 +23,7 @@ public:
                             QObject* parent = nullptr);
 
     void clear();
-    void addBookmarks(const std::vector<QString> postUris, ATProto::Client& bsky);
+    void addBookmarks(const std::vector<QString>& postUris, ATProto::Client& bsky);
 
     bool getInProgress() const { return mInProgress; }
     void setInProgress(bool inProgress);
@@ -32,7 +33,9 @@ signals:
     void inProgressChanged();
 
 private:
-    std::vector<ATProto::AppBskyFeed::PostView::Ptr> mRawPosts;
+    void addPosts(const std::vector<QString>& postUris);
+
+    PostCache mPostCache;
     bool mInProgress = false;
 };
 
