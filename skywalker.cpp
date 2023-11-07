@@ -35,6 +35,7 @@ Skywalker::Skywalker(QObject* parent) :
     mNotificationListModel(mContentFilter, mBookmarks, this),
     mUserSettings(this)
 {
+    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(&mUserSettings); });
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     AuthorCache::instance().addProfileStore(&mUserFollows);

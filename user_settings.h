@@ -21,26 +21,44 @@ public:
     Q_INVOKABLE QList<BasicProfile> getUserListWithAddAccount() const;
 
     QStringList getUserDidList() const;
+
     Q_INVOKABLE BasicProfile getUser(const QString& did) const;
+
     void setActiveUserDid(const QString& did);
     Q_INVOKABLE QString getActiveUserDid() const;
+
     void addUser(const QString& did, const QString& host);
     Q_INVOKABLE void removeUser(const QString& did);
+
     Q_INVOKABLE QString getHost(const QString& did) const;
+
     void savePassword(const QString& did, const QString& password);
     Q_INVOKABLE QString getPassword(const QString& did) const;
+
     QString getHandle(const QString& did) const;
+
     void saveDisplayName(const QString& did, const QString& displayName);
     QString getDisplayName(const QString& did) const;
+
     void saveAvatar(const QString& did, const QString& avatar);
     QString getAvatar(const QString& did) const;
+
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     ATProto::ComATProtoServer::Session getSession(const QString& did) const;
+
     void clearCredentials(const QString& did);
+
     void saveSyncTimestamp(const QString& did, QDateTime timestamp);
     QDateTime getSyncTimestamp(const QString& did) const;
+
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
-    Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did);
+    Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
+
+    void saveBookmarks(const QString& did, const QStringList& postUris);
+    QStringList getBookmarks(const QString& did) const;
+
+    void setBookmarksNoticeSeen(bool seen);
+    bool getBookmarksNoticeSeen() const;
 
 private:
     QString key(const QString& did, const QString& subkey) const;

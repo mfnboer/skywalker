@@ -184,9 +184,29 @@ void UserSettings::updateLastSignInTimestamp(const QString& did)
     mSettings.setValue(key(did, "lastSignInTimestamp"), QDateTime::currentDateTime());
 }
 
-QDateTime UserSettings::getLastSignInTimestamp(const QString& did)
+QDateTime UserSettings::getLastSignInTimestamp(const QString& did) const
 {
     return mSettings.value(key(did, "lastSignInTimestamp")).toDateTime();
+}
+
+void UserSettings::saveBookmarks(const QString& did, const QStringList& postUris)
+{
+    mSettings.setValue(key(did, "bookmarks"), postUris);
+}
+
+QStringList UserSettings::getBookmarks(const QString& did) const
+{
+    return mSettings.value(key(did, "bookmarks")).toStringList();
+}
+
+void UserSettings::setBookmarksNoticeSeen(bool seen)
+{
+    mSettings.setValue("bookmarksNoticeSeen", seen);
+}
+
+bool UserSettings::getBookmarksNoticeSeen() const
+{
+    return mSettings.value("bookmarksNoticeSeen").toBool();
 }
 
 }

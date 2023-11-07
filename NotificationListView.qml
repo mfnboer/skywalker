@@ -77,6 +77,27 @@ ListView {
         }
     }
 
+    SvgImage {
+        id: noPostImage
+        width: 150
+        height: 150
+        y: height + (parent.headerItem ? parent.headerItem.height : 0)
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "grey"
+        svg: svgOutline.noPosts
+        visible: notificationListView.count === 0
+    }
+    Text {
+        id: noPostText
+        y: noPostImage.y
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pointSize: guiSettings.scaledFont(10/8)
+        color: "grey"
+        elide: Text.ElideRight
+        text: qsTr("No notifications")
+        visible: notificationListView.count === 0
+    }
+
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent

@@ -11,12 +11,28 @@ Bookmarks::Bookmarks(QObject* parent) :
 
 void Bookmarks::clear()
 {
-    mBookmarkedPostUris.clear();
-    mPostUriIndex.clear();
+    clearPrivate();
+    mDirty = false;
     emit sizeChanged();
 }
 
+void Bookmarks::clearPrivate()
+{
+    mBookmarkedPostUris.clear();
+    mPostUriIndex.clear();
+}
+
 bool Bookmarks::addBookmark(const QString& postUri)
+{
+    if (!addBookmarkPrivate(postUri))
+        return false;
+
+    mDirty = true;
+    emit sizeChanged();
+    return true;
+}
+
+bool Bookmarks::addBookmarkPrivate(const QString& postUri)
 {
     if (isFull())
         return false;
@@ -31,7 +47,6 @@ bool Bookmarks::addBookmark(const QString& postUri)
     mBookmarkedPostUris.push_back(postUri);
 
     qDebug() << "Added bookmark:" << postUri;
-    emit sizeChanged();
     return true;
 }
 
@@ -39,7 +54,7 @@ void Bookmarks::removeBookmark(const QString& postUri)
 {
     if (!mPostUriIndex.count(postUri))
     {
-        qDebug() << "Post was not bookmarekd:" << postUri;
+        qDebug() << "Post was not bookmarked:" << postUri;
         return;
     }
 
@@ -51,6 +66,7 @@ void Bookmarks::removeBookmark(const QString& postUri)
         mBookmarkedPostUris.erase(it);
 
     qDebug() << "Removed bookmark:" << postUri;
+    mDirty = true;
     emit sizeChanged();
 }
 
@@ -67,6 +83,65 @@ std::vector<QString> Bookmarks::getPage(int startIndex, int size) const
         page.push_back(mBookmarkedPostUris[i]);
 
     return page;
+}
+
+void Bookmarks::load(const UserSettings* userSettings)
+{
+    Q_ASSERT(userSettings);
+    const QString did = userSettings->getActiveUserDid();
+
+    if (did.isEmpty())
+    {
+        qDebug() << "No active user";
+        return;
+    }
+
+    clearPrivate();
+    const QStringList& uris = userSettings->getBookmarks(did);
+
+    for (const auto& uri : uris)
+        addBookmarkPrivate(uri);
+
+    qDebug() << "Bookmarks loaded:" << size();
+    mDirty = false;
+    emit sizeChanged();
+}
+
+void Bookmarks::save(UserSettings* userSettings)
+{
+    Q_ASSERT(userSettings);
+
+    if (!mDirty)
+        return;
+
+    const QString did = userSettings->getActiveUserDid();
+
+    if (did.isEmpty())
+    {
+        qDebug() << "No active user";
+        return;
+    }
+
+    QStringList uris;
+
+    for (const auto& uri : mBookmarkedPostUris)
+        uris.append(uri);
+
+    userSettings->saveBookmarks(did, uris);
+    qDebug() << "Bookmarks saved:" << uris.size();
+    mDirty = false;
+}
+
+Q_INVOKABLE bool Bookmarks::noticeSeen(const UserSettings* userSettings) const
+{
+    Q_ASSERT(userSettings);
+    return userSettings->getBookmarksNoticeSeen();
+}
+
+Q_INVOKABLE void Bookmarks::setNoticeSeen(UserSettings* userSettings, bool seen) const
+{
+    Q_ASSERT(userSettings);
+    userSettings->setBookmarksNoticeSeen(seen);
 }
 
 }

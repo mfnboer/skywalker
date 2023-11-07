@@ -58,8 +58,16 @@ Item {
     function askYesNoQuestion(parent, question, onYesCb) {
         let component = Qt.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Yes | Dialog.No })
-        message.onAccepted.connect(() => onYesCb())
+        message.onAccepted.connect(() => { message.destroy(); onYesCb() })
         message.onRejected.connect(() => message.destroy())
         message.show(question)
+    }
+
+    function notice(parent, msg, onOkCb) {
+        let component = Qt.createComponent("Message.qml")
+        let message = component.createObject(parent, { standardButtons: Dialog.Ok })
+        message.onAccepted.connect(() => { message.destroy(); onOkCb() })
+        message.onRejected.connect(() => message.destroy())
+        message.show(msg)
     }
 }
