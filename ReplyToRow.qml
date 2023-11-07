@@ -11,7 +11,7 @@ Row {
         id: replyImg
         width: 18 //replyToText.height
         height: width
-        color: "grey"
+        color: Material.color(Material.Grey)
         svg: svgOutline.reply
     }
 
@@ -20,7 +20,7 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width - replyImg.width
         elide: Text.ElideRight
-        color: "grey"
+        color: Material.color(Material.Grey)
         font.pointSize: guiSettings.scaledFont(7/8)
         text: qsTr(`Reply to ${authorName}`)
     }

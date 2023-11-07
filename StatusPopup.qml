@@ -13,7 +13,7 @@ Popup {
     background: Rectangle {
         color: ["lightcyan", "crimson"][level]
         border.width: 1
-        border.color: "grey"
+        border.color: Material.color(Material.Grey)
         radius: 5
     }
     closePolicy: Popup.CloseOnPressOutside

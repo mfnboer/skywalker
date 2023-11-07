@@ -26,6 +26,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             font.pointSize: guiSettings.scaledFont(10/8)
+            color: guiSettings.textColor
             text: menuItem.text
         }
     }

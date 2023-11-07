@@ -10,11 +10,11 @@ RadioButton {
     contentItem: Label {
         padding: 5
         background: Rectangle {
-            color: radio.checked ? "blue" : "transparent"
+            color: radio.checked ? guiSettings.buttonColor : "transparent"
             border.width: 1
-            border.color: "blue"
+            border.color: guiSettings.buttonColor
         }
-        color: checked ? "white" : "blue"
+        color: checked ? "white" : guiSettings.buttonColor
         text: radio.text
     }
 

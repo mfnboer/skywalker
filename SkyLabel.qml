@@ -2,10 +2,10 @@ import QtQuick
 import QtQuick.Controls
 
 Label {
-    property string backgroudColor: guiSettings.labelColor
+    property string backgroundColor: guiSettings.labelColor
 
     padding: 3
-    background: Rectangle { color: backgroudColor; radius: 2 }
+    background: Rectangle { color: backgroundColor; radius: 2 }
     font.pointSize: guiSettings.labelFontSize
 
     GuiSettings {

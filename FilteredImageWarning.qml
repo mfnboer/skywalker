@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -16,7 +17,7 @@ Row {
         id: imgIcon
         width: 30
         height: width
-        color: "grey"
+        color: Material.color(Material.Grey)
         svg: svgOutline.hideVisibility
         visible: !imageVisible()
     }
@@ -28,8 +29,8 @@ Row {
         wrapMode: Text.Wrap
         elide: Text.ElideRight
         textFormat: Text.RichText
-        color: "grey"
-        text: contentWarning + "<br><a href=\"show\">" +
+        color: Material.color(Material.Grey)
+        text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
               (images.length === 1 ? qsTr("Show picture") : qsTr("Show pictures")) + "</a>"
         visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
         onLinkActivated: showWarnedMedia = true
@@ -43,7 +44,7 @@ Row {
         wrapMode: Text.Wrap
         elide: Text.ElideRight
         textFormat: Text.RichText
-        color: "grey"
+        color: Material.color(Material.Grey)
         text: contentWarning
         visible: contentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
     }

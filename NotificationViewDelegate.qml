@@ -238,6 +238,7 @@ Rectangle {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
+                    color: guiSettings.textColor
                     text: `+${(notificationOtherAuthors.length - 4)}`
                     visible: notificationOtherAuthors.length > 4
                 }
@@ -249,6 +250,7 @@ Rectangle {
                 Text {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
+                    color: guiSettings.textColor
                     text: {
                         `<b>${notificationAuthor.name}</b> ` +
                         (notificationOtherAuthors.length > 0 ?
@@ -321,6 +323,7 @@ Rectangle {
             Text {
                 width: parent.width
                 wrapMode: Text.Wrap
+                color: guiSettings.textColor
                 text: {
                     `<b>${notificationInviteCodeUsedBy.name}</b> ` +
                     qsTr("used your invite code") + ": " + notificationInviteCode
@@ -334,7 +337,7 @@ Rectangle {
             Layout.columnSpan: 2
             Layout.preferredHeight: 1
             Layout.fillWidth: true
-            color: "lightgrey"
+            color: guiSettings.separatorColor
         }
 
         // End of feed indication
@@ -345,7 +348,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             elide: Text.ElideRight
-            color: Material.foreground
+            color: guiSettings.textColor
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfList

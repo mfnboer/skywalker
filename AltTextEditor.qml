@@ -49,6 +49,7 @@ Page {
         textFormat: TextEdit.PlainText
         wrapMode: TextEdit.Wrap
         font.pointSize: guiSettings.scaledFont(9/8)
+        color: guiSettings.textColor
         clip: true
         focus: true
 
@@ -56,10 +57,11 @@ Page {
             anchors.fill: parent
             leftPadding: altText.leftPadding
             rightPadding: altText.rightPadding
-            font.pointSize: altText.font.pointSize
-            color: "grey"
-            text: qsTr("Describe the image to help users with visual impairments.")
-            visible: altText.length === 0
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: Material.color(Material.Grey)
+            elide: Text.ElideRight
+            text: qsTr("Description to help users with visual impairments")
+            visible: altText.length + altText.preeditText.length === 0
         }
     }
 
@@ -73,5 +75,9 @@ Page {
         fillMode: Image.PreserveAspectCrop
         autoTransform: true
         source: page.imgSource
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

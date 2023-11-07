@@ -73,7 +73,7 @@ Page {
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
                 text: contentGroup.title
-                color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : "grey"
+                color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
             }
             Row {
                 id: buttonRow
@@ -110,7 +110,7 @@ Page {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     padding: 10
-                    color: "blue"
+                    color: guiSettings.buttonColor
                     text: qsTr("Hide")
                     visible: contentGroup.isAdult && !page.model.adultContent
                 }
@@ -122,14 +122,14 @@ Page {
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
                 text: contentGroup.subTitle
-                color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : "grey"
+                color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
             }
 
             Rectangle {
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: "lightgrey"
+                color: guiSettings.separatorColor
             }
         }
 

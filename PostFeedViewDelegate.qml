@@ -332,7 +332,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             textFormat: Text.StyledText
-            text: "<a href=\"showMore\">" + qsTr("Show more posts") + "</a>"
+            text: `<a href=\"showMore\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show more posts") + "</a>"
             visible: postGapId > 0
 
             onLinkActivated: {
@@ -445,7 +445,7 @@ Rectangle {
             Layout.columnSpan: 2
             Layout.preferredHeight: 1
             Layout.fillWidth: true
-            color: "lightgrey"
+            color: guiSettings.separatorColor
             visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType) ||
                 (postThreadType & QEnums.THREAD_LEAF)
         }

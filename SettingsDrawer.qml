@@ -41,6 +41,7 @@ Drawer {
             elide: Text.ElideRight
             maximumLineCount: 2
             font.bold: true
+            color: guiSettings.textColor
             text: user.name
         }
 
@@ -54,6 +55,7 @@ Drawer {
         Rectangle {
             width: 20
             height: width
+            color: "transparent"
         }
 
         SkyMenuItem {

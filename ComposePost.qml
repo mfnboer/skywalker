@@ -96,7 +96,7 @@ Page {
             contentItem: Rectangle {
                 width: textLengthBar.visualPosition * parent.width
                 height: parent.height
-                color: postText.graphemeLength <= maxPostLength ? "blue" : "red"
+                color: postText.graphemeLength <= maxPostLength ? guiSettings.buttonColor : guiSettings.errorColor
             }
         }
 
@@ -105,7 +105,7 @@ Page {
             y: height + 5
             width: 34
             height: 34
-            color: page.images.length < maxImages && imageScroller.visible && !pickingImage ? "blue" : "lightgrey"
+            color: page.images.length < maxImages && imageScroller.visible && !pickingImage ? guiSettings.buttonColor : guiSettings.disabledColor
             opacity: 1
             svg: svgOutline.addImage
 
@@ -130,7 +130,7 @@ Page {
             y: 10
             anchors.rightMargin: 10
             anchors.right: parent.right
-            color: postText.graphemeLength <= maxPostLength ? Material.foreground : "red"
+            color: postText.graphemeLength <= maxPostLength ? guiSettings.textColor : guiSettings.errorColor
             text: maxPostLength - postText.graphemeLength
         }
     }
@@ -174,6 +174,7 @@ Page {
             textFormat: TextEdit.PlainText
             wrapMode: TextEdit.Wrap
             font.pointSize: guiSettings.scaledFont(9/8)
+            color: guiSettings.textColor
             clip: true
             focus: true
             text: initialText
@@ -211,7 +212,7 @@ Page {
                 leftPadding: postText.leftPadding
                 rightPadding: postText.rightPadding
                 font.pointSize: postText.font.pointSize
-                color: "grey"
+                color: Material.color(Material.Grey)
                 text: qsTr("Say something nice")
                 visible: postText.graphemeLength === 0
             }
@@ -566,6 +567,6 @@ Page {
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.
         focusTimer.start()
-        postUtils.setHighlightDocument(postText.textDocument, "blue")
+        postUtils.setHighlightDocument(postText.textDocument, guiSettings.linkColor)
     }
 }

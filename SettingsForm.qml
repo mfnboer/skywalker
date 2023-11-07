@@ -47,18 +47,22 @@ Page {
         Text {
             Layout.columnSpan: 2
             font.bold: true
+            color: guiSettings.textColor
             text: qsTr("Account")
         }
 
         Text {
+            color: guiSettings.textColor
             text: qsTr("Email:")
         }
         Rectangle {
             Layout.fillWidth: true
             height: mailText.height
+            color: "transparent"
 
             Text {
                 id: mailText
+                color: guiSettings.textColor
                 text: userPrefs.email
             }
             SvgImage {
@@ -66,17 +70,19 @@ Page {
                 anchors.leftMargin: 5
                 height: mailText.height
                 width: height
-                color: "blue"
+                color: guiSettings.buttonColor
                 svg: svgOutline.check
                 visible: userPrefs.emailConfirmed
             }
         }
 
         Text {
+            color: guiSettings.textColor
             text: qsTr("Birthday:")
         }
         Text {
             Layout.fillWidth: true
+            color: guiSettings.textColor
             text: userPrefs.birthDate
         }
     }
@@ -88,6 +94,7 @@ Page {
         Text {
             topPadding: 20
             font.bold: true
+            color: guiSettings.textColor
             text: qsTr("Home feed preferences")
         }
 

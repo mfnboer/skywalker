@@ -20,11 +20,13 @@ Drawer {
             height: guiSettings.headerHeight
             width: parent.width
             z: guiSettings.headerZLevel
+            color: "transparent"
 
             Text {
                 anchors.centerIn: parent
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
+                color: guiSettings.textColor
                 text: qsTr("Switch Account")
             }
 

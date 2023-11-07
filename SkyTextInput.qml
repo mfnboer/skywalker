@@ -16,7 +16,7 @@ Rectangle {
     height: textField.height
     radius: 10
     border.width: 1
-    border.color: "grey"
+    border.color: Material.color(Material.Grey)
 
     TextInput {
         id: textField
@@ -33,7 +33,7 @@ Rectangle {
             padding: parent.padding
             leftPadding: parent.leftPadding
             font.pointSize: parent.font.pointSize
-            color: "grey"
+            color: Material.color(Material.Grey)
             text: placeholderText
             visible: parent.displayText.length === 0
         }

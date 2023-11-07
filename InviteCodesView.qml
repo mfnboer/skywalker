@@ -61,14 +61,14 @@ ListView {
                     leftPadding: 10
                     topPadding: 10
                     font.strikeout: !modelData.available || modelData.disabled
-                    color: modelData.disabled ? "grey" : guiSettings.textColor
+                    color: modelData.disabled ? Material.color(Material.Grey) : guiSettings.textColor
                     text: modelData.code
                 }
                 Text {
                     width: parent.width
                     leftPadding: 10
                     font.pointSize: guiSettings.scaledFont(7/8)
-                    color: "grey"
+                    color: Material.color(Material.Grey)
                     text: modelData.createdAt.toLocaleDateString(Qt.locale(), Locale.LongFormat)
                 }
             }
@@ -133,7 +133,7 @@ ListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 font.pointSize: guiSettings.scaledFont(7/8)
-                color: "grey"
+                color: Material.color(Material.Grey)
                 text: modelData.usedAt.toLocaleDateString(Qt.locale(), Locale.LongFormat)
                 visible: modelData.used
             }
@@ -142,7 +142,7 @@ ListView {
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: "lightgrey"
+                color: guiSettings.separatorColor
             }
         }
         MouseArea {

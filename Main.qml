@@ -71,6 +71,8 @@ ApplicationWindow {
 
     Skywalker {
         id: skywalker
+
+
         onLoginOk: start()
 
         onLoginFailed: (error, host, handleOrDid) => {

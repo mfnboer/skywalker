@@ -79,7 +79,7 @@ ListView {
         height: 150
         y: height + (parent.headerItem ? parent.headerItem.height : 0)
         anchors.horizontalCenter: parent.horizontalCenter
-        color: "grey"
+        color: Material.color(Material.Grey)
         svg: svgOutline.noPosts
         visible: bookmarksView.count === 0
     }
@@ -88,7 +88,7 @@ ListView {
         y: noPostImage.y
         anchors.horizontalCenter: parent.horizontalCenter
         font.pointSize: guiSettings.scaledFont(10/8)
-        color: "grey"
+        color: Material.color(Material.Grey)
         elide: Text.ElideRight
         text: qsTr("No bookmarks")
         visible: bookmarksView.count === 0

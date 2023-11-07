@@ -58,7 +58,7 @@ Page {
             width: 104
             height: width
             radius: width / 2
-            color: "white"
+            color: guiSettings.backgroundColor
 
             Avatar {
                 anchors.centerIn: parent
@@ -164,6 +164,7 @@ Page {
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.pointSize: guiSettings.scaledFont(16/8)
+                color: guiSettings.textColor
                 text: author.name
             }
 
@@ -186,6 +187,7 @@ Page {
             Rectangle {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 height: contentLabels.height
+                color: "transparent"
 
                 ContentLabels {
                     id: contentLabels
@@ -229,6 +231,7 @@ Page {
                     }
                 }
                 Text {
+                    color: guiSettings.textColor
                     text: qsTr(`<b>${author.postsCount}</b> posts`)
                 }
             }
@@ -239,6 +242,7 @@ Page {
                 topPadding: 10
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
+                color: guiSettings.textColor
                 text: postUtils.linkiFy(author.description)
                 visible: contentVisible()
 
@@ -257,6 +261,7 @@ Page {
                 topPadding: 10
                 bottomPadding: 10
                 font.bold: true
+                color: guiSettings.textColor
                 text: qsTr("Posts")
             }
 
@@ -264,7 +269,7 @@ Page {
                 x: -parent.leftPadding
                 width: parent.width
                 height: 1
-                color: "lightgrey"
+                color: guiSettings.separatorColor
             }
         }
 
@@ -306,7 +311,7 @@ Page {
             height: 150
             y: height + (parent.headerItem ? parent.headerItem.height : 0)
             anchors.horizontalCenter: parent.horizontalCenter
-            color: "grey"
+            color: Material.color(Material.Grey)
             svg: {
                 if (author.viewer.blockedBy || blocking) {
                     return svgOutline.block
@@ -325,7 +330,7 @@ Page {
             y: noPostImage.y
             anchors.horizontalCenter: parent.horizontalCenter
             font.pointSize: guiSettings.scaledFont(10/8)
-            color: "grey"
+            color: Material.color(Material.Grey)
             elide: Text.ElideRight
             text: {
                 if (blocking) {
@@ -347,7 +352,7 @@ Page {
             anchors.horizontalCenter: parent.horizontalCenter
             elide: Text.ElideRight
             textFormat: Text.RichText
-            text: "<br><a href=\"show\">" + qsTr("Show profile") + "</a>"
+            text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
             visible: authorFeedView.count === 0 && !blocking && !author.viewer.blockedBy &&
                      !authorMuted && contentVisibilityIsWarning()
             onLinkActivated: {

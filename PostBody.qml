@@ -30,7 +30,7 @@ Column {
         maximumLineCount: maxTextLines
         elide: Text.ElideRight
         textFormat: Text.RichText
-        color: Material.foreground
+        color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         text: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
@@ -54,7 +54,7 @@ Column {
             id: imgIcon
             width: 30
             height: width
-            color: "grey"
+            color: Material.color(Material.Grey)
             svg: mutePost ? svgOutline.mute : svgOutline.hideVisibility
             visible: !postVisible()
         }
@@ -68,8 +68,8 @@ Column {
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: "grey"
-            text: postContentWarning + "<br><a href=\"show\">" + qsTr("Show post") + "</a>"
+            color: Material.color(Material.Grey)
+            text: postContentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
             visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
             onLinkActivated: {
                 showWarnedPost = true
@@ -88,8 +88,8 @@ Column {
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: "grey"
-            text: qsTr("You muted this account") + "<br><a href=\"show\">" + qsTr("Show post") + "</a>"
+            color: Material.color(Material.Grey)
+            text: qsTr("You muted this account") + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
             visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
             onLinkActivated: {
                 mutePost = false
@@ -109,7 +109,7 @@ Column {
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: "grey"
+            color: Material.color(Material.Grey)
             text: postContentWarning
             visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
         }

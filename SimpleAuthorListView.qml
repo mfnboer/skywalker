@@ -22,6 +22,7 @@ ListView {
         id: authorEntry
         width: searchList.width
         height: grid.height
+        color: "transparent"
 
         GridLayout {
             id: grid
@@ -37,6 +38,7 @@ ListView {
                 width: 44
                 height: avatarImg.height
                 Layout.fillHeight: true
+                color: "transparent"
 
                 Avatar {
                     id: avatarImg
@@ -54,6 +56,7 @@ ListView {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.bold: true
+                color: guiSettings.textColor
                 text: author.name
             }
 
@@ -84,7 +87,7 @@ ListView {
                 Layout.columnSpan: 3
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: "lightgrey"
+                color: guiSettings.separatorColor
             }
         }
         MouseArea {

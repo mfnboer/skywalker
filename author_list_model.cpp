@@ -81,7 +81,7 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
             continue;
         }
 
-        if (author->mViewer->mMuted)
+        if (mType != Type::AUTHOR_LIST_MUTES && author->mViewer->mMuted)
         {
             qDebug() << "Muted author:" << author->mHandle << author->mDid;
             continue;

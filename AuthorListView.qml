@@ -58,13 +58,14 @@ ListView {
             padding: 10
             wrapMode: Text.Wrap
             elide: Text.ElideRight
+            color: guiSettings.textColor
             text: description
             visible: description
         }
         Rectangle {
             width: parent.width
             height: 1
-            color: "lightgrey"
+            color: guiSettings.separatorColor
             visible: description
         }
     }
@@ -95,7 +96,7 @@ ListView {
         height: 150
         y: height + (parent.headerItem ? parent.headerItem.height : 0)
         anchors.horizontalCenter: parent.horizontalCenter
-        color: "grey"
+        color: Material.color(Material.Grey)
         svg: svgOutline.noUsers
         visible: authorListView.count === 0
     }
@@ -104,7 +105,7 @@ ListView {
         y: noAuthorsImage.y
         anchors.horizontalCenter: parent.horizontalCenter
         font.pointSize: guiSettings.scaledFont(10/8)
-        color: "grey"
+        color: Material.color(Material.Grey)
         elide: Text.ElideRight
         text: qsTr("None")
         visible: authorListView.count === 0

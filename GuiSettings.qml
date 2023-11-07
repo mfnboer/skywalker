@@ -11,17 +11,21 @@ Item {
 
     // Colors
     readonly property string backgroundColor: Material.background
-    readonly property string badgeBorderColor: "white"
-    readonly property string badgeColor: "blue"
+    readonly property string badgeBorderColor: Material.background
+    readonly property string badgeColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string badgeTextColor: "white"
-    readonly property string buttonColor: "blue"
+    readonly property string buttonColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string buttonTextColor: "white"
-    readonly property string footerColor: "white"
-    readonly property string handleColor: "grey"
+    readonly property string contentLabelColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
+    readonly property string disabledColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
+    readonly property string errorColor: "palevioletred"
+    readonly property string footerColor: Material.background
+    readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: "black"
-    readonly property string labelColor: "lightblue"
-    readonly property string linkColor: "blue"
-    readonly property string postHighLightColor: "aliceblue"
+    readonly property string labelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
+    readonly property string linkColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "darkslategrey"
+    readonly property string separatorColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string textColor: Material.foreground
 

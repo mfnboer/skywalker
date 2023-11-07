@@ -21,34 +21,34 @@ Row {
 
     StatIcon {
         width: parent.width / 5
-        iconColor: "grey"
+        iconColor: Material.color(Material.Grey)
         svg: svgOutline.reply
         statistic: replyCount
         onClicked: reply()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: repostUri ? "palevioletred" : "grey"
+        iconColor: repostUri ? "palevioletred" : Material.color(Material.Grey)
         svg: svgOutline.repost
         statistic: repostCount
         onClicked: repost()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: likeUri ? "palevioletred" : "grey"
+        iconColor: likeUri ? "palevioletred" : Material.color(Material.Grey)
         svg: likeUri ? svgFilled.like : svgOutline.like
         statistic: likeCount
         onClicked: like()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: "grey"
+        iconColor: isBookmarked ? guiSettings.buttonColor : Material.color(Material.Grey)
         svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
         onClicked: bookmark()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: "grey"
+        iconColor: Material.color(Material.Grey)
         svg: svgOutline.moreVert
         onClicked: moreMenu.open()
 
@@ -82,5 +82,9 @@ Row {
                 }
             }
         }
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

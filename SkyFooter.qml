@@ -24,7 +24,7 @@ Rectangle {
         id: separatorLine
         width: parent.width
         height: 1
-        color: "lightgrey"
+        color: guiSettings.separatorColor
     }
 
     RowLayout {
@@ -35,6 +35,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
+            color: guiSettings.backgroundColor
 
             SvgImage {
                 id: homeButton
@@ -76,6 +77,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
+            color: guiSettings.backgroundColor
 
             SvgImage {
                 id: searchButton
@@ -96,6 +98,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
+            color: guiSettings.backgroundColor
 
             SvgImage {
                 id: notificationsButton
@@ -138,5 +141,9 @@ Rectangle {
     PostButton {
         x: parent.width - width - 10
         y: -height - 10
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

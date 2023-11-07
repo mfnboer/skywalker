@@ -17,6 +17,7 @@ Rectangle {
 
     width: grid.width
     height: grid.height
+    color: guiSettings.backgroundColor
 
     GridLayout {
         id: grid
@@ -52,6 +53,7 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
+                color: guiSettings.textColor
                 text: author.name
             }
             Text {
@@ -109,6 +111,7 @@ Rectangle {
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             textFormat: Text.RichText
+            color: guiSettings.textColor
             text: author.description
             visible: showAuthor
         }
@@ -117,7 +120,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: "lightgrey"
+            color: guiSettings.separatorColor
         }
     }
     MouseArea {

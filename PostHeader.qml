@@ -17,6 +17,7 @@ GridLayout {
         elide: Text.ElideRight
         text: authorName
         font.bold: true
+        color: guiSettings.textColor
     }
     Text {
         text: guiSettings.durationToString(postIndexedSecondsAgo)

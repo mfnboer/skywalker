@@ -5,6 +5,7 @@ ScrollView {
     required property list<string> contentLabels
 
     width: Math.min(parent.width, labelRow.width)
+    height: labelRow.height
     anchors.right: parent.right
     contentWidth: labelRow.width
 
@@ -19,11 +20,20 @@ ScrollView {
 
             SkyLabel {
                 required property string modelData
-                backgroudColor: "lightgrey"
+                backgroundColor: guiSettings.contentLabelColor
                 font.pointSize: guiSettings.scaledFont(5/8)
                 font.italic: true
+                color: guiSettings.textColor
                 text: modelData
             }
         }
+    }
+
+    GuiSettings {
+        id: guiSettings
+    }
+
+    Component.onCompleted: {
+        console.debug("LABELS:", contentLabels)
     }
 }

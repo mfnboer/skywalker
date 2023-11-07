@@ -47,6 +47,7 @@ Page {
                     padding: 5
                     rightPadding: clearButton.width
                     font.pointSize: guiSettings.scaledFont(9/8)
+                    color: guiSettigs.textColor
                     inputMethodHints: Qt.ImhNoAutoUppercase
                     maximumLength: 2048
                     focus: true
@@ -88,7 +89,7 @@ Page {
                     width: searchText.width
                     padding: searchText.padding
                     font.pointSize: searchText.font.pointSize
-                    color: "grey"
+                    color: Material.color(Material.Grey)
                     text: qsTr("Search")
                     visible: searchText.displayText.length === 0
                 }
@@ -127,7 +128,7 @@ Page {
         Text {
             topPadding: 10
             anchors.horizontalCenter: parent.horizontalCenter
-            color: "grey"
+            color: Material.color(Material.Grey)
             elide: Text.ElideRight
             text: qsTr("No matching user name found")
             visible: typeaheadView.count === 0
@@ -170,7 +171,7 @@ Page {
             Text {
                 topPadding: 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: "grey"
+                color: Material.color(Material.Grey)
                 elide: Text.ElideRight
                 text: qsTr("No posts found")
                 visible: postsView.count === 0 && !searchUtils.searchPostsInProgress
@@ -200,7 +201,7 @@ Page {
             Text {
                 topPadding: 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: "grey"
+                color: Material.color(Material.Grey)
                 elide: Text.ElideRight
                 text: qsTr("No users found")
                 visible: usersView.count === 0 && !searchUtils.searchActorsInProgress
