@@ -22,7 +22,7 @@ ApplicationWindow {
         if (currentStack().depth > 1) {
             let item = currentStackItem()
 
-            if (item instanceof SignIn) {
+            if (item instanceof SignIn || item instanceof StartupStatus) {
                 // The Sign In page should not be popped from the stack.
                 // The user must sign in or close the app.
 
@@ -74,6 +74,8 @@ ApplicationWindow {
         onLoginOk: start()
 
         onLoginFailed: (error, host, handleOrDid) => {
+            closeStartupStatus()
+
             if (handleOrDid.startsWith("did:")) {
                 const did = handleOrDid
                 const userSettings = getUserSettings()
@@ -86,10 +88,14 @@ ApplicationWindow {
 
         onResumeSessionOk: start()
 
-        onResumeSessionFailed: loginActiveUser()
+        onResumeSessionFailed: {
+            closeStartupStatus()
+            loginActiveUser()
+        }
 
         onSessionExpired: (error) => {
-            timelineUpdateTimer.stop() // TODO: why?
+            closeStartupStatus()
+            timelineUpdateTimer.stop() // Could happen during a session
             loginActiveUser()
         }
 
@@ -99,6 +105,7 @@ ApplicationWindow {
 
         onGetUserProfileFailed: (error) => {
             console.warn("FAILED TO LOAD USER PROFILE:", error)
+            closeStartupStatus()
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
             skywalker.signOut()
             signIn()
@@ -110,24 +117,29 @@ ApplicationWindow {
             const lastSignIn = userSettings.getLastSignInTimestamp(did)
             inviteCodeStore.load(lastSignIn)
             skywalker.bookmarks.load(userSettings)
+
+            setStartupStatus("Rewinding timeline")
             skywalker.syncTimeline()
             userSettings.updateLastSignInTimestamp(did)
         }
 
         onGetUserPreferencesFailed: {
             console.warn("FAILED TO LOAD USER PREFERENCES")
+            closeStartupStatus()
             statusPopup.show("FAILED TO LOAD USER PREFERENCES", QEnums.STATUS_LEVEL_ERROR)
             skywalker.signOut()
             signIn()
         }
 
         onTimelineSyncOK: (index) => {
+            closeStartupStatus()
             getTimelineView().setInSync(index)
             timelineUpdateTimer.start()
         }
 
         onTimelineSyncFailed: {
             console.warn("SYNC FAILED")
+            closeStartupStatus()
             getTimelineView().setInSync(0)
         }
 
@@ -144,6 +156,7 @@ ApplicationWindow {
         }
 
         function start() {
+            setStartupStatus(qsTr("Loading user profile"))
             skywalker.getUserProfileAndFollows()
         }
     }
@@ -276,7 +289,7 @@ ApplicationWindow {
                 const userSettings = skywalker.getUserSettings()
                 const host = userSettings.getHost(profile.did)
                 const password = userSettings.getPassword(profile.did)
-                skywalker.login(profile.did, password, host)
+                skywalkerLogin(profile.did, password, host)
             }
 
             close()
@@ -409,6 +422,29 @@ ApplicationWindow {
         linkUtils.openLink(link)
     }
 
+    function showStartupStatus() {
+        let component = Qt.createComponent("StartupStatus.qml")
+        let page = component.createObject(root)
+        page.setStatus(qsTr("Connecting"))
+        pushStack(page)
+    }
+
+    function setStartupStatus(msg) {
+        let item = currentStackItem()
+
+        if (item instanceof StartupStatus) {
+            item.setStatus(msg)
+        }
+    }
+
+    function closeStartupStatus() {
+        let item = currentStackItem()
+
+        if (item instanceof StartupStatus) {
+            popStack()
+        }
+    }
+
     function showAbout() {
         let component = Qt.createComponent("About.qml")
         let page = component.createObject(root)
@@ -445,7 +481,7 @@ ApplicationWindow {
         page.onAccepted.connect((host, handle, password, did) => {
                 popStack()
                 const user = did ? did : handle
-                skywalker.login(user, password, host)
+                skywalkerLogin(user, password, host)
         })
         pushStack(page)
     }
@@ -459,7 +495,7 @@ ApplicationWindow {
             const password = userSettings.getPassword(did)
 
             if (host) {
-                skywalker.login(did, password, host)
+                skywalkerLogin(did, password, host)
                 return
             }
         }
@@ -476,7 +512,7 @@ ApplicationWindow {
         })
         page.onAccepted.connect((host, handle, password, did) => {
                 popStack()
-                skywalker.login(handle, password, host)
+                skywalkerLogin(handle, password, host)
         })
 
         pushStack(page)
@@ -516,7 +552,7 @@ ApplicationWindow {
                     return
                 }
 
-                skywalker.login(profile.did, password, host)
+                skywalkerLogin(profile.did, password, host)
         })
         page.onDeletedUser.connect((profile) => {
                 popStack()
@@ -533,6 +569,11 @@ ApplicationWindow {
                     selectUser()
         })
         pushStack(page)
+    }
+
+    function skywalkerLogin(user, password, host) {
+        showStartupStatus()
+        skywalker.login(user, password, host)
     }
 
     function signOutCurrentUser() {
@@ -729,6 +770,8 @@ ApplicationWindow {
                 { skywalker: skywalker, timeline: timelineView })
         searchView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
         searchStack.push(searchView)
+
+        showStartupStatus()
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         skywalker.resumeSession()

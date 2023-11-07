@@ -52,7 +52,7 @@ Drawer {
         }
 
         Rectangle {
-            width: 30
+            width: 20
             height: width
         }
 

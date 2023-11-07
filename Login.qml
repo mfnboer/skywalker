@@ -104,8 +104,10 @@ Page {
 
         Label {
             id: msgLabel
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
             Layout.fillWidth: true
-            color: "red"
+            color: "darkred"
             wrapMode: Text.Wrap
             text: error
             visible: error
