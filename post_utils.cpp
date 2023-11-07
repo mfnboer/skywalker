@@ -571,7 +571,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
         setFirstPostLink(QString());
 }
 
-QString PostUtils::linkiFy(const QString& text)
+QString PostUtils::linkiFy(const QString& text, const QString& colorName)
 {
     const auto facets = postMaster()->parseFacets(text);
     QString linkified = "<span style=\"white-space: pre-wrap\">";
@@ -587,7 +587,7 @@ QString PostUtils::linkiFy(const QString& text)
             linkified.append(before.toHtmlEscaped());
             const QString ref = facet.mType == ATProto::PostMaster::ParsedMatch::Type::MENTION || facet.mMatch.startsWith("http") ?
                                     facet.mMatch : "https://" + facet.mMatch;
-            QString link = QString("<a href=\"%1\">%2</a>").arg(ref, facet.mMatch);
+            QString link = QString("<a href=\"%1\" style=\"color: %3;\">%2</a>").arg(ref, facet.mMatch, colorName);
             linkified.append(link);
             pos = facet.mEndIndex;
         }

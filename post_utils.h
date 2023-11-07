@@ -43,7 +43,7 @@ public:
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                              int cursor);
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
-    Q_INVOKABLE QString linkiFy(const QString& text);
+    Q_INVOKABLE QString linkiFy(const QString& text, const QString& colorName);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);

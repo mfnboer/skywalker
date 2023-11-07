@@ -27,6 +27,7 @@ class Skywalker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
+    Q_PROPERTY(bool lightMode READ getLightMode WRITE setLightMode NOTIFY lightModeChanged FINAL)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
@@ -42,6 +43,10 @@ class Skywalker : public QObject
 
 public:
     static constexpr const char* VERSION = APP_VERSION;
+
+    // TODO: move to user settings
+    static bool getLightMode() { return sLightMode; }
+    static QString getLinkColor() { return sLightMode ? "blue" : "#58a6ff"; }
 
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
@@ -101,6 +106,8 @@ public:
     Q_INVOKABLE void clearPassword();
     Q_INVOKABLE void signOut();
 
+    void setLightMode(bool lightMode);
+
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
 
@@ -129,6 +136,7 @@ public:
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
 
 signals:
+    void lightModeChanged();
     void loginOk();
     void loginFailed(QString error, QString host, QString handle);
     void resumeSessionOk();
@@ -175,6 +183,8 @@ private:
     QDateTime getSyncTimestamp() const;
     void disableDebugLogging();
     void restoreDebugLogging();
+
+    static bool sLightMode;
 
     std::unique_ptr<ATProto::Client> mBsky;
     QString mAvatarUrl;

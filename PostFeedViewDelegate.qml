@@ -80,20 +80,20 @@ Rectangle {
                         switch (postType) {
                         case QEnums.POST_REPLY:
                         case QEnums.POST_LAST_REPLY:
-                            return !postParentInThread && index % 2 === 0 ? "transparent" : "lightcyan"
+                            return !postParentInThread && index % 2 === 0 ? "transparent" : guiSettings.threadEndColor
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
-                                return "cyan"
+                                return guiSettings.threadStartColor
                             } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) ||
                                        (postThreadType & QEnums.THREAD_ENTRY)){
-                                return "darkcyan"
+                                return guiSettings.threadEntryColor
                             } else if (postThreadType & QEnums.THREAD_TOP) {
                                 return "transparent"
                             } else if (postThreadType & QEnums.THREAD_PARENT) {
-                                return "cyan"
+                                return guiSettings.threadStartColor
                             }
 
-                            return "lightcyan"
+                            return guiSettings.threadEndColor
                         }
                         default:
                             return "transparent"
@@ -151,19 +151,19 @@ Rectangle {
                     color: {
                         switch (postType) {
                         case QEnums.POST_ROOT:
-                            return "cyan"
+                            return guiSettings.threadStartColor
                         case QEnums.POST_REPLY:
                         case QEnums.POST_LAST_REPLY:
-                            return "lightcyan"
+                            return guiSettings.threadEndColor
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_ENTRY) {
-                                return "darkcyan"
+                                return guiSettings.threadEntryColor
                             } else if ((postThreadType & QEnums.THREAD_PARENT) ||
                                     (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
-                                return "cyan"
+                                return guiSettings.threadStartColor
                             }
 
-                            return "lightcyan"
+                            return guiSettings.threadEndColor
                         }
                         default:
                             return "transparent"
@@ -178,15 +178,15 @@ Rectangle {
                             return "transparent"
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_ENTRY) {
-                                return "darkcyan"
+                                return guiSettings.threadEntryColor
                             } else if (postThreadType & QEnums.THREAD_PARENT) {
-                                return "cyan"
+                                return guiSettings.threadStartColor
                             }
 
-                            return "lightcyan"
+                            return guiSettings.threadEndColor
                         }
                         default:
-                            return "lightcyan"
+                            return guiSettings.threadEndColor
                         }
                     }
                 }
@@ -413,18 +413,18 @@ Rectangle {
                 switch (postType) {
                 case QEnums.POST_ROOT:
                 case QEnums.POST_REPLY:
-                    return "lightcyan"
+                    return guiSettings.threadEndColor
                 case QEnums.POST_THREAD: {
                     if (postThreadType & QEnums.THREAD_ENTRY)  {
-                        return "darkcyan"
+                        return guiSettings.threadEntryColor
                     }
                     if (postThreadType & QEnums.THREAD_LEAF) {
                         return "transparent"
                     } else if (postThreadType & QEnums.THREAD_PARENT)  {
-                        return "cyan"
+                        return guiSettings.threadStartColor
                     }
 
-                    return "lightcyan"
+                    return guiSettings.threadEndColor
                 }
                 default:
                     return "transparent"

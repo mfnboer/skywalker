@@ -71,7 +71,7 @@ ApplicationWindow {
 
     Skywalker {
         id: skywalker
-
+        lightMode: Material.theme === Material.Light
 
         onLoginOk: start()
 

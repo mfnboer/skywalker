@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post.h"
 #include "author_cache.h"
+#include "skywalker.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -143,7 +144,7 @@ QString Post::getFormattedText() const
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
-        return ATProto::PostMaster::getFormattedPostText(*record);
+        return ATProto::PostMaster::getFormattedPostText(*record, Skywalker::getLinkColor());
     }
 
     QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;

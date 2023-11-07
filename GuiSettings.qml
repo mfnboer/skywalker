@@ -24,10 +24,13 @@ Item {
     readonly property string headerColor: "black"
     readonly property string labelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
     readonly property string linkColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
-    readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "darkslategrey"
+    readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "#1d3030"
     readonly property string separatorColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string textColor: Material.foreground
+    readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "#000033"
+    readonly property string threadEndColor: Material.theme === Material.Light ? "lightcyan" : "navy"
+    readonly property string threadEntryColor: Material.theme === Material.Light ? "darkcyan" : "teal" // "#00004d"
 
     // Font size
     readonly property double labelFontSize: scaledFont(6/8)

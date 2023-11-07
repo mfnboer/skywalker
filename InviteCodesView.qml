@@ -48,6 +48,7 @@ ListView {
         id: codeEntry
         width: inviteCodeList.width
         height: codeRow.height + usedByRow.height
+        color: "transparent"
 
         RowLayout {
             id: codeRow
@@ -96,6 +97,7 @@ ListView {
                 width: 65
                 height: avatarImg.height + 20
                 Layout.fillHeight: true
+                color: "transparent"
                 visible: modelData.used
 
                 Avatar {
@@ -114,6 +116,7 @@ ListView {
                 topPadding: 5
                 Layout.fillWidth: true
                 elide: Text.ElideRight
+                color: guiSettings.textColor
                 text: modelData.usedBy.name
                 visible: modelData.used
             }
@@ -159,6 +162,7 @@ ListView {
         width: parent.width
         wrapMode: Text.WordWrap
         elide: Text.ElideRight
+        color: guiSettings.textColor
         text: qsTr("Could not retrieve invite codes. To retrieve invite codes you need to sign in with your real password, not an app password.")
         visible: failedToLoad
     }
@@ -169,6 +173,7 @@ ListView {
         width: parent.width
         wrapMode: Text.WordWrap
         elide: Text.ElideRight
+        color: guiSettings.textColor
         text: qsTr("You do not yet have any invide codes.")
         visible: !failedToLoad && inviteCodeList.count === 0
     }

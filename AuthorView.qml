@@ -243,7 +243,7 @@ Page {
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
                 color: guiSettings.textColor
-                text: postUtils.linkiFy(author.description)
+                text: postUtils.linkiFy(author.description, guiSettings.linkColor)
                 visible: contentVisible()
 
                 onLinkActivated: (link) => {

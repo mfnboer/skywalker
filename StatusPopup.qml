@@ -11,7 +11,8 @@ Popup {
     z: 200
 
     background: Rectangle {
-        color: ["lightcyan", "crimson"][level]
+        color: [Material.theme === Material.Light ? "lightcyan" : "teal",
+                Material.theme === Material.Light ? "crimson" : "darkred"][level]
         border.width: 1
         border.color: Material.color(Material.Grey)
         radius: 5
@@ -26,6 +27,7 @@ Popup {
         wrapMode: Text.Wrap
         maximumLineCount: 4
         elide: Text.ElideRight
+        color: guiSettings.textColor
         text: "Status"
     }
     SvgButton {
@@ -46,6 +48,10 @@ Popup {
     Timer {
         id: closeTimer
         onTriggered: statusPopup.close()
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 
     function show(msg, level = QEnums.STATUS_LEVEL_INFO, intervalSec = 30) {

@@ -28,6 +28,8 @@ static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
 static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 
+bool Skywalker::sLightMode = true;
+
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
@@ -47,6 +49,17 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
+}
+
+void Skywalker::setLightMode(bool lightMode)
+{
+    qDebug() << "Light mode:" << lightMode;
+
+    if (lightMode != sLightMode)
+    {
+        sLightMode = lightMode;
+        emit lightModeChanged();
+    }
 }
 
 // NOTE: user can be handle or DID
