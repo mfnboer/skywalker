@@ -10,10 +10,12 @@
 
 namespace Skywalker {
 
-NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, QObject* parent) :
+NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks, QObject* parent) :
     QAbstractListModel(parent),
-    mContentFilter(contentFilter)
+    mContentFilter(contentFilter),
+    mBookmarks(bookmarks)
 {
+    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
 }
 
 void NotificationListModel::clear()
@@ -457,6 +459,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getNotificationPost(mPostCache).getLikeCount() + (change ? change->mLikeCountDelta : 0);
     case Role::NotificationPostReplyCount:
         return notification.getNotificationPost(mPostCache).getReplyCount() + (change ? change->mReplyCountDelta : 0);
+    case Role::NotificationPostBookmarked:
+        return mBookmarks.isBookmarked(notification.getPostUri());
     case Role::NotificationPostNotFound:
         return notification.getNotificationPost(mPostCache).isNotFound();
     case Role::NotificationPostLabels:
@@ -523,6 +527,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
+        { int(Role::NotificationPostBookmarked), "notificationPostBookmarked" },
         { int(Role::NotificationPostNotFound), "notificationPostNotFound" },
         { int(Role::NotificationPostLabels), "notificationPostLabels" },
         { int(Role::NotificationPostContentVisibility), "notificationPostContentVisibility" },
@@ -569,6 +574,11 @@ void NotificationListModel::repostUriChanged()
 void NotificationListModel::postDeletedChanged()
 {
     changeData({ int(Role::NotificationReasonPostLocallyDeleted) });
+}
+
+void NotificationListModel::postBookmarkedChanged()
+{
+    changeData({ int(Role::NotificationPostBookmarked) });
 }
 
 void NotificationListModel::changeData(const QList<int>& roles)

@@ -9,7 +9,7 @@ Row {
     required property string repostUri
     required property string likeUri
     required property bool authorIsUser
-    property bool isBookmarked: false
+    required property bool isBookmarked
 
     signal reply()
     signal repost()

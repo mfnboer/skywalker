@@ -15,10 +15,11 @@ class BookmarksModel : public AbstractPostFeedModel, public Presence
 public:
     using Ptr = std::unique_ptr<BookmarksModel>;
 
-    static constexpr int MAX_PAGE_SIZE = 25;
+    static constexpr int MAX_PAGE_SIZE = 25; // Max posts in a getPost request
 
     explicit BookmarksModel(const QString& userDid, const IProfileStore& following,
-                            const ContentFilter& contentFilter, QObject* parent = nullptr);
+                            const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                            QObject* parent = nullptr);
 
     void clear();
     void addBookmarks(const std::vector<QString> postUris, ATProto::Client& bsky);

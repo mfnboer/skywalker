@@ -40,6 +40,7 @@ Rectangle {
     required property int notificationPostRepostCount
     required property int notificationPostLikeCount
     required property int notificationPostReplyCount
+    required property bool notificationPostBookmarked
     required property bool notificationPostNotFound
     required property list<string> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
@@ -176,7 +177,7 @@ Rectangle {
                 likeUri: notificationPostLikeUri
                 visible: !notificationPostNotFound
                 authorIsUser: false
-                isBookmarked: skywalker.bookmarks.isBookmarked(notificationPostUri)
+                isBookmarked: notificationPostBookmarked
 
                 onReply: {
                     root.composeReply(notificationPostUri, notificationCid, notificationPostText,
@@ -195,12 +196,11 @@ Rectangle {
                 onBookmark: {
                     if (isBookmarked) {
                         skywalker.bookmarks.removeBookmark(notificationPostUri)
-                        isBookmarked = false
                     }
                     else {
-                        isBookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
+                        const bookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
 
-                        if (!isBookmarked)
+                        if (!bookmarked)
                             skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
                     }
                 }

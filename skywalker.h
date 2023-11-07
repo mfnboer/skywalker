@@ -88,7 +88,8 @@ public:
     Q_INVOKABLE void saveUserPreferences();
 
     // NOTE: destroys the previous model
-    Q_INVOKABLE const BookmarksModel* getBookmarksModel();
+    Q_INVOKABLE const BookmarksModel* createBookmarksModel();
+    Q_INVOKABLE void deleteBookmarksModel();
 
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
@@ -181,6 +182,9 @@ private:
     ContentFilter mContentFilter;
     std::unique_ptr<ContentGroupListModel> mContentGroupListModel;
 
+    Bookmarks mBookmarks;
+    BookmarksModel::Ptr mBookmarksModel;
+
     PostFeedModel mTimelineModel;
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
@@ -191,6 +195,7 @@ private:
     QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
 
+    // NOTE: update makeLocalModelChange() when you add models
     ItemStore<PostThreadModel::Ptr> mPostThreadModels;
     ItemStore<AuthorFeedModel::Ptr> mAuthorFeedModels;
     ItemStore<SearchPostFeedModel::Ptr> mSearchPostFeedModels;
@@ -198,9 +203,6 @@ private:
     NotificationListModel mNotificationListModel;
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;
-
-    Bookmarks mBookmarks;
-    BookmarksModel::Ptr mBookmarksModel;
 
     UserSettings mUserSettings;
     bool mDebugLogging = false;

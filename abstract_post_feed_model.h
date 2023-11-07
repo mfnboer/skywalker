@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "bookmarks.h"
 #include "content_filter.h"
 #include "local_post_model_changes.h"
 #include "post.h"
@@ -48,6 +49,7 @@ public:
         PostLikeCount,
         PostRepostUri,
         PostLikeUri,
+        PostBookmarked,
         PostLabels,
         PostContentVisibility,
         PostContentWarning,
@@ -57,7 +59,9 @@ public:
 
     using Ptr = std::unique_ptr<AbstractPostFeedModel>;
 
-    AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent = nullptr);
+    AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
+                          const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                          QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -90,8 +94,10 @@ protected:
     const QString& mUserDid;
     const IProfileStore& mFollowing;
     const ContentFilter& mContentFilter;
+    const Bookmarks& mBookmarks;
 
 private:
+    void postBookmarkedChanged();
     void changeData(const QList<int>& roles);
 
     // TODO: change to QCache

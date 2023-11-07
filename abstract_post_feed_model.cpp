@@ -8,12 +8,17 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following, const ContentFilter& contentFilter, QObject* parent) :
+AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
+                                             const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                                             QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
     mFollowing(following),
-    mContentFilter(contentFilter)
-{}
+    mContentFilter(contentFilter),
+    mBookmarks(bookmarks)
+{
+    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
+}
 
 void AbstractPostFeedModel::clearFeed()
 {
@@ -181,6 +186,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
     case Role::PostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
+    case Role::PostBookmarked:
+        return mBookmarks.isBookmarked(post.getUri());
     case Role::PostLabels:
         return ContentFilter::getLabelTexts(post.getLabels());
     case Role::PostContentVisibility:
@@ -253,6 +260,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLikeCount), "postLikeCount" },
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
+        { int(Role::PostBookmarked), "postBookmarked" },
         { int(Role::PostLabels), "postLabels" },
         { int(Role::PostContentVisibility), "postContentVisibility" },
         { int(Role::PostContentWarning), "postContentWarning" },
@@ -301,6 +309,11 @@ void AbstractPostFeedModel::repostUriChanged()
 void AbstractPostFeedModel::postDeletedChanged()
 {
     changeData({ int(Role::PostLocallyDeleted) });
+}
+
+void AbstractPostFeedModel::postBookmarkedChanged()
+{
+    changeData({ int(Role::PostBookmarked) });
 }
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)

@@ -15,7 +15,7 @@ class Bookmarks : public QObject
     Q_PROPERTY(int size READ size NOTIFY sizeChanged FINAL)
 
 public:
-    static constexpr size_t MAX_BOOKMARKS = 3;
+    static constexpr size_t MAX_BOOKMARKS = 200;
 
     explicit Bookmarks(QObject* parent = nullptr);
 

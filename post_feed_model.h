@@ -17,6 +17,7 @@ public:
 
     explicit PostFeedModel(const QString& userDid, const IProfileStore& following,
                            const ContentFilter& contentFilter,
+                           const Bookmarks& bookmarks,
                            const ATProto::UserPreferences& userPrefs,
                            QObject* parent = nullptr);
 

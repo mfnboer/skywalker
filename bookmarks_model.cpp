@@ -5,8 +5,9 @@
 namespace Skywalker {
 
 BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& following,
-                               const ContentFilter& contentFilter, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, contentFilter, parent)
+                               const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                               QObject* parent) :
+    AbstractPostFeedModel(userDid, following, contentFilter, bookmarks, parent)
 {
 }
 
@@ -43,6 +44,14 @@ void BookmarksModel::addBookmarks(const std::vector<QString> postUris, ATProto::
                 return;
 
             setInProgress(false);
+            Q_ASSERT(!postViewList.empty());
+
+            if (postViewList.empty())
+            {
+                qWarning() << "Did not get bookmarkedposts!";
+                return;
+            }
+
             beginInsertRows({}, mFeed.size(), mFeed.size() + postViewList.size() - 1);
 
             for (auto& postView : postViewList)
@@ -51,6 +60,9 @@ void BookmarksModel::addBookmarks(const std::vector<QString> postUris, ATProto::
                 mFeed.push_back(post);
                 mRawPosts.push_back(std::move(postView));
             }
+
+            if (mFeed.size() == mBookmarks.size())
+                mFeed.back().setEndOfFeed(true);
 
             endInsertRows();
         },

@@ -36,6 +36,7 @@ Rectangle {
     required property int postLikeCount
     required property string postRepostUri
     required property string postLikeUri
+    required property bool postBookmarked
     required property list<string> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -289,7 +290,7 @@ Rectangle {
                 repostUri: postRepostUri
                 likeUri: postLikeUri
                 authorIsUser: isUser(author)
-                isBookmarked: skywalker.bookmarks.isBookmarked(postUri)
+                isBookmarked: postBookmarked
 
                 onReply: {
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
@@ -306,12 +307,11 @@ Rectangle {
                 onBookmark: {
                     if (isBookmarked) {
                         skywalker.bookmarks.removeBookmark(postUri)
-                        isBookmarked = false
                     }
                     else {
-                        isBookmarked = skywalker.bookmarks.addBookmark(postUri)
+                        const bookmarked = skywalker.bookmarks.addBookmark(postUri)
 
-                        if (!isBookmarked)
+                        if (!bookmarked)
                             skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
                     }
                 }

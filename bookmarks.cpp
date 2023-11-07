@@ -60,9 +60,9 @@ std::vector<QString> Bookmarks::getPage(int startIndex, int size) const
     page.reserve(size);
 
     const int start = (int)mBookmarkedPostUris.size() - startIndex - 1;
-    const int end = std::max(0, start - size);
+    const int end = std::max(-1, start - size);
 
-    for (int i = start; i >= end; --i)
+    for (int i = start; i > end; --i)
         page.push_back(mBookmarkedPostUris[i]);
 
     return page;

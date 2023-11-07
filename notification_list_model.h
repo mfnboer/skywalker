@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "bookmarks.h"
 #include "content_filter.h"
 #include "local_post_model_changes.h"
 #include "notification.h"
@@ -51,6 +52,7 @@ public:
         NotificationPostRepostCount,
         NotificationPostLikeCount,
         NotificationPostReplyCount,
+        NotificationPostBookmarked,
         NotificationPostNotFound,
         NotificationPostLabels,
         NotificationPostContentVisibility,
@@ -61,7 +63,7 @@ public:
         EndOfList
     };
 
-    explicit NotificationListModel(const ContentFilter& contentFilter, QObject* parent = nullptr);
+    explicit NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -99,6 +101,7 @@ private:
     void getPosts(ATProto::Client& bsky, const NotificationList& list, const std::function<void()>& cb);
     void getPosts(ATProto::Client& bsky, std::unordered_set<QString> uris, const std::function<void()>& cb);
 
+    void postBookmarkedChanged();
     void changeData(const QList<int>& roles);
     void clearLocalState();
     void clearRows();
@@ -106,6 +109,8 @@ private:
     void updateInviteCodeUser(const BasicProfile& profile);
 
     const ContentFilter& mContentFilter;
+    const Bookmarks& mBookmarks;
+
     NotificationList mList;
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
     QString mCursor;

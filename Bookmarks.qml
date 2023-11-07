@@ -12,7 +12,7 @@ ListView {
 
     id: bookmarksView
     spacing: 0
-    model: skywalker.getBookmarksModel()
+    model: skywalker.createBookmarksModel()
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: Rectangle {
@@ -81,5 +81,30 @@ ListView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    SvgImage {
+        id: noPostImage
+        width: 150
+        height: 150
+        y: height + (parent.headerItem ? parent.headerItem.height : 0)
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "grey"
+        svg: svgOutline.noPosts
+        visible: bookmarksView.count === 0
+    }
+    Text {
+        id: noPostText
+        y: noPostImage.y
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pointSize: guiSettings.scaledFont(10/8)
+        color: "grey"
+        elide: Text.ElideRight
+        text: qsTr("No bookmarks")
+        visible: bookmarksView.count === 0
+    }
+
+    Component.onDestruction: {
+        skywalker.deleteBookmarksModel()
     }
 }
