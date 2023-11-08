@@ -18,12 +18,14 @@ RoundedFrame {
     Column {
         id: externalColumn
         width: parent.width
-        spacing: 5
+        topPadding: 1
+        spacing: 3
         visible: false
 
         ImageAutoRetry {
             id: thumbImg
-            width: parent.width
+            x: 1
+            width: parent.width - 2
             source: card.thumbUrl
             fillMode: Image.PreserveAspectFit
         }

@@ -49,12 +49,9 @@ void PostThreadModel::clear()
     qDebug() << "All posts removed";
 }
 
-Post& PostThreadModel::Page::addPost(const Post& post)
+static void cacheAuthor(const Post& post)
 {
-    mFeed.push_back(post);
-    mFeed.back().setPostType(QEnums::POST_THREAD);
-
-    const auto& postView = post.getPostView();
+    const auto* postView = post.getPostView();
     if (postView)
     {
         const auto& author = postView->mAuthor;
@@ -64,7 +61,13 @@ Post& PostThreadModel::Page::addPost(const Post& post)
             AuthorCache::instance().put(authorProfile);
         }
     }
+}
 
+Post& PostThreadModel::Page::addPost(const Post& post)
+{
+    mFeed.push_back(post);
+    mFeed.back().setPostType(QEnums::POST_THREAD);
+    cacheAuthor(post);
     return mFeed.back();
 }
 
@@ -72,19 +75,7 @@ Post& PostThreadModel::Page::prependPost(const Post& post)
 {
     mFeed.push_front(post);
     mFeed.front().setPostType(QEnums::POST_THREAD);
-
-    // TODO: refactor duplicate code
-    const auto& postView = post.getPostView();
-    if (postView)
-    {
-        const auto& author = postView->mAuthor;
-        if (author)
-        {
-            const BasicProfile authorProfile(author.get());
-            AuthorCache::instance().put(authorProfile);
-        }
-    }
-
+    cacheAuthor(post);
     return mFeed.front();
 }
 

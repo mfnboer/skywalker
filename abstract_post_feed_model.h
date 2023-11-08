@@ -100,8 +100,6 @@ private:
     void postBookmarkedChanged();
     void changeData(const QList<int>& roles);
 
-    // TODO: change to QCache
-    // CID of posts stored in the timeline.
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;
 
