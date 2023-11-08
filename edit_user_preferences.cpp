@@ -69,4 +69,14 @@ void EditUserPreferences::setHideQuotePosts(bool hide)
     }
 }
 
+void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
+{
+    if (displayMode != mDisplayMode)
+    {
+        mDisplayMode = displayMode;
+        setLocalSettingsModified(true);
+        emit displayModeChanged();
+    }
+}
+
 }

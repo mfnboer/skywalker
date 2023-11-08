@@ -6,6 +6,8 @@ namespace Skywalker {
 
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
 
+QString UserSettings::sLinkColor("blue");
+
 UserSettings::UserSettings(QObject* parent) :
     QObject(parent)
 {
@@ -206,7 +208,22 @@ void UserSettings::setBookmarksNoticeSeen(bool seen)
 
 bool UserSettings::getBookmarksNoticeSeen() const
 {
-    return mSettings.value("bookmarksNoticeSeen").toBool();
+    return mSettings.value("bookmarksNoticeSeen", false).toBool();
+}
+
+void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)
+{
+    mSettings.setValue("displayMode", (int)displayMode);
+}
+
+QEnums::DisplayMode UserSettings::getDisplayMode() const
+{
+    const int mode = mSettings.value("displayMode", (int)QEnums::DISPLAY_MODE_SYSTEM).toInt();
+
+    if (mode < QEnums::DISPLAY_MODE_SYSTEM || mode > QEnums::DISPLAY_MODE_DARK)
+        return QEnums::DISPLAY_MODE_SYSTEM;
+
+    return QEnums::DisplayMode(mode);
 }
 
 }

@@ -71,7 +71,6 @@ ApplicationWindow {
 
     Skywalker {
         id: skywalker
-        lightMode: Material.theme === Material.Light
 
         onLoginOk: start()
 
@@ -496,7 +495,7 @@ ApplicationWindow {
             const host = userSettings.getHost(did)
             const password = userSettings.getPassword(did)
 
-            if (host) {
+            if (host && password) {
                 skywalkerLogin(did, password, host)
                 return
             }
@@ -756,7 +755,31 @@ ApplicationWindow {
             popStack()
     }
 
+    function setDisplayMode(displayMode) {
+        switch (displayMode) {
+        case QEnums.DISPLAY_MODE_SYSTEM:
+            root.Material.theme = Material.System
+            break
+        case QEnums.DISPLAY_MODE_LIGHT:
+            root.Material.theme = Material.Light
+            break
+        case QEnums.DISPLAY_MODE_DARK:
+            root.Material.theme = Material.Dark
+            break
+        default:
+            root.Material.theme = Material.System
+            break
+        }
+
+        console.debug("Theme set to:", root.Material.theme)
+        let userSettings = skywalker.getUserSettings()
+        userSettings.setLinkColor(guiSettings.linkColor)
+    }
+
     Component.onCompleted: {
+        const userSettings = skywalker.getUserSettings()
+        setDisplayMode(userSettings.getDisplayMode())
+
         let timelineComponent = Qt.createComponent("TimelineView.qml")
         let timelineView = timelineComponent.createObject(root, { skywalker: skywalker })
         timelineStack.push(timelineView)

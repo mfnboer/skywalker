@@ -28,8 +28,6 @@ static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
 static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 
-bool Skywalker::sLightMode = true;
-
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
@@ -49,17 +47,6 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
-}
-
-void Skywalker::setLightMode(bool lightMode)
-{
-    qDebug() << "Light mode:" << lightMode;
-
-    if (lightMode != sLightMode)
-    {
-        sLightMode = lightMode;
-        emit lightModeChanged();
-    }
 }
 
 // NOTE: user can be handle or DID
@@ -1249,6 +1236,8 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setEmail(session->mEmail.value_or(""));
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
+    mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
+    mEditUserPreferences->setLocalSettingsModified(false);
     return mEditUserPreferences.get();
 }
 
@@ -1261,6 +1250,12 @@ void Skywalker::saveUserPreferences()
     {
         qWarning() << "No preferences to save";
         return;
+    }
+
+    if (mEditUserPreferences->isLocalSettingsModified())
+    {
+        qDebug() << "Changed display mode:" << mEditUserPreferences->getDisplayMode();
+        mUserSettings.setDisplayMode(mEditUserPreferences->getDisplayMode());
     }
 
     if (!mEditUserPreferences->isModified())

@@ -3,7 +3,7 @@
 #include "record_view.h"
 #include "content_filter.h"
 #include "external_view.h"
-#include "skywalker.h"
+#include "user_settings.h"
 #include <atproto/lib/post_master.h>
 
 using namespace std::chrono_literals;
@@ -48,7 +48,7 @@ QString RecordView::getFormattedText() const
     if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
-        return ATProto::PostMaster::getFormattedPostText(*recordValue, Skywalker::getLinkColor());
+        return ATProto::PostMaster::getFormattedPostText(*recordValue, UserSettings::getLinkColor());
     }
 
     return {};

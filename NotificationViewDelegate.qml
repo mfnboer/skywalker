@@ -206,6 +206,7 @@ Rectangle {
                 }
 
                 onShare: skywalker.sharePost(notificationPostUri, notificationAuthor)
+                onCopyPostText: skywalker.copyPostTextToClipboard(postText)
             }
         }
         Column {

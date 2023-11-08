@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -17,6 +18,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool hideRepliesByUnfollowed READ getHideRepliesByUnfollowed WRITE setHideRepliesByUnfollowed NOTIFY hideRepliesByUnfollowedChanged FINAL)
     Q_PROPERTY(bool hideReposts READ getHideReposts WRITE setHideReposts NOTIFY hideRepostsChanged FINAL)
     Q_PROPERTY(bool hideQuotePosts READ getHideQuotePosts WRITE setHideQuotePosts NOTIFY hideQuotePostsChanged FINAL)
+    Q_PROPERTY(QEnums::DisplayMode displayMode READ getDisplayMode WRITE setDisplayMode NOTIFY displayModeChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -47,11 +49,18 @@ public:
 
     bool isModified() const { return mModified; }
 
+    QEnums::DisplayMode getDisplayMode() const { return mDisplayMode; }
+    void setDisplayMode(QEnums::DisplayMode displayMode);
+
+    bool isLocalSettingsModified() const { return mLocalSettingsModified; }
+    void setLocalSettingsModified(bool modified) { mLocalSettingsModified = modified; }
+
 signals:
     void hideRepliesChanged();
     void hideRepliesByUnfollowedChanged();
     void hideRepostsChanged();
     void hideQuotePostsChanged();
+    void displayModeChanged();
 
 private:
     QString mEmail;
@@ -64,6 +73,10 @@ private:
     bool mAdultContent = false;
 
     bool mModified = false;
+
+    // Local app settings
+    QEnums::DisplayMode mDisplayMode = QEnums::DISPLAY_MODE_SYSTEM;
+    bool mLocalSettingsModified = false;
 };
 
 }

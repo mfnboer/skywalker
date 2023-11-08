@@ -14,6 +14,14 @@ class QEnums : public QObject
     QML_ELEMENT
 
 public:
+    enum DisplayMode
+    {
+        DISPLAY_MODE_SYSTEM = 0,
+        DISPLAY_MODE_LIGHT = 1,
+        DISPLAY_MODE_DARK = 2
+    };
+    Q_ENUM(DisplayMode)
+
     enum PostType
     {
         POST_STANDALONE = 0,

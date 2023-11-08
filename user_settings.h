@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include "password_encryption.h"
 #include "profile.h"
 #include <atproto/lib/client.h>
@@ -13,6 +14,9 @@ class UserSettings : public QObject
 {
     Q_OBJECT
 public:
+    static QString getLinkColor() { return sLinkColor; }
+    Q_INVOKABLE static void setLinkColor(const QString& color) { sLinkColor = color; }
+
     explicit UserSettings(QObject* parent = nullptr);
 
     Q_INVOKABLE QList<BasicProfile> getUserList() const;
@@ -60,11 +64,17 @@ public:
     void setBookmarksNoticeSeen(bool seen);
     bool getBookmarksNoticeSeen() const;
 
+    void setDisplayMode(QEnums::DisplayMode displayMode);
+    Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
+
 private:
     QString key(const QString& did, const QString& subkey) const;
 
     QSettings mSettings;
     PasswordEncryption mEncryption;
+
+    // Derived from display mode
+    static QString sLinkColor;
 };
 
 }

@@ -120,7 +120,7 @@ Page {
         anchors.top: loginForm.bottom
         anchors.right: parent.right
         text: qsTr("OK")
-        enabled: hostField.editText && userField.text
+        enabled: hostField.editText && userField.text && passwordField.text
         onClicked: {
             const handle = autoCompleteHandle(userField.text, hostField.editText)
             loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did)

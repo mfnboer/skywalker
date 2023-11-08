@@ -2,7 +2,7 @@
 // License: GPLv3
 #include "post_record.h"
 #include "author_cache.h"
-#include "skywalker.h"
+#include "user_settings.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -28,7 +28,7 @@ QString PostRecord::getFormattedText() const
     if (!mRecord)
         return {};
 
-    return ATProto::PostMaster::getFormattedPostText(*mRecord, Skywalker::getLinkColor());
+    return ATProto::PostMaster::getFormattedPostText(*mRecord, UserSettings::getLinkColor());
 }
 
 ATProto::ComATProtoRepo::StrongRef::Ptr PostRecord::getReplyToRef() const

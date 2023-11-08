@@ -88,6 +88,7 @@ Page {
     }
 
     ColumnLayout {
+        id: homeFeedColumn
         anchors.top: accountGrid.bottom
         width: parent.width
 
@@ -125,6 +126,58 @@ Page {
             text: qsTr("Show quote posts")
             checked: !userPrefs.hideQuotePosts
             onCheckableChanged: userPrefs.hideQuotePosts = !checked
+        }
+    }
+
+    ColumnLayout {
+        id: appearanceColumn
+        anchors.top: homeFeedColumn.bottom
+        width: parent.width
+
+        Text {
+            topPadding: 20
+            font.bold: true
+            color: guiSettings.textColor
+            text: qsTr("Appearance")
+        }
+
+        RowLayout {
+            width: parent.width
+            spacing: -1
+
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_SYSTEM
+                text: qsTr("System");
+                onCheckedChanged: {
+                    if (checked) {
+                        userPrefs.displayMode = QEnums.DISPLAY_MODE_SYSTEM
+                        root.setDisplayMode(userPrefs.displayMode)
+                    }
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_LIGHT
+                text: qsTr("Light");
+                onCheckedChanged: {
+                    if (checked) {
+                        userPrefs.displayMode = QEnums.DISPLAY_MODE_LIGHT
+                        root.setDisplayMode(userPrefs.displayMode)
+                    }
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_DARK
+                text: qsTr("Dark");
+                onCheckedChanged: {
+                    if (checked) {
+                        userPrefs.displayMode = QEnums.DISPLAY_MODE_DARK
+                        root.setDisplayMode(userPrefs.displayMode)
+                    }
+                }
+            }
         }
     }
 
