@@ -116,7 +116,6 @@ Page {
     }
 
     Component.onDestruction: {
-        // TODO: leave page only after saving is done, show busy indicator
         console.debug("Save filter settings");
         skywalker.saveContentFilterPreferences();
     }

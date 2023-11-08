@@ -125,7 +125,7 @@ Page {
             Material.accent: guiSettings.buttonColor
             text: qsTr("Show quote posts")
             checked: !userPrefs.hideQuotePosts
-            onCheckableChanged: userPrefs.hideQuotePosts = !checked
+            onCheckedChanged: userPrefs.hideQuotePosts = !checked
         }
     }
 
@@ -186,7 +186,6 @@ Page {
     }
 
     Component.onDestruction: {
-        // TODO: leave page only after saving is done, show busy indicator
         console.debug("Save settings");
         skywalker.saveUserPreferences();
     }

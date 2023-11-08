@@ -1220,6 +1220,7 @@ void Skywalker::saveContentFilterPreferences()
         [this, prefs]{
             qDebug() << "saveFilterPreferences ok";
             mUserPreferences = prefs;
+            emit statusMessage("Content filter saved");
         },
         [this](const QString& error){
             qDebug() << "saveFilterPreferences failed:" << error;
@@ -1271,6 +1272,7 @@ void Skywalker::saveUserPreferences()
         [this, prefs]{
             qDebug() << "saveUserPreferences ok";
             mUserPreferences = prefs;
+            emit statusMessage("Settings saved");
         },
         [this](const QString& error){
             qDebug() << "saveUserPreferences failed:" << error;
