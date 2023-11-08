@@ -17,27 +17,9 @@ ListView {
     model: skywalker.notificationListModel
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
-
-        RowLayout {
-            id: headerRow
-            width: parent.width
-            height: guiSettings.headerHeight
-
-            Text {
-                id: headerTexts
-                Layout.alignment: Qt.AlignVCenter
-                leftPadding: 10
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: qsTr("Notifications")
-            }
-        }
+    header: SimpleHeader {
+        text: qsTr("Notifications")
+        onBack: notificationListView.closed()
     }
     headerPositioning: ListView.OverlayHeader
 

@@ -13,32 +13,9 @@ ListView {
     model: skywalker.getPostThreadModel(modelId)
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
-
-        RowLayout
-        {
-            id: headerRow
-
-            SvgButton {
-                id: backButton
-                iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                onClicked: view.closed()
-            }
-            Text {
-                id: headerTexts
-                Layout.alignment: Qt.AlignVCenter
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: qsTr("Post thread")
-            }
-        }
+    header: SimpleHeader {
+        text: qsTr("Post thread")
+        onBack: view.closed()
     }
     headerPositioning: ListView.OverlayHeader
 

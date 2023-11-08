@@ -89,7 +89,7 @@ Page {
                     width: searchText.width
                     padding: searchText.padding
                     font.pointSize: searchText.font.pointSize
-                    color: Material.color(Material.Grey)
+                    color: guiSettigs.placeholderTextColor
                     text: qsTr("Search")
                     visible: searchText.displayText.length === 0
                 }
@@ -100,8 +100,8 @@ Page {
             // keyboard, nor can it set the icon to a search icon.
             SvgButton {
                 id: searchButton
-                iconColor: searchText.displayText.length > 0 ? guiSettings.headerTextColor : "transparent"
-                Material.background: "transparent"
+                iconColor: searchText.displayText.length > 0 ? guiSettings.headerTextColor : guiSettigs.disabledColor
+                Material.background: guiSettigs.headerColor
                 svg: svgOutline.search
                 onClicked: searchUtils.search(searchText.displayText)
                 enabled: searchText.displayText.length > 0

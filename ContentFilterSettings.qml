@@ -11,32 +11,9 @@ Page {
     id: page
     padding: 10
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
-
-        RowLayout
-        {
-            id: headerRow
-
-            SvgButton {
-                id: backButton
-                iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                onClicked: page.closed()
-            }
-            Text {
-                id: headerTexts
-                Layout.alignment: Qt.AlignVCenter
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: qsTr("Content Filtering")
-            }
-        }
+    header: SimpleHeader {
+        text: qsTr("Content Filtering")
+        onBack: page.closed()
     }
 
     Switch {
