@@ -11,12 +11,18 @@ class JNICallbackListener : public QObject
 public:
     static JNICallbackListener& getInstance();
 
+    // Checks if the app was launched due to an incoming intent. If so
+    // the handling is started.
+    static void handlePendingIntent();
+
     void handlePhotoPicked(const QString contentUri);
     void handlePhotoPickCanceled();
+    void handleSharedTextReceived(const QString sharedText);
 
 signals:
     void photoPicked(const QString contentUri);
     void photoPickCanceled();
+    void sharedTextReceived(const QString sharedText);
 
 private:
     JNICallbackListener();

@@ -153,6 +153,7 @@ signals:
     void getAuthorListInProgressChanged();
     void getPostThreadInProgressChanged();
     void inviteCodes(InviteCodeList);
+    void sharedTextReceived(QString text); // Shared from another app
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
@@ -164,6 +165,7 @@ private:
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
+    void finishTimelineSync(int index);
     void startRefreshTimers();
     void stopRefreshTimers();
     void refreshSession();

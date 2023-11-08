@@ -5,6 +5,7 @@
 
 #if defined(Q_OS_ANDROID)
 #include <QJniObject>
+#include <QtCore/private/qandroidextras_p.h>
 #endif
 
 namespace Skywalker {
@@ -30,6 +31,15 @@ void _handlePhotoPickCanceled(JNIEnv*, jobject)
     if (instance)
         instance->handlePhotoPickCanceled();
 }
+
+void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
+{
+    QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
+    qDebug() << "Shared text received:" << sharedText;
+    auto& instance = *gTheInstance;
+    if (instance)
+        instance->handleSharedTextReceived(sharedText);
+}
 #endif
 
 }
@@ -43,6 +53,20 @@ JNICallbackListener& JNICallbackListener::getInstance()
     return *instance;
 }
 
+void JNICallbackListener::handlePendingIntent()
+{
+#if defined(Q_OS_ANDROID)
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    activity.callMethod<void>("handlePendingIntent");
+#endif
+}
+
 JNICallbackListener::JNICallbackListener() : QObject()
 {
 #if defined(Q_OS_ANDROID)
@@ -53,6 +77,11 @@ JNICallbackListener::JNICallbackListener() : QObject()
         { "emitPhotoPickCanceled", "()V", reinterpret_cast<void *>(_handlePhotoPickCanceled) }
     };
     jni.registerNativeMethods("com/gmail/mfnboer/QPhotoPicker", photoPickerCallbacks, 2);
+
+    const JNINativeMethod skywalkerActivityCallbacks[] = {
+        { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 1);
 #endif
 }
 
@@ -64,6 +93,11 @@ void JNICallbackListener::handlePhotoPicked(const QString contentUri)
 void JNICallbackListener::handlePhotoPickCanceled()
 {
     emit photoPickCanceled();
+}
+
+void JNICallbackListener::handleSharedTextReceived(const QString sharedText)
+{
+    emit sharedTextReceived(sharedText);
 }
 
 }

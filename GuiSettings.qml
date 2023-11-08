@@ -30,7 +30,7 @@ Item {
     readonly property string likeColor: "palevioletred"
     readonly property string linkColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
-    readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "#1d3030"
+    readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "#264040"
     readonly property string separatorColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string statsColor: Material.color(Material.Grey)

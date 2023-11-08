@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "jni_callback.h"
 #include "post_utils.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
@@ -39,6 +40,10 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     AuthorCache::instance().addProfileStore(&mUserFollows);
+
+    auto& jniCallbackListener = JNICallbackListener::getInstance();
+    connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
+            [this](const QString& text){ emit sharedTextReceived(text); });
 }
 
 Skywalker::~Skywalker()
@@ -251,7 +256,7 @@ void Skywalker::syncTimeline(int maxPages)
     {
         qInfo() << "No timestamp saved";
         getTimeline(TIMELINE_ADD_PAGE_SIZE);
-        emit timelineSyncOK(-1);
+        finishTimelineSync(-1);
         return;
     }
 
@@ -298,7 +303,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
                 const auto& post = mTimelineModel.getPost(index);
                 qDebug() << post.getTimelineTimestamp() << post.getText();
 
-                emit timelineSyncOK(index);
+                finishTimelineSync(index);
                 return;
             }
 
@@ -306,7 +311,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             {
                 restoreDebugLogging();
                 qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
-                emit timelineSyncOK(mTimelineModel.rowCount() - 1);
+                finishTimelineSync(mTimelineModel.rowCount() - 1);
                 return;
             }
 
@@ -315,7 +320,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             {
                 restoreDebugLogging();
                 qDebug() << "Last page reached, no more cursor";
-                emit timelineSyncOK(mTimelineModel.rowCount() - 1);
+                finishTimelineSync(mTimelineModel.rowCount() - 1);
                 return;
             }
 
@@ -324,7 +329,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
                 restoreDebugLogging();
                 qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
                 qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
-                emit timelineSyncOK(mTimelineModel.rowCount() - 1);
+                finishTimelineSync(mTimelineModel.rowCount() - 1);
             }
 
             qInfo() << "Last timestamp:" << lastTimestamp;
@@ -338,6 +343,18 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             emit timelineSyncFailed();
         }
         );
+}
+
+void Skywalker::finishTimelineSync(int index)
+{
+    // Inform the GUI about the timeline sync.
+    // This will show the timeline to the user.
+    emit timelineSyncOK(index);
+
+    // Now we can handle pending intent (content share).
+    // If there is any, then this will open the post composition page. This should
+    // only been done when the startup sequence in the GUI is finished.
+    JNICallbackListener::handlePendingIntent();
 }
 
 void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QString& cursor)

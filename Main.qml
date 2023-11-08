@@ -156,6 +156,8 @@ ApplicationWindow {
             viewAuthor(profile, modelId)
         }
 
+        onSharedTextReceived: (text) => { composePost(text) }
+
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
             skywalker.getUserProfileAndFollows()
