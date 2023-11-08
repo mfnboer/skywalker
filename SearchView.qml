@@ -25,7 +25,7 @@ Page {
 
             SvgButton {
                 id: backButton
-                iconColor: "white"
+                iconColor: guiSettings.headerTextColor
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
                 onClicked: {
@@ -100,7 +100,7 @@ Page {
             // keyboard, nor can it set the icon to a search icon.
             SvgButton {
                 id: searchButton
-                iconColor: searchText.displayText.length > 0 ? "white" : "transparent"
+                iconColor: searchText.displayText.length > 0 ? guiSettings.headerTextColor : "transparent"
                 Material.background: "transparent"
                 svg: svgOutline.search
                 onClicked: searchUtils.search(searchText.displayText)

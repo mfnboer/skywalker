@@ -27,7 +27,7 @@ Page {
 
             SvgButton {
                 id: backButton
-                iconColor: "white"
+                iconColor: guiSettings.headerTextColor
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
                 onClicked: loginPage.canceled()
@@ -37,7 +37,7 @@ Page {
                 leftPadding: 10
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
-                color: "white"
+                color: guiSettings.headerTextColor
                 text: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
             }
         }
@@ -52,6 +52,7 @@ Page {
             topPadding: 10
             leftPadding: 10
             font.bold: true
+            color: guiSettings.textColor
             text: qsTr("Sign into")
         }
 
@@ -72,6 +73,7 @@ Page {
             topPadding: 10
             leftPadding: 10
             font.bold: true
+            color: guiSettings.textColor
             text: qsTr("Account")
         }
 
@@ -107,7 +109,7 @@ Page {
             Layout.leftMargin: 10
             Layout.rightMargin: 10
             Layout.fillWidth: true
-            color: "darkred"
+            color: guiSettings.errorColor
             wrapMode: Text.Wrap
             text: error
             visible: error

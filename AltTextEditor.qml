@@ -27,7 +27,7 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
-            color: "white"
+            color: guiSettings.headerTextColor
             text: qsTr("ALT text")
         }
 
@@ -58,7 +58,7 @@ Page {
             leftPadding: altText.leftPadding
             rightPadding: altText.rightPadding
             font.pointSize: guiSettings.scaledFont(7/8)
-            color: Material.color(Material.Grey)
+            color: guiSettings.placeholderTextColor
             elide: Text.ElideRight
             text: qsTr("Description to help users with visual impairments")
             visible: altText.length + altText.preeditText.length === 0

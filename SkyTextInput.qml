@@ -16,7 +16,8 @@ Rectangle {
     height: textField.height
     radius: 10
     border.width: 1
-    border.color: Material.color(Material.Grey)
+    border.color: guiSettings.borderColor
+    color: guiSettings.backgroundColor
 
     TextInput {
         id: textField
@@ -26,6 +27,7 @@ Rectangle {
         activeFocusOnTab: true
         enabled: skyTextInput.enabled
         font.pointSize: guiSettings.scaledFont(9/8)
+        color: guiSettings.textColor
         text: skyTextInput.initialText
 
         Text {
@@ -33,7 +35,7 @@ Rectangle {
             padding: parent.padding
             leftPadding: parent.leftPadding
             font.pointSize: parent.font.pointSize
-            color: Material.color(Material.Grey)
+            color: guiSettings.placeholderTextColor
             text: placeholderText
             visible: parent.displayText.length === 0
         }

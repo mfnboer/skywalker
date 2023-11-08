@@ -14,7 +14,7 @@ RadioButton {
             border.width: 1
             border.color: guiSettings.buttonColor
         }
-        color: checked ? "white" : guiSettings.buttonColor
+        color: checked ? guiSettings.buttonTextColor : guiSettings.buttonColor
         text: radio.text
     }
 

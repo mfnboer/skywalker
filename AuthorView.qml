@@ -37,15 +37,15 @@ Page {
             anchors.top: parent.top
             width: parent.width
             height: width / 3
-            color: "blue"
+            color: guiSettings.bannerDefaultColor
             visible: !bannerImg.visible
         }
 
         SvgButton {
             anchors.top: parent.top
             anchors.left: parent.left
-            iconColor: "white"
-            Material.background: "black"
+            iconColor: guiSettings.headerTextColor
+            Material.background: headerColor
             opacity: 0.5
             svg: svgOutline.arrowBack
             onClicked: page.closed()

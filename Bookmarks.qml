@@ -23,12 +23,10 @@ ListView {
 
         RowLayout {
             id: headerRow
-            width: parent.width
-            height: guiSettings.headerHeight
 
             SvgButton {
                 id: backButton
-                iconColor: "white"
+                iconColor: guiSettings.headerTextColor
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
                 onClicked: bookmarksView.closed()
@@ -37,10 +35,9 @@ ListView {
             Text {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
-                leftPadding: 10
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
-                color: "white"
+                color: guiSettings.headerTextColor
                 text: qsTr("Bookmarks") + ` (${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize})`
             }
         }

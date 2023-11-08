@@ -36,7 +36,7 @@ Item {
         SvgImage {
             width: parent.width
             height: parent.height
-            color: guiSettings.buttonTextColor
+            color: guiSettings.avatarDefaultColor
             svg: svgFilled.unknownAvatar
         }
     }

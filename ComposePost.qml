@@ -212,7 +212,7 @@ Page {
                 leftPadding: postText.leftPadding
                 rightPadding: postText.rightPadding
                 font.pointSize: postText.font.pointSize
-                color: Material.color(Material.Grey)
+                color: guiSettings.placeholderTextColor
                 text: qsTr("Say something nice")
                 visible: postText.graphemeLength === 0
             }
@@ -339,8 +339,8 @@ Page {
             SvgButton {
                 x: parent.width - width
                 height: width
-                iconColor: "white"
-                Material.background: "black"
+                iconColor: guiSettings.buttonTextColor
+                Material.background: guiSettings.buttonColor
                 svg: svgOutline.close
                 onClicked: linkCard.hide()
             }

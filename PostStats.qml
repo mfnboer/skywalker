@@ -21,34 +21,34 @@ Row {
 
     StatIcon {
         width: parent.width / 5
-        iconColor: Material.color(Material.Grey)
+        iconColor: guiSettings.statsColor
         svg: svgOutline.reply
         statistic: replyCount
         onClicked: reply()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: repostUri ? "palevioletred" : Material.color(Material.Grey)
+        iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: svgOutline.repost
         statistic: repostCount
         onClicked: repost()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: likeUri ? "palevioletred" : Material.color(Material.Grey)
+        iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: likeUri ? svgFilled.like : svgOutline.like
         statistic: likeCount
         onClicked: like()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: isBookmarked ? guiSettings.buttonColor : Material.color(Material.Grey)
+        iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
         svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
         onClicked: bookmark()
     }
     StatIcon {
         width: parent.width / 5
-        iconColor: Material.color(Material.Grey)
+        iconColor: guiSettings.statsColor
         svg: svgOutline.moreVert
         onClicked: moreMenu.open()
 

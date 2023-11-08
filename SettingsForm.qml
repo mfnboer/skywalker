@@ -23,7 +23,7 @@ Page {
 
             SvgButton {
                 id: backButton
-                iconColor: "white"
+                iconColor: guiSettings.headerTextColor
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
                 onClicked: page.closed()
@@ -33,7 +33,7 @@ Page {
                 Layout.alignment: Qt.AlignVCenter
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
-                color: "white"
+                color: guiSettings.headerTextColor
                 text: qsTr("Settings")
             }
         }

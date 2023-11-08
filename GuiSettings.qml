@@ -10,27 +10,34 @@ Item {
     readonly property int threadBarWidth: 12 // In 5px units
 
     // Colors
+    readonly property string avatarDefaultColor: "blue"
     readonly property string backgroundColor: Material.background
     readonly property string badgeBorderColor: Material.background
     readonly property string badgeColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string badgeTextColor: "white"
+    readonly property string bannerDefaultColor: "blue"
+    readonly property string borderColor: Material.color(Material.Grey)
     readonly property string buttonColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string buttonTextColor: "white"
     readonly property string contentLabelColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string disabledColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
-    readonly property string errorColor: "palevioletred"
+    readonly property string errorColor: Material.theme === Material.Light ? "darkred" : "palevioletred"
     readonly property string footerColor: Material.background
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: "black"
+    readonly property string headerTextColor: "white"
     readonly property string labelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
+    readonly property string likeColor: "palevioletred"
     readonly property string linkColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string placeholderTextColor: Material.color(Material.Grey)
     readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "#1d3030"
     readonly property string separatorColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string skywalkerLogoColor: "#0387c7"
+    readonly property string statsColor: Material.color(Material.Grey)
     readonly property string textColor: Material.foreground
-    readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "#000033"
-    readonly property string threadEndColor: Material.theme === Material.Light ? "lightcyan" : "navy"
-    readonly property string threadEntryColor: Material.theme === Material.Light ? "darkcyan" : "teal" // "#00004d"
+    readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "navy"
+    readonly property string threadEndColor: Material.theme === Material.Light ? "lightcyan" : "#000033"
+    readonly property string threadEntryColor: Material.theme === Material.Light ? "darkcyan" : "teal"
 
     // Font size
     readonly property double labelFontSize: scaledFont(6/8)

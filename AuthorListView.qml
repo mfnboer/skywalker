@@ -35,7 +35,7 @@ ListView {
 
                 SvgButton {
                     id: backButton
-                    iconColor: "white"
+                    iconColor: guiSettings.headerTextColor
                     Material.background: "transparent"
                     svg: svgOutline.arrowBack
                     onClicked: authorListView.closed()
@@ -47,7 +47,7 @@ ListView {
                     leftPadding: 10
                     font.bold: true
                     font.pointSize: guiSettings.scaledFont(10/8)
-                    color: "white"
+                    color: guiSettings.headerTextColor
                     text: title
                 }
             }

@@ -85,7 +85,7 @@ Rectangle {
                 y: height + 5
                 width: parent.width - 19
                 height: width
-                color: "palevioletred"
+                color: guiSettings.likeColor
                 svg: svgFilled.like
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_LIKE
             }
@@ -113,7 +113,7 @@ Rectangle {
                 width: parent.width - 19
                 height: width
                 radius: height / 2
-                color: "blue"
+                color: guiSettings.avatarDefaultColor
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_FOLLOW
 
                 SvgImage {
