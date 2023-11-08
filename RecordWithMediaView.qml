@@ -40,7 +40,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         border.width: 1
-        border.color: guiSettings.separatorColor
+        border.color: guiSettings.borderColor
         color: "transparent"
         radius: 10
     }

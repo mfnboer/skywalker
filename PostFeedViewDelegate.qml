@@ -53,6 +53,7 @@ Rectangle {
             return "transparent"
     }
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 2 : 0
+    border.color: guiSettings.borderColor
 
     GridLayout {
         id: grid

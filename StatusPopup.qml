@@ -14,7 +14,7 @@ Popup {
         color: [Material.theme === Material.Light ? "lightcyan" : "teal",
                 Material.theme === Material.Light ? "crimson" : "darkred"][level]
         border.width: 1
-        border.color: Material.color(Material.Grey)
+        border.color: guiSettings.borderColor
         radius: 5
     }
     closePolicy: Popup.CloseOnPressOutside

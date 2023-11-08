@@ -13,7 +13,7 @@ RoundedFrame {
     id: card
     objectToRound: externalColumn
     border.width: 1
-    border.color: guiSettings.separatorColor
+    border.color: guiSettings.borderColor
 
     Column {
         id: externalColumn

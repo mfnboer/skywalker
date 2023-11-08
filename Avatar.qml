@@ -30,13 +30,13 @@ Item {
         width: parent.width
         height: parent.height
         radius: height / 2
-        color: guiSettings.buttonColor
+        color: guiSettings.avatarDefaultColor
         visible: !avatarFrame.visible
 
         SvgImage {
             width: parent.width
             height: parent.height
-            color: guiSettings.avatarDefaultColor
+            color: "white"
             svg: svgFilled.unknownAvatar
         }
     }

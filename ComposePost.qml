@@ -149,6 +149,7 @@ Page {
         Rectangle {
             anchors.fill: replyToColumn
             border.width: 2
+            border.color: guiSettings.borderColor
             color: guiSettings.postHighLightColor
             visible: replyToColumn.visible
         }
@@ -350,6 +351,7 @@ Page {
         Rectangle {
             anchors.fill: quoteColumn
             border.width: 2
+            border.color: guiSettings.borderColor
             color: guiSettings.postHighLightColor
             visible: quoteColumn.visible
         }
