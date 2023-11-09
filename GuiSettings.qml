@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 
 Item {
@@ -38,6 +38,7 @@ Item {
     readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "navy"
     readonly property string threadEndColor: Material.theme === Material.Light ? "lightcyan" : "#000033"
     readonly property string threadEntryColor: Material.theme === Material.Light ? "darkcyan" : "teal"
+    readonly property string threadLeafColor: Material.background
 
     // Font size
     readonly property double labelFontSize: scaledFont(6/8)

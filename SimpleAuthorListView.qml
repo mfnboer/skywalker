@@ -22,7 +22,7 @@ ListView {
         id: authorEntry
         width: searchList.width
         height: grid.height
-        color: "transparent"
+        color: guiSettings.backgroundColor
 
         GridLayout {
             id: grid

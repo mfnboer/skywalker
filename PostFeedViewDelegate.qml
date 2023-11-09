@@ -177,11 +177,15 @@ Rectangle {
                         switch (postType) {
                         case QEnums.POST_STANDALONE:
                             return "transparent"
+                        case QEnums.POST_LAST_REPLY:
+                            return guiSettings.threadLeafColor
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_ENTRY) {
                                 return guiSettings.threadEntryColor
                             } else if (postThreadType & QEnums.THREAD_PARENT) {
                                 return guiSettings.threadStartColor
+                            } else if (postThreadType & QEnums.THREAD_LEAF) {
+                                return guiSettings.threadLeafColor
                             }
 
                             return guiSettings.threadEndColor
