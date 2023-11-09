@@ -35,10 +35,10 @@ Item {
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string statsColor: Material.color(Material.Grey)
     readonly property string textColor: Material.foreground
-    readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "navy"
-    readonly property string threadEndColor: Material.theme === Material.Light ? "lightcyan" : "#000033"
+    readonly property string threadEndColor: Material.background
     readonly property string threadEntryColor: Material.theme === Material.Light ? "darkcyan" : "teal"
-    readonly property string threadLeafColor: Material.background
+    readonly property string threadMidColor: Material.theme === Material.Light ? "lightcyan" : "#000033"
+    readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "navy"
 
     // Font size
     readonly property double labelFontSize: scaledFont(6/8)

@@ -81,7 +81,7 @@ Rectangle {
                         switch (postType) {
                         case QEnums.POST_REPLY:
                         case QEnums.POST_LAST_REPLY:
-                            return !postParentInThread && index % 2 === 0 ? "transparent" : guiSettings.threadEndColor
+                            return !postParentInThread && index % 2 === 0 ? "transparent" : guiSettings.threadMidColor
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
                                 return guiSettings.threadStartColor
@@ -94,7 +94,7 @@ Rectangle {
                                 return guiSettings.threadStartColor
                             }
 
-                            return guiSettings.threadEndColor
+                            return guiSettings.threadMidColor
                         }
                         default:
                             return "transparent"
@@ -155,7 +155,7 @@ Rectangle {
                             return guiSettings.threadStartColor
                         case QEnums.POST_REPLY:
                         case QEnums.POST_LAST_REPLY:
-                            return guiSettings.threadEndColor
+                            return guiSettings.threadMidColor
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_ENTRY) {
                                 return guiSettings.threadEntryColor
@@ -164,7 +164,7 @@ Rectangle {
                                 return guiSettings.threadStartColor
                             }
 
-                            return guiSettings.threadEndColor
+                            return guiSettings.threadMidColor
                         }
                         default:
                             return "transparent"
@@ -178,20 +178,20 @@ Rectangle {
                         case QEnums.POST_STANDALONE:
                             return "transparent"
                         case QEnums.POST_LAST_REPLY:
-                            return guiSettings.threadLeafColor
+                            return guiSettings.threadEndColor
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_ENTRY) {
                                 return guiSettings.threadEntryColor
                             } else if (postThreadType & QEnums.THREAD_PARENT) {
                                 return guiSettings.threadStartColor
                             } else if (postThreadType & QEnums.THREAD_LEAF) {
-                                return guiSettings.threadLeafColor
+                                return guiSettings.threadEndColor
                             }
 
-                            return guiSettings.threadEndColor
+                            return guiSettings.threadMidColor
                         }
                         default:
-                            return guiSettings.threadEndColor
+                            return guiSettings.threadMidColor
                         }
                     }
                 }
@@ -418,7 +418,7 @@ Rectangle {
                 switch (postType) {
                 case QEnums.POST_ROOT:
                 case QEnums.POST_REPLY:
-                    return guiSettings.threadEndColor
+                    return guiSettings.threadMidColor
                 case QEnums.POST_THREAD: {
                     if (postThreadType & QEnums.THREAD_ENTRY)  {
                         return guiSettings.threadEntryColor
@@ -429,7 +429,7 @@ Rectangle {
                         return guiSettings.threadStartColor
                     }
 
-                    return guiSettings.threadEndColor
+                    return guiSettings.threadMidColor
                 }
                 default:
                     return "transparent"
