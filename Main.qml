@@ -293,7 +293,11 @@ ApplicationWindow {
                 const userSettings = skywalker.getUserSettings()
                 const host = userSettings.getHost(profile.did)
                 const password = userSettings.getPassword(profile.did)
-                skywalkerLogin(profile.did, password, host)
+
+                if (password)
+                    skywalkerLogin(profile.did, password, host)
+                else
+                    loginUser(host, profile.handle, profile.did)
             }
 
             close()
