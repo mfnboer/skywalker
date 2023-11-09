@@ -45,7 +45,7 @@ Page {
             anchors.top: parent.top
             anchors.left: parent.left
             iconColor: guiSettings.headerTextColor
-            Material.background: headerColor
+            Material.background: guiSettings.headerColor
             opacity: 0.5
             svg: svgOutline.arrowBack
             onClicked: page.closed()

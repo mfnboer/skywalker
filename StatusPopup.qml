@@ -7,7 +7,8 @@ Popup {
 
     id: statusPopup
     width: parent.width
-    height: 60
+    //height: 60
+    height: Math.max(statusText.height, closeButton.height)
     z: 200
 
     background: Rectangle {
@@ -21,11 +22,12 @@ Popup {
 
     Label {
         id: statusText
+        padding: 10
         anchors.left: parent.left
         anchors.right: closeButton.left
         anchors.verticalCenter: parent.verticalCenter
         wrapMode: Text.Wrap
-        maximumLineCount: 4
+        maximumLineCount: 5
         elide: Text.ElideRight
         color: guiSettings.textColor
         text: "Status"
