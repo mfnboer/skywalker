@@ -157,6 +157,7 @@ ApplicationWindow {
         }
 
         onSharedTextReceived: (text) => { composePost(text) }
+        onSharedImageReceived: (fileName, text) => { composePost(text, "file://" + fileName) }
 
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
@@ -587,11 +588,12 @@ ApplicationWindow {
         skywalker.signOut()
     }
 
-    function composePost(initialText) {
+    function composePost(initialText, imageFileName = "") {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
-                initialText: initialText
+                initialText: initialText,
+                initialImage: imageFileName
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)

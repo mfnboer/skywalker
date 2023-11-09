@@ -3,6 +3,8 @@
 
 package com.gmail.mfnboer;
 
+import com.gmail.mfnboer.FileUtils;
+
 import org.qtproject.qt.android.QtNative;
 import org.qtproject.qt.android.bindings.QtActivity;
 
@@ -10,6 +12,7 @@ import java.lang.String;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -19,7 +22,8 @@ public class SkywalkerActivity extends QtActivity {
     private boolean mIsIntentPending = false;
     private boolean mIsReady = false;
 
-    public static native void emitSharedTextReceived(String uri);
+    public static native void emitSharedTextReceived(String text);
+    public static native void emitSharedImageReceived(String uri, String text);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -75,22 +79,28 @@ public class SkywalkerActivity extends QtActivity {
         Log.d(LOGTAG, "handleIntent");
         Intent intent = getIntent();
 
-        if (!intent.getAction().equals(Intent.ACTION_SEND))
-        {
+        if (!intent.getAction().equals(Intent.ACTION_SEND)) {
             Log.d(LOGTAG, "Unsupported intent action: " + intent.getAction());
             return;
         }
 
-        if (!intent.getType().equals("text/plain"))
-        {
-            Log.d(LOGTAG, "Unsupported intent type: " + intent.getType());
+        if (intent.getType().equals("text/plain")) {
+            handleSharedText(intent);
             return;
         }
 
+        if (intent.getType().startsWith("image/")) {
+            handleSharedImage(intent);
+            return;
+        }
+
+        Log.d(LOGTAG, "Unsupported intent type: " + intent.getType());
+    }
+
+    private void handleSharedText(Intent intent) {
         String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
 
-        if (sharedText == null)
-        {
+        if (sharedText == null) {
             Log.d(LOGTAG, "Empty text received");
             return;
         }
@@ -100,6 +110,30 @@ public class SkywalkerActivity extends QtActivity {
 
         Log.d(LOGTAG, "Shared text: " + sharedText);
         emitSharedTextReceived(sharedText);
+    }
+
+    private void handleSharedImage(Intent intent) {
+        Uri uri = (Uri)intent.getParcelableExtra(Intent.EXTRA_STREAM);
+
+        if (uri == null) {
+            Log.d(LOGTAG, "Empty image uri received");
+            return;
+        }
+
+        String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+        if (text == null)
+            text = "";
+
+        if (text.length() > MAX_TEXT_LEN)
+            text = text.substring(0, MAX_TEXT_LEN);
+
+        String uriString = uri.toString();
+        Log.d(LOGTAG, "Shared image: " + uriString);
+        Log.d(LOGTAG, "Extra text  : " + text);
+        String fileName = FileUtils.resolveContentUriToFile(uriString);
+
+        emitSharedImageReceived(fileName, text);
     }
 
     // Avoid the app to close when the user presses the back button.

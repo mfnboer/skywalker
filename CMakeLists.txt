@@ -192,6 +192,8 @@ qt_add_qml_module(appskywalker
         QML_FILES About.qml
         QML_FILES StartupStatus.qml
         QML_FILES SimpleHeader.qml
+        SOURCES shared_image_provider.h
+        SOURCES shared_image_provider.cpp
 
 
 )

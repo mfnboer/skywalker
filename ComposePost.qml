@@ -8,11 +8,12 @@ import skywalker
 Page {
     required property var skywalker
     property string initialText
+    property string initialImage
 
     property int maxPostLength: 300
     property int maxImages: 4
-    property list<string> images
-    property list<string> altTexts
+    property list<string> images: initialImage ? [initialImage] : []
+    property list<string> altTexts: initialImage ? [""] : []
     property bool pickingImage: false
 
     // Reply-to
@@ -281,7 +282,7 @@ Page {
                         height: imageScroller.height
                         fillMode: Image.PreserveAspectCrop
                         autoTransform: true
-                        source: "file://" + modelData
+                        source: modelData
 
                         onStatusChanged: {
                             if (status === Image.Error)
@@ -393,8 +394,8 @@ Page {
         nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp *.gif)"]
         onAccepted: {
             let fileName = selectedFile.toString()
-            if (fileName.startsWith("file://"))
-                fileName = fileName.substr(7)
+            if (!fileName.startsWith("file://"))
+                fileName = "file://" + fileName
 
             photoPicked(fileName)
         }
@@ -427,7 +428,7 @@ Page {
 
         onPhotoPicked: (fileName) => {
             pickingImage = false
-            page.photoPicked(fileName)
+            page.photoPicked("file://" + fileName)
         }
 
         onPhotoPickCanceled: {
@@ -556,7 +557,7 @@ Page {
     function editAltText(index) {
         let component = Qt.createComponent("AltTextEditor.qml")
         let altPage = component.createObject(page, {
-                imgSource: "file://" + page.images[index],
+                imgSource: page.images[index],
                 text: page.altTexts[index] })
         altPage.onAltTextChanged.connect((text) => {
                 page.altTexts[index] = text
@@ -570,5 +571,6 @@ Page {
         // Then make sue the text field is in the visible area.
         focusTimer.start()
         postUtils.setHighlightDocument(postText.textDocument, guiSettings.linkColor)
+        console.debug("COMPOSE POST:", initialText, images, altTexts)
     }
 }

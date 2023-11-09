@@ -18,11 +18,13 @@ public:
     void handlePhotoPicked(const QString contentUri);
     void handlePhotoPickCanceled();
     void handleSharedTextReceived(const QString sharedText);
+    void handleSharedImageReceived(const QString fileName, const QString text);
 
 signals:
     void photoPicked(const QString contentUri);
     void photoPickCanceled();
     void sharedTextReceived(const QString sharedText);
+    void sharedImageReceived(const QString fileName, const QString text);
 
 private:
     JNICallbackListener();

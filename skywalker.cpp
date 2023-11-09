@@ -44,6 +44,8 @@ Skywalker::Skywalker(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
     connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
             [this](const QString& text){ emit sharedTextReceived(text); });
+    connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
+            [this](const QString& fileName, const QString& text){ emit sharedImageReceived(fileName, text); });
 }
 
 Skywalker::~Skywalker()

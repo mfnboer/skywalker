@@ -77,8 +77,20 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
-QString createBlob(QByteArray& blob, const QString& fileName)
+QString createBlob(QByteArray& blob, const QString& imgName)
 {
+    QString fileName;
+
+    if (imgName.startsWith("file://"))
+    {
+        fileName = imgName.sliced(7);
+    }
+    else
+    {
+        qWarning() << "Unsupported image name:" << imgName;
+        return {};
+    }
+
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
     QImage img = reader.read();
@@ -89,7 +101,7 @@ QString createBlob(QByteArray& blob, const QString& fileName)
         return {};
     }
 
-    return createBlob(blob, img, fileName);
+    return createBlob(blob, img, imgName);
 }
 
 QString createBlob(QByteArray& blob, QImage img, const QString& name)

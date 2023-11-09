@@ -63,7 +63,7 @@ public class GMSEmojiFontDownloader {
         // so the app requesting it has permissions to open
         final ParcelFileDescriptor fileDescriptor;
         try {
-            fileDescriptor = resolver.openFileDescriptor(fontInfos[0].getUri(), "r");
+            fileDescriptor = resolver.openFileDescriptor(emojiFontUri, "r");
         } catch (FileNotFoundException e) {
             Log.w(LOGTAG, e.getMessage());
             return -1;

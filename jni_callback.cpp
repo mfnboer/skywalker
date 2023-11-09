@@ -37,8 +37,21 @@ void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
     QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
     qDebug() << "Shared text received:" << sharedText;
     auto& instance = *gTheInstance;
+
     if (instance)
         instance->handleSharedTextReceived(sharedText);
+}
+
+void _handleSharedImageReceived(JNIEnv* env, jobject, jstring jsFileName, jstring jsText)
+{
+    QString fileName = jsFileName ? env->GetStringUTFChars(jsFileName, nullptr) : QString();
+    qDebug() << "Shared image received:" << fileName;
+    QString text = jsText ? env->GetStringUTFChars(jsText, nullptr) : QString();
+    qDebug() << "Additional text received:" << text;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleSharedImageReceived(fileName, text);
 }
 #endif
 
@@ -79,9 +92,10 @@ JNICallbackListener::JNICallbackListener() : QObject()
     jni.registerNativeMethods("com/gmail/mfnboer/QPhotoPicker", photoPickerCallbacks, 2);
 
     const JNINativeMethod skywalkerActivityCallbacks[] = {
-        { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) }
+        { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
+        { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 1);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 2);
 #endif
 }
 
@@ -98,6 +112,11 @@ void JNICallbackListener::handlePhotoPickCanceled()
 void JNICallbackListener::handleSharedTextReceived(const QString sharedText)
 {
     emit sharedTextReceived(sharedText);
+}
+
+void JNICallbackListener::handleSharedImageReceived(const QString fileName, const QString text)
+{
+    emit sharedImageReceived(fileName, text);
 }
 
 }
