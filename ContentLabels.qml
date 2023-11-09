@@ -32,8 +32,4 @@ ScrollView {
     GuiSettings {
         id: guiSettings
     }
-
-    Component.onCompleted: {
-        console.debug("LABELS:", contentLabels)
-    }
 }

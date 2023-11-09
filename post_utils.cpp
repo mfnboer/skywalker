@@ -19,18 +19,29 @@ PostUtils::PostUtils(QObject* parent) :
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
-    QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
-                     this, [this](const QString& uri){
-                         qDebug() << "PHOTO PICKED:" << uri;
-                         QString fileName = resolveContentUriToFile(uri);
-                         qDebug() << "PHOTO FILE NAME:" << fileName;
-                         QFile file(fileName);
-                         qDebug() << "File exists:" << file.exists() << ",size:" << file.size();
-                         emit photoPicked(fileName);
-                     });
+    connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
+        this, [this](const QString& uri){
+            qDebug() << "PHOTO PICKED:" << uri;
+            QString fileName = resolveContentUriToFile(uri);
+            qDebug() << "PHOTO FILE NAME:" << fileName;
+            QFile file(fileName);
+            qDebug() << "File exists:" << file.exists() << ",size:" << file.size();
+            emit photoPicked(fileName);
+        });
 
-    QObject::connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
+    connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
                      this, [this]{ emit photoPickCanceled(); });
+
+    connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
+        if (!mSkywalker)
+            return;
+
+        connect(mSkywalker, &Skywalker::bskyClientDeleted, this,
+            [this]{
+                qDebug() << "Reset post master";
+                mPostMaster = nullptr;
+            });
+    });
 }
 
 ATProto::PostMaster* PostUtils::postMaster()
@@ -38,8 +49,13 @@ ATProto::PostMaster* PostUtils::postMaster()
     if (!mPostMaster)
     {
         Q_ASSERT(mSkywalker);
-        Q_ASSERT(mSkywalker->getBskyClient());
-        mPostMaster = std::make_unique<ATProto::PostMaster>(*mSkywalker->getBskyClient());
+        auto* client = mSkywalker->getBskyClient();
+        Q_ASSERT(client);
+
+        if (client)
+            mPostMaster = std::make_unique<ATProto::PostMaster>(*mSkywalker->getBskyClient());
+        else
+            qWarning() << "Bsky client not yet created";
     }
 
     return mPostMaster.get();
@@ -79,6 +95,9 @@ void PostUtils::post(QString text, const QStringList& imageFileNames, const QStr
                      const QString& quoteUri, const QString& quoteCid)
 {
     qDebug() << "Posting:" << text;
+
+    if (!postMaster())
+        return;
 
     if (replyToUri.isEmpty())
     {
@@ -121,6 +140,9 @@ void PostUtils::post(QString text, const LinkCard* card,
     Q_ASSERT(card);
     qDebug() << "Posting:" << text;
 
+    if (!postMaster())
+        return;
+
     if (replyToUri.isEmpty())
     {
         postMaster()->createPost(text, nullptr,
@@ -162,6 +184,9 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
         continuePost(imageFileNames, altTexts, post);
         return;
     }
+
+    if (!postMaster())
+        return;
 
     postMaster()->checkPostExists(quoteUri, quoteCid,
         [this, presence=getPresence(), imageFileNames, altTexts, post, quoteUri, quoteCid]{
@@ -226,6 +251,9 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
         continuePost(card, post);
         return;
     }
+
+    if (!postMaster())
+        return;
 
     postMaster()->checkPostExists(quoteUri, quoteCid,
         [this, presence=getPresence(), card, post, quoteUri, quoteCid]{
@@ -307,7 +335,11 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 
 void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 {
+    if (!postMaster())
+        return;
+
     emit postProgress(tr("Posting"));
+
     postMaster()->post(*post,
         [this, presence=getPresence(), post]{
             if (!presence)
@@ -334,6 +366,9 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 
 void PostUtils::repost(const QString& uri, const QString& cid)
 {
+    if (!postMaster())
+        return;
+
     emit repostProgress(tr("Reposting"));
 
     postMaster()->checkPostExists(uri, cid,
@@ -352,6 +387,9 @@ void PostUtils::repost(const QString& uri, const QString& cid)
 
 void PostUtils::continueRepost(const QString& uri, const QString& cid)
 {
+    if (!postMaster())
+        return;
+
     postMaster()->repost(uri, cid,
         [this, presence=getPresence(), cid](const auto& repostUri, const auto&){
             if (!presence)
@@ -376,6 +414,9 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid)
 
 void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
 {
+    if (!postMaster())
+        return;
+
     postMaster()->undo(repostUri,
         [this, presence=getPresence(), origPostCid]{
             if (!presence)
@@ -400,6 +441,9 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
 
 void PostUtils::like(const QString& uri, const QString& cid)
 {
+    if (!postMaster())
+        return;
+
     postMaster()->like(uri, cid,
         [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
             if (!presence)
@@ -424,6 +468,9 @@ void PostUtils::like(const QString& uri, const QString& cid)
 
 void PostUtils::undoLike(const QString& likeUri, const QString& cid)
 {
+    if (!postMaster())
+        return;
+
     postMaster()->undo(likeUri,
         [this, presence=getPresence(), cid]{
             if (!presence)
@@ -448,6 +495,9 @@ void PostUtils::undoLike(const QString& likeUri, const QString& cid)
 
 void PostUtils::deletePost(const QString& postUri, const QString& cid)
 {
+    if (!postMaster())
+        return;
+
     postMaster()->undo(postUri,
         [this, presence=getPresence(), cid]{
             if (!presence)
@@ -611,6 +661,9 @@ int PostUtils::graphemeLength(const QString& text) const
 
 void PostUtils::getQuotePost(const QString& httpsUri)
 {
+    if (!postMaster())
+        return;
+
     postMaster()->getPost(httpsUri,
         [this](const auto& uri, const auto& cid, auto post, auto author){
             BasicProfile profile(author->mDid,

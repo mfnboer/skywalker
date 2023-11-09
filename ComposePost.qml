@@ -571,6 +571,5 @@ Page {
         // Then make sue the text field is in the visible area.
         focusTimer.start()
         postUtils.setHighlightDocument(postText.textDocument, guiSettings.linkColor)
-        console.debug("COMPOSE POST:", initialText, images, altTexts)
     }
 }

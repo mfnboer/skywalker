@@ -109,7 +109,6 @@ void UserSettings::savePassword(const QString& did, const QString& password)
 {
     const QByteArray encryptedPassword = mEncryption.encrypt(password, KEY_ALIAS_PASSWORD);
     mSettings.setValue(key(did, "password"), encryptedPassword);
-    qDebug() << "Password saved:" << encryptedPassword;
 }
 
 QString UserSettings::getPassword(const QString& did) const

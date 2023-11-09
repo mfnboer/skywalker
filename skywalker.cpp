@@ -1433,6 +1433,8 @@ void Skywalker::signOut()
     setGetAuthorListInProgress(false);
 
     mSignOutInProgress = false;
+
+    emit bskyClientDeleted();
 }
 
 }

@@ -155,6 +155,7 @@ signals:
     void inviteCodes(InviteCodeList);
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString fileName, QString text); // Shared from another app
+    void bskyClientDeleted();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
