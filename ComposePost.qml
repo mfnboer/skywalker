@@ -118,8 +118,7 @@ Page {
 
                 onClicked: {
                     if (Qt.platform.os === "android") {
-                        pickingImage = true
-                        postUtils.pickPhoto()
+                        pickingImage = postUtils.pickPhoto()
                     } else {
                         fileDialog.open()
                     }

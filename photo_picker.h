@@ -7,7 +7,7 @@
 namespace Skywalker {
 
 // Start photo pick selector on Android.
-void pickPhoto();
+bool pickPhoto();
 
 // Create a binary blob (image/*) for uploading an image.
 // The mimetype is returned

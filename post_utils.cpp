@@ -518,9 +518,18 @@ void PostUtils::deletePost(const QString& postUri, const QString& cid)
         });
 }
 
-void PostUtils::pickPhoto() const
+bool PostUtils::pickPhoto()
 {
-    ::Skywalker::pickPhoto();
+    const bool permission = ::Skywalker::pickPhoto();
+
+    if (!permission)
+    {
+        mSkywalker->showStatusMessage(
+            tr("No permission to pick photo. Try sharing a photo from your gallery app."),
+            QEnums::STATUS_LEVEL_ERROR);
+    }
+
+    return permission;
 }
 
 void PostUtils::setEditMention(const QString& mention)

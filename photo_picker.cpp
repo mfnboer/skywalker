@@ -9,6 +9,7 @@
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
+#include <QOperatingSystemVersion>
 #include <QtCore/private/qandroidextras_p.h>
 #endif
 
@@ -17,39 +18,58 @@ namespace {
 constexpr qsizetype MAX_IMAGE_BYTES = 1000000;
 constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
 
-bool checkStoragePermission()
-{
 #if defined(Q_OS_ANDROID)
-    static const QString READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
-    auto checkResult = QtAndroidPrivate::checkPermission(READ_EXTERNAL_STORAGE);
+bool checkPermission(const QString& permission)
+{
+    auto checkResult = QtAndroidPrivate::checkPermission(permission);
     if (checkResult.result() != QtAndroidPrivate::Authorized)
     {
-        qDebug() << "Read storage permission check failed.";
-        auto requestResult = QtAndroidPrivate::requestPermission(READ_EXTERNAL_STORAGE);
+        qDebug() << "Permission check failed:" << permission;
+        auto requestResult = QtAndroidPrivate::requestPermission(permission);
+
         if (requestResult.result() != QtAndroidPrivate::Authorized)
         {
-            qWarning() << "No permission to read storage.";
+            qWarning() << "No permission:" << permission;
             return false;
         }
     }
-#endif
+
     return true;
 }
+#endif
+
+#if defined(Q_OS_ANDROID)
+bool checkReadMediaPermission()
+{
+    static const QString READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
+    static const QString READ_MEDIA_IMAGES = "android.permission.READ_MEDIA_IMAGES";
+    static const QString READ_MEDIA_VISUAL_USER_SELECTED = "android.permission.READ_MEDIA_VISUAL_USER_SELECTED";
+
+    const auto osVersion = QOperatingSystemVersion::current();
+
+    if (osVersion > QOperatingSystemVersion::Android13)
+        return checkPermission(READ_MEDIA_IMAGES) || checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
+
+    if (osVersion >= QOperatingSystemVersion::Android13)
+        return checkPermission(READ_MEDIA_IMAGES);
+
+    return checkPermission(READ_EXTERNAL_STORAGE);
+}
+#endif
 
 }
 
 namespace Skywalker {
 
-void pickPhoto()
+bool pickPhoto()
 {
 #ifdef Q_OS_ANDROID
-    if (!checkStoragePermission())
-        return;
+    if (!checkReadMediaPermission())
+        return false;
 
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker",
-                                       "start");
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker", "start");
 #endif
-    checkStoragePermission();
+    return true;
 }
 
 QString resolveContentUriToFile(const QString &contentUriString) {

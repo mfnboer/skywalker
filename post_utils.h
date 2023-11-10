@@ -38,7 +38,7 @@ public:
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
-    Q_INVOKABLE void pickPhoto() const;
+    Q_INVOKABLE bool pickPhoto();
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                              int cursor);
