@@ -689,6 +689,7 @@ ApplicationWindow {
     function viewSearchView() {
         unwindStack()
         stackLayout.currentIndex = 2
+        currentStackItem().show()
     }
 
     function viewAuthor(profile, modelId) {

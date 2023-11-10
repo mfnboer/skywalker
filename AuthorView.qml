@@ -8,9 +8,6 @@ Page {
     required property detailedprofile author
     required property int modelId
 
-    property int margin: 8
-    property bool inTopOvershoot: false
-    property bool inBottomOvershoot: false
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
     property bool authorMuted: author.viewer.muted
@@ -277,26 +274,12 @@ Page {
             viewWidth: authorFeedView.width
         }
 
-        onVerticalOvershootChanged: {
-            if (verticalOvershoot < 0)  {
-                if (!inTopOvershoot && !skywalker.getAuthorFeedInProgress) {
-                    getFeed()
-                }
-
-                inTopOvershoot = true
-            } else {
-                inTopOvershoot = false
-            }
-
-            if (verticalOvershoot > 0) {
-                if (!inBottomOvershoot && !skywalker.getAuthorFeedInProgress) {
-                    getFeedNextPage()
-                }
-
-                inBottomOvershoot = true;
-            } else {
-                inBottomOvershoot = false;
-            }
+        FlickableRefresher {
+            inProgress: skywalker.getAuthorFeedInProgress
+            verticalOvershoot: authorFeedView.verticalOvershoot
+            topOvershootFun: () => getFeed()
+            bottomOvershootFun: () => getFeedNextPage()
+            topText: ""
         }
 
         BusyIndicator {

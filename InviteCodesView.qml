@@ -12,35 +12,15 @@ ListView {
 
     id: inviteCodeList
     width: parent.width
+    boundsBehavior: Flickable.StopAtBounds
     clip: true
     model: codes
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
-
-        RowLayout {
-            width: parent.width
-            height: guiSettings.headerHeight
-
-            SvgButton {
-                id: backButton
-                iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                onClicked: inviteCodeList.closed()
-            }
-            Text {
-                Layout.alignment: Qt.AlignVCenter
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: qsTr("Invite Codes")
-            }
-        }
+    header: SimpleHeader {
+        text: qsTr("Invite Codes")
+        onBack: inviteCodeList.closed()
     }
+    headerPositioning: ListView.OverlayHeader
 
     delegate: Rectangle {
         required property var modelData // class InviteCode

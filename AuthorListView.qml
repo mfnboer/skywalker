@@ -10,7 +10,6 @@ ListView {
     property string description
     property bool showFollow: true
     property int margin: 8
-    property bool inBottomOvershoot: false
 
     signal closed
 
@@ -78,16 +77,11 @@ ListView {
         onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
     }
 
-    onVerticalOvershootChanged: {
-        if (verticalOvershoot > 0) {
-            if (!inBottomOvershoot && !skywalker.getAuthorListInProgress) {
-                skywalker.getAuthorListNextPage(modelId)
-            }
-
-            inBottomOvershoot = true;
-        } else {
-            inBottomOvershoot = false;
-        }
+    FlickableRefresher {
+        inProgress: skywalker.getAuthorListInProgress
+        verticalOvershoot: authorListView.verticalOvershoot
+        bottomOvershootFun: () => skywalker.getAuthorListNextPage(modelId)
+        topText: ""
     }
 
     SvgImage {

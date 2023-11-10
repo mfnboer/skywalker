@@ -28,10 +28,7 @@ Page {
                 iconColor: guiSettings.headerTextColor
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
-                onClicked: {
-                    searchText.focus = false
-                    page.closed()
-                }
+                onClicked: page.closed()
             }
 
             Rectangle {
@@ -162,6 +159,7 @@ Page {
             spacing: 0
             clip: true
             model: searchUtils.getSearchPostFeedModel()
+            boundsBehavior: Flickable.StopAtBounds
             ScrollIndicator.vertical: ScrollIndicator {}
 
             delegate: PostFeedViewDelegate {
@@ -190,6 +188,7 @@ Page {
             spacing: 0
             clip: true
             model: searchUtils.getSearchUsersModel()
+            boundsBehavior: Flickable.StopAtBounds
             ScrollIndicator.vertical: ScrollIndicator {}
 
             delegate: AuthorViewDelegate {

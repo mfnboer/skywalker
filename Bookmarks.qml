@@ -5,8 +5,6 @@ import skywalker
 
 ListView {
     required property var skywalker
-    property bool inTopOvershoot: false
-    property bool inBottomOvershoot: false
 
     signal closed
 
@@ -25,26 +23,12 @@ ListView {
         viewWidth: bookmarksView.width
     }
 
-    onVerticalOvershootChanged: {
-        if (verticalOvershoot < 0)  {
-            if (!inTopOvershoot && !model.inProgress) {
-                skywalker.getBookmarksPage(true)
-            }
-
-            inTopOvershoot = true
-        } else {
-            inTopOvershoot = false
-        }
-
-        if (verticalOvershoot > 0) {
-            if (!inBottomOvershoot && !model.inProgress) {
-                skywalker.getBookmarksPage()
-            }
-
-            inBottomOvershoot = true;
-        } else {
-            inBottomOvershoot = false;
-        }
+    FlickableRefresher {
+        inProgress: model.inProgress
+        verticalOvershoot: bookmarksView.verticalOvershoot
+        topOvershootFun: () => skywalker.getBookmarksPage(true)
+        bottomOvershootFun: () => skywalker.getBookmarksPage()
+        topText: qsTr("Pull down to refresh bookmarks")
     }
 
     SvgImage {

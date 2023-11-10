@@ -13,6 +13,7 @@ ListView {
 
     id: searchList
     spacing: 0
+    boundsBehavior: Flickable.StopAtBounds
     clip: true
 
     delegate: Rectangle {

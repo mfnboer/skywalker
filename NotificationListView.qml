@@ -7,9 +7,6 @@ ListView {
     required property var skywalker
     required property var timeline
 
-    property bool inTopOvershoot: false
-    property bool inBottomOvershoot: false
-
     signal closed
 
     id: notificationListView
@@ -37,26 +34,12 @@ ListView {
         viewWidth: notificationListView.width
     }
 
-    onVerticalOvershootChanged: {
-        if (verticalOvershoot < 0)  {
-            if (!inTopOvershoot && !skywalker.getNotificationsInProgress) {
-                skywalker.getNotifications(25, true)
-            }
-
-            inTopOvershoot = true
-        } else {
-            inTopOvershoot = false
-        }
-
-        if (verticalOvershoot > 0) {
-            if (!inBottomOvershoot && !skywalker.getNotificationsInProgress) {
-                skywalker.getNotificationsNextPage()
-            }
-
-            inBottomOvershoot = true;
-        } else {
-            inBottomOvershoot = false;
-        }
+    FlickableRefresher {
+        inProgress: skywalker.getNotificationsInProgress
+        verticalOvershoot: notificationListView.verticalOvershoot
+        topOvershootFun: () => skywalker.getNotifications(25, true)
+        bottomOvershootFun: () => skywalker.getNotificationsNextPage()
+        topText: qsTr("Pull down to refresh notifications")
     }
 
     SvgImage {

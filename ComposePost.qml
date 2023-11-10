@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
+import QtQuick.Window 2.2
 import skywalker
 
 Page {
@@ -36,6 +37,8 @@ Page {
     signal closed
 
     id: page
+    width: parent.width
+    height: parent.height
     topPadding: 10
     bottomPadding: 10
 
@@ -50,6 +53,15 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Cancel")
             onClicked: page.cancel()
+        }
+
+        Avatar {
+            anchors.centerIn: parent
+            height: parent.height - 10
+            width: height
+            avatarUrl: skywalker.avatarUrl
+            onClicked: skywalker.showStatusMessage("Yes, you're gorgeous!", QEnums.STATUS_LEVEL_INFO)
+            onPressAndHold: skywalker.showStatusMessage("Yes, you're really gorgeous!", QEnums.STATUS_LEVEL_INFO)
         }
 
         SkyButton {
@@ -84,6 +96,10 @@ Page {
         height: guiSettings.footerHeight + Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
+
+        onHeightChanged: {
+            console.debug("Key:", Qt.inputMethod.keyboardRectangle.height, "DPR:", Screen.devicePixelRatio, "Screen:", Screen.height, "VirtY:", Screen.virtualY, "Desk:", Screen.desktopAvailableHeight)
+        }
 
         ProgressBar {
             id: textLengthBar
@@ -142,6 +158,7 @@ Page {
         contentWidth: postText.width
         contentHeight: quoteColumn.y + (quoteColumn.visible ? quoteColumn.height : 0)
         flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
 
         onHeightChanged: ensureVisible(postText.cursorRectangle)
 

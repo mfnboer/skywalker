@@ -9,9 +9,6 @@ ListView {
     property int margin: 8
     property int unreadPosts: 0
 
-    property bool inTopOvershoot: false
-    property bool inBottomOvershoot: false
-
     id: timelineView
     spacing: 0
     model: skywalker.timelineModel
@@ -94,41 +91,13 @@ ListView {
         updateUnreadPosts(firstVisibleIndex)
     }
 
-    onVerticalOvershootChanged: {
-        if (!inSync)
-            return
-
-        console.debug("Vertical overshoot:", verticalOvershoot)
-        if (verticalOvershoot < -refreshText.height - 2)  {
-            if (!inTopOvershoot && !skywalker.getTimelineInProgress) {
-                skywalker.getTimeline(50)
-            }
-
-            inTopOvershoot = true
-        } else {
-            inTopOvershoot = false
-        }
-
-        if (verticalOvershoot > 0) {
-            if (!inBottomOvershoot && !skywalker.getTimelineInProgress) {
-                skywalker.getTimelineNextPage()
-            }
-
-            inBottomOvershoot = true;
-        } else {
-            inBottomOvershoot = false;
-        }
-    }
-
-    Text {
-        id: refreshText
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: guiSettings.headerHeight - verticalOvershoot - height
-        z: parent.z - 1
-        font.italic: true
-        color: guiSettings.textColor
-        text: qsTr("Refresh timeline");
-        visible: verticalOvershoot < 0
+    FlickableRefresher {
+        inProgress: skywalker.getTimelineInProgress
+        verticalOvershoot: timelineView.verticalOvershoot
+        topOvershootFun: () => skywalker.getTimeline(50)
+        bottomOvershootFun: () => skywalker.getTimelineNextPage()
+        enabled: timelineView.inSync
+        topText: qsTr("Pull down to refresh timeline")
     }
 
     BusyIndicator {
