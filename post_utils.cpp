@@ -48,12 +48,11 @@ ATProto::PostMaster* PostUtils::postMaster()
 {
     if (!mPostMaster)
     {
-        Q_ASSERT(mSkywalker);
-        auto* client = mSkywalker->getBskyClient();
+        auto* client = bskyClient();
         Q_ASSERT(client);
 
         if (client)
-            mPostMaster = std::make_unique<ATProto::PostMaster>(*mSkywalker->getBskyClient());
+            mPostMaster = std::make_unique<ATProto::PostMaster>(*client);
         else
             qWarning() << "Bsky client not yet created";
     }

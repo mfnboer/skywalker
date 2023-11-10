@@ -8,18 +8,39 @@ GraphUtils::GraphUtils(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
 {
+    connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
+        if (!mSkywalker)
+            return;
+
+        connect(mSkywalker, &Skywalker::bskyClientDeleted, this,
+                [this]{
+                    qDebug() << "Reset post master";
+                    mGraphMaster = nullptr;
+                });
+    });
 }
 
 ATProto::GraphMaster* GraphUtils::graphMaster()
 {
     if (!mGraphMaster)
-        mGraphMaster = std::make_unique<ATProto::GraphMaster>(*bskyClient());
+    {
+        auto* client = bskyClient();
+        Q_ASSERT(client);
+
+        if (client)
+            mGraphMaster = std::make_unique<ATProto::GraphMaster>(*bskyClient());
+        else
+            qWarning() << "Bsky client not yet created";
+    }
 
     return mGraphMaster.get();
 }
 
 void GraphUtils::follow(const BasicProfile& profile)
 {
+    if (!graphMaster())
+        return;
+
     graphMaster()->follow(profile.getDid(),
         [this, presence=getPresence(), profile](const auto& followingUri, const auto&){
             if (!presence)
@@ -45,6 +66,9 @@ void GraphUtils::follow(const BasicProfile& profile)
 
 void GraphUtils::unfollow(const QString& did, const QString& followingUri)
 {
+    if (!graphMaster())
+        return;
+
     graphMaster()->undo(followingUri,
         [this, presence=getPresence(), did]{
             if (!presence)
@@ -70,6 +94,9 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
 
 void GraphUtils::block(const QString& did)
 {
+    if (!graphMaster())
+        return;
+
     graphMaster()->block(did,
         [this, presence=getPresence(), did](const auto& blockingUri, const auto&){
             if (!presence)
@@ -93,6 +120,9 @@ void GraphUtils::block(const QString& did)
 
 void GraphUtils::unblock(const QString& did, const QString& blockingUri)
 {
+    if (!graphMaster())
+        return;
+
     graphMaster()->undo(blockingUri,
         [this, presence=getPresence(), did]{
             if (!presence)
@@ -116,6 +146,9 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
 
 void GraphUtils::mute(const QString& did)
 {
+    if (!bskyClient())
+        return;
+
     bskyClient()->muteActor(did,
         [this, presence=getPresence()]{
             if (presence)
@@ -132,6 +165,9 @@ void GraphUtils::mute(const QString& did)
 
 void GraphUtils::unmute(const QString& did)
 {
+    if (!bskyClient())
+        return;
+
     bskyClient()->unmuteActor(did,
         [this, presence=getPresence()]{
             if (presence)

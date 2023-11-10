@@ -15,6 +15,7 @@ ListView {
     id: timelineView
     spacing: 0
     model: skywalker.timelineModel
+    clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: Rectangle {
@@ -97,7 +98,8 @@ ListView {
         if (!inSync)
             return
 
-        if (verticalOvershoot < 0)  {
+        console.debug("Vertical overshoot:", verticalOvershoot)
+        if (verticalOvershoot < -refreshText.height - 2)  {
             if (!inTopOvershoot && !skywalker.getTimelineInProgress) {
                 skywalker.getTimeline(50)
             }
@@ -116,6 +118,17 @@ ListView {
         } else {
             inBottomOvershoot = false;
         }
+    }
+
+    Text {
+        id: refreshText
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: guiSettings.headerHeight - verticalOvershoot - height
+        z: parent.z - 1
+        font.italic: true
+        color: guiSettings.textColor
+        text: qsTr("Refresh timeline");
+        visible: verticalOvershoot < 0
     }
 
     BusyIndicator {
