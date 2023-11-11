@@ -1405,6 +1405,11 @@ void Skywalker::clearPassword()
 
 void Skywalker::signOut()
 {
+    Q_ASSERT(mPostThreadModels.empty());
+    Q_ASSERT(mAuthorFeedModels.empty());
+    Q_ASSERT(mSearchPostFeedModels.empty());
+    Q_ASSERT(mAuthorListModels.empty());
+
     qDebug() << "Logout:" << mUserDid;
     mSignOutInProgress = true;
 

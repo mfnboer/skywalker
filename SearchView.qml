@@ -253,4 +253,9 @@ Page {
     GuiSettings {
         id: guiSettigs
     }
+
+    function forceDestroy() {
+        searchUtils.removeModels()
+        destroy()
+    }
 }

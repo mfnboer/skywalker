@@ -108,7 +108,7 @@ ApplicationWindow {
             console.warn("FAILED TO LOAD USER PROFILE:", error)
             closeStartupStatus()
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-            skywalker.signOut()
+            signOutCurrentUser()
             signIn()
         }
 
@@ -128,7 +128,7 @@ ApplicationWindow {
             console.warn("FAILED TO LOAD USER PREFERENCES")
             closeStartupStatus()
             statusPopup.show("FAILED TO LOAD USER PREFERENCES", QEnums.STATUS_LEVEL_ERROR)
-            skywalker.signOut()
+            signOutCurrentUser()
             signIn()
         }
 
@@ -588,6 +588,7 @@ ApplicationWindow {
         timelineUpdateTimer.stop()
         getTimelineView().stopSync()
         unwindStack()
+        destroySearchView()
         inviteCodeStore.clear()
         skywalker.signOut()
     }
@@ -686,10 +687,28 @@ ApplicationWindow {
         }
     }
 
+    function createSearchView() {
+        let searchComponent = Qt.createComponent("SearchView.qml")
+        let searchView = searchComponent.createObject(root,
+                { skywalker: skywalker, timeline: getTimelineView() })
+        searchView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
+        searchStack.push(searchView)
+    }
+
+    function destroySearchView() {
+        if (searchStack.depth > 0) {
+            let item = searchStack.get(0)
+            item.forceDestroy()
+            searchStack.clear()
+        }
+    }
+
     function viewSearchView() {
         unwindStack()
         stackLayout.currentIndex = 2
-        currentStackItem().show()
+
+        if (searchStack.depth === 0)
+            createSearchView()
     }
 
     function viewAuthor(profile, modelId) {
@@ -799,12 +818,6 @@ ApplicationWindow {
                 { skywalker: skywalker, timeline: timelineView })
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
         notificationStack.push(notificationsView)
-
-        let searchComponent = Qt.createComponent("SearchView.qml")
-        let searchView = searchComponent.createObject(root,
-                { skywalker: skywalker, timeline: timelineView })
-        searchView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
-        searchStack.push(searchView)
 
         showStartupStatus()
 
