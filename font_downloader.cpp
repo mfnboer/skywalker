@@ -22,6 +22,7 @@ void FontDownloader::initAppFonts()
     fontFamilies.push_back("Noto Color Emoji");
     font.setFamilies(fontFamilies);
     font.setWeight(QFont::Weight(350));
+    font.setPixelSize(16);
     QGuiApplication::setFont(font);
 
     qDebug() << "Font:" << font;

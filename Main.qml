@@ -786,6 +786,7 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+        console.debug("DPR:", Screen.devicePixelRatio)
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
 

@@ -1411,7 +1411,7 @@ void Skywalker::signOut()
     stopRefreshTimers();
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();
-    mSearchPostFeedModels.clear();
+    mSearchPostFeedModels.clear(); // TODO: clear model id in SearchUtils
     mAuthorListModels.clear();
     mNotificationListModel.clear();
     mUserPreferences = ATProto::UserPreferences();

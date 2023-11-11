@@ -93,13 +93,9 @@ Page {
     footer: Rectangle {
         id: textFooter
         width: page.width
-        height: guiSettings.footerHeight + Qt.inputMethod.keyboardRectangle.height / Screen.devicePixelRatio
+        height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
-
-        onHeightChanged: {
-            console.debug("Key:", Qt.inputMethod.keyboardRectangle.height, "DPR:", Screen.devicePixelRatio, "Screen:", Screen.height, "VirtY:", Screen.virtualY, "Desk:", Screen.desktopAvailableHeight)
-        }
 
         ProgressBar {
             id: textLengthBar
@@ -580,6 +576,21 @@ Page {
                 root.popStack()
         })
         root.pushStack(altPage)
+    }
+
+    Connections {
+        target: Qt.inputMethod
+
+        // Resize the footer when the Android virtual keyboard is shown
+        function onKeyboardRectangleChanged() {
+            if (Qt.inputMethod.keyboardRectangle.y > 0) {
+                const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
+                textFooter.height = guiSettings.footerHeight + (parent.height - keyboardY)
+            }
+            else {
+                textFooter.height = guiSettings.footerHeight
+            }
+        }
     }
 
     Component.onCompleted: {
