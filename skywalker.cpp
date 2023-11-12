@@ -1258,6 +1258,17 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setLocalSettingsModified(false);
+
+    if (session->getPDS())
+    {
+        const QUrl url(*session->getPDS());
+        mEditUserPreferences->setPDS(url.host());
+    }
+    else
+    {
+        mEditUserPreferences->setPDS(mBsky->getHost());
+    }
+
     return mEditUserPreferences.get();
 }
 

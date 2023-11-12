@@ -46,6 +46,7 @@ Page {
 
         Text {
             Layout.columnSpan: 2
+            font.pointSize: guiSettings.scaledFont(9/8)
             font.bold: true
             color: guiSettings.textColor
             text: qsTr("Account")
@@ -85,6 +86,16 @@ Page {
             color: guiSettings.textColor
             text: userPrefs.birthDate
         }
+
+        Text {
+            color: guiSettings.textColor
+            text: qsTr("PDS:")
+        }
+        Text {
+            Layout.fillWidth: true
+            color: guiSettings.textColor
+            text: userPrefs.pds
+        }
     }
 
     ColumnLayout {
@@ -94,6 +105,7 @@ Page {
 
         Text {
             topPadding: 20
+            font.pointSize: guiSettings.scaledFont(9/8)
             font.bold: true
             color: guiSettings.textColor
             text: qsTr("Home feed preferences")
@@ -136,6 +148,7 @@ Page {
 
         Text {
             topPadding: 20
+            font.pointSize: guiSettings.scaledFont(9/8)
             font.bold: true
             color: guiSettings.textColor
             text: qsTr("Appearance")

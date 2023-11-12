@@ -60,8 +60,8 @@ Page {
             height: parent.height - 10
             width: height
             avatarUrl: skywalker.avatarUrl
-            onClicked: skywalker.showStatusMessage("Yes, you're gorgeous!", QEnums.STATUS_LEVEL_INFO)
-            onPressAndHold: skywalker.showStatusMessage("Yes, you're really gorgeous!", QEnums.STATUS_LEVEL_INFO)
+            onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
+            onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
         }
 
         SkyButton {
