@@ -409,4 +409,23 @@ AuthorListModel* SearchUtils::getSearchUsersModel()
     return mSkywalker->getAuthorListModel(mSearchUsersModelId);
 }
 
+void SearchUtils::clearAllSearchResults()
+{
+    mAuthorTypeaheadList.clear();
+
+    if (mSearchPostFeedModelId != -1)
+    {
+        Q_ASSERT(mSkywalker);
+        auto* model = mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId);
+        model->clear();
+    }
+
+    if (mSearchUsersModelId != -1)
+    {
+        Q_ASSERT(mSkywalker);
+        auto* model = mSkywalker->getAuthorListModel(mSearchUsersModelId);
+        model->clear();
+    }
+}
+
 }

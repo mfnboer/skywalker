@@ -32,6 +32,7 @@ public:
     Q_INVOKABLE void legacySearchActors(const QString& text);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel();
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
+    Q_INVOKABLE void clearAllSearchResults();
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);

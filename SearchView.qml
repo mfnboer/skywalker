@@ -255,6 +255,9 @@ Page {
     }
 
     function forceDestroy() {
+        searchUtils.clearAllSearchResults();
+        usersView.model = null
+        postsView.model = null
         searchUtils.removeModels()
         destroy()
     }

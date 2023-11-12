@@ -21,8 +21,9 @@ endif()
 
 add_compile_options(-Wall -Wextra -Werror)
 
-if (!ANDROID)
+if (NOT ANDROID)
     add_compile_options(-fsanitize=address)
+    add_compile_options(-fno-omit-frame-pointer)
     add_link_options(-fsanitize=address)
 endif()
 
