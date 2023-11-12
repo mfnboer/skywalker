@@ -48,7 +48,7 @@ bool checkReadMediaPermission()
     const auto osVersion = QOperatingSystemVersion::current();
 
     if (osVersion > QOperatingSystemVersion::Android13)
-        return checkPermission(READ_MEDIA_IMAGES) || checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
+        return checkPermission(READ_MEDIA_IMAGES) && checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
 
     if (osVersion >= QOperatingSystemVersion::Android13)
         return checkPermission(READ_MEDIA_IMAGES);
