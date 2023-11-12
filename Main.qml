@@ -157,7 +157,16 @@ ApplicationWindow {
         }
 
         onSharedTextReceived: (text) => { composePost(text) }
-        onSharedImageReceived: (fileName, text) => { composePost(text, "file://" + fileName) }
+
+        onSharedImageReceived: (fileName, text) => {
+            const file = "file://" + fileName
+            let item = currentStackItem()
+
+            if (item instanceof ComposePost)
+                item.addSharedPhoto(file)
+            else
+                composePost(text, file)
+        }
 
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
@@ -434,7 +443,7 @@ ApplicationWindow {
         let component = Qt.createComponent("StartupStatus.qml")
         let page = component.createObject(root)
         page.setStatus(qsTr("Connecting"))
-        pushStack(page)
+        pushStack(page, StackView.Immediate)
     }
 
     function setStartupStatus(msg) {
@@ -476,7 +485,7 @@ ApplicationWindow {
 
             newUser()
         })
-        pushStack(page)
+        pushStack(page, StackView.Immediate)
     }
 
     function loginUser(host, handle, did, error="") {
@@ -774,8 +783,8 @@ ApplicationWindow {
         item.destroy()
     }
 
-    function pushStack(item) {
-        currentStack().push(item)
+    function pushStack(item, operation) {
+        currentStack().push(item, operation)
     }
 
     function unwindStack() {

@@ -545,6 +545,15 @@ Page {
         scrollBar.position = 1.0 - scrollBar.size
     }
 
+    function addSharedPhoto(fileName) {
+        if (page.images.length >= page.maxImages) {
+            statusPopup.show(qsTr(`Post already has ${page.maxImages} images attached.`), QEnums.STATUS_LEVEL_INFO, 30)
+            return
+        }
+
+        photoPicked(fileName)
+    }
+
     function postDone() {
         busyIndicator.running = false
         page.closed()

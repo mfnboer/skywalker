@@ -12,7 +12,7 @@ FacetHighlighter::FacetHighlighter(QTextDocument* parent) :
 
 void FacetHighlighter::setHighlightColor(const QString& colorName)
 {
-    mHighlightColor.setNamedColor(colorName);
+    mHighlightColor = QColor::fromString(colorName);
 }
 
 void FacetHighlighter::highlightBlock(const QString& text)

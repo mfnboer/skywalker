@@ -347,6 +347,7 @@ Page {
 
     StatusPopup {
         id: statusPopup
+        y: guiSettings.headerHeight
     }
 
     PostUtils {
