@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "edit_user_preferences.h"
+#include "definitions.h"
 
 namespace Skywalker {
 
@@ -21,7 +22,7 @@ const QString EditUserPreferences::getBirthDate() const
 void EditUserPreferences::setUserPreferences(const ATProto::UserPreferences& userPreferences)
 {
     mBirthDate = userPreferences.getBirthDate();
-    mHomeFeedPref = userPreferences.getFeedViewPref("home");
+    mHomeFeedPref = userPreferences.getFeedViewPref(HOME_FEED);
 }
 
 void EditUserPreferences::saveTo(ATProto::UserPreferences& userPreferences)

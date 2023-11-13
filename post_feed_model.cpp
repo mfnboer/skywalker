@@ -2,11 +2,10 @@
 // License: GPLv3
 #include "post_feed_model.h"
 #include "author_cache.h"
+#include "definitions.h"
 #include <algorithm>
 
 namespace Skywalker {
-
-static constexpr char const* HOME_FEED = "home";
 
 PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following,
                              const ContentFilter& contentFilter,

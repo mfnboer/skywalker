@@ -199,6 +199,7 @@ qt_add_qml_module(appskywalker
         SOURCES shared_image_provider.h
         SOURCES shared_image_provider.cpp
         QML_FILES FlickableRefresher.qml
+        SOURCES definitions.h
 
 
 )
