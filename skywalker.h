@@ -177,6 +177,7 @@ private:
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
+    void shareImage(const QString& fileName, const QString& text);
     void disableDebugLogging();
     void restoreDebugLogging();
 

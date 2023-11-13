@@ -3,6 +3,7 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "jni_callback.h"
+#include "photo_picker.h"
 #include "post_utils.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
@@ -45,7 +46,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
             [this](const QString& text){ emit sharedTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
-            [this](const QString& fileName, const QString& text){ emit sharedImageReceived(fileName, text); });
+            [this](const QString& fileName, const QString& text){ shareImage(fileName, text); });
 }
 
 Skywalker::~Skywalker()
@@ -1390,6 +1391,14 @@ void Skywalker::saveSyncTimestamp(int postIndex)
 QDateTime Skywalker::getSyncTimestamp() const
 {
     return mUserSettings.getSyncTimestamp(mUserDid);
+}
+
+void Skywalker::shareImage(const QString& fileName, const QString& text)
+{
+    if (checkReadMediaPermission())
+        emit sharedImageReceived(fileName, text);
+    else
+        showStatusMessage("No permission to access images.", QEnums::STATUS_LEVEL_ERROR);
 }
 
 void Skywalker::disableDebugLogging()

@@ -6,6 +6,8 @@
 
 namespace Skywalker {
 
+bool checkReadMediaPermission();
+
 // Start photo pick selector on Android.
 bool pickPhoto();
 

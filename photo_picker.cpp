@@ -38,9 +38,13 @@ bool checkPermission(const QString& permission)
 }
 #endif
 
-#if defined(Q_OS_ANDROID)
+}
+
+namespace Skywalker {
+
 bool checkReadMediaPermission()
 {
+#if defined(Q_OS_ANDROID)
     static const QString READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
     static const QString READ_MEDIA_IMAGES = "android.permission.READ_MEDIA_IMAGES";
     static const QString READ_MEDIA_VISUAL_USER_SELECTED = "android.permission.READ_MEDIA_VISUAL_USER_SELECTED";
@@ -54,12 +58,10 @@ bool checkReadMediaPermission()
         return checkPermission(READ_MEDIA_IMAGES);
 
     return checkPermission(READ_EXTERNAL_STORAGE);
-}
+#else
+    return true;
 #endif
-
 }
-
-namespace Skywalker {
 
 bool pickPhoto()
 {
