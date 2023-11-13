@@ -16,6 +16,7 @@ ListView {
     id: authorListView
     spacing: 0
     model: skywalker.getAuthorListModel(modelId)
+    flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: Column {

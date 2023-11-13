@@ -160,6 +160,7 @@ Page {
             clip: true
             model: searchUtils.getSearchPostFeedModel()
             boundsBehavior: Flickable.StopAtBounds
+            flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
             delegate: PostFeedViewDelegate {
@@ -189,6 +190,7 @@ Page {
             clip: true
             model: searchUtils.getSearchUsersModel()
             boundsBehavior: Flickable.StopAtBounds
+            flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
             delegate: AuthorViewDelegate {

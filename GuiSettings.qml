@@ -43,6 +43,9 @@ Item {
     // Font size
     readonly property double labelFontSize: scaledFont(6/8)
 
+    // Misc
+    readonly property real flickDeceleration: 1000
+
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;
     }

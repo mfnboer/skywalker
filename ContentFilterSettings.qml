@@ -35,6 +35,7 @@ Page {
         spacing: 5
         boundsBehavior: Flickable.StopAtBounds
         model: page.model
+        flickDeceleration: guiSettings.flickDeceleration
 
         delegate: GridLayout {
             required property var model

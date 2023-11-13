@@ -11,6 +11,7 @@ ListView {
     id: bookmarksView
     spacing: 0
     model: skywalker.createBookmarksModel()
+    flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: SimpleHeader {

@@ -84,6 +84,7 @@ Page {
         height: parent.height - y
         spacing: 0
         model: skywalker.getAuthorFeedModel(page.modelId)
+        flickDeceleration: guiSettings.flickDeceleration
         ScrollIndicator.vertical: ScrollIndicator {}
 
         header: Column {

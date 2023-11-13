@@ -12,6 +12,7 @@ ListView {
     id: notificationListView
     spacing: 0
     model: skywalker.notificationListModel
+    flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: SimpleHeader {

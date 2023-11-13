@@ -15,6 +15,7 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     clip: true
     model: codes
+    flickDeceleration: guiSettings.flickDeceleration
 
     header: SimpleHeader {
         text: qsTr("Invite Codes")

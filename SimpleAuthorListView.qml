@@ -15,6 +15,7 @@ ListView {
     spacing: 0
     boundsBehavior: Flickable.StopAtBounds
     clip: true
+    flickDeceleration: guiSettings.flickDeceleration
 
     delegate: Rectangle {
         required property basicprofile modelData

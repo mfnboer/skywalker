@@ -11,6 +11,7 @@ ListView {
     id: view
     spacing: 0
     model: skywalker.getPostThreadModel(modelId)
+    flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: SimpleHeader {

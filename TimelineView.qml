@@ -13,6 +13,7 @@ ListView {
     spacing: 0
     model: skywalker.timelineModel
     clip: true
+    flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: Rectangle {
