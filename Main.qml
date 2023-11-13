@@ -41,7 +41,14 @@ ApplicationWindow {
 
             popStack()
         }
-        else if (stackLayout.currentIndex > 0) {
+        else if (stackLayout.currentIndex === stackLayout.searchIndex) {
+            // Hack to hide the selection anchor on Android that should not have been
+            // there at all.
+            currentStackItem().hide()
+            event.accepted = false
+            viewTimeline()
+        }
+        else if (stackLayout.currentIndex !== stackLayout.timelineIndex) {
             event.accepted = false
             viewTimeline()
         }
@@ -175,9 +182,13 @@ ApplicationWindow {
     }
 
     StackLayout {
+        readonly property int timelineIndex: 0
+        readonly property int notificationIndex: 1
+        readonly property int searchIndex: 2
+
         id: stackLayout
         anchors.fill: parent
-        currentIndex: 0
+        currentIndex: timelineIndex
 
         StackView {
             id: timelineStack
@@ -677,12 +688,12 @@ ApplicationWindow {
 
     function viewTimeline() {
         unwindStack()
-        stackLayout.currentIndex = 0
+        stackLayout.currentIndex = stackLayout.timelineIndex
     }
 
     function viewNotifications() {
         unwindStack()
-        stackLayout.currentIndex = 1
+        stackLayout.currentIndex = stackLayout.notificationIndex
 
         let loadCount = 25
         if (skywalker.unreadNotificationCount > 0) {
@@ -700,7 +711,7 @@ ApplicationWindow {
         let searchComponent = Qt.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
                 { skywalker: skywalker, timeline: getTimelineView() })
-        searchView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
+        searchView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         searchStack.push(searchView)
     }
 
@@ -714,10 +725,12 @@ ApplicationWindow {
 
     function viewSearchView() {
         unwindStack()
-        stackLayout.currentIndex = 2
+        stackLayout.currentIndex = stackLayout.searchIndex
 
         if (searchStack.depth === 0)
             createSearchView()
+
+        currentStackItem().show()
     }
 
     function viewAuthor(profile, modelId) {
@@ -825,7 +838,7 @@ ApplicationWindow {
         let notificationsComponent = Qt.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,
                 { skywalker: skywalker, timeline: timelineView })
-        notificationsView.onClosed.connect(() => { stackLayout.currentIndex = 0 })
+        notificationsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         notificationStack.push(notificationsView)
 
         showStartupStatus()

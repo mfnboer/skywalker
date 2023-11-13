@@ -261,4 +261,14 @@ Page {
         searchUtils.removeModels()
         destroy()
     }
+
+    function hide() {
+        // Hack to hide the selection anchor on Android that should not have been
+        // there at all.
+        backButton.forceActiveFocus()
+    }
+
+    function show() {
+        searchText.forceActiveFocus()
+    }
 }
