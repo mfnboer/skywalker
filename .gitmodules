@@ -1,3 +1,4 @@
 [submodule "atproto"]
 	path = atproto
 	url = https://github.com/mfnboer/atproto
+	branch = release-0.1
