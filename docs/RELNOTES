@@ -1,0 +1,16 @@
+0.1-beta
+========
+* Color bands to visualize threads
+* Superior thread construction (context for replies)
+* App starts up where you last left in your timeline
+* Share text and links directly from other apps
+* Share photos directly from your gallery app
+* Bookmarks
+* Search prioritizes accounts you follow
+* Manage multiple accounts
+* See who used your invite codes
+* Fast performance
+
+LIMITATIONS
+* No feed and list support yet
+* No account creation and modification yet

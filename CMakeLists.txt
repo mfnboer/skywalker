@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(appskywalker VERSION 0.1 LANGUAGES CXX)
 set(VERSION_CODE 1)
+set(APP_VERSION ${PROJECT_VERSION}-beta)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
@@ -13,7 +14,7 @@ qt_standard_project_setup()
 
 add_subdirectory(atproto/lib)
 
-add_compile_definitions(APP_VERSION="${PROJECT_VERSION}")
+add_compile_definitions(APP_VERSION="${APP_VERSION}")
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
@@ -207,7 +208,7 @@ qt_add_qml_module(appskywalker
 set_target_properties(appskywalker PROPERTIES
     QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
     QT_ANDROID_TARGET_SDK_VERSION 33
-    QT_ANDROID_VERSION_NAME ${PROJECT_VERSION}
+    QT_ANDROID_VERSION_NAME ${APP_VERSION}
     QT_ANDROID_VERSION_CODE ${VERSION_CODE})
 
 
