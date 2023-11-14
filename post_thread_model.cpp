@@ -191,4 +191,10 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
     return page;
 }
 
+QVariant PostThreadModel::getData(int row, AbstractPostFeedModel::Role role)
+{
+    auto index = createIndex(row, 0);
+    return data(index, (int)role);
+}
+
 }

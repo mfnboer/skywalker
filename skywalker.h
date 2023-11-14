@@ -168,6 +168,7 @@ private:
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);
+    void finishTimelineSyncFailed();
     void startRefreshTimers();
     void stopRefreshTimers();
     void refreshSession();

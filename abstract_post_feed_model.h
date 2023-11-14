@@ -16,6 +16,7 @@ namespace Skywalker {
 class AbstractPostFeedModel : public QAbstractListModel, public LocalPostModelChanges
 {
     Q_OBJECT
+    QML_ELEMENT
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
 
@@ -56,6 +57,7 @@ public:
         PostLocallyDeleted,
         EndOfFeed
     };
+    Q_ENUM(Role)
 
     using Ptr = std::unique_ptr<AbstractPostFeedModel>;
 

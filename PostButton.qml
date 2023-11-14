@@ -4,6 +4,7 @@ import skywalker
 
 SvgButton {
     property string initialText
+    property var overrideOnClicked
 
     width: 70
     height: width
@@ -12,5 +13,10 @@ SvgButton {
     opacity: 0.6
     imageMargin: 20
     svg: svgOutline.chat
-    onClicked: root.composePost(initialText)
+    onClicked: {
+        if (overrideOnClicked)
+            overrideOnClicked()
+        else
+            root.composePost(initialText)
+    }
 }

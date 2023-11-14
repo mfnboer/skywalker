@@ -41,6 +41,7 @@ Column {
                 console.debug("MENTION", link)
                 skywalker.getDetailedProfile(link)
             } else {
+                console.debug("LINK:", link)
                 root.openLink(link)
             }
         }

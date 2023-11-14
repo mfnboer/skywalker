@@ -28,6 +28,8 @@ ListView {
         PostButton {
             x: parent.width - width - 10
             y: -height - 10
+            svg: svgOutline.reply
+            overrideOnClicked: () => reply()
         }
     }
     footerPositioning: ListView.OverlayFooter
@@ -44,6 +46,19 @@ ListView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function reply() {
+        const postUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostUri)
+        const postCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostCid)
+        const postText = model.getData(postEntryIndex, AbstractPostFeedModel.PostText)
+        const postIndexedDateTime = model.getData(postEntryIndex, AbstractPostFeedModel.PostIndexedDateTime)
+        const author = model.getData(postEntryIndex, AbstractPostFeedModel.Author)
+        const postReplyRootUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootUri)
+        const postReplyRootCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootCid)
+
+        root.composeReply(postUri, postCid, postText, postIndexedDateTime,
+                          author, postReplyRootUri, postReplyRootCid)
     }
 
     Component.onCompleted: {

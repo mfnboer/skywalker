@@ -18,6 +18,8 @@ public:
     // Returns index of the entry post
     int setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
 
+    Q_INVOKABLE QVariant getData(int row, AbstractPostFeedModel::Role role);
+
 private:
     struct Page
     {

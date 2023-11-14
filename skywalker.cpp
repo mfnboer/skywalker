@@ -291,7 +291,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             {
                 restoreDebugLogging();
                 qWarning() << "Feed is empty";
-                emit timelineSyncFailed();
+                finishTimelineSyncFailed();
                 return;
             }
 
@@ -344,7 +344,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             qWarning() << "syncTimeline FAILED:" << error;
             setGetTimelineInProgress(false);
             emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
-            emit timelineSyncFailed();
+            finishTimelineSyncFailed();
         }
         );
 }
@@ -358,6 +358,12 @@ void Skywalker::finishTimelineSync(int index)
     // Now we can handle pending intent (content share).
     // If there is any, then this will open the post composition page. This should
     // only been done when the startup sequence in the GUI is finished.
+    JNICallbackListener::handlePendingIntent();
+}
+
+void Skywalker::finishTimelineSyncFailed()
+{
+    emit timelineSyncFailed();
     JNICallbackListener::handlePendingIntent();
 }
 

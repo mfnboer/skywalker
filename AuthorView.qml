@@ -74,6 +74,7 @@ Page {
             x: parent.width - width - 10
             y: -height - 10
             initialText: (isUser(author) || author.hasInvalidHandle()) ? "" : `@${author.handle} `
+            svg: (isUser(author) || author.hasInvalidHandle()) ? svgOutline.chat : svgOutline.atSign
         }
     }
 
