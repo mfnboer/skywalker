@@ -3,6 +3,8 @@
 #include "post_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
+#include "shared_image_provider.h"
+#include <QImageReader>
 
 namespace Skywalker {
 
@@ -20,17 +22,10 @@ PostUtils::PostUtils(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
-        this, [this](const QString& uri){
-            qDebug() << "PHOTO PICKED:" << uri;
-            QString fileName = resolveContentUriToFile(uri);
-            qDebug() << "PHOTO FILE NAME:" << fileName;
-            QFile file(fileName);
-            qDebug() << "File exists:" << file.exists() << ",size:" << file.size();
-            emit photoPicked(fileName);
-        });
+            this, [this](int fd){ sharePhoto(fd);});
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
-                     this, [this]{ emit photoPickCanceled(); });
+            this, [this]{ cancelPhotoPicking(); });
 
     connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
         if (!mSkywalker)
@@ -528,6 +523,10 @@ bool PostUtils::pickPhoto()
             tr("No permission to pick photo. Try sharing a photo from your gallery app."),
             QEnums::STATUS_LEVEL_ERROR);
     }
+    else
+    {
+        mPickingPhoto = true;
+    }
 
     return permission;
 }
@@ -710,6 +709,64 @@ bool PostUtils::isEmoji(uint c)
     --it;
 
     return c >= it->first && c <= it->second;
+}
+
+void PostUtils::sharePhoto(int fd)
+{
+    if (!mPickingPhoto)
+        return;
+
+    mPickingPhoto = false;
+    qDebug() << "Share photo fd:" << fd;
+
+    if (fd < 0)
+    {
+        emit photoPickFailed(tr("Could not open picture."));
+        return;
+    }
+
+    QFile file;
+
+    if (!file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle))
+    {
+        qWarning() << "Could not open file";
+        emit photoPickFailed("Could not open picture file.");
+        return;
+    }
+
+    QImageReader reader(&file);
+    reader.setAutoTransform(true);
+    QImage img = reader.read();
+
+    if (img.isNull())
+    {
+        qWarning() << "Could not read picture data.";
+        emit photoPickFailed(tr("Could not read picture data."));
+        return;
+    }
+
+    auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+    const QString source = imgProvider->addImage(img);
+    emit photoPicked(source);
+}
+
+void PostUtils::cancelPhotoPicking()
+{
+    if (!mPickingPhoto)
+        return;
+
+    mPickingPhoto = false;
+    qDebug() << "Cancel photo picking";
+    emit photoPickCanceled();
+}
+
+void PostUtils::dropPhoto(const QString& source)
+{
+    if (source.startsWith("image://"))
+    {
+        auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+        imgProvider->removeImage(source);
+    }
 }
 
 }

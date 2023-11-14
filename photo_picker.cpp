@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "photo_picker.h"
+#include "shared_image_provider.h"
 #include <QtGlobal>
 #include <QBuffer>
 #include <QCoreApplication>
@@ -101,29 +102,35 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 
 QString createBlob(QByteArray& blob, const QString& imgName)
 {
-    QString fileName;
-
     if (imgName.startsWith("file://"))
     {
-        fileName = imgName.sliced(7);
+        const QString fileName = imgName.sliced(7);
+
+        QImageReader reader(fileName);
+        reader.setAutoTransform(true);
+        QImage img = reader.read();
+
+        if (img.isNull())
+        {
+            qWarning() << "Failed to read:" << fileName;
+            return {};
+        }
+
+        return createBlob(blob, img, imgName);
     }
-    else
+    else if (imgName.startsWith("image://"))
     {
-        qWarning() << "Unsupported image name:" << imgName;
-        return {};
+        auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+        auto img = imgProvider->getImage(imgName);
+
+        if (img.isNull())
+            return {};
+
+        return createBlob(blob, img, imgName);
     }
 
-    QImageReader reader(fileName);
-    reader.setAutoTransform(true);
-    QImage img = reader.read();
-
-    if (img.isNull())
-    {
-        qWarning() << "Failed to read:" << fileName;
-        return {};
-    }
-
-    return createBlob(blob, img, imgName);
+    qWarning() << "Unsupported image name:" << imgName;
+    return {};
 }
 
 QString createBlob(QByteArray& blob, QImage img, const QString& name)

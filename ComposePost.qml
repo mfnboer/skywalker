@@ -297,11 +297,9 @@ Page {
                         source: modelData
 
                         onStatusChanged: {
-                            if (status === Image.Error)
-                            {
+                            if (status === Image.Error){
                                 statusPopup.show(qsTr("Cannot load image"), QEnums.STATUS_LEVEL_ERROR);
-                                page.altTexts.splice(index, 1)
-                                page.images.splice(index, 1)
+                                page.removeImage(index)
                             }
                         }
 
@@ -317,10 +315,7 @@ Page {
                             iconColor: guiSettings.buttonTextColor
                             Material.background: guiSettings.buttonColor
                             svg: svgOutline.close
-                            onClicked: {
-                                page.altTexts.splice(index, 1)
-                                page.images.splice(index, 1)
-                            }
+                            onClicked: page.removeImage(index)
                         }
                     }
                 }
@@ -438,9 +433,14 @@ Page {
         onPostFailed: (error) => page.postFailed(error)
         onPostProgress: (msg) => page.postProgress(msg)
 
-        onPhotoPicked: (fileName) => {
+        onPhotoPicked: (imgSource) => {
             pickingImage = false
-            page.photoPicked("file://" + fileName)
+            page.photoPicked(imgSource)
+        }
+
+        onPhotoPickFailed: (error) => {
+            pickingImage = false
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onPhotoPickCanceled: {
@@ -537,10 +537,11 @@ Page {
         return altTexts[index].length > 0
     }
 
-    function photoPicked(fileName) {
-        console.debug("IMAGE:", fileName)
+    // "file://" or "image://" source
+    function photoPicked(source) {
+        console.debug("IMAGE:", source)
         page.altTexts.push("")
-        page.images.push(fileName)
+        page.images.push(source)
         let scrollBar = imageScroller.ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
     }
@@ -552,6 +553,12 @@ Page {
         }
 
         photoPicked(fileName)
+    }
+
+    function removeImage(index) {
+        postUtils.dropPhoto(page.images[index])
+        page.altTexts.splice(index, 1)
+        page.images.splice(index, 1)
     }
 
     function postDone() {
@@ -600,6 +607,10 @@ Page {
                 textFooter.height = guiSettings.footerHeight
             }
         }
+    }
+
+    Component.onDestruction: {
+        page.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
     }
 
     Component.onCompleted: {

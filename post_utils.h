@@ -39,6 +39,7 @@ public:
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
     Q_INVOKABLE bool pickPhoto();
+    Q_INVOKABLE void dropPhoto(const QString& source);
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                              int cursor);
@@ -71,7 +72,8 @@ signals:
     void undoLikeFailed(QString error);
     void postDeletedOk();
     void postDeletedFailed(QString error);
-    void photoPicked(QString filename);
+    void photoPicked(QString imgSource);
+    void photoPickFailed(QString error);
     void photoPickCanceled();
     void editMentionChanged();
     void firstWebLinkChanged();
@@ -88,6 +90,9 @@ private:
     void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continueRepost(const QString& uri, const QString& cid);
+    void sharePhoto(int fd);
+    void cancelPhotoPicking();
+
     static bool isEmoji(uint c);
 
     ATProto::PostMaster* postMaster();
@@ -100,6 +105,7 @@ private:
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;
+    bool mPickingPhoto = false;
 };
 
 }

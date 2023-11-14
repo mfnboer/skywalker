@@ -69,7 +69,7 @@ public class GMSEmojiFontDownloader {
             return -1;
         }
 
-        // the detachFd will return a native file descriptor that we must close
+        // detachFd will return a native file descriptor that we must close
         // later in C++ code
         int fd = fileDescriptor.detachFd();
         return fd;

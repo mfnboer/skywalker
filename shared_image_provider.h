@@ -5,26 +5,28 @@
 
 namespace Skywalker {
 
-// Seems not to be needed as we can access shared images by filename.
-// Not sure if that will work for all Android versions. If not, then
-// we may try opening an image from Java, pass the file descriptor to C++,
-// read image data and pass it through this class to QML.
+// For sharing images via app sharing or Android photo picker
 class SharedImageProvider : public QQuickImageProvider
 {
 public:
     static constexpr char const* SHARED_IMAGE = "sharedimage";
     static SharedImageProvider* getProvider(const QString& name);
 
-    SharedImageProvider();
+    explicit SharedImageProvider(const QString& name);
+    ~SharedImageProvider();
 
     QString addImage(const QImage& image);
-    void removeImage(const QString& id);
+    void removeImage(const QString& source);
+    QImage getImage(const QString& source);
 
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
 
 private:
+    QString getIdFromSource(const QString& source) const;
+
     std::map<QString, QImage> mImages; // id -> image
     int mNextId = 1;
+    QString mName;
 
     static std::map<QString, SharedImageProvider*> sProviders; // name -> provider
 };
