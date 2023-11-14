@@ -7,6 +7,8 @@
 namespace Skywalker {
 
 bool checkReadMediaPermission();
+int openContentUri(const QString& contentUri);
+QImage readImageFd(int fd);
 
 // Start photo pick selector on Android.
 bool pickPhoto();

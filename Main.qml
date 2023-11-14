@@ -165,14 +165,14 @@ ApplicationWindow {
 
         onSharedTextReceived: (text) => { composePost(text) }
 
-        onSharedImageReceived: (fileName, text) => {
-            const file = "file://" + fileName
+        // "file://" or "image://" source
+        onSharedImageReceived: (source, text) => {
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
-                item.addSharedPhoto(file)
+                item.addSharedPhoto(source)
             else
-                composePost(text, file)
+                composePost(text, source)
         }
 
         function start() {
@@ -613,12 +613,12 @@ ApplicationWindow {
         skywalker.signOut()
     }
 
-    function composePost(initialText, imageFileName = "") {
+    function composePost(initialText, imageSource = "") {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 initialText: initialText,
-                initialImage: imageFileName
+                initialImage: imageSource
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)

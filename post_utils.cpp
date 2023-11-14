@@ -718,30 +718,11 @@ void PostUtils::sharePhoto(int fd)
 
     mPickingPhoto = false;
     qDebug() << "Share photo fd:" << fd;
-
-    if (fd < 0)
-    {
-        emit photoPickFailed(tr("Could not open picture."));
-        return;
-    }
-
-    QFile file;
-
-    if (!file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle))
-    {
-        qWarning() << "Could not open file";
-        emit photoPickFailed("Could not open picture file.");
-        return;
-    }
-
-    QImageReader reader(&file);
-    reader.setAutoTransform(true);
-    QImage img = reader.read();
+    QImage img = readImageFd(fd);
 
     if (img.isNull())
     {
-        qWarning() << "Could not read picture data.";
-        emit photoPickFailed(tr("Could not read picture data."));
+        emit photoPickFailed(tr("Could not read image file."));
         return;
     }
 

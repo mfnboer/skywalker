@@ -131,9 +131,7 @@ public class SkywalkerActivity extends QtActivity {
         String uriString = uri.toString();
         Log.d(LOGTAG, "Shared image: " + uriString);
         Log.d(LOGTAG, "Extra text  : " + text);
-        String fileName = FileUtils.resolveContentUriToFile(uriString);
-
-        emitSharedImageReceived(fileName, text);
+        emitSharedImageReceived(uriString, text);
     }
 
     // Avoid the app to close when the user presses the back button.

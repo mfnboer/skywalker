@@ -154,7 +154,7 @@ signals:
     void getPostThreadInProgressChanged();
     void inviteCodes(InviteCodeList);
     void sharedTextReceived(QString text); // Shared from another app
-    void sharedImageReceived(QString fileName, QString text); // Shared from another app
+    void sharedImageReceived(QString source, QString text); // Shared from another app
     void bskyClientDeleted();
 
 private:
@@ -177,7 +177,7 @@ private:
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
-    void shareImage(const QString& fileName, const QString& text);
+    void shareImage(const QString& contentUri, const QString& text);
     void disableDebugLogging();
     void restoreDebugLogging();
 

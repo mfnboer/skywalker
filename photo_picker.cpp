@@ -5,6 +5,7 @@
 #include <QtGlobal>
 #include <QBuffer>
 #include <QCoreApplication>
+#include <QFile>
 #include <QImage>
 #include <QImageReader>
 
@@ -64,6 +65,53 @@ bool checkReadMediaPermission()
 #endif
 }
 
+int openContentUri(const QString& contentUri)
+{
+#if defined(Q_OS_ANDROID)
+    QJniObject uri = QJniObject::fromString(contentUri);
+
+    int fd = QJniObject::callStaticMethod<int>(
+        "com/gmail/mfnboer/FileUtils",
+        "openContentUriString",
+        "(Ljava/lang/String;)I",
+        uri.object<jstring>());
+
+    return fd;
+#else
+    qWarning() << "Cannot handle content-URI:" << contentUri;
+    return -1;
+#endif
+}
+
+QImage readImageFd(int fd)
+{
+    if (fd < 0)
+    {
+        qWarning() << "Invalid file descriptor";
+        return {};
+    }
+
+    QFile file;
+
+    if (!file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle))
+    {
+        qWarning() << "Could not open file";
+        return {};
+    }
+
+    QImageReader reader(&file);
+    reader.setAutoTransform(true);
+    QImage img = reader.read();
+
+    if (img.isNull())
+    {
+        qWarning() << "Could not read image data.";
+        return {};
+    }
+
+    return img;
+}
+
 bool pickPhoto()
 {
 #ifdef Q_OS_ANDROID
@@ -84,8 +132,7 @@ QString resolveContentUriToFile(const QString &contentUriString) {
         "com/gmail/mfnboer/FileUtils",
         "resolveContentUriToFile",
         "(Ljava/lang/String;)Ljava/lang/String;",
-        uri.object<jstring>()
-        );
+        uri.object<jstring>());
 
     if (!result.isValid())
     {

@@ -50,4 +50,9 @@ public class FileUtils {
         int fd = fileDescriptor.detachFd();
         return fd;
     }
+
+    public static int openContentUriString(String uriString) {
+        Uri uri = Uri.parse(uriString);
+        return openContentUri(uri);
+    }
 }

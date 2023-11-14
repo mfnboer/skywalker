@@ -5,6 +5,7 @@
 #include "jni_callback.h"
 #include "photo_picker.h"
 #include "post_utils.h"
+#include "shared_image_provider.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
 #include <QGuiApplication>
@@ -46,7 +47,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
             [this](const QString& text){ emit sharedTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
-            [this](const QString& fileName, const QString& text){ shareImage(fileName, text); });
+            [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
 }
 
 Skywalker::~Skywalker()
@@ -1393,12 +1394,26 @@ QDateTime Skywalker::getSyncTimestamp() const
     return mUserSettings.getSyncTimestamp(mUserDid);
 }
 
-void Skywalker::shareImage(const QString& fileName, const QString& text)
+void Skywalker::shareImage(const QString& contentUri, const QString& text)
 {
-    if (checkReadMediaPermission())
-        emit sharedImageReceived(fileName, text);
-    else
-        showStatusMessage("No permission to access images.", QEnums::STATUS_LEVEL_ERROR);
+    if (!checkReadMediaPermission())
+    {
+        showStatusMessage(tr("No permission to access images."), QEnums::STATUS_LEVEL_ERROR);
+        return;
+    }
+
+    int fd = openContentUri(contentUri);
+    QImage img = readImageFd(fd);
+
+    if (img.isNull())
+    {
+        showStatusMessage(tr("Could not read imgage file."), QEnums::STATUS_LEVEL_ERROR);
+        return;
+    }
+
+    auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+    const QString source = imgProvider->addImage(img);
+    emit sharedImageReceived(source, text);
 }
 
 void Skywalker::disableDebugLogging()
