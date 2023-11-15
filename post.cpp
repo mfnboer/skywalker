@@ -231,6 +231,7 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
 
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
+        Q_ASSERT(mFeedViewPost->mReply->mParent);
         if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
             const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
