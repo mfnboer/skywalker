@@ -13,9 +13,12 @@ BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& foll
 
 void BookmarksModel::clear()
 {
-    beginRemoveRows({}, 0, mFeed.size() - 1);
-    clearFeed();
-    endRemoveRows();
+    if (!mFeed.empty())
+    {
+        beginRemoveRows({}, 0, mFeed.size() - 1);
+        clearFeed();
+        endRemoveRows();
+    }
 
     qDebug() << "All bookmarks removed";
 }

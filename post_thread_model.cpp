@@ -42,10 +42,13 @@ int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& threa
 
 void PostThreadModel::clear()
 {
-    beginRemoveRows({}, 0, mFeed.size() - 1);
-    clearFeed();
-    mRawThread = nullptr;
-    endRemoveRows();
+    if (!mFeed.empty())
+    {
+        beginRemoveRows({}, 0, mFeed.size() - 1);
+        clearFeed();
+        mRawThread = nullptr;
+        endRemoveRows();
+    }
     qDebug() << "All posts removed";
 }
 

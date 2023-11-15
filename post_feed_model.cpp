@@ -185,12 +185,15 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
 
 void PostFeedModel::clear()
 {
-    beginRemoveRows({}, 0, mFeed.size() - 1);
-    clearFeed();
-    mIndexCursorMap.clear();
-    mIndexRawFeedMap.clear();
-    mGapIdIndexMap.clear();
-    endRemoveRows();
+    if (!mFeed.empty())
+    {
+        beginRemoveRows({}, 0, mFeed.size() - 1);
+        clearFeed();
+        mIndexCursorMap.clear();
+        mIndexRawFeedMap.clear();
+        mGapIdIndexMap.clear();
+        endRemoveRows();
+    }
 
     qDebug() << "All posts removed";
 }

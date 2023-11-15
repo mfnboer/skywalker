@@ -34,9 +34,12 @@ void NotificationListModel::clearLocalState()
 
 void NotificationListModel::clearRows()
 {
-    beginRemoveRows({}, 0, mList.size() - 1);
-    mList.clear();
-    endRemoveRows();
+    if (!mList.empty())
+    {
+        beginRemoveRows({}, 0, mList.size() - 1);
+        mList.clear();
+        endRemoveRows();
+    }
 }
 
 void NotificationListModel::addInviteCodeUsageNotificationRows()

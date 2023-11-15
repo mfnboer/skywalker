@@ -43,10 +43,13 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
 
 void AuthorListModel::clear()
 {
-    beginRemoveRows({}, 0, mList.size() - 1);
-    mList.clear();
-    clearLocalChanges();
-    endRemoveRows();
+    if (!mList.empty())
+    {
+        beginRemoveRows({}, 0, mList.size() - 1);
+        mList.clear();
+        clearLocalChanges();
+        endRemoveRows();
+    }
 
     mCursor.clear();
 }

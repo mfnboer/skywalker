@@ -25,9 +25,12 @@ void ContentGroupListModel::initContentGroups()
 
 void ContentGroupListModel::clear()
 {
-    beginRemoveRows({}, 0, mContentGroupList.size() - 1);
-    mContentGroupList.clear();
-    endRemoveRows();
+    if (!mContentGroupList.empty())
+    {
+        beginRemoveRows({}, 0, mContentGroupList.size() - 1);
+        mContentGroupList.clear();
+        endRemoveRows();
+    }
 }
 
 int ContentGroupListModel::rowCount(const QModelIndex&) const

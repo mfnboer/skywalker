@@ -14,10 +14,13 @@ AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& user
 
 void AuthorFeedModel::clear()
 {
-    beginRemoveRows({}, 0, mFeed.size() - 1);
-    clearFeed();
-    mRawFeed.clear();
-    endRemoveRows();
+    if (!mFeed.empty())
+    {
+        beginRemoveRows({}, 0, mFeed.size() - 1);
+        clearFeed();
+        mRawFeed.clear();
+        endRemoveRows();
+    }
 
     mCursorNextPage.clear();
     qDebug() << "All posts removed";

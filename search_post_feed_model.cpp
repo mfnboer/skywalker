@@ -13,10 +13,13 @@ SearchPostFeedModel::SearchPostFeedModel(const QString& userDid, const IProfileS
 
 void SearchPostFeedModel::clear()
 {
-    beginRemoveRows({}, 0, mFeed.size() - 1);
-    clearFeed();
-    mRawFeed.clear();
-    endRemoveRows();
+    if (!mFeed.empty())
+    {
+        beginRemoveRows({}, 0, mFeed.size() - 1);
+        clearFeed();
+        mRawFeed.clear();
+        endRemoveRows();
+    }
 
     mCursorNextPage.clear();
     qDebug() << "All posts removed";
