@@ -1,3 +1,10 @@
+0.1.2
+=====
+* Resend XRPC request on ContentReSend error.
+* No post indication in empty timeline.
+* Share external content as reply in post thread view.
+* Share external content with mention in author view.
+
 0.1.1-beta
 ==========
 * Fix image posting on Android 13
