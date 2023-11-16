@@ -48,7 +48,7 @@ ListView {
         id: guiSettings
     }
 
-    function reply() {
+    function reply(initialText = "", imageSource = "") {
         const postUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostUri)
         const postCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostCid)
         const postText = model.getData(postEntryIndex, AbstractPostFeedModel.PostText)
@@ -58,7 +58,8 @@ ListView {
         const postReplyRootCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootCid)
 
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                          author, postReplyRootUri, postReplyRootCid)
+                          author, postReplyRootUri, postReplyRootCid,
+                          initialText, imageSource)
     }
 
     Component.onCompleted: {

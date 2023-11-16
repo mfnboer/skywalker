@@ -73,8 +73,8 @@ Page {
         PostButton {
             x: parent.width - width - 10
             y: -height - 10
-            initialText: (isUser(author) || author.hasInvalidHandle()) ? "" : `@${author.handle} `
             svg: (isUser(author) || author.hasInvalidHandle()) ? svgOutline.chat : svgOutline.atSign
+            overrideOnClicked: () => mentionPost()
         }
     }
 
@@ -396,6 +396,11 @@ Page {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function mentionPost(text = "", imgSource = "") {
+        const mentionText = (isUser(author) || author.hasInvalidHandle()) ? "" : `@${author.handle} `
+        root.composePost(mentionText + text, imgSource)
     }
 
     function getFeed() {

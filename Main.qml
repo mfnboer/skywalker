@@ -163,14 +163,29 @@ ApplicationWindow {
             viewAuthor(profile, modelId)
         }
 
-        onSharedTextReceived: (text) => { composePost(text) }
+        onSharedTextReceived: (text) => {
+            let item = currentStackItem()
+
+            if (item instanceof ComposePost)
+                item.addSharedText(text)
+            else if (item instanceof PostThreadView)
+                item.reply(text)
+            else if (item instanceof AuthorView)
+                item.mentionPost(text)
+            else
+                composePost(text)
+        }
 
         // "file://" or "image://" source
         onSharedImageReceived: (source, text) => {
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
-                item.addSharedPhoto(source)
+                item.addSharedPhoto(source, text)
+            else if (item instanceof PostThreadView)
+                item.reply(text, source)
+            else if (item instanceof AuthorView)
+                item.mentionPost(text, source)
             else
                 composePost(text, source)
         }
@@ -613,7 +628,7 @@ ApplicationWindow {
         skywalker.signOut()
     }
 
-    function composePost(initialText, imageSource = "") {
+    function composePost(initialText = "", imageSource = "") {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
@@ -625,11 +640,13 @@ ApplicationWindow {
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid)
+                          replyRootUri, replyRootCid, initialText = "", imageSource = "")
     {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                initialText: initialText,
+                initialImage: imageSource,
                 replyToPostUri: replyToUri,
                 replyToPostCid: replyToCid,
                 replyRootPostUri: replyRootUri,

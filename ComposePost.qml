@@ -546,7 +546,12 @@ Page {
         scrollBar.position = 1.0 - scrollBar.size
     }
 
-    function addSharedPhoto(source) {
+    function addSharedText(text) {
+        if (text)
+            postText.append(text)
+    }
+
+    function addSharedPhoto(source, text) {
         if (page.images.length >= page.maxImages) {
             statusPopup.show(qsTr(`Post already has ${page.maxImages} images attached.`), QEnums.STATUS_LEVEL_INFO, 30)
             postUtils.dropPhoto(source)
@@ -554,6 +559,7 @@ Page {
         }
 
         photoPicked(source)
+        addSharedText(text)
     }
 
     function removeImage(index) {

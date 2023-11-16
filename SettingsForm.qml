@@ -64,6 +64,7 @@ Page {
             Text {
                 id: mailText
                 color: guiSettings.textColor
+                elide: Text.ElideRight
                 text: userPrefs.email
             }
             SvgImage {
@@ -94,6 +95,7 @@ Page {
         Text {
             Layout.fillWidth: true
             color: guiSettings.textColor
+            elide: Text.ElideRight
             text: userPrefs.pds
         }
     }

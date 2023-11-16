@@ -3,7 +3,6 @@ import QtQuick.Controls
 import skywalker
 
 SvgButton {
-    property string initialText
     property var overrideOnClicked
 
     width: 70
@@ -17,6 +16,6 @@ SvgButton {
         if (overrideOnClicked)
             overrideOnClicked()
         else
-            root.composePost(initialText)
+            root.composePost()
     }
 }
