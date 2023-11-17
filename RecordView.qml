@@ -52,25 +52,25 @@ Item {
 
         Text {
             width: parent.width
-            color: Material.foreground
+            color: guiSettings.textColor
             text: qsTr("NOT FOUND")
             visible: record.notFound
         }
         Text {
             width: parent.width
-            color: Material.foreground
+            color: guiSettings.textColor
             text: qsTr("BLOCKED")
             visible: record.blocked
         }
         Text {
             width: parent.width
-            color: Material.foreground
+            color: guiSettings.textColor
             text: qsTr("NOT SUPPORTED")
             visible: record.notSupported
         }
         Text {
             width: parent.width
-            color: Material.color(Material.Grey)
+            color: guiSettings.textColor
             wrapMode: Text.Wrap
             maximumLineCount: 2
             elide: Text.ElideRight

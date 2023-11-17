@@ -359,6 +359,7 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
+            color: guiSettings.textColor
             text: qsTr("NOT FOUND")
             visible: postNotFound
         }
@@ -370,6 +371,7 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
+            color: guiSettings.textColor
             text: qsTr("BLOCKED")
             visible: postBlocked
         }
@@ -381,6 +383,7 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
+            color: guiSettings.textColor
             text: qsTr("NOT SUPPORTED")
             visible: postNotSupported
         }
@@ -405,6 +408,7 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
+            color: guiSettings.textColor
             text: qsTr("DELETED")
             visible: postLocallyDeleted
         }

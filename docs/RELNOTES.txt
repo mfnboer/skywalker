@@ -1,7 +1,7 @@
-0.1.2
-=====
+0.1.2-beta
+==========
 * Resend XRPC request on ContentReSend error.
-* No post indication in empty timeline.
+* Show no-post indication in empty timeline.
 * Share external content as reply in post thread view.
 * Share external content with mention in author view.
 

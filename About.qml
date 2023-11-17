@@ -48,15 +48,30 @@ Page {
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
             width: height
-            height: Math.min(parent.height - title.height - version.height - author.height - handle.height - okButton.height, parent.width)
+            height: Math.min(parent.height - title.height - version.height - author.height - handle.height - warranty.height - okButton.height - whitespace.height, parent.width)
             fillMode: Image.PreserveAspectFit
             source: "images/skywalker.png"
+        }
+        Text {
+            id: warranty
+            width: parent.width
+            padding: 10
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            color: "white"
+            text: qsTr("Skywalker comes with ABSOLUTELY NO WARRANTY.")
         }
         SkyButton {
             id: okButton
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("OK")
             onClicked: closed()
+        }
+        Rectangle {
+            id: whitespace
+            width: 10
+            height: 10
+            color: "transparent"
         }
     }
 
