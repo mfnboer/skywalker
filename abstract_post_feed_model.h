@@ -51,6 +51,7 @@ public:
         PostRepostUri,
         PostLikeUri,
         PostBookmarked,
+        PostBookmarkNotFound,
         PostLabels,
         PostContentVisibility,
         PostContentWarning,

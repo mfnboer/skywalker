@@ -91,6 +91,9 @@ public:
 
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
 
+    bool isBookmarkNotFound() const { return mBookmarkNotFound; }
+    void setBookmarkNotFound(bool notFound) { mBookmarkNotFound = notFound; }
+
 private:
     struct HyperLink
     {
@@ -129,6 +132,9 @@ private:
     bool mNotFound = false;
     bool mNotSupported = false;
     QString mUnsupportedType;
+
+    // Placeholder for a bookmarked post that cannot be found (probably deleted).
+    bool mBookmarkNotFound = false;
 
     static int sNextGapId;
 };

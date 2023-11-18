@@ -2,10 +2,9 @@
 // License: GPLv3
 #include "profile.h"
 #include "content_filter.h"
+#include "definitions.h"
 
 namespace Skywalker {
-
-constexpr char const* INVALID_HANDLE = "handle.invalid";
 
 ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState) :
     mValid(true),

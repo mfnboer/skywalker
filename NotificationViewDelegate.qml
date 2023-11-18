@@ -178,6 +178,7 @@ Rectangle {
                 visible: !notificationPostNotFound
                 authorIsUser: false
                 isBookmarked: notificationPostBookmarked
+                bookmarkNotFound: false
 
                 onReply: {
                     root.composeReply(notificationPostUri, notificationCid, notificationPostText,

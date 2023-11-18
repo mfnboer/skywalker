@@ -37,6 +37,7 @@ Rectangle {
     required property string postRepostUri
     required property string postLikeUri
     required property bool postBookmarked
+    required property bool postBookmarkNotFound
     required property list<string> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -200,7 +201,7 @@ Rectangle {
             Avatar {
                 id: avatarImg
                 x: avatar.x + 8
-                y: postHeader.y + 5 // For some reaon "avatar.y + 5" does not work when it is a repost
+                y: postHeader.y + 5 // For some reason "avatar.y + 5" does not work when it is a repost
                 width: parent.width - 13
                 avatarUrl: author.avatarUrl
                 visible: !postIsPlaceHolder && !postLocallyDeleted
@@ -296,6 +297,7 @@ Rectangle {
                 likeUri: postLikeUri
                 authorIsUser: isUser(author)
                 isBookmarked: postBookmarked
+                bookmarkNotFound: postBookmarkNotFound
 
                 onReply: {
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
@@ -477,7 +479,7 @@ Rectangle {
     MouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
-        enabled: !((postThreadType & QEnums.THREAD_ENTRY))
+        enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound
         onClicked: {
             console.debug("POST CLICKED:", postUri)
             if (postUri)

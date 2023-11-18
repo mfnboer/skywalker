@@ -10,6 +10,7 @@ Row {
     required property string likeUri
     required property bool authorIsUser
     required property bool isBookmarked
+    required property bool bookmarkNotFound
 
     signal reply()
     signal repost()
@@ -24,6 +25,7 @@ Row {
         iconColor: guiSettings.statsColor
         svg: svgOutline.reply
         statistic: replyCount
+        visible: !bookmarkNotFound
         onClicked: reply()
     }
     StatIcon {
@@ -31,6 +33,7 @@ Row {
         iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: svgOutline.repost
         statistic: repostCount
+        visible: !bookmarkNotFound
         onClicked: repost()
     }
     StatIcon {
@@ -38,6 +41,7 @@ Row {
         iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: likeUri ? svgFilled.like : svgOutline.like
         statistic: likeCount
+        visible: !bookmarkNotFound
         onClicked: like()
     }
     StatIcon {
@@ -50,6 +54,7 @@ Row {
         width: parent.width / 5
         iconColor: guiSettings.statsColor
         svg: svgOutline.moreVert
+        visible: !bookmarkNotFound
         onClicked: moreMenu.open()
 
         Menu {
