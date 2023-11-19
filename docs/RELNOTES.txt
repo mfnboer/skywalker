@@ -1,3 +1,7 @@
+next
+====
+* Bug fix for bookmarked post that has been deleted.
+
 0.1.2-beta
 ==========
 * Resend XRPC request on ContentReSend error.

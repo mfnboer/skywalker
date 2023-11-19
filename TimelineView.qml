@@ -73,8 +73,8 @@ ListView {
         if (!inSync)
             return
 
-        let firstVisibleIndex = indexAt(0, contentY)
-        let lastVisibleIndex = indexAt(0, contentY + height - 1)
+        let firstVisibleIndex = getFirstVisibleIndex()
+        let lastVisibleIndex = getLastVisibleIndex()
         console.debug("COUNT CHANGED First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count)
         // Adding/removing content changes the indices.
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
@@ -85,8 +85,8 @@ ListView {
         if (!inSync)
             return
 
-        let firstVisibleIndex = indexAt(0, contentY)
-        let lastVisibleIndex = indexAt(0, contentY + height - 1)
+        let firstVisibleIndex = getFirstVisibleIndex()
+        let lastVisibleIndex = getLastVisibleIndex()
         console.info("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count, "AtBegin:", atYBeginning)
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
@@ -130,6 +130,24 @@ ListView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function getFirstVisibleIndex() {
+        let firstVisibleIndex = indexAt(0, contentY)
+
+        if (firstVisibleIndex < 0 && count > 0)
+            return 0
+
+        return firstVisibleIndex
+    }
+
+    function getLastVisibleIndex() {
+        let lastVisibleIndex = indexAt(0, contentY + height - 1)
+
+        if (lastVisibleIndex < 0 && count > 0)
+            return count
+
+        return lastVisibleIndex
     }
 
     function updateUnreadPosts(firstIndex) {
