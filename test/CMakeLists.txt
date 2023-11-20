@@ -22,6 +22,7 @@ endif()
 qt_add_executable(test_skywalker
     main.cpp
     test_search_utils.h
+    test_post_feed_model.h
 )
 
 target_link_libraries(test_skywalker
