@@ -16,6 +16,7 @@ add_compile_definitions(APP_VERSION="${APP_VERSION}")
 
 add_subdirectory(atproto/lib)
 add_subdirectory(src)
+add_subdirectory(test)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
@@ -39,10 +40,11 @@ qt_add_qml_module(appskywalker
     NO_RESOURCE_TARGET_PATH
     RESOURCES
         qtquickcontrols2.conf
+        fonts/NotoSansMath-Regular.ttf
+        images/skywalker.png
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java
-        fonts/NotoSansMath-Regular.ttf
         android/src/com/gmail/mfnboer/ShareUtils.java
         android/src/com/gmail/mfnboer/PasswordStorageHelper.java
         android/src/com/gmail/mfnboer/SkywalkerActivity.java

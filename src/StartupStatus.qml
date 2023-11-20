@@ -41,7 +41,7 @@ Page {
             width: height
             height: Math.min(parent.height - title.height - status.height, parent.width)
             fillMode: Image.PreserveAspectFit
-            source: "images/skywalker.png"
+            source: "/images/skywalker.png"
         }
     }
 

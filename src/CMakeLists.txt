@@ -120,7 +120,6 @@ qt_add_qml_module(libskywalker
         Message.qml
         PostButton.qml
     RESOURCES
-        ../images/skywalker.png
         QML_FILES ContentLabels.qml
         QML_FILES ReplyToRow.qml
         SOURCES content_filter.h

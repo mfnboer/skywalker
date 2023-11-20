@@ -14,9 +14,9 @@
 #include "post_thread_model.h"
 #include "profile_store.h"
 #include "search_post_feed_model.h"
-#include "user_preferences.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
+#include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <QTimer>
 #include <QtQmlIntegration>

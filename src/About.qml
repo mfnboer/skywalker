@@ -50,7 +50,7 @@ Page {
             width: height
             height: Math.min(parent.height - title.height - version.height - author.height - handle.height - warranty.height - okButton.height - whitespace.height, parent.width)
             fillMode: Image.PreserveAspectFit
-            source: "images/skywalker.png"
+            source: "/images/skywalker.png"
         }
         Text {
             id: warranty
