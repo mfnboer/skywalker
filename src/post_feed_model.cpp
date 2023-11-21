@@ -130,20 +130,32 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
 
     if (!overlapStart)
     {
-        page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
-        const int gapId = page->mFeed.back().getGapId();
+        int gapId = 0;
+
+        if (!page->mOverlapsWithFeed)
+        {
+            page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
+            gapId = page->mFeed.back().getGapId();
+        }
 
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
+
         beginInsertRows({}, insertIndex, lastInsertIndex);
         insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size());
         addToIndices(page->mFeed.size(), insertIndex);
-        mGapIdIndexMap[gapId] = lastInsertIndex;
 
-        // The -1 offset on lastInsertIndex is for the place holder post.
+        size_t indexOffset = 0;
+
+        if (gapId != 0)
+        {
+            mGapIdIndexMap[gapId] = lastInsertIndex;
+            indexOffset = 1; // offset for the place holder post.
+        }
+
         if (!page->mCursorNextPage.isEmpty())
-            mIndexCursorMap[lastInsertIndex - 1] = page->mCursorNextPage;
+            mIndexCursorMap[lastInsertIndex - indexOffset] = page->mCursorNextPage;
 
-        mIndexRawFeedMap[lastInsertIndex - 1] = std::move(page->mRawFeed);
+        mIndexRawFeedMap[lastInsertIndex - indexOffset] = std::move(page->mRawFeed);
         endInsertRows();
 
         qDebug() << "Full feed inserted, new size:" << mFeed.size();
@@ -173,7 +185,8 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
         firstUnusedRawIndex = std::max(firstUnusedRawIndex, page->mFeed[i].getRawIndex());
 
     Q_ASSERT(firstUnusedRawIndex >= 0);
-    page->mRawFeed.erase(page->mRawFeed.begin() + firstUnusedRawIndex, page->mRawFeed.end());
+    Q_ASSERT(firstUnusedRawIndex < (int)page->mRawFeed.size());
+    page->mRawFeed.erase(page->mRawFeed.begin() + firstUnusedRawIndex + 1, page->mRawFeed.end());
 
     mIndexRawFeedMap[insertIndex + *overlapStart - 1] = std::move(page->mRawFeed);
     endInsertRows();
@@ -506,8 +519,14 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             Post post(feedEntry.get(), i);
 
             // Due to reposting a post can show up multiple times in the feed.
+            // Also overlapping pages can come in as we look for new posts.
             if (cidIsStored(post.getCid()))
+            {
+                if (!post.isRepost())
+                    page->mOverlapsWithFeed = true;
+
                 continue;
+            }
 
             if (feedViewPref.mHideReposts && post.isRepost())
                 continue;

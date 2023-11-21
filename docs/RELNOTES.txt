@@ -1,6 +1,7 @@
 next
 ====
 * Bug fix for bookmarked post that has been deleted.
+* Bug fix in timeline assembly (potential crash)
 
 0.1.2-beta
 ==========

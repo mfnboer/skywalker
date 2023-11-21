@@ -14,6 +14,9 @@ if (NOT ANDROID)
     add_compile_options(-fsanitize=address)
     add_compile_options(-fno-omit-frame-pointer)
     add_link_options(-fsanitize=address)
+
+    add_compile_options(-fprofile-arcs -ftest-coverage)
+    add_link_options(-fprofile-arcs -ftest-coverage)
 endif()
 
 include_directories(..)
@@ -178,11 +181,16 @@ qt_add_qml_module(libskywalker
         SOURCES definitions.h
 )
 
+if (NOT ANDROID)
+    set(COVERAGE_LIB -lgcov)
+endif()
+
 target_link_libraries(libskywalker
     PRIVATE libatproto
     PRIVATE Qt6::Core
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
+    ${COVERAGE_LIB}
 )
 
 target_include_directories(libskywalker INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ..)

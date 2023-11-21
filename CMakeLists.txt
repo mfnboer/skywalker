@@ -16,7 +16,10 @@ add_compile_definitions(APP_VERSION="${APP_VERSION}")
 
 add_subdirectory(atproto/lib)
 add_subdirectory(src)
-add_subdirectory(test)
+
+if (NOT ANDROID)
+    add_subdirectory(test)
+endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)

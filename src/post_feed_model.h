@@ -67,6 +67,7 @@ private:
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
+        bool mOverlapsWithFeed = false;
 
         void addPost(const Post& post, bool isParent = false);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }

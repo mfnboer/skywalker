@@ -5,53 +5,97 @@
 #include <QTest>
 
 using namespace Skywalker;
+using namespace std::chrono_literals;
 
 class TestPostFeedModel : public QObject
 {
     Q_OBJECT
 private slots:
+    void init()
+    {
+        mPostFeedModel = std::make_unique<PostFeedModel>(mUserDid, mFollowing, mContentFilter, mBookmarks, mUserPreferences);
+    }
+
+    void cleanup()
+    {
+        mPostFeedModel = nullptr;
+        mNextPostId = 1;
+    }
+
     void setFeed()
     {
-        int newTopIndex = mPostFeedModel.setFeed(getFeed(1, TEST_DATE));
+        int newTopIndex = mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
         QCOMPARE(newTopIndex, -1);
-        QCOMPARE(mPostFeedModel.rowCount(), 1);
-        QVERIFY(mPostFeedModel.getLastCursor().isEmpty());
-        QCOMPARE(mPostFeedModel.lastTimestamp(), TEST_DATE);
+        QCOMPARE(mPostFeedModel->rowCount(), 1);
+        QVERIFY(mPostFeedModel->getLastCursor().isEmpty());
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE);
     }
 
     void clearFeed()
     {
-        mPostFeedModel.setFeed(getFeed(1, TEST_DATE));
-        QCOMPARE(mPostFeedModel.rowCount(), 1);
-        mPostFeedModel.clear();
-        QCOMPARE(mPostFeedModel.rowCount(), 0);
+        mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
+        QCOMPARE(mPostFeedModel->rowCount(), 1);
+        mPostFeedModel->clear();
+        QCOMPARE(mPostFeedModel->rowCount(), 0);
     }
 
     void refreshFeedWithSame()
     {
-        int newTopIndex = mPostFeedModel.setFeed(getFeed(1, TEST_DATE));
+        int newTopIndex = mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
         QCOMPARE(newTopIndex, -1);
-        QCOMPARE(mPostFeedModel.rowCount(), 1);
-        newTopIndex = mPostFeedModel.setFeed(getFeed(1, TEST_DATE));
+        QCOMPARE(mPostFeedModel->rowCount(), 1);
+
+        mNextPostId = 1;
+        newTopIndex = mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
         QCOMPARE(newTopIndex, 0);
-        QCOMPARE(mPostFeedModel.rowCount(), 1);
+        QCOMPARE(mPostFeedModel->rowCount(), 1);
     }
 
     void addToEmptyFeed()
     {
-        mPostFeedModel.addFeed(getFeed(1, TEST_DATE));
-        QCOMPARE(mPostFeedModel.rowCount(), 1);
-        QVERIFY(mPostFeedModel.getLastCursor().isEmpty());
-        QCOMPARE(mPostFeedModel.lastTimestamp(), TEST_DATE);
+        mPostFeedModel->addFeed(getFeed(1, TEST_DATE));
+        QCOMPARE(mPostFeedModel->rowCount(), 1);
+        QVERIFY(mPostFeedModel->getLastCursor().isEmpty());
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE);
     }
 
     void prependToEmptyFeed()
     {
-        int gapId = mPostFeedModel.prependFeed(getFeed(1, TEST_DATE));
+        int gapId = mPostFeedModel->prependFeed(getFeed(1, TEST_DATE));
         QCOMPARE(gapId, 0);
-        QCOMPARE(mPostFeedModel.rowCount(), 1);
-        QVERIFY(mPostFeedModel.getLastCursor().isEmpty());
-        QCOMPARE(mPostFeedModel.lastTimestamp(), TEST_DATE);
+        QCOMPARE(mPostFeedModel->rowCount(), 1);
+        QVERIFY(mPostFeedModel->getLastCursor().isEmpty());
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE);
+    }
+
+    void addMultipleFeeds()
+    {
+        mPostFeedModel->addFeed(getFeed(5, TEST_DATE, "CUR1"));
+        QCOMPARE(mPostFeedModel->rowCount(), 5);
+        QCOMPARE(mPostFeedModel->getLastCursor(), "CUR1");
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 4s);
+
+        mPostFeedModel->addFeed(getFeed(5, TEST_DATE - 1h, "CUR2"));
+        QCOMPARE(mPostFeedModel->rowCount(), 10);
+        QCOMPARE(mPostFeedModel->getLastCursor(), "CUR2");
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 1h - 4s);
+
+        mPostFeedModel->addFeed(getFeed(5, TEST_DATE - 2h));
+        QCOMPARE(mPostFeedModel->rowCount(), 15);
+        QVERIFY(mPostFeedModel->getLastCursor().isEmpty());
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 2h - 4s);
+    }
+
+    void prependWithOverlap()
+    {
+        mNextPostId = 2;
+        mPostFeedModel->addFeed(getFeed(5, TEST_DATE, "CUR1"));
+
+        mNextPostId = 1;
+        mPostFeedModel->prependFeed(getFeed(5, TEST_DATE + 1s, "CUR2"));
+        QCOMPARE(mPostFeedModel->rowCount(), 6);
+        QCOMPARE(mPostFeedModel->getLastCursor(), "CUR1");
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 4s);
     }
 
 private:
@@ -74,15 +118,14 @@ private:
 
     const QDateTime TEST_DATE = QDateTime::fromString("2023-11-20T18:46:00.000Z", Qt::ISODateWithMs);
 
-    ATProto::AppBskyFeed::OutputFeed::Ptr getFeed(int numPosts, QDateTime startTime)
+    ATProto::AppBskyFeed::OutputFeed::Ptr getFeed(int numPosts, QDateTime startTime, const std::optional<QString>& cursor = {})
     {
-        using namespace std::chrono_literals;
         QString feedData = R"###({ "feed": [)###";
 
         for (int i = 1; i <= numPosts; ++i)
         {
-            auto postTime = startTime + (i-1) * 1s;
-            QString postData = QString(POST_TEMPLATE).arg(QString::number(i),
+            auto postTime = startTime - (i-1) * 1s;
+            QString postData = QString(POST_TEMPLATE).arg(QString::number(mNextPostId++),
                                                           postTime.toString(Qt::ISODateWithMs));
             feedData += postData;
 
@@ -92,18 +135,20 @@ private:
 
         feedData += "]}";
 
-        return getFeed(feedData.toUtf8());
+        return getFeed(feedData.toUtf8(), cursor);
     }
 
-    ATProto::AppBskyFeed::OutputFeed::Ptr getFeed(const char* data)
+    ATProto::AppBskyFeed::OutputFeed::Ptr getFeed(const char* data, const std::optional<QString>& cursor)
     {
         QJsonParseError error;
         auto json = QJsonDocument::fromJson(data, &error);
 
         if (error.error != QJsonParseError::NoError)
-            qWarning() << "Failed to parse json:" << error.errorString() << "offset:" << error.offset;
+            qFatal() << "Failed to parse json:" << error.errorString() << "offset:" << error.offset;
 
-        return ATProto::AppBskyFeed::OutputFeed::fromJson(json);
+        auto feed = ATProto::AppBskyFeed::OutputFeed::fromJson(json);
+        feed->mCursor = cursor;
+        return feed;
     }
 
     QString mUserDid;
@@ -111,7 +156,8 @@ private:
     ATProto::UserPreferences mUserPreferences;
     ContentFilter mContentFilter{mUserPreferences};
     Bookmarks mBookmarks;
-    PostFeedModel mPostFeedModel{mUserDid, mFollowing, mContentFilter, mBookmarks, mUserPreferences};
+    PostFeedModel::Ptr mPostFeedModel;
+    int mNextPostId = 1;
 };
 
 QTEST_MAIN(TestPostFeedModel)
