@@ -46,3 +46,5 @@ private slots:
         QCOMPARE(SearchUtils::getWords(input), output);
     }
 };
+
+QTEST_MAIN(TestSearchUtils)

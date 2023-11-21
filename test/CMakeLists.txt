@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(test_atproto LANGUAGES CXX)
+project(test_skywalker LANGUAGES CXX)
 
 enable_testing()
 
@@ -19,13 +19,10 @@ if (NOT ANDROID)
     add_link_options(-fsanitize=address)
 endif()
 
-qt_add_executable(test_skywalker
-    main.cpp
-    test_search_utils.h
-    test_post_feed_model.h
-)
+qt_add_executable(test_search_utils test_search_utils.h)
+qt_add_executable(test_post_feed_model test_post_feed_model.h)
 
-target_link_libraries(test_skywalker
+set(LINK_LIBS
     PRIVATE libskywalker
     PRIVATE Qt6::Test
     PRIVATE Qt6::Core
@@ -33,3 +30,5 @@ target_link_libraries(test_skywalker
     PRIVATE Qt6::QuickControls2
 )
 
+target_link_libraries(test_search_utils ${LINK_LIBS})
+target_link_libraries(test_post_feed_model ${LINK_LIBS})
