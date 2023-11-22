@@ -362,7 +362,7 @@ const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
 
     if (it == mGapIdIndexMap.end())
     {
-        qWarning() << "Gap does not exist:" << gapId;
+        qDebug() << "Gap does not exist:" << gapId;
         return nullptr;
     }
 
@@ -682,7 +682,7 @@ std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t f
 
         if (timestampFirstStoredPost > post.getTimelineTimestamp())
         {
-            qDebug() << "Overlap on timestamp found:" << i << timestampFirstStoredPost << post.getTimelineTimestamp();
+            qDebug() << "Overlap start on timestamp found:" << i << timestampFirstStoredPost << post.getTimelineTimestamp();
             return i;
         }
     }
@@ -712,9 +712,9 @@ std::optional<size_t> PostFeedModel::findOverlapEnd(const Page& page, size_t fee
             return i;
         }
 
-        if (timestampLastPagePost > post.getTimelineTimestamp())
+        if (timestampLastPagePost >= post.getTimelineTimestamp())
         {
-            qDebug() << "Overlap on timestamp found:" << i << timestampLastPagePost << post.getTimelineTimestamp();
+            qDebug() << "Overlap end on timestamp found:" << i << timestampLastPagePost << post.getTimelineTimestamp();
             return i;
         }
     }
