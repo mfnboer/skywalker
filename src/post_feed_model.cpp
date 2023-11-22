@@ -648,8 +648,10 @@ std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t f
     QString cidFirstStoredPost;
     QDateTime timestampFirstStoredPost;
 
-    for (const auto& post : mFeed)
+    for (size_t i = feedIndex; i < mFeed.size(); ++i)
     {
+        const auto& post = mFeed[i];
+
         if (post.isPlaceHolder())
             continue;
 

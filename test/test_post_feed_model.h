@@ -29,6 +29,10 @@ private slots:
         QCOMPARE(mPostFeedModel->rowCount(), 1);
         QVERIFY(mPostFeedModel->getLastCursor().isEmpty());
         QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE);
+
+        const Post& post = mPostFeedModel->getPost(0);
+        QCOMPARE(post.getPostType(), QEnums::POST_STANDALONE);
+        QVERIFY(post.isEndOfFeed());
     }
 
     void clearFeed()
@@ -74,16 +78,22 @@ private slots:
         QCOMPARE(mPostFeedModel->rowCount(), 5);
         QCOMPARE(mPostFeedModel->getLastCursor(), "CUR1");
         QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 4s);
+        const Post* post = &mPostFeedModel->getPost(4);
+        QVERIFY(!post->isEndOfFeed());
 
         mPostFeedModel->addFeed(getFeed(5, TEST_DATE - 1h, "CUR2"));
         QCOMPARE(mPostFeedModel->rowCount(), 10);
         QCOMPARE(mPostFeedModel->getLastCursor(), "CUR2");
         QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 1h - 4s);
+        post = &mPostFeedModel->getPost(9);
+        QVERIFY(!post->isEndOfFeed());
 
         mPostFeedModel->addFeed(getFeed(5, TEST_DATE - 2h));
         QCOMPARE(mPostFeedModel->rowCount(), 15);
         QVERIFY(mPostFeedModel->getLastCursor().isEmpty());
         QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 2h - 4s);
+        post = &mPostFeedModel->getPost(14);
+        QVERIFY(post->isEndOfFeed());
     }
 
     void prependWithOverlap()
@@ -92,10 +102,44 @@ private slots:
         mPostFeedModel->addFeed(getFeed(5, TEST_DATE, "CUR1"));
 
         mNextPostId = 1;
-        mPostFeedModel->prependFeed(getFeed(5, TEST_DATE + 1s, "CUR2"));
+        int gapId = mPostFeedModel->prependFeed(getFeed(5, TEST_DATE + 1s, "CUR2"));
+        QCOMPARE(gapId, 0);
         QCOMPARE(mPostFeedModel->rowCount(), 6);
         QCOMPARE(mPostFeedModel->getLastCursor(), "CUR1");
         QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 4s);
+    }
+
+    void gapFill()
+    {
+        mNextPostId = 3;
+        mPostFeedModel->addFeed(getFeed(5, TEST_DATE, "CUR1"));
+
+        mNextPostId = 1;
+        int gapId = mPostFeedModel->prependFeed(getFeed(1, TEST_DATE + 2s, "CUR2"));
+        QCOMPARE_GT(gapId, 0);
+        QCOMPARE(mPostFeedModel->rowCount(), 7); // 6 posts + gap place holder
+        QCOMPARE(mPostFeedModel->getLastCursor(), "CUR1");
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 4s);
+
+        const Post& post = mPostFeedModel->getPost(1);
+        QVERIFY(post.isPlaceHolder());
+        QVERIFY(post.isGap());
+        QCOMPARE(post.getGapId(), gapId);
+        QCOMPARE(post.getGapCursor(), "CUR2");
+
+        mNextPostId = 2;
+        gapId = mPostFeedModel->gapFillFeed(getFeed(3, TEST_DATE + 1s, "CUR3"), gapId);
+        QCOMPARE(gapId, 0);
+        QCOMPARE(mPostFeedModel->rowCount(), 7); // 7 posts
+        QCOMPARE(mPostFeedModel->getLastCursor(), "CUR1");
+        QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE - 4s);
+
+        for (int i = 0; i < mPostFeedModel->rowCount(); ++i)
+        {
+            const Post& p = mPostFeedModel->getPost(i);
+            QVERIFY(!p.isPlaceHolder());
+            QVERIFY(!p.isGap());
+        }
     }
 
 private:
