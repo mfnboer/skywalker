@@ -206,16 +206,20 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
                 mUserFollows.add(BasicProfile(*profile));
 
             const auto& nextCursor = follows->mCursor;
+
             if (nextCursor->isEmpty())
             {
                 signalGetUserProfileOk(*follows->mSubject);
-                return;
             }
-
-            if (maxPages > 0)
+            else if (maxPages > 0)
+            {
                 getUserProfileAndFollowsNextPage(*nextCursor, maxPages - 1);
+            }
             else
+            {
                 qWarning() << "Max pages reached!";
+                signalGetUserProfileOk(*follows->mSubject);
+            }
         },
         [this](const QString& error){
             qWarning() << error;
