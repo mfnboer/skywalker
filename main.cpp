@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
         &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
 
-    const QUrl url(u"qrc:/src/Main.qml"_qs);
+    const QUrl url(u"qrc:/skywalker/Main.qml"_qs);
     engine.load(url);
 
     return app.exec();

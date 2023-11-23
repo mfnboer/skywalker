@@ -20,10 +20,11 @@ if (NOT ANDROID)
 endif()
 
 include_directories(..)
-qt_add_library(libskywalker)
+#qt_add_library(libskywalker)
 
 qt_add_qml_module(libskywalker
-    URI src
+    URI skywalker
+    IMPORT_PATH ..
     SOURCES
         skywalker.h
         skywalker.cpp

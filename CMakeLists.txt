@@ -15,7 +15,7 @@ qt_standard_project_setup()
 add_compile_definitions(APP_VERSION="${APP_VERSION}")
 
 add_subdirectory(atproto/lib)
-add_subdirectory(src)
+add_subdirectory(skywalker)
 
 if (NOT ANDROID)
     add_subdirectory(test)
@@ -38,7 +38,7 @@ qt_add_executable(appskywalker
 )
 
 qt_add_qml_module(appskywalker
-    URI skywalker
+    URI app
     VERSION ${PROJECT_VERSION}
     NO_RESOURCE_TARGET_PATH
     RESOURCES
