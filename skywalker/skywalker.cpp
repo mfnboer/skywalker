@@ -89,7 +89,7 @@ void Skywalker::resumeSession()
     if (!getSession(host, session))
     {
         qWarning() << "No saved session";
-        emit resumeSessionFailed();
+        emit resumeSessionFailed(tr("No saved session"));
         return;
     }
 
@@ -107,7 +107,7 @@ void Skywalker::resumeSession()
         },
         [this](const QString& error){
             qInfo() << "Session could not be resumed:" << error;
-            emit resumeSessionFailed();
+            emit resumeSessionFailed(error);
         });
 }
 

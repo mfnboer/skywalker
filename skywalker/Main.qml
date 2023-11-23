@@ -96,15 +96,18 @@ ApplicationWindow {
 
         onResumeSessionOk: start()
 
-        onResumeSessionFailed: {
+        onResumeSessionFailed: (error) => {
             closeStartupStatus()
-            loginActiveUser()
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            signOutCurrentUser()
+            signIn()
         }
 
         onSessionExpired: (error) => {
             closeStartupStatus()
-            timelineUpdateTimer.stop() // Could happen during a session
-            loginActiveUser()
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            signOutCurrentUser()
+            signIn()
         }
 
         onStatusMessage: (msg, level) => statusPopup.show(msg, level, level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)

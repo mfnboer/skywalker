@@ -132,7 +132,7 @@ signals:
     void loginOk();
     void loginFailed(QString error, QString host, QString handle);
     void resumeSessionOk();
-    void resumeSessionFailed();
+    void resumeSessionFailed(QString error);
     void timelineSyncOK(int index);
     void timelineSyncFailed();
     void timelineRefreshed(int prevTopPostIndex);
