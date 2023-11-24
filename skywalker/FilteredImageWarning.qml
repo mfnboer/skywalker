@@ -9,6 +9,7 @@ Row {
     property list<imageview> images
     property bool showWarnedMedia: false
     property imageview nullImage
+    property string imageUrl // Set instead of images list
 
     height: Math.max(imgIcon.height, contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnText.height : hideText.height)
     spacing: 10
@@ -31,7 +32,7 @@ Row {
         textFormat: Text.RichText
         color: Material.color(Material.Grey)
         text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
-              (images.length === 1 ? qsTr("Show picture") : qsTr("Show pictures")) + "</a>"
+              (images.length === 1 || imageUrl ? qsTr("Show picture") : qsTr("Show pictures")) + "</a>"
         visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
         onLinkActivated: showWarnedMedia = true
     }

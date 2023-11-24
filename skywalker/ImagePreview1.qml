@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 RoundedFrame {
-    required property int contentVisibility
+    required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property list<imageview> images
 

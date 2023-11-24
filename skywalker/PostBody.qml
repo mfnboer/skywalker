@@ -174,7 +174,9 @@ Column {
 
         if (postExternal) {
             let component = Qt.createComponent("ExternalView.qml")
-            component.createObject(postBody, {postExternal: postBody.postExternal})
+            component.createObject(postBody, {postExternal: postBody.postExternal,
+                                              contentVisibility: postContentVisibility,
+                                              contentWarning: postContentWarning})
         }
 
         if (postRecord) {

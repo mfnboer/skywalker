@@ -30,7 +30,9 @@ Item {
 
             if (record.external) {
                 let component = Qt.createComponent("ExternalView.qml")
-                component.createObject(recordColumn, {postExternal: record.external})
+                component.createObject(recordColumn, {postExternal: record.external,
+                                                      contentVisibility: recordItem.contentVisibility,
+                                                      contentWarning: recordItem.contentWarning})
             }
 
             let component = Qt.createComponent("RecordView.qml")
