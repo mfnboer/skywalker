@@ -2,6 +2,7 @@ next
 ====
 * Bug fix for bookmarked post that has been deleted.
 * Bug fix in timeline assembly (potential crash)
+* Bug fix for handling network errors during login.
 
 0.1.2-beta
 ==========
