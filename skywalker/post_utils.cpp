@@ -683,8 +683,10 @@ void PostUtils::getQuotePost(const QString& httpsUri)
 
 bool PostUtils::onlyEmojis(const QString& text)
 {
+    qDebug() << "EMOJI?" << text;
     for (const auto c : text.toUcs4())
     {
+        qDebug() << "Code point:" << c;
         if (!isEmoji(c))
             return false;
     }
@@ -695,8 +697,10 @@ bool PostUtils::onlyEmojis(const QString& text)
 bool PostUtils::isEmoji(uint c)
 {
     static const std::map<uint, uint> RANGES = {
-        {0x1F600, 0x1F64F},
+        {0x02700, 0x027BF},
+        {0x0FE0E, 0x0FE0F}, // variation selectors
         {0x1F300, 0x1F5FF},
+        {0x1F600, 0x1F64F},
         {0x1F680, 0x1F6C5},
         {0x1F700, 0x1FAFF}
     };
