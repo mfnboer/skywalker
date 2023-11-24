@@ -180,6 +180,7 @@ qt_add_qml_module(libskywalker
         SOURCES shared_image_provider.cpp
         QML_FILES FlickableRefresher.qml
         SOURCES definitions.h
+        QML_FILES ReportAuthor.qml
 )
 
 if (NOT ANDROID)

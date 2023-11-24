@@ -798,6 +798,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function reportAuthor(author) {
+        let component = Qt.createComponent("ReportAuthor.qml")
+        let form = component.createObject(root, { author: author })
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
     function getTimelineView() {
         return timelineStack.get(0)
     }

@@ -141,6 +141,11 @@ Page {
                                 visible: parent.enabled
                             }
                         }
+                        MenuItem {
+                            text: qsTr("Report account")
+                            enabled: !isUser(author)
+                            onTriggered: root.reportAuthor(author)
+                        }
                     }
                 }
                 SkyButton {
