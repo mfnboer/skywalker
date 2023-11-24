@@ -50,12 +50,12 @@ void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
             postAtUri.setAuthorityIsHandle(false);
             emit postLink(postAtUri.toString());
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qWarning() << error;
-            mSkywalker->statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qWarning() << error << " - " << msg;
+            mSkywalker->statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

@@ -14,7 +14,7 @@ GraphUtils::GraphUtils(QObject* parent) :
 
         connect(mSkywalker, &Skywalker::bskyClientDeleted, this,
                 [this]{
-                    qDebug() << "Reset post master";
+                    qDebug() << "Reset graph master";
                     mGraphMaster = nullptr;
                 });
     });
@@ -55,12 +55,12 @@ void GraphUtils::follow(const BasicProfile& profile)
 
             emit followOk(followingUri);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Follow failed:" << error;
-            emit followFailed(error);
+            qDebug() << "Follow failed:" << error << " - " << msg;
+            emit followFailed(msg);
         });
 }
 
@@ -83,12 +83,12 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
 
             emit unfollowOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Unfollow failed:" << error;
-            emit unfollowFailed(error);
+            qDebug() << "Unfollow failed:" << error << " - " << msg;
+            emit unfollowFailed(msg);
         });
 }
 
@@ -109,12 +109,12 @@ void GraphUtils::block(const QString& did)
 
             emit blockOk(blockingUri);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Block failed:" << error;
-            emit blockFailed(error);
+            qDebug() << "Block failed:" << error << " - " << msg;
+            emit blockFailed(msg);
         });
 }
 
@@ -135,12 +135,12 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
 
             emit unblockOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Unblock failed:" << error;
-            emit unblockFailed(error);
+            qDebug() << "Unblock failed:" << error << " - " << msg;
+            emit unblockFailed(msg);
         });
 }
 
@@ -154,12 +154,12 @@ void GraphUtils::mute(const QString& did)
             if (presence)
                 emit muteOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Mute failed failed:" << error;
-            emit muteFailed(error);
+            qDebug() << "Mute failed failed:" << error << " - " << msg;
+            emit muteFailed(msg);
         });
 }
 
@@ -173,12 +173,12 @@ void GraphUtils::unmute(const QString& did)
             if (presence)
                 emit unmuteOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Unmute failed failed:" << error;
-            emit unmuteFailed(error);
+            qDebug() << "Unmute failed failed:" << error << " - " << msg;
+            emit unmuteFailed(msg);
         });
 }
 

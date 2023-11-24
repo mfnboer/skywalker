@@ -96,9 +96,17 @@ ApplicationWindow {
 
         onResumeSessionOk: start()
 
+        onResumeSessionExpired: {
+            closeStartupStatus();
+            loginActiveUser();
+        }
+
         onResumeSessionFailed: (error) => {
             closeStartupStatus()
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+            if (error)
+                statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
             signOutCurrentUser()
             signIn()
         }

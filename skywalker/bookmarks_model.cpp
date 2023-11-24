@@ -64,14 +64,14 @@ void BookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto:
 
             getAuthorsDeletedPosts(postUris, bsky);
         },
-        [this, presence=getPresence()](const QString& error)
+        [this, presence=getPresence()](const QString& error, const QString& msg)
         {
             if (!presence)
                 return;
 
             setInProgress(false);
-            qWarning() << "Failed to get posts:" << error;
-            emit failure(error);
+            qWarning() << "Failed to get posts:" << error << " - " << msg;
+            emit failure(msg);
         });
 
     qDebug() << "Bookmarks:" << mFeed.size();
@@ -161,13 +161,13 @@ void BookmarksModel::getAuthorsDeletedPosts(const std::vector<QString>& postUris
 
             addPosts(postUris);
         },
-        [this, presence=getPresence(), postUris](const QString& error)
+        [this, presence=getPresence(), postUris](const QString& error, const QString& msg)
         {
             if (!presence)
                 return;
 
             setInProgress(false);
-            qWarning() << "Failed to get authors of deleted posts:" << error;
+            qWarning() << "Failed to get authors of deleted posts:" << error << " - " << msg;
             addPosts(postUris);
         });
 }

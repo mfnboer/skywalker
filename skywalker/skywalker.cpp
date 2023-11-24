@@ -73,10 +73,10 @@ void Skywalker::login(const QString user, QString password, const QString host)
             emit loginOk();
             startRefreshTimers();
         },
-        [this, host, user](const QString& error){
-            qDebug() << "Login" << user << "failed:" << error;
+        [this, host, user](const QString& error, const QString& msg){
+            qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(error, host, user);
+            emit loginFailed(msg, host, user);
         });
 }
 
@@ -89,7 +89,7 @@ void Skywalker::resumeSession()
     if (!getSession(host, session))
     {
         qWarning() << "No saved session";
-        emit resumeSessionFailed(tr("No saved session"));
+        emit resumeSessionFailed("");
         return;
     }
 
@@ -105,9 +105,13 @@ void Skywalker::resumeSession()
             refreshSession();
             startRefreshTimers();
         },
-        [this](const QString& error){
-            qInfo() << "Session could not be resumed:" << error;
-            emit resumeSessionFailed(error);
+        [this](const QString& error, const QString& msg){
+            qInfo() << "Session could not be resumed:" << error << " - " << msg;
+
+            if (error == "ExpiredToken")
+                emit resumeSessionExpired();
+            else
+                emit resumeSessionFailed(msg);
         });
 }
 
@@ -144,9 +148,9 @@ void Skywalker::refreshSession()
             qDebug() << "Session refreshed";
             saveSession(*mBsky->getSession());
         },
-        [this](const QString& error){
-            qDebug() << "Session could not be refreshed:" << error;
-            emit sessionExpired(error);
+        [this](const QString& error, const QString& msg){
+            qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+            emit sessionExpired(msg);
             stopRefreshTimers();
         });
 }
@@ -161,8 +165,8 @@ void Skywalker::refreshNotificationCount()
             qDebug() << "Unread notification count:" << unread;
             setUnreadNotificationCount(unread);
         },
-        [](const QString& error){
-            qWarning() << "Failed to get unread notification count:" << error;
+        [](const QString& error, const QString& msg){
+            qWarning() << "Failed to get unread notification count:" << error << " - " << msg;
         });
 }
 
@@ -185,10 +189,10 @@ void Skywalker::getUserProfileAndFollows()
             else
                 signalGetUserProfileOk(*follows->mSubject);
         },
-        [this](const QString& error){
-            qWarning() << error;
+        [this](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
             mUserFollows.clear();
-            emit getUserProfileFailed(error);
+            emit getUserProfileFailed(msg);
         });
 }
 
@@ -197,8 +201,8 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
     Q_ASSERT(mBsky);
     const auto* session = mBsky->getSession();
     Q_ASSERT(session);
-    qDebug() << "Get user profile next page:" << cursor << ",handle:" << session->mHandle <<
-            ",did:" << session->mDid << ",max pages:" << maxPages;
+    qDebug() << "Get user profile next page:" << cursor << ", handle:" << session->mHandle <<
+            ", did:" << session->mDid << ", max pages:" << maxPages;
 
     mBsky->getFollows(session->mDid, 100, cursor,
         [this, maxPages](auto follows){
@@ -221,10 +225,10 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
                 signalGetUserProfileOk(*follows->mSubject);
             }
         },
-        [this](const QString& error){
-            qWarning() << error;
+        [this](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
             mUserFollows.clear();
-            emit getUserProfileFailed(error);
+            emit getUserProfileFailed(msg);
         });
 }
 
@@ -250,8 +254,8 @@ void Skywalker::getUserPreferences()
             mUserPreferences = prefs;
             emit getUserPreferencesOK();
         },
-        [this](const QString& error){
-            qWarning() << error;
+        [this](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
             emit getUserPreferencesFailed();
         });
 }
@@ -343,11 +347,11 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             qInfo() << "Last timestamp:" << lastTimestamp;
             syncTimeline(tillTimestamp, maxPages - 1, newCursor);
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             restoreDebugLogging();
-            qWarning() << "syncTimeline FAILED:" << error;
+            qWarning() << "syncTimeline FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
             finishTimelineSyncFailed();
         }
         );
@@ -415,10 +419,10 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
             if (topPostIndex >= 0)
                 emit timelineRefreshed(topPostIndex);
        },
-       [this](const QString& error){
-            qInfo() << "getTimeline FAILED:" << error;
+       [this](const QString& error, const QString& msg){
+            qInfo() << "getTimeline FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         }
     );
 }
@@ -457,11 +461,11 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
                     qDebug() << "Gap created, no auto gap fill";
             }
         },
-        [this](const QString& error){
-            qDebug() << "getTimeline FAILED:" << error;
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getTimeline FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
             setAutoUpdateTimelineInProgress(false);
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         }
         );
 }
@@ -507,10 +511,10 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
                     qInfo() << "Gap created, no auto gap fill";
             }
         },
-        [this](const QString& error){
-            qInfo() << "getTimelineForGap FAILED:" << error;
+        [this](const QString& error, const QString& msg){
+            qInfo() << "getTimelineForGap FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         }
         );
 }
@@ -638,10 +642,10 @@ void Skywalker::getPostThread(const QString& uri)
             int id = mPostThreadModels.put(std::move(model));
             emit postThreadOk(id, postEntryIndex);
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
-            qDebug() << "getPostThread FAILED:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getPostThread FAILED:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -717,10 +721,10 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
             mNotificationListModel.addNotifications(std::move(list), *mBsky, clearFirst);
             setGetNotificationsInProgress(false);
         },
-        [this](const QString& error){
-            qDebug() << "getNotifications FAILED:" << error;
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getNotifications FAILED:" << error << " - " << msg;
             setGetNotificationsInProgress(false);
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         },
         updateSeen);
 
@@ -773,9 +777,9 @@ void Skywalker::getDetailedProfile(const QString& author)
             auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
             emit getDetailedProfileOK(DetailedProfile(shared));
         },
-        [this](const QString& error){
-            qDebug() << "getDetailedProfile failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getDetailedProfile failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -845,10 +849,10 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
             if (entriesToAdd > 0)
                 getAuthorFeedNextPage(id, maxPages - 1, entriesToAdd);
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetAuthorFeedInProgress(false);
-            qDebug() << "getAuthorFeed failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getAuthorFeed failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -942,10 +946,10 @@ void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QStri
             if (model)
                 (*model)->addAuthors(std::move(output->mFollows), output->mCursor.value_or(""));
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
-            qDebug() << "getFollowsAuthorList failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getFollowsAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -960,10 +964,10 @@ void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QSt
             if (model)
                 (*model)->addAuthors(std::move(output->mFollowers), output->mCursor.value_or(""));
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
-            qDebug() << "getFollowersAuthorList failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getFollowersAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -978,10 +982,10 @@ void Skywalker::getBlocksAuthorList(int limit, const QString& cursor, int modelI
             if (model)
                 (*model)->addAuthors(std::move(output->mBlocks), output->mCursor.value_or(""));
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
-            qDebug() << "getBlocksAuthorList failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getBlocksAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -996,10 +1000,10 @@ void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId
             if (model)
                 (*model)->addAuthors(std::move(output->mMutes), output->mCursor.value_or(""));
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
-            qDebug() << "getMutesAuthorList failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getMutesAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1021,10 +1025,10 @@ void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString
 
             (*model)->addAuthors(std::move(profileList), output->mCursor.value_or(""));
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
-            qDebug() << "getLikesAuthorList failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getLikesAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1039,10 +1043,10 @@ void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QStri
             if (model)
                 (*model)->addAuthors(std::move(output->mRepostedBy), output->mCursor.value_or(""));
         },
-        [this](const QString& error){
+        [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
-            qDebug() << "getRepostsAuthorList failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "getRepostsAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1253,9 +1257,9 @@ void Skywalker::saveContentFilterPreferences()
             mUserPreferences = prefs;
             emit statusMessage("Content filter saved");
         },
-        [this](const QString& error){
-            qDebug() << "saveFilterPreferences failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        [this](const QString& error, const QString& msg){
+            qDebug() << "saveFilterPreferences failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1316,9 +1320,9 @@ void Skywalker::saveUserPreferences()
             mUserPreferences = prefs;
             emit statusMessage("Settings saved");
         },
-        [this](const QString& error){
-            qDebug() << "saveUserPreferences failed:" << error;
-            emit statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        [this](const QString& error, const QString& msg){
+            qDebug() << "saveUserPreferences failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

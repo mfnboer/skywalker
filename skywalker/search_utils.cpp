@@ -146,11 +146,11 @@ void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit)
 
             addAuthorTypeaheadList(searchOutput->mActors);
         },
-        [presence=getPresence()](const QString& error){
+        [presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qWarning() << "Type ahead search failed:" << error;
+            qWarning() << "Type ahead search failed:" << error << " - " << msg;
         });
 }
 
@@ -196,13 +196,13 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
             if (entriesToAdd > 0)
                 getNextPageSearchPosts(text, maxPages - 1, entriesToAdd);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             setSearchPostsInProgress(false);
-            qDebug() << "searchPosts failed:" << error;
-            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "searchPosts failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -254,13 +254,13 @@ void SearchUtils::legacySearchPosts(const QString& text)
 
             getPosts(feed->mUris);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             setSearchPostsInProgress(false);
-            qDebug() << "searchPosts failed:" << error;
-            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "searchPosts failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -282,13 +282,13 @@ void SearchUtils::legacySearchActors(const QString& text)
 
             getProfiles(feed->mDids);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             setSearchActorsInProgress(false);
-            qDebug() << "searchactors failed:" << error;
-            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qDebug() << "searchactors failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -320,14 +320,14 @@ void SearchUtils::getPosts(const std::vector<QString>& uris)
             auto* model = getSearchPostFeedModel();
             model->setFeed(std::move(output));
         },
-        [this, presence=getPresence()](const QString& error)
+        [this, presence=getPresence()](const QString& error, const QString& msg)
         {
             if (!presence)
                 return;
 
             setSearchPostsInProgress(false);
-            qWarning() << "Failed to get posts:" << error;
-            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qWarning() << "Failed to get posts:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -375,14 +375,14 @@ void SearchUtils::getProfiles(const std::vector<QString>& users)
             model->clear();
             model->addAuthors(std::move(profileViewList), "");
         },
-        [this, presence=getPresence()](const QString& error)
+        [this, presence=getPresence()](const QString& error, const QString& msg)
         {
             if (!presence)
                 return;
 
             setSearchActorsInProgress(false);
-            qWarning() << "Failed to get posts:" << error;
-            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            qWarning() << "Failed to get posts:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

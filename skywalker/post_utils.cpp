@@ -117,12 +117,12 @@ void PostUtils::post(QString text, const QStringList& imageFileNames, const QStr
                         continuePost(imageFileNames, altTexts , post, quoteUri, quoteCid);
                 });
         },
-        [this, presence=getPresence()] (const QString& error){
+        [this, presence=getPresence()] (const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Post not found:" << error;
-            emit postFailed(tr("It seems the post you reply to has been deleted."));
+            qDebug() << "Post not found:" << error << " - " << msg;
+            emit postFailed(tr("Reply-to post") + ": " + msg);
         });
 }
 
@@ -161,12 +161,12 @@ void PostUtils::post(QString text, const LinkCard* card,
                         continuePost(card, post, quoteUri, quoteCid);
                 });
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Post not found:" << error;
-            emit postFailed(tr("It seems the post you reply to has been deleted."));
+            qDebug() << "Post not found:" << error << " - " << msg;
+            emit postFailed(tr("Reply-to post") + ": " + msg);
         });
 }
 
@@ -190,12 +190,12 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
             postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(imageFileNames, altTexts, post);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Post not found:" << error;
-            emit postFailed(tr("It seems the quoted post has been deleted."));
+            qDebug() << "Post not found:" << error << " - " << msg;
+            emit postFailed(tr("Quoted post") + ": " + msg);
         });
 }
 
@@ -228,12 +228,12 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
             postMaster()->addImageToPost(*post, std::move(blob), altTexts[imgIndex]);
             continuePost(imageFileNames, altTexts, post, imgIndex + 1);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Post failed:" << error;
-            emit postFailed(error);
+            qDebug() << "Post failed:" << error << " - " << msg;
+            emit postFailed(msg);
         });
 }
 
@@ -257,12 +257,12 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
             postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(card, post);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Post not found:" << error;
-            emit postFailed(tr("It seems the quoted post has been deleted."));
+            qDebug() << "Post not found:" << error << " - " << msg;
+            emit postFailed(tr("Quoted post") + ": " + msg);
         });
 }
 
@@ -318,12 +318,12 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
                     card->getDescription(), std::move(blob));
             continuePost(post);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Post failed:" << error;
-            emit postFailed(error);
+            qDebug() << "Post failed:" << error << " - " << msg;
+            emit postFailed(msg);
         });
 }
 
@@ -349,12 +349,12 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 
             emit postOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Post failed:" << error;
-            emit postFailed(error);
+            qDebug() << "Post failed:" << error << " - " << msg;
+            emit postFailed(msg);
         });
 }
 
@@ -370,12 +370,12 @@ void PostUtils::repost(const QString& uri, const QString& cid)
             if (presence)
                 continueRepost(uri, cid);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Repost failed:" << error;
-            emit repostFailed(error);
+            qDebug() << "Repost failed:" << error << " - " << msg;
+            emit repostFailed(msg);
         });
 }
 
@@ -397,12 +397,12 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid)
 
             emit repostOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Repost failed:" << error;
-            emit repostFailed(error);
+            qDebug() << "Repost failed:" << error << " - " << msg;
+            emit repostFailed(msg);
         });
 }
 
@@ -424,12 +424,12 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
 
             emit undoRepostOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Undo repost failed:" << error;
-            emit undoRepostFailed(error);
+            qDebug() << "Undo repost failed:" << error << " - " << msg;
+            emit undoRepostFailed(msg);
         });
 }
 
@@ -451,12 +451,12 @@ void PostUtils::like(const QString& uri, const QString& cid)
 
             emit likeOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Like failed:" << error;
-            emit likeFailed(error);
+            qDebug() << "Like failed:" << error << " - " << msg;
+            emit likeFailed(msg);
         });
 }
 
@@ -478,12 +478,12 @@ void PostUtils::undoLike(const QString& likeUri, const QString& cid)
 
             emit undoLikeOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Undo like failed:" << error;
-            emit undoLikeFailed(error);
+            qDebug() << "Undo like failed:" << error << " - " << msg;
+            emit undoLikeFailed(msg);
         });
 }
 
@@ -504,12 +504,12 @@ void PostUtils::deletePost(const QString& postUri, const QString& cid)
 
             emit postDeletedOk();
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "deletePost failed:" << error;
-            emit postDeletedFailed(error);
+            qDebug() << "deletePost failed:" << error << " - " << msg;
+            emit postDeletedFailed(msg);
         });
 }
 

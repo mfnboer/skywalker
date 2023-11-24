@@ -264,9 +264,9 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
 
             getPosts(bsky, uris, cb);
         },
-        [cb](const QString& err)
+        [cb](const QString& err, const QString& msg)
         {
-            qWarning() << "Failed to get posts:" << err;
+            qWarning() << "Failed to get posts:" << err << " - " << msg;
             cb();
         });
 }

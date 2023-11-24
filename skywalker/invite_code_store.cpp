@@ -58,8 +58,8 @@ void InviteCodeStore::load(QDateTime prevSignIn)
 
             emit loaded();
         },
-        [this](const QString& error){
-            qDebug() << "Load invite codes failed:" << error;
+        [this](const QString& error, const QString& msg){
+            qDebug() << "Load invite codes failed:" << error << " - " << msg;
             mFailedToLoad = true;
         });
 }
@@ -84,10 +84,10 @@ void InviteCodeStore::retrieveUsedByProfile(InviteCode& code)
             code.setRetrievingUsedByProfile(false);
             AuthorCache::instance().put(code.getUsedBy());
         },
-        [this, &code](const QString& error){
-            qDebug() << "Cannot retrieve usedBy profile:" << error;
+        [this, &code](const QString& error, const QString& msg){
+            qDebug() << "Cannot retrieve usedBy profile:" << error << " - " << msg;
             code.setRetrievingUsedByProfile(false);
-            getSkywalker()->statusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+            getSkywalker()->statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
