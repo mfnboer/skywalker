@@ -799,8 +799,21 @@ ApplicationWindow {
     }
 
     function reportAuthor(author) {
-        let component = Qt.createComponent("ReportAuthor.qml")
-        let form = component.createObject(root, { author: author })
+        let component = Qt.createComponent("Report.qml")
+        let form = component.createObject(root, { skywalker: skywalker, author: author })
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
+    function reportPost(postUri, postCid, postText, postDateTime, author) {
+        let component = Qt.createComponent("Report.qml")
+        let form = component.createObject(root, {
+                skywalker: skywalker,
+                postUri: postUri,
+                postCid: postCid,
+                postText: postText,
+                postDateTime: postDateTime,
+                author: author })
         form.onClosed.connect(() => { popStack() })
         pushStack(form)
     }

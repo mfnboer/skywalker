@@ -5,7 +5,7 @@ import skywalker
 
 // Header with a back button and title text
 Rectangle {
-    property string text
+    required property string text
 
     signal back
 

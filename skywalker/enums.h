@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <atproto/lib/lexicon/app_bsky_actor.h>
+#include <atproto/lib/lexicon/com_atproto_moderation.h>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -96,6 +97,18 @@ public:
     Q_ENUM(ContentPrefVisibility)
 
     static ContentPrefVisibility toContentPrefVisibility(ContentVisibility);
+
+    enum ReportReasonType
+    {
+        REPORT_REASON_TYPE_NULL = -1,
+        REPORT_REASON_TYPE_SPAM = (int)ATProto::ComATProtoModeration::ReasonType::SPAM,
+        REPORT_REASON_TYPE_VIOLATION = (int)ATProto::ComATProtoModeration::ReasonType::VIOLATION,
+        REPORT_REASON_TYPE_MISLEADING = (int)ATProto::ComATProtoModeration::ReasonType::MISLEADING,
+        REPORT_REASON_TYPE_SEXUAL = (int)ATProto::ComATProtoModeration::ReasonType::SEXUAL,
+        REPORT_REASON_TYPE_RUDE = (int)ATProto::ComATProtoModeration::ReasonType::RUDE,
+        REPORT_REASON_TYPE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OTHER
+    };
+    Q_ENUM(ReportReasonType)
 };
 
 }

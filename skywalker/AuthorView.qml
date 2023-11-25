@@ -145,6 +145,11 @@ Page {
                             text: qsTr("Report account")
                             enabled: !isUser(author)
                             onTriggered: root.reportAuthor(author)
+
+                            MenuItemSvg {
+                                svg: svgOutline.report
+                                visible: parent.enabled
+                            }
                         }
                     }
                 }

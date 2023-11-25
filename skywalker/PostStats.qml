@@ -19,6 +19,7 @@ Row {
     signal share()
     signal deletePost()
     signal copyPostText()
+    signal reportPost()
 
     StatIcon {
         width: parent.width / 5
@@ -83,6 +84,17 @@ Row {
 
                 MenuItemSvg {
                     svg: svgOutline.delete
+                    visible: parent.enabled
+                }
+            }
+
+            MenuItem {
+                text: qsTr("Report post")
+                enabled: !authorIsUser
+                onTriggered: reportPost()
+
+                MenuItemSvg {
+                    svg: svgOutline.report
                     visible: parent.enabled
                 }
             }
