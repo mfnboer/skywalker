@@ -49,7 +49,7 @@ Page {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Send");
-            visible: reasonType != QEnums.REPORT_REASON_TYPE_NULL
+            visible: reasonType !== QEnums.REPORT_REASON_TYPE_NULL
             onClicked: sendReport()
         }
     }
@@ -135,15 +135,20 @@ Page {
 
             id: reasonEntry
             width: reasonList.width
+            height: titleText.height + descriptionText.height
             leftPadding: 10
             rightPadding: 10
 
             contentItem: Column {
+                id: buttonText
+                anchors.top: parent.top
                 anchors.left: reasonEntry.indicator.right
                 anchors.leftMargin: 20
                 width: parent.width - reasonEntry.indicator.width - 20
 
                 Text {
+                    id: titleText
+                    topPadding: 5
                     width: parent.width - 20
                     wrapMode: Text.Wrap
                     font.bold: true
@@ -151,9 +156,12 @@ Page {
                     text: reasonEntry.reportReason.title
                 }
                 Text {
+                    id: descriptionText
+                    bottomPadding: 5
                     width: parent.width - 20
                     wrapMode: Text.Wrap
                     color: guiSettings.textColor
+                    font.pointSize: guiSettings.scaledFont(7/8)
                     text: reasonEntry.reportReason.description
                 }
             }
@@ -163,7 +171,9 @@ Page {
                     page.reasonType = reasonEntry.reportReason.type
             }
 
-            Component.onCompleted: reasonEntry.indicator.x = 0
+            Component.onCompleted: {
+                reasonEntry.indicator.x = 0
+            }
         }
     }
 
