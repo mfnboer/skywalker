@@ -531,6 +531,24 @@ bool PostUtils::pickPhoto()
     return permission;
 }
 
+void PostUtils::savePhoto(const QString& sourceUrl)
+{
+    ::Skywalker::savePhoto(sourceUrl,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            qDebug() << "Saved photo!";
+            mSkywalker->showStatusMessage(tr("Picture saved"), QEnums::STATUS_LEVEL_INFO);
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void PostUtils::setEditMention(const QString& mention)
 {
     if (mention == mEditMention)

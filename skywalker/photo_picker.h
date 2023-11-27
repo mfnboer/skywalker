@@ -7,6 +7,7 @@
 namespace Skywalker {
 
 bool checkReadMediaPermission();
+bool checkWriteMediaPermission();
 int openContentUri(const QString& contentUri);
 QImage readImageFd(int fd);
 
@@ -23,5 +24,8 @@ QString createBlob(QByteArray& blob, const QString& imgName);
 QString createBlob(QByteArray& blob, QImage img, const QString& fileName = "");
 
 QString resolveContentUriToFile(const QString& contentUri);
+
+void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
+               const std::function<void(const QString&)>& errorCb);
 
 }

@@ -6,7 +6,9 @@ import skywalker
 Page {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
+
     signal closed
+    signal saveImage(string sourceUrl)
 
     id: page
     width: parent.width
@@ -131,5 +133,24 @@ Page {
         opacity: 0.7
         svg: svgOutline.arrowBack
         onClicked: page.closed()
+    }
+
+    SvgButton {
+        anchors.top: parent.top
+        anchors.right: parent.right
+        iconColor: "white"
+        Material.background: "black"
+        opacity: 0.7
+        svg: svgOutline.moreVert
+        onClicked: moreMenu.open()
+
+        Menu {
+            id: moreMenu
+
+            MenuItem {
+                text: qsTr("Save picture")
+                onTriggered: page.saveImage(images[view.currentIndex].fullSizeUrl)
+            }
+        }
     }
 }

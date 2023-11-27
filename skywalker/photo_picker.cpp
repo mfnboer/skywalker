@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "photo_picker.h"
+#include "image_reader.h"
 #include "shared_image_provider.h"
 #include <QtGlobal>
 #include <QBuffer>
@@ -8,6 +9,7 @@
 #include <QFile>
 #include <QImage>
 #include <QImageReader>
+#include <QStandardPaths>
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
@@ -60,6 +62,16 @@ bool checkReadMediaPermission()
         return checkPermission(READ_MEDIA_IMAGES);
 
     return checkPermission(READ_EXTERNAL_STORAGE);
+#else
+    return true;
+#endif
+}
+
+bool checkWriteMediaPermission()
+{
+#if defined(Q_OS_ANDROID)
+    static const QString WRITE_EXTERNAL_STORAGE = "android.permission.WRITE_EXTERNAL_STORAGE";
+    return checkPermission(WRITE_EXTERNAL_STORAGE);
 #else
     return true;
 #endif
@@ -240,6 +252,90 @@ QString createBlob(QByteArray& blob, QImage img, const QString& name)
     }
 
     return mimeType;
+}
+
+static void scanMediaFile(const QString& fileName)
+{
+#if defined(Q_OS_ANDROID)
+    auto jsFileName = QJniObject::fromString(fileName);
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/FileUtils",
+                                       "scanMediaFile",
+                                       "(Ljava/lang/String;)V",
+                                       jsFileName.object<jstring>());
+#else
+    qDebug() << "No need to scan media:" << fileName;
+#endif
+}
+
+static QString getPicturesPath()
+{
+#if defined(Q_OS_ANDROID)
+    auto pathObj = QJniObject::callStaticMethod<jstring>("com/gmail/mfnboer/FileUtils",
+                                                         "getPicturesPath",
+                                                         "()Ljava/lang/String;");
+
+    if (!pathObj.isValid())
+    {
+        qWarning() << "Invalid path object.";
+        return {};
+    }
+
+    return pathObj.toString();
+#else
+    return QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+#endif
+}
+
+static QString createDateTimeName()
+{
+    return QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+}
+
+static QString createPictureFileName()
+{
+    return QString("SKYWALKER_%1.jpg").arg(createDateTimeName());
+}
+
+void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
+               const std::function<void(const QString&)>& errorCb)
+{
+    static ImageReader imageReader;
+
+    Q_ASSERT(successCb);
+    Q_ASSERT(errorCb);
+
+    imageReader.getImage(sourceUrl,
+        [successCb, errorCb](QImage img){
+            if (!checkWriteMediaPermission())
+            {
+                errorCb(QObject::tr("No permission to save pictures"));
+                return;
+            }
+
+            const QString picturesPath = getPicturesPath();
+
+            if (picturesPath.isEmpty())
+            {
+                qWarning() << "Cannot get pictures path.";
+                errorCb(QObject::tr("No location to save pictures"));
+                return;
+            }
+
+            const QString fileName = QString("%1/%2").arg(picturesPath, createPictureFileName());
+
+            if (!img.save(fileName))
+            {
+                qWarning() << "Failed to save file:" << fileName;
+                errorCb(QObject::tr("Failed to save picture"));
+            }
+
+            scanMediaFile(fileName);
+            successCb();
+        },
+        [errorCb](const QString& error){
+            qWarning() << "Failed get get image:" << error;
+            errorCb(error);
+        });
 }
 
 }

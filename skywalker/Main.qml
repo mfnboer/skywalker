@@ -711,6 +711,7 @@ ApplicationWindow {
         let component = Qt.createComponent("FullImageView.qml")
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() })
+        view.onSaveImage.connect((sourceUrl) => { postUtils.savePhoto(sourceUrl) })
         pushStack(view)
     }
 

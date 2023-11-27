@@ -5,13 +5,17 @@ package com.gmail.mfnboer;
 
 import org.qtproject.qt.android.QtNative;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import android.content.ContentResolver;
 import android.content.Context;
-import android.net.Uri;
 import android.database.Cursor;
-import java.io.FileNotFoundException;
-import android.provider.MediaStore;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.util.Log;
 
 public class FileUtils {
@@ -54,5 +58,26 @@ public class FileUtils {
     public static int openContentUriString(String uriString) {
         Uri uri = Uri.parse(uriString);
         return openContentUri(uri);
+    }
+
+    public static String getPicturesPath() {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        Log.d(LOGTAG, path.getAbsolutePath());
+        return path.getAbsolutePath();
+    }
+
+// Make a media file show up in the gallery
+public static void scanMediaFile(String fileName) {
+    Log.d(LOGTAG, "Scan media file=" + fileName);
+
+    MediaScannerConnection.scanFile(QtNative.getContext(),
+            new String[]{ fileName }, null,
+            new MediaScannerConnection.OnScanCompletedListener() {
+                public void onScanCompleted(String path, Uri uri) {
+                    Log.d(LOGTAG, "Scanned " + path + ":");
+                    Log.d(LOGTAG, "  uri=" + uri);
+                }
+            }
+        );
     }
 }
