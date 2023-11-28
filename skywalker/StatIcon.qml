@@ -28,6 +28,7 @@ Rectangle {
         topPadding: 2
         bottomPadding: 2
         color: iconColor
+        font.pointSize: guiSettigs.scaledFont(7/8)
         text: statistic
         visible: statistic >= 0
     }
@@ -35,5 +36,9 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         onClicked: control.clicked()
+    }
+
+    GuiSettings {
+        id: guiSettigs
     }
 }
