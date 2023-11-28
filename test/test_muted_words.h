@@ -117,6 +117,28 @@ private slots:
         QVERIFY(!mutedWords.match(post));
     }
 
+    void entriesChanged()
+    {
+        int changeCount = 0;
+        MutedWords mutedWords;
+        connect(&mutedWords, &MutedWords::entriesChanged, this, [&changeCount]{ ++changeCount; });
+
+        mutedWords.addEntry("Skywalker");
+        QCOMPARE(changeCount, 1);
+
+        mutedWords.removeEntry(0);
+        QCOMPARE(changeCount, 2);
+
+        mutedWords.addEntry("Skywalker");
+        QCOMPARE(changeCount, 3);
+
+        mutedWords.removeEntry("sky");
+        QCOMPARE(changeCount, 3);
+
+        mutedWords.removeEntry("Skywalker");
+        QCOMPARE(changeCount, 4);
+    }
+
 private:
     Post setPost(const QString& text)
     {

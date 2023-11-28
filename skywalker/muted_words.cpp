@@ -5,6 +5,22 @@
 
 namespace Skywalker {
 
+MutedWords::MutedWords(QObject* parent) :
+    QObject(parent)
+{
+}
+
+QStringList MutedWords::getEntries() const
+{
+    QStringList sortedEntries;
+
+    for (const auto& entry : mEntries)
+        sortedEntries.append(entry.mRaw);
+
+    sortedEntries.sort();
+    return sortedEntries;
+}
+
 void MutedWords::addEntry(const QString& word)
 {
     Entry entry;
@@ -24,6 +40,24 @@ void MutedWords::addEntry(const QString& word)
         const QString& firstWord = entry.mNormalizedWords[0];
         addWordToIndex(firstWord, entryIndex, mFirstWordIndex);
     }
+
+    emit entriesChanged();
+}
+
+void MutedWords::removeEntry(const QString& word)
+{
+    const auto it = std::find_if(mEntries.begin(), mEntries.end(),
+                                 [&word](const auto& entry){ return entry.mRaw == word; });
+
+    if (it == mEntries.end())
+    {
+        qDebug() << "Entry not found:" << word;
+        return;
+    }
+
+    const int index = it - mEntries.begin();
+    qDebug() << "Remove entry index:" << index << "word:" << word;
+    removeEntry(index);
 }
 
 void MutedWords::removeEntry(int index)
@@ -53,6 +87,8 @@ void MutedWords::removeEntry(int index)
     mEntries.erase(mEntries.begin() + index);
     reindexAfterRemoval(index, mSingleWordIndex);
     reindexAfterRemoval(index, mFirstWordIndex);
+
+    emit entriesChanged();
 }
 
 void MutedWords::addWordToIndex(const QString& word, int index, WordIndexType& wordIndex)

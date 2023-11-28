@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "post.h"
+#include <QObject>
 #include <QString>
 #include <unordered_map>
 #include <vector>
@@ -9,14 +10,25 @@
 
 namespace Skywalker {
 
-class MutedWords
+class MutedWords : public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(QStringList entries READ getEntries NOTIFY entriesChanged FINAL)
 public:
     static constexpr size_t MAX_ENTRIES = 100;
 
-    void addEntry(const QString& word);
+    MutedWords(QObject* parent = nullptr);
+
+    QStringList getEntries() const;
+
+    Q_INVOKABLE void addEntry(const QString& word);
+    Q_INVOKABLE void removeEntry(const QString& word);
+
     void removeEntry(int index);
     bool match(const Post& post) const;
+
+signals:
+    void entriesChanged();
 
 private:
     using WordIndexType = std::unordered_map<QString, std::set<int>>;
