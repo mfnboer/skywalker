@@ -188,6 +188,8 @@ qt_add_qml_module(libskywalker
         RESOURCES
         QML_FILES SimpleButtonHeader.qml
         QML_FILES ReportDetailsEditor.qml
+        SOURCES muted_words.h
+        SOURCES muted_words.cpp
 )
 
 if (NOT ANDROID)

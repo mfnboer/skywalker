@@ -8,6 +8,7 @@
 #include "record_view.h"
 #include "record_with_media_view.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
+#include <unordered_map>
 
 namespace Skywalker {
 
@@ -94,6 +95,9 @@ public:
     bool isBookmarkNotFound() const { return mBookmarkNotFound; }
     void setBookmarkNotFound(bool notFound) { mBookmarkNotFound = notFound; }
 
+    const std::vector<QString>& getNormalizedWords() const;
+    const std::unordered_map<QString, std::vector<int>>& getUniqueNormalizedWords() const;
+
 private:
     struct HyperLink
     {
@@ -135,6 +139,11 @@ private:
 
     // Placeholder for a bookmarked post that cannot be found (probably deleted).
     bool mBookmarkNotFound = false;
+
+    std::vector<QString> mNormalizedWords;
+
+    // normalized word -> indices into mNormalizedWords
+    std::unordered_map<QString, std::vector<int>> mUniqueNormalizedWords;
 
     static int sNextGapId;
 };
