@@ -109,6 +109,14 @@ public:
         REPORT_REASON_TYPE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OTHER
     };
     Q_ENUM(ReportReasonType)
+
+    enum MutedPostReason
+    {
+        MUTED_POST_NONE = 0,
+        MUTED_POST_AUTHOR,
+        MUTED_POST_WORDS
+    };
+    Q_ENUM(MutedPostReason)
 };
 
 }

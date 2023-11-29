@@ -4,6 +4,7 @@
 #include "bookmarks.h"
 #include "content_filter.h"
 #include "local_post_model_changes.h"
+#include "muted_words.h"
 #include "post.h"
 #include "profile_store.h"
 #include <QAbstractListModel>
@@ -55,6 +56,7 @@ public:
         PostLabels,
         PostContentVisibility,
         PostContentWarning,
+        PostMutedReason,
         PostLocallyDeleted,
         EndOfFeed
     };
@@ -64,7 +66,7 @@ public:
 
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                          QObject* parent = nullptr);
+                          const MutedWords& mutedWords, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -98,6 +100,7 @@ protected:
     const IProfileStore& mFollowing;
     const ContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
+    const MutedWords& mMutedWords;
 
 private:
     void postBookmarkedChanged();

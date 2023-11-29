@@ -10,12 +10,13 @@ using namespace std::chrono_literals;
 
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                             QObject* parent) :
+                                             const MutedWords& mutedWords, QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
     mFollowing(following),
     mContentFilter(contentFilter),
-    mBookmarks(bookmarks)
+    mBookmarks(bookmarks),
+    mMutedWords(mutedWords)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
 }
@@ -77,6 +78,12 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
         return true;
     }
 
+    if (mMutedWords.match(post))
+    {
+        qDebug() << "Hide post due to muted words" << post.getCid();
+        return true;
+    }
+
     return false;
 }
 
@@ -129,6 +136,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
+            record->setMutedReason(mMutedWords);
             return QVariant::fromValue(*record);
         }
 
@@ -145,6 +153,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
+        record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
     case Role::PostType:
@@ -201,6 +210,16 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     {
         const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
         return warning;
+    }
+    case Role::PostMutedReason:
+    {
+        if (post.getAuthor().getViewer().isMuted())
+            return QEnums::MUTED_POST_AUTHOR;
+
+        if (mMutedWords.match(post))
+            return QEnums::MUTED_POST_WORDS;
+
+        return QEnums::MUTED_POST_NONE;
     }
     case Role::PostLocallyDeleted:
     {
@@ -267,6 +286,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLabels), "postLabels" },
         { int(Role::PostContentVisibility), "postContentVisibility" },
         { int(Role::PostContentWarning), "postContentWarning" },
+        { int(Role::PostMutedReason), "postMutedReason" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };

@@ -13,7 +13,7 @@ public:
 
     explicit PostThreadModel(const QString& userDid, const IProfileStore& following,
                              const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                             QObject* parent = nullptr);
+                             const MutedWords& mutedWords, QObject* parent = nullptr);
 
     // Returns index of the entry post
     int setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);

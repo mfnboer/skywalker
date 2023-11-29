@@ -57,13 +57,15 @@ public:
         NotificationPostLabels,
         NotificationPostContentVisibility,
         NotificationPostContentWarning,
+        NotificationPostMutedReason,
         ReplyToAuthor,
         NotificationInviteCode,
         NotificationInviteCodeUsedBy,
         EndOfList
     };
 
-    explicit NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks, QObject* parent = nullptr);
+    explicit NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                                   const MutedWords& mutedWords, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -110,6 +112,7 @@ private:
 
     const ContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
+    const MutedWords& mMutedWords;
 
     NotificationList mList;
     std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;

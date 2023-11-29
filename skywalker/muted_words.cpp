@@ -20,6 +20,20 @@ QStringList MutedWords::getEntries() const
     return sortedEntries;
 }
 
+void MutedWords::clear()
+{
+    mDirty = false;
+
+    if (mEntries.empty())
+        return;
+
+    mEntries.clear();
+    mSingleWordIndex.clear();
+    mFirstWordIndex.clear();
+
+    emit entriesChanged();
+}
+
 void MutedWords::addEntry(const QString& word)
 {
     const auto& [it, inserted] = mEntries.emplace(word, SearchUtils::getWords(word));
@@ -37,6 +51,7 @@ void MutedWords::addEntry(const QString& word)
     else if (entry.mNormalizedWords.size() > 1)
         addWordToIndex(&entry, mFirstWordIndex);
 
+    mDirty = true;
     emit entriesChanged();
 }
 
@@ -59,6 +74,7 @@ void MutedWords::removeEntry(const QString& word)
         removeWordFromIndex(&entry, mFirstWordIndex);
 
     mEntries.erase(it);
+    mDirty = true;
     emit entriesChanged();
 }
 
@@ -82,7 +98,7 @@ void MutedWords::removeWordFromIndex(const Entry* entry, WordIndexType& wordInde
         wordIndex.erase(word);
 }
 
-bool MutedWords::match(const Post& post) const
+bool MutedWords::match(const NormalizedWordIndex& post) const
 {
     if (mEntries.empty())
         return false;
@@ -138,6 +154,64 @@ bool MutedWords::match(const Post& post) const
     }
 
     return false;
+}
+
+void MutedWords::load(const UserSettings* userSettings)
+{
+    Q_ASSERT(userSettings);
+    const QString did = userSettings->getActiveUserDid();
+
+    if (did.isEmpty())
+    {
+        qDebug() << "No active user";
+        return;
+    }
+
+    clear();
+    const QStringList& mutedWords = userSettings->getMutedWords(did);
+
+    for (const auto& word : mutedWords)
+        addEntry(word);
+
+    qDebug() << "Muted words loaded:" << mEntries.size();
+    mDirty = false;
+}
+
+void MutedWords::save(UserSettings* userSettings)
+{
+    Q_ASSERT(userSettings);
+
+    if (!mDirty)
+        return;
+
+    const QString did = userSettings->getActiveUserDid();
+
+    if (did.isEmpty())
+    {
+        qDebug() << "No active user";
+        return;
+    }
+
+    QStringList mutedWords;
+
+    for (const auto& entry : mEntries)
+        mutedWords.append(entry.mRaw);
+
+    userSettings->saveMutedWords(did, mutedWords);
+    qDebug() << "Muted words saved:" << mutedWords.size();
+    mDirty = false;
+}
+
+bool MutedWords::noticeSeen(const UserSettings* userSettings) const
+{
+    Q_ASSERT(userSettings);
+    return userSettings->getMutedWordsNoticeSeen();
+}
+
+void MutedWords::setNoticeSeen(UserSettings* userSettings, bool seen) const
+{
+    Q_ASSERT(userSettings);
+    userSettings->setMutedWordsNoticeSeen(seen);
 }
 
 }

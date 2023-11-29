@@ -136,6 +136,7 @@ ApplicationWindow {
             const lastSignIn = userSettings.getLastSignInTimestamp(did)
             inviteCodeStore.load(lastSignIn)
             skywalker.bookmarks.load(userSettings)
+            skywalker.mutedWords.load(userSettings)
 
             setStartupStatus("Rewinding timeline")
             skywalker.syncTimeline()
@@ -290,6 +291,14 @@ ApplicationWindow {
             viewAuthorList(modelId, qsTr("Muted Accounts"),
                     qsTr("Muted accounts have their posts removed from your feed and from your notifications. Mutes are completely private."),
                     false)
+            close()
+        }
+
+        onMutedWords: {
+            let component = Qt.createComponent("MutedWords.qml")
+            let page = component.createObject(root, { skywalker: skywalker })
+            page.onClosed.connect(() => { popStack() })
+            pushStack(page)
             close()
         }
 

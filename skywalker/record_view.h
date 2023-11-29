@@ -3,6 +3,8 @@
 #pragma once
 #include "enums.h"
 #include "image_view.h"
+#include "muted_words.h"
+#include "normalized_word_index.h"
 #include "profile.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
@@ -10,7 +12,7 @@
 namespace Skywalker
 {
 
-class RecordView
+class RecordView : public NormalizedWordIndex
 {
     Q_GADGET
     Q_PROPERTY(QString postUri READ getUri FINAL)
@@ -21,6 +23,7 @@ class RecordView
     Q_PROPERTY(QStringList contentLabels READ getLabelTexts FINAL)
     Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility FINAL)
     Q_PROPERTY(QString contentWarning READ getContentWarning FINAL)
+    Q_PROPERTY(QEnums::MutedPostReason mutedReason READ getMutedReason FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
@@ -36,6 +39,7 @@ public:
     explicit RecordView(const ATProto::AppBskyEmbed::RecordView& view);
 
     QString getUri() const;
+    QString getText() const override;
     QString getFormattedText() const;
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
@@ -45,6 +49,7 @@ public:
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
     QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }
     const QString& getContentWarning() const { return mContentWarning; }
+    QEnums::MutedPostReason getMutedReason() const { return mMutedReason; }
 
     bool getNotFound() const { return mNotFound; }
     bool getBlocked() const { return mBlocked; }
@@ -54,6 +59,8 @@ public:
 
     void setContentVisibility(QEnums::ContentVisibility visibility) { mContentVisibility = visibility; }
     void setContentWarning(const QString& warning) { mContentWarning = warning; }
+    void setMutedReason(const QEnums::MutedPostReason mutedReason) { mMutedReason = mutedReason; }
+    void setMutedReason(const MutedWords& mutedWords);
 
 private:
     const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;
@@ -63,6 +70,7 @@ private:
     QString mUnsupportedType;
     QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
     QString mContentWarning = "NOT INITIALIZED";
+    QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
 };
 
 }

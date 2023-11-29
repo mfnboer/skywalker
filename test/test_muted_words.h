@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <muted_words.h>
+#include <post.h>
 #include <QTest>
 
 using namespace Skywalker;
@@ -150,6 +151,21 @@ private slots:
         const QStringList expected{ { "sky", "sky walker", "walker" } };
 
         QCOMPARE(entries, expected);
+    }
+
+    void clear()
+    {
+        int changeCount = 0;
+        MutedWords mutedWords;
+        connect(&mutedWords, &MutedWords::entriesChanged, this, [&changeCount]{ ++changeCount; });
+
+        mutedWords.addEntry("sky");
+        QCOMPARE(changeCount, 1);
+        QCOMPARE(mutedWords.getEntries().size(), 1);
+
+        mutedWords.clear();
+        QCOMPARE(changeCount, 2);
+        QCOMPARE(mutedWords.getEntries().size(), 0);
     }
 
 private:

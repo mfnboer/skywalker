@@ -38,7 +38,7 @@ Column {
         postContentLabels: []
         postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         postContentWarning: ""
-        postMuted: false
+        postMuted: QEnums.MUTED_POST_NONE
         postDateTime: postDateTime
         maxTextLines: 5
     }

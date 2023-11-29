@@ -43,6 +43,17 @@ QString RecordView::getUri() const
     return mRecord ? mRecord->mUri : QString();
 }
 
+QString RecordView::getText() const
+{
+    if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
+        return recordValue->mText;
+    }
+
+    return {};
+}
+
 QString RecordView::getFormattedText() const
 {
     if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
@@ -114,6 +125,16 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& RecordView::getLabels()
         return NO_LABELS;
 
     return mRecord->mLabels;
+}
+
+void RecordView::setMutedReason(const MutedWords& mutedWords)
+{
+    if (getAuthor().getViewer().isMuted())
+        setMutedReason(QEnums::MUTED_POST_AUTHOR);
+    else if (mutedWords.match(*this))
+        setMutedReason(QEnums::MUTED_POST_WORDS);
+    else
+        setMutedReason(QEnums::MUTED_POST_NONE);
 }
 
 }

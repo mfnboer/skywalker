@@ -9,8 +9,8 @@ namespace Skywalker {
 
 BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& following,
                                const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                               QObject* parent) :
-    AbstractPostFeedModel(userDid, following, contentFilter, bookmarks, parent)
+                               const MutedWords& mutedWords, QObject* parent) :
+    AbstractPostFeedModel(userDid, following, contentFilter, bookmarks, mutedWords, parent)
 {
 }
 

@@ -10,7 +10,7 @@ Column {
     required property list<string> postContentLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
-    required property bool postMuted
+    required property int postMuted // QEnums::MutedPostReason
     property string postPlainText
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
@@ -18,7 +18,7 @@ Column {
     property bool detailedView: false
     property int maxTextLines: 1000
     property bool showWarnedPost: false
-    property bool mutePost: postMuted
+    property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
 
     id: postBody
 
@@ -56,8 +56,22 @@ Column {
             width: 30
             height: width
             color: Material.color(Material.Grey)
-            svg: mutePost ? svgOutline.mute : svgOutline.hideVisibility
+            svg: getIcon()
             visible: !postVisible()
+
+            function getIcon() {
+                if (!mutePost)
+                    return svgOutline.hideVisibility
+
+                switch (postMuted) {
+                case QEnums.MUTED_POST_AUTHOR:
+                    return svgOutline.mute
+                case QEnums.MUTED_POST_WORDS:
+                    return svgOutline.mutedWords
+                }
+
+                return svgOutline.hideVisibility
+            }
         }
 
         // The content warning is shown then the post is not muted
@@ -90,7 +104,7 @@ Column {
             elide: Text.ElideRight
             textFormat: Text.RichText
             color: Material.color(Material.Grey)
-            text: qsTr("You muted this account") + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+            text: getMuteText() + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
             visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
             onLinkActivated: {
                 mutePost = false
@@ -98,6 +112,17 @@ Column {
                 // The post may still not be visible due to content filtering
                 if (postVisible())
                     showPostAttachements()
+            }
+
+            function getMuteText() {
+                switch (postMuted) {
+                case QEnums.MUTED_POST_AUTHOR:
+                    return qsTr("You muted this account")
+                case QEnums.MUTED_POST_WORDS:
+                    return qsTr("Post has muted words")
+                }
+
+                return qsTr("Muted post")
             }
         }
 

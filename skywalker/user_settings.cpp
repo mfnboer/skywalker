@@ -210,6 +210,26 @@ bool UserSettings::getBookmarksNoticeSeen() const
     return mSettings.value("bookmarksNoticeSeen", false).toBool();
 }
 
+void UserSettings::saveMutedWords(const QString& did, const QStringList& mutedWords)
+{
+    mSettings.setValue(key(did, "mutedWords"), mutedWords);
+}
+
+QStringList UserSettings::getMutedWords(const QString& did) const
+{
+    return mSettings.value(key(did, "mutedWords")).toStringList();
+}
+
+void UserSettings::setMutedWordsNoticeSeen(bool seen)
+{
+    mSettings.setValue("mutedWordsNoticeSeen", seen);
+}
+
+bool UserSettings::getMutedWordsNoticeSeen() const
+{
+    return mSettings.value("mutedWordsNoticeSeen", false).toBool();
+}
+
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)
 {
     mSettings.setValue("displayMode", (int)displayMode);

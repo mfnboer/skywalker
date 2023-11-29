@@ -132,13 +132,13 @@ void Bookmarks::save(UserSettings* userSettings)
     mDirty = false;
 }
 
-Q_INVOKABLE bool Bookmarks::noticeSeen(const UserSettings* userSettings) const
+bool Bookmarks::noticeSeen(const UserSettings* userSettings) const
 {
     Q_ASSERT(userSettings);
     return userSettings->getBookmarksNoticeSeen();
 }
 
-Q_INVOKABLE void Bookmarks::setNoticeSeen(UserSettings* userSettings, bool seen) const
+void Bookmarks::setNoticeSeen(UserSettings* userSettings, bool seen) const
 {
     Q_ASSERT(userSettings);
     userSettings->setBookmarksNoticeSeen(seen);

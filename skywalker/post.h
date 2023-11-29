@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "external_view.h"
 #include "image_view.h"
+#include "normalized_word_index.h"
 #include "profile.h"
 #include "record_view.h"
 #include "record_with_media_view.h"
@@ -14,7 +15,7 @@ namespace Skywalker {
 
 struct PostReplyRef;
 
-class Post
+class Post : public NormalizedWordIndex
 {
 public:
     // A gap place holder is created to represent a gap in the timeline, i.e.
@@ -48,7 +49,7 @@ public:
 
     void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
 
-    QString getText() const;
+    QString getText() const override;
     QString getFormattedText() const;
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
@@ -95,9 +96,6 @@ public:
     bool isBookmarkNotFound() const { return mBookmarkNotFound; }
     void setBookmarkNotFound(bool notFound) { mBookmarkNotFound = notFound; }
 
-    const std::vector<QString>& getNormalizedWords() const;
-    const std::unordered_map<QString, std::vector<int>>& getUniqueNormalizedWords() const;
-
 private:
     struct HyperLink
     {
@@ -139,11 +137,6 @@ private:
 
     // Placeholder for a bookmarked post that cannot be found (probably deleted).
     bool mBookmarkNotFound = false;
-
-    std::vector<QString> mNormalizedWords;
-
-    // normalized word -> indices into mNormalizedWords
-    std::unordered_map<QString, std::vector<int>> mUniqueNormalizedWords;
 
     static int sNextGapId;
 };

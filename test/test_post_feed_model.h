@@ -13,7 +13,9 @@ class TestPostFeedModel : public QObject
 private slots:
     void init()
     {
-        mPostFeedModel = std::make_unique<PostFeedModel>(mUserDid, mFollowing, mContentFilter, mBookmarks, mUserPreferences);
+        mPostFeedModel = std::make_unique<PostFeedModel>(
+            mUserDid, mFollowing, mContentFilter,
+            mBookmarks, mMutedWords, mUserPreferences);
     }
 
     void cleanup()
@@ -436,6 +438,7 @@ private:
     ATProto::UserPreferences mUserPreferences;
     ContentFilter mContentFilter{mUserPreferences};
     Bookmarks mBookmarks;
+    MutedWords mMutedWords;
     PostFeedModel::Ptr mPostFeedModel;
     int mNextPostId = 1;
 };

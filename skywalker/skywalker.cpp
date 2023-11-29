@@ -34,8 +34,9 @@ static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
-    mTimelineModel(mUserDid, mUserFollows, mContentFilter, mBookmarks, mUserPreferences, this),
-    mNotificationListModel(mContentFilter, mBookmarks, this),
+    mMutedWords(this),
+    mTimelineModel(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, mUserPreferences, this),
+    mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mUserSettings(this)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(&mUserSettings); });
@@ -629,7 +630,7 @@ void Skywalker::getPostThread(const QString& uri)
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
             setGetPostThreadInProgress(false);
-            auto model = std::make_unique<PostThreadModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, this);
+            auto model = std::make_unique<PostThreadModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
             int postEntryIndex = model->setPostThread(std::move(thread));
 
             if (postEntryIndex < 0)
@@ -897,7 +898,7 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
 
 int Skywalker::createAuthorFeedModel(const BasicProfile& author)
 {
-    auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, mContentFilter, mBookmarks, this);
+    auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
     const int id = mAuthorFeedModels.put(std::move(model));
     return id;
 }
@@ -917,7 +918,7 @@ void Skywalker::removeAuthorFeedModel(int id)
 
 int Skywalker::createSearchPostFeedModel()
 {
-    auto model = std::make_unique<SearchPostFeedModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, this);
+    auto model = std::make_unique<SearchPostFeedModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
     const int id = mSearchPostFeedModels.put(std::move(model));
     return id;
 }
@@ -1328,7 +1329,7 @@ void Skywalker::saveUserPreferences()
 
 const BookmarksModel* Skywalker::createBookmarksModel()
 {
-    mBookmarksModel = std::make_unique<BookmarksModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, this);
+    mBookmarksModel = std::make_unique<BookmarksModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
 
     connect(mBookmarksModel.get(), &BookmarksModel::failure, this,
             [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
@@ -1478,6 +1479,7 @@ void Skywalker::signOut()
     setUnreadNotificationCount(0);
     mBookmarksModel = nullptr;
     mBookmarks.clear();
+    mMutedWords.clear();
     mUserSettings.setActiveUserDid({});
     mBsky = nullptr;
     setAutoUpdateTimelineInProgress(false);

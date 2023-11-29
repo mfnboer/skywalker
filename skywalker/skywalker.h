@@ -9,6 +9,7 @@
 #include "edit_user_preferences.h"
 #include "invite_code.h"
 #include "item_store.h"
+#include "muted_words.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
 #include "post_thread_model.h"
@@ -30,6 +31,7 @@ class Skywalker : public QObject
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
+    Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
@@ -107,6 +109,7 @@ public:
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
     Bookmarks* getBookmarks() { return &mBookmarks; }
+    MutedWords* getMutedWords() { return &mMutedWords; }
     void setAutoUpdateTimelineInProgress(bool inProgress);
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
@@ -195,6 +198,7 @@ private:
 
     Bookmarks mBookmarks;
     BookmarksModel::Ptr mBookmarksModel;
+    MutedWords mMutedWords;
     PostFeedModel mTimelineModel;
 
     bool mAutoUpdateTimelineInProgress = false;

@@ -20,7 +20,7 @@ public:
 
     explicit BookmarksModel(const QString& userDid, const IProfileStore& following,
                             const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                            QObject* parent = nullptr);
+                            const MutedWords& mutedWords, QObject* parent = nullptr);
 
     void clear();
     void addBookmarks(const std::vector<QString>& postUris, ATProto::Client& bsky);

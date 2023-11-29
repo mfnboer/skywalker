@@ -64,6 +64,12 @@ public:
     void setBookmarksNoticeSeen(bool seen);
     bool getBookmarksNoticeSeen() const;
 
+    void saveMutedWords(const QString& did, const QStringList& mutedWords);
+    QStringList getMutedWords(const QString& did) const;
+
+    void setMutedWordsNoticeSeen(bool seen);
+    bool getMutedWordsNoticeSeen() const;
+
     void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
 

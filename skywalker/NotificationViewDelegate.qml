@@ -45,6 +45,7 @@ Rectangle {
     required property list<string> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
+    required property int notificationPostMutedReason // QEnums::MutedPostReason
     required property basicprofile replyToAuthor
     required property string notificationInviteCode
     required property basicprofile notificationInviteCodeUsedBy
@@ -160,7 +161,7 @@ Rectangle {
                 postContentLabels: notificationPostLabels
                 postContentVisibility: notificationPostContentVisibility
                 postContentWarning: notificationPostContentWarning
-                postMuted: notificationAuthor.viewer.muted
+                postMuted: notificationPostMutedReason
                 postExternal: notificationPostExternal
                 postRecord: notificationPostRecord
                 postRecordWithMedia: notificationPostRecordWithMedia
@@ -289,7 +290,7 @@ Rectangle {
                 postContentLabels: notificationReasonPostLabels
                 postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                 postContentWarning: ""
-                postMuted: false
+                postMuted: QEnums.MUTED_POST_NONE
                 postDateTime: notificationReasonPostTimestamp
                 postExternal: notificationReasonPostExternal
                 postRecord: notificationReasonPostRecord

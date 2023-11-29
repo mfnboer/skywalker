@@ -190,6 +190,10 @@ qt_add_qml_module(libskywalker
         QML_FILES ReportDetailsEditor.qml
         SOURCES muted_words.h
         SOURCES muted_words.cpp
+        QML_FILES MutedWords.qml
+        QML_FILES AddMutedWord.qml
+        SOURCES normalized_word_index.h
+        SOURCES normalized_word_index.cpp
 )
 
 if (NOT ANDROID)

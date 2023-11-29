@@ -41,6 +41,7 @@ Rectangle {
     required property list<string> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property int postMutedReason // QEnums::MutedPostReason
     required property bool postLocallyDeleted
     required property bool endOfFeed
 
@@ -238,7 +239,7 @@ Rectangle {
                 postContentLabels: postLabels
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
-                postMuted: postEntry.author.viewer.muted
+                postMuted: postEntry.postMutedReason
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia

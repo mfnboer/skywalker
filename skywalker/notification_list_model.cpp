@@ -10,10 +10,12 @@
 
 namespace Skywalker {
 
-NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks, QObject* parent) :
+NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                                             const MutedWords& mutedWords, QObject* parent) :
     QAbstractListModel(parent),
     mContentFilter(contentFilter),
-    mBookmarks(bookmarks)
+    mBookmarks(bookmarks),
+    mMutedWords(mutedWords)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
 }
@@ -367,6 +369,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
+            record->setMutedReason(mMutedWords);
             return QVariant::fromValue(*record);
         }
 
@@ -384,6 +387,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
+        record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
     case Role::NotificationReasonPostTimestamp:
@@ -429,6 +433,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
+            record->setMutedReason(mMutedWords);
             return QVariant::fromValue(*record);
         }
 
@@ -446,6 +451,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
+        record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
     case Role::NotificationPostReplyRootUri:
@@ -479,6 +485,18 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         const auto& post = notification.getNotificationPost(mPostCache);
         const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
         return warning;
+    }
+    case Role::NotificationPostMutedReason:
+    {
+        if (notification.getAuthor().getViewer().isMuted())
+            return QEnums::MUTED_POST_AUTHOR;
+
+        const auto& post = notification.getNotificationPost(mPostCache);
+
+        if (mMutedWords.match(post))
+            return QEnums::MUTED_POST_WORDS;
+
+        return QEnums::MUTED_POST_NONE;
     }
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
@@ -535,6 +553,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostLabels), "notificationPostLabels" },
         { int(Role::NotificationPostContentVisibility), "notificationPostContentVisibility" },
         { int(Role::NotificationPostContentWarning), "notificationPostContentWarning" },
+        { int(Role::NotificationPostMutedReason), "notificationPostMutedReason" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::NotificationInviteCode), "notificationInviteCode" },
         { int(Role::NotificationInviteCodeUsedBy), "notificationInviteCodeUsedBy" },

@@ -2,7 +2,6 @@
 // License: GPLv3
 #include "post.h"
 #include "author_cache.h"
-#include "search_utils.h"
 #include "user_settings.h"
 #include <atproto/lib/post_master.h>
 
@@ -486,30 +485,6 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
 {
     static const std::vector<ATProto::ComATProtoLabel::Label::Ptr> NO_LABELS;
     return mPost ? mPost->mLabels : NO_LABELS;
-}
-
-const std::vector<QString>& Post::getNormalizedWords() const
-{
-    if (mNormalizedWords.empty())
-        const_cast<Post*>(this)->mNormalizedWords = SearchUtils::getWords(getText());
-
-    return mNormalizedWords;
-}
-
-const std::unordered_map<QString, std::vector<int>>& Post::getUniqueNormalizedWords() const
-{
-    if (mUniqueNormalizedWords.empty())
-    {
-        const auto& normalizedWords = getNormalizedWords();
-
-        for (int i = 0; i < (int)normalizedWords.size(); ++i)
-        {
-            const QString& word = normalizedWords[i];
-            const_cast<Post*>(this)->mUniqueNormalizedWords[word].push_back(i);
-        }
-    }
-
-    return mUniqueNormalizedWords;
 }
 
 }

@@ -13,6 +13,7 @@ Drawer {
     signal contentFiltering()
     signal blockedAccounts()
     signal mutedAccounts()
+    signal mutedWords()
     signal settings()
     signal switchAccount()
     signal inviteCodes()
@@ -110,6 +111,15 @@ Drawer {
 
                     MenuItemSvg {
                         svg: svgOutline.mute
+                    }
+                }
+
+                MenuItem {
+                    text: qsTr("Muted Words")
+                    onTriggered: mutedWords()
+
+                    MenuItemSvg {
+                        svg: svgOutline.mutedWords
                     }
                 }
             }
