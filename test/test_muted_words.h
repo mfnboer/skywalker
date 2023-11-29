@@ -97,12 +97,12 @@ private slots:
         MutedWords mutedWords;
         mutedWords.addEntry("the quick brown fox");
         mutedWords.addEntry("hello");
-        mutedWords.addEntry("hello");
+        mutedWords.addEntry("hello!");
         mutedWords.addEntry("world");
         mutedWords.addEntry("yellow fox");
 
-        mutedWords.removeEntry(2);
-        mutedWords.removeEntry(0);
+        mutedWords.removeEntry("hello!");
+        mutedWords.removeEntry("the quick brown fox");
 
         auto post = setPost("hello darkness");
         QVERIFY(mutedWords.match(post));
@@ -126,7 +126,7 @@ private slots:
         mutedWords.addEntry("Skywalker");
         QCOMPARE(changeCount, 1);
 
-        mutedWords.removeEntry(0);
+        mutedWords.removeEntry("Skywalker");
         QCOMPARE(changeCount, 2);
 
         mutedWords.addEntry("Skywalker");
@@ -137,6 +137,19 @@ private slots:
 
         mutedWords.removeEntry("Skywalker");
         QCOMPARE(changeCount, 4);
+    }
+
+    void sortedEntries()
+    {
+        MutedWords mutedWords;
+        mutedWords.addEntry("walker");
+        mutedWords.addEntry("sky");
+        mutedWords.addEntry("sky walker");
+
+        const QStringList entries = mutedWords.getEntries();
+        const QStringList expected{ { "sky", "sky walker", "walker" } };
+
+        QCOMPARE(entries, expected);
     }
 
 private:

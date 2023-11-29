@@ -31,19 +31,23 @@ signals:
     void entriesChanged();
 
 private:
-    using WordIndexType = std::unordered_map<QString, std::set<int>>;
-
-    void addWordToIndex(const QString& word, int index, WordIndexType& wordIndex);
-    void removeWordFromIndex(const QString& word, int index, WordIndexType& wordIndex);
-    void reindexAfterRemoval(int removedIndex, WordIndexType& wordIndex);
-
     struct Entry
     {
         QString mRaw;
         std::vector<QString> mNormalizedWords;
+
+        Entry(const QString& raw, const std::vector<QString>& normalizedWords) :
+            mRaw(raw), mNormalizedWords(normalizedWords) {}
+
+        bool operator<(const Entry& rhs) const { return mRaw < rhs.mRaw; }
     };
 
-    std::vector<Entry> mEntries;
+    using WordIndexType = std::unordered_map<QString, std::set<const Entry*>>;
+
+    void addWordToIndex(const Entry* entry, WordIndexType& wordIndex);
+    void removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
+
+    std::set<Entry> mEntries;
 
     // Normalized word (from single word entries) -> index
     WordIndexType mSingleWordIndex;
