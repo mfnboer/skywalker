@@ -204,7 +204,10 @@ void IndexedProfileStore::addToIndex(const BasicProfile& profile)
         return;
 
     for (const auto& word : words)
+    {
         mWordIndex[word].insert(basicProfile);
+        qDebug() << "Index:" << basicProfile->getHandle() << word;
+    }
 
     mProfileWords[basicProfile] = std::move(words);
 }

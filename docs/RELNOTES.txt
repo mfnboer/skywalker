@@ -1,5 +1,6 @@
 next
 ====
+* Muted words
 * Reporting function
 * Save pictures
 * Bug fix for bookmarked post that has been deleted.

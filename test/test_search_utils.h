@@ -18,6 +18,8 @@ private slots:
         QTest::newRow("casing") << "ABCdef" << "abcdef";
         QTest::newRow("non-letters") << "Hello, world!" << "hello, world!";
         QTest::newRow("emoji") << "😅😂🤣" << "😅😂🤣";
+        QTest::newRow("bold sans") << "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵" << "abcdefghijklmnopqrstuvwxyz0123456789";
+        QTest::newRow("math A") << "𝒜" << "a";
     }
 
     void normalizeText()
@@ -37,6 +39,9 @@ private slots:
         QTest::newRow("punctuation") << "Hello, beautiful WORLD!!" << std::vector<QString>{"hello", "beautiful", "world"};
         QTest::newRow("emoji") << "😀Hello, beautiful 😀 WORLD😅😂🤣" << std::vector<QString>{"hello", "beautiful", "world"};
         QTest::newRow("no words") << "😀, 😀 !😅😂🤣.." << std::vector<QString>{};
+        QTest::newRow("combine single letters 1") << "s k y walker" << std::vector<QString>{"s", "k", "y", "walker", "sky"};
+        QTest::newRow("combine single letters 2") << "S K Y" << std::vector<QString>{"s", "k", "y", "sky"};
+        QTest::newRow("no combine") << "H i" << std::vector<QString>{"h", "i"};
     }
 
     void getWords()

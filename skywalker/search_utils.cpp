@@ -5,11 +5,37 @@
 
 namespace Skywalker {
 
+static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
+{
+    static const int MIN_COMBINE_SIZE = 3;
+
+    std::vector<QString> combinedWords;
+    QString combined;
+
+    for (const auto& w : words)
+    {
+        if (w.size() == 1)
+        {
+            combined += w;
+            continue;
+        }
+
+        if (combined.size() >= MIN_COMBINE_SIZE)
+            combinedWords.push_back(combined);
+
+        combined.clear();
+    }
+
+    if (combined.size() >= MIN_COMBINE_SIZE)
+        combinedWords.push_back(combined);
+
+    return combinedWords;
+}
+
 QString SearchUtils::normalizeText(const QString& text)
 {
     QLocale locale;
-    const QString lowerCase = locale.toLower(text);
-    const QString NFKD = lowerCase.normalized(QString::NormalizationForm_KD);
+    const QString NFKD = text.normalized(QString::NormalizationForm_KD);
     QString normalized;
 
     for (const auto ch : NFKD)
@@ -27,7 +53,7 @@ QString SearchUtils::normalizeText(const QString& text)
         normalized.append(ch);
     }
 
-    return normalized;
+    return locale.toLower(normalized);
 }
 
 std::vector<QString> SearchUtils::getWords(const QString& text)
@@ -58,6 +84,9 @@ std::vector<QString> SearchUtils::getWords(const QString& text)
         while (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem) && startWordPos != -1)
             startWordPos = boundaryFinder.toNextBoundary();
     }
+
+    const auto combinedWords = combineSingleCharsToWords(words);
+    words.insert(words.end(), combinedWords.begin(), combinedWords.end());
 
     return words;
 }

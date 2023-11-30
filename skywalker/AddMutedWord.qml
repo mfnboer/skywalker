@@ -19,15 +19,17 @@ Dialog {
         initialText: editWord
         placeholderText: qsTr("Enter word/phrase to mute")
         enabled: true
-        focus: true
     }
 
     function getText() {
-        return textInput.text
+        return textInput.text.trim()
     }
 
     function show() {
         open()
-        textInput.forceActiveFocus()
+    }
+
+    Component.onCompleted: {
+        textInput.setFocus()
     }
 }
