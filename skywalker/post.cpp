@@ -487,4 +487,16 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
     return mPost ? mPost->mLabels : NO_LABELS;
 }
 
+std::vector<QString> Post::getHashtags() const
+{
+    if (!mPost)
+        return {};
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    return ATProto::PostMaster::getFacetTags(*record);
+}
+
 }

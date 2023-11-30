@@ -47,6 +47,8 @@ private:
             mRaw(raw), mNormalizedWords(normalizedWords) {}
 
         bool operator<(const Entry& rhs) const { return mRaw.localeAwareCompare(rhs.mRaw) < 0; }
+
+        bool isHashtag() const { return mNormalizedWords.size() == 1 && mRaw.startsWith('#'); }
     };
 
     using WordIndexType = std::unordered_map<QString, std::set<const Entry*>>;
@@ -61,6 +63,8 @@ private:
 
     // Normalized first word (from multi-word entries) -> index
     WordIndexType mFirstWordIndex;
+
+    WordIndexType mHashTagIndex;
 
     bool mDirty = false;
 };

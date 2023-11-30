@@ -127,6 +127,18 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& RecordView::getLabels()
     return mRecord->mLabels;
 }
 
+std::vector<QString> RecordView::getHashtags() const
+{
+    if (!mRecord)
+        return {};
+
+    if (mRecord && mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
+    return ATProto::PostMaster::getFacetTags(*recordValue);
+}
+
 void RecordView::setMutedReason(const MutedWords& mutedWords)
 {
     if (getAuthor().getViewer().isMuted())

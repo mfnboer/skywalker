@@ -3,6 +3,7 @@
 #pragma once
 #include <muted_words.h>
 #include <post.h>
+#include <atproto/lib/post_master.h>
 #include <QTest>
 
 using namespace Skywalker;
@@ -76,6 +77,26 @@ private slots:
             << std::vector<QString>{"!"}
             << "Hello world!"
             << false;
+
+        QTest::newRow("hashtag match")
+            << std::vector<QString>{"#sky"}
+            << "The #sky is blue."
+            << true;
+
+        QTest::newRow("hashtag no match")
+            << std::vector<QString>{"#sky"}
+            << "The sky is blue."
+            << false;
+
+        QTest::newRow("hashtag mutiple facet tags 1")
+            << std::vector<QString>{"#sky", "#blue"}
+            << "Hello blue #sky #walker"
+            << true;
+
+        QTest::newRow("hashtag mutiple facet tags 2")
+            << std::vector<QString>{"#blue", "#walker"}
+            << "Hello blue #sky #walker"
+            << true;
     }
 
     void matchPost()
@@ -171,10 +192,14 @@ private slots:
 private:
     Post setPost(const QString& text)
     {
-        mPostView.mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
-        auto postRecord = std::make_unique<ATProto::AppBskyFeed::Record::Post>();
-        postRecord->mText = text;
-        mPostView.mRecord = std::move(postRecord);
+        ATProto::Client client(nullptr);
+        ATProto::PostMaster pm(client);
+        pm.createPost(text, nullptr, [this](auto&& postRecord){
+            const auto json = postRecord->toJson();
+            mPostView.mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+            mPostView.mRecord = ATProto::AppBskyFeed::Record::Post::fromJson(json);
+        });
+
         return Post(&mPostView, 0);
     }
 

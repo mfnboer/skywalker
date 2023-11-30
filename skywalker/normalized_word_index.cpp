@@ -5,6 +5,17 @@
 
 namespace Skywalker {
 
+const std::unordered_set<QString>& NormalizedWordIndex::getUniqueHashtags() const
+{
+    if (mHashtags.empty())
+    {
+        const auto& hashtagList = getHashtags();
+        const_cast<NormalizedWordIndex*>(this)->mHashtags.insert(hashtagList.begin(), hashtagList.end());
+    }
+
+    return mHashtags;
+}
+
 const std::vector<QString>& NormalizedWordIndex::getNormalizedWords() const
 {
     if (mNormalizedWords.empty())

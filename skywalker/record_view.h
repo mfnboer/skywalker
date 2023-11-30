@@ -47,6 +47,7 @@ public:
     QVariant getExternal() const;
     QStringList getLabelTexts() const;
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    std::vector<QString> getHashtags() const override;
     QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }
     const QString& getContentWarning() const { return mContentWarning; }
     QEnums::MutedPostReason getMutedReason() const { return mMutedReason; }

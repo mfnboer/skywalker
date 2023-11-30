@@ -46,7 +46,9 @@ void MutedWords::addEntry(const QString& word)
 
     const auto& entry = *it;
 
-    if (entry.mNormalizedWords.size() == 1)
+    if (entry.isHashtag())
+        addWordToIndex(&entry, mHashTagIndex);
+    else if (entry.mNormalizedWords.size() == 1)
         addWordToIndex(&entry, mSingleWordIndex);
     else if (entry.mNormalizedWords.size() > 1)
         addWordToIndex(&entry, mFirstWordIndex);
@@ -68,7 +70,9 @@ void MutedWords::removeEntry(const QString& word)
 
     const Entry& entry = *it;
 
-    if (entry.mNormalizedWords.size() == 1)
+    if (entry.isHashtag())
+        removeWordFromIndex(&entry, mHashTagIndex);
+    else if (entry.mNormalizedWords.size() == 1)
         removeWordFromIndex(&entry, mSingleWordIndex);
     else if (entry.mNormalizedWords.size() > 1)
         removeWordFromIndex(&entry, mFirstWordIndex);
@@ -102,6 +106,17 @@ bool MutedWords::match(const NormalizedWordIndex& post) const
 {
     if (mEntries.empty())
         return false;
+
+    const auto& postHashtags = post.getUniqueHashtags();
+
+    for (const auto& [word, _] : mHashTagIndex)
+    {
+        if (postHashtags.count(word))
+        {
+            qDebug() << "Match on hashtag:" << word;
+            return true;
+        }
+    }
 
     const auto& uniquePostWords = post.getUniqueNormalizedWords();
 
