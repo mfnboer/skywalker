@@ -56,14 +56,26 @@ QString SearchUtils::normalizeText(const QString& text)
     return locale.toLower(normalized);
 }
 
-std::vector<QString> SearchUtils::getWords(const QString& text)
+std::vector<QString> SearchUtils::getNormalizedWords(const QString& text)
 {
     if (text.isEmpty())
         return {};
 
     const QString normalized = SearchUtils::normalizeText(text);
+    std::vector<QString> words = getWords(normalized);
+    const std::vector<QString>& combinedWords = combineSingleCharsToWords(words);
+    words.insert(words.end(), combinedWords.begin(), combinedWords.end());
+
+    return words;
+}
+
+std::vector<QString> SearchUtils::getWords(const QString& text)
+{
+    if (text.isEmpty())
+        return {};
+
     std::vector<QString> words;
-    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Word, normalized);
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Word, text);
     int startWordPos = 0;
 
     while (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem) && startWordPos != -1)
@@ -77,16 +89,13 @@ std::vector<QString> SearchUtils::getWords(const QString& text)
         if (endWordPos == -1)
             break;
 
-        const QString word = normalized.sliced(startWordPos, endWordPos - startWordPos);
+        const QString word = text.sliced(startWordPos, endWordPos - startWordPos);
         words.push_back(word);
 
         startWordPos = boundaryFinder.toNextBoundary();
         while (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem) && startWordPos != -1)
             startWordPos = boundaryFinder.toNextBoundary();
     }
-
-    const auto combinedWords = combineSingleCharsToWords(words);
-    words.insert(words.end(), combinedWords.begin(), combinedWords.end());
 
     return words;
 }

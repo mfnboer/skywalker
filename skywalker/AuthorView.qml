@@ -143,7 +143,6 @@ Page {
                         }
                         MenuItem {
                             text: qsTr("Report account")
-                            enabled: !isUser(author)
                             onTriggered: root.reportAuthor(author)
 
                             MenuItemSvg {

@@ -48,7 +48,7 @@ private slots:
     {
         QFETCH(QString, input);
         QFETCH(std::vector<QString>, output);
-        QCOMPARE(SearchUtils::getWords(input), output);
+        QCOMPARE(SearchUtils::getNormalizedWords(input), output);
     }
 };
 

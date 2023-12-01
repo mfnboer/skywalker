@@ -69,7 +69,7 @@ void IndexedProfileStore::clear()
 
 const std::unordered_set<const BasicProfile*> IndexedProfileStore::findProfiles(const QString& text, int limit) const
 {
-    const std::vector<QString> words = SearchUtils::getWords(text);
+    const std::vector<QString> words = SearchUtils::getNormalizedWords(text);
 
     if (words.empty())
         return {};
@@ -177,7 +177,7 @@ const std::unordered_set<const BasicProfile*> IndexedProfileStore::findWordPrefi
 
 std::set<QString> IndexedProfileStore::getWords(const BasicProfile& profile) const
 {
-    const std::vector<QString> wordList = SearchUtils::getWords(profile.getDisplayName());
+    const std::vector<QString> wordList = SearchUtils::getNormalizedWords(profile.getDisplayName());
     std::set<QString> words = std::set<QString>(wordList.begin(), wordList.end());
 
     if (!profile.hasInvalidHandle())

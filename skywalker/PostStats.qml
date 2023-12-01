@@ -90,7 +90,6 @@ Row {
 
             MenuItem {
                 text: qsTr("Report post")
-                enabled: !authorIsUser
                 onTriggered: reportPost()
 
                 MenuItemSvg {

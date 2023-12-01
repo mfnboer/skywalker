@@ -19,7 +19,7 @@ const std::unordered_set<QString>& NormalizedWordIndex::getUniqueHashtags() cons
 const std::vector<QString>& NormalizedWordIndex::getNormalizedWords() const
 {
     if (mNormalizedWords.empty())
-        const_cast<NormalizedWordIndex*>(this)->mNormalizedWords = SearchUtils::getWords(getText());
+        const_cast<NormalizedWordIndex*>(this)->mNormalizedWords = SearchUtils::getNormalizedWords(getText());
 
     return mNormalizedWords;
 }

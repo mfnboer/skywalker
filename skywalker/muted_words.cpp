@@ -34,9 +34,30 @@ void MutedWords::clear()
     emit entriesChanged();
 }
 
+// A word can be a phrase..
+static QString cleanRawWord(const QString& word)
+{
+    const auto& words = SearchUtils::getWords(word);
+    QString cleanedWord;
+
+    if (word.startsWith('#') && words.size() == 1)
+        cleanedWord += '#';
+
+    for (int i = 0; i < (int)words.size(); ++i)
+    {
+        if (i != 0)
+            cleanedWord += ' ';
+
+        cleanedWord += words[i];
+    }
+
+    return cleanedWord;
+}
+
 void MutedWords::addEntry(const QString& word)
 {
-    const auto& [it, inserted] = mEntries.emplace(word, SearchUtils::getWords(word));
+    const auto& [it, inserted] = mEntries.emplace(cleanRawWord(word),
+                                                  SearchUtils::getNormalizedWords(word));
 
     if (!inserted)
     {
