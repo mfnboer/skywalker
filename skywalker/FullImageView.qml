@@ -60,8 +60,8 @@ Page {
                         yAxis.enabled: false
 
                         onScaleChanged: (delta) => {
-                            let dx = centroid.position.x - img.getCenter().x
-                            let dy = centroid.position.y - img.getCenter().y
+                            let dx = (centroid.position.x - img.getCenter().x) * img.scale
+                            let dy = (centroid.position.y - img.getCenter().y) * img.scale
 
                             img.scale *= delta
                             imgTranslation.x -= dx * delta - dx
