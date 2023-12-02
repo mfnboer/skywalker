@@ -715,11 +715,12 @@ bool PostUtils::onlyEmojis(const QString& text)
 bool PostUtils::isEmoji(uint c)
 {
     static const std::map<uint, uint> RANGES = {
-        {0x02700, 0x027BF},
+        {0x02600, 0x026FF}, // Miscellaneous symbols
+        {0x02700, 0x027BF}, // Dingbats
         {0x0FE0E, 0x0FE0F}, // variation selectors
-        {0x1F300, 0x1F5FF},
-        {0x1F600, 0x1F64F},
-        {0x1F680, 0x1F6C5},
+        {0x1F300, 0x1F5FF}, // Miscellaneous Symbols and Pictographs
+        {0x1F600, 0x1F64F}, // Emoticons
+        {0x1F680, 0x1F6FF}, // Transport and Map Symbols
         {0x1F700, 0x1FAFF}
     };
 
