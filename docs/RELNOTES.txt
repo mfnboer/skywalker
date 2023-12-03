@@ -1,5 +1,5 @@
-next
-====
+0.2-beta
+========
 * Muted words
 * Reporting function
 * Save pictures
