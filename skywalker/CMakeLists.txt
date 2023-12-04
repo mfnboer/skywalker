@@ -194,6 +194,9 @@ qt_add_qml_module(libskywalker
         QML_FILES AddMutedWord.qml
         SOURCES normalized_word_index.h
         SOURCES normalized_word_index.cpp
+        SOURCES tenor.h
+        SOURCES tenor_gif.h
+        SOURCES tenor_category.h
 )
 
 if (NOT ANDROID)
