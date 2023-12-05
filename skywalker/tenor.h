@@ -23,15 +23,16 @@ public:
 signals:
     void searchGifsResult(const TenorGifList& results, const QString& next);
     void searchGifsFailed();
-    void categories(const TenorCategoryList& categories);
-    void categoriesFailed();
+    void categories(const TenorCategoryList categories);
 
 private:
     using Params = QList<QPair<QString, QString>>;
     QUrl buildUrl(const QString& endpoint, const Params& params) const;
 
+    void getCategories(const QString& type, TenorCategoryList& categoryList, const std::function<void()>& getNext = {});
     void searchGifsFinished(QNetworkReply* reply);
-    void categoriesFinished(QNetworkReply* reply);
+    bool categoriesFinished(QNetworkReply* reply, TenorCategoryList& categoryList);
+    void allCategoriesRetrieved();
 
     struct MediaFormat
     {
@@ -45,7 +46,8 @@ private:
     const QString mClientKey;
     QString mLocale;
     QNetworkAccessManager mNetwork;
-    TenorCategoryList mCachedCategories;
+    TenorCategoryList mCachedFeaturedCategories;
+    TenorCategoryList mCachedTrendingCategories;
 };
 
 }

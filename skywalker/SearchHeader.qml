@@ -84,8 +84,8 @@ Rectangle {
         // keyboard, nor can it set the icon to a search icon.
         SvgButton {
             id: searchButton
-            iconColor: searchText.displayText.length >= headerRect.minSearchTextLength ? guiSettings.headerTextColor : guiSettings.disabledColor
-            Material.background: guiSettings.headerColor
+            iconColor: enabled ? guiSettings.headerTextColor : guiSettings.disabledColor
+            Material.background: enabled ? guiSettings.buttonColor : guiSettings.headerColor
             svg: svgOutline.search
             onClicked: headerRect.search(searchText.displayText)
             enabled: searchText.displayText.length >= headerRect.minSearchTextLength

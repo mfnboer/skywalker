@@ -68,18 +68,35 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
 
 void Tenor::getCategories()
 {
-    if (!mCachedCategories.empty())
+    getCategories("featured", mCachedFeaturedCategories,
+                  [this]{ getCategories("trending", mCachedTrendingCategories); });
+}
+
+void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, const std::function<void()>& getNext)
+{
+    if (!categoryList.empty())
     {
-        emit categories(mCachedCategories);
+        if (getNext)
+            getNext();
+        else {
+            allCategoriesRetrieved();
+        }
+
         return;
     }
 
-    Params params{{"contentfilter", "medium"}};
-
+    Params params{{"type", type}, {"contentfilter", "medium"}};
     QNetworkRequest request(buildUrl("categories", params));
     QNetworkReply* reply = mNetwork.get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply]{ categoriesFinished(reply); });
+    connect(reply, &QNetworkReply::finished, this, [this, reply, &categoryList, getNext]{
+        categoriesFinished(reply, categoryList);
+
+        if (getNext)
+            getNext();
+        else
+            allCategoriesRetrieved();
+    });
 
     connect(reply, &QNetworkReply::errorOccurred, this, [reply](auto errCode){
         qWarning() << "Categories error:" << reply->request().url() << "error:" <<
@@ -89,7 +106,6 @@ void Tenor::getCategories()
     connect(reply, &QNetworkReply::sslErrors, this, [reply]{
         qWarning() << "Categories SSL error:" <<  reply->request().url();
     });
-
 }
 
 void Tenor::searchGifsFinished(QNetworkReply* reply)
@@ -112,6 +128,7 @@ void Tenor::searchGifsFinished(QNetworkReply* reply)
     {
         qWarning("results are missing");
         emit searchGifsFailed();
+        return;
     }
 
     TenorGifList tenorGifList;
@@ -173,14 +190,13 @@ Tenor::MediaFormat Tenor::mediaFormatFromJson(const QJsonObject& json) const
     return mediaFormat;
 }
 
-void Tenor::categoriesFinished(QNetworkReply* reply)
+bool Tenor::categoriesFinished(QNetworkReply* reply, TenorCategoryList& categoryList)
 {
     if (reply->error() != QNetworkReply::NoError)
     {
         qWarning() << "Categories failed:" << reply->request().url() << "error:" <<
             reply->error() << reply->errorString();
-        emit categoriesFailed();
-        return;
+        return false;
     }
 
     const auto data = reply->readAll();
@@ -192,7 +208,7 @@ void Tenor::categoriesFinished(QNetworkReply* reply)
     if (!tags)
     {
         qWarning("tags are missing");
-        emit categoriesFailed();
+        return false;
     }
 
     for (const auto& tag : *tags)
@@ -211,7 +227,7 @@ void Tenor::categoriesFinished(QNetworkReply* reply)
             const auto gifUrl = tagXJson.getRequiredString("image");
             qDebug() << "Category:" << searchTerm << gifUrl;
             const TenorCategory category(gifUrl, searchTerm);
-            mCachedCategories.append(category);
+            categoryList.append(category);
         }
         catch (ATProto::InvalidJsonException& e) {
             qWarning() << "Invalid JSON:" << e.msg();
@@ -219,7 +235,25 @@ void Tenor::categoriesFinished(QNetworkReply* reply)
         }
     }
 
-    emit categories(mCachedCategories);
+    return true;
+}
+
+void Tenor::allCategoriesRetrieved()
+{
+    TenorCategoryList categoryList;
+    int i = 0;
+    int j = 0;
+
+    while (i < mCachedFeaturedCategories.size() || j < mCachedTrendingCategories.size())
+    {
+        if (i < mCachedFeaturedCategories.size())
+            categoryList.append(mCachedFeaturedCategories[i++]);
+
+        if (j < mCachedTrendingCategories.size())
+            categoryList.append(mCachedTrendingCategories[j++]);
+    }
+
+    emit categories(categoryList);
 }
 
 }
