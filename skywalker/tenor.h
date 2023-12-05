@@ -14,11 +14,11 @@ class Tenor : public QObject
     Q_OBJECT
     QML_ELEMENT
 public:
-    explicit Tenor(const QString& apiKey, const QString& clientKey, QObject* parent = nullptr);
+    explicit Tenor(QObject* parent = nullptr);
 
-    //Q_INVOKABLE void searchGifs(const QString& query, const QString& pos = "");
-    //Q_INVOKABLE void getCategories();
-    //Q_INVOKABLE void registerShare(const QString& id, const QString& query);
+    Q_INVOKABLE void searchGifs(const QString& query, const QString& pos = "");
+    Q_INVOKABLE void getCategories();
+    // TODO Q_INVOKABLE void registerShare(const QString& id, const QString& query);
 
 signals:
     void searchGifsResult(const TenorGifList& results, const QString& next);
@@ -27,8 +27,23 @@ signals:
     void categoriesFailed();
 
 private:
+    using Params = QList<QPair<QString, QString>>;
+    QUrl buildUrl(const QString& endpoint, const Params& params) const;
+
+    void searchGifsFinished(QNetworkReply* reply);
+    void categoriesFinished(QNetworkReply* reply);
+
+    struct MediaFormat
+    {
+        QString mUrl;
+        QSize mSize;
+    };
+
+    MediaFormat mediaFormatFromJson(const QJsonObject& json) const;
+
     const QString mApiKey;
     const QString mClientKey;
+    QString mLocale;
     QNetworkAccessManager mNetwork;
     TenorCategoryList mCachedCategories;
 };

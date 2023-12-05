@@ -13,6 +13,7 @@ find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2)
 qt_standard_project_setup()
 
 add_compile_definitions(APP_VERSION="${APP_VERSION}")
+add_compile_definitions(TENOR_API_KEY="$ENV{TENOR_API_KEY}")
 
 add_subdirectory(atproto/lib)
 add_subdirectory(skywalker)

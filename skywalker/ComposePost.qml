@@ -114,6 +114,7 @@ Page {
         }
 
         SvgImage {
+            id: addImage
             x: 10
             y: height + 5
             width: 34
@@ -134,6 +135,34 @@ Page {
                     } else {
                         fileDialog.open()
                     }
+                }
+            }
+        }
+
+        SvgImage {
+            x: addImage.x + addImage.width + 10
+            y: height + 5
+            width: 34
+            height: 34
+            color: guiSettings.buttonColor
+            opacity: 1
+            svg: svgOutline.addGif
+
+            MouseArea {
+                property var tenorSearchView: null
+
+                y: -parent.y
+                width: parent.width
+                height: parent.height
+                onClicked: {
+                    if (!tenorSearchView)
+                    {
+                        let component = Qt.createComponent("TenorSearch.qml")
+                        tenorSearchView = component.createObject(root)
+                        tenorSearchView.onClosed.connect(() => { root.currentStack().pop() })
+                    }
+
+                    root.pushStack(tenorSearchView)
                 }
             }
         }

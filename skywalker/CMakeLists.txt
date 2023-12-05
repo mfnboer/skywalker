@@ -197,6 +197,9 @@ qt_add_qml_module(libskywalker
         SOURCES tenor.h
         SOURCES tenor_gif.h
         SOURCES tenor_category.h
+        SOURCES tenor.cpp
+        QML_FILES SearchHeader.qml
+        QML_FILES TenorSearch.qml
 )
 
 if (NOT ANDROID)

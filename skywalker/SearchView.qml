@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.VirtualKeyboard
 import skywalker
 
 Page {
@@ -13,97 +12,27 @@ Page {
 
     id: page
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
+    header: SearchHeader {
+        onBack: page.closed()
 
-        RowLayout {
-            width: parent.width
-            height: guiSettings.headerHeight
+        onSearchTextChanged: (text) => {
+            page.isTyping = true
 
-            SvgButton {
-                id: backButton
-                iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                onClicked: page.closed()
-            }
-
-            Rectangle {
-                radius: 5
-                Layout.fillWidth: true
-                height: searchText.height
-                color: guiSettigs.backgroundColor
-
-                TextInput {
-                    id: searchText
-                    EnterKeyAction.actionId: EnterKeyAction.Search
-                    width: parent.width
-                    padding: 5
-                    rightPadding: clearButton.width
-                    font.pointSize: guiSettings.scaledFont(9/8)
-                    color: guiSettigs.textColor
-                    inputMethodHints: Qt.ImhNoAutoUppercase
-                    maximumLength: 2048
-                    focus: true
-
-                    onDisplayTextChanged: {
-                        page.isTyping = true
-
-                        if (displayText.length > 0) {
-                            typeaheadSearchTimer.start()
-                        } else {
-                            typeaheadSearchTimer.stop()
-                            searchUtils.authorTypeaheadList = []
-                        }
-                    }
-
-                    // Does not work with Android
-                    Keys.onReleased: (event) => {
-                        if (event.key === Qt.Key_Return) {
-                            searchUtils.search(displayText)
-                        }
-                    }
-
-                    SvgButton {
-                        id: clearButton
-                        anchors.right: parent.right
-                        imageMargin: 8
-                        y: parent.y - parent.padding
-                        width: height
-                        height: parent.height + 10
-                        iconColor: guiSettigs.textColor
-                        Material.background: "transparent"
-                        svg: svgOutline.close
-                        visible: searchText.displayText.length > 0
-                        onClicked: searchText.clear()
-                    }
-                }
-
-                Text {
-                    width: searchText.width
-                    padding: searchText.padding
-                    font.pointSize: searchText.font.pointSize
-                    color: guiSettigs.placeholderTextColor
-                    text: qsTr("Search")
-                    visible: searchText.displayText.length === 0
-                }
-            }
-
-            // WORKAROUND for Android
-            // Qt does not catch the signal of the ENTER key from the Android
-            // keyboard, nor can it set the icon to a search icon.
-            SvgButton {
-                id: searchButton
-                iconColor: searchText.displayText.length > 0 ? guiSettings.headerTextColor : guiSettigs.disabledColor
-                Material.background: guiSettigs.headerColor
-                svg: svgOutline.search
-                onClicked: searchUtils.search(searchText.displayText)
-                enabled: searchText.displayText.length > 0
+            if (text.length > 0) {
+                typeaheadSearchTimer.start()
+            } else {
+                typeaheadSearchTimer.stop()
+                searchUtils.authorTypeaheadList = []
             }
         }
+
+        onKeyRelease: (event) => {
+            if (event.key === Qt.Key_Return) {
+                searchUtils.search(getDisplayText())
+            }
+        }
+
+        onSearch: (text) => { searchUtils.search(text) }
     }
 
     footer: SkyFooter {
@@ -219,8 +148,10 @@ Page {
         id: typeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (searchText.displayText.length > 0)
-                searchUtils.searchAuthorsTypeahead(searchText.displayText)
+            const text = page.header.getDisplayText()
+
+            if (text.length > 0)
+                searchUtils.searchAuthorsTypeahead(text)
         }
     }
 
@@ -253,7 +184,7 @@ Page {
     }
 
     GuiSettings {
-        id: guiSettigs
+        id: guiSettings
     }
 
     function forceDestroy() {
@@ -265,12 +196,10 @@ Page {
     }
 
     function hide() {
-        // Hack to hide the selection anchor on Android that should not have been
-        // there at all.
-        backButton.forceActiveFocus()
+        page.header.unfocus()
     }
 
     function show() {
-        searchText.forceActiveFocus()
+        page.header.forceFocus()
     }
 }

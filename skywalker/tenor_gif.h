@@ -6,42 +6,40 @@
 
 namespace Skywalker {
 
-class TenorGif : public QObject
+class TenorGif
 {
-    Q_OBJECT
+    Q_GADGET
     Q_PROPERTY(QString id MEMBER mId CONSTANT FINAL)
     Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
-    Q_PROPERTY(QString gifUrl MEMBER mGifUrl CONSTANT FINAL)
-    Q_PROPERTY(QSize gifSize MEMBER mGifSize CONSTANT FINAL)
-    Q_PROPERTY(QString tinyGifUrl MEMBER mTinyGifUrl CONSTANT FINAL)
-    Q_PROPERTY(QSize tinyGifSize MEMBER mTinyGifSize CONSTANT FINAL)
+    Q_PROPERTY(QString url MEMBER mUrl CONSTANT FINAL)
+    Q_PROPERTY(QSize size MEMBER mSize CONSTANT FINAL)
+    Q_PROPERTY(QString nanoUrl MEMBER mNanoUrl CONSTANT FINAL)
+    Q_PROPERTY(QSize nanoSize MEMBER mNanoSize CONSTANT FINAL)
     Q_PROPERTY(QString previewUrl MEMBER mPreviewUrl CONSTANT FINAL)
     Q_PROPERTY(QSize previewSize MEMBER mPreviewSize CONSTANT FINAL)
-    QML_ELEMENT
+    QML_VALUE_TYPE(tenorgif)
 
 public:
     TenorGif(
             const QString& id,
             const QString& description,
-            const QString& gifUrl, QSize gifSize,
-            const QString& tinyGifUrl, QSize tinyGifSize,
-            const QString& previewUrl, QSize previewSize,
-            QObject* parent = nullptr) :
-        QObject(parent),
+            const QString& url, QSize size,
+            const QString& nanoUrl, QSize nanoSize,
+            const QString& previewUrl, QSize previewSize) :
         mId(id),
         mDescription(description),
-        mGifUrl(gifUrl), mGifSize(gifSize),
-        mTinyGifUrl(tinyGifUrl), mTinyGifSize(tinyGifSize),
+        mUrl(url), mSize(size),
+        mNanoUrl(nanoUrl), mNanoSize(nanoSize),
         mPreviewUrl(previewUrl), mPreviewSize(previewSize)
     {}
 
 private:
     QString mId;
     QString mDescription;
-    QString mGifUrl;
-    QSize mGifSize;
-    QString mTinyGifUrl;
-    QSize mTinyGifSize;
+    QString mUrl;
+    QSize mSize;
+    QString mNanoUrl;
+    QSize mNanoSize;
     QString mPreviewUrl;
     QSize mPreviewSize;
 };
@@ -49,3 +47,5 @@ private:
 using TenorGifList = QList<TenorGif>;
 
 }
+
+Q_DECLARE_METATYPE(Skywalker::TenorGif)
