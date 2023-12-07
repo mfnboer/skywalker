@@ -11,10 +11,14 @@ constexpr char const* TENOR_BASE_URL = "https://tenor.googleapis.com/v2/";
 
 }
 
+QNetworkAccessManager Tenor::sNetwork;
+
 Tenor::Tenor(QObject* parent) :
     QObject(parent),
+    Presence(),
     mApiKey(TENOR_API_KEY),
-    mClientKey("com.gmail.mfnboer.skywalker")
+    mClientKey("com.gmail.mfnboer.skywalker"),
+    mOverviewModel(mWidth, mSpacing, this)
 {
     QLocale locale;
     mLocale = QString("%1_%2").arg(
@@ -22,8 +26,37 @@ Tenor::Tenor(QObject* parent) :
         QLocale::territoryToCode(locale.territory()));
     qDebug() << "Locale:" << mLocale;
 
-    mNetwork.setAutoDeleteReplies(true);
-    mNetwork.setTransferTimeout(15000);
+    sNetwork.setAutoDeleteReplies(true);
+    sNetwork.setTransferTimeout(15000);
+}
+
+void Tenor::setWidth(int width)
+{
+    if (width == mWidth)
+        return;
+
+    mWidth = width;
+    mOverviewModel.setMaxRowWidth(mWidth);
+    emit widthChanged();
+}
+
+void Tenor::setSpacing(int spacing)
+{
+    if (spacing == mSpacing)
+        return;
+
+    mSpacing = spacing;
+    mOverviewModel.setSpacing(mSpacing);
+    emit spacingChanged();
+}
+
+void Tenor::setSearchInProgress(bool inProgress)
+{
+    if (inProgress == mSearchInProgress)
+        return;
+
+    mSearchInProgress = inProgress;
+    emit searchInProgressChanged();
 }
 
 QUrl Tenor::buildUrl(const QString& endpoint, const Params& params) const
@@ -43,33 +76,85 @@ QUrl Tenor::buildUrl(const QString& endpoint, const Params& params) const
 
 void Tenor::searchGifs(const QString& query, const QString& pos)
 {
+    if (mSearchInProgress)
+    {
+        qWarning() << "Search already in progress";
+        return;
+    }
+
+    if (pos.isEmpty())
+    {
+        mNextPos.clear();
+        mOverviewModel.clear();
+        mQuery = query;
+    }
+    else
+    {
+        Q_ASSERT(query == mQuery);
+    }
+
     // We use the MP4 formats as those are much smaller than GIF
     Params params{{"q", query},
-                  {"media_filter", "mp4,nanomp4,gifpreview"},
+                  {"media_filter", "mediumgif,tinygif,gifpreview"},
                   {"contentfilter", "medium"}};
 
     if (!pos.isEmpty())
         params.append({"pos", pos});
 
+    setSearchInProgress(true);
     QNetworkRequest request(buildUrl("search", params));
-    QNetworkReply* reply = mNetwork.get(request);
+    QNetworkReply* reply = sNetwork.get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply]{ searchGifsFinished(reply); });
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, query]{
+        if (!presence)
+            return;
 
-    connect(reply, &QNetworkReply::errorOccurred, this, [reply](auto errCode){
+        setSearchInProgress(false);
+        searchGifsFinished(reply, query);
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
         qWarning() << "Search error:" << reply->request().url() << "error:" <<
                 errCode << reply->errorString();
     });
 
-    connect(reply, &QNetworkReply::sslErrors, this, [reply]{
+    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
         qWarning() << "Search SSL error:" <<  reply->request().url();
     });
 }
 
+void Tenor::getNextPage()
+{
+    Q_ASSERT(!mQuery.isEmpty());
+
+    if (mQuery.isEmpty())
+    {
+        qWarning() << "No previous query available";
+        return;
+    }
+
+    if (mNextPos.isEmpty())
+    {
+        qDebug() << "End of feed";
+        return;
+    }
+
+    searchGifs(mQuery, mNextPos);
+}
+
 void Tenor::getCategories()
 {
-    getCategories("featured", mCachedFeaturedCategories,
-                  [this]{ getCategories("trending", mCachedTrendingCategories); });
+    // The trending categories seem not very valuable, and there are
+    // more than enough featured categories.
+    getCategories("featured", mCachedFeaturedCategories);
 }
 
 void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, const std::function<void()>& getNext)
@@ -87,9 +172,12 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
 
     Params params{{"type", type}, {"contentfilter", "medium"}};
     QNetworkRequest request(buildUrl("categories", params));
-    QNetworkReply* reply = mNetwork.get(request);
+    QNetworkReply* reply = sNetwork.get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply, &categoryList, getNext]{
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, &categoryList, getNext]{
+        if (!presence)
+            return;
+
         categoriesFinished(reply, categoryList);
 
         if (getNext)
@@ -108,7 +196,35 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
     });
 }
 
-void Tenor::searchGifsFinished(QNetworkReply* reply)
+void Tenor::registerShare(const TenorGif& gif)
+{
+    Params params{{"id", gif.getId()}, {"q", gif.getSearchTerm()}};
+    QNetworkRequest request(buildUrl("registershare", params));
+    QNetworkReply* reply = sNetwork.get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [reply]{
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            qDebug() << "Register Share OK";
+        }
+        else
+        {
+            qWarning() << "Register Share failed:" << reply->request().url() << "error:" <<
+                reply->error() << reply->errorString();
+        }
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [reply](auto errCode){
+        qWarning() << "Register Share error:" << reply->request().url() << "error:" <<
+            errCode << reply->errorString();
+    });
+
+    connect(reply, &QNetworkReply::sslErrors, this, [reply]{
+        qWarning() << "Register Share SSL error:" <<  reply->request().url();
+    });
+}
+
+void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
 {
     if (reply->error() != QNetworkReply::NoError)
     {
@@ -126,8 +242,7 @@ void Tenor::searchGifsFinished(QNetworkReply* reply)
 
     if (!results)
     {
-        qWarning("results are missing");
-        emit searchGifsFailed();
+        qDebug("no results");
         return;
     }
 
@@ -149,17 +264,17 @@ void Tenor::searchGifsFinished(QNetworkReply* reply)
             qDebug() << id << description;
             const auto mediaFormatsJson = resultXJson.getRequiredObject("media_formats");
             const ATProto::XJsonObject mediaFormatsXJson(mediaFormatsJson);
-            const auto mp4Json = mediaFormatsXJson.getRequiredObject("mp4");
-            const auto mp4Format = mediaFormatFromJson(mp4Json);
-            const auto nanoMp4Json = mediaFormatsXJson.getRequiredObject("nanomp4");
-            const auto nanoMp4Format = mediaFormatFromJson(nanoMp4Json);
-            const auto gifPreviewJson = mediaFormatsXJson.getRequiredObject("gifpreview");
-            const auto gifPreviewFormat = mediaFormatFromJson(gifPreviewJson);
+            const auto normalJson = mediaFormatsXJson.getRequiredObject("mediumgif");
+            const auto normalFormat = mediaFormatFromJson(normalJson);
+            const auto smallJson = mediaFormatsXJson.getRequiredObject("tinygif");
+            const auto smallFormat = mediaFormatFromJson(smallJson);
+            const auto imageJson = mediaFormatsXJson.getRequiredObject("gifpreview");
+            const auto imageFormat = mediaFormatFromJson(imageJson);
 
-            const TenorGif tenorGif(id, description,
-                                    mp4Format.mUrl, mp4Format.mSize,
-                                    nanoMp4Format.mUrl, nanoMp4Format.mSize,
-                                    gifPreviewFormat.mUrl, gifPreviewFormat.mSize);
+            const TenorGif tenorGif(id, description, query,
+                                    normalFormat.mUrl, normalFormat.mSize,
+                                    smallFormat.mUrl, smallFormat.mSize,
+                                    imageFormat.mUrl, imageFormat.mSize);
 
             tenorGifList.append(tenorGif);
         }
@@ -169,8 +284,8 @@ void Tenor::searchGifsFinished(QNetworkReply* reply)
         }
     }
 
-    const auto next = xjson.getOptionalString("next", "");
-    emit searchGifsResult(tenorGifList, next);
+    mNextPos = xjson.getOptionalString("next", "");
+    mOverviewModel.addGifs(tenorGifList);
 }
 
 Tenor::MediaFormat Tenor::mediaFormatFromJson(const QJsonObject& json) const

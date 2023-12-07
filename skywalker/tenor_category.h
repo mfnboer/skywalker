@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <QObject>
+#include <QString>
 #include <QtQmlIntegration>
 
 namespace Skywalker {

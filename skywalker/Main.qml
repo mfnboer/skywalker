@@ -724,6 +724,13 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function viewFullAnimatedImage(imageUrl, imageTitle) {
+        let component = Qt.createComponent("FullAnimatedImageView.qml")
+        let view = component.createObject(root, { imageUrl: imageUrl, imageTitle: imageTitle })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+    }
+
     function viewTimeline() {
         unwindStack()
         stackLayout.currentIndex = stackLayout.timelineIndex

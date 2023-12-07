@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 include(FetchContent)
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2 Multimedia)
 
 qt_standard_project_setup()
 
@@ -46,6 +46,8 @@ qt_add_qml_module(appskywalker
         qtquickcontrols2.conf
         fonts/NotoSansMath-Regular.ttf
         images/skywalker.png
+        images/PB_tenor_logo_blue_horizontal.svg
+        images/via_tenor_logo_blue.svg
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java
@@ -93,6 +95,7 @@ target_link_libraries(appskywalker
     PRIVATE Qt6::Core
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
+    PRIVATE Qt6::Multimedia
 )
 
 include(GNUInstallDirs)

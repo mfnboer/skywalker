@@ -14,6 +14,20 @@ LinkCardReader::LinkCardReader(QObject* parent):
     mNetwork.setTransferTimeout(15000);
 }
 
+LinkCard* LinkCardReader::makeLinkCard(const QString& link, const QString& title,
+                       const QString& description, const QString& thumb)
+{
+    LinkCard* card = new LinkCard(this);
+    card->setLink(link);
+    card->setTitle(title);
+    card->setDescription(description);
+    card->setThumb(thumb);
+
+    QUrl url(link);
+    mCardCache.insert(url, card);
+    return mCardCache[url];
+}
+
 void LinkCardReader::getLinkCard(const QString& link)
 {
     qDebug() << "Get link card:" << link;

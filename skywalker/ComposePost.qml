@@ -75,16 +75,28 @@ Page {
             onClicked: {
                 postButton.enabled = false
 
-                if (!linkCard.card) {
-                    postUtils.post(postText.text, images, altTexts,
-                                   replyToPostUri, replyToPostCid,
-                                   replyRootPostUri, replyRootPostCid,
-                                   quoteUri, quoteCid);
-                } else {
+                if (linkCard.card) {
                     postUtils.post(postText.text, linkCard.card,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
                                    quoteUri, quoteCid)
+                } else if (gifAttachment.gif) {
+                    let gifCard = linkCardReader.makeLinkCard(
+                            gifAttachment.gif.url,
+                            gifAttachment.gif.description + " (via Tenor)",
+                            qsTr("This GIF has been posted from Skywalker for Android. " +
+                                 "Get Skywalker from Google Play."),
+                            gifAttachment.gif.imageUrl)
+
+                    postUtils.post(postText.text, gifCard,
+                                   replyToPostUri, replyToPostCid,
+                                   replyRootPostUri, replyRootPostCid,
+                                   quoteUri, quoteCid)
+                } else {
+                    postUtils.post(postText.text, images, altTexts,
+                                   replyToPostUri, replyToPostCid,
+                                   replyRootPostUri, replyRootPostCid,
+                                   quoteUri, quoteCid);
                 }
             }
         }
@@ -119,15 +131,19 @@ Page {
             y: height + 5
             width: 34
             height: 34
-            color: page.images.length < maxImages && imageScroller.visible && !pickingImage ? guiSettings.buttonColor : guiSettings.disabledColor
+            color: addImage.mustEnable() ? guiSettings.buttonColor : guiSettings.disabledColor
             opacity: 1
             svg: svgOutline.addImage
+
+            function mustEnable() {
+                return page.images.length < maxImages && imageScroller.visible && !pickingImage
+            }
 
             MouseArea {
                 y: -parent.y
                 width: parent.width
                 height: parent.height
-                enabled: page.images.length < maxImages && !pickingImage
+                enabled: addImage.mustEnable()
 
                 onClicked: {
                     if (Qt.platform.os === "android") {
@@ -140,13 +156,18 @@ Page {
         }
 
         SvgImage {
+            id: addGif
             x: addImage.x + addImage.width + 10
             y: height + 5
             width: 34
             height: 34
-            color: guiSettings.buttonColor
+            color: addGif.mustEnable() ? guiSettings.buttonColor : guiSettings.disabledColor
             opacity: 1
             svg: svgOutline.addGif
+
+            function mustEnable() {
+                return !gifAttachment.visible && !linkCard.visible && page.images.length === 0
+            }
 
             MouseArea {
                 property var tenorSearchView: null
@@ -154,12 +175,18 @@ Page {
                 y: -parent.y
                 width: parent.width
                 height: parent.height
+                enabled: addGif.mustEnable()
+
                 onClicked: {
                     if (!tenorSearchView)
                     {
                         let component = Qt.createComponent("TenorSearch.qml")
                         tenorSearchView = component.createObject(root)
                         tenorSearchView.onClosed.connect(() => { root.currentStack().pop() })
+                        tenorSearchView.onSelected.connect((gif) => {
+                                gifAttachment.show(gif)
+                                root.currentStack().pop()
+                        })
                     }
 
                     root.pushStack(tenorSearchView)
@@ -305,7 +332,7 @@ Page {
             anchors.top: postText.bottom
             contentWidth: imageRow.width
             contentHeight: height
-            visible: !linkCard.visible
+            visible: !linkCard.visible && !gifAttachment.visible
 
             Row {
                 id: imageRow
@@ -351,6 +378,37 @@ Page {
             }
         }
 
+        // GIF attachment
+        AnimatedImage {
+            property var gif: null
+
+            id: gifAttachment
+            x: 10
+            width: Math.min(gif ? gif.smallSize.width : 1, page.width - 20)
+            anchors.top: imageScroller.bottom
+            fillMode: Image.PreserveAspectFit
+            source: gif ? gif.smallUrl : ""
+            visible: gif
+
+            function show(gif) {
+                gifAttachment.gif = gif
+                linkCard.hide()
+            }
+
+            function hide() {
+                gifAttachment.gif = null
+            }
+
+            SvgButton {
+                x: parent.width - width
+                height: width
+                iconColor: guiSettings.buttonTextColor
+                Material.background: guiSettings.buttonColor
+                svg: svgOutline.close
+                onClicked: gifAttachment.hide()
+            }
+        }
+
         // Link card attachment
         LinkCardView {
             property var card: null
@@ -359,7 +417,7 @@ Page {
             x: 10
             width: page.width - 20
             height: card ? columnHeight : 0
-            anchors.top: imageScroller.bottom
+            anchors.top: gifAttachment.bottom
             uri: card ? card.link : ""
             title: card ? card.title : ""
             description: card ? card.description : ""
@@ -368,6 +426,7 @@ Page {
 
             function show(card) {
                 linkCard.card = card
+                gifAttachment.hide()
             }
 
             function hide() {
@@ -483,6 +542,9 @@ Page {
         }
 
         onFirstWebLinkChanged: {
+            if (gifAttachment.visible)
+                return
+
             linkCard.hide()
 
             if (firstWebLink) {
