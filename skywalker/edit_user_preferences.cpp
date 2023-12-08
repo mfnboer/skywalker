@@ -80,4 +80,14 @@ void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
     }
 }
 
+void EditUserPreferences::setGifAutoPlay(const bool autoPlay)
+{
+    if (autoPlay != mGifAutoPlay)
+    {
+        mGifAutoPlay = autoPlay;
+        setLocalSettingsModified(true);
+        emit gifAutoPlayChanged();
+    }
+}
+
 }

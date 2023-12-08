@@ -46,7 +46,7 @@ Item {
         width: parent.width - 2
         contentVisibiliy: view.contentVisibility
         contentWarning: view.contentWarning
-        images: [postExternal.thumbUrl]
+        imageUrl: postExternal.thumbUrl
     }
     MouseArea {
         anchors.fill: parent

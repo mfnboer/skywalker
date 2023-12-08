@@ -20,8 +20,6 @@ RoundedFrame {
         Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
         url: frame.url
-
-        onImplicitWidthChanged: console.debug("IMAGE WIDTH:", implicitWidth)
     }
     MouseArea {
         enabled: filter.imageVisible()

@@ -165,6 +165,12 @@ Page {
         spacing: 4
 
         onCategories: (categoryList) => categoriesView.model = categoryList
+        onSearchGifsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: tenor.searchInProgress
     }
 
     GuiSettings {

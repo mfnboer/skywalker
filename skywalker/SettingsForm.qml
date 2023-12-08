@@ -194,6 +194,13 @@ Page {
                 }
             }
         }
+
+        Switch {
+            Material.accent: guiSettings.buttonColor
+            text: qsTr("GIF auto play")
+            checked: userPrefs.gifAutoPlay
+            onCheckedChanged: userPrefs.gifAutoPlay = checked
+        }
     }
 
     GuiSettings {

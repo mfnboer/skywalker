@@ -95,7 +95,7 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
 
     // We use the MP4 formats as those are much smaller than GIF
     Params params{{"q", query},
-                  {"media_filter", "mediumgif,tinygif,gifpreview"},
+                  {"media_filter", "mp4,tinygif,gifpreview"},
                   {"contentfilter", "medium"}};
 
     if (!pos.isEmpty())
@@ -233,13 +233,14 @@ void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
     {
         qWarning() << "Search failed:" << reply->request().url() << "error:" <<
                 reply->error() << reply->errorString();
-        emit searchGifsFailed();
+        emit searchGifsFailed(reply->errorString());
         return;
     }
 
     const auto data = reply->readAll();
     const QJsonDocument json(QJsonDocument::fromJson(data));
-    const ATProto::XJsonObject xjson(json.object());
+    const auto jsonObject = json.object();
+    const ATProto::XJsonObject xjson(jsonObject);
 
     const auto results = xjson.getOptionalArray("results");
 
@@ -267,7 +268,7 @@ void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
             qDebug() << id << description;
             const auto mediaFormatsJson = resultXJson.getRequiredObject("media_formats");
             const ATProto::XJsonObject mediaFormatsXJson(mediaFormatsJson);
-            const auto normalJson = mediaFormatsXJson.getRequiredObject("mediumgif");
+            const auto normalJson = mediaFormatsXJson.getRequiredObject("mp4");
             const auto normalFormat = mediaFormatFromJson(normalJson);
             const auto smallJson = mediaFormatsXJson.getRequiredObject("tinygif");
             const auto smallFormat = mediaFormatFromJson(smallJson);
@@ -319,7 +320,8 @@ bool Tenor::categoriesFinished(QNetworkReply* reply, TenorCategoryList& category
 
     const auto data = reply->readAll();
     const QJsonDocument json(QJsonDocument::fromJson(data));
-    const ATProto::XJsonObject xjson(json.object());
+    const auto jsonObject = json.object();
+    const ATProto::XJsonObject xjson(jsonObject);
 
     const auto tags = xjson.getOptionalArray("tags");
 

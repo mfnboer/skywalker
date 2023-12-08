@@ -73,6 +73,9 @@ public:
     void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
 
+    void setGifAutoPlay(bool autoPlay);
+    Q_INVOKABLE bool getGifAutoPlay() const;
+
 private:
     QString key(const QString& did, const QString& subkey) const;
 

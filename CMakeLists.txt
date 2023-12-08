@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(appskywalker VERSION 0.2 LANGUAGES CXX)
+project(appskywalker VERSION 0.3 LANGUAGES CXX)
 set(VERSION_CODE 4)
-set(APP_VERSION ${PROJECT_VERSION}-beta)
+set(APP_VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 include(FetchContent)
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2 Multimedia)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2)
 
 qt_standard_project_setup()
 
@@ -95,7 +95,6 @@ target_link_libraries(appskywalker
     PRIVATE Qt6::Core
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
-    PRIVATE Qt6::Multimedia
 )
 
 include(GNUInstallDirs)

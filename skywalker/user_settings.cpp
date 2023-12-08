@@ -245,4 +245,14 @@ QEnums::DisplayMode UserSettings::getDisplayMode() const
     return QEnums::DisplayMode(mode);
 }
 
+void UserSettings::setGifAutoPlay(bool autoPlay)
+{
+    mSettings.setValue("gifAutoPlay", autoPlay);
+}
+
+bool UserSettings::getGifAutoPlay() const
+{
+    return mSettings.value("gifAutoPlay", true).toBool();
+}
+
 }

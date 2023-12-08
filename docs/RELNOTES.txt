@@ -1,6 +1,7 @@
-next
-====
-* Post and view GIFs
+0.3
+===
+* Post and view GIFs (compatible with Graysky and deck.blue)
+* GIF auto play can be enabled/disabled in the settings.
 * Reduced maximum pages to fetch for timeline rewinding.
 
 0.2-beta

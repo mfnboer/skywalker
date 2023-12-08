@@ -37,7 +37,7 @@ public:
     TenorOverviewModel* getOverviewModel() { return &mOverviewModel; }
 
 signals:
-    void searchGifsFailed();
+    void searchGifsFailed(const QString& error);
     void categories(const TenorCategoryList categories);
     void widthChanged();
     void spacingChanged();

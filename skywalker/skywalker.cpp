@@ -1274,6 +1274,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
+    mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
     mEditUserPreferences->setLocalSettingsModified(false);
 
     if (session->getPDS())
@@ -1302,8 +1303,11 @@ void Skywalker::saveUserPreferences()
 
     if (mEditUserPreferences->isLocalSettingsModified())
     {
-        qDebug() << "Changed display mode:" << mEditUserPreferences->getDisplayMode();
+        qDebug() << "Display mode:" << mEditUserPreferences->getDisplayMode();
         mUserSettings.setDisplayMode(mEditUserPreferences->getDisplayMode());
+
+        qDebug() << "GIF auto play:" << mEditUserPreferences->getGifAutoPlay();
+        mUserSettings.setGifAutoPlay(mEditUserPreferences->getGifAutoPlay());
     }
 
     if (!mEditUserPreferences->isModified())
