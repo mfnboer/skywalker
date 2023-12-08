@@ -11,15 +11,17 @@ RoundedFrame {
 
     id: frame
     objectToRound: img
-    width: parent.width
+    width: filter.imageVisible() ? img.width : parent.width
     height: filter.imageVisible() ? img.height : filter.height
 
     ThumbAnimatedImageView {
         id: img
-        width: parent.width
+        width: Math.min(implicitWidth, frame.parent.width)
         Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
         url: frame.url
+
+        onImplicitWidthChanged: console.debug("IMAGE WIDTH:", implicitWidth)
     }
     MouseArea {
         enabled: filter.imageVisible()

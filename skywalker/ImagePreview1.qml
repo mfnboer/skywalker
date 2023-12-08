@@ -10,12 +10,12 @@ RoundedFrame {
 
     id: frame
     objectToRound: img
-    width: parent.width
+    width: filter.imageVisible() ? img.width : parent.width
     height: filter.imageVisible() ? img.height : filter.height
 
     ThumbImageView {
         id: img
-        width: parent.width
+        width: Math.min(implicitWidth, frame.parent.width)
         Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
         imageView: filter.getImage(0)
