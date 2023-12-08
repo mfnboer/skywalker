@@ -81,6 +81,8 @@ Page {
                                    replyRootPostUri, replyRootPostCid,
                                    quoteUri, quoteCid)
                 } else if (gifAttachment.gif) {
+                    tenor.registerShare(gifAttachment.gif)
+
                     let gifCard = linkCardReader.makeLinkCard(
                             gifAttachment.gif.url,
                             gifAttachment.gif.description + " (via Tenor)",
@@ -594,6 +596,10 @@ Page {
             // Remove models now before the Skywalker object is destroyed.
             searchUtils.removeModels()
         }
+    }
+
+    Tenor {
+        id: tenor
     }
 
     Timer {

@@ -198,6 +198,9 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
 
 void Tenor::registerShare(const TenorGif& gif)
 {
+    qDebug() << "Register share:" << gif.getDescription() <<
+            "id:" << gif.getId() << "q:" << gif.getSearchTerm();
+
     Params params{{"id", gif.getId()}, {"q", gif.getSearchTerm()}};
     QNetworkRequest request(buildUrl("registershare", params));
     QNetworkReply* reply = sNetwork.get(request);

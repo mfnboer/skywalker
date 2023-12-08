@@ -52,11 +52,11 @@ public:
     Q_INVOKABLE void resumeSession();
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
-    Q_INVOKABLE void syncTimeline(int maxPages = 50);
-    Q_INVOKABLE void getTimeline(int limit, int maxPages = 50, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void syncTimeline(int maxPages = 20);
+    Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0);
-    Q_INVOKABLE void getTimelineNextPage(int maxPages = 50, int minEntries = 10);
+    Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
@@ -67,8 +67,8 @@ public:
     Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
     Q_INVOKABLE void clearAuthorFeed(int id);
-    Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 50, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 50, int minEntries = 10);
+    Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE int createAuthorFeedModel(const BasicProfile& author);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);

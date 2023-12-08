@@ -1,3 +1,8 @@
+next
+====
+* Post and view GIFs
+* Reduced maximum pages to fetch for timeline rewinding.
+
 0.2-beta
 ========
 * Muted words

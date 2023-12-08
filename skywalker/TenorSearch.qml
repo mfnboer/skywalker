@@ -27,6 +27,7 @@ Page {
         width: parent.width
         height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
+        color: guiSettings.backgroundColor
 
         Image {
             id: tenorAttribution
