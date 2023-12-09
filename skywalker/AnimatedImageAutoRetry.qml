@@ -21,7 +21,7 @@ AnimatedImage {
 
         console.debug("Failed to load animated image:", img.source)
 
-        if (retryCount >= 3)
+        if (retryCount >= 5)
             return
 
         let retrySeconds = 2 ** retryCount

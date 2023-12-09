@@ -1470,7 +1470,7 @@ void Skywalker::signOut()
     stopRefreshTimers();
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();
-    mSearchPostFeedModels.clear(); // TODO: clear model id in SearchUtils
+    mSearchPostFeedModels.clear();
     mAuthorListModels.clear();
     mNotificationListModel.clear();
     mUserPreferences = ATProto::UserPreferences();
@@ -1485,7 +1485,6 @@ void Skywalker::signOut()
     mBookmarks.clear();
     mMutedWords.clear();
     mUserSettings.setActiveUserDid({});
-    mBsky = nullptr;
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);
     setGetPostThreadInProgress(false);

@@ -671,7 +671,10 @@ Page {
     }
 
     function hasContent() {
-        return postText.graphemeLength > 0 || page.images.length > 0
+        return postText.graphemeLength > 0 ||
+                page.images.length > 0 ||
+                linkCard.card ||
+                gifAttachment.gif
     }
 
     function cancel() {

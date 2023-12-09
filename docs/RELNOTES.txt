@@ -1,3 +1,9 @@
+next
+====
+* Bug fix: you could not send a post with only a GIF as content.
+* Increased image loading retries to 5.
+* Do not release client object on signout.
+
 0.3
 ===
 * Post and view GIFs (compatible with Graysky and deck.blue)
