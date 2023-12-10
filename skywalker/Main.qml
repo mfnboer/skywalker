@@ -22,7 +22,7 @@ ApplicationWindow {
         if (currentStack().depth > 1) {
             let item = currentStackItem()
 
-            if (item instanceof SignIn || item instanceof StartupStatus) {
+            if (item instanceof SignIn || item instanceof Login || item instanceof StartupStatus) {
                 // The Sign In page should not be popped from the stack.
                 // The user must sign in or close the app.
 

@@ -64,6 +64,7 @@ Page {
             model: ["bsky.social"]
             editable: true
             editText: host
+            inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
             enabled: isNewAccount()
             activeFocusOnTab: false
         }
@@ -87,7 +88,7 @@ Page {
             svgIcon: svgOutline.atSign
             initialText: user
             placeholderText: qsTr("User")
-            inputMethodHints: Qt.ImhNoAutoUppercase
+            inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
             maximumLength: 253
             validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
         }
@@ -100,7 +101,7 @@ Page {
             svgIcon: svgFilled.lock
             echoMode: TextInput.Password
             placeholderText: qsTr("Password")
-            inputMethodHints: Qt.ImhNoAutoUppercase
+            inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
             maximumLength: 255
         }
 

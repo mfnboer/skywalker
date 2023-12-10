@@ -35,10 +35,10 @@ Item {
         anchors.right: gifImage.right
         anchors.top: gifImage.bottom
         anchors.topMargin: 5
-        width: 80
+        width: 50
         fillMode: Image.PreserveAspectFit
         source: "/images/via_tenor_logo_blue.svg"
-        visible: isGifImage()
+        visible: isGifImage() && gifImage.status === Image.Ready
     }
 
     FilteredImageWarning {

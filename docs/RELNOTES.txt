@@ -1,6 +1,7 @@
-next
-====
+0.3.1
+=====
 * Bug fix: you could not send a post with only a GIF as content.
+* Disable predictive text on login screen.
 * Increased image loading retries to 5.
 * Do not release client object on signout.
 

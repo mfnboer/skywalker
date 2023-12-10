@@ -87,7 +87,8 @@ Page {
                             gifAttachment.gif.url,
                             gifAttachment.gif.description + " (via Tenor)",
                             qsTr("This GIF has been posted from Skywalker for Android. " +
-                                 "Get Skywalker from Google Play."),
+                                 "Get Skywalker from Google Play.") +
+                                 ("\nBluesky: @skywalkerapp.bsky.social"),
                             gifAttachment.gif.imageUrl)
 
                     postUtils.post(postText.text, gifCard,

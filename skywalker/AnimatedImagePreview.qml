@@ -8,6 +8,7 @@ RoundedFrame {
     required property string contentWarning
     required property string url
     property string title
+    property alias status: img.status
 
     id: frame
     objectToRound: img
