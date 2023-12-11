@@ -474,11 +474,11 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
 void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
 {
     Q_ASSERT(mBsky);
-    qInfo() << "Get timeline for gap:" << gapId;
+    qDebug() << "Get timeline for gap:" << gapId;
 
     if (mGetTimelineInProgress)
     {
-        qInfo() << "Get timeline still in progress";
+        qDebug() << "Get timeline still in progress";
         return;
     }
 
@@ -496,7 +496,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
         return;
     }
 
-    qInfo() << "Set gap cursor:" << *cur;
+    qDebug() << "Set gap cursor:" << *cur;
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_ADD_PAGE_SIZE, cur,
@@ -509,11 +509,11 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
                 if (autoGapFill > 0)
                     getTimelineForGap(newGapId, autoGapFill - 1);
                 else
-                    qInfo() << "Gap created, no auto gap fill";
+                    qDebug() << "Gap created, no auto gap fill";
             }
         },
         [this](const QString& error, const QString& msg){
-            qInfo() << "getTimelineForGap FAILED:" << error << " - " << msg;
+            qWarning() << "getTimelineForGap FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         }

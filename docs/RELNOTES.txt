@@ -2,6 +2,7 @@ next
 ====
 * Translate post (in the triple-dot menu)
 * Bug fix: copy and report post did not work on a notification.
+* Bug fix: timeline should not scroll when new posts are prepended.
 
 0.3.1
 =====

@@ -8,6 +8,7 @@ ListView {
     property bool inSync: false
     property int margin: 8
     property int unreadPosts: 0
+    property int topIndexBeforeInsert: -1
 
     id: timelineView
     spacing: 0
@@ -160,31 +161,42 @@ ListView {
     }
 
     function rowsInsertedHandler(parent, start, end) {
-        console.debug("ROWS INSERTED:", start, end, "AtBegin:", atYBeginning)
-        if (atYBeginning) {
+        console.debug("ROWS INSERTED:", start, end, "Count:", count, "First visible:", getFirstVisibleIndex())
+
+        if (topIndexBeforeInsert === 0 && start === 0) {
             if (count > end + 1) {
                 // Stay at the current item instead of scrolling to the new top
-                positionViewAtIndex(end, ListView.Beginning)
+                console.debug("Position at:", end + 1)
+                positionViewAtIndex(end + 1, ListView.Beginning)
             }
             else {
+                // TODO: remove code?
                 // Avoid the flick to bounce down the timeline
-                cancelFlick()
-                positionViewAtBeginning()
+                console.debug("Avoid flick WHY")
+                // cancelFlick()
+                // positionViewAtBeginning()
             }
         }
 
-        let firstVisibleIndex = indexAt(0, contentY)
+        const firstVisibleIndex = getFirstVisibleIndex()
         updateUnreadPosts(firstVisibleIndex)
+    }
+
+    function rowsAboutToBeInsertedHandler(parent, start, end) {
+        topIndexBeforeInsert = getFirstVisibleIndex()
+        console.debug("Top index before insert:", topIndexBeforeInsert, "Count:", count)
     }
 
     function setInSync(index) {
         moveToPost(index)
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)
+        model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
     }
 
     function stopSync() {
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
+        model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
     }
 }
