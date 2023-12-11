@@ -1,3 +1,8 @@
+next
+====
+* Translate post (in the triple-dot menu)
+* Bug fix: copy and report post did not work on a notification.
+
 0.3.1
 =====
 * Bug fix: you could not send a post with only a GIF as content.

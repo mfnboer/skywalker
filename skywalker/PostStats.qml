@@ -20,6 +20,7 @@ Row {
     signal deletePost()
     signal copyPostText()
     signal reportPost()
+    signal translatePost()
 
     StatIcon {
         width: parent.width / 5
@@ -62,6 +63,15 @@ Row {
             id: moreMenu
 
             MenuItem {
+                text: qsTr("Translate")
+                onTriggered: translatePost()
+
+                MenuItemSvg {
+                    svg: svgOutline.googleTranslate
+                }
+            }
+
+            MenuItem {
                 text: qsTr("Copy post text")
                 onTriggered: copyPostText()
 
@@ -87,7 +97,6 @@ Row {
                     visible: parent.enabled
                 }
             }
-
             MenuItem {
                 text: qsTr("Report post")
                 onTriggered: reportPost()

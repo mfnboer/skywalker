@@ -1209,7 +1209,7 @@ void Skywalker::shareAuthor(const BasicProfile& author)
 void Skywalker::copyPostTextToClipboard(const QString& text)
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(PostUtils::toPlainText(text));
+    clipboard->setText(text);
     emit statusMessage(tr("Post text copied to clipboard"));
 }
 

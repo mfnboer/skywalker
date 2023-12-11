@@ -835,6 +835,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function translateText(text) {
+        const lang = Qt.locale().name.split("_")[0]
+        const encoded = encodeURIComponent(text)
+        const url = `https://translate.google.com/?hl=${lang}&sl=auto&tl=${lang}&text=${encoded}&op=translate`
+        Qt.openUrlExternally(url)
+    }
+
     function getTimelineView() {
         return timelineStack.get(0)
     }

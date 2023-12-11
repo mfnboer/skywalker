@@ -326,8 +326,9 @@ Rectangle {
 
                 onShare: skywalker.sharePost(postUri, author)
                 onDeletePost: root.deletePost(postUri, postCid)
-                onCopyPostText: skywalker.copyPostTextToClipboard(postText)
+                onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
+                onTranslatePost: root.translateText(postPlainText)
             }
         }
 

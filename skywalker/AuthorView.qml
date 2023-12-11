@@ -104,6 +104,14 @@ Page {
                     Menu {
                         id: moreMenu
                         MenuItem {
+                            text: qsTr("Translate")
+                            onTriggered: root.translateText(author.description)
+
+                            MenuItemSvg {
+                                svg: svgOutline.googleTranslate
+                            }
+                        }
+                        MenuItem {
                             text: qsTr("Share")
                             onTriggered: skywalker.shareAuthor(author)
 

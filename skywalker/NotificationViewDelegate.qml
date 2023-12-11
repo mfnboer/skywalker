@@ -208,8 +208,9 @@ Rectangle {
                 }
 
                 onShare: skywalker.sharePost(notificationPostUri, notificationAuthor)
-                onCopyPostText: skywalker.copyPostTextToClipboard(postText)
-                onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
+                onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
+                onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
+                onTranslatePost: root.translateText(notificationPostPlainText)
             }
         }
         Column {
