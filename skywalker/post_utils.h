@@ -33,6 +33,7 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
+    Q_INVOKABLE void addThreadgate(const QString& uri, bool allowMention, bool allowFollowing);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
@@ -59,8 +60,10 @@ public:
     void setFirstPostLink(const QString& link);
 
 signals:
-    void postOk();
+    void postOk(QString uri, QString cid);
     void postFailed(QString error);
+    void threadgateOk();
+    void threadgateFailed(QString error);
     void postProgress(QString msg);
     void repostOk();
     void repostFailed(QString error);

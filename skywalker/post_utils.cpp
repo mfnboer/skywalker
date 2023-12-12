@@ -170,6 +170,29 @@ void PostUtils::post(QString text, const LinkCard* card,
         });
 }
 
+void PostUtils::addThreadgate(const QString& uri, bool allowMention, bool allowFollowing)
+{
+    qDebug() << "Add threadgate uri:" << uri << "mention:" << allowMention << "following:" << allowFollowing;
+
+    if (!postMaster())
+        return;
+
+    mPostMaster->addThreadgate(uri, allowMention, allowFollowing,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            emit threadgateOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addThreadgate failed:" << error << " - " << msg;
+            emit threadgateFailed(msg);
+        });
+}
+
 void PostUtils::continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                              const QString& quoteUri, const QString& quoteCid)
 {
@@ -335,7 +358,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
     emit postProgress(tr("Posting"));
 
     postMaster()->post(*post,
-        [this, presence=getPresence(), post]{
+        [this, presence=getPresence(), post](const QString& uri, const QString& cid){
             if (!presence)
                 return;
 
@@ -347,7 +370,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
                     });
             }
 
-            emit postOk();
+            emit postOk(uri, cid);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

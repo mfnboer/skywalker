@@ -209,6 +209,7 @@ qt_add_qml_module(libskywalker
         QML_FILES ThumbAnimatedImageView.qml
         QML_FILES AnimatedImagePreview.qml
         QML_FILES FullAnimatedImageView.qml
+        QML_FILES AddReplyRestrictions.qml
 )
 
 if (NOT ANDROID)

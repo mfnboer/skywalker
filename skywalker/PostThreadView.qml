@@ -69,18 +69,18 @@ ListView {
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
                         restrictionList.push(qsTr("mentioned"))
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING)
-                        restrictionList.push(qsTr("following"))
+                        restrictionList.push(qsTr("followed"))
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST)
                         restrictionList.push(qsTr("selected"))
 
                     if (!restrictionList) {
                         console.warn("No restrictions found.")
-                        return qsTr("Replies are disabled")
+                        return qsTr("Replies are restricted")
                     }
 
                     let restrictionListText = restrictionList[0]
 
-                    for (let i = 0; i < restrictionList.length - 1; ++i)
+                    for (let i = 1; i < restrictionList.length - 1; ++i)
                         restrictionListText += ", " + restrictionList[i]
 
                     if (restrictionList.length > 1) {

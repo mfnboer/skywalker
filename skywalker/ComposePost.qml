@@ -16,6 +16,9 @@ Page {
     property list<string> images: initialImage ? [initialImage] : []
     property list<string> altTexts: initialImage ? [""] : []
     property bool pickingImage: false
+    property bool restrictReply: false
+    property bool allowReplyMentioned: false
+    property bool allowReplyFollowing: false
 
     // Reply-to
     property basicprofile replyToAuthor
@@ -108,15 +111,85 @@ Page {
     footer: Rectangle {
         id: textFooter
         width: page.width
-        height: guiSettings.footerHeight
+        height: getFooterHeight()
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
+
+        function getFooterHeight() {
+            return guiSettings.footerHeight + (replyToPostUri ? 0 : restrictionRow.height + footerSeparator.height)
+        }
+
+        Rectangle {
+            id: footerSeparator
+            width: parent.width
+            height: 1
+            color: guiSettings.separatorColor
+            visible: !replyToPostUri
+        }
+
+        Rectangle {
+            id: restrictionRow
+            anchors.top: footerSeparator.top
+            width: parent.width
+            height: restrictionText.height + 10
+            color: "transparent"
+            visible: !replyToPostUri
+
+            SvgImage {
+                id: restrictionIcon
+                x: 10
+                y: height + 5
+                width: restrictionText.height
+                height: restrictionText.height
+                color: guiSettings.linkColor
+                svg: restrictReply ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions
+            }
+            Text {
+                id: restrictionText
+                y: 5
+                anchors.left: restrictionIcon.right
+                anchors.right: parent.right
+                leftPadding: 5
+                color: guiSettings.linkColor
+                font.italic: true
+                font.pointSize: guiSettings.scaledFont(7/8)
+                wrapMode: Text.Wrap
+                text: getRestrictionText()
+
+                function getRestrictionText() {
+                    if (!restrictReply)
+                        return qsTr("Everyone can reply")
+
+                    let restrictedListText = ""
+
+                    if (allowReplyMentioned)
+                        restrictedListText = qsTr("mentioned")
+
+                    if (allowReplyFollowing) {
+                        if (restrictedListText)
+                            restrictedListText += qsTr(" and ")
+
+                        restrictedListText += qsTr("followed")
+                    }
+
+                    if (restrictedListText)
+                        return qsTr(`Only ${restrictedListText} users can reply`)
+
+                    return qsTr("Replies disabled")
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: page.addReplyRestrictions()
+            }
+        }
 
         ProgressBar {
             id: textLengthBar
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.top: parent.top
+            anchors.top: restrictionRow.bottom
             from: 0
             to: Math.max(page.maxPostLength, postText.graphemeLength)
             value: postText.graphemeLength
@@ -131,7 +204,7 @@ Page {
         SvgImage {
             id: addImage
             x: 10
-            y: height + 5
+            y: height + 5 + restrictionRow.height + footerSeparator.height
             width: 34
             height: 34
             color: addImage.mustEnable() ? guiSettings.buttonColor : guiSettings.disabledColor
@@ -143,7 +216,7 @@ Page {
             }
 
             MouseArea {
-                y: -parent.y
+                y: -parent.height
                 width: parent.width
                 height: parent.height
                 enabled: addImage.mustEnable()
@@ -161,7 +234,7 @@ Page {
         SvgImage {
             id: addGif
             x: addImage.x + addImage.width + 10
-            y: height + 5
+            y: height + 5 + restrictionRow.height + footerSeparator.height
             width: 34
             height: 34
             color: addGif.mustEnable() ? guiSettings.buttonColor : guiSettings.disabledColor
@@ -175,7 +248,7 @@ Page {
             MouseArea {
                 property var tenorSearchView: null
 
-                y: -parent.y
+                y: -parent.height
                 width: parent.width
                 height: parent.height
                 enabled: addGif.mustEnable()
@@ -198,7 +271,7 @@ Page {
         }
 
         Text {
-            y: 10
+            y: 10 + restrictionRow.height + footerSeparator.height
             anchors.rightMargin: 10
             anchors.right: parent.right
             color: postText.graphemeLength <= maxPostLength ? guiSettings.textColor : guiSettings.errorColor
@@ -521,8 +594,18 @@ Page {
         id: postUtils
         skywalker: page.skywalker
 
-        onPostOk: postDone()
+        onPostOk: (uri, cid) => {
+            if (page.restrictReply)
+                postUtils.addThreadgate(uri, page.allowReplyMentioned, page.allowReplyFollowing)
+            else
+                postDone()
+        }
+
         onPostFailed: (error) => page.postFailed(error)
+
+        onThreadgateOk: postDone()
+        onThreadgateFailed: (error) => page.postFailed(error)
+
         onPostProgress: (msg) => page.postProgress(msg)
 
         onPhotoPicked: (imgSource) => {
@@ -703,6 +786,23 @@ Page {
         root.pushStack(altPage)
     }
 
+    function addReplyRestrictions() {
+        let component = Qt.createComponent("AddReplyRestrictions.qml")
+        let restrictionsPage = component.createObject(page, {
+                restrictReply: page.restrictReply,
+                allowMentioned: page.allowReplyMentioned,
+                allowFollowing: page.allowReplyFollowing
+        })
+        restrictionsPage.onAccepted.connect(() => {
+                page.restrictReply = restrictionsPage.restrictReply
+                page.allowReplyMentioned = restrictionsPage.allowMentioned
+                page.allowReplyFollowing = restrictionsPage.allowFollowing
+                restrictionsPage.destroy()
+        })
+        restrictionsPage.onRejected.connect(() => restrictionsPage.destroy())
+        restrictionsPage.open()
+    }
+
     Connections {
         target: Qt.inputMethod
 
@@ -710,10 +810,10 @@ Page {
         function onKeyboardRectangleChanged() {
             if (Qt.inputMethod.keyboardRectangle.y > 0) {
                 const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-                textFooter.height = guiSettings.footerHeight + (parent.height - keyboardY)
+                textFooter.height = textFooter.getFooterHeight() + (parent.height - keyboardY)
             }
             else {
-                textFooter.height = guiSettings.footerHeight
+                textFooter.height = textFooter.getFooterHeight()
             }
         }
     }
