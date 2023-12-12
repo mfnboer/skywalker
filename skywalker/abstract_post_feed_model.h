@@ -52,6 +52,7 @@ public:
         PostRepostUri,
         PostLikeUri,
         PostReplyDisabled,
+        PostReplyRestriction,
         PostBookmarked,
         PostBookmarkNotFound,
         PostLabels,

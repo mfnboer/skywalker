@@ -50,6 +50,7 @@ public:
         NotificationPostRepostUri,
         NotificationPostLikeUri,
         NotificationPostReplyDisabled,
+        NotificationPostReplyRestriction,
         NotificationPostRepostCount,
         NotificationPostLikeCount,
         NotificationPostReplyCount,

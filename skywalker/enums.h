@@ -46,6 +46,16 @@ public:
     };
     Q_ENUM(ThreadPostType);
 
+    enum ReplyRestriction
+    {
+        REPLY_RESTRICTION_NONE = 0,
+        REPLY_RESTRICTION_NOBODY = 1,
+        REPLY_RESTRICTION_MENTIONED = 2,
+        REPLY_RESTRICTION_FOLLOWING = 4,
+        REPLY_RESTRICTION_LIST = 8
+    };
+    Q_ENUM(ReplyRestriction)
+
     enum StatusLevel
     {
         STATUS_LEVEL_INFO = 0,

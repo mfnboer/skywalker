@@ -40,6 +40,15 @@ int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& threa
     return page->mEntryPostIndex;
 }
 
+QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
+{
+    if (mFeed.empty())
+        return QEnums::REPLY_RESTRICTION_NONE;
+
+    const auto& post = mFeed[0];
+    return post.getReplyRestriction();
+}
+
 void PostThreadModel::clear()
 {
     if (!mFeed.empty())

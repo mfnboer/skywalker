@@ -37,6 +37,7 @@ Rectangle {
     required property string postRepostUri
     required property string postLikeUri
     required property bool postReplyDisabled
+    required property int postReplyRestriction // QEnums::ReplyRestriction flags
     required property bool postBookmarked
     required property bool postBookmarkNotFound
     required property list<string> postLabels

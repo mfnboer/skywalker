@@ -489,6 +489,29 @@ bool Post::isReplyDisabled() const
     return mPost->mViewer->mReplyDisabled;
 }
 
+QEnums::ReplyRestriction Post::getReplyRestriction() const
+{
+    if (!mPost || !mPost->mThreadgate || !mPost->mThreadgate->mRecord)
+        return QEnums::REPLY_RESTRICTION_NONE;
+
+    const auto& threadgate = mPost->mThreadgate->mRecord;
+    int restriction = QEnums::REPLY_RESTRICTION_NONE;
+
+    if (threadgate->mAllowMention)
+        restriction |= QEnums::REPLY_RESTRICTION_MENTIONED;
+
+    if (threadgate->mAllowFollowing)
+        restriction |= QEnums::REPLY_RESTRICTION_FOLLOWING;
+
+    if (!threadgate->mAllowList.empty())
+        restriction |= QEnums::REPLY_RESTRICTION_LIST;
+
+    if (restriction != QEnums::REPLY_RESTRICTION_NONE)
+        return (QEnums::ReplyRestriction)restriction;
+
+    return QEnums::REPLY_RESTRICTION_NOBODY;
+}
+
 const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
 {
     static const std::vector<ATProto::ComATProtoLabel::Label::Ptr> NO_LABELS;

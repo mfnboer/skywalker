@@ -18,6 +18,10 @@ public:
     // Returns index of the entry post
     int setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
 
+    // May return NONE even if there are reply restrictions. This will happen
+    // if the root is not in the thread.
+    Q_INVOKABLE QEnums::ReplyRestriction getReplyRestriction() const;
+
     Q_INVOKABLE QVariant getData(int row, AbstractPostFeedModel::Role role);
 
 private:

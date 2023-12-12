@@ -15,8 +15,83 @@ ListView {
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: SimpleHeader {
+        height: restrictionRow.visible ? guiSettings.headerHeight + restrictionRow.height : guiSettings.headerHeight
         text: qsTr("Post thread")
         onBack: view.closed()
+
+        Rectangle {
+            width: parent.width
+            height: restrictionRow.height + 5
+            anchors.bottom: parent.bottom
+            color: guiSettings.threadStartColor
+            border.width: 1
+            border.color: guiSettings.headerColor
+            visible: model.getReplyRestriction() !== QEnums.REPLY_RESTRICTION_NONE
+
+            Rectangle {
+                id: restrictionRow
+                x: guiSettings.threadBarWidth * 5
+                anchors.bottom: parent.bottom
+                width: parent.width - x - 10
+                height: restrictionText.height + 5
+                color: "transparent"
+
+                SvgImage {
+                    id: restrictionIcon
+                    width: restrictionText.height
+                    height: restrictionText.height
+                    color: guiSettings.textColor
+                    svg: svgOutline.replyRestrictions
+                }
+                Text {
+                    id: restrictionText
+                    anchors.left: restrictionIcon.right
+                    anchors.right: parent.right
+                    leftPadding: 5
+                    color: guiSettings.textColor
+                    font.italic: true
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    wrapMode: Text.Wrap
+                    text: restrictionRow.getRestrictionText()
+                }
+
+                function getRestrictionText() {
+                    const replyRestriction = model.getReplyRestriction()
+
+                    if (replyRestriction === QEnums.REPLY_RESTRICTION_NONE)
+                        return ""
+
+                    if (replyRestriction === QEnums.REPLY_RESTRICTION_NOBODY)
+                        return qsTr("Replies are disabled")
+
+                    let restrictionList = []
+
+                    if (replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
+                        restrictionList.push(qsTr("mentioned"))
+                    if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING)
+                        restrictionList.push(qsTr("following"))
+                    if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST)
+                        restrictionList.push(qsTr("selected"))
+
+                    if (!restrictionList) {
+                        console.warn("No restrictions found.")
+                        return qsTr("Replies are disabled")
+                    }
+
+                    let restrictionListText = restrictionList[0]
+
+                    for (let i = 0; i < restrictionList.length - 1; ++i)
+                        restrictionListText += ", " + restrictionList[i]
+
+                    if (restrictionList.length > 1) {
+                        restrictionListText += " and "
+                        restrictionListText += restrictionList[restrictionList.length - 1]
+                    }
+
+                    return qsTr(`Replies are restricted to ${restrictionListText} users`)
+                }
+            }
+        }
     }
     headerPositioning: ListView.OverlayHeader
 

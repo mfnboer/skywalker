@@ -1,8 +1,9 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
-Row {
+Column {
     required property int replyCount
     required property int repostCount
     required property int likeCount
@@ -23,89 +24,93 @@ Row {
     signal reportPost()
     signal translatePost()
 
-    StatIcon {
-        width: parent.width / 5
-        iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
-        svg: svgOutline.reply
-        statistic: replyCount
-        visible: !bookmarkNotFound
-        enabled: !replyDisabled
-        onClicked: reply()
-    }
-    StatIcon {
-        width: parent.width / 5
-        iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
-        svg: svgOutline.repost
-        statistic: repostCount
-        visible: !bookmarkNotFound
-        onClicked: repost()
-    }
-    StatIcon {
-        width: parent.width / 5
-        iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
-        svg: likeUri ? svgFilled.like : svgOutline.like
-        statistic: likeCount
-        visible: !bookmarkNotFound
-        onClicked: like()
-    }
-    StatIcon {
-        width: parent.width / 5
-        iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
-        svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
-        onClicked: bookmark()
-    }
-    StatIcon {
-        width: parent.width / 5
-        iconColor: guiSettings.statsColor
-        svg: svgOutline.moreVert
-        visible: !bookmarkNotFound
-        onClicked: moreMenu.open()
+    Row {
+        width: parent.width
 
-        Menu {
-            id: moreMenu
+        StatIcon {
+            width: parent.width / 5
+            iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
+            svg: svgOutline.reply
+            statistic: replyCount
+            visible: !bookmarkNotFound
+            enabled: !replyDisabled
+            onClicked: reply()
+        }
+        StatIcon {
+            width: parent.width / 5
+            iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
+            svg: svgOutline.repost
+            statistic: repostCount
+            visible: !bookmarkNotFound
+            onClicked: repost()
+        }
+        StatIcon {
+            width: parent.width / 5
+            iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
+            svg: likeUri ? svgFilled.like : svgOutline.like
+            statistic: likeCount
+            visible: !bookmarkNotFound
+            onClicked: like()
+        }
+        StatIcon {
+            width: parent.width / 5
+            iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
+            svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
+            onClicked: bookmark()
+        }
+        StatIcon {
+            width: parent.width / 5
+            iconColor: guiSettings.statsColor
+            svg: svgOutline.moreVert
+            visible: !bookmarkNotFound
+            onClicked: moreMenu.open()
 
-            MenuItem {
-                text: qsTr("Translate")
-                onTriggered: translatePost()
+            Menu {
+                id: moreMenu
 
-                MenuItemSvg {
-                    svg: svgOutline.googleTranslate
+                MenuItem {
+                    text: qsTr("Translate")
+                    onTriggered: translatePost()
+
+                    MenuItemSvg {
+                        svg: svgOutline.googleTranslate
+                    }
                 }
-            }
 
-            MenuItem {
-                text: qsTr("Copy post text")
-                onTriggered: copyPostText()
+                MenuItem {
+                    text: qsTr("Copy post text")
+                    onTriggered: copyPostText()
 
-                MenuItemSvg {
-                    svg: svgOutline.copy
+                    MenuItemSvg {
+                        svg: svgOutline.copy
+                    }
                 }
-            }
-            MenuItem {
-                text: qsTr("Share")
-                onTriggered: share()
+                MenuItem {
+                    text: qsTr("Share")
+                    onTriggered: share()
 
-                MenuItemSvg {
-                    svg: svgOutline.share
+                    MenuItemSvg {
+                        svg: svgOutline.share
+                    }
                 }
-            }
-            MenuItem {
-                text: qsTr("Delete")
-                enabled: authorIsUser
-                onTriggered: deletePost()
+                MenuItem {
+                    text: qsTr("Delete")
+                    enabled: authorIsUser
+                    onTriggered: deletePost()
 
-                MenuItemSvg {
-                    svg: svgOutline.delete
-                    visible: parent.enabled
+                    MenuItemSvg {
+                        svg: svgOutline.delete
+                        visible: parent.enabled
+                    }
                 }
-            }
-            MenuItem {
-                text: qsTr("Report post")
-                onTriggered: reportPost()
+                MenuItem {
+                    text: qsTr("Report post")
+                    onTriggered: reportPost()
 
-                MenuItemSvg {
-                    svg: svgOutline.report
-                    visible: parent.enabled
+                    MenuItemSvg {
+                        svg: svgOutline.report
+                        visible: parent.enabled
+                    }
                 }
             }
         }
