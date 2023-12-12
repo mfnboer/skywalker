@@ -51,6 +51,7 @@ public:
         PostLikeCount,
         PostRepostUri,
         PostLikeUri,
+        PostReplyDisabled,
         PostBookmarked,
         PostBookmarkNotFound,
         PostLabels,

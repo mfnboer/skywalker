@@ -49,6 +49,7 @@ public:
         NotificationPostReplyRootCid,
         NotificationPostRepostUri,
         NotificationPostLikeUri,
+        NotificationPostReplyDisabled,
         NotificationPostRepostCount,
         NotificationPostLikeCount,
         NotificationPostReplyCount,

@@ -8,6 +8,7 @@ Row {
     required property int likeCount
     required property string repostUri
     required property string likeUri
+    required property bool replyDisabled
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
@@ -24,10 +25,11 @@ Row {
 
     StatIcon {
         width: parent.width / 5
-        iconColor: guiSettings.statsColor
+        iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
         svg: svgOutline.reply
         statistic: replyCount
         visible: !bookmarkNotFound
+        enabled: !replyDisabled
         onClicked: reply()
     }
     StatIcon {

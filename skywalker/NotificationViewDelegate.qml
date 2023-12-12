@@ -37,6 +37,7 @@ Rectangle {
     required property string notificationPostReplyRootCid
     required property string notificationPostRepostUri
     required property string notificationPostLikeUri
+    required property bool notificationPostReplyDisabled
     required property int notificationPostRepostCount
     required property int notificationPostLikeCount
     required property int notificationPostReplyCount
@@ -176,6 +177,7 @@ Rectangle {
                 likeCount: notificationPostLikeCount
                 repostUri: notificationPostRepostUri
                 likeUri: notificationPostLikeUri
+                replyDisabled: notificationPostReplyDisabled
                 visible: !notificationPostNotFound
                 authorIsUser: false
                 isBookmarked: notificationPostBookmarked

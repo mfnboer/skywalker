@@ -481,6 +481,14 @@ QString Post::getLikeUri() const
     return like ? *like : QString();
 }
 
+bool Post::isReplyDisabled() const
+{
+    if (!mPost || !mPost->mViewer)
+        return false;
+
+    return mPost->mViewer->mReplyDisabled;
+}
+
 const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
 {
     static const std::vector<ATProto::ComATProtoLabel::Label::Ptr> NO_LABELS;

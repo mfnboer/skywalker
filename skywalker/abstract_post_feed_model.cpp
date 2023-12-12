@@ -195,6 +195,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
     case Role::PostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
+    case Role::PostReplyDisabled:
+        return post.isReplyDisabled();
     case Role::PostBookmarked:
         return mBookmarks.isBookmarked(post.getUri());
     case Role::PostBookmarkNotFound:
@@ -281,6 +283,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLikeCount), "postLikeCount" },
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
+        { int(Role::PostReplyDisabled), "postReplyDisabled" },
         { int(Role::PostBookmarked), "postBookmarked" },
         { int(Role::PostBookmarkNotFound), "postBookmarkNotFound" },
         { int(Role::PostLabels), "postLabels" },

@@ -462,6 +462,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : notification.getNotificationPost(mPostCache).getRepostUri();
     case Role::NotificationPostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : notification.getNotificationPost(mPostCache).getLikeUri();
+    case Role::NotificationPostReplyDisabled:
+        return notification.getNotificationPost(mPostCache).isReplyDisabled();
     case Role::NotificationPostRepostCount:
         return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:
@@ -545,6 +547,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyRootCid), "notificationPostReplyRootCid" },
         { int(Role::NotificationPostRepostUri), "notificationPostRepostUri" },
         { int(Role::NotificationPostLikeUri), "notificationPostLikeUri" },
+        { int(Role::NotificationPostReplyDisabled), "notificationPostReplyDisabled" },
         { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },

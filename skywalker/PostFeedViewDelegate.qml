@@ -36,6 +36,7 @@ Rectangle {
     required property int postLikeCount
     required property string postRepostUri
     required property string postLikeUri
+    required property bool postReplyDisabled
     required property bool postBookmarked
     required property bool postBookmarkNotFound
     required property list<string> postLabels
@@ -296,6 +297,7 @@ Rectangle {
                 likeCount: postLikeCount
                 repostUri: postRepostUri
                 likeUri: postLikeUri
+                replyDisabled: postReplyDisabled
                 authorIsUser: isUser(author)
                 isBookmarked: postBookmarked
                 bookmarkNotFound: postBookmarkNotFound
