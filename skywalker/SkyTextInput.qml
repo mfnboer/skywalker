@@ -28,6 +28,7 @@ Rectangle {
         enabled: skyTextInput.enabled
         font.pointSize: guiSettings.scaledFont(9/8)
         color: guiSettings.textColor
+        selectionColor: guiSettings.selectionColor
         text: skyTextInput.initialText
 
         Text {

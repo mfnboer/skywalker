@@ -1,6 +1,7 @@
 next
 ====
 * Translate post (in the triple-dot menu)
+* Lighter selection color in dark mode
 * Bug fix: copy and report post did not work on a notification.
 * Bug fix: timeline should not scroll when new posts are prepended.
 * Buf fix: no permission to save picture on Android 11 or higher
