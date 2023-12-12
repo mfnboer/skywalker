@@ -71,10 +71,13 @@ bool checkWriteMediaPermission()
 {
 #if defined(Q_OS_ANDROID)
     static const QString WRITE_EXTERNAL_STORAGE = "android.permission.WRITE_EXTERNAL_STORAGE";
-    return checkPermission(WRITE_EXTERNAL_STORAGE);
-#else
-    return true;
+
+    const auto osVersion = QOperatingSystemVersion::current();
+
+    if (osVersion < QOperatingSystemVersion::Android11)
+        return checkPermission(WRITE_EXTERNAL_STORAGE);
 #endif
+    return true;
 }
 
 int openContentUri(const QString& contentUri)

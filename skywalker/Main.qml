@@ -170,6 +170,11 @@ ApplicationWindow {
                 getTimelineView().moveToPost(prevTopPostIndex - 1)
         }
 
+        onGapFilled: (gapEndIndex) => {
+            console.debug("Gap filled, end index:", gapEndIndex)
+            getTimelineView().moveToPost(gapEndIndex, 0, true)
+        }
+
         onGetDetailedProfileOK: (profile) => {
             let modelId = skywalker.createAuthorFeedModel(profile)
             viewAuthor(profile, modelId)

@@ -471,7 +471,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
         );
 }
 
-void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
+void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline for gap:" << gapId;
@@ -500,14 +500,20 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill)
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_ADD_PAGE_SIZE, cur,
-        [this, gapId, autoGapFill](auto feed){
+        [this, gapId, autoGapFill, userInitiated](auto feed){
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
             setGetTimelineInProgress(false);
+
+            if (userInitiated)
+            {
+                const int gapEndIndex = mTimelineModel.getLastInsertedRowIndex();
+                emit gapFilled(gapEndIndex);
+            }
 
             if (newGapId > 0)
             {
                 if (autoGapFill > 0)
-                    getTimelineForGap(newGapId, autoGapFill - 1);
+                    getTimelineForGap(newGapId, autoGapFill - 1, userInitiated);
                 else
                     qDebug() << "Gap created, no auto gap fill";
             }

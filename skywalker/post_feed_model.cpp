@@ -159,6 +159,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
         mIndexRawFeedMap[lastInsertIndex - indexOffset] = std::move(page->mRawFeed);
         endInsertRows();
 
+        mLastInsertedRowIndex = (int)lastInsertIndex;
         qDebug() << "Full feed inserted, new size:" << mFeed.size();
         logIndices();
         return gapId;
@@ -192,6 +193,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
     mIndexRawFeedMap[insertIndex + *overlapStart - 1] = std::move(page->mRawFeed);
     endInsertRows();
 
+    mLastInsertedRowIndex = insertIndex + *overlapStart - 1;
     qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mFeed.size();
     logIndices();
     return 0;
@@ -226,6 +228,7 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
         mIndexRawFeedMap[mFeed.size() - 1] = std::move(page->mRawFeed);
         endInsertRows();
 
+        mLastInsertedRowIndex = newRowCount - 1;
         qDebug() << "New feed size:" << mFeed.size();
     }
     else

@@ -42,6 +42,7 @@ public:
 
     QString getLastCursor() const;
     const Post* getGapPlaceHolder(int gapId) const;
+    int getLastInsertedRowIndex() const { return mLastInsertedRowIndex; }
 
     // Get the timestamp of the last post in the feed
     QDateTime lastTimestamp() const;
@@ -112,6 +113,8 @@ private:
 
     // Number of posts that have been prepended to the feed since the last clear.
     size_t mPrependPostCount = 0;
+
+    int mLastInsertedRowIndex = -1;
 };
 
 }

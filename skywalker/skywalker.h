@@ -55,7 +55,7 @@ public:
     Q_INVOKABLE void syncTimeline(int maxPages = 20);
     Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
-    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0);
+    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false);
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
     Q_INVOKABLE void getPostThread(const QString& uri);
@@ -140,6 +140,7 @@ signals:
     void timelineSyncOK(int index);
     void timelineSyncFailed();
     void timelineRefreshed(int prevTopPostIndex);
+    void gapFilled(int gapEndIndex);
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
