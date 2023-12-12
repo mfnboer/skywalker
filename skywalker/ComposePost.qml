@@ -122,7 +122,7 @@ Page {
         Rectangle {
             id: footerSeparator
             width: parent.width
-            height: 1
+            height: replyToPostUri ? 0 : 1
             color: guiSettings.separatorColor
             visible: !replyToPostUri
         }
@@ -131,7 +131,7 @@ Page {
             id: restrictionRow
             anchors.top: footerSeparator.top
             width: parent.width
-            height: restrictionText.height + 10
+            height: replyToPostUri ? 0 : restrictionText.height + 10
             color: "transparent"
             visible: !replyToPostUri
 
