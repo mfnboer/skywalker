@@ -98,6 +98,39 @@ Page {
             elide: Text.ElideRight
             text: userPrefs.pds
         }
+
+        Text {
+            Layout.columnSpan: 2
+            topPadding: 20
+            font.pointSize: guiSettings.scaledFont(9/8)
+            font.bold: true
+            color: guiSettings.textColor
+            text: qsTr("Logged-out visibility")
+        }
+
+        Switch {
+            id: loggedoutSwitch
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+
+            contentItem: Text {
+                text: qsTr("Discourage apps from showing my account to logged-out users");
+                color: guiSettings.textColor
+                wrapMode: Text.Wrap
+                verticalAlignment: Text.AlignVCenter
+                anchors.left: loggedoutSwitch.indicator.right
+                anchors.leftMargin: loggedoutSwitch.spacing
+                anchors.right: parent.right
+                anchors.rightMargin: loggedoutSwitch.rightPadding
+            }
+
+            checked: !userPrefs.loggedOutVisibility
+            onCheckedChanged: userPrefs.loggedOutVisibility = !checked
+
+            Component.onCompleted: {
+                loggedoutSwitch.indicator.x = loggedoutSwitch.leftPadding
+            }
+        }
     }
 
     ColumnLayout {
@@ -114,14 +147,12 @@ Page {
         }
 
         Switch {
-            Material.accent: guiSettings.buttonColor
             text: qsTr("Show replies")
             checked: !userPrefs.hideReplies
             onCheckedChanged: userPrefs.hideReplies = !checked
         }
 
         Switch {
-            Material.accent: guiSettings.buttonColor
             text: qsTr("Replies to followed users only")
             checked: userPrefs.hideRepliesByUnfollowed
             enabled: !userPrefs.hideReplies
@@ -129,14 +160,12 @@ Page {
         }
 
         Switch {
-            Material.accent: guiSettings.buttonColor
             text: qsTr("Show reposts")
             checked: !userPrefs.hideReposts
             onCheckedChanged: userPrefs.hideReposts = !checked
         }
 
         Switch {
-            Material.accent: guiSettings.buttonColor
             text: qsTr("Show quote posts")
             checked: !userPrefs.hideQuotePosts
             onCheckedChanged: userPrefs.hideQuotePosts = !checked
@@ -196,7 +225,6 @@ Page {
         }
 
         Switch {
-            Material.accent: guiSettings.buttonColor
             text: qsTr("GIF auto play")
             checked: userPrefs.gifAutoPlay
             onCheckedChanged: userPrefs.gifAutoPlay = checked

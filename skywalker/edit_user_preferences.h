@@ -15,6 +15,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool emailConfirmed READ getEmailConfirmed CONSTANT FINAL)
     Q_PROPERTY(QString birthDate READ getBirthDate CONSTANT FINAL)
     Q_PROPERTY(QString pds READ getPDS CONSTANT FINAL)
+    Q_PROPERTY(bool loggedOutVisibility READ getLoggedOutVisiblity WRITE setLoggedOutVisibility NOTIFY loggedOutVisibilityChanged FINAL)
     Q_PROPERTY(bool hideReplies READ getHideReplies WRITE setHideReplies NOTIFY hideRepliesChanged FINAL)
     Q_PROPERTY(bool hideRepliesByUnfollowed READ getHideRepliesByUnfollowed WRITE setHideRepliesByUnfollowed NOTIFY hideRepliesByUnfollowedChanged FINAL)
     Q_PROPERTY(bool hideReposts READ getHideReposts WRITE setHideReposts NOTIFY hideRepostsChanged FINAL)
@@ -40,6 +41,9 @@ public:
     const QString& getPDS() const { return mPDS; }
     void setPDS(const QString& pds) { mPDS = pds; }
 
+    bool getLoggedOutVisiblity() const { return mLoggedOutVisibility; }
+    void setLoggedOutVisibility(bool visibility);
+
     bool getHideReplies() const { return mHomeFeedPref.mHideReplies; }
     void setHideReplies(bool hide);
 
@@ -64,6 +68,7 @@ public:
     void setLocalSettingsModified(bool modified) { mLocalSettingsModified = modified; }
 
 signals:
+    void loggedOutVisibilityChanged();
     void hideRepliesChanged();
     void hideRepliesByUnfollowedChanged();
     void hideRepostsChanged();
@@ -76,6 +81,7 @@ private:
     bool mEmailConfirmed = false;
     std::optional<QDateTime> mBirthDate;
     QString mPDS;
+    bool mLoggedOutVisibility = true;
 
     ATProto::UserPreferences::FeedViewPref mHomeFeedPref;
 

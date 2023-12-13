@@ -1,5 +1,7 @@
 next
 ====
+* Reply controls to indicate who can reply to your post
+* Logged-out visibility option in settings
 * Translate post (in the triple-dot menu)
 * Lighter selection color in dark mode
 * Bug fix: copy and report post did not work on a notification.

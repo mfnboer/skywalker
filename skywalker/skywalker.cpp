@@ -241,6 +241,7 @@ void Skywalker::signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView&
     const auto avatar = user.mAvatar ? *user.mAvatar : QString();
     mUserSettings.saveAvatar(mUserDid, avatar);
     setAvatarUrl(avatar);
+    mLoggedOutVisibility = ATProto::ProfileMaster::getLoggedOutVisibility(user);
     emit getUserProfileOK();
 }
 
@@ -249,7 +250,6 @@ void Skywalker::getUserPreferences()
     Q_ASSERT(mBsky);
     qDebug() << "Get user preferences";
 
-    // Get profile and follows in one go. We do not need detailed profile data.
     mBsky->getPreferences(
         [this](auto prefs){
             mUserPreferences = prefs;
@@ -1270,6 +1270,16 @@ void Skywalker::saveContentFilterPreferences()
         });
 }
 
+ATProto::ProfileMaster& Skywalker::getProfileMaster()
+{
+    Q_ASSERT(mBsky);
+
+    if (!mProfileMaster)
+        mProfileMaster = std::make_unique<ATProto::ProfileMaster>(*mBsky);
+
+    return *mProfileMaster;
+}
+
 EditUserPreferences* Skywalker::getEditUserPreferences()
 {
     Q_ASSERT(mBsky);
@@ -1278,6 +1288,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences = std::make_unique<EditUserPreferences>(this);
     mEditUserPreferences->setEmail(session->mEmail.value_or(""));
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
+    mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
@@ -1316,6 +1327,19 @@ void Skywalker::saveUserPreferences()
         mUserSettings.setGifAutoPlay(mEditUserPreferences->getGifAutoPlay());
     }
 
+    const bool loggedOutVisibility = mEditUserPreferences->getLoggedOutVisiblity();
+    if (loggedOutVisibility != mLoggedOutVisibility)
+    {
+        getProfileMaster().setLoggedOutVisibility(mUserDid, loggedOutVisibility,
+            [this, loggedOutVisibility]{
+                mLoggedOutVisibility = loggedOutVisibility;
+            },
+            [this](const QString& error, const QString& msg){
+                qWarning() << error << " - " << msg;
+                emit statusMessage(tr("Failed to change logged-out visibility: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+            });
+    }
+
     if (!mEditUserPreferences->isModified())
     {
         qDebug() << "User preferences not modified.";
@@ -1329,7 +1353,6 @@ void Skywalker::saveUserPreferences()
         [this, prefs]{
             qDebug() << "saveUserPreferences ok";
             mUserPreferences = prefs;
-            emit statusMessage("Settings saved");
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "saveUserPreferences failed:" << error << " - " << msg;
@@ -1480,11 +1503,13 @@ void Skywalker::signOut()
     mAuthorListModels.clear();
     mNotificationListModel.clear();
     mUserPreferences = ATProto::UserPreferences();
+    mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;
     mContentGroupListModel = nullptr;
     mTimelineModel.clear();
     setAvatarUrl({});
     mUserDid.clear();
+    mLoggedOutVisibility = true;
     mUserFollows.clear();
     setUnreadNotificationCount(0);
     mBookmarksModel = nullptr;

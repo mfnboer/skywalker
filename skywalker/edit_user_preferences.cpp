@@ -30,6 +30,15 @@ void EditUserPreferences::saveTo(ATProto::UserPreferences& userPreferences)
     userPreferences.setFeedViewPref(mHomeFeedPref);
 }
 
+void EditUserPreferences::setLoggedOutVisibility(bool visibility)
+{
+    if (visibility != mLoggedOutVisibility)
+    {
+        mLoggedOutVisibility = visibility;
+        emit loggedOutVisibilityChanged();
+    }
+}
+
 void EditUserPreferences::setHideReplies(bool hide)
 {
     if (hide != mHomeFeedPref.mHideReplies)

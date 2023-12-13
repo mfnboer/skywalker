@@ -17,6 +17,7 @@
 #include "search_post_feed_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
+#include <atproto/lib/profile_master.h>
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <QTimer>
@@ -179,6 +180,7 @@ private:
     void refreshSession();
     void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host, const QString& password);
+    ATProto::ProfileMaster& getProfileMaster();
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
@@ -191,8 +193,10 @@ private:
 
     QString mAvatarUrl;
     QString mUserDid;
+    bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
     ATProto::UserPreferences mUserPreferences;
+    std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     ContentFilter mContentFilter;
     std::unique_ptr<ContentGroupListModel> mContentGroupListModel;
