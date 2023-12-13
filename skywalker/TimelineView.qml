@@ -76,7 +76,6 @@ ListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
-        console.debug("COUNT CHANGED First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count)
         // Adding/removing content changes the indices.
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
@@ -88,7 +87,6 @@ ListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
-        console.info("END MOVEMENT First:", firstVisibleIndex, "Last:", lastVisibleIndex, "Count:", count, "AtBegin:", atYBeginning)
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
     }
@@ -168,13 +166,6 @@ ListView {
                 // Stay at the current item instead of scrolling to the new top
                 console.debug("Position at:", end + 1)
                 positionViewAtIndex(end + 1, ListView.Beginning)
-            }
-            else {
-                // TODO: remove code?
-                // Avoid the flick to bounce down the timeline
-                console.debug("Avoid flick WHY")
-                // cancelFlick()
-                // positionViewAtBeginning()
             }
         }
 

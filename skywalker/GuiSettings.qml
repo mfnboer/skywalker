@@ -10,6 +10,7 @@ Item {
     readonly property int threadBarWidth: 12 // In 5px units
 
     // Colors
+    readonly property string accentColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string avatarDefaultColor: "blue"
     readonly property string backgroundColor: Material.background
     readonly property string badgeBorderColor: Material.background
@@ -89,5 +90,22 @@ Item {
         message.onAccepted.connect(() => { message.destroy(); onOkCb() })
         message.onRejected.connect(() => message.destroy())
         message.show(msg)
+    }
+
+    function toWordSequence(stringList) {
+        if (!stringList)
+            return ""
+
+        let wordSequence = stringList[0]
+
+        for (let i = 1; i < stringList.length - 1; ++i)
+            wordSequence =+ ", " + stringList[i]
+
+        if (stringList.length > 1) {
+            wordSequence += qsTr(" and ")
+            wordSequence += stringList[stringList.length - 1]
+        }
+
+        return wordSequence
     }
 }

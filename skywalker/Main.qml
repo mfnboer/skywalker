@@ -899,6 +899,7 @@ ApplicationWindow {
         }
 
         console.debug("Theme set to:", root.Material.theme)
+        root.Material.accent = guiSettings.accentColor
         let userSettings = skywalker.getUserSettings()
         userSettings.setLinkColor(guiSettings.linkColor)
     }

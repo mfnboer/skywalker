@@ -266,13 +266,13 @@ void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
             const auto id = resultXJson.getRequiredString("id");
             const auto description = resultXJson.getOptionalString("content_description", "");
             qDebug() << id << description;
-            const auto mediaFormatsJson = resultXJson.getRequiredObject("media_formats");
+            const auto mediaFormatsJson = resultXJson.getRequiredJsonObject("media_formats");
             const ATProto::XJsonObject mediaFormatsXJson(mediaFormatsJson);
-            const auto normalJson = mediaFormatsXJson.getRequiredObject("mp4");
+            const auto normalJson = mediaFormatsXJson.getRequiredJsonObject("mp4");
             const auto normalFormat = mediaFormatFromJson(normalJson);
-            const auto smallJson = mediaFormatsXJson.getRequiredObject("tinygif");
+            const auto smallJson = mediaFormatsXJson.getRequiredJsonObject("tinygif");
             const auto smallFormat = mediaFormatFromJson(smallJson);
-            const auto imageJson = mediaFormatsXJson.getRequiredObject("gifpreview");
+            const auto imageJson = mediaFormatsXJson.getRequiredJsonObject("gifpreview");
             const auto imageFormat = mediaFormatFromJson(imageJson);
 
             const TenorGif tenorGif(id, description, query,

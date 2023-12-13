@@ -512,6 +512,19 @@ QEnums::ReplyRestriction Post::getReplyRestriction() const
     return QEnums::REPLY_RESTRICTION_NOBODY;
 }
 
+QStringList Post::getReplyRestrictionLists() const
+{
+    if (!mPost || !mPost->mThreadgate)
+        return {};
+
+    QStringList lists;
+
+    for (const auto& l : mPost->mThreadgate->mLists)
+        lists.append(l->mName);
+
+    return lists;
+}
+
 const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
 {
     static const std::vector<ATProto::ComATProtoLabel::Label::Ptr> NO_LABELS;

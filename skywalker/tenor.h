@@ -10,7 +10,6 @@
 
 namespace Skywalker {
 
-// TODO: presence
 class Tenor : public QObject, public Presence
 {
     Q_OBJECT

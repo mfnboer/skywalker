@@ -79,6 +79,7 @@ public:
     QString getLikeUri() const;
     bool isReplyDisabled() const;
     QEnums::ReplyRestriction getReplyRestriction() const;
+    QStringList getReplyRestrictionLists() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
     void setPostType(QEnums::PostType postType) { mPostType = postType; }

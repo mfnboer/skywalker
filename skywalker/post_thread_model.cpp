@@ -46,7 +46,35 @@ QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
         return QEnums::REPLY_RESTRICTION_NONE;
 
     const auto& post = mFeed[0];
-    return post.getReplyRestriction();
+    const auto restriction = post.getReplyRestriction();
+
+    if (post.isReplyDisabled() && restriction == QEnums::REPLY_RESTRICTION_NONE)
+        return QEnums::REPLY_RESTRICTION_UNKNOWN;
+
+    return restriction;
+}
+
+BasicProfile PostThreadModel::getReplyRestrictionAuthor() const
+{
+    if (mFeed.empty())
+        return {};
+
+    const auto& post = mFeed[0];
+    const auto restriction = post.getReplyRestriction();
+
+    if (restriction == QEnums::REPLY_RESTRICTION_NONE)
+        return {};
+
+    return post.getAuthor();
+}
+
+QStringList PostThreadModel::getReplyRestrictionLists() const
+{
+    if (mFeed.empty())
+        return {};
+
+    const auto& post = mFeed[0];
+    return post.getReplyRestrictionLists();
 }
 
 void PostThreadModel::clear()

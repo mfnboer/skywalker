@@ -30,7 +30,7 @@ ListView {
 
             Rectangle {
                 id: restrictionRow
-                x: guiSettings.threadBarWidth * 5
+                x: guiSettings.threadBarWidth * 5 - restrictionIcon.width
                 anchors.bottom: parent.bottom
                 width: parent.width - x - 10
                 height: restrictionText.height + 5
@@ -38,8 +38,8 @@ ListView {
 
                 SvgImage {
                     id: restrictionIcon
-                    width: restrictionText.height
-                    height: restrictionText.height
+                    width: 15
+                    height: 15
                     color: guiSettings.textColor
                     svg: svgOutline.replyRestrictions
                 }
@@ -52,7 +52,16 @@ ListView {
                     font.italic: true
                     font.pointSize: guiSettings.scaledFont(7/8)
                     wrapMode: Text.Wrap
+                    maximumLineCount: 3
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
                     text: restrictionRow.getRestrictionText()
+
+                    onLinkActivated: (link) => {
+                        if (link.startsWith("did:")) {
+                            skywalker.getDetailedProfile(link)
+                        }
+                    }
                 }
 
                 function getRestrictionText() {
@@ -61,34 +70,39 @@ ListView {
                     if (replyRestriction === QEnums.REPLY_RESTRICTION_NONE)
                         return ""
 
+                    if (replyRestriction === QEnums.REPLY_RESTRICTION_UNKNOWN)
+                        return "Replies are restricted"
+
                     if (replyRestriction === QEnums.REPLY_RESTRICTION_NOBODY)
                         return qsTr("Replies are disabled")
 
                     let restrictionList = []
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
-                        restrictionList.push(qsTr("mentioned"))
-                    if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING)
-                        restrictionList.push(qsTr("followed"))
-                    if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST)
-                        restrictionList.push(qsTr("selected"))
+                        restrictionList.push(qsTr("mentioned users"))
+
+                    if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) {
+                        const author = model.getReplyRestrictionAuthor()
+                        restrictionList.push(qsTr(`users followed by <a href="${author.did}" style="color: ${guiSettings.linkColor};">@${author.handle}</a>`))
+                    }
+
+                    if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST) {
+                        let lists = model.getReplyRestrictionLists()
+
+                        for (let i = 0; i < lists.length; ++i)
+                            lists[i] = `<b>${(lists[i])}</b>`
+
+                        const names = guiSettings.toWordSequence(lists)
+                        restrictionList.push(qsTr(`members of ${lists}`))
+                    }
 
                     if (!restrictionList) {
                         console.warn("No restrictions found.")
                         return qsTr("Replies are restricted")
                     }
 
-                    let restrictionListText = restrictionList[0]
-
-                    for (let i = 1; i < restrictionList.length - 1; ++i)
-                        restrictionListText += ", " + restrictionList[i]
-
-                    if (restrictionList.length > 1) {
-                        restrictionListText += " and "
-                        restrictionListText += restrictionList[restrictionList.length - 1]
-                    }
-
-                    return qsTr(`Replies are restricted to ${restrictionListText} users`)
+                    const restrictionListText = guiSettings.toWordSequence(restrictionList)
+                    return qsTr(`Replies are restricted to ${restrictionListText}`)
                 }
             }
         }

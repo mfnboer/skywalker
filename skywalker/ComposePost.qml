@@ -139,8 +139,8 @@ Page {
                 id: restrictionIcon
                 x: 10
                 y: height + 5
-                width: restrictionText.height
-                height: restrictionText.height
+                width: 15
+                height: 15
                 color: guiSettings.linkColor
                 svg: restrictReply ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions
             }
