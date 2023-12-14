@@ -33,13 +33,13 @@ ListView {
                 x: guiSettings.threadBarWidth * 5 - restrictionIcon.width
                 anchors.bottom: parent.bottom
                 width: parent.width - x - 10
-                height: restrictionText.height + 5
+                height: restrictionText.height + 10
                 color: "transparent"
 
                 SvgImage {
                     id: restrictionIcon
-                    width: 15
-                    height: 15
+                    width: 20
+                    height: 20
                     color: guiSettings.textColor
                     svg: svgOutline.replyRestrictions
                 }
