@@ -210,6 +210,10 @@ qt_add_qml_module(libskywalker
         QML_FILES AnimatedImagePreview.qml
         QML_FILES FullAnimatedImageView.qml
         QML_FILES AddReplyRestrictions.qml
+        SOURCES feed_list_model.h
+        SOURCES generator_view.h
+        SOURCES generator_view.cpp
+        SOURCES feed_list_model.cpp
 )
 
 if (NOT ANDROID)

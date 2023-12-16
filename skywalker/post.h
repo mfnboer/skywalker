@@ -9,7 +9,6 @@
 #include "record_view.h"
 #include "record_with_media_view.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
-#include <unordered_map>
 
 namespace Skywalker {
 
@@ -101,13 +100,6 @@ public:
     void setBookmarkNotFound(bool notFound) { mBookmarkNotFound = notFound; }
 
 private:
-    struct HyperLink
-    {
-        int mStart;
-        int mEnd;
-        QString mText;
-    };
-
     // null is place holder for more posts (gap)
     const ATProto::AppBskyFeed::PostView* mPost = nullptr;
 

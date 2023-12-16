@@ -122,6 +122,11 @@ void SearchUtils::removeModels()
         mSkywalker->removeAuthorListModel(mSearchUsersModelId);
         mSearchUsersModelId = -1;
     }
+
+    if (mSearchFeedsModelId >= 0) {
+        mSkywalker->removeFeedListModel(mSearchFeedsModelId);
+        mSearchFeedsModelId = -1;
+    }
 }
 
 void SearchUtils::setAuthorTypeaheadList(const BasicProfileList& list)
@@ -145,6 +150,15 @@ void SearchUtils::setSearchActorsInProgress(bool inProgress)
     {
         mSearchActorsInProgress = inProgress;
         emit searchActorsInProgressChanged();
+    }
+}
+
+void SearchUtils::setSearchFeedsInProgress(bool inProgress)
+{
+    if (inProgress != mSearchFeedsInProgress)
+    {
+        mSearchFeedsInProgress = inProgress;
+        emit searchFeedsInProgressChanged();
     }
 }
 
@@ -272,6 +286,62 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, int maxPages, int 
     }
 
     searchPosts(text, maxPages, minEntries, cursor);
+}
+
+void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
+{
+    qDebug() << "Search feeds:" << text << "cursor:" << cursor;
+
+    if (mSearchFeedsInProgress)
+    {
+        qDebug() << "Search feeds still in progress";
+        return;
+    }
+
+    setSearchFeedsInProgress(true);
+    bskyClient()->getPopularFeedGenerators(text, {}, mSkywalker->makeOptionalCursor(cursor),
+        [this, presence=getPresence(), text, cursor](auto output){
+            if (!presence)
+                return;
+
+            setSearchFeedsInProgress(false);
+            auto& model = *getSearchFeedsModel();
+
+            if (cursor.isEmpty())
+                model.clear();
+
+            model.addFeeds(std::move(output->mFeeds), output->mCursor.value_or(""));
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            setSearchFeedsInProgress(false);
+            qDebug() << "searchFeeds failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
+{
+    qDebug() << "Get next page search feeds:" << text;
+
+    if (mSearchFeedsInProgress)
+    {
+        qDebug() << "Search feeds still in progress";
+        return;
+    }
+
+    auto& model = *getSearchFeedsModel();
+    const auto& cursor = model.getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    searchFeeds(text, cursor);
 }
 
 void SearchUtils::legacySearchPosts(const QString& text)
@@ -447,6 +517,16 @@ AuthorListModel* SearchUtils::getSearchUsersModel()
     return mSkywalker->getAuthorListModel(mSearchUsersModelId);
 }
 
+FeedListModel* SearchUtils::getSearchFeedsModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (mSearchFeedsModelId < 0)
+        mSearchFeedsModelId = mSkywalker->createFeedListModel();
+
+    return mSkywalker->getFeedListModel(mSearchFeedsModelId);
+}
+
 void SearchUtils::clearAllSearchResults()
 {
     mAuthorTypeaheadList.clear();
@@ -462,6 +542,13 @@ void SearchUtils::clearAllSearchResults()
     {
         Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getAuthorListModel(mSearchUsersModelId);
+        model->clear();
+    }
+
+    if (mSearchFeedsModelId >= 0)
+    {
+        Q_ASSERT(mSkywalker);
+        auto* model = mSkywalker->getFeedListModel(mSearchFeedsModelId);
         model->clear();
     }
 }

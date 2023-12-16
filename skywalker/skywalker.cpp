@@ -57,6 +57,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
+    Q_ASSERT(mFeedListModels.empty());
 }
 
 // NOTE: user can be handle or DID
@@ -940,6 +941,26 @@ void Skywalker::removeSearchPostFeedModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mSearchPostFeedModels.remove(id);
+}
+
+int Skywalker::createFeedListModel()
+{
+    auto model = std::make_unique<FeedListModel>(this);
+    const int id = mFeedListModels.put(std::move(model));
+    return id;
+}
+
+FeedListModel* Skywalker::getFeedListModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mFeedListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeFeedListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mFeedListModels.remove(id);
 }
 
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)

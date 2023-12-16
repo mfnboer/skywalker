@@ -7,6 +7,7 @@
 #include "bookmarks_model.h"
 #include "content_group_list_model.h"
 #include "edit_user_preferences.h"
+#include "feed_list_model.h"
 #include "invite_code.h"
 #include "item_store.h"
 #include "muted_words.h"
@@ -76,6 +77,9 @@ public:
     Q_INVOKABLE int createSearchPostFeedModel();
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
+    Q_INVOKABLE int createFeedListModel();
+    Q_INVOKABLE FeedListModel* getFeedListModel(int id) const;
+    Q_INVOKABLE void removeFeedListModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit, const QString& cursor = {});
     Q_INVOKABLE void getAuthorListNextPage(int id);
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
@@ -221,6 +225,7 @@ private:
     ItemStore<AuthorFeedModel::Ptr> mAuthorFeedModels;
     ItemStore<SearchPostFeedModel::Ptr> mSearchPostFeedModels;
     ItemStore<AuthorListModel::Ptr> mAuthorListModels;
+    ItemStore<FeedListModel::Ptr> mFeedListModels;
     NotificationListModel mNotificationListModel;
 
     bool mGetNotificationsInProgress = false;
