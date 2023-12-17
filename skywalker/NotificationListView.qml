@@ -28,6 +28,7 @@ ListView {
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: positionViewAtBeginning()
         onSearchClicked: root.viewSearchView()
+        onFeedsClicked: root.viewFeedsView()
     }
     footerPositioning: ListView.OverlayFooter
 

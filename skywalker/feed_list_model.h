@@ -13,7 +13,8 @@ class FeedListModel : public QAbstractListModel
 public:
     enum class Role {
         Feed = Qt::UserRole + 1,
-        FeedCreator
+        FeedCreator,
+        EndOfeed
     };
 
     using Ptr = std::unique_ptr<FeedListModel>;

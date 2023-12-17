@@ -41,6 +41,7 @@ Page {
         searchActive: true
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
+        onFeedsClicked: root.viewFeedsView()
     }
 
     SimpleAuthorListView {

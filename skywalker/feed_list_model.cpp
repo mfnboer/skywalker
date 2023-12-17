@@ -28,6 +28,8 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(feed);
     case Role::FeedCreator:
         return QVariant::fromValue(feed.getCreator());
+    case Role::EndOfeed:
+        return index.row() == (int)mFeeds.size() - 1 && isEndOfList();
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -36,6 +38,8 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
 
 void FeedListModel::clear()
 {
+    qDebug() << "Clear feeds";
+
     if (!mFeeds.empty())
     {
         beginRemoveRows({}, 0, mFeeds.size() - 1);
@@ -51,12 +55,26 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, cons
 {
     qDebug() << "Add feeds:" << feeds.size() << "cursor:" << cursor;
     mCursor = cursor;
+
+    if (feeds.empty())
+    {
+        qDebug() << "No new feeds";
+
+        if (!mFeeds.empty())
+            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfeed });
+
+        return;
+    }
+
     const size_t newRowCount = mFeeds.size() + feeds.size();
 
     beginInsertRows({}, mFeeds.size(), newRowCount - 1);
 
     for (const auto& view : feeds)
+    {
+        qDebug() << view->mDisplayName;
         mFeeds.emplace_back(view.get());
+    }
 
     endInsertRows();
 
@@ -68,7 +86,8 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::Feed), "feed" },
-        { int(Role::FeedCreator), "feedCreator" }
+        { int(Role::FeedCreator), "feedCreator" },
+        { int(Role::EndOfeed), "endOfFeed" }
     };
 
     return roles;

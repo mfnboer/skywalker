@@ -5,6 +5,9 @@ import skywalker
 
 Item {
     property string avatarUrl
+    property int radius: width / 2
+    property svgimage unknownSvg: svgFilled.unknownAvatar
+
     signal clicked
     signal pressAndHold
 
@@ -16,7 +19,7 @@ Item {
         objectToRound: avatarImg
         width: parent.width
         height: parent.height
-        radius: parent.width / 2
+        radius: parent.radius
         visible: avatarItem.avatarUrl && avatarImg.status === Image.Ready
 
         ImageAutoRetry {
@@ -29,7 +32,7 @@ Item {
     Rectangle {
         width: parent.width
         height: parent.height
-        radius: height / 2
+        radius: parent.radius
         color: guiSettings.avatarDefaultColor
         visible: !avatarFrame.visible
 
@@ -37,7 +40,7 @@ Item {
             width: parent.width
             height: parent.height
             color: "white"
-            svg: svgFilled.unknownAvatar
+            svg: avatarItem.unknownSvg
         }
     }
     MouseArea {

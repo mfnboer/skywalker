@@ -299,8 +299,8 @@ void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
     }
 
     setSearchFeedsInProgress(true);
-    bskyClient()->getPopularFeedGenerators(text, {}, mSkywalker->makeOptionalCursor(cursor),
-        [this, presence=getPresence(), text, cursor](auto output){
+    bskyClient()->getPopularFeedGenerators(text, 20, mSkywalker->makeOptionalCursor(cursor),
+        [this, presence=getPresence(), cursor](auto output){
             if (!presence)
                 return;
 

@@ -41,7 +41,8 @@ ApplicationWindow {
 
             popStack()
         }
-        else if (stackLayout.currentIndex === stackLayout.searchIndex) {
+        else if (stackLayout.currentIndex === stackLayout.searchIndex ||
+                 stackLayout.currentIndex === stackLayout.feedsIndex) {
             // Hack to hide the selection anchor on Android that should not have been
             // there at all.
             currentStackItem().hide()
@@ -217,6 +218,7 @@ ApplicationWindow {
         readonly property int timelineIndex: 0
         readonly property int notificationIndex: 1
         readonly property int searchIndex: 2
+        readonly property int feedsIndex: 3
 
         id: stackLayout
         anchors.fill: parent
@@ -230,6 +232,9 @@ ApplicationWindow {
         }
         StackView {
             id: searchStack
+        }
+        StackView {
+            id: feedsStack
         }
     }
 
@@ -649,6 +654,7 @@ ApplicationWindow {
         getTimelineView().stopSync()
         unwindStack()
         destroySearchView()
+        destroyFeedsView()
         inviteCodeStore.clear()
         skywalker.signOut()
     }
@@ -779,6 +785,32 @@ ApplicationWindow {
 
         if (searchStack.depth === 0)
             createSearchView()
+
+        currentStackItem().show()
+    }
+
+    function createFeedsView() {
+        let feedsComponent = Qt.createComponent("SearchFeeds.qml")
+        let feedsView = feedsComponent.createObject(root,
+                { skywalker: skywalker, timeline: getTimelineView() })
+        feedsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
+        feedsStack.push(feedsView)
+    }
+
+    function destroyFeedsView() {
+        if (feedsStack.depth > 0) {
+            let item = feedsStack.get(0)
+            item.forceDestroy()
+            feedsStack.clear()
+        }
+    }
+
+    function viewFeedsView() {
+        unwindStack()
+        stackLayout.currentIndex = stackLayout.feedsIndex
+
+        if (feedsStack.depth === 0)
+            createFeedsView()
 
         currentStackItem().show()
     }

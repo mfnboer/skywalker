@@ -214,6 +214,8 @@ qt_add_qml_module(libskywalker
         SOURCES generator_view.h
         SOURCES generator_view.cpp
         SOURCES feed_list_model.cpp
+        QML_FILES SearchFeeds.qml
+        QML_FILES GeneratorViewDelegate.qml
 )
 
 if (NOT ANDROID)

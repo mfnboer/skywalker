@@ -9,7 +9,6 @@ ListView {
     required property int modelId
     property string description
     property bool showFollow: true
-    property int margin: 8
 
     signal closed
 

@@ -6,7 +6,6 @@ import skywalker
 ListView {
     required property var skywalker
     property bool inSync: false
-    property int margin: 8
     property int unreadPosts: 0
     property int topIndexBeforeInsert: -1
 
@@ -63,6 +62,7 @@ ListView {
         onHomeClicked: moveToPost(0)
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
+        onFeedsClicked: root.viewFeedsView()
     }
     footerPositioning: ListView.OverlayFooter
 

@@ -9,11 +9,13 @@ Rectangle {
     property bool homeActive: false
     property bool notificationsActive: false
     property bool searchActive: false
+    property bool feedsActive: false
     property int unreadNotifications: 0
 
     signal homeClicked()
     signal notificationsClicked()
     signal searchClicked()
+    signal feedsClicked()
 
     width: parent.width
     height: guiSettings.footerHeight
@@ -92,6 +94,27 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: searchClicked()
+            }
+        }
+
+        Rectangle {
+            height: parent.height
+            Layout.fillWidth: true
+            color: guiSettings.backgroundColor
+
+            SvgImage {
+                id: feedsButton
+                y: height + 5
+                width: height
+                height: parent.height - 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: guiSettings.textColor
+                svg: feedsActive ? svgFilled.feed : svgOutline.feed
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: feedsClicked()
             }
         }
 

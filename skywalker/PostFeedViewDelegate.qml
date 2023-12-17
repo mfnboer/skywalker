@@ -473,7 +473,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             elide: Text.ElideRight
-            color: Material.foreground
+            color: guiSettings.textColor
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfFeed
