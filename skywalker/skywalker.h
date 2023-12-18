@@ -43,6 +43,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
+    Q_PROPERTY(QList<GeneratorView> savedFeeds READ getSavedFeeds NOTIFY savedFeedsChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -143,6 +144,7 @@ public:
     const ContentFilter& getContentFilter() const { return mContentFilter; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
+    QList<GeneratorView> getSavedFeeds() const { return mSavedFeeds; };
 
 signals:
     void loginOk();
@@ -175,6 +177,7 @@ signals:
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString text); // Shared from another app
     void bskyClientDeleted();
+    void savedFeedsChanged();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
@@ -199,6 +202,8 @@ private:
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
     void shareImage(const QString& contentUri, const QString& text);
+    void updateSavedFeeds();
+    void updateSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& generators);
     void disableDebugLogging();
     void restoreDebugLogging();
 
@@ -241,6 +246,8 @@ private:
 
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;
+    ATProto::AppBskyFeed::GeneratorViewList mSavedGenerators;
+    QList<GeneratorView> mSavedFeeds;
 
     UserSettings mUserSettings;
     bool mDebugLogging = false;

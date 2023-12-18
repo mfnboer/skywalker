@@ -36,6 +36,38 @@ ListView {
                 color: guiSettings.headerTextColor
                 text: qsTr("Home feed")
             }
+            SvgButton {
+                id: expandButton
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignLeft
+                iconColor: guiSettings.headerTextColor
+                Material.background: "transparent"
+                svg: svgOutline.expandMore
+                onClicked: feedsMenu.open()
+
+                Menu {
+                    id: feedsMenu
+
+                    Instantiator {
+                        model: skywalker.savedFeeds
+                        delegate: MenuItem {
+                            text: modelData.displayName
+
+                            FeedAvatar {
+                                y: 5
+                                anchors.rightMargin: 10
+                                anchors.right: parent.right
+                                width: height
+                                height: parent.height - 10
+                                avatarUrl: modelData.avatar
+                            }
+                        }
+
+                        onObjectAdded: (index, object) => feedsMenu.insertItem(index, object)
+                        onObjectRemoved: (index, object) => feedsMenu.removeItem(object)
+                    }
+                }
+            }
             Item {
                 Layout.rightMargin: 10
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignRight

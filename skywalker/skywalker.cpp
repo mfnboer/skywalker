@@ -255,12 +255,72 @@ void Skywalker::getUserPreferences()
     mBsky->getPreferences(
         [this](auto prefs){
             mUserPreferences = prefs;
+            updateSavedFeeds();
             emit getUserPreferencesOK();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
             emit getUserPreferencesFailed();
         });
+}
+
+void Skywalker::updateSavedFeeds()
+{
+    qDebug() << "Update saved feeds";
+    const auto& savedFeedsPref = mUserPreferences.getSavedFeedsPref();
+
+    if (savedFeedsPref.mSaved.empty())
+    {
+        qDebug() << "No saved feeds";
+        updateSavedFeeds({});
+        return;
+    }
+
+    mBsky->getFeedGenerators(savedFeedsPref.mSaved,
+        [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
+            updateSavedFeeds(std::move(output->mFeeds));
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << "Cannot get saved feeds:" << error << " - " << msg;
+            showStatusMessage(tr("Cannot get saved feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::updateSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& generators)
+{
+    qInfo() << "Update saved feeds";
+
+    if (generators.size() == mSavedGenerators.size())
+    {
+        bool equal = true;
+
+        for (int i = 0; i < (int)generators.size(); ++i)
+        {
+            if (generators[i]->mUri != mSavedGenerators[i]->mUri)
+            {
+                equal = false;
+                break;
+            }
+        }
+
+        if (equal)
+        {
+            qInfo() << "Saved feeds not changed";
+            return;
+        }
+    }
+
+    mSavedFeeds.clear();
+    mSavedGenerators = std::move(generators);
+
+    for (const auto& gen : mSavedGenerators)
+    {
+        qInfo() << "Saved feed:" << gen->mDisplayName;
+        GeneratorView view(gen.get());
+        mSavedFeeds.push_back(std::move(view));
+    }
+
+    emit savedFeedsChanged();
 }
 
 void Skywalker::syncTimeline(int maxPages)
@@ -1636,6 +1696,7 @@ void Skywalker::signOut()
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
+    Q_ASSERT(mPostFeedModels.empty());
 
     qDebug() << "Logout:" << mUserDid;
     mSignOutInProgress = true;
@@ -1662,6 +1723,7 @@ void Skywalker::signOut()
     mUserSettings.setActiveUserDid({});
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);
+    setGetFeedInProgress(false);
     setGetPostThreadInProgress(false);
     setGetAuthorFeedInProgress(false);
     setGetAuthorListInProgress(false);
