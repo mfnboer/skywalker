@@ -6,6 +6,8 @@ import QtQuick.Window
 import skywalker
 
 ApplicationWindow {
+    property var feedViews: new Map()
+
     id: root
     width: 480
     height: 960
@@ -803,6 +805,12 @@ ApplicationWindow {
             item.forceDestroy()
             feedsStack.clear()
         }
+
+        for (let view of feedViews.values()) {
+            view.forceDestroy()
+        }
+
+        feedViews.clear()
     }
 
     function viewFeedsView() {
@@ -813,6 +821,37 @@ ApplicationWindow {
             createFeedsView()
 
         currentStackItem().show()
+    }
+
+    // TODO: put a maximum on kept views
+    function viewFeed(generatorView) {
+        let view = null
+
+        if (root.feedViews.has(generatorView.uri)) {
+            view = feedViews.get(generatorView.uri)
+            const visibleItem = currentStackItem()
+
+            if (visibleItem === view)
+            {
+                console.debug("Feed already showing:", generatorView.displayName)
+                return
+            }
+
+            if (view.atYBeginning) {
+                console.debug("Reload feed:", generatorView.displayName)
+                skywalker.getFeed(view.modelId)
+            }
+        }
+        else {
+            const modelId = skywalker.createPostFeedModel(generatorView)
+            skywalker.getFeed(modelId)
+            let component = Qt.createComponent("PostFeedView.qml")
+            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
+            feedViews.set(generatorView.uri, view)
+        }
+
+        viewTimeline()
+        pushStack(view)
     }
 
     function viewAuthor(profile, modelId) {
@@ -902,7 +941,10 @@ ApplicationWindow {
 
     function popStack() {
         let item = currentStack().pop()
-        item.destroy()
+
+        // PostFeedViews are kept alive in root.feedViews
+        if (!(item instanceof PostFeedView))
+            item.destroy()
     }
 
     function pushStack(item, operation) {

@@ -39,6 +39,7 @@ ListView {
                 onClicked: postFeedView.closed()
             }
             FeedAvatar {
+                Layout.leftMargin: backButton.visible ? 0 : 10
                 Layout.rightMargin: 10
                 height: parent.height - 10
                 width: height
@@ -46,12 +47,27 @@ ListView {
             }
             Text {
                 id: headerTexts
-                Layout.fillWidth: true
+                Layout.fillWidth: !showAsHome
                 Layout.alignment: Qt.AlignVCenter
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(10/8)
                 color: guiSettings.headerTextColor
                 text: postFeedView.model.feedName
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if (expandFeedsButton.visible)
+                            expandFeedsButton.onClicked()
+                    }
+                }
+            }
+            ExpandFeedsButton {
+                id: expandFeedsButton
+                skywalker: postFeedView.skywalker
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignLeft
+                visible: showAsHome
             }
             Item {
                 Layout.rightMargin: 10
@@ -128,5 +144,15 @@ ListView {
         id: guiSettings
     }
 
-    Component.onDestruction: skywalker.removePostFeedModel(modelId)
+    function forceDestroy() {
+        postFeedView.model = null
+        skywalker.removePostFeedModel(modelId)
+        modelId = -1
+        destroy()
+    }
+
+    Component.onDestruction: {
+        if (modelId !== -1)
+            skywalker.removePostFeedModel(modelId)
+    }
 }

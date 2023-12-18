@@ -218,6 +218,7 @@ qt_add_qml_module(libskywalker
         QML_FILES GeneratorViewDelegate.qml
         QML_FILES PostFeedView.qml
         QML_FILES FeedAvatar.qml
+        QML_FILES ExpandFeedsButton.qml
 )
 
 if (NOT ANDROID)
