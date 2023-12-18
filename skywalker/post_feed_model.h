@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "generator_view.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
 #include <unordered_map>
@@ -12,15 +13,23 @@ namespace Skywalker {
 class PostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
+    Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
 
-    explicit PostFeedModel(const QString& userDid, const IProfileStore& following,
+    explicit PostFeedModel(const QString& feedName,
+                           const QString& userDid, const IProfileStore& following,
                            const ContentFilter& contentFilter,
                            const Bookmarks& bookmarks,
                            const MutedWords& mutedWords,
                            const ATProto::UserPreferences& userPrefs,
                            QObject* parent = nullptr);
+
+    const QString& getFeedName() const { return mFeedName; }
+
+    Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
+    void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
 
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
@@ -115,6 +124,8 @@ private:
     size_t mPrependPostCount = 0;
 
     int mLastInsertedRowIndex = -1;
+    QString mFeedName;
+    GeneratorView mGeneratorView;
 };
 
 }

@@ -2,9 +2,9 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "definitions.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
-#include "post_utils.h"
 #include "shared_image_provider.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
@@ -27,6 +27,7 @@ static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
 static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
+static constexpr int FEED_ADD_PAGE_SIZE = 50;
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
 static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
@@ -35,7 +36,7 @@ Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
     mMutedWords(this),
-    mTimelineModel(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, mUserPreferences, this),
+    mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, mUserPreferences, this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mUserSettings(this)
 {
@@ -548,6 +549,96 @@ void Skywalker::getTimelineNextPage(int maxPages, int minEntries)
     getTimeline(TIMELINE_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
+void Skywalker::getFeed(int modelId, int limit, int maxPages, int minEntries, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get feed model:" << modelId << "cursor:" << cursor;
+
+    if (mGetFeedInProgress)
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& feedUri = model->getGeneratorView().getUri();
+    setGetFeedInProgress(true);
+
+    mBsky->getFeed(feedUri, limit, makeOptionalCursor(cursor),
+        [this, modelId, maxPages, minEntries, cursor](auto feed){
+            setGetFeedInProgress(false);
+            int addedPosts = 0;
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            if (cursor.isEmpty())
+            {
+                model->setFeed(std::move(feed));
+                addedPosts = model->rowCount();
+            }
+            else
+            {
+                const int oldRowCount = model->rowCount();
+                model->addFeed(std::move(feed));
+                addedPosts = model->rowCount() - oldRowCount;
+            }
+
+            const int postsToAdd = minEntries - addedPosts;
+
+            if (postsToAdd > 0)
+                getFeedNextPage(modelId, maxPages - 1, postsToAdd);
+        },
+        [this](const QString& error, const QString& msg){
+            qInfo() << "getFeed FAILED:" << error << " - " << msg;
+            setGetFeedInProgress(false);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getFeedNextPage(int modelId, int maxPages, int minEntries)
+{
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& cursor = model->getLastCursor();
+    if (cursor.isEmpty())
+    {
+        qDebug() << "Last page reached, no more cursor";
+        return;
+    }
+
+    getFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
 void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)
 {
     mAutoUpdateTimelineInProgress = inProgress;
@@ -558,6 +649,12 @@ void Skywalker::setGetTimelineInProgress(bool inProgress)
 {
     mGetTimelineInProgress = inProgress;
     emit getTimeLineInProgressChanged();
+}
+
+void Skywalker::setGetFeedInProgress(bool inProgress)
+{
+    mGetFeedInProgress = inProgress;
+    emit getFeedInProgressChanged();
 }
 
 void Skywalker::setGetPostThreadInProgress(bool inProgress)
@@ -699,6 +796,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
         update(model.get());
 
     for (auto& [_, model] : mSearchPostFeedModels.items())
+        update(model.get());
+
+    for (auto& [_, model] : mPostFeedModels.items())
         update(model.get());
 
     if (mBookmarksModel)
@@ -961,6 +1061,29 @@ void Skywalker::removeFeedListModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mFeedListModels.remove(id);
+}
+
+int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
+{
+    auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
+            mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords,
+            mUserPreferences, this);
+    model->setGeneratorView(generatorView);
+    const int id = mPostFeedModels.put(std::move(model));
+    return id;
+}
+
+PostFeedModel* Skywalker::getPostFeedModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mPostFeedModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removePostFeedModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mPostFeedModels.remove(id);
 }
 
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)

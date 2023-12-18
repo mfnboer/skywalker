@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <definitions.h>
 #include <post_feed_model.h>
 #include <QTest>
 
@@ -14,7 +15,7 @@ private slots:
     void init()
     {
         mPostFeedModel = std::make_unique<PostFeedModel>(
-            mUserDid, mFollowing, mContentFilter,
+            HOME_FEED, mUserDid, mFollowing, mContentFilter,
             mBookmarks, mMutedWords, mUserPreferences);
     }
 

@@ -2,19 +2,20 @@
 // License: GPLv3
 #include "post_feed_model.h"
 #include "author_cache.h"
-#include "definitions.h"
 #include <algorithm>
 
 namespace Skywalker {
 
-PostFeedModel::PostFeedModel(const QString& userDid, const IProfileStore& following,
+PostFeedModel::PostFeedModel(const QString& feedName,
+                             const QString& userDid, const IProfileStore& following,
                              const ContentFilter& contentFilter,
                              const Bookmarks& bookmarks,
                              const MutedWords& mutedWords,
                              const ATProto::UserPreferences& userPrefs,
                              QObject* parent) :
     AbstractPostFeedModel(userDid, following, contentFilter, bookmarks, mutedWords, parent),
-    mUserPreferences(userPrefs)
+    mUserPreferences(userPrefs),
+    mFeedName(feedName)
 {}
 
 int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
@@ -469,7 +470,7 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
 
 bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(HOME_FEED);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
 
     if (feedViewPref.mHideReplies)
         return false;
@@ -510,7 +511,7 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(HOME_FEED);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
     auto page = std::make_unique<Page>();
     page->mRawFeed = std::forward<ATProto::AppBskyFeed::PostFeed>(feed->mFeed);
 

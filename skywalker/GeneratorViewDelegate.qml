@@ -11,6 +11,8 @@ Rectangle {
     required property bool endOfFeed
     property int maxTextLines: 1000
 
+    signal feedClicked(generatorview feed)
+
     id: generatorView
     width: grid.width
     height: grid.height
@@ -29,16 +31,16 @@ Rectangle {
             color: "transparent"
         }
 
-        Avatar {
+        FeedAvatar {
             Layout.rowSpan: 3
             Layout.leftMargin: generatorView.margin
             Layout.rightMargin: generatorView.margin
             x: 8
             y: 5
             width: guiSettings.threadBarWidth * 5
-            radius: 5
-            unknownSvg: svgFilled.feed
             avatarUrl: feed.avatar
+
+            onClicked: feedClicked(feed)
         }
 
         Text {
@@ -105,6 +107,15 @@ Rectangle {
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfFeed
+        }
+    }
+
+    MouseArea {
+        z: -2 // Let other mouse areas on top
+        anchors.fill: parent
+        onClicked: {
+            console.debug("FEED CLICKED:", feed.displayName)
+            generatorView.feedClicked(feed)
         }
     }
 

@@ -36,6 +36,7 @@ class Skywalker : public QObject
     Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
@@ -60,6 +61,8 @@ public:
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false);
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
+    Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
@@ -80,6 +83,9 @@ public:
     Q_INVOKABLE int createFeedListModel();
     Q_INVOKABLE FeedListModel* getFeedListModel(int id) const;
     Q_INVOKABLE void removeFeedListModel(int id);
+    Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
+    Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
+    Q_INVOKABLE void removePostFeedModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit, const QString& cursor = {});
     Q_INVOKABLE void getAuthorListNextPage(int id);
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
@@ -119,6 +125,8 @@ public:
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
+    void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
     bool isGetPostThreadInProgress() const { return mGetPostThreadInProgress; }
     void setGetNotificationsInProgress(bool inProgress);
@@ -152,6 +160,7 @@ signals:
     void getUserPreferencesFailed();
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
+    void getFeedInProgressChanged();
     void getNotificationsInProgressChanged();
     void sessionExpired(QString error);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
@@ -212,6 +221,7 @@ private:
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
+    bool mGetFeedInProgress = false;
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;
@@ -226,6 +236,7 @@ private:
     ItemStore<SearchPostFeedModel::Ptr> mSearchPostFeedModels;
     ItemStore<AuthorListModel::Ptr> mAuthorListModels;
     ItemStore<FeedListModel::Ptr> mFeedListModels;
+    ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     NotificationListModel mNotificationListModel;
 
     bool mGetNotificationsInProgress = false;

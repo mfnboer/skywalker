@@ -53,6 +53,15 @@ Page {
 
         delegate: GeneratorViewDelegate {
             viewWidth: page.width
+
+            onFeedClicked: (feed) => {
+                const modelId = skywalker.createPostFeedModel(feed)
+                skywalker.getFeed(modelId)
+                let component = Qt.createComponent("PostFeedView.qml")
+                let view = component.createObject(page, { skywalker: skywalker, modelId: modelId })
+                view.onClosed.connect(() => root.popStack())
+                root.pushStack(view)
+            }
         }
 
         FlickableRefresher {

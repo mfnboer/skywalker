@@ -216,6 +216,8 @@ qt_add_qml_module(libskywalker
         SOURCES feed_list_model.cpp
         QML_FILES SearchFeeds.qml
         QML_FILES GeneratorViewDelegate.qml
+        QML_FILES PostFeedView.qml
+        QML_FILES FeedAvatar.qml
 )
 
 if (NOT ANDROID)
