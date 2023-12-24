@@ -219,6 +219,8 @@ qt_add_qml_module(libskywalker
         QML_FILES PostFeedView.qml
         QML_FILES FeedAvatar.qml
         QML_FILES ExpandFeedsButton.qml
+        SOURCES favorite_feeds.h
+        SOURCES favorite_feeds.cpp
 )
 
 if (NOT ANDROID)

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "favorite_feeds.h"
 #include "generator_view.h"
 #include <QAbstractListModel>
 #include <deque>
@@ -14,12 +15,14 @@ public:
     enum class Role {
         Feed = Qt::UserRole + 1,
         FeedCreator,
+        FeedSaved,
+        FeedPinned,
         EndOfeed
     };
 
     using Ptr = std::unique_ptr<FeedListModel>;
 
-    explicit FeedListModel(QObject* parent = nullptr);
+    explicit FeedListModel(const FavoriteFeeds& favoriteFeeds, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -37,6 +40,7 @@ private:
     FeedList mFeeds;
     std::vector<ATProto::AppBskyFeed::GeneratorViewList> mRawFeeds;
     QString mCursor;
+    const FavoriteFeeds& mFavoriteFeeds;
 };
 
 }

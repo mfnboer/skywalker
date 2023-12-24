@@ -33,6 +33,7 @@ class GeneratorView
     Q_PROPERTY(QString description READ getDescription FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
     Q_PROPERTY(int likeCount READ getLikeCount FINAL)
+    Q_PROPERTY(GeneratorViewerState viewer READ getViewer FINAL)
     QML_VALUE_TYPE(generatorview)
 
 public:

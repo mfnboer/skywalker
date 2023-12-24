@@ -23,6 +23,7 @@ Item {
     readonly property string contentLabelColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string disabledColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string errorColor: Material.theme === Material.Light ? "darkred" : "palevioletred"
+    readonly property string favoriteColor: "gold"
     readonly property string footerColor: Material.background
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: "black"

@@ -39,11 +39,12 @@ ListView {
                 onClicked: postFeedView.closed()
             }
             FeedAvatar {
-                Layout.leftMargin: backButton.visible ? 0 : 10
+                Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 height: parent.height - 10
                 width: height
                 avatarUrl: postFeedView.model.getGeneratorView().avatar
+                visible: showAsHome
             }
             Text {
                 id: headerTexts
@@ -68,6 +69,14 @@ ListView {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignLeft
                 visible: showAsHome
+            }
+            FeedAvatar {
+                Layout.rightMargin: 10
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                height: parent.height - 10
+                width: height
+                avatarUrl: postFeedView.model.getGeneratorView().avatar
+                visible: !showAsHome
             }
             Item {
                 Layout.rightMargin: 10

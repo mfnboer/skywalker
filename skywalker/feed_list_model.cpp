@@ -4,8 +4,9 @@
 
 namespace Skywalker {
 
-FeedListModel::FeedListModel(QObject* parent) :
-    QAbstractListModel(parent)
+FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, QObject* parent) :
+    QAbstractListModel(parent),
+    mFavoriteFeeds(favoriteFeeds)
 {
 }
 
@@ -28,6 +29,10 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(feed);
     case Role::FeedCreator:
         return QVariant::fromValue(feed.getCreator());
+    case Role::FeedSaved:
+        return mFavoriteFeeds.isSavedFeed(feed.getUri());
+    case Role::FeedPinned:
+        return mFavoriteFeeds.isPinnedFeed(feed.getUri());
     case Role::EndOfeed:
         return index.row() == (int)mFeeds.size() - 1 && isEndOfList();
     }
@@ -87,6 +92,8 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
     static const QHash<int, QByteArray> roles{
         { int(Role::Feed), "feed" },
         { int(Role::FeedCreator), "feedCreator" },
+        { int(Role::FeedSaved), "feedSaved" },
+        { int(Role::FeedPinned), "feedPinned" },
         { int(Role::EndOfeed), "endOfFeed" }
     };
 

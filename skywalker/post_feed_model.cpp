@@ -463,8 +463,6 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     }
 
     mParentIndexMap[replyRef.mParent.getCid()] = parentIndex;
-
-    //qDebug() << "Added parent (" << replyRef.mParent.getCid() << ") to existing thread:" << post.getCid();
     return true;
 }
 
