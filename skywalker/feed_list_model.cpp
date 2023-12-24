@@ -49,7 +49,6 @@ void FeedListModel::clear()
     {
         beginRemoveRows({}, 0, mFeeds.size() - 1);
         mFeeds.clear();
-        mRawFeeds.clear();
         endRemoveRows();
     }
 
@@ -75,15 +74,14 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, cons
 
     beginInsertRows({}, mFeeds.size(), newRowCount - 1);
 
-    for (const auto& view : feeds)
+    for (auto& view : feeds)
     {
         qDebug() << view->mDisplayName;
-        mFeeds.emplace_back(view.get());
+        ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(view.release());
+        mFeeds.emplace_back(sharedRaw);
     }
 
     endInsertRows();
-
-    mRawFeeds.push_back(std::move(feeds));
     qDebug() << "New feeds size:" << mFeeds.size();
 }
 

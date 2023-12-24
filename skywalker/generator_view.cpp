@@ -11,7 +11,7 @@ GeneratorViewerState::GeneratorViewerState(const ATProto::AppBskyFeed::Generator
 {
 }
 
-GeneratorView::GeneratorView(const ATProto::AppBskyFeed::GeneratorView* view) :
+GeneratorView::GeneratorView(const ATProto::AppBskyFeed::GeneratorView::SharedPtr& view) :
     mGeneratorView(view)
 {
     Q_ASSERT(mGeneratorView);

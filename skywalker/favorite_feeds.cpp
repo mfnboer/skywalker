@@ -22,8 +22,6 @@ void FavoriteFeeds::clear()
     mPinnedUris.clear();
     mSavedFeeds.clear();
     mPinnedFeeds.clear();
-    mRawSavedFeeds.clear();
-    mRawPinnedFeeds.clear();
 }
 
 void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
@@ -37,27 +35,25 @@ void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedF
 
 void FavoriteFeeds::setSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators)
 {
-    mRawSavedFeeds = std::move(savedGenerators);
-    setFeeds(mSavedFeeds, mRawSavedFeeds);
+    setFeeds(mSavedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(savedGenerators));
 }
 
 void FavoriteFeeds::setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators)
 {
-    mRawPinnedFeeds = std::move(pinnedGenerators);
-    setFeeds(mPinnedFeeds, mRawPinnedFeeds);
+    setFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
 }
 
-void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, const ATProto::AppBskyFeed::GeneratorViewList& generators)
+void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
 {
-    for (const auto& gen : generators)
+    for (auto& gen : generators)
     {
-        GeneratorView view(gen.get());
+        ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
+        GeneratorView view(sharedRaw);
         auto it = std::lower_bound(feeds.cbegin(), feeds.cend(), view, feedNameCompare);
         feeds.insert(it, view);
     }
 }
 
-// TODO: raw feed??
 void FavoriteFeeds::addFeed(const GeneratorView& feed)
 {
     if (isSavedFeed(feed.getUri()))

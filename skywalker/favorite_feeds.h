@@ -30,7 +30,7 @@ public:
     const QList<GeneratorView>& getPinnedFeeds() const { return mPinnedFeeds; }
 
 private:
-    void setFeeds(QList<GeneratorView>& feeds, const ATProto::AppBskyFeed::GeneratorViewList& generators);
+    void setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
     void pinFeed(const GeneratorView& feed);
     void unpinFeed(const GeneratorView& feed);
 
@@ -39,8 +39,6 @@ private:
     std::unordered_set<QString> mPinnedUris;
     QList<GeneratorView> mSavedFeeds; // sorted by name
     QList<GeneratorView> mPinnedFeeds; // sorted by name
-    ATProto::AppBskyFeed::GeneratorViewList mRawSavedFeeds;
-    ATProto::AppBskyFeed::GeneratorViewList mRawPinnedFeeds;
 };
 
 }

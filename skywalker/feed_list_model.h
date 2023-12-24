@@ -38,7 +38,6 @@ protected:
 private:
     using FeedList = std::deque<GeneratorView>;
     FeedList mFeeds;
-    std::vector<ATProto::AppBskyFeed::GeneratorViewList> mRawFeeds;
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
 };
