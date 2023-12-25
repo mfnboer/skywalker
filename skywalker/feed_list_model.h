@@ -1,12 +1,13 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "favorite_feeds.h"
 #include "generator_view.h"
 #include <QAbstractListModel>
 #include <deque>
 
 namespace Skywalker {
+
+class FavoriteFeeds;
 
 class FeedListModel : public QAbstractListModel
 {
@@ -29,6 +30,7 @@ public:
 
     void clear();
     void addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, const QString& cursor);
+    void addFeeds(const QList<GeneratorView>& feeds);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
@@ -36,6 +38,10 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
+    void feedSavedChanged();
+    void feedPinnedChanged();
+    void changeData(const QList<int>& roles);
+
     using FeedList = std::deque<GeneratorView>;
     FeedList mFeeds;
     QString mCursor;

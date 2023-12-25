@@ -43,38 +43,79 @@ Page {
         onFeedsClicked: feedListView.positionViewAtBeginning()
     }
 
-    ListView {
-        id: feedListView
-        anchors.fill: parent
-        spacing: 0
-        model: searchUtils.getSearchFeedsModel()
-        flickDeceleration: guiSettings.flickDeceleration
-        ScrollIndicator.vertical: ScrollIndicator {}
+    TabBar {
+        id: feedsBar
+        width: parent.width
 
-        delegate: GeneratorViewDelegate {
-            viewWidth: page.width
-
-            onFeedClicked: (feed) => {
-                const modelId = skywalker.createPostFeedModel(feed)
-                skywalker.getFeed(modelId)
-                let component = Qt.createComponent("PostFeedView.qml")
-                let view = component.createObject(page, { skywalker: skywalker, modelId: modelId })
-                view.onClosed.connect(() => root.popStack())
-                root.pushStack(view)
-            }
+        TabButton {
+            text: qsTr("Search results")
         }
-
-        FlickableRefresher {
-            inProgress: searchUtils.searchFeedsInProgress
-            verticalOvershoot: feedListView.verticalOvershoot
-            bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.header.getDisplayText())
-            topText: ""
+        TabButton {
+            text: qsTr("Saved feeds")
         }
     }
 
-    BusyIndicator {
-        anchors.centerIn: parent
-        running: searchUtils.searchFeedsInProgress
+    StackLayout {
+        anchors.top: feedsBar.bottom
+        anchors.bottom: parent.bottom
+        width: parent.width
+        currentIndex: feedsBar.currentIndex
+
+        ListView {
+            id: feedListView
+            width: parent.width
+            height: parent.height
+            spacing: 0
+            clip: true
+            model: searchUtils.getSearchFeedsModel()
+            flickDeceleration: guiSettings.flickDeceleration
+            ScrollIndicator.vertical: ScrollIndicator {}
+
+            delegate: GeneratorViewDelegate {
+                viewWidth: page.width
+
+                onFeedClicked: (feed) => viewPostFeed(feed)
+                onAddClicked: (feed, add) => saveFeed(feed, add)
+                onFavoriteClicked: (feed, add) => pinFeed(feed, add)
+            }
+
+            FlickableRefresher {
+                inProgress: searchUtils.searchFeedsInProgress
+                verticalOvershoot: feedListView.verticalOvershoot
+                bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.header.getDisplayText())
+                topText: ""
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: searchUtils.searchFeedsInProgress
+            }
+        }
+
+        ListView {
+            id: savedFeedsView
+            width: parent.width
+            height: parent.height
+            spacing: 0
+            clip: true
+            model: skywalker.favoriteFeeds.getSavedFeedsModel()
+            boundsBehavior: Flickable.StopAtBounds
+            flickDeceleration: guiSettings.flickDeceleration
+            ScrollIndicator.vertical: ScrollIndicator {}
+
+            delegate: GeneratorViewDelegate {
+                viewWidth: page.width
+
+                onFeedClicked: (feed) => viewPostFeed(feed)
+                onAddClicked: (feed, add) => saveFeed(feed, add)
+                onFavoriteClicked: (feed, add) => pinFeed(feed, add)
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: skywalker.favoriteFeeds.updateSavedFeedsModelInProgress
+            }
+        }
     }
 
     Timer {
@@ -91,11 +132,32 @@ Page {
             // The destuctor of SearchUtils is called too late by the QML engine
             // Remove models now before the Skywalker object is destroyed.
             searchUtils.removeModels()
+            skywalker.favoriteFeeds.removeSavedFeedsModel()
         }
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function viewPostFeed(feed) {
+        const modelId = skywalker.createPostFeedModel(feed)
+        skywalker.getFeed(modelId)
+        let component = Qt.createComponent("PostFeedView.qml")
+        let view = component.createObject(page, { skywalker: skywalker, modelId: modelId })
+        view.onClosed.connect(() => root.popStack())
+        root.pushStack(view)
+    }
+
+    function saveFeed(feed, save) {
+        if (save)
+            skywalker.favoriteFeeds.addFeed(feed)
+        else
+            skywalker.favoriteFeeds.removeFeed(feed)
+    }
+
+    function pinFeed(feed, pin) {
+        skywalker.favoriteFeeds.pinFeed(feed, pin)
     }
 
     function searchFeeds() {
@@ -105,9 +167,11 @@ Page {
     }
 
     function forceDestroy() {
-        searchUtils.clearAllSearchResults();
+        searchUtils.clearAllSearchResults()
         feedListView.model = null
         searchUtils.removeModels()
+        savedFeedsView.model = null
+        skywalker.favoriteFeeds.removeSavedFeedsModel()
         destroy()
     }
 

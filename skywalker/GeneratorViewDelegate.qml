@@ -14,6 +14,8 @@ Rectangle {
     property int maxTextLines: 1000
 
     signal feedClicked(generatorview feed)
+    signal addClicked(generatorview feed, bool add)
+    signal favoriteClicked(generatorview feed, bool add)
 
     id: generatorView
     width: grid.width
@@ -77,13 +79,24 @@ Rectangle {
             width: 80
             Layout.fillHeight: true
 
-            SvgImage {
-                id: favoIcon
+            Rectangle {
                 anchors.right: addIcon.left
                 width: 40
                 height: width
-                color: feedPinned ? guiSettings.favoriteColor : guiSettings.statsColor
-                svg: feedPinned ? svgFilled.star : svgOutline.star
+                color: "transparent"
+
+                SvgImage {
+                    id: favoIcon
+                    width: 40
+                    height: width
+                    color: feedPinned ? guiSettings.favoriteColor : guiSettings.statsColor
+                    svg: feedPinned ? svgFilled.star : svgOutline.star
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: favoriteClicked(feed, !feedPinned)
+                }
             }
 
             SvgButton {
@@ -91,9 +104,11 @@ Rectangle {
                 anchors.right: parent.right
                 width: 40
                 height: width
-                iconColor: guiSettings.buttonTextColor
-                Material.background: guiSettings.buttonColor
+                flat: feedSaved
+                iconColor: flat ? guiSettings.textColor : guiSettings.buttonTextColor
+                Material.background: flat ? guiSettings.labelColor : guiSettings.buttonColor
                 svg: feedSaved ? svgOutline.remove : svgOutline.add
+                onClicked: addClicked(feed, !feedSaved)
             }
         }
 

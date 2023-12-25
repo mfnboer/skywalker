@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "feed_list_model.h"
+#include "favorite_feeds.h"
 
 namespace Skywalker {
 
@@ -8,6 +9,8 @@ FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, QObject* parent
     QAbstractListModel(parent),
     mFavoriteFeeds(favoriteFeeds)
 {
+    connect(&mFavoriteFeeds, &FavoriteFeeds::feedSaved, this, [this]{ feedSavedChanged(); });
+    connect(&mFavoriteFeeds, &FavoriteFeeds::feedPinned, this, [this]{ feedPinnedChanged(); });
 }
 
 int FeedListModel::rowCount(const QModelIndex& parent) const
@@ -85,6 +88,28 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, cons
     qDebug() << "New feeds size:" << mFeeds.size();
 }
 
+void FeedListModel::addFeeds(const QList<GeneratorView>& feeds)
+{
+    qDebug() << "Add feeds:" << feeds.size();
+    if (feeds.empty())
+    {
+        qDebug() << "No new feeds";
+
+        if (!mFeeds.empty())
+            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfeed });
+
+        return;
+    }
+
+    const size_t newRowCount = mFeeds.size() + feeds.size();
+
+    beginInsertRows({}, mFeeds.size(), newRowCount - 1);
+    mFeeds.insert(mFeeds.end(), feeds.begin(), feeds.end());
+    endInsertRows();
+
+    qDebug() << "New feeds size:" << mFeeds.size();
+}
+
 QHash<int, QByteArray> FeedListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
@@ -96,6 +121,21 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
     };
 
     return roles;
+}
+
+void FeedListModel::feedSavedChanged()
+{
+    changeData({ int(Role::FeedSaved) });
+}
+
+void FeedListModel::feedPinnedChanged()
+{
+    changeData({ int(Role::FeedPinned) });
+}
+
+void FeedListModel::changeData(const QList<int>& roles)
+{
+    emit dataChanged(createIndex(0, 0), createIndex(mFeeds.size() - 1, 0), roles);
 }
 
 }

@@ -30,7 +30,7 @@ SvgButton {
         }
 
         Instantiator {
-            model: skywalker.pinnedFeeds
+            model: skywalker.favoriteFeeds.pinnedFeeds
             delegate: MenuItem {
                 text: modelData.displayName
 

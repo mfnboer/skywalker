@@ -270,33 +270,6 @@ void Skywalker::updateSavedFeeds()
     qDebug() << "Update saved feeds";
     const auto& savedFeedsPref = mUserPreferences.getSavedFeedsPref();
     mFavoriteFeeds.reset(savedFeedsPref);
-
-    if (!savedFeedsPref.mSaved.empty())
-    {
-        mBsky->getFeedGenerators(savedFeedsPref.mSaved,
-            [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
-                mFavoriteFeeds.setSavedFeeds(std::move(output->mFeeds));
-            },
-            [this](const QString& error, const QString& msg){
-                qWarning() << "Cannot get saved feeds:" << error << " - " << msg;
-                showStatusMessage(tr("Cannot get saved feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
-                // TODO: handle favorite feeds
-            });
-    }
-
-    if (!savedFeedsPref.mPinned.empty())
-    {
-        mBsky->getFeedGenerators(savedFeedsPref.mPinned,
-            [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
-                mFavoriteFeeds.setPinnedFeeds(std::move(output->mFeeds));
-                emit pinnedFeedsChanged();
-            },
-            [this](const QString& error, const QString& msg){
-                qWarning() << "Cannot get pinned feeds:" << error << " - " << msg;
-                showStatusMessage(tr("Cannot get pinned feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
-                // TODO: handle favorite feeds
-            });
-    }
 }
 
 void Skywalker::syncTimeline(int maxPages)

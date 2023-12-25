@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "favorite_feeds.h"
+#include "skywalker.h"
 
 namespace Skywalker
 {
@@ -9,9 +10,15 @@ static auto feedNameCompare = [](const GeneratorView& lhs, const GeneratorView& 
                 return lhs.getDisplayName() < rhs.getDisplayName();
             };
 
-FavoriteFeeds::FavoriteFeeds(QObject* parent) :
-    QObject(parent)
+FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
+    QObject(parent),
+    mSkywalker(skywalker)
 {
+}
+
+FavoriteFeeds::~FavoriteFeeds()
+{
+    removeSavedFeedsModel();
 }
 
 void FavoriteFeeds::clear()
@@ -22,6 +29,8 @@ void FavoriteFeeds::clear()
     mPinnedUris.clear();
     mSavedFeeds.clear();
     mPinnedFeeds.clear();
+
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
@@ -31,20 +40,27 @@ void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedF
     mSavedFeedsPref = savedFeedsPref;
     mSavedUris.insert(mSavedFeedsPref.mSaved.begin(), mSavedFeedsPref.mSaved.end());
     mPinnedUris.insert(mSavedFeedsPref.mPinned.begin(), mSavedFeedsPref.mPinned.end());
+    updatePinnedViews();
 }
 
 void FavoriteFeeds::setSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators)
 {
     setFeeds(mSavedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(savedGenerators));
+
+    if (!mSavedFeeds.empty())
+        updateSavedFeedsModel();
 }
 
 void FavoriteFeeds::setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators)
 {
     setFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
 {
+    feeds.clear();
+
     for (auto& gen : generators)
     {
         ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
@@ -67,6 +83,9 @@ void FavoriteFeeds::addFeed(const GeneratorView& feed)
 
     auto it = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
     mSavedFeeds.insert(it, feed);
+
+    updateSavedFeedsModel();
+    emit feedSaved();
 }
 
 void FavoriteFeeds::removeFeed(const GeneratorView& feed)
@@ -86,6 +105,9 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
 
     auto it2 = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
     mSavedFeeds.erase(it2);
+
+    updateSavedFeedsModel();
+    emit feedSaved();
 }
 
 void FavoriteFeeds::pinFeed(const GeneratorView& feed, bool pin)
@@ -112,6 +134,9 @@ void FavoriteFeeds::pinFeed(const GeneratorView& feed)
 
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), feed, feedNameCompare);
     mPinnedFeeds.insert(it, feed);
+
+    emit feedPinned();
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
@@ -128,6 +153,87 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
 
     auto it2 = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), feed, feedNameCompare);
     mPinnedFeeds.erase(it2);
+
+    emit feedPinned();
+    emit pinnedFeedsChanged();
+}
+
+void FavoriteFeeds::updateSavedViews()
+{
+    if (!mSavedFeedsPref.mSaved.empty())
+    {
+        setUpdateSavedFeedsModelInProgress(true);
+
+        mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mSaved,
+            [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
+                setUpdateSavedFeedsModelInProgress(false);
+                setSavedFeeds(std::move(output->mFeeds));
+            },
+            [this](const QString& error, const QString& msg){
+                setUpdateSavedFeedsModelInProgress(false);
+                qWarning() << "Cannot get saved feeds:" << error << " - " << msg;
+                mSkywalker->showStatusMessage(tr("Cannot get saved feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+            });
+    }
+}
+
+void FavoriteFeeds::updatePinnedViews()
+{
+    if (!mSavedFeedsPref.mPinned.empty())
+    {
+        mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mPinned,
+            [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
+                setPinnedFeeds(std::move(output->mFeeds));
+            },
+            [this](const QString& error, const QString& msg){
+                qWarning() << "Cannot get pinned feeds:" << error << " - " << msg;
+                mSkywalker->showStatusMessage(tr("Cannot get pinned feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+                // TODO: handle favorite feeds
+            });
+    }
+}
+
+void FavoriteFeeds::updateSavedFeedsModel()
+{
+    if (mSavedFeedsModelId < 0)
+        return;
+
+    auto* model = mSkywalker->getFeedListModel(mSavedFeedsModelId);
+    model->clear();
+
+    if (!mSavedFeeds.empty())
+        model->addFeeds(mSavedFeeds);
+    else
+        updateSavedViews();
+}
+
+FeedListModel* FavoriteFeeds::getSavedFeedsModel()
+{
+    if (mSavedFeedsModelId < 0)
+    {
+        mSavedFeedsModelId = mSkywalker->createFeedListModel();
+        updateSavedFeedsModel();
+    }
+
+    return mSkywalker->getFeedListModel(mSavedFeedsModelId);
+}
+
+void FavoriteFeeds::removeSavedFeedsModel()
+{
+    if (mSavedFeedsModelId >= 0)
+    {
+        mSkywalker->removeFeedListModel(mSavedFeedsModelId);
+        mSavedFeedsModelId = -1;
+    }
+}
+
+void FavoriteFeeds::setUpdateSavedFeedsModelInProgress(bool inProgress)
+{
+    if (mUpdateSavedFeedsModelInProgress != inProgress)
+    {
+        mUpdateSavedFeedsModelInProgress = inProgress;
+        emit updateSavedFeedsModelInProgressChanged();
+    }
 }
 
 }
