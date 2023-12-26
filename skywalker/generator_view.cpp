@@ -48,7 +48,7 @@ QString GeneratorView::getDescription() const
         return {};
 
     if (mGeneratorView->mDescriptionFacets.empty())
-        return ATProto::PostMaster::plainToHtml(*mGeneratorView->mDescription);
+        return ATProto::PostMaster::linkiFy(*mGeneratorView->mDescription, UserSettings::getLinkColor());
 
     return ATProto::AppBskyRichtext::applyFacets(*mGeneratorView->mDescription,
                                                  mGeneratorView->mDescriptionFacets,
