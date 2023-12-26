@@ -671,29 +671,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
 QString PostUtils::linkiFy(const QString& text, const QString& colorName)
 {
-    const auto facets = postMaster()->parseFacets(text);
-    QString linkified = "<span style=\"white-space: pre-wrap\">";
-
-    int pos = 0;
-
-    for (const auto& facet : facets)
-    {
-        if (facet.mType == ATProto::PostMaster::ParsedMatch::Type::MENTION ||
-            facet.mType == ATProto::PostMaster::ParsedMatch::Type::LINK)
-        {
-            const auto before = text.sliced(pos, facet.mStartIndex - pos);
-            linkified.append(before.toHtmlEscaped());
-            const QString ref = facet.mType == ATProto::PostMaster::ParsedMatch::Type::MENTION || facet.mMatch.startsWith("http") ?
-                                    facet.mMatch : "https://" + facet.mMatch;
-            QString link = QString("<a href=\"%1\" style=\"color: %3;\">%2</a>").arg(ref, facet.mMatch, colorName);
-            linkified.append(link);
-            pos = facet.mEndIndex;
-        }
-    }
-
-    linkified.append(text.sliced(pos).toHtmlEscaped());
-    linkified.append("</span>");
-    return linkified;
+    return ATProto::PostMaster::linkiFy(text, colorName);
 }
 
 int PostUtils::graphemeLength(const QString& text) const

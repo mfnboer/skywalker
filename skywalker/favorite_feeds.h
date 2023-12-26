@@ -39,6 +39,8 @@ public:
     Q_INVOKABLE FeedListModel* getSavedFeedsModel();
     Q_INVOKABLE void removeSavedFeedsModel();
 
+    void saveTo(ATProto::UserPreferences& userPreferences) const;
+
 signals:
     void feedSaved();
     void feedPinned();

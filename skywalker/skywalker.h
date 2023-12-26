@@ -104,6 +104,7 @@ public:
     Q_INVOKABLE void saveContentFilterPreferences();
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
+    Q_INVOKABLE void saveFavoriteFeeds();
 
     // NOTE: destroys the previous model
     Q_INVOKABLE const BookmarksModel* createBookmarksModel();
@@ -202,7 +203,8 @@ private:
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
     void shareImage(const QString& contentUri, const QString& text);
-    void updateSavedFeeds();
+    void updateFavoriteFeeds();
+    void saveUserPreferences(const ATProto::UserPreferences& prefs);
     void disableDebugLogging();
     void restoreDebugLogging();
 

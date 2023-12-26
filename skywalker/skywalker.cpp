@@ -256,7 +256,7 @@ void Skywalker::getUserPreferences()
     mBsky->getPreferences(
         [this](auto prefs){
             mUserPreferences = prefs;
-            updateSavedFeeds();
+            updateFavoriteFeeds();
             emit getUserPreferencesOK();
         },
         [this](const QString& error, const QString& msg){
@@ -265,11 +265,32 @@ void Skywalker::getUserPreferences()
         });
 }
 
-void Skywalker::updateSavedFeeds()
+void Skywalker::updateFavoriteFeeds()
 {
-    qDebug() << "Update saved feeds";
+    qDebug() << "Update favorite feeds";
     const auto& savedFeedsPref = mUserPreferences.getSavedFeedsPref();
     mFavoriteFeeds.reset(savedFeedsPref);
+}
+
+void Skywalker::saveFavoriteFeeds()
+{
+    qDebug() << "Save favorite feeds";
+    auto prefs = mUserPreferences;
+    mFavoriteFeeds.saveTo(prefs);
+    saveUserPreferences(prefs);
+}
+
+void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs)
+{
+    mBsky->putPreferences(prefs,
+        [this, prefs]{
+            qDebug() << "saveUserPreferences ok";
+            mUserPreferences = prefs;
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "saveUserPreferences failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
 }
 
 void Skywalker::syncTimeline(int maxPages)
@@ -1410,17 +1431,7 @@ void Skywalker::saveContentFilterPreferences()
 
     auto prefs = mUserPreferences;
     mContentGroupListModel->saveTo(prefs);
-
-    mBsky->putPreferences(prefs,
-        [this, prefs]{
-            qDebug() << "saveFilterPreferences ok";
-            mUserPreferences = prefs;
-            emit statusMessage("Content filter saved");
-        },
-        [this](const QString& error, const QString& msg){
-            qDebug() << "saveFilterPreferences failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
-        });
+    saveUserPreferences(prefs);
 }
 
 ATProto::ProfileMaster& Skywalker::getProfileMaster()
@@ -1501,16 +1512,7 @@ void Skywalker::saveUserPreferences()
 
     auto prefs = mUserPreferences;
     mEditUserPreferences->saveTo(prefs);
-
-    mBsky->putPreferences(prefs,
-        [this, prefs]{
-            qDebug() << "saveUserPreferences ok";
-            mUserPreferences = prefs;
-        },
-        [this](const QString& error, const QString& msg){
-            qDebug() << "saveUserPreferences failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
-        });
+    saveUserPreferences(prefs);
 }
 
 const BookmarksModel* Skywalker::createBookmarksModel()

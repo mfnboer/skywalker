@@ -47,7 +47,7 @@ Rectangle {
         }
 
         Column {
-            spacing: 5
+            spacing: 0
             Layout.fillWidth: true
             Layout.rightMargin: generatorView.margin
 
@@ -60,6 +60,7 @@ Rectangle {
             }
 
             Text {
+                topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
                 color: guiSettings.textColor
@@ -125,6 +126,15 @@ Rectangle {
             textFormat: Text.RichText
             color: guiSettings.textColor
             text: feed.description
+
+            onLinkActivated: (link) => {
+                if (link.startsWith("@")) {
+                    console.debug("MENTION:", link)
+                    skywalker.getDetailedProfile(link.slice(1))
+                } else {
+                    root.openLink(link)
+                }
+            }
         }
 
         Rectangle {
@@ -140,6 +150,8 @@ Rectangle {
                 iconColor: feed.viewer.like ? guiSettings.likeColor : guiSettings.statsColor
                 svg: feed.viewer.like ? svgFilled.like : svgOutline.like
                 statistic: feed.likeCount
+
+                onClicked: root.like(feed.viewer.like, feed.uri, feed.cid)
             }
         }
 

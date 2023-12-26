@@ -236,4 +236,9 @@ void FavoriteFeeds::setUpdateSavedFeedsModelInProgress(bool inProgress)
     }
 }
 
+void FavoriteFeeds::saveTo(ATProto::UserPreferences& userPreferences) const
+{
+    userPreferences.setSavedFeedsPref(mSavedFeedsPref);
+}
+
 }

@@ -11,6 +11,7 @@ Rectangle {
     property bool searchActive: false
     property bool feedsActive: false
     property int unreadNotifications: 0
+    property bool showHomeFeedBadge: false
 
     signal homeClicked()
     signal notificationsClicked()
@@ -48,6 +49,7 @@ Rectangle {
                 color: guiSettings.textColor
                 svg: homeActive ? svgFilled.home : svgOutline.home
 
+                // Badge counter
                 Rectangle {
                     x: parent.width - 17
                     y: -parent.y + 6
@@ -66,6 +68,28 @@ Rectangle {
                         font.pointSize: guiSettings.scaledFont(6/8)
                         color: guiSettings.badgeTextColor
                         text: timeline.unreadPosts
+                    }
+                }
+
+                // Feed badge
+                Rectangle {
+                    x: parent.width - 17
+                    y: -parent.y + 6
+                    width: 20
+                    height: 20
+                    radius: 10
+                    color: guiSettings.textColor
+                    border.color: guiSettings.backgroundColor
+                    border.width: 2
+                    visible: showHomeFeedBadge
+
+                    SvgImage {
+                        x: 4
+                        y: height + 2
+                        width: 14
+                        height: width
+                        color: guiSettings.backgroundColor
+                        svg: svgOutline.feed
                     }
                 }
             }

@@ -103,6 +103,7 @@ ListView {
         timeline: postFeedView
         skywalker: postFeedView.skywalker
         homeActive: true
+        showHomeFeedBadge: true
         onHomeClicked: postFeedView.positionViewAtBeginning()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()

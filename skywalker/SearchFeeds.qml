@@ -154,10 +154,13 @@ Page {
             skywalker.favoriteFeeds.addFeed(feed)
         else
             skywalker.favoriteFeeds.removeFeed(feed)
+
+        skywalker.saveFavoriteFeeds()
     }
 
     function pinFeed(feed, pin) {
         skywalker.favoriteFeeds.pinFeed(feed, pin)
+        skywalker.saveFavoriteFeeds()
     }
 
     function searchFeeds() {
