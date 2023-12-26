@@ -221,6 +221,10 @@ qt_add_qml_module(libskywalker
         QML_FILES ExpandFeedsButton.qml
         SOURCES favorite_feeds.h
         SOURCES favorite_feeds.cpp
+        SOURCES local_feed_model_changes.h
+        SOURCES local_feed_model_changes.cpp
+        SOURCES feed_utils.h
+        SOURCES feed_utils.cpp
 )
 
 if (NOT ANDROID)

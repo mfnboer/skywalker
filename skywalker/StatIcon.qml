@@ -12,6 +12,7 @@ Rectangle {
 
     id: control
     height: statText.height
+    width: statIcon.width + statText.width
     color: "transparent"
 
     SvgImage {

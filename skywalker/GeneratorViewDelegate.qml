@@ -7,6 +7,8 @@ Rectangle {
     property int margin: 10
     required property int viewWidth
     required property generatorview feed
+    required property int feedLikeCount
+    required property string feedLikeUri
     required property profile feedCreator
     required property bool feedSaved
     required property bool feedPinned
@@ -147,11 +149,11 @@ Rectangle {
 
             StatIcon {
                 id: likeIcon
-                iconColor: feed.viewer.like ? guiSettings.likeColor : guiSettings.statsColor
-                svg: feed.viewer.like ? svgFilled.like : svgOutline.like
-                statistic: feed.likeCount
+                iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
+                svg: feedLikeUri ? svgFilled.like : svgOutline.like
+                statistic: feedLikeCount
 
-                onClicked: root.like(feed.viewer.like, feed.uri, feed.cid)
+                onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid)
             }
         }
 

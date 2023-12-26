@@ -465,6 +465,14 @@ ApplicationWindow {
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    FeedUtils {
+        id: feedUtils
+        skywalker: skywalker
+
+        onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     LinkUtils {
         id: linkUtils
         skywalker: skywalker
@@ -716,6 +724,13 @@ ApplicationWindow {
             postUtils.undoLike(likeUri, cid)
         else
             postUtils.like(uri, cid)
+    }
+
+    function likeFeed(likeUri, uri, cid) {
+        if (likeUri)
+            feedUtils.undoLike(likeUri, cid)
+        else
+            feedUtils.like(uri, cid)
     }
 
     function deletePost(uri, cid) {

@@ -841,6 +841,12 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalAuthorModelCh
         update(model.get());
 }
 
+void Skywalker::makeLocalModelChange(const std::function<void(LocalFeedModelChanges*)>& update)
+{
+    for (auto& [_, model] : mFeedListModels.items())
+        update(model.get());
+}
+
 void Skywalker::getNotifications(int limit, bool updateSeen, const QString& cursor)
 {
     Q_ASSERT(mBsky);

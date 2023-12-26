@@ -25,11 +25,16 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& feed = mFeeds[index.row()];
+    const auto* change = getLocalChange(feed.getCid());
 
     switch (Role(role))
     {
     case Role::Feed:
         return QVariant::fromValue(feed);
+    case Role::FeedLikeCount:
+        return feed.getLikeCount() + (change ? change->mLikeCountDelta : 0);
+    case Role::FeedLikeUri:
+        return change && change->mLikeUri ? *change->mLikeUri : feed.getViewer().getLike();
     case Role::FeedCreator:
         return QVariant::fromValue(feed.getCreator());
     case Role::FeedSaved:
@@ -114,6 +119,8 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::Feed), "feed" },
+        { int(Role::FeedLikeCount), "feedLikeCount" },
+        { int(Role::FeedLikeUri), "feedLikeUri" },
         { int(Role::FeedCreator), "feedCreator" },
         { int(Role::FeedSaved), "feedSaved" },
         { int(Role::FeedPinned), "feedPinned" },
@@ -121,6 +128,16 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
     };
 
     return roles;
+}
+
+void FeedListModel::likeCountChanged()
+{
+    changeData({ int(Role::FeedLikeCount) });
+}
+
+void FeedListModel::likeUriChanged()
+{
+    changeData({ int(Role::FeedLikeUri) });
 }
 
 void FeedListModel::feedSavedChanged()
