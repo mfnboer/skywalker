@@ -927,6 +927,22 @@ void Skywalker::getDetailedProfile(const QString& author)
         });
 }
 
+Q_INVOKABLE void Skywalker::getFeedGenerator(const QString& feedUri)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get feed generator:" << feedUri;
+
+    mBsky->getFeedGenerator(feedUri,
+        [this](auto output){
+            auto shared = ATProto::AppBskyFeed::GeneratorView::SharedPtr(output->mView.release());
+            emit getFeedGeneratorOK(GeneratorView(shared));
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getFeedGenerator failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::clearAuthorFeed(int id)
 {
     Q_ASSERT(mBsky);

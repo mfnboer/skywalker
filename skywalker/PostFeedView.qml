@@ -45,6 +45,8 @@ ListView {
                 width: height
                 avatarUrl: postFeedView.model.getGeneratorView().avatar
                 visible: showAsHome
+
+                onClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
             }
             Text {
                 id: headerTexts
@@ -77,6 +79,8 @@ ListView {
                 width: height
                 avatarUrl: postFeedView.model.getGeneratorView().avatar
                 visible: !showAsHome
+
+                onClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
             }
             Item {
                 Layout.rightMargin: 10

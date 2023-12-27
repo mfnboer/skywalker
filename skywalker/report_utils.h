@@ -17,7 +17,7 @@ public:
     explicit ReportUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE void reportAuthor(const QString& did, QEnums::ReportReasonType reasonType, const QString& details);
-    Q_INVOKABLE void reportPost(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType, const QString& details);
+    Q_INVOKABLE void reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType, const QString& details);
 
     const ReportReasonList& getReportReasons() const { return mReportReasons; }
 

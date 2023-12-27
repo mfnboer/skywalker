@@ -47,6 +47,14 @@ QString GeneratorView::getDescription() const
     if (!mGeneratorView || !mGeneratorView->mDescription)
         return {};
 
+    return *mGeneratorView->mDescription;
+}
+
+QString GeneratorView::getFormattedDescription() const
+{
+    if (!mGeneratorView || !mGeneratorView->mDescription)
+        return {};
+
     if (mGeneratorView->mDescriptionFacets.empty())
         return ATProto::PostMaster::linkiFy(*mGeneratorView->mDescription, UserSettings::getLinkColor());
 

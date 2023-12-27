@@ -5,11 +5,12 @@ import skywalker
 
 Page {
     required property var skywalker
-    required property basicprofile author
+    property basicprofile author
     property string postUri
     property string postCid
     property string postText
     property date postDateTime
+    property generatorview feed
     property int reasonType: QEnums.REPORT_REASON_TYPE_NULL // QEnums.ReasonType
     property string details
 
@@ -40,7 +41,7 @@ Page {
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
-            text: postUri ? qsTr("Report post") : qsTr("Report account")
+            text: postUri ? qsTr("Report post") : !author.isNull() ? qsTr("Report account") : qsTr("Report feed")
         }
 
         SkyButton {
@@ -68,7 +69,7 @@ Page {
         header: Rectangle {
             z: guiSettings.headerZLevel
             width: parent.width
-            height: page.postUri ? quotePost.height : authorRow.height
+            height: page.postUri ? quotePost.height : !page.author.isNull() ? authorRow.height : quoteFeed.height
             color: guiSettings.postHighLightColor
             border.width: 2
             border.color: guiSettings.borderColor
@@ -77,7 +78,7 @@ Page {
                 id: authorRow
                 width: parent.width
                 spacing: 10
-                visible: !page.postUri
+                visible: !postUri && !page.author.isNull()
 
                 Rectangle {
                     width: 60
@@ -117,6 +118,13 @@ Page {
                 postText: page.postText
                 postDateTime: page.postDateTime
                 visible: page.postUri
+            }
+
+            QuoteFeed {
+                id: quoteFeed
+                width: parent.width
+                feed: page.feed
+                visible: !page.feed.isNull();
             }
         }
         headerPositioning: ListView.OverlayHeader
@@ -205,10 +213,13 @@ Page {
 
     function sendReport() {
         if (postUri) {
-            reportUtils.reportPost(postUri, postCid, reasonType, details)
+            reportUtils.reportPostOrFeed(postUri, postCid, reasonType, details)
+        }
+        else if (!author.isNull()) {
+            reportUtils.reportAuthor(author.did, reasonType, details)
         }
         else {
-            reportUtils.reportAuthor(author.did, reasonType, details)
+            reportUtils.reportPostOrFeed(feed.uri, feed.cid, reasonType, details)
         }
     }
 }

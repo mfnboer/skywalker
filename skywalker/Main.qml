@@ -183,6 +183,8 @@ ApplicationWindow {
             viewAuthor(profile, modelId)
         }
 
+        onGetFeedGeneratorOK: (generatorView) => viewFeedDescription(generatorView)
+
         onSharedTextReceived: (text) => {
             let item = currentStackItem()
 
@@ -890,6 +892,13 @@ ApplicationWindow {
         skywalker.getAuthorList(modelId, 50)
     }
 
+    function viewFeedDescription(feed) {
+        let component = Qt.createComponent("FeedDescriptionView.qml")
+        let view = component.createObject(root, { feed: feed, skywalker: skywalker })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+    }
+
     function editSettings() {
         let component = Qt.createComponent("SettingsForm.qml")
         let userPrefs = skywalker.getEditUserPreferences()
@@ -922,6 +931,13 @@ ApplicationWindow {
                 postText: postText,
                 postDateTime: postDateTime,
                 author: author })
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
+    function reportFeed(feed) {
+        let component = Qt.createComponent("Report.qml")
+        let form = component.createObject(root, { skywalker: skywalker, feed: feed })
         form.onClosed.connect(() => { popStack() })
         pushStack(form)
     }

@@ -24,8 +24,8 @@ public:
     void clear();
     void reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
 
-    bool isSavedFeed(const QString& uri) const { return mSavedUris.count(uri); }
-    bool isPinnedFeed(const QString& uri) const { return mPinnedUris.count(uri); }
+    Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.count(uri); }
+    Q_INVOKABLE bool isPinnedFeed(const QString& uri) const { return mPinnedUris.count(uri); }
 
     Q_INVOKABLE void addFeed(const GeneratorView& feed);
     Q_INVOKABLE void removeFeed(const GeneratorView& feed);

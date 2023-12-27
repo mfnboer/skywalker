@@ -32,6 +32,7 @@ class GeneratorView
     Q_PROPERTY(Profile creator READ getCreator FINAL)
     Q_PROPERTY(QString displayName READ getDisplayName FINAL)
     Q_PROPERTY(QString description READ getDescription FINAL)
+    Q_PROPERTY(QString formattedDescription READ getFormattedDescription FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
     Q_PROPERTY(int likeCount READ getLikeCount FINAL)
     Q_PROPERTY(GeneratorViewerState viewer READ getViewer FINAL)
@@ -41,12 +42,14 @@ public:
     GeneratorView() = default;
     explicit GeneratorView(const ATProto::AppBskyFeed::GeneratorView::SharedPtr& view);
 
+    Q_INVOKABLE bool isNull() const { return mGeneratorView == nullptr; }
     QString getUri() const;
     QString getCid() const;
     QString getDid() const;
     Profile getCreator() const;
     QString getDisplayName() const;
     QString getDescription() const;
+    QString getFormattedDescription() const;
     QString getAvatar() const;
     int getLikeCount() const;
     GeneratorViewerState getViewer() const;

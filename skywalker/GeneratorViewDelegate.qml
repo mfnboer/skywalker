@@ -67,6 +67,12 @@ Rectangle {
                 elide: Text.ElideRight
                 color: guiSettings.textColor
                 text: feedCreator.name
+
+
+                MouseArea {
+                    anchors.fill:  parent
+                    onClicked: skywalker.getDetailedProfile(feedCreator.did)
+                }
             }
 
             Text {
@@ -75,6 +81,12 @@ Rectangle {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: "@" + feedCreator.handle
+
+
+                MouseArea {
+                    anchors.fill:  parent
+                    onClicked: skywalker.getDetailedProfile(feedCreator.did)
+                }
             }
         }
 
@@ -127,7 +139,7 @@ Rectangle {
             elide: Text.ElideRight
             textFormat: Text.RichText
             color: guiSettings.textColor
-            text: feed.description
+            text: feed.formattedDescription
 
             onLinkActivated: (link) => {
                 if (link.startsWith("@")) {

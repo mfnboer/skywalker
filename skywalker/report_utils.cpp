@@ -36,16 +36,16 @@ void ReportUtils::reportAuthor(const QString& did, QEnums::ReportReasonType reas
         });
 }
 
-void ReportUtils::reportPost(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType, const QString& details)
+void ReportUtils::reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType, const QString& details)
 {
-    qDebug() << "Report post:" << uri << cid << reasonType << details;
-
-    bskyClient()->reportPost(uri, cid, ATProto::ComATProtoModeration::ReasonType(reasonType), details,
+    qDebug() << "Report post or feed:" << uri << cid << reasonType << details;
+    
+    bskyClient()->reportPostOrFeed(uri, cid, ATProto::ComATProtoModeration::ReasonType(reasonType), details,
         [this, presence=getPresence()]{
             if (!presence)
                 return;
 
-            qDebug() << "Report post succeeded";
+            qDebug() << "Report post or feed succeeded";
             emit reportOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){

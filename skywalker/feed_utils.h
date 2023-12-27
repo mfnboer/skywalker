@@ -19,7 +19,7 @@ public:
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
 
 signals:
-    void likeOk();
+    void likeOk(QString likeUri);
     void likeFailed(QString error);
     void undoLikeOk();
     void undoLikeFailed(QString error);

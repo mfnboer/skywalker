@@ -52,7 +52,7 @@ void FeedUtils::like(const QString& uri, const QString& cid)
                     model->updateLikeUri(cid, likeUri);
                 });
 
-            emit likeOk();
+            emit likeOk(likeUri);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

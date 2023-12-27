@@ -79,6 +79,7 @@ public:
     Q_INVOKABLE int createAuthorFeedModel(const BasicProfile& author);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
+    Q_INVOKABLE void getFeedGenerator(const QString& feedUri);
     Q_INVOKABLE int createSearchPostFeedModel();
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
@@ -175,6 +176,7 @@ signals:
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorFeedInProgressChanged();
     void getAuthorListInProgressChanged();
+    void getFeedGeneratorOK(GeneratorView);
     void getPostThreadInProgressChanged();
     void inviteCodes(InviteCodeList);
     void sharedTextReceived(QString text); // Shared from another app

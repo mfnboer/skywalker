@@ -225,6 +225,8 @@ qt_add_qml_module(libskywalker
         SOURCES local_feed_model_changes.cpp
         SOURCES feed_utils.h
         SOURCES feed_utils.cpp
+        QML_FILES FeedDescriptionView.qml
+        QML_FILES QuoteFeed.qml
 )
 
 if (NOT ANDROID)

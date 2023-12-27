@@ -7,7 +7,7 @@ namespace Skywalker
 {
 
 static auto feedNameCompare = [](const GeneratorView& lhs, const GeneratorView& rhs){
-                return lhs.getDisplayName() < rhs.getDisplayName();
+                return QCollator().compare(lhs.getDisplayName(), rhs.getDisplayName()) < 0;
             };
 
 FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
@@ -81,10 +81,14 @@ void FavoriteFeeds::addFeed(const GeneratorView& feed)
     mSavedFeedsPref.mSaved.push_back(feed.getUri());
     mSavedUris.insert(feed.getUri());
 
-    auto it = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
-    mSavedFeeds.insert(it, feed);
+    if (mSavedFeedsModelId >= 0)
+    {
+        auto it = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
+        mSavedFeeds.insert(it, feed);
 
-    updateSavedFeedsModel();
+        updateSavedFeedsModel();
+    }
+
     emit feedSaved();
 }
 
@@ -103,10 +107,16 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
     mSavedFeedsPref.mSaved.erase(it);
     mSavedUris.erase(feed.getUri());
 
-    auto it2 = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
-    mSavedFeeds.erase(it2);
+    if (mSavedFeedsModelId >= 0)
+    {
+        auto it2 = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
 
-    updateSavedFeedsModel();
+        if (it2 != mSavedFeeds.cend())
+            mSavedFeeds.erase(it2);
+
+        updateSavedFeedsModel();
+    }
+
     emit feedSaved();
 }
 
@@ -152,7 +162,9 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     mPinnedUris.erase(feed.getUri());
 
     auto it2 = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), feed, feedNameCompare);
-    mPinnedFeeds.erase(it2);
+
+    if (it2 != mPinnedFeeds.cend())
+        mPinnedFeeds.erase(it2);
 
     emit feedPinned();
     emit pinnedFeedsChanged();
