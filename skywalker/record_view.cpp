@@ -30,6 +30,12 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         mRecord = record.get();
         break;
     }
+    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    {
+        const auto& record = std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(view.mRecord);
+        mFeed = record.get();
+        break;
+    }
     default:
         qWarning() << "Record type not supported:" << view.mUnsupportedType;
         mNotSupported = true;
@@ -45,10 +51,23 @@ QString RecordView::getUri() const
 
 QString RecordView::getText() const
 {
-    if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!mRecord)
+        return {};
+
+    switch (mRecord->mValueType)
+    {
+    case ATProto::RecordType::APP_BSKY_FEED_POST:
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
         return recordValue->mText;
+    }
+    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord->mValue);
+        return recordValue->mDescription.value_or("");
+    }
+    default:
+        break;
     }
 
     return {};
@@ -56,10 +75,23 @@ QString RecordView::getText() const
 
 QString RecordView::getFormattedText() const
 {
-    if (mRecord && mRecord->mValueType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!mRecord)
+        return {};
+
+    switch (mRecord->mValueType)
+    {
+    case ATProto::RecordType::APP_BSKY_FEED_POST:
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
         return ATProto::PostMaster::getFormattedPostText(*recordValue, UserSettings::getLinkColor());
+    }
+    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord->mValue);
+        return ATProto::PostMaster::getFormattedFeedDescription(*recordValue, UserSettings::getLinkColor());
+    }
+    default:
+        break;
     }
 
     return {};
@@ -147,6 +179,14 @@ void RecordView::setMutedReason(const MutedWords& mutedWords)
         setMutedReason(QEnums::MUTED_POST_WORDS);
     else
         setMutedReason(QEnums::MUTED_POST_NONE);
+}
+
+GeneratorView RecordView::getFeed() const
+{
+    if (!mFeed)
+        return {};
+
+    return GeneratorView(mFeed);
 }
 
 }

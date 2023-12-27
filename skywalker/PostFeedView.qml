@@ -159,10 +159,12 @@ ListView {
     }
 
     function forceDestroy() {
-        postFeedView.model = null
-        skywalker.removePostFeedModel(modelId)
-        modelId = -1
-        destroy()
+        if (modelId !== -1) {
+            postFeedView.model = null
+            skywalker.removePostFeedModel(modelId)
+            modelId = -1
+            destroy()
+        }
     }
 
     Component.onDestruction: {

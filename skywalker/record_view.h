@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
+#include "generator_view.h"
 #include "image_view.h"
 #include "muted_words.h"
 #include "normalized_word_index.h"
@@ -30,6 +31,8 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(bool notSupported READ getNotSupported FINAL)
     Q_PROPERTY(QString unsupportedType READ getUnsupportedType FINAL)
     Q_PROPERTY(bool available READ getAvailable FINAL)
+    Q_PROPERTY(bool feedAvailable READ getFeedAvailable FINAL)
+    Q_PROPERTY(GeneratorView feed READ getFeed FINAL)
     QML_VALUE_TYPE(recordview)
 
 public:
@@ -56,7 +59,9 @@ public:
     bool getBlocked() const { return mBlocked; }
     bool getNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
-    bool getAvailable() const { return !mNotFound && !mBlocked && !mNotSupported; }
+    bool getAvailable() const { return mRecord != nullptr; }
+    bool getFeedAvailable()  const { return mFeed != nullptr; }
+    GeneratorView getFeed() const;
 
     void setContentVisibility(QEnums::ContentVisibility visibility) { mContentVisibility = visibility; }
     void setContentWarning(const QString& warning) { mContentWarning = warning; }
@@ -65,6 +70,7 @@ public:
 
 private:
     const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;
+    const ATProto::AppBskyFeed::GeneratorView* mFeed = nullptr;
     bool mNotFound = false;
     bool mBlocked = false;
     bool mNotSupported = false;

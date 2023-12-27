@@ -871,6 +871,15 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function viewPostFeed(feed) {
+        const modelId = skywalker.createPostFeedModel(feed)
+        skywalker.getFeed(modelId)
+        let component = Qt.createComponent("PostFeedView.qml")
+        let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
+        view.onClosed.connect(() => { let item = currentStack().pop(); item.destroy() })
+        root.pushStack(view)
+    }
+
     function viewAuthor(profile, modelId) {
         let component = Qt.createComponent("AuthorView.qml")
         let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker })

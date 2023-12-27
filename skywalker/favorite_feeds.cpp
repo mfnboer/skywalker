@@ -200,7 +200,6 @@ void FavoriteFeeds::updatePinnedViews()
             [this](const QString& error, const QString& msg){
                 qWarning() << "Cannot get pinned feeds:" << error << " - " << msg;
                 mSkywalker->showStatusMessage(tr("Cannot get pinned feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
-                // TODO: handle favorite feeds
             });
     }
 }

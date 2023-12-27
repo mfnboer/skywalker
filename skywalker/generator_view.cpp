@@ -12,74 +12,79 @@ GeneratorViewerState::GeneratorViewerState(const ATProto::AppBskyFeed::Generator
 }
 
 GeneratorView::GeneratorView(const ATProto::AppBskyFeed::GeneratorView::SharedPtr& view) :
-    mGeneratorView(view)
+    mSharedGeneratorView(view)
 {
-    Q_ASSERT(mGeneratorView);
+    Q_ASSERT(mSharedGeneratorView);
+}
+
+GeneratorView::GeneratorView(const ATProto::AppBskyFeed::GeneratorView* view) :
+    mRawGeneratorView(view)
+{
+    Q_ASSERT(mRawGeneratorView);
 }
 
 QString GeneratorView::getUri() const
 {
-    return mGeneratorView ? mGeneratorView->mUri : "";
+    return view() ? view()->mUri : "";
 }
 
 QString GeneratorView::getCid() const
 {
-    return mGeneratorView ? mGeneratorView->mCid : "";
+    return view() ? view()->mCid : "";
 }
 
 QString GeneratorView::getDid() const
 {
-    return mGeneratorView ? mGeneratorView->mDid : "";
+    return view() ? view()->mDid : "";
 }
 
 Profile GeneratorView::getCreator() const
 {
-    return mGeneratorView ? Profile(mGeneratorView->mCreator.get()) : Profile();
+    return view() ? Profile(view()->mCreator.get()) : Profile();
 }
 
 QString GeneratorView::getDisplayName() const
 {
-    return mGeneratorView ? mGeneratorView->mDisplayName : "";
+    return view() ? view()->mDisplayName : "";
 }
 
 QString GeneratorView::getDescription() const
 {
-    if (!mGeneratorView || !mGeneratorView->mDescription)
+    if (!view() || !view()->mDescription)
         return {};
 
-    return *mGeneratorView->mDescription;
+    return *view()->mDescription;
 }
 
 QString GeneratorView::getFormattedDescription() const
 {
-    if (!mGeneratorView || !mGeneratorView->mDescription)
+    if (!view() || !view()->mDescription)
         return {};
 
-    if (mGeneratorView->mDescriptionFacets.empty())
-        return ATProto::PostMaster::linkiFy(*mGeneratorView->mDescription, UserSettings::getLinkColor());
-
-    return ATProto::AppBskyRichtext::applyFacets(*mGeneratorView->mDescription,
-                                                 mGeneratorView->mDescriptionFacets,
-                                                 UserSettings::getLinkColor());
+    return ATProto::PostMaster::getFormattedFeedDescription(*view(), UserSettings::getLinkColor());
 }
 
 QString GeneratorView::getAvatar() const
 {
-    return mGeneratorView ? mGeneratorView->mAvatar.value_or("") : "";
+    return view() ? view()->mAvatar.value_or("") : "";
 }
 
 int GeneratorView::getLikeCount() const
 {
-    return mGeneratorView ? mGeneratorView->mLikeCount : 0;
+    return view() ? view()->mLikeCount : 0;
 }
 
 GeneratorViewerState GeneratorView::getViewer() const
 {
-    if (!mGeneratorView || !mGeneratorView->mViewer)
+    if (!view() || !view()->mViewer)
         return {};
 
-    return GeneratorViewerState(*mGeneratorView->mViewer);
+    return GeneratorViewerState(*view()->mViewer);
 }
 
+const ATProto::AppBskyFeed::GeneratorView* GeneratorView::view() const
+{
+    return mSharedGeneratorView ? mSharedGeneratorView.get() : mRawGeneratorView;
+}
 
 }

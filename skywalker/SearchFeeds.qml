@@ -74,7 +74,7 @@ Page {
             delegate: GeneratorViewDelegate {
                 viewWidth: page.width
 
-                onFeedClicked: (feed) => viewPostFeed(feed)
+                onFeedClicked: (feed) => root.viewPostFeed(feed)
                 onAddClicked: (feed, add) => saveFeed(feed, add)
                 onFavoriteClicked: (feed, add) => pinFeed(feed, add)
             }
@@ -106,7 +106,7 @@ Page {
             delegate: GeneratorViewDelegate {
                 viewWidth: page.width
 
-                onFeedClicked: (feed) => viewPostFeed(feed)
+                onFeedClicked: (feed) => root.viewPostFeed(feed)
                 onAddClicked: (feed, add) => saveFeed(feed, add)
                 onFavoriteClicked: (feed, add) => pinFeed(feed, add)
             }
@@ -138,15 +138,6 @@ Page {
 
     GuiSettings {
         id: guiSettings
-    }
-
-    function viewPostFeed(feed) {
-        const modelId = skywalker.createPostFeedModel(feed)
-        skywalker.getFeed(modelId)
-        let component = Qt.createComponent("PostFeedView.qml")
-        let view = component.createObject(page, { skywalker: skywalker, modelId: modelId })
-        view.onClosed.connect(() => root.popStack())
-        root.pushStack(view)
     }
 
     function saveFeed(feed, save) {

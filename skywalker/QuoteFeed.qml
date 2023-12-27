@@ -13,17 +13,29 @@ Column {
 
         FeedAvatar {
             id: avatar
-            width: 24
+            width: 34
             Layout.alignment: Qt.AlignTop
             avatarUrl: feed.avatar
+
+            onClicked: skywalker.getFeedGenerator(feed.uri)
         }
 
-        Text {
+        Column {
             Layout.fillWidth: true
-            elide: Text.ElideRight
-            font.bold: true
-            color: guiSettings.textColor
-            text: feed.displayName
+
+            Text {
+                elide: Text.ElideRight
+                font.bold: true
+                color: guiSettings.textColor
+                text: feed.displayName
+            }
+
+            Text {
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: qsTr(`feed by @${feed.creator.handle}`)
+            }
         }
     }
 

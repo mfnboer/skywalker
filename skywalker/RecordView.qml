@@ -50,6 +50,12 @@ Item {
             visible: record.available
         }
 
+        QuoteFeed {
+            width: parent.width
+            feed: record.feed
+            visible: record.feedAvailable
+        }
+
         Text {
             width: parent.width
             color: guiSettings.textColor
@@ -90,9 +96,10 @@ Item {
         z: -1 // Let other mouse areas, e.g. images, get on top
         anchors.fill: parent
         onClicked: {
-            console.debug("RECORD VIEW CLICKED:", record.postUri)
             if (record.postUri)
                 skywalker.getPostThread(record.postUri)
+            else if (record.feedAvailable)
+                root.viewPostFeed(record.feed)
         }
     }
 
