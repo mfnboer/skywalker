@@ -2,6 +2,7 @@
 ===
 * Feeds
 * Translate alt-texts
+* Hide system labels
 
 0.4
 ===

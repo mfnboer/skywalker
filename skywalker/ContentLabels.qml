@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 ScrollView {
     required property list<string> contentLabels
+    readonly property list<string> nonSystemLabels: filterSystemLabels()
 
     width: Math.min(parent.width, labelRow.width)
     height: labelRow.height
@@ -13,10 +14,10 @@ ScrollView {
         id: labelRow
         topPadding: 5
         spacing: 5
-        visible: contentLabels.length > 0
+        visible: nonSystemLabels.length > 0
 
         Repeater {
-            model: contentLabels
+            model: nonSystemLabels
 
             SkyLabel {
                 required property string modelData
@@ -31,5 +32,16 @@ ScrollView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function filterSystemLabels() {
+        let labels = []
+
+        for (let i = 0; i < contentLabels.length; ++i) {
+            if (!contentLabels[i].startsWith("!"))
+                labels.push(contentLabels[i])
+        }
+
+        return labels
     }
 }
