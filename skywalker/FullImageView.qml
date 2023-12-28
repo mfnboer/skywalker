@@ -151,6 +151,16 @@ Page {
                 text: qsTr("Save picture")
                 onTriggered: page.saveImage(images[view.currentIndex].fullSizeUrl)
             }
+
+            MenuItem {
+                text: qsTr("Translate")
+                enabled: images[view.currentIndex].alt
+                onTriggered: root.translateText(images[view.currentIndex].alt)
+
+                MenuItemSvg {
+                    svg: svgOutline.googleTranslate
+                }
+            }
         }
     }
 }
