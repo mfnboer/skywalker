@@ -1,3 +1,7 @@
+0.5
+===
+* Feeds
+
 0.4
 ===
 * Reply controls to indicate who can reply to your post

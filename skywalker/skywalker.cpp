@@ -927,15 +927,15 @@ void Skywalker::getDetailedProfile(const QString& author)
         });
 }
 
-Q_INVOKABLE void Skywalker::getFeedGenerator(const QString& feedUri)
+Q_INVOKABLE void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get feed generator:" << feedUri;
 
     mBsky->getFeedGenerator(feedUri,
-        [this](auto output){
+        [this, viewPosts](auto output){
             auto shared = ATProto::AppBskyFeed::GeneratorView::SharedPtr(output->mView.release());
-            emit getFeedGeneratorOK(GeneratorView(shared));
+            emit getFeedGeneratorOK(GeneratorView(shared), viewPosts);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getFeedGenerator failed:" << error << " - " << msg;
@@ -1384,6 +1384,34 @@ void Skywalker::sharePost(const QString& postUri, const BasicProfile& author)
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
     emit statusMessage(tr("Post link copied to clipboard"));
+#endif
+}
+
+void Skywalker::shareFeed(const GeneratorView& feed)
+{
+    qDebug() << "Share feed:" << feed.getDisplayName();
+    ATProto::ATUri atUri(feed.getUri());
+
+    if (!atUri.isValid())
+        return;
+
+    const QString authorId = feed.getCreator().getHandleOrDid();
+    const QString shareUri = QString("https://bsky.app/profile/%1/feed/%2")
+                                 .arg(authorId, atUri.getRkey());
+
+#ifdef Q_OS_ANDROID
+    QJniObject jShareUri = QJniObject::fromString(shareUri);
+    QJniObject jSubject = QJniObject::fromString("feed");
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareLink",
+                                       "(Ljava/lang/String;Ljava/lang/String;)V",
+                                       jShareUri.object<jstring>(),
+                                       jSubject.object<jstring>());
+#else
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(shareUri);
+    emit statusMessage(tr("Feed link copied to clipboard"));
 #endif
 }
 

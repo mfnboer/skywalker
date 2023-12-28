@@ -183,7 +183,12 @@ ApplicationWindow {
             viewAuthor(profile, modelId)
         }
 
-        onGetFeedGeneratorOK: (generatorView) => viewFeedDescription(generatorView)
+        onGetFeedGeneratorOK: (generatorView, viewPosts) => {
+            if (viewPosts)
+                viewPostFeed(generatorView)
+            else
+                viewFeedDescription(generatorView)
+        }
 
         onSharedTextReceived: (text) => {
             let item = currentStackItem()
@@ -481,6 +486,7 @@ ApplicationWindow {
 
         onWebLink: (link) => Qt.openUrlExternally(link)
         onPostLink: (atUri) => skywalker.getPostThread(atUri)
+        onFeedLink: (atUri) => skywalker.getFeedGenerator(atUri, true)
         onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
     }
 
@@ -840,7 +846,6 @@ ApplicationWindow {
         currentStackItem().show()
     }
 
-    // TODO: put a maximum on kept views
     function viewFeed(generatorView) {
         let view = null
 
@@ -876,7 +881,7 @@ ApplicationWindow {
         skywalker.getFeed(modelId)
         let component = Qt.createComponent("PostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
-        view.onClosed.connect(() => { let item = currentStack().pop(); item.destroy() })
+        view.onClosed.connect(() => { popStack() })
         root.pushStack(view)
     }
 
@@ -982,8 +987,8 @@ ApplicationWindow {
     function popStack() {
         let item = currentStack().pop()
 
-        // PostFeedViews are kept alive in root.feedViews
-        if (!(item instanceof PostFeedView))
+        // PostFeedViews, shown as home, are kept alive in root.feedViews
+        if (!(item instanceof PostFeedView && item.showAsHome))
             item.destroy()
     }
 

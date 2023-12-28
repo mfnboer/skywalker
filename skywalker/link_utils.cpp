@@ -21,6 +21,14 @@ void LinkUtils::openLink(const QString& link)
         return;
     }
 
+    const auto feedAtUri = getFeedUri(link);
+
+    if (feedAtUri.isValid())
+    {
+        openFeedLink(feedAtUri);
+        return;
+    }
+
     const auto handleOrDid = isAuthorLink(link);
 
     if (!handleOrDid.isEmpty())
@@ -59,6 +67,33 @@ void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
         });
 }
 
+void LinkUtils::openFeedLink(const ATProto::ATUri& atUri)
+{
+    if (!atUri.authorityIsHandle())
+    {
+        emit feedLink(atUri.toString());
+        return;
+    }
+
+    bskyClient()->resolveHandle(atUri.getAuthority(),
+        [this, presence=getPresence(), atUri](const QString& did){
+            if (!presence)
+                return;
+
+            auto feedAtUri = atUri;
+            feedAtUri.setAuthority(did);
+            feedAtUri.setAuthorityIsHandle(false);
+            emit feedLink(feedAtUri.toString());
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << error << " - " << msg;
+            mSkywalker->statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 QString LinkUtils::isAuthorLink(const QString& link) const
 {
     static const QRegularExpression authorHandleRE(
@@ -82,6 +117,15 @@ QString LinkUtils::isAuthorLink(const QString& link) const
 ATProto::ATUri LinkUtils::getPostUri(const QString& link) const
 {
     const auto atUri = ATProto::ATUri::fromHttpsPostUri(link);
+    if (atUri.isValid())
+        return atUri;
+
+    return {};
+}
+
+ATProto::ATUri LinkUtils::getFeedUri(const QString& link) const
+{
+    const auto atUri = ATProto::ATUri::fromHttpsFeedUri(link);
     if (atUri.isValid())
         return atUri;
 

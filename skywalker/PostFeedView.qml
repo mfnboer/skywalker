@@ -18,87 +18,14 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
+    header: PostFeedHeader {
+        skywalker: postFeedView.skywalker
+        feedName: postFeedView.model.feedName
+        feedAvatar: postFeedView.model.getGeneratorView().avatar
+        showAsHome: postFeedView.showAsHome
 
-        RowLayout {
-            id: headerRow
-            width: parent.width
-            height: guiSettings.headerHeight
-
-            SvgButton {
-                id: backButton
-                iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                visible: !showAsHome
-
-                onClicked: postFeedView.closed()
-            }
-            FeedAvatar {
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                height: parent.height - 10
-                width: height
-                avatarUrl: postFeedView.model.getGeneratorView().avatar
-                visible: showAsHome
-
-                onClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
-            }
-            Text {
-                id: headerTexts
-                Layout.fillWidth: !showAsHome
-                Layout.alignment: Qt.AlignVCenter
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: postFeedView.model.feedName
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        if (expandFeedsButton.visible)
-                            expandFeedsButton.onClicked()
-                    }
-                }
-            }
-            ExpandFeedsButton {
-                id: expandFeedsButton
-                skywalker: postFeedView.skywalker
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignLeft
-                visible: showAsHome
-            }
-            FeedAvatar {
-                Layout.rightMargin: 10
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                height: parent.height - 10
-                width: height
-                avatarUrl: postFeedView.model.getGeneratorView().avatar
-                visible: !showAsHome
-
-                onClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
-            }
-            Item {
-                Layout.rightMargin: 10
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                height: parent.height - 10
-                width: height
-                visible: showAsHome
-
-                Avatar {
-                    id: avatar
-                    width: parent.width
-                    height: parent.height
-                    avatarUrl: skywalker.avatarUrl
-                    onClicked: root.showSettingsDrawer()
-                    onPressAndHold: root.showSwitchUserDrawer()
-                }
-            }
-        }
+        onClosed: postFeedView.closed()
+        onFeedAvatarClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
     }
     headerPositioning: ListView.OverlayHeader
 

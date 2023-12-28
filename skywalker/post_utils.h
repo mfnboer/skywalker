@@ -18,6 +18,7 @@ class PostUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QString editMention READ getEditMention WRITE setEditMention NOTIFY editMentionChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
+    Q_PROPERTY(QString firstFeedLink READ getFirstFeedLink WRITE setFirstFeedLink NOTIFY firstFeedLinkChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -50,6 +51,7 @@ public:
     Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
+    Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
 
     const QString& getEditMention() const { return mEditMention; }
@@ -58,6 +60,8 @@ public:
     void setFirstWebLink(const QString& link);
     const QString& getFirstPostLink() const { return mFirstPostLink; }
     void setFirstPostLink(const QString& link);
+    const QString& getFirstFeedLink() const { return mFirstFeedLink; }
+    void setFirstFeedLink(const QString& link);
 
 signals:
     void postOk(QString uri, QString cid);
@@ -82,7 +86,9 @@ signals:
     void editMentionChanged();
     void firstWebLinkChanged();
     void firstPostLinkChanged();
+    void firstFeedLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
+    void quoteFeed(GeneratorView feed);
 
 private:
     void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
@@ -105,6 +111,7 @@ private:
     QString mEditMention; // Mention currently being edited (without @-symbol)
     int mEditMentionIndex = 0;
     QString mFirstPostLink; // HTTPS link to a post
+    QString mFirstFeedLink; // HTTPS link to feed generator
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;

@@ -21,11 +21,14 @@ signals:
     void webLink(QString uri);
     void authorLink(QString handleOrDid);
     void postLink(QString atUri);
+    void feedLink(QString atUri);
 
 private:
     void openPostLink(const ATProto::ATUri& atUri);
+    void openFeedLink(const ATProto::ATUri& atUri);
     QString isAuthorLink(const QString& link) const;
     ATProto::ATUri getPostUri(const QString& link) const;
+    ATProto::ATUri getFeedUri(const QString& link) const;
 };
 
 }

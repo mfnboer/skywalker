@@ -139,7 +139,7 @@ Page {
                 }
                 MenuItem {
                     text: qsTr("Share")
-                    //onTriggered: skywalker.shareAuthor(author) TODO
+                    onTriggered: skywalker.shareFeed(feed)
 
                     MenuItemSvg {
                         svg: svgOutline.share

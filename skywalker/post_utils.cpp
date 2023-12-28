@@ -103,7 +103,7 @@ void PostUtils::post(QString text, const QStringList& imageFileNames, const QStr
         return;
     }
 
-    postMaster()->checkPostExists(replyToUri, replyToCid,
+    postMaster()->checkRecordExists(replyToUri, replyToCid,
         [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
             if (!presence)
@@ -147,7 +147,7 @@ void PostUtils::post(QString text, const LinkCard* card,
         return;
     }
 
-    postMaster()->checkPostExists(replyToUri, replyToCid,
+    postMaster()->checkRecordExists(replyToUri, replyToCid,
         [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
         {
             if (!presence)
@@ -205,7 +205,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
     if (!postMaster())
         return;
 
-    postMaster()->checkPostExists(quoteUri, quoteCid,
+    postMaster()->checkRecordExists(quoteUri, quoteCid,
         [this, presence=getPresence(), imageFileNames, altTexts, post, quoteUri, quoteCid]{
             if (!presence)
                 return;
@@ -272,7 +272,7 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
     if (!postMaster())
         return;
 
-    postMaster()->checkPostExists(quoteUri, quoteCid,
+    postMaster()->checkRecordExists(quoteUri, quoteCid,
         [this, presence=getPresence(), card, post, quoteUri, quoteCid]{
             if (!presence)
                 return;
@@ -388,7 +388,7 @@ void PostUtils::repost(const QString& uri, const QString& cid)
 
     emit repostProgress(tr("Reposting"));
 
-    postMaster()->checkPostExists(uri, cid,
+    postMaster()->checkRecordExists(uri, cid,
         [this, presence=getPresence(), uri, cid]{
             if (presence)
                 continueRepost(uri, cid);
@@ -599,6 +599,15 @@ void PostUtils::setFirstPostLink(const QString& link)
     emit firstPostLinkChanged();
 }
 
+void PostUtils::setFirstFeedLink(const QString& link)
+{
+    if (link == mFirstFeedLink)
+        return;
+
+    mFirstFeedLink = link;
+    emit firstFeedLinkChanged();
+}
+
 void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor)
 {
     mFacetHighlighter.setDocument(doc->textDocument());
@@ -615,6 +624,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
     bool editMentionFound = false;
     bool webLinkFound = false;
     bool postLinkFound = false;
+    bool feedLinkFound = false;
     mLinkShorteningReduction = 0;
 
     for (const auto& facet : facets)
@@ -624,18 +634,38 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
         case ATProto::PostMaster::ParsedMatch::Type::LINK:
         {
             const auto atUri = ATProto::ATUri::fromHttpsPostUri(facet.mMatch);
+
             if (atUri.isValid())
             {
+                qDebug() << "Valid post link:" << facet.mMatch;
+
                 if (!postLinkFound)
                 {
                     setFirstPostLink(facet.mMatch);
                     postLinkFound = true;
                 }
             }
-            else if (!webLinkFound)
+            else
             {
-                setFirstWebLink(facet.mMatch);
-                webLinkFound = true;
+                const auto atFeedUri = ATProto::ATUri::fromHttpsFeedUri(facet.mMatch);
+
+                if (atFeedUri.isValid())
+                {
+                    qDebug() << "Valid feed link:" << facet.mMatch;
+
+                    if (!feedLinkFound)
+                    {
+                        setFirstFeedLink(facet.mMatch);
+                        feedLinkFound = true;
+                    }
+                }
+                else if (!webLinkFound)
+                {
+                    qDebug() << "Web link:" << facet.mMatch;
+
+                    setFirstWebLink(facet.mMatch);
+                    webLinkFound = true;
+                }
             }
 
             const auto shortLink = ATProto::PostMaster::shortenWebLink(facet.mMatch);
@@ -667,6 +697,9 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
     if (!postLinkFound)
         setFirstPostLink(QString());
+
+    if (!feedLinkFound)
+        setFirstFeedLink(QString());
 }
 
 QString PostUtils::linkiFy(const QString& text, const QString& colorName)
@@ -697,6 +730,19 @@ void PostUtils::getQuotePost(const QString& httpsUri)
                                  author->mDisplayName.value_or(""),
                                  author->mAvatar.value_or(""));
             emit quotePost(uri, cid, post->mText, profile, post->mCreatedAt);
+        });
+}
+
+void PostUtils::getQuoteFeed(const QString& httpsUri)
+{
+    if (!postMaster())
+        return;
+
+    postMaster()->getFeed(httpsUri,
+        [this](auto feed){
+            ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedFeed(feed.release());
+            GeneratorView view(sharedFeed);
+            emit quoteFeed(view);
         });
 }
 

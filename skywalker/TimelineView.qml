@@ -16,54 +16,10 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
-
-        // TODO: refactor, almost duplicate in PostFeedView.qml
-        RowLayout {
-            id: headerRow
-            width: parent.width
-            height: guiSettings.headerHeight
-
-            Text {
-                id: headerTexts
-                Layout.alignment: Qt.AlignVCenter
-                leftPadding: 10
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: qsTr("Home feed")
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: expandFeedsButton.onClicked()
-                }
-            }
-            ExpandFeedsButton {
-                id: expandFeedsButton
-                skywalker: timelineView.skywalker
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignLeft
-            }
-            Item {
-                Layout.rightMargin: 10
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                height: parent.height - 10
-                width: height
-
-                Avatar {
-                    id: avatar
-                    width: parent.width
-                    height: parent.height
-                    avatarUrl: skywalker.avatarUrl
-                    onClicked: root.showSettingsDrawer()
-                    onPressAndHold: root.showSwitchUserDrawer()
-                }
-            }
-        }
+    header: PostFeedHeader {
+        skywalker: timelineView.skywalker
+        feedName: qsTr("Home feed")
+        showAsHome: true
     }
     headerPositioning: ListView.OverlayHeader
 

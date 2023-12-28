@@ -37,6 +37,10 @@ Page {
     property string quoteText
     property date quoteDateTime
 
+    // Quote feed
+    property generatorview quoteFeed
+    property generatorview nullFeed
+
     signal closed
 
     id: page
@@ -78,11 +82,14 @@ Page {
             onClicked: {
                 postButton.enabled = false
 
+                const qUri = quoteUri ? quoteUri : quoteFeed.uri
+                const qCid = quoteUri ? quoteCid : quoteFeed.cid
+
                 if (linkCard.card) {
                     postUtils.post(postText.text, linkCard.card,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
-                                   quoteUri, quoteCid)
+                                   qUri, qCid)
                 } else if (gifAttachment.gif) {
                     tenor.registerShare(gifAttachment.gif)
 
@@ -97,12 +104,12 @@ Page {
                     postUtils.post(postText.text, gifCard,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
-                                   quoteUri, quoteCid)
+                                   qUri, qCid)
                 } else {
                     postUtils.post(postText.text, images, altTexts,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
-                                   quoteUri, quoteCid);
+                                   qUri, qCid);
                 }
             }
         }
@@ -284,7 +291,7 @@ Page {
         anchors.fill: parent
         clip: true
         contentWidth: postText.width
-        contentHeight: quoteColumn.y + (quoteColumn.visible ? quoteColumn.height : 0)
+        contentHeight: quoteFeedColumn.y + (quoteFeedColumn.visible ? quoteFeedColumn.height : 0)
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
@@ -540,6 +547,24 @@ Page {
             visible: quoteUri
         }
 
+        // Quote feed
+        Rectangle {
+            anchors.fill: quoteFeedColumn
+            border.width: 2
+            border.color: guiSettings.borderColor
+            color: guiSettings.postHighLightColor
+            visible: quoteFeedColumn.visible
+        }
+        QuoteFeed {
+            id: quoteFeedColumn
+            width: parent.width - 20
+            anchors.top: linkCard.bottom
+            anchors.topMargin: 5
+            anchors.horizontalCenter: parent.horizontalCenter
+            feed: page.quoteFeed
+            visible: !page.quoteFeed.isNull()
+        }
+
         function ensureVisible(cursor) {
             let cursorY = cursor.y + postText.y
 
@@ -645,21 +670,47 @@ Page {
             if (page.openedAsQuotePost)
                 return
 
+            page.quoteFeed = page.nullFeed
             quoteUri = ""
+
             if (firstPostLink) {
                 postUtils.getQuotePost(firstPostLink)
             }
+        }
+
+        onFirstFeedLinkChanged: {
+            if (page.openedAsQuotePost)
+                return
+
+            page.quoteFeed = page.nullFeed
+
+            if (firstPostLink)
+                return
+
+            if (firstFeedLink)
+                postUtils.getQuoteFeed(firstFeedLink)
         }
 
         onQuotePost: (uri, cid, text, author, timestamp) => {
                 if (!firstPostLink)
                     return
 
+                page.quoteFeed = page.nullFeed
                 page.quoteUri = uri
                 page.quoteCid = cid
                 page.quoteText = text
                 page.quoteAuthor = author
                 page.quoteDateTime = timestamp
+            }
+
+        onQuoteFeed: (feed) => {
+                if (!firstFeedLink)
+                    return
+
+                if (firstPostLink)
+                    return
+
+                page.quoteFeed = feed
             }
     }
 

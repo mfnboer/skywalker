@@ -79,7 +79,7 @@ public:
     Q_INVOKABLE int createAuthorFeedModel(const BasicProfile& author);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
-    Q_INVOKABLE void getFeedGenerator(const QString& feedUri);
+    Q_INVOKABLE void getFeedGenerator(const QString& feedUri, bool viewPosts = false);
     Q_INVOKABLE int createSearchPostFeedModel();
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
@@ -97,6 +97,7 @@ public:
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
     Q_INVOKABLE BasicProfile getUser() const;
     Q_INVOKABLE void sharePost(const QString& postUri, const BasicProfile& author);
+    Q_INVOKABLE void shareFeed(const GeneratorView& feed);
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const QStringList& labelTexts) const;
@@ -176,7 +177,7 @@ signals:
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorFeedInProgressChanged();
     void getAuthorListInProgressChanged();
-    void getFeedGeneratorOK(GeneratorView);
+    void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
     void getPostThreadInProgressChanged();
     void inviteCodes(InviteCodeList);
     void sharedTextReceived(QString text); // Shared from another app
