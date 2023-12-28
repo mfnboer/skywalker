@@ -151,21 +151,57 @@ Rectangle {
             }
         }
 
-        Rectangle {
-            height: likeIcon.height
+        Row {
+            //height: likeIcon.height
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.leftMargin: generatorView.margin
             Layout.rightMargin: generatorView.margin
-            color: "transparent"
 
             StatIcon {
                 id: likeIcon
+                width: parent.width / 2
                 iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
                 svg: feedLikeUri ? svgFilled.like : svgOutline.like
                 statistic: feedLikeCount
 
                 onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid)
+            }
+
+            StatIcon {
+                width: parent.width / 2
+                iconColor: guiSettings.statsColor
+                svg: svgOutline.moreVert
+                onClicked: moreMenu.open()
+
+                Menu {
+                    id: moreMenu
+
+                    MenuItem {
+                        text: qsTr("Translate")
+                        onTriggered: root.translateText(feed.description)
+
+                        MenuItemSvg {
+                            svg: svgOutline.googleTranslate
+                        }
+                    }
+                    MenuItem {
+                        text: qsTr("Share")
+                        onTriggered: skywalker.shareFeed(feed)
+
+                        MenuItemSvg {
+                            svg: svgOutline.share
+                        }
+                    }
+                    MenuItem {
+                        text: qsTr("Report feed")
+                        onTriggered: root.reportFeed(feed)
+
+                        MenuItemSvg {
+                            svg: svgOutline.report
+                        }
+                    }
+                }
             }
         }
 
