@@ -391,7 +391,6 @@ Page {
 
         onUnblockOk: {
             blocking = ""
-            getFeed()
         }
 
         onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -405,7 +404,6 @@ Page {
 
         onUnmuteOk: {
             authorMuted = false
-            getFeed()
         }
 
         onUnmuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
