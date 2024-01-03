@@ -4,7 +4,7 @@
 #include "content_filter.h"
 #include "external_view.h"
 #include "user_settings.h"
-#include <atproto/lib/post_master.h>
+#include <atproto/lib/rich_text_master.h>
 
 using namespace std::chrono_literals;
 
@@ -83,12 +83,12 @@ QString RecordView::getFormattedText() const
     case ATProto::RecordType::APP_BSKY_FEED_POST:
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
-        return ATProto::PostMaster::getFormattedPostText(*recordValue, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedPostText(*recordValue, UserSettings::getLinkColor());
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord->mValue);
-        return ATProto::PostMaster::getFormattedFeedDescription(*recordValue, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedFeedDescription(*recordValue, UserSettings::getLinkColor());
     }
     default:
         break;
@@ -168,7 +168,7 @@ std::vector<QString> RecordView::getHashtags() const
         return {};
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
-    return ATProto::PostMaster::getFacetTags(*recordValue);
+    return ATProto::RichTextMaster::getFacetTags(*recordValue);
 }
 
 void RecordView::setMutedReason(const MutedWords& mutedWords)

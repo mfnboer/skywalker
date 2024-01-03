@@ -3,7 +3,7 @@
 #include "post.h"
 #include "author_cache.h"
 #include "user_settings.h"
-#include <atproto/lib/post_master.h>
+#include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
 
@@ -144,11 +144,11 @@ QString Post::getFormattedText() const
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
-        return ATProto::PostMaster::getFormattedPostText(*record, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedPostText(*record, UserSettings::getLinkColor());
     }
 
     QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;
-    return ATProto::PostMaster::plainToHtml(text);
+    return ATProto::RichTextMaster::plainToHtml(text);
 }
 
 BasicProfile Post::getAuthor() const
@@ -540,7 +540,7 @@ std::vector<QString> Post::getHashtags() const
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
-    return ATProto::PostMaster::getFacetTags(*record);
+    return ATProto::RichTextMaster::getFacetTags(*record);
 }
 
 }

@@ -2,7 +2,7 @@
 // License: GPLv3
 #include "generator_view.h"
 #include "user_settings.h"
-#include <atproto/lib/post_master.h>
+#include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
 
@@ -61,7 +61,7 @@ QString GeneratorView::getFormattedDescription() const
     if (!view() || !view()->mDescription)
         return {};
 
-    return ATProto::PostMaster::getFormattedFeedDescription(*view(), UserSettings::getLinkColor());
+    return ATProto::RichTextMaster::getFormattedFeedDescription(*view(), UserSettings::getLinkColor());
 }
 
 QString GeneratorView::getAvatar() const

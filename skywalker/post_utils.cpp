@@ -4,6 +4,7 @@
 #include "jni_callback.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
+#include <atproto/lib/rich_text_master.h>
 #include <QImageReader>
 
 namespace Skywalker {
@@ -618,7 +619,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                                         int cursor)
 {   
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
-    const auto facets = postMaster()->parseFacets(fullText);
+    const auto facets = ATProto::RichTextMaster::parseFacets(fullText);
 
     int preeditCursor = cursor + preeditText.length();
     bool editMentionFound = false;
@@ -631,7 +632,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
     {
         switch (facet.mType)
         {
-        case ATProto::PostMaster::ParsedMatch::Type::LINK:
+        case ATProto::RichTextMaster::ParsedMatch::Type::LINK:
         {
             const auto atUri = ATProto::ATUri::fromHttpsPostUri(facet.mMatch);
 
@@ -668,14 +669,14 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                 }
             }
 
-            const auto shortLink = ATProto::PostMaster::shortenWebLink(facet.mMatch);
+            const auto shortLink = ATProto::RichTextMaster::shortenWebLink(facet.mMatch);
             const int reduction = graphemeLength(facet.mMatch) - graphemeLength(shortLink);
             qDebug() << "SHORT:" << shortLink << "reduction:" << reduction;
             mLinkShorteningReduction += reduction;
             break;
         }
-        case ATProto::PostMaster::ParsedMatch::Type::PARTIAL_MENTION:
-        case ATProto::PostMaster::ParsedMatch::Type::MENTION:
+        case ATProto::RichTextMaster::ParsedMatch::Type::PARTIAL_MENTION:
+        case ATProto::RichTextMaster::ParsedMatch::Type::MENTION:
             if (facet.mStartIndex < preeditCursor && preeditCursor <= facet.mEndIndex)
             {
                 mEditMentionIndex = facet.mStartIndex + 1;
@@ -683,8 +684,8 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                 editMentionFound = true;
             }
             break;
-        case ATProto::PostMaster::ParsedMatch::Type::TAG:
-        case ATProto::PostMaster::ParsedMatch::Type::UNKNOWN:
+        case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
+        case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
             break;
         }
     }
@@ -704,7 +705,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
 QString PostUtils::linkiFy(const QString& text, const QString& colorName)
 {
-    return ATProto::PostMaster::linkiFy(text, colorName);
+    return ATProto::RichTextMaster::linkiFy(text, colorName);
 }
 
 int PostUtils::graphemeLength(const QString& text) const
