@@ -1,3 +1,7 @@
+0.5.1
+=====
+* Select photo's from all your albums and cloud locations.
+
 0.5
 ===
 * Feeds
