@@ -90,7 +90,6 @@ Page {
 
         SvgButton {
             id: moreButton
-            //Layout.fillHeight: true
             Material.background: guiSettings.buttonColor
             iconColor: guiSettings.buttonTextColor
             svg: svgOutline.moreVert

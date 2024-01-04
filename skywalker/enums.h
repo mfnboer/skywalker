@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <atproto/lib/lexicon/app_bsky_actor.h>
+#include <atproto/lib/lexicon/app_bsky_graph.h>
 #include <atproto/lib/lexicon/com_atproto_moderation.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -128,6 +129,14 @@ public:
         MUTED_POST_WORDS
     };
     Q_ENUM(MutedPostReason)
+
+    enum ListPurpose
+    {
+        LIST_PURPOSE_MOD = (int)ATProto::AppBskyGraph::ListPurpose::MOD_LIST,
+        LIST_PURPOSE_CURATE = (int)ATProto::AppBskyGraph::ListPurpose::CURATE_LIST,
+        LIST_PURPOSE_UNKNOWN = (int)ATProto::AppBskyGraph::ListPurpose::UNKNOWN
+    };
+    Q_ENUM(ListPurpose)
 };
 
 }

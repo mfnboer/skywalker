@@ -59,6 +59,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
+    Q_ASSERT(mListListModels.empty());
     Q_ASSERT(mFeedListModels.empty());
 }
 
@@ -569,7 +570,7 @@ void Skywalker::getTimelineNextPage(int maxPages, int minEntries)
     const QString& cursor = mTimelineModel.getLastCursor();
     if (cursor.isEmpty())
     {
-        qInfo() << "Last page reached, no more cursor";
+        qDebug() << "Last page reached, no more cursor";
         return;
     }
 
@@ -709,6 +710,12 @@ void Skywalker::setGetAuthorListInProgress(bool inProgress)
 {
     mGetAuthorListInProgress = inProgress;
     emit getAuthorListInProgressChanged();
+}
+
+void Skywalker::setGetListListInProgress(bool inProgress)
+{
+    mGetListListInProgress = inProgress;
+    emit getListListInProgressChanged();
 }
 
 void Skywalker::setAvatarUrl(const QString& avatarUrl)
@@ -1354,6 +1361,102 @@ void Skywalker::removeAuthorListModel(int id)
     mAuthorListModels.remove(id);
 }
 
+void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get list list model:" << id << "cursor:" << cursor;
+
+    if (mGetListListInProgress)
+    {
+        qDebug() << "Get list list still in progress";
+        return;
+    }
+
+    const auto* model = mListListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    const ListListModel::Type type = (*model)->getType();
+    const auto& atId = (*model)->getAtId();
+    qDebug() << "Get list list:" << atId << "type:" << int(type);
+
+    setGetListListInProgress(true);
+    mBsky->getLists(atId, limit, makeOptionalCursor(cursor),
+        [this, id, maxPages, minEntries, cursor](auto output){
+            setGetListListInProgress(false);
+            const auto* model = mListListModels.get(id);
+
+            if (model)
+            {
+                if (cursor.isEmpty())
+                    (*model)->clear();
+
+                const int added = (*model)->addLists(std::move(output->mLists), output->mCursor.value_or(""));
+                const int toAdd = minEntries - added;
+
+                if (toAdd > 0)
+                    getListListNextPage(maxPages - 1, toAdd);
+            }
+        },
+        [this](const QString& error, const QString& msg){
+            setGetListListInProgress(false);
+            qDebug() << "getListList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getListListNextPage(int id, int limit, int maxPages, int minEntries)
+{
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
+    const auto* model = mListListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    const QString& cursor = (*model)->getCursor();
+    if (cursor.isEmpty())
+    {
+        qDebug() << "Last page reached, no more cursor";
+        return;
+    }
+
+    getListList(id, limit, maxPages, minEntries, cursor);
+}
+
+int Skywalker::createListListModel(ListListModel::Type type, const QString& atId)
+{
+    auto model = std::make_unique<ListListModel>(type, atId, this);
+    const int id = mListListModels.put(std::move(model));
+    return id;
+}
+
+ListListModel* Skywalker::getListListModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mListListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeListListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mListListModels.remove(id);
+}
+
 BasicProfile Skywalker::getUser() const
 {
     return AuthorCache::instance().getUser();
@@ -1697,6 +1800,7 @@ void Skywalker::signOut()
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
+    Q_ASSERT(mListListModels.empty());
     Q_ASSERT(mPostFeedModels.empty());
 
     qDebug() << "Logout:" << mUserDid;
@@ -1707,6 +1811,7 @@ void Skywalker::signOut()
     mAuthorFeedModels.clear();
     mSearchPostFeedModels.clear();
     mAuthorListModels.clear();
+    mListListModels.clear();
     mNotificationListModel.clear();
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;

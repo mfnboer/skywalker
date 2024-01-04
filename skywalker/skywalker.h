@@ -11,6 +11,7 @@
 #include "feed_list_model.h"
 #include "invite_code.h"
 #include "item_store.h"
+#include "list_list_model.h"
 #include "muted_words.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
@@ -42,6 +43,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
+    Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     Q_PROPERTY(FavoriteFeeds* favoriteFeeds READ getFavoriteFeeds CONSTANT FINAL)
@@ -94,6 +96,11 @@ public:
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
     Q_INVOKABLE AuthorListModel* getAuthorListModel(int id) const;
     Q_INVOKABLE void removeAuthorListModel(int id);
+    Q_INVOKABLE void getListList(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getListListNextPage(int id, int limit = 50, int maxPages = 20, int minEntries = 10);
+    Q_INVOKABLE int createListListModel(ListListModel::Type type, const QString& atId);
+    Q_INVOKABLE ListListModel* getListListModel(int id) const;
+    Q_INVOKABLE void removeListListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
     Q_INVOKABLE BasicProfile getUser() const;
     Q_INVOKABLE void sharePost(const QString& postUri, const BasicProfile& author);
@@ -141,6 +148,8 @@ public:
     bool isGetAuthorFeedInProgress() const { return mGetAuthorFeedInProgress; }
     void setGetAuthorListInProgress(bool inProgress);
     bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
+    void setGetListListInProgress(bool inProgress);
+    bool isGetListListInProgress() const { return mGetListListInProgress; }
     const QString& getAvatarUrl() const { return mAvatarUrl; }
     void setAvatarUrl(const QString& avatarUrl);
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
@@ -177,6 +186,7 @@ signals:
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorFeedInProgressChanged();
     void getAuthorListInProgressChanged();
+    void getListListInProgressChanged();
     void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
     void getPostThreadInProgressChanged();
     void inviteCodes(InviteCodeList);
@@ -235,6 +245,7 @@ private:
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;
+    bool mGetListListInProgress = false;
     bool mSignOutInProgress = false;
 
     QTimer mRefreshTimer;
@@ -245,6 +256,7 @@ private:
     ItemStore<AuthorFeedModel::Ptr> mAuthorFeedModels;
     ItemStore<SearchPostFeedModel::Ptr> mSearchPostFeedModels;
     ItemStore<AuthorListModel::Ptr> mAuthorListModels;
+    ItemStore<ListListModel::Ptr> mListListModels;
     ItemStore<FeedListModel::Ptr> mFeedListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     NotificationListModel mNotificationListModel;

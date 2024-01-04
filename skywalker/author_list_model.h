@@ -21,7 +21,6 @@ public:
     };
 
     using Type = QEnums::AuthorListType;
-
     using Ptr = std::unique_ptr<AuthorListModel>;
 
     AuthorListModel(Type type, const QString& atId, const ContentFilter& contentFilter, QObject* parent = nullptr);
@@ -45,6 +44,7 @@ protected:
 
 private:
     using AuthorList = std::deque<Profile>;
+
     AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const;
     void changeData(const QList<int>& roles);
 

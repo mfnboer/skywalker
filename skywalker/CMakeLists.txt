@@ -228,6 +228,12 @@ qt_add_qml_module(libskywalker
         QML_FILES FeedDescriptionView.qml
         QML_FILES QuoteFeed.qml
         QML_FILES PostFeedHeader.qml
+        QML_FILES ListListView.qml
+        QML_FILES SimpleDescriptionHeader.qml
+        SOURCES list_list_model.h
+        SOURCES list_view.h
+        SOURCES list_view.cpp
+        SOURCES list_list_model.cpp
 )
 
 if (NOT ANDROID)

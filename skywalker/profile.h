@@ -106,8 +106,8 @@ class Profile : public BasicProfile
 
 public:
     Profile() = default;
-    Profile(const ATProto::AppBskyActor::ProfileView* profile);
-    Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
+    explicit Profile(const ATProto::AppBskyActor::ProfileView* profile);
+    explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
 
     QString getDescription() const;
 };
