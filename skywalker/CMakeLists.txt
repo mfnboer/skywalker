@@ -234,6 +234,8 @@ qt_add_qml_module(libskywalker
         SOURCES list_view.h
         SOURCES list_view.cpp
         SOURCES list_list_model.cpp
+        QML_FILES ListViewDelegate.qml
+        QML_FILES ListAvatar.qml
 )
 
 if (NOT ANDROID)

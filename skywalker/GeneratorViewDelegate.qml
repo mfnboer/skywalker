@@ -51,6 +51,7 @@ Rectangle {
         Column {
             spacing: 0
             Layout.fillWidth: true
+            Layout.fillHeight: true
             Layout.rightMargin: generatorView.margin
 
             Text {
@@ -152,7 +153,6 @@ Rectangle {
         }
 
         Row {
-            //height: likeIcon.height
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.leftMargin: generatorView.margin

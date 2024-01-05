@@ -1387,7 +1387,7 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
 
     setGetListListInProgress(true);
     mBsky->getLists(atId, limit, makeOptionalCursor(cursor),
-        [this, id, maxPages, minEntries, cursor](auto output){
+        [this, id, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             const auto* model = mListListModels.get(id);
 
@@ -1400,7 +1400,7 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
                 const int toAdd = minEntries - added;
 
                 if (toAdd > 0)
-                    getListListNextPage(maxPages - 1, toAdd);
+                    getListListNextPage(id, limit, maxPages - 1, toAdd);
             }
         },
         [this](const QString& error, const QString& msg){

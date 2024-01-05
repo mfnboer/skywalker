@@ -91,7 +91,7 @@ public:
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
-    Q_INVOKABLE void getAuthorList(int id, int limit, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorList(int id, int limit = 50, const QString& cursor = {});
     Q_INVOKABLE void getAuthorListNextPage(int id);
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
     Q_INVOKABLE AuthorListModel* getAuthorListModel(int id) const;

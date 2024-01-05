@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "image_view.h"
 #include "profile.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
 #include <QObject>
@@ -34,6 +35,7 @@ class GeneratorView
     Q_PROPERTY(QString description READ getDescription FINAL)
     Q_PROPERTY(QString formattedDescription READ getFormattedDescription FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
+    Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(int likeCount READ getLikeCount FINAL)
     Q_PROPERTY(GeneratorViewerState viewer READ getViewer FINAL)
     QML_VALUE_TYPE(generatorview)
@@ -52,6 +54,7 @@ public:
     QString getDescription() const;
     QString getFormattedDescription() const;
     QString getAvatar() const;
+    ImageView getImageView() const;
     int getLikeCount() const;
     GeneratorViewerState getViewer() const;
 

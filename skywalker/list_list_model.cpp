@@ -66,7 +66,7 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QSt
 
     const size_t newRowCount = mLists.size() + filteredLists.size();
 
-    beginInsertRows({}, filteredLists.size(), newRowCount - 1);
+    beginInsertRows({}, mLists.size(), newRowCount - 1);
     mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
 

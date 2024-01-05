@@ -313,6 +313,20 @@ ApplicationWindow {
             close()
         }
 
+        onModLists: {
+            let modelId = skywalker.createListListModel(QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
+            viewListList(modelId, qsTr("Moderation Lists"),
+                         qsTr("Public, shareable lists of users to mute or block in bulk."))
+            close()
+        }
+
+        onUserLists: {
+            let modelId = skywalker.createListListModel(QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+            viewListList(modelId, qsTr("User Lists"),
+                         qsTr("Public, shareable lists of users which can be used as feeds or reply restrictions."))
+            close()
+        }
+
         onMutedWords: {
             let component = Qt.createComponent("MutedWords.qml")
             let page = component.createObject(root, { skywalker: skywalker })
@@ -903,7 +917,20 @@ ApplicationWindow {
         })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
-        skywalker.getAuthorList(modelId, 50)
+        skywalker.getAuthorList(modelId)
+    }
+
+    function viewListList(modelId, title, description = "") {
+        let component = Qt.createComponent("ListListView.qml")
+        let view = component.createObject(root, {
+                title: title,
+                modelId: modelId,
+                skywalker: skywalker,
+                description: description
+        })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+        skywalker.getListList(modelId)
     }
 
     function viewFeedDescription(feed) {

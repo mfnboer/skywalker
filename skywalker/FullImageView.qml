@@ -159,6 +159,7 @@ Page {
 
                 MenuItemSvg {
                     svg: svgOutline.googleTranslate
+                    visible: parent.enabled
                 }
             }
         }

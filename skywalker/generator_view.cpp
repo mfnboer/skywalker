@@ -69,6 +69,11 @@ QString GeneratorView::getAvatar() const
     return view() ? view()->mAvatar.value_or("") : "";
 }
 
+ImageView GeneratorView::getImageView() const
+{
+    return ImageView(getAvatar(), getDisplayName());
+}
+
 int GeneratorView::getLikeCount() const
 {
     return view() ? view()->mLikeCount : 0;

@@ -13,6 +13,8 @@ Drawer {
     signal contentFiltering()
     signal blockedAccounts()
     signal mutedAccounts()
+    signal modLists()
+    signal userLists()
     signal mutedWords()
     signal settings()
     signal switchAccount()
@@ -113,7 +115,14 @@ Drawer {
                         svg: svgOutline.mute
                     }
                 }
+                MenuItem {
+                    text: qsTr("Moderation Lists")
+                    onTriggered: modLists()
 
+                    MenuItemSvg {
+                        svg: svgOutline.list
+                    }
+                }
                 MenuItem {
                     text: qsTr("Muted Words")
                     onTriggered: mutedWords()
@@ -123,6 +132,13 @@ Drawer {
                     }
                 }
             }
+        }
+
+        SkyMenuItem {
+            id: userListsItem
+            icon: svgOutline.list
+            text: qsTr("User Lists")
+            onClicked: userLists()
         }
 
         SkyMenuItem {

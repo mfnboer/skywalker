@@ -5,7 +5,6 @@ import skywalker
 
 
 Rectangle {
-    property int margin: 8
     required property int viewWidth
     required property profile author
     required property string followingUri
