@@ -20,6 +20,7 @@ ListView {
         skywalker: timelineView.skywalker
         feedName: qsTr("Home feed")
         showAsHome: true
+        isHomeFeed: true
     }
     headerPositioning: ListView.OverlayHeader
 

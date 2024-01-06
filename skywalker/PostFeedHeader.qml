@@ -8,6 +8,7 @@ Rectangle {
     required property string feedName
     property string feedAvatar
     property bool showAsHome: false
+    property bool isHomeFeed: false
 
     signal closed
     signal feedAvatarClicked
@@ -38,7 +39,7 @@ Rectangle {
             height: parent.height - 10
             width: height
             avatarUrl: header.feedAvatar
-            visible: showAsHome && header.feedAvatar
+            visible: showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()
         }
@@ -73,7 +74,7 @@ Rectangle {
             height: parent.height - 10
             width: height
             avatarUrl: header.feedAvatar
-            visible: !showAsHome && header.feedAvatar
+            visible: !showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()
         }
