@@ -86,6 +86,12 @@ Page {
                 topText: ""
             }
 
+            EmptyListIndication {
+                svg: svgOutline.noPosts
+                text: qsTr("No results")
+                list: feedListView
+            }
+
             BusyIndicator {
                 anchors.centerIn: parent
                 running: searchUtils.searchFeedsInProgress
@@ -109,6 +115,12 @@ Page {
                 onFeedClicked: (feed) => root.viewPostFeed(feed)
                 onAddClicked: (feed, add) => saveFeed(feed, add)
                 onFavoriteClicked: (feed, add) => pinFeed(feed, add)
+            }
+
+            EmptyListIndication {
+                svg: svgOutline.noPosts
+                text: qsTr("No saved feeds")
+                list: savedFeedsView
             }
 
             BusyIndicator {

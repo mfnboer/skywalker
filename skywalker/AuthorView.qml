@@ -305,13 +305,9 @@ Page {
             running: skywalker.getAuthorFeedInProgress
         }
 
-        SvgImage {
-            id: noPostImage
-            width: 150
-            height: 150
-            y: height + (parent.headerItem ? parent.headerItem.height : 0)
-            anchors.horizontalCenter: parent.horizontalCenter
-            color: Material.color(Material.Grey)
+        EmptyListIndication {
+            id: noPostIndication
+            y: parent.headerItem ? parent.headerItem.height : 0
             svg: {
                 if (author.viewer.blockedBy || blocking) {
                     return svgOutline.block
@@ -323,15 +319,6 @@ Page {
 
                 return svgOutline.noPosts
             }
-            visible: authorFeedView.count === 0
-        }
-        Text {
-            id: noPostText
-            y: noPostImage.y
-            anchors.horizontalCenter: parent.horizontalCenter
-            font.pointSize: guiSettings.scaledFont(10/8)
-            color: Material.color(Material.Grey)
-            elide: Text.ElideRight
             text: {
                 if (blocking) {
                     return qsTr("You blocked this account")
@@ -345,10 +332,10 @@ Page {
 
                 return qsTr("No posts")
             }
-            visible: authorFeedView.count === 0
+            list: authorFeedView
         }
         Text {
-            anchors.top: noPostText.bottom
+            anchors.top: noPostIndication.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             elide: Text.ElideRight
             textFormat: Text.RichText

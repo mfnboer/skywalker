@@ -43,25 +43,11 @@ ListView {
         topText: qsTr("Refresh lists")
     }
 
-    SvgImage {
-        id: noListsImage
-        width: 150
-        height: 150
-        y: height + (parent.headerItem ? parent.headerItem.height : 0)
-        anchors.horizontalCenter: parent.horizontalCenter
-        color: Material.color(Material.Grey)
+    EmptyListIndication {
+        y: parent.headerItem ? parent.headerItem.height : 0
         svg: svgOutline.noLists
-        visible: view.count === 0
-    }
-    Text {
-        id: noListsText
-        y: noListsImage.y
-        anchors.horizontalCenter: parent.horizontalCenter
-        font.pointSize: guiSettings.scaledFont(10/8)
-        color: Material.color(Material.Grey)
-        elide: Text.ElideRight
         text: qsTr("No lists")
-        visible: view.count === 0
+        list: view
     }
 
     BusyIndicator {

@@ -236,6 +236,7 @@ qt_add_qml_module(libskywalker
         SOURCES list_list_model.cpp
         QML_FILES ListViewDelegate.qml
         QML_FILES ListAvatar.qml
+        QML_FILES EmptyListIndication.qml
 )
 
 if (NOT ANDROID)
