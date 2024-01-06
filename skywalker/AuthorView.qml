@@ -62,7 +62,10 @@ Page {
                 width: parent.width - 4
                 height: parent.height - 4
                 avatarUrl: !contentVisible() ? "" : author.avatarUrl
-                onClicked: root.viewFullImage([author.imageView], 0)
+                onClicked:  {
+                    if (author.avatarUrl)
+                        root.viewFullImage([author.imageView], 0)
+                }
             }
         }
     }

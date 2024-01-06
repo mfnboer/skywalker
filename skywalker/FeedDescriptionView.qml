@@ -39,7 +39,10 @@ Page {
             y: 5
             width: 100
             avatarUrl: feed.avatar
-            onClicked: root.viewFullImage([feed.imageView], 0)
+            onClicked: {
+                if (feed.avatar)
+                    root.viewFullImage([feed.imageView], 0)
+            }
         }
 
         Column {
