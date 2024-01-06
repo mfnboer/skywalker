@@ -2,6 +2,7 @@ import QtQuick
 
 TextEdit {
     property string placeholderText
+    property double placeholderPointSize: guiSettings.scaledFont(7/8)
 
     id: skyTextEdit
     width: page.width
@@ -17,9 +18,10 @@ TextEdit {
 
     Text {
         anchors.fill: parent
-        leftPadding: skyTextEdit.leftPadding
-        rightPadding: skyTextEdit.rightPadding
-        font.pointSize: guiSettings.scaledFont(7/8)
+        padding: parent.padding
+        leftPadding: parent.leftPadding
+        rightPadding: parent.rightPadding
+        font.pointSize: placeholderPointSize
         color: guiSettings.placeholderTextColor
         elide: Text.ElideRight
         text: placeholderText

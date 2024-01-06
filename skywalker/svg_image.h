@@ -22,6 +22,8 @@ public:
         mHeight(height)
     {}
 
+    Q_INVOKABLE bool isNull() const { return mWidth == 0; }
+
 private:
     const char* mPath = "";
     int mWidth = 0;

@@ -22,8 +22,9 @@ Rectangle {
     TextInput {
         id: textField
         width: parent.width
+        clip: true
         padding: 10
-        leftPadding: icon.width
+        leftPadding: icon.visible ? icon.width : 10
         activeFocusOnTab: true
         enabled: skyTextInput.enabled
         font.pointSize: guiSettings.scaledFont(9/8)
@@ -49,6 +50,7 @@ Rectangle {
             height: parent.height - 10
             color: parent.color
             svg: svgIcon
+            visible: !svgIcon.isNull()
         }
     }
 

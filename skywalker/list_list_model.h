@@ -32,7 +32,7 @@ public:
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
-    Type getType() const { return mType; }
+    Q_INVOKABLE Type getType() const { return mType; }
     const QString& getAtId() const { return mAtId; }
 
 protected:

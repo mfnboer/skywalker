@@ -237,6 +237,9 @@ qt_add_qml_module(libskywalker
         QML_FILES ListViewDelegate.qml
         QML_FILES ListAvatar.qml
         QML_FILES EmptyListIndication.qml
+        QML_FILES EditList.qml
+        QML_FILES SkyFormattedTextEdit.qml
+        QML_FILES AuthorTypeaheadView.qml
 )
 
 if (NOT ANDROID)

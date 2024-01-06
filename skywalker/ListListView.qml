@@ -27,6 +27,7 @@ ListView {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.add
+            onClicked: newList()
         }
     }
     headerPositioning: ListView.OverlayHeader
@@ -57,6 +58,16 @@ ListView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function newList() {
+        let component = Qt.createComponent("EditList.qml")
+        let page = component.createObject(view, {
+                skywalker: skywalker,
+                purpose: model.getType()
+            })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
     }
 
     Component.onDestruction: {

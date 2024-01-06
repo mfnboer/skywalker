@@ -15,32 +15,9 @@ Page {
     id: loginPage
     width: parent.width
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
-
-        RowLayout {
-            width: parent.width
-            height: guiSettings.headerHeight
-
-            SvgButton {
-                id: backButton
-                iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
-                svg: svgOutline.arrowBack
-                onClicked: loginPage.canceled()
-            }
-            Text {
-                Layout.alignment: Qt.AlignVCenter
-                leftPadding: 10
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
-            }
-        }
+    header: SimpleHeader {
+        text: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
+        onBack: loginPage.canceled()
     }
 
     ColumnLayout {
