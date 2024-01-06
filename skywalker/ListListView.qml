@@ -22,6 +22,14 @@ ListView {
         title: view.title
         description: view.description
         onClosed: view.closed()
+
+        SvgButton {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            iconColor: guiSettings.buttonTextColor
+            Material.background: guiSettings.buttonColor
+            svg: svgOutline.add
+        }
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -32,8 +40,9 @@ ListView {
     FlickableRefresher {
         inProgress: skywalker.getListListInProgress
         verticalOvershoot: view.verticalOvershoot
+        topOvershootFun: () => skywalker.getListList(modelId)
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
-        topText: ""
+        topText: qsTr("Refresh lists")
     }
 
     SvgImage {
