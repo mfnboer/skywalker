@@ -452,8 +452,6 @@ Page {
                         SvgButton {
                             x: parent.width - width
                             height: width
-                            iconColor: guiSettings.buttonTextColor
-                            Material.background: guiSettings.buttonColor
                             svg: svgOutline.close
                             onClicked: page.removeImage(index)
                         }
@@ -486,8 +484,6 @@ Page {
             SvgButton {
                 x: parent.width - width
                 height: width
-                iconColor: guiSettings.buttonTextColor
-                Material.background: guiSettings.buttonColor
                 svg: svgOutline.close
                 onClicked: gifAttachment.hide()
             }
@@ -520,8 +516,6 @@ Page {
             SvgButton {
                 x: parent.width - width
                 height: width
-                iconColor: guiSettings.buttonTextColor
-                Material.background: guiSettings.buttonColor
                 svg: svgOutline.close
                 onClicked: linkCard.hide()
             }

@@ -150,6 +150,10 @@ Page {
             MenuItem {
                 text: qsTr("Save picture")
                 onTriggered: page.saveImage(images[view.currentIndex].fullSizeUrl)
+
+                MenuItemSvg {
+                    svg: svgOutline.save
+                }
             }
 
             MenuItem {

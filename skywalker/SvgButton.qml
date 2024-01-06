@@ -4,11 +4,11 @@ import skywalker
 
 RoundButton {
     id: button
-    required property string iconColor
     required property svgimage svg
+    property string iconColor: guiSettings.buttonTextColor
     property int imageMargin: 10
 
-    Material.background: "black"
+    Material.background: guiSettings.buttonColor
     opacity: 1
 
     SvgImage {
@@ -18,5 +18,9 @@ RoundButton {
         y: height + button.imageMargin
         svg: button.svg
         color: button.iconColor
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

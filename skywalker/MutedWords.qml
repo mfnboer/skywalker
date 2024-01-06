@@ -22,8 +22,6 @@ ListView {
 
         SvgButton {
             anchors.right: parent.right
-            iconColor: guiSettings.buttonTextColor
-            Material.background: guiSettings.buttonColor
             svg: svgOutline.add
             onClicked: addWord()
             visible: view.count < skywalker.mutedWords.maxSize

@@ -26,8 +26,6 @@ ListView {
         SvgButton {
             anchors.right: parent.right
             anchors.top: parent.top
-            iconColor: guiSettings.buttonTextColor
-            Material.background: guiSettings.buttonColor
             svg: svgOutline.add
         }
     }

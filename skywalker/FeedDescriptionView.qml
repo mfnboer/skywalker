@@ -91,8 +91,6 @@ Page {
 
         SvgButton {
             id: moreButton
-            Material.background: guiSettings.buttonColor
-            iconColor: guiSettings.buttonTextColor
             svg: svgOutline.moreVert
 
             onClicked: moreMenu.open()
