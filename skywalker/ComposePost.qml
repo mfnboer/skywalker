@@ -11,7 +11,6 @@ Page {
     property string initialText
     property string initialImage
 
-    property int maxPostLength: 300
     property int maxImages: 4
     property list<string> images: initialImage ? [initialImage] : []
     property list<string> altTexts: initialImage ? [""] : []
@@ -78,7 +77,7 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on reply button") : qsTr("Post", "verb on post button")
 
-            enabled: postText.graphemeLength <= maxPostLength && page.hasContent()
+            enabled: postText.graphemeLength <= postText.maxLength && page.hasContent()
             onClicked: {
                 postButton.enabled = false
 
@@ -192,20 +191,9 @@ Page {
             }
         }
 
-        ProgressBar {
-            id: textLengthBar
-            anchors.left: parent.left
-            anchors.right: parent.right
+        TextLengthBar {
             anchors.top: restrictionRow.bottom
-            from: 0
-            to: Math.max(page.maxPostLength, postText.graphemeLength)
-            value: postText.graphemeLength
-
-            contentItem: Rectangle {
-                width: textLengthBar.visualPosition * parent.width
-                height: parent.height
-                color: postText.graphemeLength <= maxPostLength ? guiSettings.buttonColor : guiSettings.errorColor
-            }
+            textField: postText
         }
 
         SvgImage {
@@ -277,12 +265,11 @@ Page {
             }
         }
 
-        Text {
+        TextLengthCounter {
             y: 10 + restrictionRow.height + footerSeparator.height
             anchors.rightMargin: 10
             anchors.right: parent.right
-            color: postText.graphemeLength <= maxPostLength ? guiSettings.textColor : guiSettings.errorColor
-            text: maxPostLength - postText.graphemeLength
+            textField: postText
         }
     }
 
@@ -317,6 +304,7 @@ Page {
 
         // Post text
         TextEdit {
+            readonly property int maxLength: 300
             property int graphemeLength: 0
 
             id: postText
@@ -373,35 +361,12 @@ Page {
         }
 
         // Typeahead matches on parital mention
-        SimpleAuthorListView {
-            id: typeaheadView
+        AuthorTypeaheadView {
             y: postText.y + postText.cursorRectangle.y + postText.cursorRectangle.height + 5
-            z: 10
-            width: page.width
-            height: page.footer.y - y - 5
-            model: searchUtils.authorTypeaheadList
-            visible: postUtils.editMention.length > 0
-
-            onVisibleChanged: {
-                if (!visible)
-                    searchUtils.authorTypeaheadList = []
-            }
-
-            onAuthorClicked: (profile) => {
-                const textBefore = postText.text.slice(0, postText.cursorPosition)
-                const textBetween = postText.preeditText
-                const textAfter = postText.text.slice(postText.cursorPosition)
-                const fullText = textBefore + textBetween + textAfter
-                const mentionStartIndex = postUtils.getEditMentionIndex()
-                const mentionEndIndex = mentionStartIndex + postUtils.editMention.length
-                postText.clear() // also clears the preedit buffer
-
-                // Add space and move the cursor 1 postion beyond the end
-                // of then mention. That causes the typeahead list to disappear.
-                const newText = fullText.slice(0, mentionStartIndex) + profile.handle + ' ' + fullText.slice(mentionEndIndex)
-                postText.text = newText
-                postText.cursorPosition = mentionStartIndex + profile.handle.length + 1
-            }
+            parentPage: page
+            editText: postText
+            searchUtils: searchUtils
+            postUtils: postUtils
         }
 
         // Image attachments

@@ -30,27 +30,15 @@ Page {
             return guiSettings.footerHeight
         }
 
-        ProgressBar {
-            id: textLengthBar
-            anchors.left: parent.left
-            anchors.right: parent.right
-            from: 0
-            to: Math.max(descriptionField.maxLength, descriptionField.graphemeLength)
-            value: descriptionField.graphemeLength
-
-            contentItem: Rectangle {
-                width: textLengthBar.visualPosition * parent.width
-                height: parent.height
-                color: descriptionField.graphemeLength <= descriptionField.maxLength ? guiSettings.buttonColor : guiSettings.errorColor
-            }
+        TextLengthBar {
+            textField: descriptionField
         }
 
-        Text {
+        TextLengthCounter {
             y: 10
             anchors.rightMargin: 10
             anchors.right: parent.right
-            color: descriptionField.graphemeLength <= descriptionField.maxLength ? guiSettings.textColor : guiSettings.errorColor
-            text: descriptionField.maxLength - descriptionField.graphemeLength
+            textField: descriptionField
         }
     }
 
