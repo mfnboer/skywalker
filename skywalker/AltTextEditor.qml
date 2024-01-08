@@ -16,7 +16,7 @@ Page {
 
     header: SimpleButtonHeader {
         title: qsTr("ALT text")
-        buttonText: qsTr("Done")
+        buttonSvg: svgOutline.check
         onButtonClicked: altTextChanged(page.text)
     }
 

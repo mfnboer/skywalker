@@ -54,10 +54,10 @@ Page {
         z: guiSettings.headerZLevel
         color: guiSettings.headerColor
 
-        SkyButton {
+        SvgButton {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            text: qsTr("Cancel")
+            svg: svgOutline.cancel
             onClicked: page.cancel()
         }
 
@@ -75,7 +75,7 @@ Page {
             anchors.rightMargin: 10
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            text: replyToPostUri ? qsTr("Reply", "verb on reply button") : qsTr("Post", "verb on post button")
+            text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
 
             enabled: postText.graphemeLength <= postText.maxLength && page.hasContent()
             onClicked: {

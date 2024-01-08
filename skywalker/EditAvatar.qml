@@ -10,6 +10,7 @@ Page {
     property double maskOpacity: 0.8
 
     signal closed
+    signal selected(rect rectangle)
 
     id: page
     width: parent.width
@@ -18,7 +19,15 @@ Page {
 
     header: SimpleHeader {
         text: qsTr("Edit Photo")
+        backIsCancel: true
         onBack: closed()
+
+        SvgButton {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            svg: svgOutline.check
+            onClicked: selected(img.getSelectRect())
+        }
     }
 
     Image {
@@ -73,7 +82,6 @@ Page {
             scaleAxis.enabled: false
             minimumPointCount: 1
             maximumPointCount: 1
-            //enabled: img.zooming
 
             onTranslationChanged: (delta) => {
                 imgTranslation.x += delta.x
@@ -97,10 +105,15 @@ Page {
             img.scale = img.minScale
         }
 
-        function getImgSize() {
+        function getImgScale() {
             let xScale = width / sourceSize.width
             let yScale = height / sourceSize.height
             let s = Math.min(xScale, yScale)
+            return s
+        }
+
+        function getImgSize() {
+            let s = getImgScale()
             return Qt.size(sourceSize.width * s, sourceSize.height * s)
         }
 
@@ -122,6 +135,22 @@ Page {
                 imgTranslation.y = maxYDrag
             else if (imgTranslation.y < -maxYDrag)
                 imgTranslation.y = -maxYDrag
+        }
+
+        function getSelectRect() {
+            let s = img.getImgScale()
+            let imgSize = img.getImgSize()
+
+            let x0 = (imgSize.width * img.scale - img.boundingWidth) / 2
+            let y0 = (imgSize.height * img.scale - img.boundingHeight) / 2
+
+            let rx = (x0 - imgTranslation.x) / img.scale / s
+            let ry = (y0 - imgTranslation.y) / img.scale / s
+            let rw = img.boundingWidth / s
+            let rh = img.boundingHeight / s
+
+            let r = Qt.rect(rx, ry, rw, rh)
+            return r
         }
     }
 

@@ -6,6 +6,7 @@ import skywalker
 // Header with a back button and title text
 Rectangle {
     required property string text
+    property bool backIsCancel: false
 
     signal back
 
@@ -21,9 +22,9 @@ Rectangle {
 
         SvgButton {
             id: backButton
-            iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
-            svg: svgOutline.arrowBack
+            iconColor: backIsCancel ? guiSettings.buttonTextColor : guiSettings.headerTextColor
+            Material.background: backIsCancel ? guiSettings.buttonColor : "transparent"
+            svg: backIsCancel ? svgOutline.cancel : svgOutline.arrowBack
             onClicked: headerRect.back()
         }
         Text {

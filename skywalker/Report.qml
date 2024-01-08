@@ -28,10 +28,10 @@ Page {
         z: guiSettings.headerZLevel
         color: guiSettings.headerColor
 
-        SkyButton {
+        SvgButton {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            text: qsTr("Cancel")
+            svg: svgOutline.cancel
             onClicked: page.closed()
         }
 
@@ -49,7 +49,7 @@ Page {
             anchors.rightMargin: 10
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            text: qsTr("Send");
+            text: qsTr("Send")
             visible: reasonType !== QEnums.REPORT_REASON_TYPE_NULL
             onClicked: sendReport()
         }

@@ -201,6 +201,10 @@ Page {
         let component = Qt.createComponent("EditAvatar.qml")
         let page = component.createObject(editListPage, { photoSource: source })
         page.onClosed.connect(() => { root.popStack() })
+        page.onSelected.connect((rect) => {
+            console.debug(rect)
+            root.popStack()
+        })
         root.pushStack(page)
     }
 

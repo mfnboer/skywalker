@@ -13,7 +13,7 @@ Page {
 
     header: SimpleButtonHeader {
         title: qsTr("Report details")
-        buttonText: qsTr("Done")
+        buttonSvg: svgOutline.check
         onButtonClicked: detailsChanged(page.text)
     }
 

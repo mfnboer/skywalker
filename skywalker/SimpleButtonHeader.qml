@@ -3,7 +3,7 @@ import QtQuick
 // Header with a title and a button
 Rectangle {
     required property string title
-    required property string buttonText
+    required property svgimage buttonSvg
 
     signal buttonClicked
 
@@ -23,11 +23,11 @@ Rectangle {
         text: headerItem.title
     }
 
-    SkyButton {
+    SvgButton {
         anchors.rightMargin: 10
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        text: headerItem.buttonText
+        svg: headerItem.buttonSvg
         onClicked: buttonClicked()
     }
 
