@@ -2,6 +2,6 @@ import QtQuick
 import skywalker
 
 Avatar {
-    radius: 5
+    radius: width * 0.1
     unknownSvg: svgFilled.feed
 }

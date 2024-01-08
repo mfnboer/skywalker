@@ -162,7 +162,7 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
-QString createBlob(QByteArray& blob, const QString& imgName)
+QImage loadImage(const QString& imgName)
 {
     if (imgName.startsWith("file://"))
     {
@@ -173,26 +173,39 @@ QString createBlob(QByteArray& blob, const QString& imgName)
         QImage img = reader.read();
 
         if (img.isNull())
-        {
             qWarning() << "Failed to read:" << fileName;
-            return {};
-        }
 
-        return createBlob(blob, img, imgName);
+        return img;
     }
     else if (imgName.startsWith("image://"))
     {
         auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
         auto img = imgProvider->getImage(imgName);
-
-        if (img.isNull())
-            return {};
-
-        return createBlob(blob, img, imgName);
+        return img;
     }
 
     qWarning() << "Unsupported image name:" << imgName;
     return {};
+}
+
+QImage cutRect(const QString& imgName, const QRect& rect)
+{
+    QImage img = loadImage(imgName);
+
+    if (img.isNull())
+        return {};
+
+    return img.copy(rect);
+}
+
+QString createBlob(QByteArray& blob, const QString& imgName)
+{
+    QImage img = loadImage(imgName);
+
+    if (img.isNull())
+        return {};
+
+    return createBlob(blob, img, imgName);
 }
 
 QString createBlob(QByteArray& blob, QImage img, const QString& name)

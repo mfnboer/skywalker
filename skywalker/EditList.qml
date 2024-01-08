@@ -10,6 +10,8 @@ Page {
     required property int purpose // QEnums::ListPurpose
     property listview list
     property bool pickingImage: false
+    property string createdAvatarSource
+    readonly property int avatarSize: 1000
 
     signal closed
 
@@ -18,7 +20,15 @@ Page {
 
     header: SimpleHeader {
         text: list.isNull() ? qsTr(`New ${(listTypeName())}`) : qsTr(`Edit ${(listTypeName())}`)
+        backIsCancel: true
         onBack: editListPage.closed()
+
+        SvgButton {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            svg: svgOutline.check
+            onClicked: editListPage.closed() // TODO
+        }
     }
 
     footer: Rectangle {
@@ -94,7 +104,8 @@ Page {
             }
 
             FeedAvatar {
-                width: 100
+                id: avatar
+                width: 180
                 avatarUrl: list.avatar
 
                 onClicked: {
@@ -105,6 +116,18 @@ Page {
                         pickingImage = postUtils.pickPhoto()
                     } else {
                         fileDialog.open()
+                    }
+                }
+
+                SvgButton {
+                    x: parent.width - width
+                    height: width
+                    svg: svgOutline.close
+                    visible: avatar.avatarUrl
+
+                    onClicked: {
+                        avatar.avatarUrl = ""
+                        dropCreatedAvatar()
                     }
                 }
             }
@@ -199,11 +222,18 @@ Page {
     function photoPicked(source) {
         console.debug("IMAGE:", source)
         let component = Qt.createComponent("EditAvatar.qml")
-        let page = component.createObject(editListPage, { photoSource: source })
-        page.onClosed.connect(() => { root.popStack() })
+        let page = component.createObject(editListPage, { photoSource: source, relativeRadius: 0.1 })
+        page.onClosed.connect(() => {
+            root.popStack()
+            postUtils.dropPhoto(source)
+        })
         page.onSelected.connect((rect) => {
             console.debug(rect)
+            dropCreatedAvatar()
+            createdAvatarSource = postUtils.cutPhotoRect(source, rect, Qt.size(avatarSize, avatarSize))
+            avatar.avatarUrl = createdAvatarSource
             root.popStack()
+            postUtils.dropPhoto(source)
         })
         root.pushStack(page)
     }
@@ -217,5 +247,16 @@ Page {
         default:
             return qsTr("List")
         }
+    }
+
+    function dropCreatedAvatar() {
+        if (createdAvatarSource) {
+            postUtils.dropPhoto(createdAvatarSource)
+            createdAvatarSource = ""
+        }
+    }
+
+    Component.onDestruction: {
+        dropCreatedAvatar()
     }
 }

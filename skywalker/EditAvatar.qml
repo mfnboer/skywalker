@@ -146,8 +146,8 @@ Page {
 
             let rx = (x0 - imgTranslation.x) / img.scale / s
             let ry = (y0 - imgTranslation.y) / img.scale / s
-            let rw = img.boundingWidth / s
-            let rh = img.boundingHeight / s
+            let rw = img.boundingWidth / img.scale / s
+            let rh = img.boundingHeight / img.scale / s
 
             let r = Qt.rect(rx, ry, rw, rh)
             return r

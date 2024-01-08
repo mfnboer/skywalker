@@ -11,6 +11,7 @@ Rectangle {
     id: emptyListIndication
     width: parent.width
     height: visible ? noListsImage.height + noListsText.height : 0
+    color: "transparent"
     visible: list.count === 0
 
     SvgImage {

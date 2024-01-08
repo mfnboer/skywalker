@@ -94,6 +94,7 @@ Rectangle {
         Rectangle {
             width: 80
             Layout.fillHeight: true
+            color: "transparent"
 
             Rectangle {
                 anchors.right: addIcon.left

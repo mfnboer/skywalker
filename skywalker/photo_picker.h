@@ -14,6 +14,8 @@ QImage readImageFd(int fd);
 // Start photo pick selector on Android.
 bool pickPhoto();
 
+QImage loadImage(const QString& imgName);
+
 // Create a binary blob (image/*) for uploading an image.
 // The mimetype is returned
 // If the width or height is larger than 2000 pixels, it will be scaled down to 2000 pixels.
@@ -22,6 +24,8 @@ bool pickPhoto();
 // imgName is "file://..." or "image://..."
 QString createBlob(QByteArray& blob, const QString& imgName);
 QString createBlob(QByteArray& blob, QImage img, const QString& fileName = "");
+
+QImage cutRect(const QString& imgName, const QRect& rect);
 
 QString resolveContentUriToFile(const QString& contentUri);
 

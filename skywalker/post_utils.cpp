@@ -573,6 +573,18 @@ void PostUtils::savePhoto(const QString& sourceUrl)
         });
 }
 
+QString PostUtils::cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize)
+{
+    QImage img = ::Skywalker::cutRect(source, rect);
+
+    if (img.isNull())
+        return {};
+
+    img = img.scaled(scaledSize);
+    auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+    return imgProvider->addImage(img);
+}
+
 void PostUtils::setEditMention(const QString& mention)
 {
     if (mention == mEditMention)
