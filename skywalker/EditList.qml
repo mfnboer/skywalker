@@ -1,5 +1,7 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import skywalker
 
@@ -7,6 +9,7 @@ Page {
     required property var skywalker
     required property int purpose // QEnums::ListPurpose
     property listview list
+    property bool pickingImage: false
 
     signal closed
 
@@ -93,6 +96,17 @@ Page {
             FeedAvatar {
                 width: 100
                 avatarUrl: list.avatar
+
+                onClicked: {
+                    if (pickingImage)
+                        return
+
+                    if (Qt.platform.os === "android") {
+                        pickingImage = postUtils.pickPhoto()
+                    } else {
+                        fileDialog.open()
+                    }
+                }
             }
 
             Text {
@@ -145,8 +159,49 @@ Page {
         }
     }
 
+    FileDialog {
+        id: fileDialog
+        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+        nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp *.gif)"]
+        onAccepted: {
+            let fileName = selectedFile.toString()
+            if (!fileName.startsWith("file://"))
+                fileName = "file://" + fileName
+
+            photoPicked(fileName)
+        }
+    }
+
+    PostUtils {
+        id: postUtils
+        skywalker: editListPage.skywalker
+
+        onPhotoPicked: (imgSource) => {
+            pickingImage = false
+            editListPage.photoPicked(imgSource)
+        }
+
+        onPhotoPickFailed: (error) => {
+            pickingImage = false
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onPhotoPickCanceled: {
+            pickingImage = false
+        }
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    // "file://" or "image://" source
+    function photoPicked(source) {
+        console.debug("IMAGE:", source)
+        let component = Qt.createComponent("EditAvatar.qml")
+        let page = component.createObject(editListPage, { photoSource: source })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
     }
 
     function listTypeName() {

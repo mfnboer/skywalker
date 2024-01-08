@@ -242,6 +242,7 @@ qt_add_qml_module(libskywalker
         QML_FILES AuthorTypeaheadView.qml
         QML_FILES TextLengthBar.qml
         QML_FILES TextLengthCounter.qml
+        QML_FILES EditAvatar.qml
 )
 
 if (NOT ANDROID)
