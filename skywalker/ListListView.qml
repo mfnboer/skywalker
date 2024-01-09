@@ -33,7 +33,10 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     delegate: ListViewDelegate {
+        required property int index
+
         viewWidth: view.width
+        onUpdateList: (list) => editList(list, index)
     }
 
     FlickableRefresher {
@@ -66,6 +69,40 @@ ListView {
                 skywalker: skywalker,
                 purpose: model.getType()
             })
+        page.onListCreated.connect((list) => {
+            if (list.isNull()) {
+                // This should rarely happen. Let the user refresh.
+                statusPopup.show(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
+            }
+            else {
+                statusPopup.show(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
+                view.model.prependList(list)
+            }
+
+            root.popStack()
+        })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
+    }
+
+    function editList(list, index) {
+        let component = Qt.createComponent("EditList.qml")
+        let page = component.createObject(view, {
+                skywalker: skywalker,
+                purpose: list.purpose,
+                list: list
+            })
+        page.onListCreated.connect((updatedList) => {
+            if (updatedList.isNull()) {
+                statusPopup.show(qsTr("List updated. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
+            }
+            else {
+                statusPopup.show(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
+                view.model.updateEntry(index, updatedList)
+            }
+
+            root.popStack()
+        })
         page.onClosed.connect(() => { root.popStack() })
         root.pushStack(page)
     }

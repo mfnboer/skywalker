@@ -74,6 +74,31 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QSt
     return filteredLists.size();
 }
 
+void ListListModel::prependList(const ListView& list)
+{
+    qDebug() << "Prepend list:" << list.getName();
+
+    beginInsertRows({}, 0, 0);
+    mLists.push_front(list);
+    endInsertRows();
+
+    qDebug() << "New lists size:" << mLists.size();
+}
+
+void ListListModel::updateEntry(int index, const ListView& list)
+{
+    qDebug() << "Update entry:" << list.getName() << "index:" << index;
+
+    if (index < 0 || (size_t)index >= mLists.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mLists.size();
+        return;
+    }
+
+    mLists[index] = list;
+    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
+}
+
 ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListViewList lists) const
 {
     ListList filtered;

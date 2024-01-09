@@ -12,6 +12,7 @@ Page {
     readonly property int avatarSize: 1000
 
     signal closed
+    signal listCreated(listview list)
 
     id: editListPage
     width: parent.width
@@ -32,6 +33,8 @@ Page {
 
                 if (list.isNull())
                     createList()
+                else
+                    updateList()
             }
         }
     }
@@ -109,6 +112,8 @@ Page {
             }
 
             FeedAvatar {
+                property bool isUpdated: false
+
                 id: avatar
                 width: 180
                 avatarUrl: list.avatar
@@ -131,9 +136,14 @@ Page {
                     visible: avatar.avatarUrl
 
                     onClicked: {
-                        avatar.avatarUrl = ""
+                        avatar.setUrl("")
                         dropCreatedAvatar()
                     }
+                }
+
+                function setUrl(url) {
+                    avatarUrl = url
+                    isUpdated = true
                 }
             }
 
@@ -165,11 +175,15 @@ Page {
             Rectangle {
                 id: descriptionRect
                 Layout.fillWidth: true
-                height: descriptionField.height
+
+                // Normal height acts weird when the user changes the avatar, then it
+                // shrinks back to a single line of text. preferredHeight works.
+                Layout.preferredHeight: descriptionField.height
+
                 radius: 10
                 border.width: 1
                 border.color: guiSettings.borderColor
-                color: guiSettings.backgroundColor
+                color: "transparent"
 
                 SkyFormattedTextEdit {
                     readonly property int maxLength: 300
@@ -218,12 +232,26 @@ Page {
     }
 
     GraphUtils {
+        property listview nullList
+
         id: graphUtils
         skywalker: editListPage.skywalker
 
         onCreateListProgress: (msg) => editListPage.createListProgress(msg)
         onCreateListFailed: (error) => editListPage.createListFailed(error)
-        onCreateListOk: (uri, cid) => editListPage.createListDone()
+
+        // I first tried to refresh the list list view to get the new list displayed.
+        // That did not work as the new list was apparently not indexed by creator yet.
+        // That takes a bit of time.
+        // Therefore we get a list view for the new list based on URI instead.
+        onCreateListOk: (uri, cid) => graphUtils.getListView(uri)
+
+        onGetListFailed: (error) => editListPage.listCreated(nullList)
+        onGetListOk: (listView) => editListPage.listCreated(listView)
+
+        onUpdateListProgress: (msg) => editListPage.createListProgress(msg)
+        onUpdateListFailed: (error) => editListPage.createListFailed(error)
+        onUpdateListOk: (uri) => graphUtils.getListView(uri)
     }
 
     GuiSettings {
@@ -241,14 +269,12 @@ Page {
         createListButton.enabled = true
     }
 
-    function createListDone() {
-        busyIndicator.running = false
-        statusPopup.show(qsTr("List created"), QEnums.STATUS_LEVEL_INFO, 2)
-        editListPage.closed()
-    }
-
     function createList() {
         graphUtils.createList(purpose, nameField.text, descriptionField.text, avatar.avatarUrl)
+    }
+
+    function updateList() {
+        graphUtils.updateList(list.uri, nameField.text, descriptionField.text, avatar.avatarUrl, avatar.isUpdated)
     }
 
     // "file://" or "image://" source
@@ -264,7 +290,7 @@ Page {
             console.debug(rect)
             dropCreatedAvatar()
             createdAvatarSource = postUtils.cutPhotoRect(source, rect, Qt.size(avatarSize, avatarSize))
-            avatar.avatarUrl = createdAvatarSource
+            avatar.setUrl(createdAvatarSource)
             root.popStack()
             postUtils.dropPhoto(source)
         })

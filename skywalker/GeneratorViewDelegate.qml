@@ -33,7 +33,7 @@ Rectangle {
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: 5
+            height: 10
             color: "transparent"
         }
 

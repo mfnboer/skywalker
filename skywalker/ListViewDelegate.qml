@@ -16,17 +16,19 @@ Rectangle {
     color: guiSettings.backgroundColor
 
     signal listClicked(listview list)
+    signal updateList(listview list)
+    signal deleteList(listview list)
 
     GridLayout {
         id: grid
-        columns: 2
+        columns: 3
         width: viewWidth
         rowSpacing: 0
 
         Rectangle {
-            Layout.columnSpan: 2
+            Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: 5
+            height: 10
             color: "transparent"
         }
 
@@ -84,10 +86,33 @@ Rectangle {
             }
         }
 
+        Rectangle {
+            width: 80
+            Layout.fillHeight: true
+            color: "transparent"
+
+            SvgButton {
+                id: updateButton
+                anchors.right: deleteButton.left
+                width: 40
+                height: width
+                svg: svgOutline.edit
+                onClicked: updateList(list)
+            }
+
+            SvgButton {
+                id: deleteButton
+                anchors.right: parent.right
+                width: 40
+                height: width
+                svg: svgOutline.delete
+                onClicked: deleteList(list)
+            }
+        }
+
         Text {
             topPadding: 5
-            bottomPadding: 10
-            Layout.columnSpan: 2
+            Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.leftMargin: view.margin
             Layout.rightMargin: view.margin
@@ -97,17 +122,33 @@ Rectangle {
             textFormat: Text.RichText
             color: guiSettings.textColor
             text: list.formattedDescription
+            visible: text
 
             onLinkActivated: (link) => root.openLink(link)
         }
 
         Rectangle {
-            Layout.columnSpan: 2
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            Layout.preferredHeight: 10
+            color: "transparent"
+        }
+
+        Rectangle {
+            Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             color: guiSettings.separatorColor
         }
+    }
 
+    MouseArea {
+        z: -2 // Let other mouse areas on top
+        anchors.fill: parent
+        onClicked: {
+            console.debug("LIST CLICKED:", list.name)
+            view.listClicked(list)
+        }
     }
 
     GuiSettings {

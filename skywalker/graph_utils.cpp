@@ -244,4 +244,88 @@ void GraphUtils::continueCreateList(const QEnums::ListPurpose purpose, const QSt
         });
 }
 
+void GraphUtils::updateList(const QString& listUri, const QString& name,
+                const QString& description, const QString& avatarImgSource,
+                bool updateAvatar)
+{
+    if (!bskyClient())
+        return;
+
+    if (updateAvatar && !avatarImgSource.isEmpty())
+    {
+        emit updateListProgress(tr("Uploading avatar"));
+
+        QByteArray blob;
+        const QString mimeType = createBlob(blob, avatarImgSource);
+
+        if (blob.isEmpty())
+        {
+            emit updateListFailed(tr("Could not load avatar image"));
+            return;
+        }
+
+        bskyClient()->uploadBlob(blob, mimeType,
+            [this, presence=getPresence(), listUri, name, description](auto blob){
+                if (!presence)
+                    return;
+
+                continueUpdateList(listUri, name, description, std::move(blob), true);
+            },
+            [this, presence=getPresence()](const QString& error, const QString& msg){
+                if (!presence)
+                    return;
+
+                qDebug() << "Update list failed:" << error << " - " << msg;
+                emit updateListFailed(msg);
+            });
+    }
+    else
+    {
+        continueUpdateList(listUri, name, description, nullptr, updateAvatar);
+    }
+}
+
+void GraphUtils::continueUpdateList(const QString& listUri, const QString& name,
+                        const QString& description, ATProto::Blob::Ptr blob, bool updateAvatar)
+{
+    emit updateListProgress(tr("Updating list"));
+
+    graphMaster()->updateList(listUri, name, description, std::move(blob), updateAvatar,
+        [this, presence=getPresence(), listUri](){
+            if (!presence)
+                return;
+
+            emit updateListOk(listUri);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Update list failed:" << error << " - " << msg;
+            emit updateListFailed(msg);
+        });
+}
+
+void GraphUtils::getListView(const QString& listUri)
+{
+    if (!bskyClient())
+        return;
+
+    bskyClient()->getList(listUri, 1, {},
+        [this, presence=getPresence()](auto output){
+            if (!presence)
+                return;
+
+            ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
+            emit getListOk(ListView(sharedListView));
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "getListViewfailed:" << error << " - " << msg;
+            emit getListFailed(msg);
+        });
+}
+
 }

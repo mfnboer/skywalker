@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "list_view.h"
 #include "enums.h"
 #include "presence.h"
 #include "wrapped_skywalker.h"
@@ -26,6 +27,10 @@ public:
     // avatarImgSource must be a 'file://' or 'image://' reference.
     Q_INVOKABLE void createList(const QEnums::ListPurpose purpose, const QString& name,
                                 const QString& description, const QString& avatarImgSource);
+    Q_INVOKABLE void updateList(const QString& listUri, const QString& name,
+                                const QString& description, const QString& avatarImgSource,
+                                bool updateAvatar);
+    Q_INVOKABLE void getListView(const QString& listUri);
 
 signals:
     void followOk(QString uri);
@@ -43,10 +48,17 @@ signals:
     void createListProgress(QString msg);
     void createListOk(QString uri, QString cid);
     void createListFailed(QString error);
+    void updateListProgress(QString msg);
+    void updateListOk(QString uri);
+    void updateListFailed(QString error);
+    void getListOk(ListView list);
+    void getListFailed(QString error);
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
-                    const QString& description, ATProto::Blob::Ptr blob);
+                            const QString& description, ATProto::Blob::Ptr blob);
+    void continueUpdateList(const QString& listUri, const QString& name,
+                            const QString& description, ATProto::Blob::Ptr blob, bool updateAvatar);
 
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;
