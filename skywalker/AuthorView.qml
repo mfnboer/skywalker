@@ -263,14 +263,7 @@ Page {
                 text: postUtils.linkiFy(author.description, guiSettings.linkColor)
                 visible: contentVisible()
 
-                onLinkActivated: (link) => {
-                                     if (link.startsWith("@")) {
-                                         console.debug("MENTION:", link)
-                                         skywalker.getDetailedProfile(link.slice(1))
-                                     } else {
-                                         root.openLink(link)
-                                     }
-                                 }
+                onLinkActivated: (link) => root.openLink(link)
             }
 
             Text {

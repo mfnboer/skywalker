@@ -169,17 +169,7 @@ Page {
             color: guiSettings.textColor
             text: feed.formattedDescription
 
-            onLinkActivated: (link) => {
-                if (link.startsWith("@")) {
-                    console.debug("MENTION:", link)
-                    skywalker.getDetailedProfile(link.slice(1))
-                } else if (link.startsWith("did:")) {
-                    console.debug("MENTION:", link)
-                    skywalker.getDetailedProfile(link)
-                } else {
-                    root.openLink(link)
-                }
-            }
+            onLinkActivated: (link) => root.openLink(link)
         }
 
         Rectangle {

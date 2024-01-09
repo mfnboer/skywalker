@@ -36,15 +36,7 @@ Column {
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
         visible: postVisible()
 
-        onLinkActivated: (link) => {
-            if (link.startsWith("did:")) {
-                console.debug("MENTION", link)
-                skywalker.getDetailedProfile(link)
-            } else {
-                console.debug("LINK:", link)
-                root.openLink(link)
-            }
-        }
+        onLinkActivated: (link) => root.openLink(link)
     }
 
     Row {

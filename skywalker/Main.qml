@@ -524,7 +524,15 @@ ApplicationWindow {
     }
 
     function openLink(link) {
-        linkUtils.openLink(link)
+        if (link.startsWith("@")) {
+            console.debug("@-MENTION:", link)
+            skywalker.getDetailedProfile(link.slice(1))
+        } else if (link.startsWith("did:")) {
+            console.debug("DID-MENTION:", link)
+            skywalker.getDetailedProfile(link)
+        } else {
+            linkUtils.openLink(link)
+        }
     }
 
     function showStartupStatus() {
