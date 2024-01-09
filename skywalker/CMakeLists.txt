@@ -243,6 +243,7 @@ qt_add_qml_module(libskywalker
         QML_FILES TextLengthBar.qml
         QML_FILES TextLengthCounter.qml
         QML_FILES EditAvatar.qml
+        QML_FILES ImageFileDialog.qml
 )
 
 if (NOT ANDROID)

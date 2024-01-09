@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "graph_utils.h"
+#include "photo_picker.h"
 
 namespace Skywalker {
 
@@ -179,6 +180,67 @@ void GraphUtils::unmute(const QString& did)
 
             qDebug() << "Unmute failed failed:" << error << " - " << msg;
             emit unmuteFailed(msg);
+        });
+}
+
+void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& name,
+                const QString& description, const QString& avatarImgSource)
+{
+    if (!bskyClient())
+        return;
+
+    if (!avatarImgSource.isEmpty())
+    {
+        emit createListProgress(tr("Uploading avatar"));
+
+        QByteArray blob;
+        const QString mimeType = createBlob(blob, avatarImgSource);
+
+        if (blob.isEmpty())
+        {
+            emit createListFailed(tr("Could not load avatar image"));
+            return;
+        }
+
+        bskyClient()->uploadBlob(blob, mimeType,
+            [this, presence=getPresence(), purpose, name, description](auto blob){
+                if (!presence)
+                    return;
+
+                continueCreateList(purpose, name, description, std::move(blob));
+            },
+            [this, presence=getPresence()](const QString& error, const QString& msg){
+                if (!presence)
+                    return;
+
+                qDebug() << "Create list failed:" << error << " - " << msg;
+                emit createListFailed(msg);
+            });
+    }
+    else
+    {
+        continueCreateList(purpose, name, description, nullptr);
+    }
+}
+
+void GraphUtils::continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
+                        const QString& description, ATProto::Blob::Ptr blob)
+{
+    emit createListProgress(tr("Creating list"));
+
+    graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose(purpose), name, description, std::move(blob),
+        [this, presence=getPresence()](const QString& uri, const QString& cid){
+            if (!presence)
+                return;
+
+            emit createListOk(uri, cid);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Create list failed:" << error << " - " << msg;
+            emit createListFailed(msg);
         });
 }
 

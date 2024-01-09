@@ -1,7 +1,5 @@
-import QtCore
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Window 2.2
 import skywalker
@@ -544,17 +542,9 @@ Page {
         running: false
     }
 
-    FileDialog {
+    ImageFileDialog {
         id: fileDialog
-        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp *.gif)"]
-        onAccepted: {
-            let fileName = selectedFile.toString()
-            if (!fileName.startsWith("file://"))
-                fileName = "file://" + fileName
-
-            photoPicked(fileName)
-        }
+        onFileSelected: (fileName) => { photoPicked(fileName) }
     }
 
     LinkCardReader {

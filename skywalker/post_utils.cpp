@@ -84,7 +84,7 @@ static ATProto::AppBskyFeed::PostReplyRef::Ptr createReplyRef(
     return replyRef;
 }
 
-void PostUtils::post(QString text, const QStringList& imageFileNames, const QStringList& altTexts,
+void PostUtils::post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid)
@@ -127,7 +127,7 @@ void PostUtils::post(QString text, const QStringList& imageFileNames, const QStr
         });
 }
 
-void PostUtils::post(QString text, const LinkCard* card,
+void PostUtils::post(const QString& text, const LinkCard* card,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid)
@@ -231,18 +231,17 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
         return;
     }
 
+    emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
+
     const auto& fileName = imageFileNames[imgIndex];
     QByteArray blob;
     const QString mimeType = createBlob(blob, fileName);
 
     if (blob.isEmpty())
     {
-        const QString error = tr("Could not load image") + ": " + QFileInfo(fileName).fileName();
-        emit postFailed(error);
+        emit postFailed(tr("Could not load image") + QString(" #%1").arg(imgIndex + 1));
         return;
     }
-
-    emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
 
     bskyClient()->uploadBlob(blob, mimeType,
         [this, presence=getPresence(), imageFileNames, altTexts, post, imgIndex](auto blob){

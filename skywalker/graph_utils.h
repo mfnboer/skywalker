@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include "presence.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/graph_master.h>
@@ -22,6 +23,10 @@ public:
     Q_INVOKABLE void mute(const QString& did);
     Q_INVOKABLE void unmute(const QString& did);
 
+    // avatarImgSource must be a 'file://' or 'image://' reference.
+    Q_INVOKABLE void createList(const QEnums::ListPurpose purpose, const QString& name,
+                                const QString& description, const QString& avatarImgSource);
+
 signals:
     void followOk(QString uri);
     void followFailed(QString error);
@@ -35,8 +40,14 @@ signals:
     void muteFailed(QString error);
     void unmuteOk();
     void unmuteFailed(QString error);
+    void createListProgress(QString msg);
+    void createListOk(QString uri, QString cid);
+    void createListFailed(QString error);
 
 private:
+    void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
+                    const QString& description, ATProto::Blob::Ptr blob);
+
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;
 };

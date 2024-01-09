@@ -1,7 +1,5 @@
-import QtCore
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Dialogs
 import QtQuick.Layouts
 import skywalker
 
@@ -24,10 +22,17 @@ Page {
         onBack: editListPage.closed()
 
         SvgButton {
+            id: createListButton
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
-            onClicked: editListPage.closed() // TODO
+
+            onClicked: {
+                createListButton.enabled = false
+
+                if (list.isNull())
+                    createList()
+            }
         }
     }
 
@@ -182,17 +187,15 @@ Page {
         }
     }
 
-    FileDialog {
-        id: fileDialog
-        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp *.gif)"]
-        onAccepted: {
-            let fileName = selectedFile.toString()
-            if (!fileName.startsWith("file://"))
-                fileName = "file://" + fileName
+    BusyIndicator {
+        id: busyIndicator
+        anchors.centerIn: parent
+        running: false
+    }
 
-            photoPicked(fileName)
-        }
+    ImageFileDialog {
+        id: fileDialog
+        onFileSelected: (fileName) => photoPicked(fileName)
     }
 
     PostUtils {
@@ -214,8 +217,38 @@ Page {
         }
     }
 
+    GraphUtils {
+        id: graphUtils
+        skywalker: editListPage.skywalker
+
+        onCreateListProgress: (msg) => editListPage.createListProgress(msg)
+        onCreateListFailed: (error) => editListPage.createListFailed(error)
+        onCreateListOk: (uri, cid) => editListPage.createListDone()
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    function createListProgress(msg) {
+        busyIndicator.running = true
+        statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
+    }
+
+    function createListFailed(error) {
+        busyIndicator.running = false
+        statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        createListButton.enabled = true
+    }
+
+    function createListDone() {
+        busyIndicator.running = false
+        statusPopup.show(qsTr("List created"), QEnums.STATUS_LEVEL_INFO, 2)
+        editListPage.closed()
+    }
+
+    function createList() {
+        graphUtils.createList(purpose, nameField.text, descriptionField.text, avatar.avatarUrl)
     }
 
     // "file://" or "image://" source

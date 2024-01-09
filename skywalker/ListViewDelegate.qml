@@ -98,10 +98,14 @@ Rectangle {
             color: guiSettings.textColor
             text: list.formattedDescription
 
+            // TODO: refactor duplicate code
             onLinkActivated: (link) => {
                 if (link.startsWith("@")) {
                     console.debug("MENTION:", link)
                     skywalker.getDetailedProfile(link.slice(1))
+                } else if (link.startsWith("did:")) {
+                    console.debug("MENTION:", link)
+                    skywalker.getDetailedProfile(link)
                 } else {
                     root.openLink(link)
                 }

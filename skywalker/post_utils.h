@@ -26,11 +26,11 @@ public:
 
     static QString toPlainText(const QString& text);
 
-    Q_INVOKABLE void post(QString text, const QStringList& imageFileNames, const QStringList& altTexts,
+    Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
-    Q_INVOKABLE void post(QString text, const LinkCard* card,
+    Q_INVOKABLE void post(const QString& text, const LinkCard* card,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
