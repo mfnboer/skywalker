@@ -31,4 +31,17 @@ private:
     static std::map<QString, SharedImageProvider*> sProviders; // name -> provider
 };
 
+class SharedImageSource
+{
+public:
+    using SharedPtr = std::shared_ptr<SharedImageSource>;
+
+    SharedImageSource(const QString& source, SharedImageProvider* provider);
+    ~SharedImageSource();
+
+private:
+    QString mSource;
+    SharedImageProvider* mProvider;
+};
+
 }

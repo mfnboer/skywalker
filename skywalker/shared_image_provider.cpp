@@ -104,4 +104,17 @@ QImage SharedImageProvider::requestImage(const QString& id, QSize* size, const Q
     return img;
 }
 
+SharedImageSource::SharedImageSource(const QString& source, SharedImageProvider* provider) :
+    mSource(source),
+    mProvider(provider)
+{
+    Q_ASSERT(mProvider);
+    Q_ASSERT(source.startsWith("image://"));
+}
+
+SharedImageSource::~SharedImageSource()
+{
+    mProvider->removeImage(mSource);
+}
+
 }

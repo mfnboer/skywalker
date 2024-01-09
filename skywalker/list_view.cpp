@@ -60,6 +60,9 @@ QString ListViewBasic::getCid() const
 
 QString ListViewBasic::getName() const
 {
+    if (!mName.isEmpty())
+        return mName;
+
     if (basicView())
         return basicView()->mName;
 
@@ -82,6 +85,9 @@ QEnums::ListPurpose ListViewBasic::getPurpose() const
 
 QString ListViewBasic::getAvatar() const
 {
+    if (mAvatar)
+        return *mAvatar;
+
     if (basicView())
         return basicView()->mAvatar.value_or("");
 
@@ -100,6 +106,21 @@ ListViewerState ListViewBasic::getViewer() const
         return view()->mViewer ? ListViewerState(*view()->mViewer) : ListViewerState{};
 
     return {};
+}
+
+void ListViewBasic::setAvatar(const QString& avatar)
+{
+    mAvatar = avatar;
+
+    if (avatar.startsWith("image://"))
+    {
+        auto* provider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+        mAvatarSource = std::make_shared<SharedImageSource>(avatar, provider);
+    }
+    else
+    {
+        mAvatarSource = nullptr;
+    }
 }
 
 const ATProto::AppBskyGraph::ListView* ListViewBasic::view() const
@@ -129,6 +150,9 @@ Profile ListView::getCreator() const
 
 QString ListView::getDescription() const
 {
+    if (mDescription)
+        return *mDescription;
+
     if (!view() || !view()->mDescription)
         return {};
 
@@ -137,6 +161,9 @@ QString ListView::getDescription() const
 
 QString ListView::getFormattedDescription() const
 {
+    if (mDescription)
+        return ATProto::RichTextMaster::linkiFy(*mDescription, UserSettings::getLinkColor());
+
     if (!view() || !view()->mDescription)
         return {};
 

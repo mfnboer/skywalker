@@ -92,15 +92,9 @@ ListView {
                 purpose: list.purpose,
                 list: list
             })
-        page.onListCreated.connect((updatedList) => {
-            if (updatedList.isNull()) {
-                statusPopup.show(qsTr("List updated. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
-            }
-            else {
-                statusPopup.show(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
-                view.model.updateEntry(index, updatedList)
-            }
-
+        page.onListUpdated.connect((name, description , avatar) => {
+            statusPopup.show(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
+            view.model.updateEntry(index, name, description, avatar)
             root.popStack()
         })
         page.onClosed.connect(() => { root.popStack() })

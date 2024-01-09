@@ -85,9 +85,9 @@ void ListListModel::prependList(const ListView& list)
     qDebug() << "New lists size:" << mLists.size();
 }
 
-void ListListModel::updateEntry(int index, const ListView& list)
+void ListListModel::updateEntry(int index, const QString& name, const QString& description, const QString& avatar)
 {
-    qDebug() << "Update entry:" << list.getName() << "index:" << index;
+    qDebug() << "Update entry:" << name << "index:" << index;
 
     if (index < 0 || (size_t)index >= mLists.size())
     {
@@ -95,7 +95,17 @@ void ListListModel::updateEntry(int index, const ListView& list)
         return;
     }
 
-    mLists[index] = list;
+    auto& list = mLists[index];
+
+    if (name != list.getName())
+        list.setName(name);
+
+    if (description != list.getDescription())
+        list.setDescription(description);
+
+    if (avatar != list.getAvatar())
+        list.setAvatar(avatar);
+
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
 }
 

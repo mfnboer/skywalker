@@ -3,6 +3,7 @@
 #pragma once
 #include "enums.h"
 #include "profile.h"
+#include "shared_image_provider.h"
 #include <atproto/lib/lexicon/app_bsky_graph.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -54,6 +55,9 @@ public:
     QString getAvatar() const;
     ListViewerState getViewer() const;
 
+    void setName(const QString& name) { mName = name; }
+    void setAvatar(const QString& avatar);
+
 protected:
     const ATProto::AppBskyGraph::ListView* view() const;
 
@@ -65,6 +69,10 @@ private:
 
     ATProto::AppBskyGraph::ListViewBasic::SharedPtr mSharedListViewBasic;
     const ATProto::AppBskyGraph::ListViewBasic* mRawListViewBasic = nullptr;
+
+    QString mName;
+    std::optional<QString> mAvatar;
+    SharedImageSource::SharedPtr mAvatarSource;
 };
 
 class ListView : public ListViewBasic
@@ -83,6 +91,11 @@ public:
     Profile getCreator() const;
     QString getDescription() const;
     QString getFormattedDescription() const;
+
+    void setDescription(const QString& description) { mDescription = description; };
+
+private:
+    std::optional<QString> mDescription;
 };
 
 }

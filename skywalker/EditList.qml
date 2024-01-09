@@ -13,6 +13,7 @@ Page {
 
     signal closed
     signal listCreated(listview list)
+    signal listUpdated(string name, string description, string avatar)
 
     id: editListPage
     width: parent.width
@@ -246,12 +247,12 @@ Page {
         // Therefore we get a list view for the new list based on URI instead.
         onCreateListOk: (uri, cid) => graphUtils.getListView(uri)
 
-        onGetListFailed: (error) => editListPage.listCreated(nullList)
+        onGetListFailed: (error) =>  editListPage.listCreated(nullList)
         onGetListOk: (listView) => editListPage.listCreated(listView)
 
         onUpdateListProgress: (msg) => editListPage.createListProgress(msg)
         onUpdateListFailed: (error) => editListPage.createListFailed(error)
-        onUpdateListOk: (uri) => graphUtils.getListView(uri)
+        onUpdateListOk: (uri) => editListPage.updateListDone()
     }
 
     GuiSettings {
@@ -275,6 +276,13 @@ Page {
 
     function updateList() {
         graphUtils.updateList(list.uri, nameField.text, descriptionField.text, avatar.avatarUrl, avatar.isUpdated)
+    }
+
+    function updateListDone() {
+        // Erase the created avatar source such that the imaee will not be dropped
+        // from the image provider in Component.onDestruction
+        createdAvatarSource = ""
+        editListPage.listUpdated(nameField.text, descriptionField.text, avatar.avatarUrl)
     }
 
     // "file://" or "image://" source
