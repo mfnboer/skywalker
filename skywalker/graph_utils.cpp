@@ -291,11 +291,11 @@ void GraphUtils::continueUpdateList(const QString& listUri, const QString& name,
     emit updateListProgress(tr("Updating list"));
 
     graphMaster()->updateList(listUri, name, description, std::move(blob), updateAvatar,
-        [this, presence=getPresence(), listUri](){
+        [this, presence=getPresence()](const QString& uri, const QString& cid){
             if (!presence)
                 return;
 
-            emit updateListOk(listUri);
+            emit updateListOk(uri, cid);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -303,6 +303,27 @@ void GraphUtils::continueUpdateList(const QString& listUri, const QString& name,
 
             qDebug() << "Update list failed:" << error << " - " << msg;
             emit updateListFailed(msg);
+        });
+}
+
+void GraphUtils::deleteList(const QString& listUri)
+{
+    if (!graphMaster())
+        return;
+
+    graphMaster()->undo(listUri,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            emit deleteListOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Delete list failed:" << error << " - " << msg;
+            emit deleteListFailed(msg);
         });
 }
 

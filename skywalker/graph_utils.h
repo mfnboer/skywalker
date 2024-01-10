@@ -30,6 +30,7 @@ public:
     Q_INVOKABLE void updateList(const QString& listUri, const QString& name,
                                 const QString& description, const QString& avatarImgSource,
                                 bool updateAvatar);
+    Q_INVOKABLE void deleteList(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri);
 
 signals:
@@ -49,8 +50,10 @@ signals:
     void createListOk(QString uri, QString cid);
     void createListFailed(QString error);
     void updateListProgress(QString msg);
-    void updateListOk(QString uri);
+    void updateListOk(QString uri, QString cid);
     void updateListFailed(QString error);
+    void deleteListOk();
+    void deleteListFailed(QString error);
     void getListOk(ListView list);
     void getListFailed(QString error);
 

@@ -55,6 +55,7 @@ public:
     QString getAvatar() const;
     ListViewerState getViewer() const;
 
+    void setCid(const QString& cid) { mCid = cid; }
     void setName(const QString& name) { mName = name; }
     void setAvatar(const QString& avatar);
 
@@ -70,6 +71,7 @@ private:
     ATProto::AppBskyGraph::ListViewBasic::SharedPtr mSharedListViewBasic;
     const ATProto::AppBskyGraph::ListViewBasic* mRawListViewBasic = nullptr;
 
+    QString mCid;
     QString mName;
     std::optional<QString> mAvatar;
     SharedImageSource::SharedPtr mAvatarSource;

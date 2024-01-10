@@ -36,7 +36,8 @@ ListView {
         required property int index
 
         viewWidth: view.width
-        onUpdateList: (list) => editList(list, index)
+        onUpdateList: (list) => view.editList(list, index)
+        onDeleteList: (list) => view.deleteList(list, index)
     }
 
     FlickableRefresher {
@@ -57,6 +58,16 @@ ListView {
     BusyIndicator {
         anchors.centerIn: parent
         running: skywalker.getListListInProgress
+    }
+
+    GraphUtils {
+        id: graphUtils
+        skywalker: view.skywalker
+
+        onDeleteListFailed: {
+            statusPopup.show(qsTr("Failed to delete list."), QEnums.STATUS_LEVEL_ERROR)
+            skywalker.getListList(modelId)
+        }
     }
 
     GuiSettings {
@@ -92,13 +103,25 @@ ListView {
                 purpose: list.purpose,
                 list: list
             })
-        page.onListUpdated.connect((name, description , avatar) => {
+        page.onListUpdated.connect((cid, name, description , avatar) => {
             statusPopup.show(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
-            view.model.updateEntry(index, name, description, avatar)
+            view.model.updateEntry(index, cid, name, description, avatar)
             root.popStack()
         })
         page.onClosed.connect(() => { root.popStack() })
         root.pushStack(page)
+    }
+
+    function deleteList(list, index) {
+        guiSettings.askYesNoQuestion(
+                    view,
+                    qsTr(`Do you really want to delete: ${(list.name)} ?`),
+                    () => view.continueDeleteList(list, index))
+    }
+
+    function continueDeleteList(list, index) {
+        graphUtils.deleteList(list.uri)
+        view.model.deleteEntry(index)
     }
 
     Component.onDestruction: {

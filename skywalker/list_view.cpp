@@ -49,6 +49,9 @@ QString ListViewBasic::getUri() const
 
 QString ListViewBasic::getCid() const
 {
+    if (!mCid.isEmpty())
+        return mCid;
+
     if (basicView())
         return basicView()->mCid;
 

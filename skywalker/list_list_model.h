@@ -29,7 +29,8 @@ public:
     // Returns the number of lists added
     int addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor);
     Q_INVOKABLE void prependList(const ListView& list);
-    Q_INVOKABLE void updateEntry(int index, const QString& name, const QString& description, const QString& avatar);
+    Q_INVOKABLE void updateEntry(int index, const QString& cid, const QString& name, const QString& description, const QString& avatar);
+    Q_INVOKABLE void deleteEntry(int index);
 
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }

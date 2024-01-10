@@ -13,7 +13,7 @@ Page {
 
     signal closed
     signal listCreated(listview list)
-    signal listUpdated(string name, string description, string avatar)
+    signal listUpdated(string cid, string name, string description, string avatar)
 
     id: editListPage
     width: parent.width
@@ -21,13 +21,14 @@ Page {
     header: SimpleHeader {
         text: list.isNull() ? qsTr(`New ${(listTypeName())}`) : qsTr(`Edit ${(listTypeName())}`)
         backIsCancel: true
-        onBack: editListPage.closed()
+        onBack: editListPage.cancel()
 
         SvgButton {
             id: createListButton
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
+            enabled: nameField.displayText.length > 0
 
             onClicked: {
                 createListButton.enabled = false
@@ -252,7 +253,7 @@ Page {
 
         onUpdateListProgress: (msg) => editListPage.createListProgress(msg)
         onUpdateListFailed: (error) => editListPage.createListFailed(error)
-        onUpdateListOk: (uri) => editListPage.updateListDone()
+        onUpdateListOk: (uri, cid) => editListPage.updateListDone(uri, cid)
     }
 
     GuiSettings {
@@ -271,18 +272,18 @@ Page {
     }
 
     function createList() {
-        graphUtils.createList(purpose, nameField.text, descriptionField.text, avatar.avatarUrl)
+        graphUtils.createList(purpose, nameField.displayText, descriptionField.text, avatar.avatarUrl)
     }
 
     function updateList() {
-        graphUtils.updateList(list.uri, nameField.text, descriptionField.text, avatar.avatarUrl, avatar.isUpdated)
+        graphUtils.updateList(list.uri, nameField.displayText, descriptionField.text, avatar.avatarUrl, avatar.isUpdated)
     }
 
-    function updateListDone() {
+    function updateListDone(uri, cid) {
         // Erase the created avatar source such that the imaee will not be dropped
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
-        editListPage.listUpdated(nameField.text, descriptionField.text, avatar.avatarUrl)
+        editListPage.listUpdated(cid, nameField.displayText, descriptionField.text, avatar.avatarUrl)
     }
 
     // "file://" or "image://" source
@@ -303,6 +304,24 @@ Page {
             postUtils.dropPhoto(source)
         })
         root.pushStack(page)
+    }
+
+    function changesMade() {
+        return list.name !== nameField.displayText ||
+                list.description !== descriptionField.text ||
+                list.avatar !== avatar.avatarUrl
+    }
+
+    function cancel() {
+        if (!changesMade()) {
+            editListPage.closed()
+            return
+        }
+
+        guiSettings.askYesNoQuestion(
+                    editListPage,
+                    qsTr("Do you really want to discard your changes?"),
+                    () => editListPage.closed())
     }
 
     function listTypeName() {

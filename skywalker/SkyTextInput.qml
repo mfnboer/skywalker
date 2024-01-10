@@ -11,6 +11,7 @@ Rectangle {
     property alias maximumLength: textField.maximumLength
     property alias validator: textField.validator
     property alias text: textField.text
+    property alias displayText: textField.displayText
 
     id: skyTextInput
     height: textField.height
