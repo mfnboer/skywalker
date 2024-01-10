@@ -246,6 +246,7 @@ qt_add_qml_module(libskywalker
         QML_FILES ImageFileDialog.qml
         QML_FILES PostListFeedView.qml
         QML_FILES ListFeedDescriptionView.qml
+        QML_FILES QuoteList.qml
 )
 
 if (NOT ANDROID)

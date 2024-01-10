@@ -1598,7 +1598,7 @@ void Skywalker::sharePost(const QString& postUri, const BasicProfile& author)
     if (!atUri.isValid())
         return;
 
-    const QString authorId = author.getHandleOrDid();
+    const QString authorId = author.getDid();
     const QString shareUri = QString("https://bsky.app/profile/%1/post/%2")
                                 .arg(authorId, atUri.getRkey());
 
@@ -1626,7 +1626,7 @@ void Skywalker::shareFeed(const GeneratorView& feed)
     if (!atUri.isValid())
         return;
 
-    const QString authorId = feed.getCreator().getHandleOrDid();
+    const QString authorId = feed.getCreator().getDid();
     const QString shareUri = QString("https://bsky.app/profile/%1/feed/%2")
                                  .arg(authorId, atUri.getRkey());
 
@@ -1646,9 +1646,38 @@ void Skywalker::shareFeed(const GeneratorView& feed)
 #endif
 }
 
+
+void Skywalker::shareList(const ListView& list)
+{
+    qDebug() << "Share list:" << list.getName();
+    ATProto::ATUri atUri(list.getUri());
+
+    if (!atUri.isValid())
+        return;
+
+    const QString authorId = list.getCreator().getDid();
+    const QString shareUri = QString("https://bsky.app/profile/%1/lists/%2")
+                                 .arg(authorId, atUri.getRkey());
+
+#ifdef Q_OS_ANDROID
+    QJniObject jShareUri = QJniObject::fromString(shareUri);
+    QJniObject jSubject = QJniObject::fromString("list");
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareLink",
+                                       "(Ljava/lang/String;Ljava/lang/String;)V",
+                                       jShareUri.object<jstring>(),
+                                       jSubject.object<jstring>());
+#else
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(shareUri);
+    emit statusMessage(tr("List link copied to clipboard"));
+#endif
+}
+
 void Skywalker::shareAuthor(const BasicProfile& author)
 {
-    const QString authorId = author.getHandleOrDid();
+    const QString authorId = author.getDid();
     const QString shareUri = QString("https://bsky.app/profile/%1").arg(authorId);
 
 #ifdef Q_OS_ANDROID

@@ -1007,6 +1007,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function reportList(list) {
+        let component = Qt.createComponent("Report.qml")
+        let form = component.createObject(root, { skywalker: skywalker, list: list })
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
     function translateText(text) {
         const lang = Qt.locale().name.split("_")[0]
         const encoded = encodeURIComponent(text)

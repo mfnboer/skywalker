@@ -11,6 +11,7 @@ Page {
     property string postText
     property date postDateTime
     property generatorview feed
+    property listview list
     property int reasonType: QEnums.REPORT_REASON_TYPE_NULL // QEnums.ReasonType
     property string details
 
@@ -126,6 +127,13 @@ Page {
                 feed: page.feed
                 visible: !page.feed.isNull();
             }
+
+            QuoteList {
+                id: quoteList
+                width: parent.width
+                list: page.list
+                visible: !page.list.isNull();
+            }
         }
         headerPositioning: ListView.OverlayHeader
 
@@ -218,8 +226,11 @@ Page {
         else if (!author.isNull()) {
             reportUtils.reportAuthor(author.did, reasonType, details)
         }
-        else {
+        else if (!feed.isNull()) {
             reportUtils.reportPostOrFeed(feed.uri, feed.cid, reasonType, details)
+        }
+        else if (!list.isNull()) {
+            reportUtils.reportPostOrFeed(list.uri, list.cid, reasonType, details)
         }
     }
 }

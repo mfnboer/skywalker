@@ -115,7 +115,7 @@ Page {
                 }
                 MenuItem {
                     text: qsTr("Share")
-                    // TODO onTriggered: skywalker.shareList(list)
+                    onTriggered: skywalker.shareList(list)
 
                     MenuItemSvg {
                         svg: svgOutline.share
@@ -123,7 +123,7 @@ Page {
                 }
                 MenuItem {
                     text: qsTr("Report list")
-                    // TODO onTriggered: root.reportList(list)
+                    onTriggered: root.reportList(list)
 
                     MenuItemSvg {
                         svg: svgOutline.report

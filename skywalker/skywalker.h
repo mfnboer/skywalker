@@ -108,6 +108,7 @@ public:
     Q_INVOKABLE BasicProfile getUser() const;
     Q_INVOKABLE void sharePost(const QString& postUri, const BasicProfile& author);
     Q_INVOKABLE void shareFeed(const GeneratorView& feed);
+    Q_INVOKABLE void shareList(const ListView& list);
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const QStringList& labelTexts) const;

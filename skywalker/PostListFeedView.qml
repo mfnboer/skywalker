@@ -25,7 +25,7 @@ ListView {
         showAsHome: postListFeedView.showAsHome
 
         onClosed: postListFeedView.closed()
-        onFeedAvatarClicked: graphUtils.getListView(postListFeedView.model.getListView().uri)
+        onFeedAvatarClicked: root.viewListFeedDescription((postListFeedView.model.getListView()))
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -65,13 +65,6 @@ ListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: skywalker.getFeedInProgress
-    }
-
-    GraphUtils {
-        id: graphUtils
-        skywalker: postListFeedView.skywalker
-
-        onGetListOk: (list) => root.viewListFeedDescription(list)
     }
 
     GuiSettings {

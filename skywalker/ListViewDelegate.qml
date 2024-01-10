@@ -92,21 +92,52 @@ Rectangle {
             color: "transparent"
 
             SvgButton {
-                id: updateButton
-                anchors.right: deleteButton.left
+                id: membersButton
+                anchors.right: moreButton.left
                 width: 40
                 height: width
-                svg: svgOutline.edit
-                onClicked: updateList(list)
+                svg: svgOutline.group
+                onClicked: root.viewListFeedDescription(list)
             }
 
             SvgButton {
-                id: deleteButton
+                id: moreButton
                 anchors.right: parent.right
                 width: 40
                 height: width
-                svg: svgOutline.delete
-                onClicked: deleteList(list)
+                svg: svgOutline.moreVert
+                onClicked: moreMenu.open()
+
+                Menu {
+                    id: moreMenu
+
+                    MenuItem {
+                        text: qsTr("Edit")
+                        onTriggered: updateList(list)
+
+                        MenuItemSvg {
+                            svg: svgOutline.edit
+                        }
+                    }
+
+                    MenuItem {
+                        text: qsTr("Delete")
+                        onTriggered: deleteList(list)
+
+                        MenuItemSvg {
+                            svg: svgOutline.delete
+                        }
+                    }
+
+                    MenuItem {
+                        text: qsTr("Share")
+                        onTriggered: skywalker.shareList(list)
+
+                        MenuItemSvg {
+                            svg: svgOutline.share
+                        }
+                    }
+                }
             }
         }
 
