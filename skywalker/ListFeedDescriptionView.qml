@@ -148,6 +148,18 @@ Page {
         }
     }
 
+    AuthorListView {
+        width: parent.width
+        anchors.top: grid.bottom
+        anchors.bottom: parent.bottom
+        title: ""
+        skywalker: page.skywalker
+        modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
+        clip: true
+
+        Component.onCompleted: skywalker.getAuthorList(modelId)
+    }
+
     GuiSettings {
         id: guiSettings
     }

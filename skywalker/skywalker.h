@@ -205,6 +205,7 @@ private:
     void getMutesAuthorList(int limit, const QString& cursor, int modelId);
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);

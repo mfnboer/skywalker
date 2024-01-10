@@ -86,7 +86,8 @@ public:
         AUTHOR_LIST_MUTES,
         AUTHOR_LIST_LIKES,
         AUTHOR_LIST_REPOSTS,
-        AUTHOR_LIST_SEARCH_RESULTS
+        AUTHOR_LIST_SEARCH_RESULTS,
+        AUTHOR_LIST_LIST_MEMBERS
     };
     Q_ENUM(AuthorListType)
 

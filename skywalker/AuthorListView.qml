@@ -21,7 +21,13 @@ ListView {
     header: SimpleDescriptionHeader {
         title: authorListView.title
         description: authorListView.description
+        visible: authorListView.title
         onClosed: authorListView.closed()
+
+        Component.onCompleted: {
+            if (!visible)
+                height = 0
+        }
     }
     headerPositioning: ListView.OverlayHeader
 

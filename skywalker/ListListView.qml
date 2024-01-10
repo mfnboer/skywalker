@@ -42,6 +42,10 @@ ListView {
             switch (list.purpose) {
             case QEnums.LIST_PURPOSE_CURATE:
                 root.viewPostListFeed(list)
+                break
+            case QEnums.LIST_PURPOSE_MOD:
+                root.viewListFeedDescription(list)
+                break
             }
         }
     }

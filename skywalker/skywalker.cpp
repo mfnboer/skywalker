@@ -1360,6 +1360,31 @@ void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QStri
         });
 }
 
+void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
+{
+    setGetAuthorListInProgress(true);
+    mBsky->getList(atId, limit, makeOptionalCursor(cursor),
+        [this, modelId](auto output){
+            setGetAuthorListInProgress(false);
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (!model)
+                return;
+
+            ATProto::AppBskyActor::ProfileViewList profileList;
+
+            for (const auto& listItem : output->mItems)
+                profileList.push_back(std::move(listItem->mSubject));
+
+            (*model)->addAuthors(std::move(profileList), output->mCursor.value_or(""));
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getListMembersAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -1406,6 +1431,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
         break;
     case AuthorListModel::Type::AUTHOR_LIST_SEARCH_RESULTS:
         Q_ASSERT(false);
+        break;
+    case AuthorListModel::Type::AUTHOR_LIST_LIST_MEMBERS:
+        getListMembersAuthorList(atId, limit, cursor, id);
         break;
     }
 }
