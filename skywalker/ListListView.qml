@@ -38,6 +38,12 @@ ListView {
         viewWidth: view.width
         onUpdateList: (list) => view.editList(list, index)
         onDeleteList: (list) => view.deleteList(list, index)
+        onListClicked: (list) => {
+            switch (list.purpose) {
+            case QEnums.LIST_PURPOSE_CURATE:
+                root.viewPostListFeed(list)
+            }
+        }
     }
 
     FlickableRefresher {

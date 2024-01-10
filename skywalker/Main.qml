@@ -907,6 +907,15 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
+    function viewPostListFeed(list) {
+        const modelId = skywalker.createPostFeedModel(list)
+        skywalker.getListFeed(modelId)
+        let component = Qt.createComponent("PostListFeedView.qml")
+        let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
+        view.onClosed.connect(() => { popStack() })
+        root.pushStack(view)
+    }
+
     function viewAuthor(profile, modelId) {
         let component = Qt.createComponent("AuthorView.qml")
         let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker })
@@ -944,6 +953,13 @@ ApplicationWindow {
     function viewFeedDescription(feed) {
         let component = Qt.createComponent("FeedDescriptionView.qml")
         let view = component.createObject(root, { feed: feed, skywalker: skywalker })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+    }
+
+    function viewListFeedDescription(list) {
+        let component = Qt.createComponent("ListFeedDescriptionView.qml")
+        let view = component.createObject(root, { list: list, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }

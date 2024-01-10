@@ -19,7 +19,7 @@ Page {
     width: parent.width
 
     header: SimpleHeader {
-        text: list.isNull() ? qsTr(`New ${(listTypeName())}`) : qsTr(`Edit ${(listTypeName())}`)
+        text: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
         backIsCancel: true
         onBack: editListPage.cancel()
 
@@ -322,17 +322,6 @@ Page {
                     editListPage,
                     qsTr("Do you really want to discard your changes?"),
                     () => editListPage.closed())
-    }
-
-    function listTypeName() {
-        switch (purpose) {
-        case QEnums.LIST_PURPOSE_MOD:
-            return qsTr("Moderation List")
-        case QEnums.LIST_PURPOSE_CURATE:
-            return qsTr("User List")
-        default:
-            return qsTr("List")
-        }
     }
 
     function dropCreatedAvatar() {

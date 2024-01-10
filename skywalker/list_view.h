@@ -37,6 +37,7 @@ class ListViewBasic
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QEnums::ListPurpose purpose READ getPurpose FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
+    Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(ListViewerState viewer READ getViewer FINAL)
     QML_VALUE_TYPE(listviewbasic)
 
@@ -53,6 +54,7 @@ public:
     QString getName() const;
     QEnums::ListPurpose getPurpose() const;
     QString getAvatar() const;
+    ImageView getImageView() const;
     ListViewerState getViewer() const;
 
     void setCid(const QString& cid) { mCid = cid; }

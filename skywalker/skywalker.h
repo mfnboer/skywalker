@@ -67,6 +67,8 @@ public:
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
     Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
+    Q_INVOKABLE void getListFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getListFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
@@ -89,6 +91,7 @@ public:
     Q_INVOKABLE FeedListModel* getFeedListModel(int id) const;
     Q_INVOKABLE void removeFeedListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
+    Q_INVOKABLE int createPostFeedModel(const ListView& listView);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit = 50, const QString& cursor = {});
@@ -241,7 +244,7 @@ private:
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
-    bool mGetFeedInProgress = false;
+    bool mGetFeedInProgress = false; // for feeds and listFeeds
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;

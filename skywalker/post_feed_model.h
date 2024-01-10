@@ -3,6 +3,7 @@
 #pragma once
 #include "abstract_post_feed_model.h"
 #include "generator_view.h"
+#include "list_view.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
 #include <unordered_map>
@@ -30,6 +31,9 @@ public:
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
+
+    Q_INVOKABLE const ListView getListView() const { return mListView; }
+    void setListView(const ListView& view) { mListView = view; }
 
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
@@ -126,6 +130,7 @@ private:
     int mLastInsertedRowIndex = -1;
     QString mFeedName;
     GeneratorView mGeneratorView;
+    ListView mListView;
 };
 
 }

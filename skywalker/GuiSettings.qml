@@ -109,4 +109,15 @@ Item {
 
         return wordSequence
     }
+
+    function listTypeName(purpose) {
+        switch (purpose) {
+        case QEnums.LIST_PURPOSE_MOD:
+            return qsTr("Moderation List")
+        case QEnums.LIST_PURPOSE_CURATE:
+            return qsTr("User List")
+        default:
+            return qsTr("List")
+        }
+    }
 }

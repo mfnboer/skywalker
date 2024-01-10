@@ -670,6 +670,96 @@ void Skywalker::getFeedNextPage(int modelId, int maxPages, int minEntries)
     getFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
+void Skywalker::getListFeed(int modelId, int limit, int maxPages, int minEntries, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get list feed model:" << modelId << "cursor:" << cursor;
+
+    if (mGetFeedInProgress)
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& listUri = model->getListView().getUri();
+    setGetFeedInProgress(true);
+
+    mBsky->getListFeed(listUri, limit, makeOptionalCursor(cursor),
+        [this, modelId, maxPages, minEntries, cursor](auto feed){
+            setGetFeedInProgress(false);
+            int addedPosts = 0;
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            if (cursor.isEmpty())
+            {
+                model->setFeed(std::move(feed));
+                addedPosts = model->rowCount();
+            }
+            else
+            {
+                const int oldRowCount = model->rowCount();
+                model->addFeed(std::move(feed));
+                addedPosts = model->rowCount() - oldRowCount;
+            }
+
+            const int postsToAdd = minEntries - addedPosts;
+
+            if (postsToAdd > 0)
+                getListFeedNextPage(modelId, maxPages - 1, postsToAdd);
+        },
+        [this](const QString& error, const QString& msg){
+            qInfo() << "getListFeed FAILED:" << error << " - " << msg;
+            setGetFeedInProgress(false);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getListFeedNextPage(int modelId, int maxPages, int minEntries)
+{
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& cursor = model->getLastCursor();
+    if (cursor.isEmpty())
+    {
+        qDebug() << "Last page reached, no more cursor";
+        return;
+    }
+
+    getListFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
 void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)
 {
     mAutoUpdateTimelineInProgress = inProgress;
@@ -1128,6 +1218,16 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
             mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords,
             mUserPreferences, this);
     model->setGeneratorView(generatorView);
+    const int id = mPostFeedModels.put(std::move(model));
+    return id;
+}
+
+int Skywalker::createPostFeedModel(const ListView& listView)
+{
+    auto model = std::make_unique<PostFeedModel>(listView.getName(),
+                                                 mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords,
+                                                 mUserPreferences, this);
+    model->setListView(listView);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
 }

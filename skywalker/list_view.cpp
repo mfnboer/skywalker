@@ -100,6 +100,11 @@ QString ListViewBasic::getAvatar() const
     return {};
 }
 
+ImageView ListViewBasic::getImageView() const
+{
+    return ImageView(getAvatar(), getName());
+}
+
 ListViewerState ListViewBasic::getViewer() const
 {
     if (basicView())
