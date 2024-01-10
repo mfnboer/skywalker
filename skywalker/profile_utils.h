@@ -15,10 +15,11 @@ class ProfileUtils : public WrappedSkywalker, public Presence
 public:
     explicit ProfileUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void getProfileView(const QString& atId);
+    // The token will be returned in the emitted signal
+    Q_INVOKABLE void getProfileView(const QString& atId, const QString& token);
 
 signals:
-    void profileViewOk(Profile profile);
+    void profileViewOk(Profile profile, const QString& token);
     void profileViewFailed(QString error);
 };
 

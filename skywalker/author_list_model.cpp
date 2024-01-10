@@ -4,6 +4,12 @@
 
 namespace Skywalker {
 
+AuthorListModel::ListEntry::ListEntry(const Profile& profile, const QString& listItemUri) :
+    mProfile(profile),
+    mListItemUri(listItemUri)
+{
+}
+
 AuthorListModel::AuthorListModel(Type type, const QString& atId, const ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
@@ -24,7 +30,8 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
     if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
-    const auto& author = mList[index.row()];
+    const auto& entry = mList[index.row()];
+    const auto& author = entry.mProfile;
     const auto* change = getLocalChange(author.getDid());
 
     switch (Role(role))
@@ -35,6 +42,8 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return change && change->mFollowingUri ? *change->mFollowingUri : author.getViewer().getFollowing();
     case Role::BlockingUri:
         return change && change->mBlockingUri ? *change->mBlockingUri : author.getViewer().getBlocking();
+    case Role::ListItemUri:
+        return entry.mListItemUri;
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -52,6 +61,8 @@ void AuthorListModel::clear()
     }
 
     mCursor.clear();
+    mRawLists.clear();
+    mRawItemLists.clear();
 }
 
 void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor)
@@ -70,12 +81,32 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors,
     qDebug() << "New list size:" << mList.size();
 }
 
-void AuthorListModel::prependAuthor(const Profile& author)
+void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor)
+{
+    qDebug() << "Add list item authors:" << listItems.size() << "cursor:" << cursor;
+    mCursor = cursor;
+    const size_t newRowCount = mList.size() + listItems.size();
+
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+
+    for (const auto& item : listItems)
+    {
+        ListEntry entry(Profile(item->mSubject.get()), item->mUri);
+        mList.push_back(entry);
+    }
+
+    endInsertRows();
+
+    mRawItemLists.push_back(std::forward<ATProto::AppBskyGraph::ListItemViewList>(listItems));
+    qDebug() << "New list size:" << mList.size();
+}
+
+void AuthorListModel::prependAuthor(const Profile& author, const QString& listItemUri)
 {
     qDebug() << "Preprend author:" << author.getHandle();
 
     beginInsertRows({}, 0, 0);
-    mList.push_front(author);
+    mList.push_front(ListEntry(author, listItemUri));
     endInsertRows();
 
     qDebug() << "New list size:" << mList.size();
@@ -101,7 +132,7 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
             continue;
         }
 
-        list.push_back(Profile(author.get()));
+        list.push_back(ListEntry(Profile(author.get())));
     }
 
     return list;
@@ -112,7 +143,8 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
     static const QHash<int, QByteArray> roles{
         { int(Role::Author), "author" },
         { int(Role::FollowingUri), "followingUri" },
-        { int(Role::BlockingUri), "blockingUri" }
+        { int(Role::BlockingUri), "blockingUri" },
+        { int(Role::ListItemUri), "listItemUri" }
     };
 
     return roles;

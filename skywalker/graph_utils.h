@@ -57,7 +57,7 @@ signals:
     void deleteListFailed(QString error);
     void getListOk(ListView list);
     void getListFailed(QString error);
-    void addListUserOk(QString did);
+    void addListUserOk(QString did, QString itemUri, QString itemCid);
     void addListUserFailed(QString error);
 
 private:

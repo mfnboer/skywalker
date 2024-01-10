@@ -1371,12 +1371,7 @@ void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const Q
             if (!model)
                 return;
 
-            ATProto::AppBskyActor::ProfileViewList profileList;
-
-            for (const auto& listItem : output->mItems)
-                profileList.push_back(std::move(listItem->mSubject));
-
-            (*model)->addAuthors(std::move(profileList), output->mCursor.value_or(""));
+            (*model)->addAuthors(std::move(output->mItems), output->mCursor.value_or(""));
         },
         [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
@@ -1408,6 +1403,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
     const AuthorListModel::Type type = (*model)->getType();
     const auto& atId = (*model)->getAtId();
     qDebug() << "Get author list:" << atId << "type:" << int(type);
+
+    if (cursor.isEmpty())
+        (*model)->clear();
 
     switch (type)
     {

@@ -18,6 +18,15 @@ public:
         Author = Qt::UserRole + 1,
         FollowingUri,
         BlockingUri,
+        ListItemUri
+    };
+
+    struct ListEntry
+    {
+        Profile mProfile;
+        QString mListItemUri; // empty when not part of a list
+
+        explicit ListEntry(const Profile& profile, const QString& listItemUri = {});
     };
 
     using Type = QEnums::AuthorListType;
@@ -30,7 +39,8 @@ public:
 
     void clear();
     void addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor);
-    Q_INVOKABLE void prependAuthor(const Profile& author);
+    void addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor);
+    Q_INVOKABLE void prependAuthor(const Profile& author, const QString& listItemUri);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
@@ -44,7 +54,7 @@ protected:
     virtual void followingUriChanged() override;
 
 private:
-    using AuthorList = std::deque<Profile>;
+    using AuthorList = std::deque<ListEntry>;
 
     AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const;
     void changeData(const QList<int>& roles);
@@ -55,6 +65,7 @@ private:
 
     AuthorList mList;
     std::deque<ATProto::AppBskyActor::ProfileViewList> mRawLists;
+    std::deque<ATProto::AppBskyGraph::ListItemViewList> mRawItemLists;
 
     QString mCursor;
 };

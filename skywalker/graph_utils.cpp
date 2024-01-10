@@ -355,11 +355,11 @@ void GraphUtils::addListUser(const QString& listUri, const QString& did)
         return;
 
     graphMaster()->addUserToList(listUri, did,
-        [this, presence=getPresence(), did]{
+        [this, presence=getPresence(), did](const QString& uri, const QString& cid){
             if (!presence)
                 return;
 
-            emit addListUserOk(did);
+            emit addListUserOk(did, uri, cid);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

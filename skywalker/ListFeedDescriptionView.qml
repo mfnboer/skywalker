@@ -173,7 +173,7 @@ Page {
         id: graphUtils
         skywalker: page.skywalker
 
-        onAddListUserOk: (did) => profileUtils.getProfileView(did)
+        onAddListUserOk: (did, itemUri, itemCid) => profileUtils.getProfileView(did, itemUri)
         onAddListUserFailed: (error) => statusPopup.show(qsTr(`Failed to add user: ${error}`), QEnums.STATUS_LEVEL_ERROR)
     }
 
@@ -181,7 +181,7 @@ Page {
         id: profileUtils
         skywalker: page.skywalker
 
-        onProfileViewOk: (profile) => authorListView.model.prependAuthor(profile)
+        onProfileViewOk: (profile, listItemUri) => authorListView.model.prependAuthor(profile, listItemUri)
         onProfileViewFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
