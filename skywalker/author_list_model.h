@@ -30,6 +30,7 @@ public:
 
     void clear();
     void addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor);
+    Q_INVOKABLE void prependAuthor(const Profile& author);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 

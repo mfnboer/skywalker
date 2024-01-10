@@ -108,8 +108,14 @@ public:
     Profile() = default;
     explicit Profile(const ATProto::AppBskyActor::ProfileView* profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
+    explicit Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
+    explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
 
     QString getDescription() const;
+
+private:
+    ATProto::AppBskyActor::ProfileView::SharedPtr mProfile;
+    ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mDetailedProfile;
 };
 
 class DetailedProfile : public Profile
@@ -123,7 +129,7 @@ class DetailedProfile : public Profile
 
 public:
     DetailedProfile() = default;
-    DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
+    explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
 
     QString getBanner() const;
     int getFollowersCount() const;

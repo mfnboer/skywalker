@@ -247,6 +247,9 @@ qt_add_qml_module(libskywalker
         QML_FILES PostListFeedView.qml
         QML_FILES ListFeedDescriptionView.qml
         QML_FILES QuoteList.qml
+        QML_FILES SearchAuthor.qml
+        SOURCES profile_utils.h
+        SOURCES profile_utils.cpp
 )
 
 if (NOT ANDROID)

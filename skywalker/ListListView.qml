@@ -74,8 +74,8 @@ ListView {
         id: graphUtils
         skywalker: view.skywalker
 
-        onDeleteListFailed: {
-            statusPopup.show(qsTr("Failed to delete list."), QEnums.STATUS_LEVEL_ERROR)
+        onDeleteListFailed: (error) => {
+            statusPopup.show(qsTr(`Failed to delete list: ${error}`), QEnums.STATUS_LEVEL_ERROR)
             skywalker.getListList(modelId)
         }
     }

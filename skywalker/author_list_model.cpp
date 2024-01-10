@@ -70,6 +70,17 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors,
     qDebug() << "New list size:" << mList.size();
 }
 
+void AuthorListModel::prependAuthor(const Profile& author)
+{
+    qDebug() << "Preprend author:" << author.getHandle();
+
+    beginInsertRows({}, 0, 0);
+    mList.push_front(author);
+    endInsertRows();
+
+    qDebug() << "New list size:" << mList.size();
+}
+
 AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const
 {
     AuthorList list;

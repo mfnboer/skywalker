@@ -196,6 +196,18 @@ Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile) :
 {
 }
 
+Profile::Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile) :
+    BasicProfile(profile.get()),
+    mProfile(profile)
+{
+}
+
+Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
+    BasicProfile(profile.get()),
+    mDetailedProfile(profile)
+{
+}
+
 QString Profile::getDescription() const
 {
     if (mProfileView)

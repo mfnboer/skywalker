@@ -349,4 +349,25 @@ void GraphUtils::getListView(const QString& listUri)
         });
 }
 
+void GraphUtils::addListUser(const QString& listUri, const QString& did)
+{
+    if (!graphMaster())
+        return;
+
+    graphMaster()->addUserToList(listUri, did,
+        [this, presence=getPresence(), did]{
+            if (!presence)
+                return;
+
+            emit addListUserOk(did);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addListUser:" << error << " - " << msg;
+            emit addListUserFailed(msg);
+        });
+}
+
 }

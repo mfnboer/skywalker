@@ -96,39 +96,47 @@ Page {
             }
         }
 
-        SvgButton {
-            id: moreButton
-            svg: svgOutline.moreVert
+        Column {
+            SvgButton {
+                id: moreButton
+                svg: svgOutline.moreVert
 
-            onClicked: moreMenu.open()
+                onClicked: moreMenu.open()
 
-            Menu {
-                id: moreMenu
+                Menu {
+                    id: moreMenu
 
-                MenuItem {
-                    text: qsTr("Translate")
-                    onTriggered: root.translateText(list.description)
+                    MenuItem {
+                        text: qsTr("Translate")
+                        onTriggered: root.translateText(list.description)
 
-                    MenuItemSvg {
-                        svg: svgOutline.googleTranslate
+                        MenuItemSvg {
+                            svg: svgOutline.googleTranslate
+                        }
+                    }
+                    MenuItem {
+                        text: qsTr("Share")
+                        onTriggered: skywalker.shareList(list)
+
+                        MenuItemSvg {
+                            svg: svgOutline.share
+                        }
+                    }
+                    MenuItem {
+                        text: qsTr("Report list")
+                        onTriggered: root.reportList(list)
+
+                        MenuItemSvg {
+                            svg: svgOutline.report
+                        }
                     }
                 }
-                MenuItem {
-                    text: qsTr("Share")
-                    onTriggered: skywalker.shareList(list)
+            }
 
-                    MenuItemSvg {
-                        svg: svgOutline.share
-                    }
-                }
-                MenuItem {
-                    text: qsTr("Report list")
-                    onTriggered: root.reportList(list)
-
-                    MenuItemSvg {
-                        svg: svgOutline.report
-                    }
-                }
+            SvgButton {
+                id: addUser
+                svg: svgOutline.addUser
+                onClicked: page.addUser()
             }
         }
 
@@ -149,6 +157,7 @@ Page {
     }
 
     AuthorListView {
+        id: authorListView
         width: parent.width
         anchors.top: grid.bottom
         anchors.bottom: parent.bottom
@@ -160,7 +169,34 @@ Page {
         Component.onCompleted: skywalker.getAuthorList(modelId)
     }
 
+    GraphUtils {
+        id: graphUtils
+        skywalker: page.skywalker
+
+        onAddListUserOk: (did) => profileUtils.getProfileView(did)
+        onAddListUserFailed: (error) => statusPopup.show(qsTr(`Failed to add user: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    ProfileUtils {
+        id: profileUtils
+        skywalker: page.skywalker
+
+        onProfileViewOk: (profile) => authorListView.model.prependAuthor(profile)
+        onProfileViewFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    function addUser() {
+        let component = Qt.createComponent("SearchAuthor.qml")
+        let searchPage = component.createObject(page, { skywalker: skywalker })
+        searchPage.onAuthorClicked.connect((profile) => {
+            graphUtils.addListUser(list.uri, profile.did)
+            root.popStack()
+        })
+        searchPage.onClosed.connect(() => { root.popStack() })
+        root.pushStack(searchPage)
     }
 }

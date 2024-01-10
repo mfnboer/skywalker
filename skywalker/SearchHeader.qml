@@ -7,6 +7,7 @@ import skywalker
 Rectangle {
     property int minSearchTextLength: 1
     property string placeHolderText: qsTr("Search")
+    property bool showSearchButton: true
 
     signal back
     signal searchTextChanged(string text)
@@ -89,6 +90,7 @@ Rectangle {
             svg: svgOutline.search
             onClicked: headerRect.search(searchText.displayText)
             enabled: searchText.displayText.length >= headerRect.minSearchTextLength
+            visible: headerRect.showSearchButton
         }
     }
 

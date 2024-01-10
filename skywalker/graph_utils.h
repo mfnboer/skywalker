@@ -32,6 +32,7 @@ public:
                                 bool updateAvatar);
     Q_INVOKABLE void deleteList(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri);
+    Q_INVOKABLE void addListUser(const QString& listUri, const QString& did);
 
 signals:
     void followOk(QString uri);
@@ -56,6 +57,8 @@ signals:
     void deleteListFailed(QString error);
     void getListOk(ListView list);
     void getListFailed(QString error);
+    void addListUserOk(QString did);
+    void addListUserFailed(QString error);
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
