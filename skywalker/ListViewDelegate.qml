@@ -7,6 +7,7 @@ Rectangle {
     required property int viewWidth
     required property listview list
     required property profile listCreator
+    property bool ownLists: true
     property int margin: 10
     property int maxTextLines: 1000
 
@@ -113,6 +114,7 @@ Rectangle {
 
                     MenuItem {
                         text: qsTr("Edit")
+                        enabled: ownLists
                         onTriggered: updateList(list)
 
                         MenuItemSvg {
@@ -122,6 +124,7 @@ Rectangle {
 
                     MenuItem {
                         text: qsTr("Delete")
+                        enabled: ownLists
                         onTriggered: deleteList(list)
 
                         MenuItemSvg {

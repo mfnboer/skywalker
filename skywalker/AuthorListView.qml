@@ -9,6 +9,7 @@ ListView {
     required property int modelId
     property string description
     property bool showFollow: true
+    property bool allowDeleteItem: false
 
     signal closed
 
@@ -36,6 +37,8 @@ ListView {
 
         viewWidth: authorListView.width
         showFollow: authorListView.showFollow
+        allowDeleteItem: authorListView.allowDeleteItem
+
         onFollow: (profile) => { graphUtils.follow(profile) }
         onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
         onDeleteItem: (listItemUri) => authorListView.deleteListItem(listItemUri, index)

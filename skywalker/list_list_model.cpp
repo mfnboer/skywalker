@@ -74,6 +74,25 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QSt
     return filteredLists.size();
 }
 
+void ListListModel::addLists(const QList<ListView>& lists)
+{
+    qDebug() << "Add lists:" << lists.size();
+
+    if (mLists.empty())
+    {
+        qDebug() << "No new lists";
+        return;
+    }
+
+    const size_t newRowCount = mLists.size() + lists.size();
+
+    beginInsertRows({}, mLists.size(), newRowCount - 1);
+    mLists.insert(mLists.end(), lists.begin(), lists.end());
+    endInsertRows();
+
+    qDebug() << "New lists size:" << mLists.size();
+}
+
 void ListListModel::prependList(const ListView& list)
 {
     qDebug() << "Prepend list:" << list.getName();

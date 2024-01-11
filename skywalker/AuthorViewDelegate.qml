@@ -9,6 +9,7 @@ Rectangle {
     required property profile author
     required property string followingUri
     required property string listItemUri // empty when the author list is not an item list
+    property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
     property bool showFollow: true
 
@@ -107,7 +108,7 @@ Rectangle {
             }
             SvgButton {
                 svg: svgOutline.delete
-                visible: listItemUri
+                visible: listItemUri && allowDeleteItem
                 onClicked: confirmDelete()
             }
         }

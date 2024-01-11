@@ -11,6 +11,10 @@ static auto feedNameCompare = [](const GeneratorView& lhs, const GeneratorView& 
                 return QCollator().compare(lhs.getDisplayName(), rhs.getDisplayName()) < 0;
             };
 
+static auto listNameCompare = [](const ListView& lhs, const ListView& rhs){
+    return QCollator().compare(lhs.getName(), rhs.getName()) < 0;
+};
+
 static auto favoriteFeedNameCompare = [](const FavoriteFeedView& lhs, const FavoriteFeedView& rhs){
     return QCollator().compare(lhs.getName(), rhs.getName()) < 0;
 };
@@ -24,6 +28,7 @@ FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
 FavoriteFeeds::~FavoriteFeeds()
 {
     removeSavedFeedsModel();
+    removeSavedListsModel();
 }
 
 void FavoriteFeeds::clear()
@@ -33,6 +38,7 @@ void FavoriteFeeds::clear()
     mSavedUris.clear();
     mPinnedUris.clear();
     mSavedFeeds.clear();
+    mSavedLists.clear();
     mPinnedFeeds.clear();
 
     emit pinnedFeedsChanged();
@@ -200,6 +206,108 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     emit pinnedFeedsChanged();
 }
 
+void FavoriteFeeds::addList(const ListView& list)
+{
+    if (isSavedFeed(list.getUri()))
+    {
+        qDebug() << "List already added:" << list.getName();
+        return;
+    }
+
+    mSavedFeedsPref.mSaved.push_back(list.getUri());
+    mSavedUris.insert(list.getUri());
+
+    if (mSavedListsModelId >= 0)
+    {
+        auto it = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), list, listNameCompare);
+        mSavedLists.insert(it, list);
+
+        updateSavedListsModel();
+    }
+
+    emit listSaved();
+}
+
+void FavoriteFeeds::removeList(const ListView& list)
+{
+    if (!isSavedFeed(list.getUri()))
+    {
+        qDebug() << "List already removed:" << list.getName();
+        return;
+    }
+
+    // When a list is removed it cannot be still pinned
+    pinList(list, false);
+
+    auto it = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), list.getUri());
+    mSavedFeedsPref.mSaved.erase(it);
+    mSavedUris.erase(list.getUri());
+
+    if (mSavedListsModelId >= 0)
+    {
+        auto it2 = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), list, listNameCompare);
+
+        if (it2 != mSavedLists.cend())
+            mSavedLists.erase(it2);
+
+        updateSavedListsModel();
+    }
+
+    emit listSaved();
+}
+
+void FavoriteFeeds::pinList(const ListView& list, bool pin)
+{
+    if (pin)
+        pinList(list);
+    else
+        unpinList(list);
+}
+
+void FavoriteFeeds::pinList(const ListView& list)
+{
+    if (isPinnedFeed(list.getUri()))
+    {
+        qDebug() << "List already pinned:" << list.getName();
+        return;
+    }
+
+    if (!isSavedFeed(list.getUri()))
+        addList(list);
+
+    mSavedFeedsPref.mPinned.push_back(list.getUri());
+    mPinnedUris.insert(list.getUri());
+
+    FavoriteFeedView view(list);
+    auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
+    mPinnedFeeds.insert(it, view);
+
+    emit listPinned();
+    emit pinnedFeedsChanged();
+}
+
+void FavoriteFeeds::unpinList(const ListView& list)
+{
+    if (!isPinnedFeed(list.getUri()))
+    {
+        qDebug() << "List not pinned:" << list.getName();
+        return;
+    }
+
+    auto it = std::find(mSavedFeedsPref.mPinned.cbegin(), mSavedFeedsPref.mPinned.cend(), list.getUri());
+    mSavedFeedsPref.mPinned.erase(it);
+    mPinnedUris.erase(list.getUri());
+
+    FavoriteFeedView view(list);
+    auto it2 = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
+
+    if (it2 != mPinnedFeeds.cend())
+        mPinnedFeeds.erase(it2);
+
+    emit listPinned();
+    emit pinnedFeedsChanged();
+}
+
 std::vector<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, char const* collection) const
 {
     std::vector<QString> filtered;
@@ -358,6 +466,40 @@ void FavoriteFeeds::removeSavedFeedsModel()
     {
         mSkywalker->removeFeedListModel(mSavedFeedsModelId);
         mSavedFeedsModelId = -1;
+    }
+}
+
+void FavoriteFeeds::updateSavedListsModel()
+{
+    if (mSavedListsModelId < 0)
+        return;
+
+    auto* model = mSkywalker->getListListModel(mSavedListsModelId);
+    model->clear();
+
+    if (!mSavedLists.empty())
+        model->addLists(mSavedLists);
+    else
+        updateSavedViews();
+}
+
+ListListModel* FavoriteFeeds::getSavedListsModel()
+{
+    if (mSavedListsModelId < 0)
+    {
+        mSavedListsModelId = mSkywalker->createListListModel(ListListModel::Type::LIST_PURPOSE_CURATE, "");
+        updateSavedListsModel();
+    }
+
+    return mSkywalker->getListListModel(mSavedListsModelId);
+}
+
+void FavoriteFeeds::removeSavedListsModel()
+{
+    if (mSavedListsModelId >= 0)
+    {
+        mSkywalker->removeFeedListModel(mSavedListsModelId);
+        mSavedListsModelId = -1;
     }
 }
 

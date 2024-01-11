@@ -4,6 +4,7 @@
 #include "feed_list_model.h"
 #include "favorite_feed_view.h"
 #include "generator_view.h"
+#include "list_list_model.h"
 #include "list_view.h"
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
@@ -33,6 +34,10 @@ public:
     Q_INVOKABLE void removeFeed(const GeneratorView& feed);
     Q_INVOKABLE void pinFeed(const GeneratorView& feed, bool pin);
 
+    Q_INVOKABLE void addList(const ListView& list);
+    Q_INVOKABLE void removeList(const ListView& list);
+    Q_INVOKABLE void pinList(const ListView& list, bool pin);
+
     const QList<FavoriteFeedView>& getPinnedFeeds() const { return mPinnedFeeds; }
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
@@ -41,11 +46,16 @@ public:
     Q_INVOKABLE FeedListModel* getSavedFeedsModel();
     Q_INVOKABLE void removeSavedFeedsModel();
 
+    Q_INVOKABLE ListListModel* getSavedListsModel();
+    Q_INVOKABLE void removeSavedListsModel();
+
     void saveTo(ATProto::UserPreferences& userPreferences) const;
 
 signals:
     void feedSaved();
+    void listSaved();
     void feedPinned();
+    void listPinned();
     void pinnedFeedsChanged();
     void updateSavedFeedsModelInProgressChanged();
 
@@ -54,6 +64,8 @@ private:
     void setFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
     void pinFeed(const GeneratorView& feed);
     void unpinFeed(const GeneratorView& feed);
+    void pinList(const ListView& list);
+    void unpinList(const ListView& list);
     void setSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators);
     void setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators);
     void addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList);
@@ -66,6 +78,7 @@ private:
     void updatePinnedListViews();
     void updatePinnedListViews(std::vector<QString> listUris);
     void updateSavedFeedsModel();
+    void updateSavedListsModel();
     std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
 
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
@@ -75,6 +88,7 @@ private:
     QList<ListView> mSavedLists; // sorted by name
     QList<FavoriteFeedView> mPinnedFeeds; // sorted by name
     int mSavedFeedsModelId = -1;
+    int mSavedListsModelId = -1;
     bool mUpdateSavedFeedsModelInProgress = false;
     Skywalker* mSkywalker;
 };

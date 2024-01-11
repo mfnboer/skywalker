@@ -8,6 +8,7 @@ ListView {
     required property var skywalker
     required property int modelId
     property string description
+    property bool ownLists: true
 
     signal closed
 
@@ -24,9 +25,11 @@ ListView {
         onClosed: view.closed()
 
         SvgButton {
+            id: addButton
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.add
+            visible: ownLists
             onClicked: newList()
         }
     }
@@ -36,6 +39,8 @@ ListView {
         required property int index
 
         viewWidth: view.width
+        ownLists: view.ownLists
+
         onUpdateList: (list) => view.editList(list, index)
         onDeleteList: (list) => view.deleteList(list, index)
         onListClicked: (list) => {

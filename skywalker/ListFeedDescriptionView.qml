@@ -136,6 +136,7 @@ Page {
             SvgButton {
                 id: addUser
                 svg: svgOutline.addUser
+                visible: isOwnList()
                 onClicked: page.addUser()
             }
         }
@@ -164,6 +165,7 @@ Page {
         title: ""
         skywalker: page.skywalker
         modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
+        allowDeleteItem: isOwnList()
         clip: true
 
         Component.onCompleted: skywalker.getAuthorList(modelId)
@@ -198,5 +200,9 @@ Page {
         })
         searchPage.onClosed.connect(() => { root.popStack() })
         root.pushStack(searchPage)
+    }
+
+    function isOwnList() {
+        return skywalker.getUserDid() === list.creator.did
     }
 }
