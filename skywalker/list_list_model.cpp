@@ -78,7 +78,7 @@ void ListListModel::addLists(const QList<ListView>& lists)
 {
     qDebug() << "Add lists:" << lists.size();
 
-    if (mLists.empty())
+    if (lists.empty())
     {
         qDebug() << "No new lists";
         return;

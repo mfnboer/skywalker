@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import skywalker
 
 ListView {
-    required property string title
     required property var skywalker
     required property int modelId
     property string description
@@ -19,18 +18,31 @@ ListView {
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    header: SimpleDescriptionHeader {
-        title: view.title
-        description: view.description
-        onClosed: view.closed()
+    header: Rectangle {
+        width: parent.width
+        height: headerRow.height
+        z: guiSettings.headerZLevel
+        color: guiSettings.backgroundColor
 
-        SvgButton {
-            id: addButton
-            anchors.right: parent.right
-            anchors.top: parent.top
-            svg: svgOutline.add
-            visible: ownLists
-            onClicked: newList()
+        RowLayout {
+            id: headerRow
+            width: parent.width
+
+            Text {
+                Layout.fillWidth: true
+                padding: 10
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                color: guiSettings.textColor
+                text: view.description
+            }
+
+            SvgButton {
+                id: addButton
+                svg: svgOutline.add
+                visible: ownLists
+                onClicked: newList()
+            }
         }
     }
     headerPositioning: ListView.OverlayHeader
@@ -43,16 +55,7 @@ ListView {
 
         onUpdateList: (list) => view.editList(list, index)
         onDeleteList: (list) => view.deleteList(list, index)
-        onListClicked: (list) => {
-            switch (list.purpose) {
-            case QEnums.LIST_PURPOSE_CURATE:
-                root.viewPostListFeed(list)
-                break
-            case QEnums.LIST_PURPOSE_MOD:
-                root.viewListFeedDescription(list)
-                break
-            }
-        }
+        onListClicked: (list) => root.viewList(list)
     }
 
     FlickableRefresher {

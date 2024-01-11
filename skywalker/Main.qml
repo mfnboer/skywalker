@@ -315,15 +315,13 @@ ApplicationWindow {
 
         onModLists: {
             let modelId = skywalker.createListListModel(QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
-            viewListList(modelId, qsTr("Moderation Lists"),
-                         qsTr("Public, shareable lists of users to mute or block in bulk."))
+            viewModerationLists(modelId)
             close()
         }
 
         onUserLists: {
             let modelId = skywalker.createListListModel(QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
-            viewListList(modelId, qsTr("User Lists"),
-                         qsTr("Public, shareable lists of users which can be used as feeds or reply restrictions."))
+            viewUserLists(modelId)
             close()
         }
 
@@ -937,6 +935,17 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
+    function viewList(list) {
+        switch (list.purpose) {
+        case QEnums.LIST_PURPOSE_CURATE:
+            viewPostListFeed(list)
+            break
+        case QEnums.LIST_PURPOSE_MOD:
+            viewListFeedDescription(list)
+            break
+        }
+    }
+
     function viewPostListFeed(list) {
         const modelId = skywalker.createPostFeedModel(list)
         skywalker.getListFeed(modelId)
@@ -967,16 +976,25 @@ ApplicationWindow {
         skywalker.getAuthorList(modelId)
     }
 
-    function viewListList(modelId, title, description = "") {
-        let component = Qt.createComponent("ListListView.qml")
-        let view = component.createObject(root, {
-                title: title,
+    function viewUserLists(modelId) {
+        let component = Qt.createComponent("UserListsPage.qml")
+        let page = component.createObject(root, {
                 modelId: modelId,
-                skywalker: skywalker,
-                description: description
+                skywalker: skywalker
         })
-        view.onClosed.connect(() => { popStack() })
-        pushStack(view)
+        page.onClosed.connect(() => { popStack() })
+        pushStack(page)
+        skywalker.getListList(modelId)
+    }
+
+    function viewModerationLists(modelId) {
+        let component = Qt.createComponent("ModerationListsPage.qml")
+        let page = component.createObject(root, {
+                modelId: modelId,
+                skywalker: skywalker
+        })
+        page.onClosed.connect(() => { popStack() })
+        pushStack(page)
         skywalker.getListList(modelId)
     }
 

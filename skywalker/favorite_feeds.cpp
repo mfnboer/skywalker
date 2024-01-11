@@ -365,6 +365,10 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
     if (listUris.empty())
     {
         setUpdateSavedFeedsModelInProgress(false);
+
+        if (!mSavedLists.empty())
+            updateSavedListsModel();
+
         return;
     }
 
@@ -374,7 +378,17 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
     mSkywalker->getBskyClient()->getList(uri, 1, {},
         [this, listUris](auto output){
             ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
-            mSavedLists.append(ListView(sharedListView));
+
+            if (sharedListView->mCreator->mDid != mSkywalker->getUserDid())
+            {
+                qDebug() << "Add saved list:" << sharedListView->mName;
+                mSavedLists.append(ListView(sharedListView));
+            }
+            else
+            {
+                qDebug() << "Own list:" << sharedListView->mName;
+            }
+
             updateSavedListViews(std::move(listUris));
         },
         [this, listUris](const QString& error, const QString& msg){
@@ -498,7 +512,7 @@ void FavoriteFeeds::removeSavedListsModel()
 {
     if (mSavedListsModelId >= 0)
     {
-        mSkywalker->removeFeedListModel(mSavedListsModelId);
+        mSkywalker->removeListListModel(mSavedListsModelId);
         mSavedListsModelId = -1;
     }
 }
