@@ -250,6 +250,8 @@ qt_add_qml_module(libskywalker
         QML_FILES SearchAuthor.qml
         SOURCES profile_utils.h
         SOURCES profile_utils.cpp
+        SOURCES favorite_feed_view.h
+        SOURCES favorite_feed_view.cpp
 )
 
 if (NOT ANDROID)

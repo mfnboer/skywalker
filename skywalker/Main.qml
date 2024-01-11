@@ -898,6 +898,36 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function viewListFeed(listView) {
+        let view = null
+
+        if (root.feedViews.has(listView.uri)) {
+            view = feedViews.get(listView.uri)
+            const visibleItem = currentStackItem()
+
+            if (visibleItem === view)
+            {
+                console.debug("List feed already showing:", listView.name)
+                return
+            }
+
+            if (view.atYBeginning) {
+                console.debug("Reload list feed:", listView.name)
+                skywalker.getListFeed(view.modelId)
+            }
+        }
+        else {
+            const modelId = skywalker.createPostFeedModel(listView)
+            skywalker.getListFeed(modelId)
+            let component = Qt.createComponent("PostListFeedView.qml")
+            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
+            feedViews.set(listView.uri, view)
+        }
+
+        viewTimeline()
+        pushStack(view)
+    }
+
     function viewPostFeed(feed) {
         const modelId = skywalker.createPostFeedModel(feed)
         skywalker.getFeed(modelId)
@@ -1045,8 +1075,8 @@ ApplicationWindow {
     function popStack() {
         let item = currentStack().pop()
 
-        // PostFeedViews, shown as home, are kept alive in root.feedViews
-        if (!(item instanceof PostFeedView && item.showAsHome))
+        // PostFeedViews and PostListFeedViews, shown as home, are kept alive in root.feedViews
+        if (!((item instanceof PostFeedView || item instanceof PostListFeedView) && item.showAsHome))
             item.destroy()
     }
 

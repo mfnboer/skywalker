@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "favorite_feeds.h"
 #include "skywalker.h"
+#include <atproto/lib/at_uri.h>
 
 namespace Skywalker
 {
@@ -9,6 +10,10 @@ namespace Skywalker
 static auto feedNameCompare = [](const GeneratorView& lhs, const GeneratorView& rhs){
                 return QCollator().compare(lhs.getDisplayName(), rhs.getDisplayName()) < 0;
             };
+
+static auto favoriteFeedNameCompare = [](const FavoriteFeedView& lhs, const FavoriteFeedView& rhs){
+    return QCollator().compare(lhs.getName(), rhs.getName()) < 0;
+};
 
 FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
     QObject(parent),
@@ -57,6 +62,15 @@ void FavoriteFeeds::setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pin
     emit pinnedFeedsChanged();
 }
 
+void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList)
+{
+    ListView listView(pinnedList);
+    FavoriteFeedView view(listView);
+    auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
+    mPinnedFeeds.insert(it, view);
+    emit pinnedFeedsChanged();
+}
+
 void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
 {
     feeds.clear();
@@ -66,6 +80,20 @@ void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::
         ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
         GeneratorView view(sharedRaw);
         auto it = std::lower_bound(feeds.cbegin(), feeds.cend(), view, feedNameCompare);
+        feeds.insert(it, view);
+    }
+}
+
+void FavoriteFeeds::setFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
+{
+    feeds.clear();
+
+    for (auto& gen : generators)
+    {
+        ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
+        GeneratorView generatorView(sharedRaw);
+        FavoriteFeedView view(generatorView);
+        auto it = std::lower_bound(feeds.cbegin(), feeds.cend(), view, favoriteFeedNameCompare);
         feeds.insert(it, view);
     }
 }
@@ -142,8 +170,9 @@ void FavoriteFeeds::pinFeed(const GeneratorView& feed)
     mSavedFeedsPref.mPinned.push_back(feed.getUri());
     mPinnedUris.insert(feed.getUri());
 
-    auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), feed, feedNameCompare);
-    mPinnedFeeds.insert(it, feed);
+    FavoriteFeedView view(feed);
+    auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
+    mPinnedFeeds.insert(it, view);
 
     emit feedPinned();
     emit pinnedFeedsChanged();
@@ -161,7 +190,8 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     mSavedFeedsPref.mPinned.erase(it);
     mPinnedUris.erase(feed.getUri());
 
-    auto it2 = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), feed, feedNameCompare);
+    FavoriteFeedView view(feed);
+    auto it2 = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
 
     if (it2 != mPinnedFeeds.cend())
         mPinnedFeeds.erase(it2);
@@ -170,38 +200,131 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     emit pinnedFeedsChanged();
 }
 
+std::vector<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, char const* collection) const
+{
+    std::vector<QString> filtered;
+
+    for (const auto& uri : uris)
+    {
+        ATProto::ATUri atUri(uri);
+
+        if (atUri.isValid() && atUri.getCollection() == collection)
+            filtered.push_back(uri);
+    }
+
+    return filtered;
+}
+
 void FavoriteFeeds::updateSavedViews()
 {
     if (!mSavedFeedsPref.mSaved.empty())
     {
-        setUpdateSavedFeedsModelInProgress(true);
-
-        mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mSaved,
-            [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
-                setUpdateSavedFeedsModelInProgress(false);
-                setSavedFeeds(std::move(output->mFeeds));
-            },
-            [this](const QString& error, const QString& msg){
-                setUpdateSavedFeedsModelInProgress(false);
-                qWarning() << "Cannot get saved feeds:" << error << " - " << msg;
-                mSkywalker->showStatusMessage(tr("Cannot get saved feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
-            });
+        updateSavedGeneratorViews();
+        updateSavedListViews();
     }
+}
+
+void FavoriteFeeds::updateSavedGeneratorViews()
+{
+    auto feedGeneratorUris = filterUris(mSavedFeedsPref.mSaved, ATProto::ATUri::COLLECTION_FEED_GENERATOR);
+
+    if (feedGeneratorUris.empty())
+        return;
+
+    setUpdateSavedFeedsModelInProgress(true);
+
+    mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mSaved,
+        [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
+            setUpdateSavedFeedsModelInProgress(false);
+            setSavedFeeds(std::move(output->mFeeds));
+        },
+        [this](const QString& error, const QString& msg){
+            setUpdateSavedFeedsModelInProgress(false);
+            qWarning() << "Cannot get saved feeds:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(tr("Cannot get saved feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void FavoriteFeeds::updateSavedListViews()
+{
+    auto listUris = filterUris(mSavedFeedsPref.mSaved, ATProto::ATUri::COLLECTION_GRAPH_LIST);
+    setUpdateSavedFeedsModelInProgress(true);
+    updateSavedListViews(std::move(listUris));
+}
+
+void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
+{
+    if (listUris.empty())
+    {
+        setUpdateSavedFeedsModelInProgress(false);
+        return;
+    }
+
+    const QString uri = listUris.back();
+    listUris.pop_back();
+
+    mSkywalker->getBskyClient()->getList(uri, 1, {},
+        [this, listUris](auto output){
+            ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
+            mSavedLists.append(ListView(sharedListView));
+            updateSavedListViews(std::move(listUris));
+        },
+        [this, listUris](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
+            updateSavedListViews(std::move(listUris));
+        });
 }
 
 void FavoriteFeeds::updatePinnedViews()
 {
     if (!mSavedFeedsPref.mPinned.empty())
     {
-        mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mPinned,
-            [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
-                setPinnedFeeds(std::move(output->mFeeds));
-            },
-            [this](const QString& error, const QString& msg){
-                qWarning() << "Cannot get pinned feeds:" << error << " - " << msg;
-                mSkywalker->showStatusMessage(tr("Cannot get pinned feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
-            });
+        updatePinnedGeneratorViews();
+        updatePinnedListViews();
     }
+}
+
+void FavoriteFeeds::updatePinnedGeneratorViews()
+{
+    auto feedGeneratorUris = filterUris(mSavedFeedsPref.mPinned, ATProto::ATUri::COLLECTION_FEED_GENERATOR);
+
+    if (feedGeneratorUris.empty())
+        return;
+
+    mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mPinned,
+        [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
+            setPinnedFeeds(std::move(output->mFeeds));
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << "Cannot get pinned feeds:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(tr("Cannot get pinned feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void FavoriteFeeds::updatePinnedListViews()
+{
+    auto listUris = filterUris(mSavedFeedsPref.mSaved, ATProto::ATUri::COLLECTION_GRAPH_LIST);
+    updatePinnedListViews(listUris);
+}
+
+void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
+{
+    if (listUris.empty())
+        return;
+
+    const QString uri = listUris.back();
+    listUris.pop_back();
+
+    mSkywalker->getBskyClient()->getList(uri, 1, {},
+        [this, listUris](auto output){
+            ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
+            addPinnedFeed(sharedListView);
+            updatePinnedListViews(std::move(listUris));
+        },
+        [this, listUris](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
+            updatePinnedListViews(std::move(listUris));
+        });
 }
 
 void FavoriteFeeds::updateSavedFeedsModel()

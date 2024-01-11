@@ -18,12 +18,6 @@ ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic::SharedP
     Q_ASSERT(mSharedListViewBasic);
 }
 
-ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListView::SharedPtr& view) :
-    mSharedListView(view)
-{
-    Q_ASSERT(mSharedListView);
-}
-
 ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListView* view) :
     mRawListView(view)
 {
@@ -133,7 +127,7 @@ void ListViewBasic::setAvatar(const QString& avatar)
 
 const ATProto::AppBskyGraph::ListView* ListViewBasic::view() const
 {
-    return mSharedListView ? mSharedListView.get() : mRawListView;
+    return mRawListView;
 }
 
 const ATProto::AppBskyGraph::ListViewBasic* ListViewBasic::basicView() const
@@ -142,7 +136,8 @@ const ATProto::AppBskyGraph::ListViewBasic* ListViewBasic::basicView() const
 }
 
 ListView::ListView(const ATProto::AppBskyGraph::ListView::SharedPtr& view) :
-    ListViewBasic(view)
+    ListViewBasic(view.get()),
+    mSharedListView(view)
 {
 }
 

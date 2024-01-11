@@ -32,7 +32,7 @@ SvgButton {
         Instantiator {
             model: skywalker.favoriteFeeds.pinnedFeeds
             delegate: MenuItem {
-                text: modelData.displayName
+                text: modelData.name
 
                 FeedAvatar {
                     y: 5
@@ -43,7 +43,12 @@ SvgButton {
                     avatarUrl: modelData.avatar
                 }
 
-                onTriggered: root.viewFeed(modelData)
+                onTriggered: {
+                    if (modelData.isGeneratorView)
+                        root.viewFeed(modelData.generatorView)
+                    else
+                        root.viewListFeed(modelData.listView)
+                }
             }
 
             onObjectAdded: (index, object) => feedsMenu.insertItem(index + 1, object)

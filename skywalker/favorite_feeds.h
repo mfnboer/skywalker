@@ -2,7 +2,9 @@
 // License: GPLv3
 #pragma once
 #include "feed_list_model.h"
+#include "favorite_feed_view.h"
 #include "generator_view.h"
+#include "list_view.h"
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <unordered_set>
@@ -14,7 +16,7 @@ class Skywalker;
 class FavoriteFeeds : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<GeneratorView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
+    Q_PROPERTY(QList<FavoriteFeedView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
     Q_PROPERTY(bool updateSavedFeedsModelInProgress READ getUpdateSavedFeedsModelInProgress NOTIFY updateSavedFeedsModelInProgressChanged FINAL)
 
 public:
@@ -31,7 +33,7 @@ public:
     Q_INVOKABLE void removeFeed(const GeneratorView& feed);
     Q_INVOKABLE void pinFeed(const GeneratorView& feed, bool pin);
 
-    const QList<GeneratorView>& getPinnedFeeds() const { return mPinnedFeeds; }
+    const QList<FavoriteFeedView>& getPinnedFeeds() const { return mPinnedFeeds; }
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
     void setUpdateSavedFeedsModelInProgress(bool inProgress);
@@ -49,19 +51,29 @@ signals:
 
 private:
     void setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
+    void setFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
     void pinFeed(const GeneratorView& feed);
     void unpinFeed(const GeneratorView& feed);
     void setSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators);
     void setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators);
+    void addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList);
     void updateSavedViews();
+    void updateSavedGeneratorViews();
+    void updateSavedListViews();
+    void updateSavedListViews(std::vector<QString> listUris);
     void updatePinnedViews();
+    void updatePinnedGeneratorViews();
+    void updatePinnedListViews();
+    void updatePinnedListViews(std::vector<QString> listUris);
     void updateSavedFeedsModel();
+    std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
 
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
     std::unordered_set<QString> mSavedUris;
     std::unordered_set<QString> mPinnedUris;
     QList<GeneratorView> mSavedFeeds; // sorted by name
-    QList<GeneratorView> mPinnedFeeds; // sorted by name
+    QList<ListView> mSavedLists; // sorted by name
+    QList<FavoriteFeedView> mPinnedFeeds; // sorted by name
     int mSavedFeedsModelId = -1;
     bool mUpdateSavedFeedsModelInProgress = false;
     Skywalker* mSkywalker;

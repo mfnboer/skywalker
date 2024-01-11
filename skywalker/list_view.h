@@ -45,7 +45,6 @@ public:
     ListViewBasic() = default;
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic::SharedPtr& view);
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic* view);
-    explicit ListViewBasic(const ATProto::AppBskyGraph::ListView::SharedPtr& view);
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListView* view);
 
     Q_INVOKABLE bool isNull() const { return basicView() == nullptr && view() == nullptr; }
@@ -64,7 +63,6 @@ public:
 protected:
     const ATProto::AppBskyGraph::ListView* view() const;
 
-    ATProto::AppBskyGraph::ListView::SharedPtr mSharedListView;
     const ATProto::AppBskyGraph::ListView* mRawListView = nullptr;
 
 private:
@@ -99,6 +97,7 @@ public:
     void setDescription(const QString& description) { mDescription = description; };
 
 private:
+    ATProto::AppBskyGraph::ListView::SharedPtr mSharedListView;
     std::optional<QString> mDescription;
 };
 
