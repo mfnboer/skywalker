@@ -130,8 +130,8 @@ ListView {
     }
 
     function continueDeleteList(list, index) {
-        graphUtils.deleteList(list.uri)
         view.model.deleteEntry(index)
+        graphUtils.deleteList(list.uri)
     }
 
     Component.onDestruction: {

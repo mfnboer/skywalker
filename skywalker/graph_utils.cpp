@@ -370,4 +370,25 @@ void GraphUtils::addListUser(const QString& listUri, const QString& did)
         });
 }
 
+void GraphUtils::removeListUser(const QString& listItemUri)
+{
+    if (!graphMaster())
+        return;
+
+    graphMaster()->undo(listItemUri,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            emit removeListUserOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Remove list user failed:" << error << " - " << msg;
+            emit removeListUserFailed(msg);
+        });
+}
+
 }

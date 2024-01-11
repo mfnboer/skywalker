@@ -32,10 +32,13 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     delegate: AuthorViewDelegate {
+        required property int index
+
         viewWidth: authorListView.width
         showFollow: authorListView.showFollow
         onFollow: (profile) => { graphUtils.follow(profile) }
         onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
+        onDeleteItem: (listItemUri) => authorListView.deleteListItem(listItemUri, index)
     }
 
     FlickableRefresher {
@@ -59,6 +62,10 @@ ListView {
 
         onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onRemoveListUserFailed: (error) => {
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.getAuthorList(modelId)
+        }
     }
 
     BusyIndicator {
@@ -69,6 +76,11 @@ ListView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function deleteListItem(listItemUri, index) {
+        model.deleteEntry(index)
+        graphUtils.removeListUser(listItemUri)
     }
 
     Component.onDestruction: {

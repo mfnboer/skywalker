@@ -114,7 +114,7 @@ void ListListModel::updateEntry(int index, const QString& cid, const QString& na
 
 void ListListModel::deleteEntry(int index)
 {
-    qDebug() << "Update entry:" << index;
+    qDebug() << "Delete entry:" << index;
 
     if (index < 0 || (size_t)index >= mLists.size())
     {

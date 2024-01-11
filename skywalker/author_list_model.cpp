@@ -112,6 +112,21 @@ void AuthorListModel::prependAuthor(const Profile& author, const QString& listIt
     qDebug() << "New list size:" << mList.size();
 }
 
+void AuthorListModel::deleteEntry(int index)
+{
+    qDebug() << "Delete entry:" << index;
+
+    if (index < 0 || (size_t)index >= mList.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
+        return;
+    }
+
+    beginRemoveRows({}, index, index);
+    mList.erase(mList.begin() + index);
+    endRemoveRows();
+}
+
 AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const
 {
     AuthorList list;

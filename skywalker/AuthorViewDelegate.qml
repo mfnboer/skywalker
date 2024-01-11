@@ -8,12 +8,15 @@ Rectangle {
     required property int viewWidth
     required property profile author
     required property string followingUri
+    required property string listItemUri // empty when the author list is not an item list
     property bool showAuthor: authorVisible()
     property bool showFollow: true
 
     signal follow(basicprofile profile)
     signal unfollow(string did, string uri)
+    signal deleteItem(string listItemUri)
 
+    id: authorRect
     width: grid.width
     height: grid.height
     color: guiSettings.backgroundColor
@@ -102,6 +105,11 @@ Rectangle {
                 visible: followingUri && !isUser(author) && showAuthor && showFollow
                 onClicked: unfollow(author.did, followingUri)
             }
+            SvgButton {
+                svg: svgOutline.delete
+                visible: listItemUri
+                onClicked: confirmDelete()
+            }
         }
 
         Text {
@@ -130,6 +138,13 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function confirmDelete() {
+        guiSettings.askYesNoQuestion(
+                    authorRect,
+                    qsTr(`Do you really want to delete: @${author.handle} ?`),
+                    () => deleteItem(listItemUri))
     }
 
     function authorVisible()

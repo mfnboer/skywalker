@@ -41,6 +41,8 @@ public:
     void addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor);
     void addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor);
     Q_INVOKABLE void prependAuthor(const Profile& author, const QString& listItemUri);
+    Q_INVOKABLE void deleteEntry(int index);
+
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 

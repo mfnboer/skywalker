@@ -33,6 +33,7 @@ public:
     Q_INVOKABLE void deleteList(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri);
     Q_INVOKABLE void addListUser(const QString& listUri, const QString& did);
+    Q_INVOKABLE void removeListUser(const QString& listItemUri);
 
 signals:
     void followOk(QString uri);
@@ -59,6 +60,8 @@ signals:
     void getListFailed(QString error);
     void addListUserOk(QString did, QString itemUri, QString itemCid);
     void addListUserFailed(QString error);
+    void removeListUserOk();
+    void removeListUserFailed(QString error);
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,

@@ -28,7 +28,7 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
-            enabled: nameField.displayText.length > 0
+            enabled: nameField.displayText.length > 0 && changesMade()
 
             onClicked: {
                 createListButton.enabled = false
