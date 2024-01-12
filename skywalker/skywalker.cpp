@@ -192,7 +192,7 @@ void Skywalker::getUserProfileAndFollows()
             if (!nextCursor->isEmpty())
                 getUserProfileAndFollowsNextPage(*nextCursor);
             else
-                signalGetUserProfileOk(*follows->mSubject);
+                signalGetUserProfileOk(std::move(follows->mSubject));
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
@@ -218,7 +218,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
 
             if (nextCursor->isEmpty())
             {
-                signalGetUserProfileOk(*follows->mSubject);
+                signalGetUserProfileOk(std::move(follows->mSubject));
             }
             else if (maxPages > 0)
             {
@@ -227,7 +227,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
             else
             {
                 qWarning() << "Max pages reached!";
-                signalGetUserProfileOk(*follows->mSubject);
+                signalGetUserProfileOk(std::move(follows->mSubject));
             }
         },
         [this](const QString& error, const QString& msg){
@@ -237,15 +237,19 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
         });
 }
 
-void Skywalker::signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user)
+void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr user)
 {
-    qDebug() << "Got user:" << user.mHandle << "#follows:" << mUserFollows.size();
-    AuthorCache::instance().setUser(BasicProfile(user));
-    mUserSettings.saveDisplayName(mUserDid, user.mDisplayName.value_or(""));
-    const auto avatar = user.mAvatar ? *user.mAvatar : QString();
+    Q_ASSERT(mUserDid == user->mDid);
+    qDebug() << "Got user:" << user->mHandle << "#follows:" << mUserFollows.size();
+    AuthorCache::instance().setUser(BasicProfile(*user));
+    mUserSettings.saveDisplayName(mUserDid, user->mDisplayName.value_or(""));
+    const auto avatar = user->mAvatar ? *user->mAvatar : QString();
     mUserSettings.saveAvatar(mUserDid, avatar);
-    setAvatarUrl(avatar);
-    mLoggedOutVisibility = ATProto::ProfileMaster::getLoggedOutVisibility(user);
+    emit avatarUrlChanged();
+
+    mLoggedOutVisibility = ATProto::ProfileMaster::getLoggedOutVisibility(*user);
+    auto sharedUser = ATProto::AppBskyActor::ProfileView::SharedPtr(user.release());
+    mUserProfile = Profile(sharedUser);
     emit getUserProfileOK();
 }
 
@@ -806,12 +810,6 @@ void Skywalker::setGetListListInProgress(bool inProgress)
 {
     mGetListListInProgress = inProgress;
     emit getListListInProgressChanged();
-}
-
-void Skywalker::setAvatarUrl(const QString& avatarUrl)
-{
-    mAvatarUrl = avatarUrl;
-    emit avatarUrlChanged();
 }
 
 void Skywalker::setUnreadNotificationCount(int unread)
@@ -1973,8 +1971,8 @@ void Skywalker::signOut()
     mEditUserPreferences = nullptr;
     mContentGroupListModel = nullptr;
     mTimelineModel.clear();
-    setAvatarUrl({});
     mUserDid.clear();
+    mUserProfile = {};
     mLoggedOutVisibility = true;
     mUserFollows.clear();
     setUnreadNotificationCount(0);

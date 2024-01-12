@@ -30,8 +30,21 @@ ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic* view) :
     Q_ASSERT(mRawListViewBasic);
 }
 
+ListViewBasic::ListViewBasic(const QString& uri, const QString& cid, const QString& name,
+              ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar) :
+    mUri(uri),
+    mCid(cid),
+    mName(name),
+    mPurpose(purpose),
+    mAvatar(avatar)
+{
+}
+
 QString ListViewBasic::getUri() const
 {
+    if (!mUri.isEmpty())
+        return mUri;
+
     if (basicView())
         return basicView()->mUri;
 
@@ -71,6 +84,9 @@ QString ListViewBasic::getName() const
 
 QEnums::ListPurpose ListViewBasic::getPurpose() const
 {
+    if (mPurpose != ATProto::AppBskyGraph::ListPurpose::UNKNOWN)
+        return QEnums::ListPurpose(mPurpose);
+
     if (basicView())
         return QEnums::ListPurpose(basicView()->mPurpose);
 
@@ -101,6 +117,9 @@ ImageView ListViewBasic::getImageView() const
 
 ListViewerState ListViewBasic::getViewer() const
 {
+    if (mViewer)
+        return *mViewer;
+
     if (basicView())
         return basicView()->mViewer ? ListViewerState(*basicView()->mViewer) : ListViewerState{};
 
@@ -146,8 +165,20 @@ ListView::ListView(const ATProto::AppBskyGraph::ListView* view) :
 {
 }
 
+ListView::ListView(const QString& uri, const QString& cid, const QString& name,
+         ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar,
+         const Profile& creator, const QString& description) :
+    ListViewBasic(uri, cid, name, purpose, avatar),
+    mCreator(creator),
+    mDescription(description)
+{
+}
+
 Profile ListView::getCreator() const
 {
+    if (mCreator)
+        return *mCreator;
+
     return view() ? Profile(view()->mCreator.get()) : Profile{};
 }
 

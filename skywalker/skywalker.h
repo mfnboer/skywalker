@@ -105,6 +105,7 @@ public:
     Q_INVOKABLE ListListModel* getListListModel(int id) const;
     Q_INVOKABLE void removeListListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
+    Q_INVOKABLE Profile getUserProfile() const { return mUserProfile; }
     Q_INVOKABLE BasicProfile getUser() const;
     Q_INVOKABLE void sharePost(const QString& postUri, const BasicProfile& author);
     Q_INVOKABLE void shareFeed(const GeneratorView& feed);
@@ -154,8 +155,7 @@ public:
     bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
     void setGetListListInProgress(bool inProgress);
     bool isGetListListInProgress() const { return mGetListListInProgress; }
-    const QString& getAvatarUrl() const { return mAvatarUrl; }
-    void setAvatarUrl(const QString& avatarUrl);
+    const QString getAvatarUrl() const { return mUserProfile.getAvatarUrl(); }
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
@@ -207,7 +207,7 @@ private:
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void signalGetUserProfileOk(const ATProto::AppBskyActor::ProfileView& user);
+    void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();
@@ -231,6 +231,8 @@ private:
 
     QString mAvatarUrl;
     QString mUserDid;
+    Profile mUserProfile;
+
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
     ATProto::UserPreferences mUserPreferences;

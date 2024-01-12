@@ -46,6 +46,8 @@ public:
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic::SharedPtr& view);
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic* view);
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListView* view);
+    ListViewBasic(const QString& uri, const QString& cid, const QString& name,
+                  ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar);
 
     Q_INVOKABLE bool isNull() const { return basicView() == nullptr && view() == nullptr; }
     QString getUri() const;
@@ -71,10 +73,13 @@ private:
     ATProto::AppBskyGraph::ListViewBasic::SharedPtr mSharedListViewBasic;
     const ATProto::AppBskyGraph::ListViewBasic* mRawListViewBasic = nullptr;
 
+    QString mUri;
     QString mCid;
     QString mName;
+    ATProto::AppBskyGraph::ListPurpose mPurpose = ATProto::AppBskyGraph::ListPurpose::UNKNOWN;
     std::optional<QString> mAvatar;
     SharedImageSource::SharedPtr mAvatarSource;
+    std::optional<ListViewerState> mViewer;
 };
 
 class ListView : public ListViewBasic
@@ -89,6 +94,9 @@ public:
     ListView() = default;
     explicit ListView(const ATProto::AppBskyGraph::ListView::SharedPtr& view);
     explicit ListView(const ATProto::AppBskyGraph::ListView* view);
+    ListView(const QString& uri, const QString& cid, const QString& name,
+             ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar,
+             const Profile& creator, const QString& description);
 
     Profile getCreator() const;
     QString getDescription() const;
@@ -98,6 +106,7 @@ public:
 
 private:
     ATProto::AppBskyGraph::ListView::SharedPtr mSharedListView;
+    std::optional<Profile> mCreator;
     std::optional<QString> mDescription;
 };
 

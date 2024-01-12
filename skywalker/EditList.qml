@@ -242,14 +242,14 @@ Page {
         onCreateListProgress: (msg) => editListPage.createListProgress(msg)
         onCreateListFailed: (error) => editListPage.createListFailed(error)
 
-        // I first tried to refresh the list list view to get the new list displayed.
-        // That did not work as the new list was apparently not indexed by creator yet.
-        // That takes a bit of time.
-        // Therefore we get a list view for the new list based on URI instead.
-        onCreateListOk: (uri, cid) => graphUtils.getListView(uri)
-
-        onGetListFailed: (error) =>  editListPage.listCreated(nullList)
-        onGetListOk: (listView) => editListPage.listCreated(listView)
+        // Immediate after creation the list view is not yet available on Bluesky.
+        // Therefore we internally create a view.
+        onCreateListOk: (uri, cid) => {
+            let listView = graphUtils.makeListView(uri, cid, nameField.displayText, purpose,
+                                                   avatar.avatarUrl, skywalker.getUserProfile(),
+                                                   descriptionField.text)
+            editListPage.listCreated(listView)
+        }
 
         onUpdateListProgress: (msg) => editListPage.createListProgress(msg)
         onUpdateListFailed: (error) => editListPage.createListFailed(error)

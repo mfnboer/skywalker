@@ -35,6 +35,10 @@ public:
     Q_INVOKABLE void addListUser(const QString& listUri, const QString& did);
     Q_INVOKABLE void removeListUser(const QString& listItemUri);
 
+    Q_INVOKABLE ListView makeListView(const QString& uri, const QString& cid, const QString& name,
+                    QEnums::ListPurpose purpose, const QString& avatar,
+                    const Profile& creator, const QString& description);
+
 signals:
     void followOk(QString uri);
     void followFailed(QString error);

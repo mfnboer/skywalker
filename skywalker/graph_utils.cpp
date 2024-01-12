@@ -391,4 +391,12 @@ void GraphUtils::removeListUser(const QString& listItemUri)
         });
 }
 
+ListView GraphUtils::makeListView(const QString& uri, const QString& cid, const QString& name,
+                      QEnums::ListPurpose purpose, const QString& avatar,
+                      const Profile& creator, const QString& description)
+{
+    return ListView(uri, cid, name, ATProto::AppBskyGraph::ListPurpose(purpose),
+                    avatar, creator, description);
+}
+
 }
