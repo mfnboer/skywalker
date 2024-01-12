@@ -134,6 +134,7 @@ public:
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalFeedModelChanges*)>& update);
+    void makeLocalModelChange(const std::function<void(LocalListModelChanges*)>& update);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }

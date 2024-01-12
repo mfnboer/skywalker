@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "list_view.h"
+#include "local_list_model_changes.h"
 #include <QAbstractListModel>
 #include <deque>
 
@@ -9,13 +10,15 @@ namespace Skywalker {
 
 class FavoriteFeeds;
 
-class ListListModel : public QAbstractListModel
+class ListListModel : public QAbstractListModel, public LocalListModelChanges
 {
     Q_OBJECT
 public:
     enum class Role {
         List = Qt::UserRole + 1,
         ListCreator,
+        ListBlockedUri,
+        ListMuted,
         ListSaved,
         ListPinned
     };
@@ -45,6 +48,8 @@ public:
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
+    virtual void blockedChanged() override;
+    virtual void mutedChanged() override;
 
 private:
     using ListList = std::deque<ListView>;

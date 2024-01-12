@@ -399,4 +399,108 @@ ListView GraphUtils::makeListView(const QString& uri, const QString& cid, const 
                     avatar, creator, description);
 }
 
+void GraphUtils::blockList(const QString& listUri)
+{
+    if (!graphMaster())
+        return;
+
+    graphMaster()->listBlock(listUri,
+        [this, presence=getPresence(), listUri](const auto& blockingUri, const auto&){
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [listUri, blockingUri](LocalListModelChanges* model){
+                    model->updateBlocked(listUri, blockingUri);
+                });
+
+            emit blockListOk(blockingUri);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Block list failed:" << error << " - " << msg;
+            emit blockListFailed(msg);
+        });
+}
+
+void GraphUtils::unblockList(const QString& listUri, const QString& blockingUri)
+{
+    if (!graphMaster())
+        return;
+
+    graphMaster()->undo(blockingUri,
+        [this, presence=getPresence(), listUri]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [listUri](LocalListModelChanges* model){
+                    model->updateBlocked(listUri, "");
+                });
+
+            emit unblockListOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Unblock list failed:" << error << " - " << msg;
+            emit unblockListFailed(msg);
+        });
+}
+
+void GraphUtils::muteList(const QString& listUri)
+{
+    if (!bskyClient())
+        return;
+
+    bskyClient()->muteActorList(listUri,
+        [this, presence=getPresence(), listUri]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [listUri](LocalListModelChanges* model){
+                    model->updateMuted(listUri, true);
+                });
+
+            emit muteListOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Mute list failed failed:" << error << " - " << msg;
+            emit muteListFailed(msg);
+        });
+}
+
+void GraphUtils::unmuteList(const QString& listUri)
+{
+    if (!bskyClient())
+        return;
+
+    bskyClient()->unmuteActorList(listUri,
+        [this, presence=getPresence(), listUri]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [listUri](LocalListModelChanges* model){
+                    model->updateMuted(listUri, false);
+                });
+
+            emit unmuteListOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Unmute failed failed:" << error << " - " << msg;
+            emit unmuteListFailed(msg);
+        });
+}
+
 }

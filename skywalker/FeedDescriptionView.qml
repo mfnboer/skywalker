@@ -128,7 +128,7 @@ Page {
 
                     MenuItemSvg {
                         svg: isPinnedFeed ? svgFilled.star : svgOutline.star
-                        color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
+                        color: isPinnedFeed ? guiSettings.favoriteColor : guiSettings.textColor
                     }
                 }
                 MenuItem {

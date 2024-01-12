@@ -100,7 +100,6 @@ Column {
 
                     MenuItemSvg {
                         svg: svgOutline.delete
-                        visible: parent.enabled
                     }
                 }
                 MenuItem {
@@ -109,7 +108,6 @@ Column {
 
                     MenuItemSvg {
                         svg: svgOutline.report
-                        visible: parent.enabled
                     }
                 }
             }

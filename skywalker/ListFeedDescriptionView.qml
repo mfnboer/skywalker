@@ -8,6 +8,8 @@ Page {
     required property listview list
     property bool isSavedList: skywalker.favoriteFeeds.isSavedFeed(list.uri)
     property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
+    property string listBlockedUri: list.viewer.blocked
+    property bool listMuted: list.viewer.muted
 
     signal closed
 
@@ -178,6 +180,23 @@ Page {
                 color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
             }
         }
+
+        MenuItem {
+            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
+            onTriggered: listMuted ? graphUtils.unmuteList(list.uri) : graphUtils.muteList(list.uri)
+            enabled: !listBlockedUri
+
+            MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
+        }
+
+        MenuItem {
+            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
+            onTriggered: listBlockedUri ? graphUtils.unblockList(list.uri, listBlockedUri) : graphUtils.blockList(list.uri)
+            enabled: !listMuted
+
+            MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
+        }
+
         MenuItem {
             text: qsTr("Translate")
             onTriggered: root.translateText(list.description)
@@ -230,6 +249,23 @@ Page {
                 color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
             }
         }
+
+        MenuItem {
+            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
+            onTriggered: listMuted ? graphUtils.unmuteList(list.uri) : graphUtils.muteList(list.uri)
+            enabled: !listBlockedUri
+
+            MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
+        }
+
+        MenuItem {
+            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
+            onTriggered: listBlockedUri ? graphUtils.unblockList(list.uri, listBlockedUri) : graphUtils.blockList(list.uri)
+            enabled: !listMuted
+
+            MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
+        }
+
         MenuItem {
             text: qsTr("Translate")
             onTriggered: root.translateText(list.description)
@@ -252,6 +288,22 @@ Page {
 
     Menu {
         id: moreMenuModList
+
+        MenuItem {
+            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
+            onTriggered: listMuted ? graphUtils.unmuteList(list.uri) : graphUtils.muteList(list.uri)
+            enabled: !listBlockedUri
+
+            MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
+        }
+
+        MenuItem {
+            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
+            onTriggered: listBlockedUri ? graphUtils.unblockList(list.uri, listBlockedUri) : graphUtils.blockList(list.uri)
+            enabled: !listMuted
+
+            MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
+        }
 
         MenuItem {
             text: qsTr("Translate")
@@ -279,6 +331,14 @@ Page {
 
         onAddListUserOk: (did, itemUri, itemCid) => profileUtils.getProfileView(did, itemUri)
         onAddListUserFailed: (error) => statusPopup.show(qsTr(`Failed to add user: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        onBlockListOk: (uri) => listBlockedUri = uri
+        onBlockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnblockListOk: listBlockedUri = ""
+        onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteListOk: listMuted = true
+        onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteListOk: listMuted = false
+        onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     ProfileUtils {

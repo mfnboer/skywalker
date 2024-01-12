@@ -28,6 +28,7 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& list = mLists[index.row()];
+    const auto* change = getLocalChange(list.getUri());
 
     switch (Role(role))
     {
@@ -35,6 +36,10 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(list);
     case Role::ListCreator:
         return QVariant::fromValue(list.getCreator());
+    case Role::ListBlockedUri:
+        return change && change->mBlocked ? *change->mBlocked : list.getViewer().getBlocked();
+    case Role::ListMuted:
+        return change && change->mMuted ? *change->mMuted : list.getViewer().getMuted();
     case Role::ListSaved:
         return mFavoriteFeeds.isSavedFeed(list.getUri());
     case Role::ListPinned:
@@ -57,6 +62,7 @@ void ListListModel::clear()
     }
 
     mCursor.clear();
+    clearLocalChanges();
 }
 
 int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor)
@@ -175,11 +181,23 @@ QHash<int, QByteArray> ListListModel::roleNames() const
     static const QHash<int, QByteArray> roles{
         { int(Role::List), "list" },
         { int(Role::ListCreator), "listCreator" },
+        { int(Role::ListBlockedUri), "listBlockedUri" },
+        { int(Role::ListMuted), "listMuted" },
         { int(Role::ListSaved), "listSaved" },
         { int(Role::ListPinned), "listPinned" }
     };
 
     return roles;
+}
+
+void ListListModel::blockedChanged()
+{
+    changeData({ int(Role::ListBlockedUri) });
+}
+
+void ListListModel::mutedChanged()
+{
+    changeData({ int(Role::ListMuted) });
 }
 
 void ListListModel::listSavedChanged()

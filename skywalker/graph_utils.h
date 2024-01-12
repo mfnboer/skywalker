@@ -39,6 +39,11 @@ public:
                     QEnums::ListPurpose purpose, const QString& avatar,
                     const Profile& creator, const QString& description);
 
+    Q_INVOKABLE void blockList(const QString& listUri);
+    Q_INVOKABLE void unblockList(const QString& listUri, const QString& blockingUri);
+    Q_INVOKABLE void muteList(const QString& listUri);
+    Q_INVOKABLE void unmuteList(const QString& listUri);
+
 signals:
     void followOk(QString uri);
     void followFailed(QString error);
@@ -66,6 +71,14 @@ signals:
     void addListUserFailed(QString error);
     void removeListUserOk();
     void removeListUserFailed(QString error);
+    void blockListOk(QString uri);
+    void blockListFailed(QString error);
+    void unblockListOk();
+    void unblockListFailed(QString error);
+    void muteListOk();
+    void muteListFailed(QString error);
+    void unmuteListOk();
+    void unmuteListFailed(QString error);
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,

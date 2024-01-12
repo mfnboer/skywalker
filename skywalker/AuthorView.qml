@@ -132,7 +132,6 @@ Page {
 
                             MenuItemSvg {
                                 svg: authorMuted ? svgOutline.unmute : svgOutline.mute
-                                visible: parent.enabled
                             }
                         }
                         MenuItem {
@@ -147,7 +146,6 @@ Page {
 
                             MenuItemSvg {
                                 svg: blocking ? svgOutline.unblock : svgOutline.block
-                                visible: parent.enabled
                             }
                         }
                         MenuItem {
@@ -156,7 +154,6 @@ Page {
 
                             MenuItemSvg {
                                 svg: svgOutline.report
-                                visible: parent.enabled
                             }
                         }
                     }

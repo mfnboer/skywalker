@@ -254,6 +254,8 @@ qt_add_qml_module(libskywalker
         SOURCES favorite_feed_view.cpp
         QML_FILES UserListsPage.qml
         QML_FILES ModerationListsPage.qml
+        SOURCES local_list_model_changes.h
+        SOURCES local_list_model_changes.cpp
 )
 
 if (NOT ANDROID)

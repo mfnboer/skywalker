@@ -61,6 +61,7 @@ void FeedListModel::clear()
     }
 
     mCursor.clear();
+    clearLocalChanges();
 }
 
 void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, const QString& cursor)

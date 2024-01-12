@@ -56,6 +56,10 @@ ListView {
         onUpdateList: (list) => view.editList(list, index)
         onDeleteList: (list) => view.deleteList(list, index)
         onListClicked: (list) => root.viewList(list)
+        onBlockList: (list) => graphUtils.blockList(list.uri)
+        onUnblockList: (list, blockedUri) => graphUtils.unblockList(list.uri, blockedUri)
+        onMuteList: (list) => graphUtils.muteList(list.uri)
+        onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
     }
 
     FlickableRefresher {
@@ -86,6 +90,11 @@ ListView {
             statusPopup.show(qsTr(`Failed to delete list: ${error}`), QEnums.STATUS_LEVEL_ERROR)
             skywalker.getListList(modelId)
         }
+
+        onBlockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     GuiSettings {

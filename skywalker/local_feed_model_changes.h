@@ -34,7 +34,7 @@ protected:
     virtual void likeUriChanged() = 0;
 
 private:
-    // Mapping from post CID to change
+    // CID to change
     std::unordered_map<QString, Change> mChanges;
 };
 
