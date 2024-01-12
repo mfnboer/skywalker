@@ -7,6 +7,8 @@ Rectangle {
     required property int viewWidth
     required property listview list
     required property profile listCreator
+    required property bool listSaved
+    required property bool listPinned
     property bool ownLists: true
     property int margin: 10
     property int maxTextLines: 1000
@@ -107,38 +109,21 @@ Rectangle {
                 width: 40
                 height: width
                 svg: svgOutline.moreVert
-                onClicked: moreMenu.open()
+                onClicked: {
+                    switch (list.purpose) {
+                    case QEnums.LIST_PURPOSE_CURATE:
+                        if (list.creator.did === skywalker.getUserDid())
+                            moreMenuOwnUserList.popup(moreButton)
+                        else
+                            moreMenuOtherUserList.popup(moreButton)
 
-                Menu {
-                    id: moreMenu
-
-                    MenuItem {
-                        text: qsTr("Edit")
-                        enabled: ownLists
-                        onTriggered: updateList(list)
-
-                        MenuItemSvg {
-                            svg: svgOutline.edit
-                        }
-                    }
-
-                    MenuItem {
-                        text: qsTr("Delete")
-                        enabled: ownLists
-                        onTriggered: deleteList(list)
-
-                        MenuItemSvg {
-                            svg: svgOutline.delete
-                        }
-                    }
-
-                    MenuItem {
-                        text: qsTr("Share")
-                        onTriggered: skywalker.shareList(list)
-
-                        MenuItemSvg {
-                            svg: svgOutline.share
-                        }
+                        break
+                    case QEnums.LIST_PURPOSE_MOD:
+                        if (list.creator.did === skywalker.getUserDid())
+                            moreMenuOwnModList.popup(moreButton)
+                        else
+                            moreMenuOtherModList.popup(moreButton)
+                        break
                     }
                 }
             }
@@ -182,6 +167,189 @@ Rectangle {
         onClicked: {
             console.debug("LIST CLICKED:", list.name)
             view.listClicked(list)
+        }
+    }
+
+    Menu {
+        id: moreMenuOwnUserList
+
+        MenuItem {
+            text: qsTr("Edit")
+            onTriggered: updateList(list)
+
+            MenuItemSvg { svg: svgOutline.edit }
+        }
+
+        MenuItem {
+            text: qsTr("Delete")
+            enabled: ownLists
+            onTriggered: deleteList(list)
+
+            MenuItemSvg { svg: svgOutline.delete }
+        }
+
+        MenuItem {
+            text: listPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
+            onTriggered: {
+                if (listPinned)
+                    skywalker.favoriteFeeds.removeList(list) // We never show own lists as saved
+                else
+                    skywalker.favoriteFeeds.pinList(list, true)
+
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg {
+                svg: listPinned ? svgFilled.star : svgOutline.star
+                color: listPinned ? guiSettings.favoriteColor : guiSettings.textColor
+            }
+        }
+
+        MenuItem {
+            text: qsTr("Translate")
+            onTriggered: root.translateText(list.description)
+
+            MenuItemSvg { svg: svgOutline.googleTranslate }
+        }
+
+        MenuItem {
+            text: qsTr("Share")
+            onTriggered: skywalker.shareList(list)
+
+            MenuItemSvg { svg: svgOutline.share }
+        }
+
+        MenuItem {
+            text: qsTr("Report list")
+            onTriggered: root.reportList(list)
+
+            MenuItemSvg {
+                svg: svgOutline.report
+            }
+        }
+    }
+
+    Menu {
+        id: moreMenuOtherUserList
+
+        MenuItem {
+            text: listSaved ? qsTr("Unsave list") : qsTr("Save list")
+            enabled: listCreator.did !== skywalker.getUserDid()
+            onTriggered: {
+                if (listSaved)
+                    skywalker.favoriteFeeds.removeList(list)
+                else
+                    skywalker.favoriteFeeds.addList(list)
+
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg { svg: listSaved ? svgOutline.remove : svgOutline.add }
+        }
+
+        MenuItem {
+            text: listPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
+            onTriggered: {
+                skywalker.favoriteFeeds.pinList(list, !listPinned)
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg {
+                svg: listPinned ? svgFilled.star : svgOutline.star
+                color: listPinned ? guiSettings.favoriteColor : guiSettings.textColor
+            }
+        }
+
+        MenuItem {
+            text: qsTr("Translate")
+            onTriggered: root.translateText(list.description)
+
+            MenuItemSvg { svg: svgOutline.googleTranslate }
+        }
+
+        MenuItem {
+            text: qsTr("Share")
+            onTriggered: skywalker.shareList(list)
+
+            MenuItemSvg { svg: svgOutline.share }
+        }
+
+        MenuItem {
+            text: qsTr("Report list")
+            onTriggered: root.reportList(list)
+
+            MenuItemSvg {
+                svg: svgOutline.report
+            }
+        }
+    }
+
+    Menu {
+        id: moreMenuOwnModList
+
+        MenuItem {
+            text: qsTr("Edit")
+            onTriggered: updateList(list)
+
+            MenuItemSvg { svg: svgOutline.edit }
+        }
+
+        MenuItem {
+            text: qsTr("Delete")
+            enabled: ownLists
+            onTriggered: deleteList(list)
+
+            MenuItemSvg { svg: svgOutline.delete }
+        }
+
+        MenuItem {
+            text: qsTr("Translate")
+            onTriggered: root.translateText(list.description)
+
+            MenuItemSvg { svg: svgOutline.googleTranslate }
+        }
+
+        MenuItem {
+            text: qsTr("Share")
+            onTriggered: skywalker.shareList(list)
+
+            MenuItemSvg { svg: svgOutline.share }
+        }
+
+        MenuItem {
+            text: qsTr("Report list")
+            onTriggered: root.reportList(list)
+
+            MenuItemSvg {
+                svg: svgOutline.report
+            }
+        }
+    }
+
+    Menu {
+        id: moreMenuOtherModList
+
+        MenuItem {
+            text: qsTr("Translate")
+            onTriggered: root.translateText(list.description)
+
+            MenuItemSvg { svg: svgOutline.googleTranslate }
+        }
+
+        MenuItem {
+            text: qsTr("Share")
+            onTriggered: skywalker.shareList(list)
+
+            MenuItemSvg { svg: svgOutline.share }
+        }
+
+        MenuItem {
+            text: qsTr("Report list")
+            onTriggered: root.reportList(list)
+
+            MenuItemSvg {
+                svg: svgOutline.report
+            }
         }
     }
 

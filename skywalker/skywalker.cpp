@@ -245,11 +245,11 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr u
     mUserSettings.saveDisplayName(mUserDid, user->mDisplayName.value_or(""));
     const auto avatar = user->mAvatar ? *user->mAvatar : QString();
     mUserSettings.saveAvatar(mUserDid, avatar);
-    emit avatarUrlChanged();
-
     mLoggedOutVisibility = ATProto::ProfileMaster::getLoggedOutVisibility(*user);
     auto sharedUser = ATProto::AppBskyActor::ProfileView::SharedPtr(user.release());
     mUserProfile = Profile(sharedUser);
+
+    emit avatarUrlChanged();
     emit getUserProfileOK();
 }
 
@@ -1563,7 +1563,7 @@ void Skywalker::getListListNextPage(int id, int limit, int maxPages, int minEntr
 
 int Skywalker::createListListModel(ListListModel::Type type, const QString& atId)
 {
-    auto model = std::make_unique<ListListModel>(type, atId, this);
+    auto model = std::make_unique<ListListModel>(type, atId, mFavoriteFeeds, this);
     const int id = mListListModels.put(std::move(model));
     return id;
 }

@@ -7,19 +7,23 @@
 
 namespace Skywalker {
 
+class FavoriteFeeds;
+
 class ListListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
     enum class Role {
         List = Qt::UserRole + 1,
-        ListCreator
+        ListCreator,
+        ListSaved,
+        ListPinned
     };
 
     using Type = QEnums::ListPurpose;
     using Ptr = std::unique_ptr<ListListModel>;
 
-    ListListModel(Type type, const QString& atId, QObject* parent = nullptr);
+    ListListModel(Type type, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -45,12 +49,17 @@ protected:
 private:
     using ListList = std::deque<ListView>;
 
+    void listSavedChanged();
+    void listPinnedChanged();
+    void changeData(const QList<int>& roles);
+
     ListList filterLists(ATProto::AppBskyGraph::ListViewList lists) const;
 
     Type mType;
     QString mAtId;
     ListList mLists;
     QString mCursor;
+    const FavoriteFeeds& mFavoriteFeeds;
 };
 
 }

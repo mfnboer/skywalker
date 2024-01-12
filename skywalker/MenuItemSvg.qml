@@ -8,6 +8,7 @@ SvgImage {
     width: height
     height: parent.height - 10
     color: guiSettings.textColor
+    visible: parent.enabled
 
     GuiSettings {
         id: guiSettings

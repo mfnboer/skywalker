@@ -6,6 +6,8 @@ import skywalker
 Page {
     required property var skywalker
     required property listview list
+    property bool isSavedList: skywalker.favoriteFeeds.isSavedFeed(list.uri)
+    property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
 
     signal closed
 
@@ -101,34 +103,18 @@ Page {
                 id: moreButton
                 svg: svgOutline.moreVert
 
-                onClicked: moreMenu.open()
+                onClicked: {
+                    switch (list.purpose) {
+                    case QEnums.LIST_PURPOSE_CURATE:
+                        if (list.creator.did === skywalker.getUserDid())
+                            moreMenuOwnUserList.popup(moreButton)
+                        else
+                            moreMenuOtherUserList.popup(moreButton)
 
-                Menu {
-                    id: moreMenu
-
-                    MenuItem {
-                        text: qsTr("Translate")
-                        onTriggered: root.translateText(list.description)
-
-                        MenuItemSvg {
-                            svg: svgOutline.googleTranslate
-                        }
-                    }
-                    MenuItem {
-                        text: qsTr("Share")
-                        onTriggered: skywalker.shareList(list)
-
-                        MenuItemSvg {
-                            svg: svgOutline.share
-                        }
-                    }
-                    MenuItem {
-                        text: qsTr("Report list")
-                        onTriggered: root.reportList(list)
-
-                        MenuItemSvg {
-                            svg: svgOutline.report
-                        }
+                        break
+                    case QEnums.LIST_PURPOSE_MOD:
+                        moreMenuModList.popup(moreButton)
+                        break
                     }
                 }
             }
@@ -169,6 +155,122 @@ Page {
         clip: true
 
         Component.onCompleted: skywalker.getAuthorList(modelId)
+    }
+
+    Menu {
+        id: moreMenuOwnUserList
+
+        MenuItem {
+            text: isPinnedList ? qsTr("Remove favorite") : qsTr("Add favorite")
+            onTriggered: {
+                if (isPinnedList)
+                    skywalker.favoriteFeeds.removeList(list) // We never show own lists as saved
+                else
+                    skywalker.favoriteFeeds.pinList(list, true)
+
+                isPinnedList = !isPinnedList
+                isSavedList = skywalker.favoriteFeeds.isSavedFeed(list.uri)
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg {
+                svg: isPinnedList ? svgFilled.star : svgOutline.star
+                color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
+            }
+        }
+        MenuItem {
+            text: qsTr("Translate")
+            onTriggered: root.translateText(list.description)
+
+            MenuItemSvg { svg: svgOutline.googleTranslate }
+        }
+        MenuItem {
+            text: qsTr("Share")
+            onTriggered: skywalker.shareList(list)
+
+            MenuItemSvg { svg: svgOutline.share }
+        }
+        MenuItem {
+            text: qsTr("Report list")
+            onTriggered: root.reportList(list)
+
+            MenuItemSvg { svg: svgOutline.report }
+        }
+    }
+
+    Menu {
+        id: moreMenuOtherUserList
+
+        MenuItem {
+            text: isSavedList ? qsTr("Unsave list") : qsTr("Save list")
+            onTriggered: {
+                if (isSavedList)
+                    skywalker.favoriteFeeds.removeList(list)
+                else
+                    skywalker.favoriteFeeds.addList(list)
+
+                isSavedList = !isSavedList
+                isPinnedList = skywalker.favoriteFeeds.isPinnedFeed(list.uri)
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg { svg: isSavedList ? svgOutline.remove : svgOutline.add }
+        }
+        MenuItem {
+            text: isPinnedList ? qsTr("Remove favorite") : qsTr("Add favorite")
+            onTriggered: {
+                skywalker.favoriteFeeds.pinList(list, !isPinnedList)
+                isPinnedList = !isPinnedList
+                isSavedList = skywalker.favoriteFeeds.isSavedFeed(list.uri)
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg {
+                svg: isPinnedList ? svgFilled.star : svgOutline.star
+                color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
+            }
+        }
+        MenuItem {
+            text: qsTr("Translate")
+            onTriggered: root.translateText(list.description)
+
+            MenuItemSvg { svg: svgOutline.googleTranslate }
+        }
+        MenuItem {
+            text: qsTr("Share")
+            onTriggered: skywalker.shareList(list)
+
+            MenuItemSvg { svg: svgOutline.share }
+        }
+        MenuItem {
+            text: qsTr("Report list")
+            onTriggered: root.reportList(list)
+
+            MenuItemSvg { svg: svgOutline.report }
+        }
+    }
+
+    Menu {
+        id: moreMenuModList
+
+        MenuItem {
+            text: qsTr("Translate")
+            onTriggered: root.translateText(list.description)
+
+            MenuItemSvg { svg: svgOutline.googleTranslate }
+        }
+        MenuItem {
+            text: qsTr("Share")
+            onTriggered: skywalker.shareList(list)
+
+            MenuItemSvg { svg: svgOutline.share }
+        }
+        MenuItem {
+            text: qsTr("Report list")
+            onTriggered: root.reportList(list)
+
+            MenuItemSvg { svg: svgOutline.report }
+        }
     }
 
     GraphUtils {

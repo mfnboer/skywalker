@@ -101,7 +101,7 @@ Page {
             Menu {
                 id: moreMenu
                 MenuItem {
-                    text: isSavedFeed ? qsTr("Remove feed") : qsTr("Save feed")
+                    text: isSavedFeed ? qsTr("Unsave feed") : qsTr("Save feed")
                     onTriggered: {
                         if (isSavedFeed)
                             skywalker.favoriteFeeds.removeFeed(feed)
@@ -128,6 +128,7 @@ Page {
 
                     MenuItemSvg {
                         svg: isPinnedFeed ? svgFilled.star : svgOutline.star
+                        color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
                     }
                 }
                 MenuItem {

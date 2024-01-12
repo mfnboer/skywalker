@@ -1,15 +1,19 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "list_list_model.h"
+#include "favorite_feeds.h"
 
 namespace Skywalker {
 
-ListListModel::ListListModel(Type type, const QString& atId, QObject* parent) :
+ListListModel::ListListModel(Type type, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
-    mAtId(atId)
+    mAtId(atId),
+    mFavoriteFeeds(favoriteFeeds)
 {
     qDebug() << "New list list model type:" << type << "atId:" << atId;
+    connect(&mFavoriteFeeds, &FavoriteFeeds::listSaved, this, [this]{ listSavedChanged(); });
+    connect(&mFavoriteFeeds, &FavoriteFeeds::listPinned, this, [this]{ listPinnedChanged(); });
 }
 
 int ListListModel::rowCount(const QModelIndex& parent) const
@@ -31,6 +35,10 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(list);
     case Role::ListCreator:
         return QVariant::fromValue(list.getCreator());
+    case Role::ListSaved:
+        return mFavoriteFeeds.isSavedFeed(list.getUri());
+    case Role::ListPinned:
+        return mFavoriteFeeds.isPinnedFeed(list.getUri());
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -166,10 +174,27 @@ QHash<int, QByteArray> ListListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::List), "list" },
-        { int(Role::ListCreator), "listCreator" }
+        { int(Role::ListCreator), "listCreator" },
+        { int(Role::ListSaved), "listSaved" },
+        { int(Role::ListPinned), "listPinned" }
     };
 
     return roles;
+}
+
+void ListListModel::listSavedChanged()
+{
+    changeData({ int(Role::ListSaved) });
+}
+
+void ListListModel::listPinnedChanged()
+{
+    changeData({ int(Role::ListPinned) });
+}
+
+void ListListModel::changeData(const QList<int>& roles)
+{
+    emit dataChanged(createIndex(0, 0), createIndex(mLists.size() - 1, 0), roles);
 }
 
 }

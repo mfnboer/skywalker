@@ -425,7 +425,7 @@ void FavoriteFeeds::updatePinnedGeneratorViews()
 
 void FavoriteFeeds::updatePinnedListViews()
 {
-    auto listUris = filterUris(mSavedFeedsPref.mSaved, ATProto::ATUri::COLLECTION_GRAPH_LIST);
+    auto listUris = filterUris(mSavedFeedsPref.mPinned, ATProto::ATUri::COLLECTION_GRAPH_LIST);
     updatePinnedListViews(listUris);
 }
 

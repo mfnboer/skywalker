@@ -14,6 +14,7 @@ namespace Skywalker {
 
 class Skywalker;
 
+// Favorite feeds and lists
 class FavoriteFeeds : public QObject
 {
     Q_OBJECT
@@ -27,6 +28,7 @@ public:
     void clear();
     void reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
 
+    // Can also be called for list uri's
     Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.count(uri); }
     Q_INVOKABLE bool isPinnedFeed(const QString& uri) const { return mPinnedUris.count(uri); }
 
