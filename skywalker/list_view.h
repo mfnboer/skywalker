@@ -49,7 +49,7 @@ public:
     ListViewBasic(const QString& uri, const QString& cid, const QString& name,
                   ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar);
 
-    Q_INVOKABLE bool isNull() const { return basicView() == nullptr && view() == nullptr; }
+    Q_INVOKABLE bool isNull() const { return getUri().isEmpty(); }
     QString getUri() const;
     QString getCid() const;
     QString getName() const;

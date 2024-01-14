@@ -280,9 +280,10 @@ Page {
     }
 
     function updateListDone(uri, cid) {
-        // Erase the created avatar source such that the imaee will not be dropped
+        // Erase the created avatar source such that the image will not be dropped
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
+        statusPopup.close()
         editListPage.listUpdated(cid, nameField.displayText, descriptionField.text, avatar.avatarUrl)
     }
 

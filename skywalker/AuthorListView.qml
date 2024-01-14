@@ -10,6 +10,7 @@ ListView {
     property string description
     property bool showFollow: true
     property bool allowDeleteItem: false
+    property int prevModelId: -1
 
     signal closed
 
@@ -42,6 +43,15 @@ ListView {
         onFollow: (profile) => { graphUtils.follow(profile) }
         onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
         onDeleteItem: (listItemUri) => authorListView.deleteListItem(listItemUri, index)
+    }
+
+    onModelIdChanged: {
+        if (prevModelId > -1) {
+            console.debug("Delete previous model:", prevModelId)
+            skywalker.removeAuthorListModel(prevModelId)
+            prevModelId = modelId
+            skywalker.getAuthorList(modelId)
+        }
     }
 
     FlickableRefresher {
@@ -88,5 +98,9 @@ ListView {
 
     Component.onDestruction: {
         skywalker.removeAuthorListModel(modelId)
+    }
+
+    Component.onCompleted: {
+        prevModelId = modelId
     }
 }

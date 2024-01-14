@@ -163,6 +163,13 @@ Page {
         id: moreMenuOwnUserList
 
         MenuItem {
+            text: qsTr("Edit")
+            onTriggered: editList()
+
+            MenuItemSvg { svg: svgOutline.edit }
+        }
+
+        MenuItem {
             text: isPinnedList ? qsTr("Remove favorite") : qsTr("Add favorite")
             onTriggered: {
                 if (isPinnedList)
@@ -290,6 +297,14 @@ Page {
         id: moreMenuModList
 
         MenuItem {
+            text: qsTr("Edit")
+            onTriggered: editList()
+            enabled: isOwnList()
+
+            MenuItemSvg { svg: svgOutline.edit }
+        }
+
+        MenuItem {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")
             onTriggered: listMuted ? graphUtils.unmuteList(list.uri) : graphUtils.muteList(list.uri)
             enabled: !listBlockedUri
@@ -351,6 +366,22 @@ Page {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function editList() {
+        let component = Qt.createComponent("EditList.qml")
+        let editPage = component.createObject(page, {
+                skywalker: skywalker,
+                purpose: list.purpose,
+                list: list
+            })
+        editPage.onListUpdated.connect((cid, name, description, avatar) => {
+            list = graphUtils.makeListView(list.uri, cid, name, list.purpose, avatar,
+                                           skywalker.getUserProfile(), description)
+            root.popStack()
+        })
+        editPage.onClosed.connect(() => { root.popStack() })
+        root.pushStack(editPage)
     }
 
     function addUser() {

@@ -24,6 +24,7 @@ SvgButton {
                 width: height
                 height: parent.height - 10
                 unknownSvg: svgFilled.home
+                onClicked: parent.triggered()
             }
 
             onTriggered: root.viewTimeline()
@@ -41,9 +42,12 @@ SvgButton {
                     width: height
                     height: parent.height - 10
                     avatarUrl: modelData.avatar
+                    onClicked: parent.triggered()
                 }
 
-                onTriggered: {
+                onTriggered: viewFeed()
+
+                function viewFeed() {
                     if (modelData.isGeneratorView)
                         root.viewFeed(modelData.generatorView)
                     else
