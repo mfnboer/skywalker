@@ -314,13 +314,13 @@ ApplicationWindow {
         }
 
         onModLists: {
-            let modelId = skywalker.createListListModel(QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
+            let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
             viewModerationLists(modelId)
             close()
         }
 
         onUserLists: {
-            let modelId = skywalker.createListListModel(QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+            let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
             viewUserLists(modelId)
             close()
         }

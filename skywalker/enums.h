@@ -138,6 +138,15 @@ public:
         LIST_PURPOSE_UNKNOWN = (int)ATProto::AppBskyGraph::ListPurpose::UNKNOWN
     };
     Q_ENUM(ListPurpose)
+
+    enum ListType
+    {
+        LIST_TYPE_ALL,
+        LIST_TYPE_BLOCKS,
+        LIST_TYPE_MUTES,
+        LIST_TYPE_SAVED
+    };
+    Q_ENUM(ListType)
 };
 
 }

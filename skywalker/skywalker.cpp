@@ -1511,15 +1511,32 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
         return;
     }
 
-    const ListListModel::Type type = (*model)->getType();
+    const auto type = (*model)->getType();
     const auto& atId = (*model)->getAtId();
     qDebug() << "Get list list:" << atId << "type:" << int(type);
 
+    switch (type) {
+    case ListListModel::Type::LIST_TYPE_ALL:
+        getListListAll(atId, limit, maxPages, minEntries, cursor, id);
+        break;
+    case ListListModel::Type::LIST_TYPE_BLOCKS:
+        getListListBlocks(limit, maxPages, minEntries, cursor, id);
+        break;
+    case ListListModel::Type::LIST_TYPE_MUTES:
+        getListListMutes(limit, maxPages, minEntries, cursor, id);
+        break;
+    case ListListModel::Type::LIST_TYPE_SAVED:
+        break;
+    }
+}
+
+void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
     setGetListListInProgress(true);
     mBsky->getLists(atId, limit, makeOptionalCursor(cursor),
-        [this, id, limit, maxPages, minEntries, cursor](auto output){
+        [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
-            const auto* model = mListListModels.get(id);
+            const auto* model = mListListModels.get(modelId);
 
             if (model)
             {
@@ -1530,12 +1547,66 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
                 const int toAdd = minEntries - added;
 
                 if (toAdd > 0)
-                    getListListNextPage(id, limit, maxPages - 1, toAdd);
+                    getListListNextPage(modelId, limit, maxPages - 1, toAdd);
             }
         },
         [this](const QString& error, const QString& msg){
             setGetListListInProgress(false);
-            qDebug() << "getListList failed:" << error << " - " << msg;
+            qDebug() << "getListListAll failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
+    setGetListListInProgress(true);
+    mBsky->getListBlocks(limit, makeOptionalCursor(cursor),
+        [this, modelId, limit, maxPages, minEntries, cursor](auto output){
+            setGetListListInProgress(false);
+            const auto* model = mListListModels.get(modelId);
+
+            if (model)
+            {
+                if (cursor.isEmpty())
+                    (*model)->clear();
+
+                const int added = (*model)->addLists(std::move(output->mLists), output->mCursor.value_or(""));
+                const int toAdd = minEntries - added;
+
+                if (toAdd > 0)
+                    getListListNextPage(modelId, limit, maxPages - 1, toAdd);
+            }
+        },
+        [this](const QString& error, const QString& msg){
+            setGetListListInProgress(false);
+            qDebug() << "getListListBlocks failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
+    setGetListListInProgress(true);
+    mBsky->getListMutes(limit, makeOptionalCursor(cursor),
+        [this, modelId, limit, maxPages, minEntries, cursor](auto output){
+            setGetListListInProgress(false);
+            const auto* model = mListListModels.get(modelId);
+
+            if (model)
+            {
+                if (cursor.isEmpty())
+                    (*model)->clear();
+
+                const int added = (*model)->addLists(std::move(output->mLists), output->mCursor.value_or(""));
+                const int toAdd = minEntries - added;
+
+                if (toAdd > 0)
+                    getListListNextPage(modelId, limit, maxPages - 1, toAdd);
+            }
+        },
+        [this](const QString& error, const QString& msg){
+            setGetListListInProgress(false);
+            qDebug() << "getListListMutes failed:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -1567,9 +1638,9 @@ void Skywalker::getListListNextPage(int id, int limit, int maxPages, int minEntr
     getListList(id, limit, maxPages, minEntries, cursor);
 }
 
-int Skywalker::createListListModel(ListListModel::Type type, const QString& atId)
+int Skywalker::createListListModel(ListListModel::Type type, ListListModel::Purpose purpose, const QString& atId)
 {
-    auto model = std::make_unique<ListListModel>(type, atId, mFavoriteFeeds, this);
+    auto model = std::make_unique<ListListModel>(type, purpose, atId, mFavoriteFeeds, this);
     const int id = mListListModels.put(std::move(model));
     return id;
 }

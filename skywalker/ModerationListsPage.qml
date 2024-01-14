@@ -37,6 +37,13 @@ Page {
         width: parent.width
         currentIndex: listsBar.currentIndex
 
+        onCurrentIndexChanged: {
+            if (currentIndex === 1)
+                blockedLists.refresh()
+            else if (currentIndex === 2)
+                mutedLists.refresh()
+        }
+
         ListListView {
             id: yourLists
             width: parent.width
@@ -45,6 +52,26 @@ Page {
             modelId: page.modelId
             ownLists: true
             description: qsTr("Public, shareable lists of users to mute or block in bulk.")
+        }
+
+        ListListView {
+            id: blockedLists
+            width: parent.width
+            height: parent.height
+            skywalker: page.skywalker
+            modelId: skywalker.createListListModel(QEnums.LIST_TYPE_BLOCKS, QEnums.LIST_PURPOSE_MOD, "")
+            ownLists: false
+            description: qsTr("Lists blocked by you.")
+        }
+
+        ListListView {
+            id: mutedLists
+            width: parent.width
+            height: parent.height
+            skywalker: page.skywalker
+            modelId: skywalker.createListListModel(QEnums.LIST_TYPE_MUTES, QEnums.LIST_PURPOSE_MOD, "")
+            ownLists: false
+            description: qsTr("Lists muted by you.")
         }
     }
 

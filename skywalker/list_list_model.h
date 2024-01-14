@@ -23,10 +23,11 @@ public:
         ListPinned
     };
 
-    using Type = QEnums::ListPurpose;
+    using Type = QEnums::ListType;
+    using Purpose = QEnums::ListPurpose;
     using Ptr = std::unique_ptr<ListListModel>;
 
-    ListListModel(Type type, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent = nullptr);
+    ListListModel(Type type, Purpose purpose, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -43,7 +44,8 @@ public:
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
-    Q_INVOKABLE Type getType() const { return mType; }
+    Type getType() const { return mType; }
+    Q_INVOKABLE Purpose getPurpose() const { return mPurpose; }
     const QString& getAtId() const { return mAtId; }
 
 protected:
@@ -61,6 +63,7 @@ private:
     ListList filterLists(ATProto::AppBskyGraph::ListViewList lists) const;
 
     Type mType;
+    Purpose mPurpose;
     QString mAtId;
     ListList mLists;
     QString mCursor;

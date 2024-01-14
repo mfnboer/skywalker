@@ -5,13 +5,14 @@
 
 namespace Skywalker {
 
-ListListModel::ListListModel(Type type, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent) :
+ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
+    mPurpose(purpose),
     mAtId(atId),
     mFavoriteFeeds(favoriteFeeds)
 {
-    qDebug() << "New list list model type:" << type << "atId:" << atId;
+    qDebug() << "New list list model type:" << type << "purpose:" << purpose << "atId:" << atId;
     connect(&mFavoriteFeeds, &FavoriteFeeds::listSaved, this, [this]{ listSavedChanged(); });
     connect(&mFavoriteFeeds, &FavoriteFeeds::listPinned, this, [this]{ listPinnedChanged(); });
 }
@@ -166,7 +167,7 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
 
     for (auto&& listView : lists)
     {
-        if (listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mType))
+        if (listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mPurpose))
         {
             ATProto::AppBskyGraph::ListView::SharedPtr sharedRaw(listView.release());
             filtered.emplace_back(sharedRaw);

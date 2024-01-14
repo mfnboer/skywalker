@@ -51,6 +51,16 @@ Rectangle {
             avatarUrl: list.avatar
 
             onClicked: listClicked(list)
+
+            SvgImage {
+                x: parent.width - 10
+                y: height - 10
+                width: 20
+                height: width
+                color: guiSettings.favoriteColor
+                svg: svgFilled.star
+                visible: listPinned
+            }
         }
 
         Column {

@@ -101,7 +101,7 @@ public:
     Q_INVOKABLE void removeAuthorListModel(int id);
     Q_INVOKABLE void getListList(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getListListNextPage(int id, int limit = 50, int maxPages = 20, int minEntries = 10);
-    Q_INVOKABLE int createListListModel(ListListModel::Type type, const QString& atId);
+    Q_INVOKABLE int createListListModel(ListListModel::Type type, ListListModel::Purpose purpose, const QString& atId);
     Q_INVOKABLE ListListModel* getListListModel(int id) const;
     Q_INVOKABLE void removeListListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
@@ -208,6 +208,9 @@ private:
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);

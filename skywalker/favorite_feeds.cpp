@@ -501,7 +501,9 @@ ListListModel* FavoriteFeeds::getSavedListsModel()
 {
     if (mSavedListsModelId < 0)
     {
-        mSavedListsModelId = mSkywalker->createListListModel(ListListModel::Type::LIST_PURPOSE_CURATE, "");
+        mSavedListsModelId = mSkywalker->createListListModel(
+                ListListModel::Type::LIST_TYPE_SAVED,
+                ListListModel::Purpose::LIST_PURPOSE_CURATE, "");
         updateSavedListsModel();
     }
 

@@ -65,7 +65,7 @@ ListView {
     FlickableRefresher {
         inProgress: skywalker.getListListInProgress
         verticalOvershoot: view.verticalOvershoot
-        topOvershootFun: () => skywalker.getListList(modelId)
+        topOvershootFun: () => refresh()
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
         topText: qsTr("Refresh lists")
     }
@@ -105,7 +105,7 @@ ListView {
         let component = Qt.createComponent("EditList.qml")
         let page = component.createObject(view, {
                 skywalker: skywalker,
-                purpose: model.getType()
+                purpose: model.getPurpose()
             })
         page.onListCreated.connect((list) => {
             if (list.isNull()) {
@@ -149,6 +149,10 @@ ListView {
     function continueDeleteList(list, index) {
         view.model.deleteEntry(index)
         graphUtils.deleteList(list.uri)
+    }
+
+    function refresh() {
+        skywalker.getListList(modelId)
     }
 
     Component.onDestruction: {
