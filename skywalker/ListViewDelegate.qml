@@ -47,6 +47,7 @@ Rectangle {
             x: 8
             y: 5
             width: guiSettings.threadBarWidth * 5
+            Layout.fillHeight: true
             avatarUrl: list.avatar
 
             onClicked: listClicked(list)
@@ -93,6 +94,12 @@ Rectangle {
                     onClicked: skywalker.getDetailedProfile(listCreator.did)
                 }
             }
+
+            ListViewerState {
+                topPadding: 5
+                muted: listMuted
+                blockedUri: listBlockedUri
+            }
         }
 
         Rectangle {
@@ -106,7 +113,7 @@ Rectangle {
                 width: 40
                 height: width
                 svg: svgOutline.group
-                onClicked: root.viewListFeedDescription(list)
+                onClicked: root.viewListFeedDescription(list, listMuted, listBlockedUri)
             }
 
             SvgButton {
@@ -212,22 +219,6 @@ Rectangle {
         }
 
         MenuItem {
-            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
-            onTriggered: listMuted ? unmuteList(list) : muteList(list)
-            enabled: !listBlockedUri
-
-            MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
-        }
-
-        MenuItem {
-            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
-            onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
-            enabled: !listMuted
-
-            MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
-        }
-
-        MenuItem {
             text: qsTr("Translate")
             onTriggered: root.translateText(list.description)
 
@@ -283,22 +274,6 @@ Rectangle {
         }
 
         MenuItem {
-            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
-            onTriggered: listMuted ? unmuteList(list) : muteList(list)
-            enabled: !listBlockedUri
-
-            MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
-        }
-
-        MenuItem {
-            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
-            onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
-            enabled: !listMuted
-
-            MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
-        }
-
-        MenuItem {
             text: qsTr("Translate")
             onTriggered: root.translateText(list.description)
 
@@ -343,7 +318,7 @@ Rectangle {
         MenuItem {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")
             onTriggered: listMuted ? unmuteList(list) : muteList(list)
-            enabled: !listBlockedUri
+            enabled: !listBlockedUri || listMuted
 
             MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
         }
@@ -351,7 +326,7 @@ Rectangle {
         MenuItem {
             text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
             onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
-            enabled: !listMuted
+            enabled: !listMuted || listBlockedUri
 
             MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
         }
@@ -386,7 +361,7 @@ Rectangle {
         MenuItem {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")
             onTriggered: listMuted ? unmuteList(list) : muteList(list)
-            enabled: !listBlockedUri
+            enabled: !listBlockedUri || listMuted
 
             MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
         }
@@ -394,7 +369,7 @@ Rectangle {
         MenuItem {
             text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
             onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
-            enabled: !listMuted
+            enabled: !listMuted || listBlockedUri
 
             MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
         }

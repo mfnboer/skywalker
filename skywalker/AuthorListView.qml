@@ -50,14 +50,14 @@ ListView {
             console.debug("Delete previous model:", prevModelId)
             skywalker.removeAuthorListModel(prevModelId)
             prevModelId = modelId
-            skywalker.getAuthorList(modelId)
+            refresh()
         }
     }
 
     FlickableRefresher {
         inProgress: skywalker.getAuthorListInProgress
         verticalOvershoot: authorListView.verticalOvershoot
-        topOvershootFun: () => skywalker.getAuthorList(modelId)
+        topOvershootFun: () => refresh()
         bottomOvershootFun: () => skywalker.getAuthorListNextPage(modelId)
         topText: "Refresh"
     }
@@ -77,7 +77,7 @@ ListView {
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
         onRemoveListUserFailed: (error) => {
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-            skywalker.getAuthorList(modelId)
+            refresh()
         }
     }
 
@@ -94,6 +94,10 @@ ListView {
     function deleteListItem(listItemUri, index) {
         model.deleteEntry(index)
         graphUtils.removeListUser(listItemUri)
+    }
+
+    function refresh() {
+        skywalker.getAuthorList(modelId)
     }
 
     Component.onDestruction: {

@@ -17,7 +17,7 @@ Column {
             Layout.alignment: Qt.AlignTop
             avatarUrl: list.avatar
 
-            onClicked: root.viewListFeedDescription(list)
+            onClicked: root.viewListFeedDescription(list, list.viewer.muted, list.viewer.blocked)
         }
 
         Column {

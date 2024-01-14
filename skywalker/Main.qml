@@ -941,7 +941,7 @@ ApplicationWindow {
             viewPostListFeed(list)
             break
         case QEnums.LIST_PURPOSE_MOD:
-            viewListFeedDescription(list)
+            viewListFeedDescription(list, list.viewer.muted, list.viewer.blocked)
             break
         }
     }
@@ -1005,9 +1005,13 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewListFeedDescription(list) {
+    function viewListFeedDescription(list, muted, blockedUri) {
         let component = Qt.createComponent("ListFeedDescriptionView.qml")
-        let view = component.createObject(root, { list: list, skywalker: skywalker })
+        let view = component.createObject(root, {
+                list: list,
+                listMuted: muted,
+                listBlockedUri: blockedUri,
+                skywalker: skywalker })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }

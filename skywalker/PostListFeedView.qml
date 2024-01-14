@@ -25,7 +25,10 @@ ListView {
         showAsHome: postListFeedView.showAsHome
 
         onClosed: postListFeedView.closed()
-        onFeedAvatarClicked: root.viewListFeedDescription((postListFeedView.model.getListView()))
+        onFeedAvatarClicked: {
+            let list = postListFeedView.model.getListView()
+            root.viewListFeedDescription(list, list.viewer.muted, list.viewer.blocked)
+        }
     }
     headerPositioning: ListView.OverlayHeader
 

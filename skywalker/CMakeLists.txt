@@ -256,6 +256,7 @@ qt_add_qml_module(libskywalker
         QML_FILES ModerationListsPage.qml
         SOURCES local_list_model_changes.h
         SOURCES local_list_model_changes.cpp
+        QML_FILES ListViewerState.qml
 )
 
 if (NOT ANDROID)
