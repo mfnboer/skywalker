@@ -77,7 +77,7 @@ Page {
                 viewWidth: page.width
                 ownLists: false
 
-                onListClicked: (list) => root.viewList(list)
+                onListClicked: (list) => root.viewListByUri(list.uri, true)
             }
 
             EmptyListIndication {

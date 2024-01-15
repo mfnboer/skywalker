@@ -327,18 +327,18 @@ void GraphUtils::deleteList(const QString& listUri)
         });
 }
 
-void GraphUtils::getListView(const QString& listUri)
+void GraphUtils::getListView(const QString& listUri, bool viewPosts)
 {
     if (!bskyClient())
         return;
 
     bskyClient()->getList(listUri, 1, {},
-        [this, presence=getPresence()](auto output){
+        [this, presence=getPresence(), viewPosts](auto output){
             if (!presence)
                 return;
 
             ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
-            emit getListOk(ListView(sharedListView));
+            emit getListOk(ListView(sharedListView), viewPosts);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

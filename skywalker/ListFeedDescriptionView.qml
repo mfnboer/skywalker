@@ -6,8 +6,8 @@ import skywalker
 Page {
     required property var skywalker
     required property listview list
-    required property string listBlockedUri
-    required property bool listMuted
+    property string listBlockedUri: list.viewer.blocked
+    property bool listMuted: list.viewer.muted
 
     property bool isSavedList: skywalker.favoriteFeeds.isSavedFeed(list.uri)
     property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)

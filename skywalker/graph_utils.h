@@ -31,7 +31,7 @@ public:
                                 const QString& description, const QString& avatarImgSource,
                                 bool updateAvatar);
     Q_INVOKABLE void deleteList(const QString& listUri);
-    Q_INVOKABLE void getListView(const QString& listUri);
+    Q_INVOKABLE void getListView(const QString& listUri, bool viewPosts = false);
     Q_INVOKABLE void addListUser(const QString& listUri, const QString& did);
     Q_INVOKABLE void removeListUser(const QString& listItemUri);
 
@@ -65,7 +65,7 @@ signals:
     void updateListFailed(QString error);
     void deleteListOk();
     void deleteListFailed(QString error);
-    void getListOk(ListView list);
+    void getListOk(ListView list, bool viewPosts);
     void getListFailed(QString error);
     void addListUserOk(QString did, QString itemUri, QString itemCid);
     void addListUserFailed(QString error);

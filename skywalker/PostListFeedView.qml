@@ -27,7 +27,7 @@ ListView {
         onClosed: postListFeedView.closed()
         onFeedAvatarClicked: {
             let list = postListFeedView.model.getListView()
-            root.viewListFeedDescription(list, list.viewer.muted, list.viewer.blocked)
+            root.viewListByUri(list.uri, false)
         }
     }
     headerPositioning: ListView.OverlayHeader

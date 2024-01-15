@@ -502,6 +502,19 @@ ApplicationWindow {
         onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
     }
 
+    GraphUtils {
+        id: graphUtils
+        skywalker: skywalker
+
+        onGetListOk: (list, viewPosts) => {
+            if (viewPosts)
+                viewList(list)
+            else
+                viewListFeedDescription(list)
+        }
+        onGetListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     InviteCodeStore {
         id: inviteCodeStore
         skywalker: skywalker
@@ -935,13 +948,17 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
+    function viewListByUri(listUri, viewPosts) {
+        graphUtils.getListView(listUri, viewPosts)
+    }
+
     function viewList(list) {
         switch (list.purpose) {
         case QEnums.LIST_PURPOSE_CURATE:
             viewPostListFeed(list)
             break
         case QEnums.LIST_PURPOSE_MOD:
-            viewListFeedDescription(list, list.viewer.muted, list.viewer.blocked)
+            viewListFeedDescription(list)
             break
         }
     }
@@ -1005,13 +1022,9 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewListFeedDescription(list, muted, blockedUri) {
+    function viewListFeedDescription(list) {
         let component = Qt.createComponent("ListFeedDescriptionView.qml")
-        let view = component.createObject(root, {
-                list: list,
-                listMuted: muted,
-                listBlockedUri: blockedUri,
-                skywalker: skywalker })
+        let view = component.createObject(root, { list: list, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }

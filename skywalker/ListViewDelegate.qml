@@ -118,7 +118,7 @@ Rectangle {
                 width: 40
                 height: width
                 svg: svgOutline.group
-                onClicked: root.viewListFeedDescription(list, listMuted, listBlockedUri)
+                onClicked: root.viewListByUri(list.uri, false)
             }
 
             SvgButton {
