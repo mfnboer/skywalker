@@ -43,6 +43,11 @@ Page {
                 if (feed.avatar)
                     root.viewFullImage([feed.imageView], 0)
             }
+
+            FavoriteStar {
+                width: 30
+                visible: isPinnedFeed
+            }
         }
 
         Column {

@@ -47,13 +47,8 @@ Page {
                     root.viewFullImage([list.imageView], 0)
             }
 
-            SvgImage {
-                x: parent.width - 15
-                y: height - 15
+            FavoriteStar {
                 width: 30
-                height: width
-                color: guiSettings.favoriteColor
-                svg: svgFilled.star
                 visible: isPinnedList
             }
         }

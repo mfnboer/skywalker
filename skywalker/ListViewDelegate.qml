@@ -52,13 +52,8 @@ Rectangle {
 
             onClicked: listClicked(list)
 
-            SvgImage {
-                x: parent.width - 10
-                y: height - 10
+            FavoriteStar {
                 width: 20
-                height: width
-                color: guiSettings.favoriteColor
-                svg: svgFilled.star
                 visible: listPinned
             }
         }

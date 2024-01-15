@@ -257,6 +257,7 @@ qt_add_qml_module(libskywalker
         SOURCES local_list_model_changes.h
         SOURCES local_list_model_changes.cpp
         QML_FILES ListViewerState.qml
+        QML_FILES FavoriteStar.qml
 )
 
 if (NOT ANDROID)
