@@ -14,6 +14,19 @@ ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState&
     mFollowing(viewerState.mFollowing.value_or("")),
     mFollowedBy(viewerState.mFollowedBy.value_or(""))
 {
+    if (viewerState.mMutedByList)
+    {
+        const auto& l = *viewerState.mMutedByList;
+        mMutedByList = ListViewBasic(l.mUri, l.mCid, l.mName, l.mPurpose,
+                                      l.mAvatar.value_or(""));
+    }
+
+    if (viewerState.mBlockingByList)
+    {
+        const auto& l = *viewerState.mBlockingByList;
+        mBlockingByList = ListViewBasic(l.mUri, l.mCid, l.mName, l.mPurpose,
+                                        l.mAvatar.value_or(""));
+    }
 }
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile) :

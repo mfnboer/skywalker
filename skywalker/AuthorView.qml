@@ -122,7 +122,7 @@ Page {
                         }
                         MenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
-                            enabled: !isUser(author)
+                            enabled: !isUser(author) && author.viewer.mutedByList.isNull()
                             onTriggered: {
                                 if (authorMuted)
                                     graphUtils.unmute(author.did)
@@ -136,7 +136,7 @@ Page {
                         }
                         MenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
-                            enabled: !isUser(author)
+                            enabled: !isUser(author) && author.viewer.blockingByList.isNull()
                             onTriggered: {
                                 if (blocking)
                                     graphUtils.unblock(author.did, blocking)
@@ -313,10 +313,14 @@ Page {
                 return svgOutline.noPosts
             }
             text: {
-                if (blocking) {
+                if (!author.viewer.blockingByList.isNull()) {
+                    return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.blockingByList.name}</a>`)
+                } else if (blocking) {
                     return qsTr("You blocked this account")
                 } else if (author.viewer.blockedBy) {
                     return qsTr("You are blocked")
+                } else if (!author.viewer.mutedByList.isNull()) {
+                    return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.mutedByList.name}</a>`)
                 } else if (authorMuted) {
                     return qsTr("You muted this account")
                 } else if (!contentVisible()) {
@@ -326,6 +330,8 @@ Page {
                 return qsTr("No posts")
             }
             list: authorFeedView
+
+            onLinkActivated: (link) => root.viewListByUri(link, false)
         }
         Text {
             anchors.top: noPostIndication.bottom

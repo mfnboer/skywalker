@@ -8,6 +8,8 @@ Rectangle {
     required property string text
     required property var list
 
+    signal linkActivated(string link)
+
     id: emptyListIndication
     width: parent.width
     height: visible ? noListsImage.height + noListsText.height : 0
@@ -25,11 +27,16 @@ Rectangle {
     Text {
         id: noListsText
         y: noListsImage.y
-        anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width
+        horizontalAlignment: Text.AlignHCenter
         font.pointSize: guiSettings.scaledFont(10/8)
         color: Material.color(Material.Grey)
+        wrapMode: Text.Wrap
         elide: Text.ElideRight
+        textFormat: Text.RichText
         text: emptyListIndication.text
+
+        onLinkActivated: (link) => emptyListIndication.linkActivated(link)
     }
 
     GuiSettings {

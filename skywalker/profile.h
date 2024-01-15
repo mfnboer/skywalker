@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "image_view.h"
+#include "list_view_include.h"
 #include <atproto/lib/lexicon/app_bsky_actor.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -17,6 +18,8 @@ class ProfileViewerState
     Q_PROPERTY(QString blocking READ getBlocking FINAL)
     Q_PROPERTY(QString following READ getFollowing FINAL)
     Q_PROPERTY(QString followedBy READ getFollowedBy FINAL)
+    Q_PROPERTY(ListViewBasic mutedByList READ getMutedByList FINAL)
+    Q_PROPERTY(ListViewBasic blockingByList READ getBlockingByList FINAL)
     QML_VALUE_TYPE(profileviewerstate)
 
 public:
@@ -29,6 +32,8 @@ public:
     const QString& getBlocking() const { return mBlocking; }
     const QString& getFollowing() const { return mFollowing; }
     const QString& getFollowedBy() const { return mFollowedBy; }
+    const ListViewBasic& getMutedByList() const { return mMutedByList; }
+    const ListViewBasic& getBlockingByList() const { return mBlockingByList; }
 
 private:
     bool mValid = false;
@@ -37,6 +42,8 @@ private:
     QString mBlocking;
     QString mFollowing;
     QString mFollowedBy;
+    ListViewBasic mMutedByList;
+    ListViewBasic mBlockingByList;
 };
 
 class BasicProfile

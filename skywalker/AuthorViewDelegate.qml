@@ -83,11 +83,19 @@ Rectangle {
                 }
                 SkyLabel {
                     text: qsTr("blocked")
-                    visible: author.viewer.blocking
+                    visible: author.viewer.blocking && author.viewer.blockingByList.isNull()
+                }
+                SkyLabel {
+                    text: qsTr("list blocked")
+                    visible: !author.viewer.blockingByList.isNull()
                 }
                 SkyLabel {
                     text: qsTr("muted")
-                    visible: author.viewer.muted
+                    visible: author.viewer.muted && author.viewer.mutedByList.isNull()
+                }
+                SkyLabel {
+                    text: qsTr("list muted")
+                    visible: !author.viewer.mutedByList.isNull()
                 }
             }
         }
