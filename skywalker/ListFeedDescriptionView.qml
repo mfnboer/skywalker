@@ -167,6 +167,7 @@ Page {
         skywalker: page.skywalker
         modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
         allowDeleteItem: isOwnList()
+        listUri: list.uri
         clip: true
 
         Component.onCompleted: skywalker.getAuthorList(modelId)

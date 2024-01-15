@@ -27,4 +27,10 @@ void LocalListModelChanges::updateMuted(const QString& uri, bool muted)
     mutedChanged();
 }
 
+void LocalListModelChanges::updateMemberListItemUri(const QString& uri, const QString& listItemUri)
+{
+    mChanges[uri].mMemberListItemUri = listItemUri;
+    memberListItemUriChanged();
+}
+
 }

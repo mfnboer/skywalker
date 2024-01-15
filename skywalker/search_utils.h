@@ -1,6 +1,8 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "author_list_model.h"
+#include "feed_list_model.h"
 #include "presence.h"
 #include "profile.h"
 #include "search_post_feed_model.h"

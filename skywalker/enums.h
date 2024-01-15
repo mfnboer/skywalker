@@ -147,6 +147,14 @@ public:
         LIST_TYPE_SAVED
     };
     Q_ENUM(ListType)
+
+    enum TripleBool
+    {
+        TRIPLE_BOOL_UNKNOWN,
+        TRIPLE_BOOL_NO,
+        TRIPLE_BOOL_YES
+    };
+    Q_ENUM(TripleBool)
 };
 
 }

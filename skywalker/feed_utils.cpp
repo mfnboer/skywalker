@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "feed_utils.h"
+#include "skywalker.h"
 
 namespace Skywalker {
 

@@ -10,6 +10,7 @@ ListView {
     property string description
     property bool showFollow: true
     property bool allowDeleteItem: false
+    property string listUri // set when the author list is a list of members from listUri
     property int prevModelId: -1
 
     signal closed
@@ -93,7 +94,7 @@ ListView {
 
     function deleteListItem(listItemUri, index) {
         model.deleteEntry(index)
-        graphUtils.removeListUser(listItemUri)
+        graphUtils.removeListUser(listUri, listItemUri)
     }
 
     function refresh() {

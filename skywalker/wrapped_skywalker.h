@@ -1,11 +1,13 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "skywalker.h"
+#include <atproto/lib/client.h>
 #include <QObject>
 #include <QtQmlIntegration>
 
 namespace Skywalker {
+
+class Skywalker;
 
 class WrappedSkywalker : public QObject
 {

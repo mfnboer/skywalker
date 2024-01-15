@@ -2,9 +2,11 @@
 // License: GPLv3
 #pragma once
 #include "facet_highlighter.h"
+#include "generator_view.h"
 #include "image_reader.h"
 #include "link_card.h"
 #include "presence.h"
+#include "profile.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <QImage>

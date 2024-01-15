@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "link_utils.h"
 #include "at_regex.h"
+#include "skywalker.h"
 #include <QRegularExpression>
 
 namespace Skywalker {

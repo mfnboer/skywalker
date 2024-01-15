@@ -1,20 +1,31 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "list_list_model.h"
+#include "skywalker.h"
 #include "favorite_feeds.h"
 
 namespace Skywalker {
 
-ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent) :
+ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId,
+                             const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
+                             QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
     mPurpose(purpose),
     mAtId(atId),
-    mFavoriteFeeds(favoriteFeeds)
+    mFavoriteFeeds(favoriteFeeds),
+    mGraphUtils(this)
 {
     qDebug() << "New list list model type:" << type << "purpose:" << purpose << "atId:" << atId;
+    mGraphUtils.setSkywalker(skywalker);
+
     connect(&mFavoriteFeeds, &FavoriteFeeds::listSaved, this, [this]{ listSavedChanged(); });
     connect(&mFavoriteFeeds, &FavoriteFeeds::listPinned, this, [this]{ listPinnedChanged(); });
+
+    connect(&mGraphUtils, &GraphUtils::isListUserOk, this,
+            [this](const QString& listUri, const QString&, const QString& listItemUri){
+                updateMemberCheckResults(listUri, listItemUri);
+            });
 }
 
 int ListListModel::rowCount(const QModelIndex& parent) const
@@ -45,6 +56,13 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
         return mFavoriteFeeds.isSavedFeed(list.getUri());
     case Role::ListPinned:
         return mFavoriteFeeds.isPinnedFeed(list.getUri());
+    case Role::MemberCheck:
+        if (change && change->mMemberListItemUri)
+            return change->mMemberListItemUri->isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
+
+        return memberCheck(list.getUri());
+    case Role::MemberListItemUri:
+        return change && change->mMemberListItemUri ? *change->mMemberListItemUri : getMemberListItemUri(list.getUri());
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -62,6 +80,7 @@ void ListListModel::clear()
         endRemoveRows();
     }
 
+    mMemberCheckResults.clear();
     mCursor.clear();
     clearLocalChanges();
 }
@@ -85,6 +104,12 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QSt
     mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
 
+    if (!mMemberCheckDid.isEmpty())
+    {
+        for (const auto& l : filteredLists)
+            mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
+    }
+
     qDebug() << "New lists size:" << mLists.size();
     return filteredLists.size();
 }
@@ -105,6 +130,12 @@ void ListListModel::addLists(const QList<ListView>& lists)
     mLists.insert(mLists.end(), lists.begin(), lists.end());
     endInsertRows();
 
+    if (!mMemberCheckDid.isEmpty())
+    {
+        for (const auto& l : lists)
+            mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
+    }
+
     qDebug() << "New lists size:" << mLists.size();
 }
 
@@ -115,6 +146,9 @@ void ListListModel::prependList(const ListView& list)
     beginInsertRows({}, 0, 0);
     mLists.push_front(list);
     endInsertRows();
+
+    if (!mMemberCheckDid.isEmpty())
+        mGraphUtils.isListUser(list.getUri(), mMemberCheckDid);
 
     qDebug() << "New lists size:" << mLists.size();
 }
@@ -156,9 +190,14 @@ void ListListModel::deleteEntry(int index)
         return;
     }
 
+    const QString listUri = mLists[index].getUri();
+
     beginRemoveRows({}, index, index);
     mLists.erase(mLists.begin() + index);
     endRemoveRows();
+
+    if (!mMemberCheckDid.isEmpty())
+        mMemberCheckResults.erase(listUri);
 }
 
 ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListViewList lists) const
@@ -167,7 +206,8 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
 
     for (auto&& listView : lists)
     {
-        if (listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mPurpose))
+        if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN ||
+            listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mPurpose))
         {
             ATProto::AppBskyGraph::ListView::SharedPtr sharedRaw(listView.release());
             filtered.emplace_back(sharedRaw);
@@ -185,10 +225,55 @@ QHash<int, QByteArray> ListListModel::roleNames() const
         { int(Role::ListBlockedUri), "listBlockedUri" },
         { int(Role::ListMuted), "listMuted" },
         { int(Role::ListSaved), "listSaved" },
-        { int(Role::ListPinned), "listPinned" }
+        { int(Role::ListPinned), "listPinned" },
+        { int(Role::MemberCheck), "memberCheck" },
+        { int(Role::MemberListItemUri), "memberListItemUri" }
     };
 
     return roles;
+}
+
+QEnums::TripleBool ListListModel::memberCheck(const QString& listUri) const
+{
+    if (mMemberCheckDid.isEmpty())
+        return QEnums::TRIPLE_BOOL_UNKNOWN;
+
+    auto it = mMemberCheckResults.find(listUri);
+
+    if (it != mMemberCheckResults.end())
+    {
+        const std::optional<QString>& listItemUri = it->second;
+
+        if (!listItemUri)
+            return QEnums::TRIPLE_BOOL_UNKNOWN;
+
+        return listItemUri->isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
+    }
+
+    return QEnums::TRIPLE_BOOL_UNKNOWN;
+}
+
+void ListListModel::updateMemberCheckResults(const QString& listUri, const QString& listItemUri)
+{
+    qDebug() << "List:" << listUri << "Item:" << listItemUri;
+    mMemberCheckResults[listUri] = listItemUri;
+    changeData({ int(Role::MemberCheck), int(Role::MemberListItemUri) });
+}
+
+QString ListListModel::getMemberListItemUri(const QString& listUri) const
+{
+    qDebug() << "Get member, list:" << listUri;
+
+    if (mMemberCheckDid.isEmpty())
+        return {};
+
+    auto it = mMemberCheckResults.find(listUri);
+
+    if (it == mMemberCheckResults.end())
+        return {};
+
+    qDebug() << "Get member, list:" << listUri << "item:" << *(it->second);
+    return *(it->second);
 }
 
 void ListListModel::blockedChanged()
@@ -199,6 +284,11 @@ void ListListModel::blockedChanged()
 void ListListModel::mutedChanged()
 {
     changeData({ int(Role::ListMuted) });
+}
+
+void ListListModel::memberListItemUriChanged()
+{
+    changeData({ int(Role::MemberCheck), int(Role::MemberListItemUri) });
 }
 
 void ListListModel::listSavedChanged()

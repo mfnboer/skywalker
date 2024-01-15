@@ -108,17 +108,13 @@ Page {
                             text: qsTr("Translate")
                             onTriggered: root.translateText(author.description)
 
-                            MenuItemSvg {
-                                svg: svgOutline.googleTranslate
-                            }
+                            MenuItemSvg { svg: svgOutline.googleTranslate }
                         }
                         MenuItem {
                             text: qsTr("Share")
                             onTriggered: skywalker.shareAuthor(author)
 
-                            MenuItemSvg {
-                                svg: svgOutline.share
-                            }
+                            MenuItemSvg { svg: svgOutline.share }
                         }
                         MenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
@@ -130,9 +126,7 @@ Page {
                                     graphUtils.mute(author.did)
                             }
 
-                            MenuItemSvg {
-                                svg: authorMuted ? svgOutline.unmute : svgOutline.mute
-                            }
+                            MenuItemSvg { svg: authorMuted ? svgOutline.unmute : svgOutline.mute }
                         }
                         MenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
@@ -144,17 +138,19 @@ Page {
                                     graphUtils.block(author.did)
                             }
 
-                            MenuItemSvg {
-                                svg: blocking ? svgOutline.unblock : svgOutline.block
-                            }
+                            MenuItemSvg { svg: blocking ? svgOutline.unblock : svgOutline.block }
+                        }
+                        MenuItem {
+                            text: qsTr("Update lists")
+                            onTriggered: updateLists()
+
+                            MenuItemSvg { svg: svgOutline.list }
                         }
                         MenuItem {
                             text: qsTr("Report account")
                             onTriggered: root.reportAuthor(author)
 
-                            MenuItemSvg {
-                                svg: svgOutline.report
-                            }
+                            MenuItemSvg { svg: svgOutline.report }
                         }
                     }
                 }
@@ -410,6 +406,16 @@ Page {
     function getFeedNextPage() {
         if (mustGetFeed())
             skywalker.getAuthorFeedNextPage(modelId)
+    }
+
+    function updateLists() {
+        let listModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, skywalker.getUserDid())
+        skywalker.getListListModel(listModelId).setMemberCheckDid(author.did)
+        let component = Qt.createComponent("AddUserListListView.qml")
+        let view = component.createObject(page, { author: author, modelId: listModelId, skywalker: skywalker })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+        skywalker.getListList(listModelId)
     }
 
     function mustGetFeed() {

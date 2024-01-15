@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "graph_utils.h"
 #include "list_view.h"
 #include "local_list_model_changes.h"
 #include <QAbstractListModel>
@@ -9,6 +10,7 @@
 namespace Skywalker {
 
 class FavoriteFeeds;
+class Skywalker;
 
 class ListListModel : public QAbstractListModel, public LocalListModelChanges
 {
@@ -20,14 +22,20 @@ public:
         ListBlockedUri,
         ListMuted,
         ListSaved,
-        ListPinned
+        ListPinned,
+        MemberCheck,
+        MemberListItemUri
     };
 
     using Type = QEnums::ListType;
     using Purpose = QEnums::ListPurpose;
     using Ptr = std::unique_ptr<ListListModel>;
 
-    ListListModel(Type type, Purpose purpose, const QString& atId, const FavoriteFeeds& favoriteFeeds, QObject* parent = nullptr);
+    ListListModel(Type type, Purpose purpose, const QString& atId,
+                  const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
+                  QObject* parent = nullptr);
+
+    Q_INVOKABLE void setMemberCheckDid(const QString& did) { mMemberCheckDid = did; }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -52,10 +60,14 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
     virtual void blockedChanged() override;
     virtual void mutedChanged() override;
+    virtual void memberListItemUriChanged() override;
 
 private:
     using ListList = std::deque<ListView>;
 
+    QEnums::TripleBool memberCheck(const QString& listUri) const;
+    void updateMemberCheckResults(const QString& listUri, const QString& listItemUri);
+    QString getMemberListItemUri(const QString& listUri) const;
     void listSavedChanged();
     void listPinnedChanged();
     void changeData(const QList<int>& roles);
@@ -68,6 +80,9 @@ private:
     ListList mLists;
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
+    GraphUtils mGraphUtils;
+    QString mMemberCheckDid;
+    std::unordered_map<QString, std::optional<QString>> mMemberCheckResults; // listUri -> listItemUri
 };
 
 }

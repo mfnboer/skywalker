@@ -259,6 +259,8 @@ qt_add_qml_module(libskywalker
         QML_FILES ListViewerState.qml
         QML_FILES FavoriteStar.qml
         SOURCES list_view_include.h
+        QML_FILES AddUserListListView.qml
+        QML_FILES AddUserListViewDelegate.qml
 )
 
 if (NOT ANDROID)

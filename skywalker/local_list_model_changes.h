@@ -18,6 +18,7 @@ public:
         std::optional<QString> mBlocked;
 
         std::optional<bool> mMuted;
+        std::optional<QString> mMemberListItemUri;
     };
 
     LocalListModelChanges() = default;
@@ -28,10 +29,12 @@ public:
 
     void updateBlocked(const QString& uri, const QString& blockUri);
     void updateMuted(const QString& uri, bool muted);
+    void updateMemberListItemUri(const QString& uri, const QString& listItemUri);
 
 protected:
     virtual void blockedChanged() = 0;
     virtual void mutedChanged() = 0;
+    virtual void memberListItemUriChanged() = 0;
 
 private:
     // URI to change

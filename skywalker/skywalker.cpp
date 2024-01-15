@@ -1536,6 +1536,7 @@ void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int
     mBsky->getLists(atId, limit, makeOptionalCursor(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
+            qDebug() << "getListListAll succeded, id:" << modelId;
             const auto* model = mListListModels.get(modelId);
 
             if (model)

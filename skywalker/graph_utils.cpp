@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "graph_utils.h"
 #include "photo_picker.h"
+#include "skywalker.h"
 
 namespace Skywalker {
 
@@ -349,17 +350,67 @@ void GraphUtils::getListView(const QString& listUri, bool viewPosts)
         });
 }
 
+void GraphUtils::isListUser(const QString& listUri, const QString& did, int maxPages, const std::optional<QString> cursor)
+{
+    if (!bskyClient())
+        return;
+
+    if (maxPages <= 0)
+    {
+        qWarning() << "Max pages reached";
+        emit isListUserOk(listUri, did, {});
+        return;
+    }
+
+    bskyClient()->getList(listUri, 100, cursor,
+        [this, presence=getPresence(), listUri, did, maxPages](auto output){
+            if (!presence)
+                return;
+
+            for (const auto& item : output->mItems)
+            {
+                if (item->mSubject->mDid == did)
+                {
+                    qDebug() << "User:" << did << "is member of list:" << listUri << ", itemUri:" << item->mUri;
+                    emit isListUserOk(listUri, did, item->mUri);
+                    return;
+                }
+            }
+
+            if (output->mCursor)
+            {
+                isListUser(listUri, did, maxPages - 1, output->mCursor);
+            }
+            else
+            {
+                emit isListUserOk(listUri, did, {});
+            }
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "getListViewfailed:" << error << " - " << msg;
+            emit isListUserFailed(msg);
+        });
+}
+
 void GraphUtils::addListUser(const QString& listUri, const QString& did)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->addUserToList(listUri, did,
-        [this, presence=getPresence(), did](const QString& uri, const QString& cid){
+        [this, presence=getPresence(), listUri, did](const QString& itemUri, const QString& itemCid){
             if (!presence)
                 return;
 
-            emit addListUserOk(did, uri, cid);
+            mSkywalker->makeLocalModelChange(
+                [listUri, itemUri](LocalListModelChanges* model){
+                    model->updateMemberListItemUri(listUri, itemUri);
+                });
+
+            emit addListUserOk(did, itemUri, itemCid);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -370,15 +421,20 @@ void GraphUtils::addListUser(const QString& listUri, const QString& did)
         });
 }
 
-void GraphUtils::removeListUser(const QString& listItemUri)
+void GraphUtils::removeListUser(const QString& listUri, const QString& listItemUri)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->undo(listItemUri,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), listUri]{
             if (!presence)
                 return;
+
+            mSkywalker->makeLocalModelChange(
+                [listUri](LocalListModelChanges* model){
+                    model->updateMemberListItemUri(listUri, {});
+                });
 
             emit removeListUserOk();
         },

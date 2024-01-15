@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "search_utils.h"
+#include "skywalker.h"
 #include <QTextBoundaryFinder>
 
 namespace Skywalker {

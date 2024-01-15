@@ -33,7 +33,8 @@ public:
     Q_INVOKABLE void deleteList(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri, bool viewPosts = false);
     Q_INVOKABLE void addListUser(const QString& listUri, const QString& did);
-    Q_INVOKABLE void removeListUser(const QString& listItemUri);
+    Q_INVOKABLE void removeListUser(const QString& listUri, const QString& listItemUri);
+    Q_INVOKABLE void isListUser(const QString& listUri, const QString& did, int maxPages = 10, const std::optional<QString> cursor = {});
 
     Q_INVOKABLE ListView makeListView(const QString& uri, const QString& cid, const QString& name,
                     QEnums::ListPurpose purpose, const QString& avatar,
@@ -71,6 +72,8 @@ signals:
     void addListUserFailed(QString error);
     void removeListUserOk();
     void removeListUserFailed(QString error);
+    void isListUserOk(QString listUri, QString did, QString listItemUri);
+    void isListUserFailed(QString error);
     void blockListOk(QString uri);
     void blockListFailed(QString error);
     void unblockListOk();

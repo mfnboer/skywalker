@@ -4,6 +4,7 @@
 #include "jni_callback.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
+#include "skywalker.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QImageReader>
 

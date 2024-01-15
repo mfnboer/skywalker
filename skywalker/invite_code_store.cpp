@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "invite_code_store.h"
 #include "author_cache.h"
+#include "skywalker.h"
 
 namespace Skywalker {
 

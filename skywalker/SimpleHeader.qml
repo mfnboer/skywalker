@@ -19,6 +19,7 @@ Rectangle {
     RowLayout
     {
         id: headerRow
+        width: parent.width
 
         SvgButton {
             id: backButton
@@ -29,10 +30,12 @@ Rectangle {
         }
         Text {
             id: headerTexts
+            Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
+            elide: Text.ElideRight
             text: headerRect.text
         }
     }
