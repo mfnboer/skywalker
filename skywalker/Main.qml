@@ -499,6 +499,7 @@ ApplicationWindow {
         onWebLink: (link) => Qt.openUrlExternally(link)
         onPostLink: (atUri) => skywalker.getPostThread(atUri)
         onFeedLink: (atUri) => skywalker.getFeedGenerator(atUri, true)
+        onListLink: (atUri) => viewListByUri(atUri, true)
         onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
     }
 

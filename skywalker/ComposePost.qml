@@ -38,6 +38,10 @@ Page {
     property generatorview quoteFeed
     property generatorview nullFeed
 
+    // Quote list
+    property listview quoteList
+    property listview nullList
+
     signal closed
 
     id: page
@@ -79,8 +83,8 @@ Page {
             onClicked: {
                 postButton.enabled = false
 
-                const qUri = quoteUri ? quoteUri : quoteFeed.uri
-                const qCid = quoteUri ? quoteCid : quoteFeed.cid
+                const qUri = getQuoteUri()
+                const qCid = getQuoteCid()
 
                 if (linkCard.card) {
                     postUtils.post(postText.text, linkCard.card,
@@ -276,7 +280,7 @@ Page {
         anchors.fill: parent
         clip: true
         contentWidth: postText.width
-        contentHeight: quoteFeedColumn.y + (quoteFeedColumn.visible ? quoteFeedColumn.height : 0)
+        contentHeight: quoteListColumn.y + (quoteListColumn.visible ? quoteListColumn.height : 0)
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
@@ -522,6 +526,24 @@ Page {
             visible: !page.quoteFeed.isNull()
         }
 
+        // Quote list
+        Rectangle {
+            anchors.fill: quoteListColumn
+            border.width: 2
+            border.color: guiSettings.borderColor
+            color: guiSettings.postHighLightColor
+            visible: quoteListColumn.visible
+        }
+        QuoteList {
+            id: quoteListColumn
+            width: parent.width - 20
+            anchors.top: linkCard.bottom
+            anchors.topMargin: 5
+            anchors.horizontalCenter: parent.horizontalCenter
+            list: page.quoteList
+            visible: !page.quoteList.isNull()
+        }
+
         function ensureVisible(cursor) {
             let cursorY = cursor.y + postText.y
 
@@ -619,18 +641,19 @@ Page {
             if (page.openedAsQuotePost)
                 return
 
+            page.quoteList = page.nullList
             page.quoteFeed = page.nullFeed
             quoteUri = ""
 
-            if (firstPostLink) {
+            if (firstPostLink)
                 postUtils.getQuotePost(firstPostLink)
-            }
         }
 
         onFirstFeedLinkChanged: {
             if (page.openedAsQuotePost)
                 return
 
+            page.quoteList = page.nullList
             page.quoteFeed = page.nullFeed
 
             if (firstPostLink)
@@ -640,10 +663,24 @@ Page {
                 postUtils.getQuoteFeed(firstFeedLink)
         }
 
+        onFirstListLinkChanged: {
+            if (page.openedAsQuotePost)
+                return
+
+            page.quoteList = page.nullList
+
+            if (firstPostLink || firstFeedLink)
+                return
+
+            if (firstListLink)
+                postUtils.getQuoteList(firstListLink)
+        }
+
         onQuotePost: (uri, cid, text, author, timestamp) => {
                 if (!firstPostLink)
                     return
 
+                page.quoteList = page.nullList
                 page.quoteFeed = page.nullFeed
                 page.quoteUri = uri
                 page.quoteCid = cid
@@ -659,7 +696,18 @@ Page {
                 if (firstPostLink)
                     return
 
+                page.quoteList = page.nullList
                 page.quoteFeed = feed
+            }
+
+        onQuoteList: (list) => {
+                if (!firstListLink)
+                    return
+
+                if (firstPostLink || firstFeedLink)
+                    return
+
+                page.quoteList = list
             }
     }
 
@@ -801,6 +849,26 @@ Page {
         })
         restrictionsPage.onRejected.connect(() => restrictionsPage.destroy())
         restrictionsPage.open()
+    }
+
+    function getQuoteUri() {
+        if (quoteUri)
+            return quoteUri
+
+        if (quoteFeed.uri)
+            return quoteFeed.uri
+
+        return quoteList.uri
+    }
+
+    function getQuoteCid() {
+        if (quoteCid)
+            return quoteCid
+
+        if (quoteFeed.cid)
+            return quoteFeed.cid
+
+        return quoteList.cid
     }
 
     Connections {

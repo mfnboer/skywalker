@@ -1,3 +1,9 @@
+next
+====
+* Moderation and user lists
+* Add user lists to your favorite feeds
+* Bug fixes
+
 0.5.1
 =====
 * Select photo's from all your albums and cloud locations.

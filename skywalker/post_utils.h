@@ -5,6 +5,7 @@
 #include "generator_view.h"
 #include "image_reader.h"
 #include "link_card.h"
+#include "list_view.h"
 #include "presence.h"
 #include "profile.h"
 #include "wrapped_skywalker.h"
@@ -21,6 +22,7 @@ class PostUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
     Q_PROPERTY(QString firstFeedLink READ getFirstFeedLink WRITE setFirstFeedLink NOTIFY firstFeedLinkChanged FINAL)
+    Q_PROPERTY(QString firstListLink READ getFirstListLink WRITE setFirstListLink NOTIFY firstListLinkChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -55,6 +57,7 @@ public:
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
     Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
+    Q_INVOKABLE void getQuoteList(const QString& httpsUri);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
 
     const QString& getEditMention() const { return mEditMention; }
@@ -65,6 +68,8 @@ public:
     void setFirstPostLink(const QString& link);
     const QString& getFirstFeedLink() const { return mFirstFeedLink; }
     void setFirstFeedLink(const QString& link);
+    const QString& getFirstListLink() const { return mFirstListLink; }
+    void setFirstListLink(const QString& link);
 
 signals:
     void postOk(QString uri, QString cid);
@@ -90,8 +95,10 @@ signals:
     void firstWebLinkChanged();
     void firstPostLinkChanged();
     void firstFeedLinkChanged();
+    void firstListLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
     void quoteFeed(GeneratorView feed);
+    void quoteList(ListView list);
 
 private:
     void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
@@ -115,6 +122,7 @@ private:
     int mEditMentionIndex = 0;
     QString mFirstPostLink; // HTTPS link to a post
     QString mFirstFeedLink; // HTTPS link to feed generator
+    QString mFirstListLink; // HTTPS link to list ivew
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;

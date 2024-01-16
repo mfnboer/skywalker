@@ -56,6 +56,12 @@ Item {
             visible: record.feedAvailable
         }
 
+        QuoteList {
+            width: parent.width
+            list: record.list
+            visible: record.listAvailable
+        }
+
         Text {
             width: parent.width
             color: guiSettings.textColor
@@ -100,6 +106,8 @@ Item {
                 skywalker.getPostThread(record.postUri)
             else if (record.feedAvailable)
                 root.viewPostFeed(record.feed)
+            else if (record.listAvailable)
+                root.viewList(record.list)
         }
     }
 

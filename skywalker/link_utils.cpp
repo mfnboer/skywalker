@@ -30,6 +30,14 @@ void LinkUtils::openLink(const QString& link)
         return;
     }
 
+    const auto listAtUri = getListUri(link);
+
+    if (listAtUri.isValid())
+    {
+        openListLink(listAtUri);
+        return;
+    }
+
     const auto handleOrDid = isAuthorLink(link);
 
     if (!handleOrDid.isEmpty())
@@ -41,23 +49,23 @@ void LinkUtils::openLink(const QString& link)
     emit webLink(link);
 }
 
-void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
+void LinkUtils::openLink(const ATProto::ATUri& atUri, const std::function<void(const QString& uri)>& openFun)
 {
     if (!atUri.authorityIsHandle())
     {
-        emit postLink(atUri.toString());
+        openFun(atUri.toString());
         return;
     }
 
     bskyClient()->resolveHandle(atUri.getAuthority(),
-        [this, presence=getPresence(), atUri](const QString& did){
+        [presence=getPresence(), atUri, openFun](const QString& did){
             if (!presence)
                 return;
 
             auto postAtUri = atUri;
             postAtUri.setAuthority(did);
             postAtUri.setAuthorityIsHandle(false);
-            emit postLink(postAtUri.toString());
+            openFun(postAtUri.toString());
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -68,31 +76,19 @@ void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
         });
 }
 
+void LinkUtils::openPostLink(const ATProto::ATUri& atUri)
+{
+    openLink(atUri, [this](const QString& uri){ emit postLink(uri); });
+}
+
 void LinkUtils::openFeedLink(const ATProto::ATUri& atUri)
 {
-    if (!atUri.authorityIsHandle())
-    {
-        emit feedLink(atUri.toString());
-        return;
-    }
+    openLink(atUri, [this](const QString& uri){ emit feedLink(uri); });
+}
 
-    bskyClient()->resolveHandle(atUri.getAuthority(),
-        [this, presence=getPresence(), atUri](const QString& did){
-            if (!presence)
-                return;
-
-            auto feedAtUri = atUri;
-            feedAtUri.setAuthority(did);
-            feedAtUri.setAuthorityIsHandle(false);
-            emit feedLink(feedAtUri.toString());
-        },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
-            if (!presence)
-                return;
-
-            qWarning() << error << " - " << msg;
-            mSkywalker->statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
-        });
+void LinkUtils::openListLink(const ATProto::ATUri& atUri)
+{
+    openLink(atUri, [this](const QString& uri){ emit listLink(uri); });
 }
 
 QString LinkUtils::isAuthorLink(const QString& link) const
@@ -127,6 +123,15 @@ ATProto::ATUri LinkUtils::getPostUri(const QString& link) const
 ATProto::ATUri LinkUtils::getFeedUri(const QString& link) const
 {
     const auto atUri = ATProto::ATUri::fromHttpsFeedUri(link);
+    if (atUri.isValid())
+        return atUri;
+
+    return {};
+}
+
+ATProto::ATUri LinkUtils::getListUri(const QString& link) const
+{
+    const auto atUri = ATProto::ATUri::fromHttpsListUri(link);
     if (atUri.isValid())
         return atUri;
 

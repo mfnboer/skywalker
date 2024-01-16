@@ -36,6 +36,12 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         mFeed = record.get();
         break;
     }
+    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    {
+        const auto& record = std::get<ATProto::AppBskyGraph::ListView::Ptr>(view.mRecord);
+        mList = record.get();
+        break;
+    }
     default:
         qWarning() << "Record type not supported:" << view.mUnsupportedType;
         mNotSupported = true;
@@ -66,6 +72,11 @@ QString RecordView::getText() const
         const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord->mValue);
         return recordValue->mDescription.value_or("");
     }
+    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::Ptr>(mRecord->mValue);
+        return recordValue->mDescription.value_or("");
+    }
     default:
         break;
     }
@@ -89,6 +100,11 @@ QString RecordView::getFormattedText() const
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedFeedDescription(*recordValue, UserSettings::getLinkColor());
+    }
+    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::Ptr>(mRecord->mValue);
+        return ATProto::RichTextMaster::getFormattedListDescription(*recordValue, UserSettings::getLinkColor());
     }
     default:
         break;
@@ -187,6 +203,14 @@ GeneratorView RecordView::getFeed() const
         return {};
 
     return GeneratorView(mFeed);
+}
+
+ListView RecordView::getList() const
+{
+    if (!mList)
+        return {};
+
+    return ListView(mList);
 }
 
 }

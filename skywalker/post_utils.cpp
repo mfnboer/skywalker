@@ -621,6 +621,15 @@ void PostUtils::setFirstFeedLink(const QString& link)
     emit firstFeedLinkChanged();
 }
 
+void PostUtils::setFirstListLink(const QString& link)
+{
+    if (link == mFirstListLink)
+        return;
+
+    mFirstListLink = link;
+    emit firstListLinkChanged();
+}
+
 void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor)
 {
     mFacetHighlighter.setDocument(doc->textDocument());
@@ -638,6 +647,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
     bool webLinkFound = false;
     bool postLinkFound = false;
     bool feedLinkFound = false;
+    bool listLinkFound = false;
     mLinkShorteningReduction = 0;
 
     for (const auto& facet : facets)
@@ -672,12 +682,27 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                         feedLinkFound = true;
                     }
                 }
-                else if (!webLinkFound)
+                else
                 {
-                    qDebug() << "Web link:" << facet.mMatch;
+                    const auto atListUri = ATProto::ATUri::fromHttpsListUri(facet.mMatch);
 
-                    setFirstWebLink(facet.mMatch);
-                    webLinkFound = true;
+                    if (atListUri.isValid())
+                    {
+                        qDebug() << "Valid list link:" << facet.mMatch;
+
+                        if (!listLinkFound)
+                        {
+                            setFirstListLink(facet.mMatch);
+                            listLinkFound = true;
+                        }
+                    }
+                    else if (!webLinkFound)
+                    {
+                        qDebug() << "Web link:" << facet.mMatch;
+
+                        setFirstWebLink(facet.mMatch);
+                        webLinkFound = true;
+                    }
                 }
             }
 
@@ -703,16 +728,19 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
     }
 
     if (!editMentionFound)
-        setEditMention(QString());
+        setEditMention({});
 
     if (!webLinkFound)
-        setFirstWebLink(QString());
+        setFirstWebLink({});
 
     if (!postLinkFound)
-        setFirstPostLink(QString());
+        setFirstPostLink({});
 
     if (!feedLinkFound)
-        setFirstFeedLink(QString());
+        setFirstFeedLink({});
+
+    if (!listLinkFound)
+        setFirstListLink({});
 }
 
 QString PostUtils::linkiFy(const QString& text, const QString& colorName)
@@ -759,6 +787,19 @@ void PostUtils::getQuoteFeed(const QString& httpsUri)
         });
 }
 
+void PostUtils::getQuoteList(const QString& httpsUri)
+{
+    if (!postMaster())
+        return;
+
+    postMaster()->getList(httpsUri,
+                          [this](auto list){
+                              ATProto::AppBskyGraph::ListView::SharedPtr sharedList(list.release());
+                              ListView view(sharedList);
+                              emit quoteList(view);
+                          });
+}
+
 bool PostUtils::onlyEmojis(const QString& text)
 {
     qDebug() << "EMOJI?" << text;
@@ -775,6 +816,7 @@ bool PostUtils::onlyEmojis(const QString& text)
 bool PostUtils::isEmoji(uint c)
 {
     static const std::map<uint, uint> RANGES = {
+        {0x0200D, 0x0200D}, // Zero Width Joiner to combine codepoints
         {0x02600, 0x026FF}, // Miscellaneous symbols
         {0x02700, 0x027BF}, // Dingbats
         {0x0FE0E, 0x0FE0F}, // variation selectors
