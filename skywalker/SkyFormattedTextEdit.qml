@@ -14,6 +14,7 @@ TextEdit {
     width: parentPage.width
     leftPadding: 10
     rightPadding: 10
+    activeFocusOnTab: true
     textFormat: TextEdit.PlainText
     wrapMode: TextEdit.Wrap
     font.pointSize: guiSettings.scaledFont(9/8)

@@ -335,4 +335,8 @@ Page {
     Component.onDestruction: {
         dropCreatedAvatar()
     }
+
+    Component.onCompleted: {
+        nameField.setFocus()
+    }
 }
