@@ -19,6 +19,7 @@ Column {
     property int maxTextLines: 1000
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
+    property bool attachmentsInitialized: false
 
     id: postBody
 
@@ -209,14 +210,25 @@ Column {
         }
     }
 
-    Component.onCompleted: {
-        if (!postBody.visible)
-            return
+    onVisibleChanged: {
+        if (postBody.visible && !postBody.attachmentsInitialized)
+            initAttachments()
+    }
 
+    function initAttachments() {
         if (postVisible())
             showPostAttachements()
 
         if (detailedView)
             dateTimeComp.createObject(postBody)
+
+        postBody.attachmentsInitialized = true
+    }
+
+    Component.onCompleted: {
+        if (!postBody.visible)
+            return
+
+        initAttachments()
     }
 }
