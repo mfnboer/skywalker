@@ -10,6 +10,7 @@ public:
     static void initAppFonts();
     static void addApplicationFonts();
     static void downloadEmojiFont();
+    static float getFontScale();
 };
 
 }

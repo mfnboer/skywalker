@@ -18,11 +18,13 @@ void FontDownloader::initAppFonts()
     downloadEmojiFont();
 
     QFont font = QGuiApplication::font();
+    const float fontScale = getFontScale();
+
     auto fontFamilies = font.families();
     fontFamilies.push_back("Noto Color Emoji");
     font.setFamilies(fontFamilies);
     font.setWeight(QFont::Weight(350));
-    font.setPixelSize(16);
+    font.setPixelSize(std::roundf(16 * fontScale));
     QGuiApplication::setFont(font);
 
     qDebug() << "Font:" << font;
@@ -32,6 +34,7 @@ void FontDownloader::initAppFonts()
     qDebug() << "Font family:" << font.family();
     qDebug() << "Font default family:" << font.defaultFamily();
     qDebug() << "Font style hint:" << font.styleHint();
+    qDebug() << "Font scale:" << fontScale;
 }
 
 void FontDownloader::addApplicationFonts()
@@ -68,6 +71,20 @@ void FontDownloader::downloadEmojiFont()
 
     if (fontId >= 0)
         qDebug() << "FONT FAMILIES:" << QFontDatabase::applicationFontFamilies(fontId);
+#endif
+}
+
+float FontDownloader::getFontScale()
+{
+#ifdef Q_OS_ANDROID
+    auto fontScale = QJniObject::callStaticMethod<jfloat>("com/gmail/mfnboer/FontUtils",
+                                                         "getFontScale",
+                                                         "()F");
+
+    qDebug() << "Font scale:" << fontScale;
+    return fontScale;
+#else
+    return 1.0;
 #endif
 }
 

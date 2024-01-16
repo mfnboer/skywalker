@@ -2,6 +2,7 @@ next
 ====
 * Moderation and user lists
 * Add user lists to your favorite feeds
+* Scale font size according to device settings
 * Bug fixes
 
 0.5.1

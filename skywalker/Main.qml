@@ -1149,6 +1149,9 @@ ApplicationWindow {
 
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)
+        console.debug("Font pt:", Qt.application.font.pointSize)
+        console.debug("Font px:", Qt.application.font.pixelSize)
+
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
 

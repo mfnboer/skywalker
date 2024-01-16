@@ -54,6 +54,7 @@ qt_add_qml_module(appskywalker
         android/src/com/gmail/mfnboer/ShareUtils.java
         android/src/com/gmail/mfnboer/PasswordStorageHelper.java
         android/src/com/gmail/mfnboer/SkywalkerActivity.java
+        RESOURCES android/src/com/gmail/mfnboer/FontUtils.java
 )
 
 if (ANDROID)
