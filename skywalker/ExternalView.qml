@@ -38,7 +38,17 @@ Item {
         width: 50
         fillMode: Image.PreserveAspectFit
         source: "/images/via_tenor_logo_blue.svg"
-        visible: isGifImage() && gifImage.status === Image.Ready
+        visible: gifImage.visible && isTenorGif() && gifImage.status === Image.Ready
+    }
+    Image {
+        id: giphyAttribution
+        anchors.right: gifImage.right
+        anchors.top: gifImage.bottom
+        anchors.topMargin: 5
+        width: 50
+        fillMode: Image.PreserveAspectFit
+        source: "/images/giphy_logo.png"
+        visible: gifImage.visible && isGiphyGif() && gifImage.status === Image.Ready
     }
 
     FilteredImageWarning {
@@ -55,6 +65,17 @@ Item {
         enabled: !isGifImage() && filter.imageVisible()
     }
 
+    function isTenorGif() {
+        return postExternal.uri.startsWith("https://media.tenor.com/") ||
+                postExternal.uri.startsWith("https://tenor.com/view/") ||
+                postExternal.uri.startsWith("https://graysky.app/gif/")
+    }
+
+    function isGiphyGif() {
+        return postExternal.uri.startsWith("https://giphy.com/gifs/") ||
+                postExternal.uri.startsWith("https://media.giphy.com/media/")
+    }
+
     function isGifImage() {
         if (postExternal.uri.startsWith("https://media.tenor.com/")) {
             if (postExternal.uri.endsWith(".gif")) {
@@ -68,12 +89,33 @@ Item {
             return getGifUrl() !== ""
         }
 
+        if (postExternal.uri.startsWith("https://tenor.com/view/")) {
+            return getGifUrl() !== ""
+        }
+
+        if (postExternal.uri.startsWith("https://giphy.com/gifs/")) {
+            return getGifUrl() !== ""
+        }
+
+        if (postExternal.uri.startsWith("https://media.giphy.com/media/")) {
+            return getGifUrl() !== ""
+        }
+
         return false
     }
 
     function getGifUrl() {
         let url = postExternal.uri
         console.debug("Get GIF url for:", url)
+
+        if (url.startsWith("https://giphy.com/gifs/"))
+            return getGiphyGifUrl()
+
+        if (url.startsWith("https://media.giphy.com/media/"))
+            return getGiphyMediaGifUrl()
+
+        if (url.startsWith("https://tenor.com/view/"))
+            return getTenorViewGif()
 
         if (url.startsWith("https://graysky.app/gif/")) {
             url = postExternal.uri.split("?")[0]
@@ -125,5 +167,48 @@ Item {
 
         console.debug("Unsupported GIF format:", url)
         return ""
+    }
+
+    function getGiphyGifUrl() {
+        let url = postExternal.uri
+        console.debug("Get Giphy GIF url for:", url)
+
+        let urlParts = url.split("/")
+
+        if (urlParts.length !== 5) {
+            console.warn("Unknown Giphy URL format:", url)
+            return ""
+        }
+
+        let gifLongId = urlParts[urlParts.length - 1]
+        let gifLongIdParts = gifLongId.split("-")
+        let gifId = gifLongIdParts[gifLongIdParts.length - 1]
+        url = "https://i.giphy.com/" + gifId + ".gif"
+        console.debug("Giphy GIF url:", url)
+        return url
+    }
+
+    function getGiphyMediaGifUrl() {
+        let url = postExternal.uri
+        console.debug("Get Giphy media GIF url for:", url)
+
+        if (url.endsWith(".gif"))
+            return url
+
+        return ""
+    }
+
+    function getTenorViewGif() {
+        let url = postExternal.uri
+        console.debug("Get Tenor view GIF url for:", url)
+
+        let queryIndex = url.indexOf("?")
+
+        if (queryIndex !== -1)
+            url = url.slice(0, queryIndex)
+
+        url = url + ".gif"
+        console.debug("Tenor view GIF url:", url)
+        return url
     }
 }

@@ -27,8 +27,8 @@ public:
             const QString& description,
             const QString& searchTerm,
             const QString& url, QSize size,
-        const QString& smallUrl, QSize smallSize,
-        const QString& imageUrl, QSize imageSize) :
+            const QString& smallUrl, QSize smallSize,
+            const QString& imageUrl, QSize imageSize) :
         mId(id),
         mDescription(description),
         mSearchTerm(searchTerm),

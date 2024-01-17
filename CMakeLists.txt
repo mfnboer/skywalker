@@ -48,6 +48,7 @@ qt_add_qml_module(appskywalker
         images/skywalker.png
         images/PB_tenor_logo_blue_horizontal.svg
         images/via_tenor_logo_blue.svg
+        images/giphy_logo.png
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java
