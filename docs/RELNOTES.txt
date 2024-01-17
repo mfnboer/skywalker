@@ -1,3 +1,9 @@
+0.6.1
+=====
+* Fix pinned feeds/list drop down list
+* Bug fix: sometimes feed/list stayed visible after unsaving
+* Bug fix: saved lists sorting was messed up
+
 0.6
 ===
 * Moderation and user lists

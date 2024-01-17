@@ -31,7 +31,8 @@ SvgButton {
         }
 
         Instantiator {
-            model: skywalker.favoriteFeeds.pinnedFeeds
+            id: menuInstantiator
+            model: []
             delegate: MenuItem {
                 text: modelData.name
 
@@ -42,6 +43,7 @@ SvgButton {
                     width: height
                     height: parent.height - 10
                     avatarUrl: modelData.avatar
+                    unknownSvg: modelData.isGeneratorView ? svgFilled.feed : svgFilled.list
                     onClicked: parent.triggered()
                 }
 
@@ -55,9 +57,18 @@ SvgButton {
                 }
             }
 
-            onObjectAdded: (index, object) => feedsMenu.insertItem(index + 1, object)
-            onObjectRemoved: (index, object) => feedsMenu.removeItem(object)
+            onObjectAdded: (index, object) => {
+                console.debug("Add feed menu item:", object.text, "index:", index)
+                feedsMenu.insertItem(index + 1, object)
+            }
+            onObjectRemoved: (index, object) => {
+                console.debug("Remove feed menu item:", object.text, "index:", index)
+                feedsMenu.removeItem(object)
+            }
         }
+
+        onAboutToShow: menuInstantiator.model = skywalker.favoriteFeeds.getPinnedFeeds()
+        onAboutToHide: menuInstantiator.model = []
     }
 
     GuiSettings {

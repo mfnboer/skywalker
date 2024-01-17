@@ -41,13 +41,13 @@ Rectangle {
             color: "transparent"
         }
 
-        FeedAvatar {
+        ListAvatar {
             Layout.leftMargin: view.margin
             Layout.rightMargin: view.margin
             x: 8
             y: 5
             width: guiSettings.threadBarWidth * 5
-            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             avatarUrl: list.avatar
 
             onClicked: listClicked(list)

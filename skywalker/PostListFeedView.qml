@@ -21,6 +21,7 @@ ListView {
     header: PostFeedHeader {
         skywalker: postListFeedView.skywalker
         feedName: postListFeedView.model.feedName
+        isList: true
         feedAvatar: postListFeedView.model.getListView().avatar
         showAsHome: postListFeedView.showAsHome
 

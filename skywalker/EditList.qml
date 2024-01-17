@@ -113,7 +113,7 @@ Page {
                 text: qsTr("List Avatar")
             }
 
-            FeedAvatar {
+            ListAvatar {
                 property bool isUpdated: false
 
                 id: avatar

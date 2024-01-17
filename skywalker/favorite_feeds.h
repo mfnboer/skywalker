@@ -18,7 +18,6 @@ class Skywalker;
 class FavoriteFeeds : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<FavoriteFeedView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
     Q_PROPERTY(bool updateSavedFeedsModelInProgress READ getUpdateSavedFeedsModelInProgress NOTIFY updateSavedFeedsModelInProgressChanged FINAL)
 
 public:
@@ -40,7 +39,7 @@ public:
     Q_INVOKABLE void removeList(const ListView& list);
     Q_INVOKABLE void pinList(const ListView& list, bool pin);
 
-    const QList<FavoriteFeedView>& getPinnedFeeds() const { return mPinnedFeeds; }
+    Q_INVOKABLE QList<FavoriteFeedView> getPinnedFeeds() const { return mPinnedFeeds; }
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
     void setUpdateSavedFeedsModelInProgress(bool inProgress);
@@ -58,7 +57,6 @@ signals:
     void listSaved();
     void feedPinned();
     void listPinned();
-    void pinnedFeedsChanged();
     void updateSavedFeedsModelInProgressChanged();
 
 private:

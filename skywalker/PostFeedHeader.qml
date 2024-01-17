@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     required property var skywalker
     required property string feedName
+    property bool isList: false
     property string feedAvatar
     property bool showAsHome: false
     property bool isHomeFeed: false
@@ -39,6 +40,7 @@ Rectangle {
             height: parent.height - 10
             width: height
             avatarUrl: header.feedAvatar
+            unknownSvg: isList ? svgFilled.list : svgFilled.feed
             visible: showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()

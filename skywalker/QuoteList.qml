@@ -11,7 +11,7 @@ Column {
     RowLayout {
         width: parent.width - 20
 
-        FeedAvatar {
+        ListAvatar {
             id: avatar
             width: 34
             Layout.alignment: Qt.AlignTop

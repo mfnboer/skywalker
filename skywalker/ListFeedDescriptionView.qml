@@ -36,11 +36,11 @@ Page {
             color: "transparent"
         }
 
-        FeedAvatar {
+        ListAvatar {
             x: 8
             y: 5
             width: 100
-            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             avatarUrl: list.avatar
             onClicked: {
                 if (list.avatar)

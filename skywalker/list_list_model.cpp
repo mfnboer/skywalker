@@ -153,14 +153,14 @@ void ListListModel::prependList(const ListView& list)
     qDebug() << "New lists size:" << mLists.size();
 }
 
-void ListListModel::updateEntry(int index, const QString& cid, const QString& name, const QString& description, const QString& avatar)
+ListView ListListModel::updateEntry(int index, const QString& cid, const QString& name, const QString& description, const QString& avatar)
 {
     qDebug() << "Update entry:" << name << "index:" << index;
 
     if (index < 0 || (size_t)index >= mLists.size())
     {
         qWarning() << "Invalid index:" << index << "size:" << mLists.size();
-        return;
+        return {};
     }
 
     auto& list = mLists[index];
@@ -178,6 +178,7 @@ void ListListModel::updateEntry(int index, const QString& cid, const QString& na
         list.setAvatar(avatar);
 
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
+    return list;
 }
 
 void ListListModel::deleteEntry(int index)
@@ -198,6 +199,19 @@ void ListListModel::deleteEntry(int index)
 
     if (!mMemberCheckDid.isEmpty())
         mMemberCheckResults.erase(listUri);
+}
+
+ListView ListListModel::getEntry(int index) const
+{
+    qDebug() << "Get entry:" << index;
+
+    if (index < 0 || (size_t)index >= mLists.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mLists.size();
+        return {};
+    }
+
+    return mLists[index];
 }
 
 ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListViewList lists) const

@@ -40,8 +40,6 @@ void FavoriteFeeds::clear()
     mSavedFeeds.clear();
     mSavedLists.clear();
     mPinnedFeeds.clear();
-
-    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
@@ -65,7 +63,6 @@ void FavoriteFeeds::setSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& save
 void FavoriteFeeds::setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators)
 {
     setFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
-    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList)
@@ -74,7 +71,7 @@ void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedP
     FavoriteFeedView view(listView);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
-    emit pinnedFeedsChanged();
+    qInfo() << "Pinned:" << view.getName();
 }
 
 void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
@@ -143,7 +140,8 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
 
     if (mSavedFeedsModelId >= 0)
     {
-        auto it2 = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
+        auto it2 = std::find_if(mSavedFeeds.cbegin(), mSavedFeeds.cend(),
+                            [uri=feed.getUri()](const auto& f){ return f.getUri() == uri; });
 
         if (it2 != mSavedFeeds.cend())
             mSavedFeeds.erase(it2);
@@ -179,9 +177,9 @@ void FavoriteFeeds::pinFeed(const GeneratorView& feed)
     FavoriteFeedView view(feed);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
+    qDebug() << "Pinned:" << view.getName();
 
     emit feedPinned();
-    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
@@ -197,13 +195,16 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     mPinnedUris.erase(feed.getUri());
 
     FavoriteFeedView view(feed);
-    auto it2 = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
+    auto it2 = std::find_if(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(),
+                         [uri=feed.getUri()](const auto& f){ return f.getUri() == uri; });
 
     if (it2 != mPinnedFeeds.cend())
+    {
+        qDebug() << "Unpin:" << it2->getName();
         mPinnedFeeds.erase(it2);
+    }
 
     emit feedPinned();
-    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::addList(const ListView& list)
@@ -245,7 +246,8 @@ void FavoriteFeeds::removeList(const ListView& list)
 
     if (mSavedListsModelId >= 0)
     {
-        auto it2 = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), list, listNameCompare);
+        auto it2 = std::find_if(mSavedLists.cbegin(), mSavedLists.cend(),
+                             [uri=list.getUri()](const auto& l){ return l.getUri() == uri; });
 
         if (it2 != mSavedLists.cend())
             mSavedLists.erase(it2);
@@ -281,9 +283,9 @@ void FavoriteFeeds::pinList(const ListView& list)
     FavoriteFeedView view(list);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
+    qDebug() << "Pinned:" << view.getName();
 
     emit listPinned();
-    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::unpinList(const ListView& list)
@@ -299,13 +301,16 @@ void FavoriteFeeds::unpinList(const ListView& list)
     mPinnedUris.erase(list.getUri());
 
     FavoriteFeedView view(list);
-    auto it2 = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
+    auto it2 = std::find_if(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(),
+                         [uri=list.getUri()](const auto& l){ return l.getUri() == uri; });
 
     if (it2 != mPinnedFeeds.cend())
+    {
+        qDebug() << "Unpin:" << it2->getName();
         mPinnedFeeds.erase(it2);
+    }
 
     emit listPinned();
-    emit pinnedFeedsChanged();
 }
 
 std::vector<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, char const* collection) const
@@ -341,7 +346,7 @@ void FavoriteFeeds::updateSavedGeneratorViews()
 
     setUpdateSavedFeedsModelInProgress(true);
 
-    mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mSaved,
+    mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
         [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
             setUpdateSavedFeedsModelInProgress(false);
             setSavedFeeds(std::move(output->mFeeds));
@@ -382,7 +387,9 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
             if (sharedListView->mCreator->mDid != mSkywalker->getUserDid())
             {
                 qDebug() << "Add saved list:" << sharedListView->mName;
-                mSavedLists.append(ListView(sharedListView));
+                ListView view(sharedListView);
+                auto it = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), view, listNameCompare);
+                mSavedLists.insert(it, view);
             }
             else
             {
@@ -413,7 +420,7 @@ void FavoriteFeeds::updatePinnedGeneratorViews()
     if (feedGeneratorUris.empty())
         return;
 
-    mSkywalker->getBskyClient()->getFeedGenerators(mSavedFeedsPref.mPinned,
+    mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
         [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
             setPinnedFeeds(std::move(output->mFeeds));
         },
@@ -443,8 +450,28 @@ void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
             addPinnedFeed(sharedListView);
             updatePinnedListViews(std::move(listUris));
         },
-        [this, listUris](const QString& error, const QString& msg){
+        [this, listUris, uri](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
+
+            if (error == "InvalidRequest" && msg.startsWith("List not found"))
+            {
+                qDebug() << "Remove unknown list:" << uri;
+
+                mPinnedUris.erase(uri);
+                auto itPinned = std::find(mSavedFeedsPref.mPinned.cbegin(), mSavedFeedsPref.mPinned.cend(), uri);
+                if (itPinned != mSavedFeedsPref.mPinned.end())
+                    mSavedFeedsPref.mPinned.erase(itPinned);
+
+                mSavedUris.erase(uri);
+                auto itSaved = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), uri);
+                if (itSaved != mSavedFeedsPref.mSaved.end())
+                    mSavedFeedsPref.mSaved.erase(itSaved);
+            }
+            else
+            {
+                mSkywalker->showStatusMessage(tr("Cannot get pinned list: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+            }
+
             updatePinnedListViews(std::move(listUris));
         });
 }

@@ -132,7 +132,16 @@ ListView {
             })
         page.onListUpdated.connect((cid, name, description , avatar) => {
             statusPopup.show(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
-            view.model.updateEntry(index, cid, name, description, avatar)
+            let oldList = view.model.getEntry(index)
+            let newList = view.model.updateEntry(index, cid, name, description, avatar)
+
+            if (skywalker.favoriteFeeds.isPinnedFeed(oldList.uri)) {
+                skywalker.favoriteFeeds.removeList(oldList)
+
+                if (!newList.isNull())
+                    skywalker.favoriteFeeds.pinList(newList, true)
+            }
+
             root.popStack()
         })
         page.onClosed.connect(() => { root.popStack() })
@@ -148,6 +157,7 @@ ListView {
 
     function continueDeleteList(list, index) {
         view.model.deleteEntry(index)
+        skywalker.favoriteFeeds.removeList(list)
         graphUtils.deleteList(list.uri)
     }
 

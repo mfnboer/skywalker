@@ -14,6 +14,11 @@ FavoriteFeedView::FavoriteFeedView(const ListView& listView) :
 {
 }
 
+QString FavoriteFeedView::getUri() const
+{
+    return isGeneratorView() ? mGeneratorView.getUri() : mListView.getUri();
+}
+
 QString FavoriteFeedView::getName() const
 {
     return isGeneratorView() ? mGeneratorView.getDisplayName() : mListView.getName();

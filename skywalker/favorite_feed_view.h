@@ -22,6 +22,7 @@ public:
     explicit FavoriteFeedView(const ListView& listView);
 
     bool isGeneratorView() const { return !mGeneratorView.isNull(); }
+    QString getUri() const;
     QString getName() const;
     QString getAvatar() const;
     const GeneratorView& getGeneratorView() const { return mGeneratorView; }
