@@ -12,7 +12,6 @@ class TenorGif
     Q_PROPERTY(QString id MEMBER mId CONSTANT FINAL)
     Q_PROPERTY(QString description READ getDescription CONSTANT FINAL)
     Q_PROPERTY(QString url MEMBER mUrl CONSTANT FINAL)
-    Q_PROPERTY(QSize size MEMBER mSize CONSTANT FINAL)
     Q_PROPERTY(QString smallUrl MEMBER mSmallUrl CONSTANT FINAL)
     Q_PROPERTY(QSize smallSize MEMBER mSmallSize CONSTANT FINAL)
     Q_PROPERTY(QString imageUrl MEMBER mImageUrl CONSTANT FINAL)
@@ -26,13 +25,13 @@ public:
             const QString& id,
             const QString& description,
             const QString& searchTerm,
-            const QString& url, QSize size,
+            const QString& url,
             const QString& smallUrl, QSize smallSize,
             const QString& imageUrl, QSize imageSize) :
         mId(id),
         mDescription(description),
         mSearchTerm(searchTerm),
-        mUrl(url), mSize(size),
+        mUrl(url),
         mSmallUrl(smallUrl), mSmallSize(smallSize),
         mImageUrl(imageUrl), mImageSize(imageSize),
         mOverviewSize(mSmallSize)
@@ -49,7 +48,6 @@ private:
     QString mDescription;
     QString mSearchTerm;
     QString mUrl;
-    QSize mSize;
     QString mSmallUrl;
     QSize mSmallSize;
     QString mImageUrl;

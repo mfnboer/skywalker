@@ -93,9 +93,8 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
         Q_ASSERT(query == mQuery);
     }
 
-    // We use the MP4 formats as those are much smaller than GIF
     Params params{{"q", query},
-                  {"media_filter", "mp4,tinygif,gifpreview"},
+                  {"media_filter", "tinygif,gifpreview"},
                   {"contentfilter", "medium"}};
 
     if (!pos.isEmpty())
@@ -266,17 +265,19 @@ void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
             const auto id = resultXJson.getRequiredString("id");
             const auto description = resultXJson.getOptionalString("content_description", "");
             qDebug() << id << description;
+
+            // Would be nicer to add URL to an MP4 or GIF directly.
+            // However the itemurl is compatible with the official Bluesky app.
+            const auto gifViewUrl = resultXJson.getRequiredString("itemurl");
+
             const auto mediaFormatsJson = resultXJson.getRequiredJsonObject("media_formats");
             const ATProto::XJsonObject mediaFormatsXJson(mediaFormatsJson);
-            const auto normalJson = mediaFormatsXJson.getRequiredJsonObject("mp4");
-            const auto normalFormat = mediaFormatFromJson(normalJson);
             const auto smallJson = mediaFormatsXJson.getRequiredJsonObject("tinygif");
             const auto smallFormat = mediaFormatFromJson(smallJson);
             const auto imageJson = mediaFormatsXJson.getRequiredJsonObject("gifpreview");
             const auto imageFormat = mediaFormatFromJson(imageJson);
 
-            const TenorGif tenorGif(id, description, query,
-                                    normalFormat.mUrl, normalFormat.mSize,
+            const TenorGif tenorGif(id, description, query, gifViewUrl,
                                     smallFormat.mUrl, smallFormat.mSize,
                                     imageFormat.mUrl, imageFormat.mSize);
 

@@ -67,7 +67,7 @@ Item {
 
     function isTenorGif() {
         return postExternal.uri.startsWith("https://media.tenor.com/") ||
-                postExternal.uri.startsWith("https://tenor.com/view/") ||
+                postExternal.uri.startsWith("https://tenor.com/") ||
                 postExternal.uri.startsWith("https://graysky.app/gif/")
     }
 
@@ -89,7 +89,7 @@ Item {
             return getGifUrl() !== ""
         }
 
-        if (postExternal.uri.startsWith("https://tenor.com/view/")) {
+        if (postExternal.uri.startsWith("https://tenor.com/")) {
             return getGifUrl() !== ""
         }
 
@@ -114,7 +114,7 @@ Item {
         if (url.startsWith("https://media.giphy.com/media/"))
             return getGiphyMediaGifUrl()
 
-        if (url.startsWith("https://tenor.com/view/"))
+        if (url.startsWith("https://tenor.com/"))
             return getTenorViewGif()
 
         if (url.startsWith("https://graysky.app/gif/")) {
@@ -201,6 +201,18 @@ Item {
     function getTenorViewGif() {
         let url = postExternal.uri
         console.debug("Get Tenor view GIF url for:", url)
+
+        let urlParts = url.split("/")
+
+        if (urlParts.length < 5) {
+            console.warn("Unknown Tenor view format:", url)
+            return ""
+        }
+
+        if (urlParts[3] !== "view" && urlParts[4] !== "view") {
+            console.warn("Not a Tenor view format:", url)
+            return ""
+        }
 
         let queryIndex = url.indexOf("?")
 
