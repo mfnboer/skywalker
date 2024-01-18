@@ -99,6 +99,8 @@ QString GifUtils::getGiphyMediaUrl(const QString& link) const
     return gifLink.endsWith(".gif") ? gifLink : "";
 }
 
+// Example: https://tenor.com/view/happy-thursday-mawnin-gif-8975369713728247911
+// Result:  https://tenor.com/view/happy-thursday-mawnin-gif-8975369713728247911.gif
 QString GifUtils::getTenorViewGif(const QString& link) const
 {
     qDebug() << "Get Tenor view GIF url for:" << link;
