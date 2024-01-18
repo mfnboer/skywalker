@@ -8,15 +8,15 @@ namespace Skywalker
 {
 
 static auto feedNameCompare = [](const GeneratorView& lhs, const GeneratorView& rhs){
-                return QCollator().compare(lhs.getDisplayName(), rhs.getDisplayName()) < 0;
-            };
+    return lhs.getDisplayName().compare(rhs.getDisplayName(), Qt::CaseInsensitive) < 0;
+};
 
 static auto listNameCompare = [](const ListView& lhs, const ListView& rhs){
-    return QCollator().compare(lhs.getName(), rhs.getName()) < 0;
+    return lhs.getName().compare(rhs.getName(), Qt::CaseInsensitive) < 0;
 };
 
 static auto favoriteFeedNameCompare = [](const FavoriteFeedView& lhs, const FavoriteFeedView& rhs){
-    return QCollator().compare(lhs.getName(), rhs.getName()) < 0;
+    return lhs.getName().compare(rhs.getName(), Qt::CaseInsensitive) < 0;
 };
 
 FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
