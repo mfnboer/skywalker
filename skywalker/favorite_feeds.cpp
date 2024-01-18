@@ -71,7 +71,7 @@ void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedP
     FavoriteFeedView view(listView);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
-    qInfo() << "Pinned:" << view.getName();
+    qInfo() << "Pinned:" << view.getName() << "size:" << mPinnedFeeds.size();
 }
 
 void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
@@ -459,12 +459,12 @@ void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
 
                 mPinnedUris.erase(uri);
                 auto itPinned = std::find(mSavedFeedsPref.mPinned.cbegin(), mSavedFeedsPref.mPinned.cend(), uri);
-                if (itPinned != mSavedFeedsPref.mPinned.end())
+                if (itPinned != mSavedFeedsPref.mPinned.cend())
                     mSavedFeedsPref.mPinned.erase(itPinned);
 
                 mSavedUris.erase(uri);
                 auto itSaved = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), uri);
-                if (itSaved != mSavedFeedsPref.mSaved.end())
+                if (itSaved != mSavedFeedsPref.mSaved.cend())
                     mSavedFeedsPref.mSaved.erase(itSaved);
             }
             else

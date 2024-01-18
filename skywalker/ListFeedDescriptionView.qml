@@ -66,7 +66,7 @@ Page {
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
-                font.pointSize: guiSettings.scaledFont(16/8)
+                font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
                 text: list.name
             }

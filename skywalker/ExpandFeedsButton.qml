@@ -15,9 +15,16 @@ SvgButton {
         id: feedsMenu
 
         MenuItem {
-            text: qsTr("Home feed", "timeline title")
+            contentItem: Text {
+                verticalAlignment: Text.AlignVCenter
+                rightPadding: homeAvatar.width + 5
+                color: guiSettings.textColor
+                elide: Text.ElideRight
+                text: qsTr("Home feed", "timeline title")
+            }
 
             FeedAvatar {
+                id: homeAvatar
                 y: 5
                 anchors.rightMargin: 10
                 anchors.right: parent.right
@@ -34,9 +41,16 @@ SvgButton {
             id: menuInstantiator
             model: []
             delegate: MenuItem {
-                text: modelData.name
+                contentItem: Text {
+                    verticalAlignment: Text.AlignVCenter
+                    rightPadding: feedAvatar.width + 5
+                    color: guiSettings.textColor
+                    elide: Text.ElideRight
+                    text: modelData.name
+                }
 
                 FeedAvatar {
+                    id: feedAvatar
                     y: 5
                     anchors.rightMargin: 10
                     anchors.right: parent.right

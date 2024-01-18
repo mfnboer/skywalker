@@ -261,6 +261,8 @@ qt_add_qml_module(libskywalker
         SOURCES list_view_include.h
         QML_FILES AddUserListListView.qml
         QML_FILES AddUserListViewDelegate.qml
+        SOURCES gif_utils.h
+        SOURCES gif_utils.cpp
 )
 
 if (NOT ANDROID)

@@ -173,7 +173,8 @@ Page {
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
-                font.pointSize: guiSettings.scaledFont(16/8)
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
                 text: author.name
             }
