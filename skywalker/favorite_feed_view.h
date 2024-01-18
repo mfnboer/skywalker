@@ -10,6 +10,7 @@ class FavoriteFeedView
 {
     Q_GADGET
     Q_PROPERTY(bool isGeneratorView READ isGeneratorView FINAL)
+    Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
     Q_PROPERTY(GeneratorView generatorView READ getGeneratorView FINAL)

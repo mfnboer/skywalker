@@ -67,8 +67,31 @@ SvgButton {
             }
         }
 
-        onAboutToShow: menuInstantiator.model = skywalker.favoriteFeeds.getPinnedFeeds()
-        onAboutToHide: menuInstantiator.model = []
+        onAboutToShow: {
+            let favorites = skywalker.favoriteFeeds.getPinnedFeeds()
+
+            if (!compareFavorites(favorites))
+                menuInstantiator.model = favorites
+        }
+
+        function compareFavorites(favorites) {
+            if (favorites.length !== menuInstantiator.model.length)
+                return false
+
+            for (let i = 0; i < favorites.length; ++i) {
+                const newFav = favorites[i]
+                const oldFav = menuInstantiator.model[i]
+
+                if (newFav.uri !== oldFav.uri ||
+                        newFav.name !== oldFav.name ||
+                        newFav.avatar !== oldFav.avatar)
+                {
+                    return false
+                }
+            }
+
+            return true
+        }
     }
 
     GuiSettings {

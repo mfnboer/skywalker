@@ -24,6 +24,7 @@ Column {
             Layout.fillWidth: true
 
             Text {
+                width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
@@ -31,6 +32,7 @@ Column {
             }
 
             Text {
+                width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
