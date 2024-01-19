@@ -60,14 +60,14 @@ signals:
     void updateSavedFeedsModelInProgressChanged();
 
 private:
-    void setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
-    void setFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
+    void addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
+    void addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
     void pinFeed(const GeneratorView& feed);
     void unpinFeed(const GeneratorView& feed);
     void pinList(const ListView& list);
     void unpinList(const ListView& list);
-    void setSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators);
-    void setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators);
+    void addSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators);
+    void addPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators);
     void addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList);
     void updateSavedViews();
     void updateSavedGeneratorViews();

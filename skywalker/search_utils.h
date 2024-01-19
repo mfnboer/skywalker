@@ -30,8 +30,10 @@ public:
 
     Q_INVOKABLE void removeModels();
     Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20);
-    Q_INVOKABLE void searchPosts(const QString& text, int maxPages = 50, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getNextPageSearchPosts(const QString& text, int maxPages = 50, int minEntries = 10);
+    Q_INVOKABLE void searchPosts(const QString& text, int maxPages = 10, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getNextPageSearchPosts(const QString& text, int maxPages = 10, int minEntries = 10);
+    Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
+    Q_INVOKABLE void getNextPageSearchActors(const QString& text);
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
     Q_INVOKABLE void legacySearchPosts(const QString& text);

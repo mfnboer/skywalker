@@ -224,6 +224,9 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
     qDebug() << "Search posts:" << text << "cursor:" << cursor << "max pages:"
              << maxPages << "min entries:" << minEntries;
 
+    if (text.isEmpty())
+        return;
+
     if (mSearchPostsInProgress)
     {
         qDebug() << "Search posts still in progress";
@@ -287,6 +290,65 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, int maxPages, int 
     }
 
     searchPosts(text, maxPages, minEntries, cursor);
+}
+
+void SearchUtils::searchActors(const QString& text, const QString& cursor)
+{
+    qDebug() << "Search actors:" << text << "cursor:" << cursor;
+
+    if (text.isEmpty())
+        return;
+
+    if (mSearchActorsInProgress)
+    {
+        qDebug() << "Search actors still in progress";
+        return;
+    }
+
+    setSearchActorsInProgress(true);
+    bskyClient()->searchActors(text, {}, mSkywalker->makeOptionalCursor(cursor),
+        [this, presence=getPresence(), text, cursor](auto output){
+            if (!presence)
+                return;
+
+            setSearchActorsInProgress(false);
+            auto* model = getSearchUsersModel();
+
+            if (cursor.isEmpty())
+                model->clear();
+
+            model->addAuthors(std::move(output->mActors), output->mCursor.value_or(""));
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            setSearchActorsInProgress(false);
+            qDebug() << "searchActors failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void SearchUtils::getNextPageSearchActors(const QString& text)
+{
+    qDebug() << "Get next page search actors";
+
+    if (mSearchActorsInProgress)
+    {
+        qDebug() << "Search actors still in progress";
+        return;
+    }
+
+    auto* model = getSearchUsersModel();
+    const auto& cursor = model->getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    searchActors(text, cursor);
 }
 
 void SearchUtils::searchFeeds(const QString& text, const QString& cursor)

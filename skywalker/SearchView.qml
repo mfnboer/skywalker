@@ -76,6 +76,7 @@ Page {
     }
 
     StackLayout {
+        id: searchStack
         anchors.top: searchResultsBar.bottom
         anchors.bottom: parent.bottom
         width: parent.width
@@ -89,12 +90,18 @@ Page {
             spacing: 0
             clip: true
             model: searchUtils.getSearchPostFeedModel()
-            boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
             delegate: PostFeedViewDelegate {
                 viewWidth: postsView.width
+            }
+
+            FlickableRefresher {
+                inProgress: searchUtils.searchPostsInProgress
+                verticalOvershoot: postsView.verticalOvershoot
+                bottomOvershootFun: () => searchUtils.getNextPageSearchPosts(header.getDisplayText())
+                topText: ""
             }
 
             Text {
@@ -119,7 +126,6 @@ Page {
             spacing: 0
             clip: true
             model: searchUtils.getSearchUsersModel()
-            boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -127,6 +133,13 @@ Page {
                 viewWidth: postsView.width
                 onFollow: (profile) => { graphUtils.follow(profile) }
                 onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
+            }
+
+            FlickableRefresher {
+                inProgress: searchUtils.searchActorsInProgress
+                verticalOvershoot: usersView.verticalOvershoot
+                bottomOvershootFun: () => searchUtils.getNextPageSearchActors(header.getDisplayText())
+                topText: ""
             }
 
             Text {
@@ -164,8 +177,8 @@ Page {
             page.isTyping = false
 
             if (query.length > 0) {
-                searchUtils.legacySearchPosts(query)
-                searchUtils.legacySearchActors(query)
+                searchUtils.searchPosts(query)
+                searchUtils.searchActors(query)
             }
         }
 

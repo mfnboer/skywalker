@@ -52,21 +52,24 @@ void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedF
     updatePinnedViews();
 }
 
-void FavoriteFeeds::setSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators)
+void FavoriteFeeds::addSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators)
 {
-    setFeeds(mSavedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(savedGenerators));
+    qDebug() << "Add saved feeds:" << savedGenerators.size();
+    addFeeds(mSavedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(savedGenerators));
 
     if (!mSavedFeeds.empty())
         updateSavedFeedsModel();
 }
 
-void FavoriteFeeds::setPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators)
+void FavoriteFeeds::addPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators)
 {
-    setFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
+    qDebug() << "Add pinned feeds:" << pinnedGenerators.size();
+    addFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
 }
 
 void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList)
 {
+    qDebug() << "Add pinned list:" << pinnedList->mName;
     ListView listView(pinnedList);
     FavoriteFeedView view(listView);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
@@ -74,10 +77,8 @@ void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedP
     qInfo() << "Pinned:" << view.getName() << "size:" << mPinnedFeeds.size();
 }
 
-void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
+void FavoriteFeeds::addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
 {
-    feeds.clear();
-
     for (auto& gen : generators)
     {
         ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
@@ -87,10 +88,8 @@ void FavoriteFeeds::setFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::
     }
 }
 
-void FavoriteFeeds::setFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
+void FavoriteFeeds::addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
 {
-    feeds.clear();
-
     for (auto& gen : generators)
     {
         ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
@@ -330,6 +329,8 @@ std::vector<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, 
 
 void FavoriteFeeds::updateSavedViews()
 {
+    mSavedFeeds.clear();
+
     if (!mSavedFeedsPref.mSaved.empty())
     {
         updateSavedGeneratorViews();
@@ -349,7 +350,7 @@ void FavoriteFeeds::updateSavedGeneratorViews()
     mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
         [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
             setUpdateSavedFeedsModelInProgress(false);
-            setSavedFeeds(std::move(output->mFeeds));
+            addSavedFeeds(std::move(output->mFeeds));
         },
         [this](const QString& error, const QString& msg){
             setUpdateSavedFeedsModelInProgress(false);
@@ -406,6 +407,8 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
 
 void FavoriteFeeds::updatePinnedViews()
 {
+    mPinnedFeeds.clear();
+
     if (!mSavedFeedsPref.mPinned.empty())
     {
         updatePinnedGeneratorViews();
@@ -416,13 +419,14 @@ void FavoriteFeeds::updatePinnedViews()
 void FavoriteFeeds::updatePinnedGeneratorViews()
 {
     auto feedGeneratorUris = filterUris(mSavedFeedsPref.mPinned, ATProto::ATUri::COLLECTION_FEED_GENERATOR);
+    qDebug() << "Update pinned generators:" << feedGeneratorUris.size();
 
     if (feedGeneratorUris.empty())
         return;
 
     mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
         [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
-            setPinnedFeeds(std::move(output->mFeeds));
+            addPinnedFeeds(std::move(output->mFeeds));
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Cannot get pinned feeds:" << error << " - " << msg;
