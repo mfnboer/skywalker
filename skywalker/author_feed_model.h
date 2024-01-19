@@ -9,11 +9,19 @@ class AuthorFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
 public:
+    enum class Filter {
+        Posts,
+        Replies,
+        Media
+    };
+
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
     AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following,
                     const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                     const MutedWords& mutedWords, QObject* parent = nullptr);
+
+    void setFilter(Filter filter) { mFilter = filter; }
 
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
@@ -32,6 +40,7 @@ private:
     };
 
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    bool mustShow(const Post& post) const;
 
     BasicProfile mAuthor;
 
@@ -39,6 +48,7 @@ private:
     std::vector<ATProto::AppBskyFeed::OutputFeed::Ptr> mRawFeed;
 
     QString mCursorNextPage;
+    Filter mFilter = Filter::Posts;
 };
 
 }

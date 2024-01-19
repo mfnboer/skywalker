@@ -90,7 +90,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
         {
             Post post(feedEntry.get(), i);
 
-            if (post.isReply() && !post.isRepost())
+            if (!mustShow(post))
                 continue;
 
             if (mustHideContent(post))
@@ -107,6 +107,23 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
 
     qDebug() << "Created page:" << page->mFeed.size() << "posts";
     return page;
+}
+
+bool AuthorFeedModel::mustShow(const Post& post) const
+{
+    switch (mFilter)
+    {
+    case Filter::Posts:
+        return !post.isReply() || post.isRepost();
+    case Filter::Replies:
+        return post.isReply() && !post.isRepost();
+        break;
+    case Filter::Media:
+        return !post.getImages().isEmpty() && !post.isRepost();
+    }
+
+    qWarning() << "Unknown filter:" << int(mFilter);
+    return false;
 }
 
 }
