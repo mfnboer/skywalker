@@ -1156,9 +1156,10 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
-int Skywalker::createAuthorFeedModel(const BasicProfile& author)
+int Skywalker::createAuthorFeedModel(const BasicProfile& author, QEnums::AuthorFeedFilter filter)
 {
     auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
+    model->setFilter(filter);
     const int id = mAuthorFeedModels.put(std::move(model));
     return id;
 }

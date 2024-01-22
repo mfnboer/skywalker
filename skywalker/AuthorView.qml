@@ -14,6 +14,8 @@ Page {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
+    property int replyModelId: -1
+    property int mediaModelId: -1
 
     signal closed
 
@@ -281,8 +283,6 @@ Page {
             TabBar {
                 id: feedMenuBar
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
-                //topPadding: 10
-                //bottomPadding: 10
 
                 TabButton {
                     text: qsTr("Posts")
@@ -298,96 +298,205 @@ Page {
             Rectangle {
                 x: -parent.leftPadding
                 width: parent.width
-                Layout.preferredHeight: 1
+                height: 1
                 color: guiSettings.separatorColor
             }
 
             function getFeedMenuBarHeight() {
                 return feedMenuBar.height
             }
+
+            function getFeedMenuBar() {
+                return feedMenuBar
+            }
         }
 
-        delegate: ListView {
+        delegate: StackLayout {
             width: parent.width
             height: page.height - page.header.height
-            clip: true
-            spacing: 0
-            model: skywalker.getAuthorFeedModel(page.modelId)
-            flickDeceleration: guiSettings.flickDeceleration
-            ScrollIndicator.vertical: ScrollIndicator {}
-            interactive: !authorFeedView.interactive
+            currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
 
-            onVerticalOvershootChanged: {
-                if (verticalOvershoot < 0) {
-                    contentY = 0
-                    authorFeedView.interactive = true
-                }
-            }
+            // Posts
+            ListView {
+                id: authorPostsFeed
+                width: parent.width
+                height: parent.height
+                clip: true
+                spacing: 0
+                model: skywalker.getAuthorFeedModel(page.modelId)
+                flickDeceleration: guiSettings.flickDeceleration
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
 
-            delegate: PostFeedViewDelegate {
-                viewWidth: authorFeedView.width
-            }
-
-            FlickableRefresher {
-                inProgress: skywalker.getAuthorFeedInProgress
-                verticalOvershoot: authorFeedView.verticalOvershoot
-                topOvershootFun: () => getFeed()
-                bottomOvershootFun: () => getFeedNextPage()
-                topText: ""
-            }
-
-            BusyIndicator {
-                id: busyIndicator
-                anchors.centerIn: parent
-                running: skywalker.getAuthorFeedInProgress
-            }
-
-            EmptyListIndication {
-                id: noPostIndication
-                y: parent.headerItem ? parent.headerItem.height : 0
-                svg: {
-                    if (author.viewer.blockedBy || blocking) {
-                        return svgOutline.block
-                    } else if (authorMuted) {
-                        return svgOutline.mute
-                    } else if (!contentVisible()) {
-                        return svgOutline.hideVisibility
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0) {
+                        contentY = 0
+                        authorFeedView.interactive = true
                     }
-
-                    return svgOutline.noPosts
                 }
-                text: {
-                    if (!author.viewer.blockingByList.isNull()) {
-                        return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.blockingByList.name}</a>`)
-                    } else if (blocking) {
-                        return qsTr("You blocked this account")
-                    } else if (author.viewer.blockedBy) {
-                        return qsTr("You are blocked")
-                    } else if (!author.viewer.mutedByList.isNull()) {
-                        return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.mutedByList.name}</a>`)
-                    } else if (authorMuted) {
-                        return qsTr("You muted this account")
-                    } else if (!contentVisible()) {
-                        return contentWarning
-                    }
 
-                    return qsTr("No posts")
+                delegate: PostFeedViewDelegate {
+                    viewWidth: authorFeedView.width
                 }
-                list: authorFeedView
 
-                onLinkActivated: (link) => root.viewListByUri(link, false)
+                FlickableRefresher {
+                    inProgress: skywalker.getAuthorFeedInProgress
+                    verticalOvershoot: authorFeedView.verticalOvershoot
+                    topOvershootFun: () => getFeed(page.modelId)
+                    bottomOvershootFun: () => getFeedNextPage(page.modelId)
+                    topText: ""
+                }
+
+                BusyIndicator {
+                    id: busyIndicator
+                    anchors.centerIn: parent
+                    running: skywalker.getAuthorFeedInProgress
+                }
+
+                EmptyListIndication {
+                    id: noPostIndication
+                    y: authorFeedView.headerItem ? authorFeedView.headerItem.height : 0
+                    svg: getEmptyListIndicationSvg()
+                    text: getEmptyListIndicationText()
+                    list: authorPostsFeed
+                    onLinkActivated: (link) => root.viewListByUri(link, false)
+                }
+                Text {
+                    anchors.top: noPostIndication.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
+                    visible: visibilityShowProfileLink()
+                    onLinkActivated: disableWarning(modelId)
+                }
             }
-            Text {
-                anchors.top: noPostIndication.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                elide: Text.ElideRight
-                textFormat: Text.RichText
-                text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
-                visible: authorFeedView.count === 0 && !blocking && !author.viewer.blockedBy &&
-                         !authorMuted && contentVisibilityIsWarning()
-                onLinkActivated: {
-                    showWarnedMedia = true
-                    getFeed()
+
+            // Replies
+            ListView {
+                id: authorRepliesFeed
+                width: parent.width
+                height: parent.height
+                clip: true
+                spacing: 0
+                model: null
+                flickDeceleration: guiSettings.flickDeceleration
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
+
+                StackLayout.onIsCurrentItemChanged: {
+                    if (StackLayout.isCurrentItem && replyModelId < 0) {
+                        replyModelId = skywalker.createAuthorFeedModel(author, QEnums.AUTHOR_FEED_FILTER_REPLIES)
+                        model = skywalker.getAuthorFeedModel(replyModelId)
+                        getFeed(replyModelId)
+                    }
+                }
+
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0) {
+                        contentY = 0
+                        authorFeedView.interactive = true
+                    }
+                }
+
+                delegate: PostFeedViewDelegate {
+                    viewWidth: authorFeedView.width
+                }
+
+                FlickableRefresher {
+                    inProgress: skywalker.getAuthorFeedInProgress
+                    verticalOvershoot: authorFeedView.verticalOvershoot
+                    topOvershootFun: () => getFeed(replyModelId)
+                    bottomOvershootFun: () => getFeedNextPage(replyModelId)
+                    topText: ""
+                }
+
+                BusyIndicator {
+                    id: replyBusyIndicator
+                    anchors.centerIn: parent
+                    running: skywalker.getAuthorFeedInProgress
+                }
+
+                EmptyListIndication {
+                    id: noReplyIndication
+                    y: authorFeedView.headerItem ? authorFeedView.headerItem.height : 0
+                    svg: getEmptyListIndicationSvg()
+                    text: getEmptyListIndicationText()
+                    list: authorRepliesFeed
+                    onLinkActivated: (link) => root.viewListByUri(link, false)
+                }
+                Text {
+                    anchors.top: noReplyIndication.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
+                    visible: visibilityShowProfileLink()
+                    onLinkActivated: disableWarning(replyModelId)
+                }
+            }
+
+            // Media
+            ListView {
+                id: authorMediaFeed
+                width: parent.width
+                height: parent.height
+                clip: true
+                spacing: 0
+                model: null
+                flickDeceleration: guiSettings.flickDeceleration
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
+
+                StackLayout.onIsCurrentItemChanged: {
+                    if (StackLayout.isCurrentItem && mediaModelId < 0) {
+                        mediaModelId = skywalker.createAuthorFeedModel(author, QEnums.AUTHOR_FEED_FILTER_MEDIA)
+                        model = skywalker.getAuthorFeedModel(mediaModelId)
+                        getFeed(mediaModelId)
+                    }
+                }
+
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0) {
+                        contentY = 0
+                        authorFeedView.interactive = true
+                    }
+                }
+
+                delegate: PostFeedViewDelegate {
+                    viewWidth: authorFeedView.width
+                }
+
+                FlickableRefresher {
+                    inProgress: skywalker.getAuthorFeedInProgress
+                    verticalOvershoot: authorFeedView.verticalOvershoot
+                    topOvershootFun: () => getFeed(mediaModelId)
+                    bottomOvershootFun: () => getFeedNextPage(mediaModelId)
+                    topText: ""
+                }
+
+                BusyIndicator {
+                    id: mediaBusyIndicator
+                    anchors.centerIn: parent
+                    running: skywalker.getAuthorFeedInProgress
+                }
+
+                EmptyListIndication {
+                    id: noMediaIndication
+                    y: authorFeedView.headerItem ? authorFeedView.headerItem.height : 0
+                    svg: getEmptyListIndicationSvg()
+                    text: getEmptyListIndicationText()
+                    list: authorMediaFeed
+                    onLinkActivated: (link) => root.viewListByUri(link, false)
+                }
+                Text {
+                    anchors.top: noMediaIndication.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
+                    visible: visibilityShowProfileLink()
+                    onLinkActivated: disableWarning(mediaModelId)
                 }
             }
         }
@@ -447,12 +556,12 @@ Page {
         root.composePost(mentionText + text, imgSource)
     }
 
-    function getFeed() {
+    function getFeed(modelId) {
         if (mustGetFeed())
             skywalker.getAuthorFeed(modelId, 100)
     }
 
-    function getFeedNextPage() {
+    function getFeedNextPage(modelId) {
         if (mustGetFeed())
             skywalker.getAuthorFeedNextPage(modelId)
     }
@@ -483,6 +592,46 @@ Page {
                 QEnums.CONTENT_VISIBILITY_WARN_POST].includes(contentVisibility) && !showWarnedMedia
     }
 
+    function visibilityShowProfileLink() {
+        return authorFeedView.count === 0 && !blocking && !author.viewer.blockedBy &&
+                !authorMuted && contentVisibilityIsWarning()
+    }
+
+    function disableWarning(modelId) {
+        showWarnedMedia = true
+        getFeed(modelId)
+    }
+
+    function getEmptyListIndicationSvg() {
+        if (author.viewer.blockedBy || blocking) {
+            return svgOutline.block
+        } else if (authorMuted) {
+            return svgOutline.mute
+        } else if (!contentVisible()) {
+            return svgOutline.hideVisibility
+        }
+
+        return svgOutline.noPosts
+    }
+
+    function getEmptyListIndicationText() {
+        if (!author.viewer.blockingByList.isNull()) {
+            return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.blockingByList.name}</a>`)
+        } else if (blocking) {
+            return qsTr("You blocked this account")
+        } else if (author.viewer.blockedBy) {
+            return qsTr("You are blocked")
+        } else if (!author.viewer.mutedByList.isNull()) {
+            return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.mutedByList.name}</a>`)
+        } else if (authorMuted) {
+            return qsTr("You muted this account")
+        } else if (!contentVisible()) {
+            return contentWarning
+        }
+
+        return qsTr("No posts")
+    }
+
     function isUser(author) {
         return skywalker.getUserDid() === author.did
     }
@@ -490,10 +639,16 @@ Page {
     Component.onCompleted: {
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
-        getFeed()
+        getFeed(modelId)
     }
 
     Component.onDestruction: {
         skywalker.removeAuthorFeedModel(modelId)
+
+        if (replyModelId >= 0)
+            skywalker.removeAuthorFeedModel(replyModelId)
+
+        if (mediaModelId >= 0)
+            skywalker.removeAuthorFeedModel(mediaModelId)
     }
 }

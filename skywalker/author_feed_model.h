@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "enums.h"
 
 namespace Skywalker {
 
@@ -9,19 +10,13 @@ class AuthorFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
 public:
-    enum class Filter {
-        Posts,
-        Replies,
-        Media
-    };
-
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
     AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following,
                     const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                     const MutedWords& mutedWords, QObject* parent = nullptr);
 
-    void setFilter(Filter filter) { mFilter = filter; }
+    void setFilter(QEnums::AuthorFeedFilter filter) { mFilter = filter; }
 
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
@@ -48,7 +43,7 @@ private:
     std::vector<ATProto::AppBskyFeed::OutputFeed::Ptr> mRawFeed;
 
     QString mCursorNextPage;
-    Filter mFilter = Filter::Posts;
+    QEnums::AuthorFeedFilter mFilter = QEnums::AUTHOR_FEED_FILTER_POSTS;
 };
 
 }

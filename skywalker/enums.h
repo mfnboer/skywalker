@@ -155,6 +155,14 @@ public:
         TRIPLE_BOOL_YES
     };
     Q_ENUM(TripleBool)
+
+    enum AuthorFeedFilter
+    {
+        AUTHOR_FEED_FILTER_POSTS,
+        AUTHOR_FEED_FILTER_REPLIES,
+        AUTHOR_FEED_FILTER_MEDIA
+    };
+    Q_ENUM(AuthorFeedFilter)
 };
 
 }
