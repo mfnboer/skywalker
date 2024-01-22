@@ -1294,6 +1294,77 @@ int Skywalker::createFeedListModel()
     return id;
 }
 
+void Skywalker::getAuthorFeedList(const QString& did, int id, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get author feed list:" << id << "did:" << did << "cursor:" << cursor;
+
+    if (mGetFeedInProgress)
+    {
+        qDebug() << "Get author feed list still in progress";
+        return;
+    }
+
+    const auto* model = mFeedListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    setGetFeedInProgress(true);
+    mBsky->getActorFeeds(did, {}, makeOptionalCursor(cursor),
+        [this, id, cursor](auto output){
+            setGetFeedInProgress(false);
+            const auto* model = mFeedListModels.get(id);
+
+            if (!model)
+                return; // user has closed the view
+
+            if (cursor.isEmpty())
+                (*model)->clear();
+
+            (*model)->addFeeds(std::move(output->mFeeds), output->mCursor.value_or(""));
+        },
+        [this](const QString& error, const QString& msg){
+            setGetFeedInProgress(false);
+            qDebug() << "getAuthorLikes failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getAuthorFeedListNextPage(const QString& did, int id)
+{
+    qDebug() << "Get author feed list next page:" << id << "did:" << did;
+
+    if (mGetFeedInProgress)
+    {
+        qDebug() << "Get author feed list still in progress";
+        return;
+    }
+
+    const auto* model = mFeedListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    const auto& cursor = (*model)->getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    getAuthorFeedList(did, id, cursor);
+}
+
 FeedListModel* Skywalker::getFeedListModel(int id) const
 {
     qDebug() << "Get model:" << id;

@@ -74,9 +74,9 @@ Page {
             delegate: GeneratorViewDelegate {
                 viewWidth: page.width
 
-                onFeedClicked: (feed) => root.viewPostFeed(feed)
-                onAddClicked: (feed, add) => saveFeed(feed, add)
-                onFavoriteClicked: (feed, add) => pinFeed(feed, add)
+                // onFeedClicked: (feed) => root.viewPostFeed(feed)
+                // onAddClicked: (feed, add) => saveFeed(feed, add)
+                // onFavoriteClicked: (feed, add) => pinFeed(feed, add)
             }
 
             FlickableRefresher {
@@ -112,9 +112,9 @@ Page {
             delegate: GeneratorViewDelegate {
                 viewWidth: page.width
 
-                onFeedClicked: (feed) => root.viewPostFeed(feed)
-                onAddClicked: (feed, add) => saveFeed(feed, add)
-                onFavoriteClicked: (feed, add) => pinFeed(feed, add)
+                // onFeedClicked: (feed) => root.viewPostFeed(feed)
+                // onAddClicked: (feed, add) => saveFeed(feed, add)
+                // onFavoriteClicked: (feed, add) => pinFeed(feed, add)
             }
 
             EmptyListIndication {

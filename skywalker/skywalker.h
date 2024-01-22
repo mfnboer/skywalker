@@ -89,6 +89,8 @@ public:
     Q_INVOKABLE int createSearchPostFeedModel();
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
+    Q_INVOKABLE void getAuthorFeedList(const QString& did, int id, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorFeedListNextPage(const QString& did, int id);
     Q_INVOKABLE int createFeedListModel();
     Q_INVOKABLE FeedListModel* getFeedListModel(int id) const;
     Q_INVOKABLE void removeFeedListModel(int id);
@@ -254,7 +256,7 @@ private:
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
-    bool mGetFeedInProgress = false; // for feeds and listFeeds
+    bool mGetFeedInProgress = false; // for feeds and listFeeds and feedList
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;

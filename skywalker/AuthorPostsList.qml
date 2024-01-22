@@ -33,8 +33,8 @@ ListView {
         }
     }
 
-    onVerticalOvershootChanged: {
-        if (verticalOvershoot < 0) {
+    onContentYChanged: {
+        if (contentY <= 0) {
             contentY = 0
             enclosingView.interactive = true
         }
@@ -60,7 +60,6 @@ ListView {
 
     EmptyListIndication {
         id: noPostIndication
-        y: enclosingView.headerItem ? enclosingView.headerItem.height : 0
         svg: getEmptyListIndicationSvg()
         text: getEmptyListIndicationText()
         list: authorPostsList

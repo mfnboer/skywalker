@@ -14,6 +14,8 @@ Page {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
+    readonly property int feedListModelId: skywalker.createFeedListModel()
+    property bool hasFeeds: false
 
     signal closed
 
@@ -294,11 +296,12 @@ Page {
                 TabButton {
                     text: qsTr("Likes")
                     visible: isUser(author)
-
-                    onVisibleChanged: {
-                        if (!visible)
-                            width = 0
-                    }
+                    width: isUser(author) ? implicitWidth : 0
+                }
+                TabButton {
+                    text: qsTr("Feeds")
+                    visible: hasFeeds
+                    width: hasFeeds ? implicitWidth : 0
                 }
             }
 
@@ -377,6 +380,52 @@ Page {
                 disableWarning: (id) => page.disableWarning(id)
                 feedFilter: QEnums.AUTHOR_FEED_FILTER_NONE
             }
+
+            // Feeds
+            ListView {
+                id: authorFeedList
+                width: parent.width
+                height: parent.height
+                clip: true
+                spacing: 0
+                model: skywalker.getFeedListModel(feedListModelId)
+                flickDeceleration: guiSettings.flickDeceleration
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
+
+                onContentYChanged: {
+                    if (contentY <= 0) {
+                        contentY = 0
+                        authorFeedView.interactive = true
+                    }
+                }
+
+                onCountChanged: hasFeeds = count
+
+                delegate: GeneratorViewDelegate {
+                    viewWidth: authorFeedView.width
+                }
+
+                FlickableRefresher {
+                    inProgress: skywalker.getFeedInProgress
+                    verticalOvershoot: authorFeedList.verticalOvershoot
+                    topOvershootFun: () => getFeedList(feedListModelId)
+                    bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
+                    topText: ""
+                }
+
+                BusyIndicator {
+                    id: busyIndicator
+                    anchors.centerIn: parent
+                    running: skywalker.getFeedInProgress
+                }
+
+                EmptyListIndication {
+                    svg: svgOutline.noPosts
+                    text: qsTr("No feeds")
+                    list: authorFeedList
+                }
+            }
         }
     }
 
@@ -442,6 +491,16 @@ Page {
     function getFeedNextPage(modelId) {
         if (mustGetFeed())
             skywalker.getAuthorFeedNextPage(modelId)
+    }
+
+    function getFeedList(modelId) {
+        if (mustGetFeed())
+            skywalker.getAuthorFeedList(author.did, modelId)
+    }
+
+    function getFeedListNextPage(modelId) {
+        if (mustGetFeed())
+            skywalker.getAuthorFeedListNextPage(author.did, modelId)
     }
 
     function updateLists() {
@@ -514,9 +573,14 @@ Page {
         return skywalker.getUserDid() === author.did
     }
 
+    Component.onDestruction: {
+        skywalker.removeFeedListModel(feedListModelId)
+    }
+
     Component.onCompleted: {
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)
+        getFeedList(feedListModelId)
     }
 }

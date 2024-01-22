@@ -15,10 +15,6 @@ Rectangle {
     required property bool endOfFeed
     property int maxTextLines: 1000
 
-    signal feedClicked(generatorview feed)
-    signal addClicked(generatorview feed, bool add)
-    signal favoriteClicked(generatorview feed, bool add)
-
     id: generatorView
     width: grid.width
     height: grid.height
@@ -238,5 +234,23 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function feedClicked(feed) {
+        root.viewPostFeed(feed)
+    }
+
+    function addClicked(feed, add) {
+        if (add)
+            skywalker.favoriteFeeds.addFeed(feed)
+        else
+            skywalker.favoriteFeeds.removeFeed(feed)
+
+        skywalker.saveFavoriteFeeds()
+    }
+
+    function favoriteClicked(feed, add) {
+        skywalker.favoriteFeeds.pinFeed(feed, add)
+        skywalker.saveFavoriteFeeds()
     }
 }
