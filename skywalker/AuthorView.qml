@@ -291,6 +291,15 @@ Page {
                 TabButton {
                     text: qsTr("Media")
                 }
+                TabButton {
+                    text: qsTr("Likes")
+                    visible: isUser(author)
+
+                    onVisibleChanged: {
+                        if (!visible)
+                            width = 0
+                    }
+                }
             }
 
             Rectangle {
@@ -354,6 +363,19 @@ Page {
                 visibilityShowProfileLink: () => page.visibilityShowProfileLink()
                 disableWarning: (id) => page.disableWarning(id)
                 feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
+            }
+
+            // Likes
+            AuthorPostsList {
+                author: page.author
+                enclosingView: authorFeedView
+                getFeed: (id) => skywalker.getAuthorLikes(id)
+                getFeedNextPage: (id) => skywalker.getAuthorLikesNextPage(id)
+                getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
+                getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                visibilityShowProfileLink: () => page.visibilityShowProfileLink()
+                disableWarning: (id) => page.disableWarning(id)
+                feedFilter: QEnums.AUTHOR_FEED_FILTER_NONE
             }
         }
     }

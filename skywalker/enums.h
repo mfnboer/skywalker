@@ -158,6 +158,7 @@ public:
 
     enum AuthorFeedFilter
     {
+        AUTHOR_FEED_FILTER_NONE,
         AUTHOR_FEED_FILTER_POSTS,
         AUTHOR_FEED_FILTER_REPLIES,
         AUTHOR_FEED_FILTER_MEDIA

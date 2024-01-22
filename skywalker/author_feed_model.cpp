@@ -127,11 +127,12 @@ bool AuthorFeedModel::mustShow(const Post& post) const
 {
     switch (mFilter)
     {
+    case QEnums::AUTHOR_FEED_FILTER_NONE:
+        return true;
     case QEnums::AUTHOR_FEED_FILTER_POSTS:
         return !post.isReply() || post.isRepost();
     case QEnums::AUTHOR_FEED_FILTER_REPLIES:
         return post.isReply() && !post.isRepost();
-        break;
     case QEnums::AUTHOR_FEED_FILTER_MEDIA:
         return !post.getImages().isEmpty() && !post.isRepost();
     }

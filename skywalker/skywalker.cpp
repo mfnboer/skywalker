@@ -30,6 +30,7 @@ static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add
 static constexpr int FEED_ADD_PAGE_SIZE = 50;
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
+static constexpr int AUTHOR_LIKES_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 
 Skywalker::Skywalker(QObject* parent) :
@@ -1154,6 +1155,95 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     }
 
     getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
+void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get author likes model:" << id << "cursor:" << cursor << "max pages:"
+             << maxPages << "min entries:" << minEntries;
+
+    if (mGetAuthorFeedInProgress)
+    {
+        qDebug() << "Get author likes still in progress";
+        return;
+    }
+
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    const auto& author = (*model)->getAuthor();
+    qDebug() << "Get author likes:" << author.getHandle();
+
+    setGetAuthorFeedInProgress(true);
+    mBsky->getActorLikes(author.getDid(), limit, makeOptionalCursor(cursor),
+        [this, id, maxPages, minEntries, cursor](auto feed){
+            setGetAuthorFeedInProgress(false);
+            const auto* model = mAuthorFeedModels.get(id);
+
+            if (!model)
+                return; // user has closed the view
+
+            int added = cursor.isEmpty() ?
+                            (*model)->setFeed(std::move(feed)) :
+                            (*model)->addFeed(std::move(feed));
+
+            // When replies are filtered out, a page can easily become empty
+            int entriesToAdd = minEntries - added;
+
+            if (entriesToAdd > 0)
+                getAuthorFeedNextPage(id, maxPages - 1, entriesToAdd);
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorFeedInProgress(false);
+            qDebug() << "getAuthorLikes failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
+{
+    qDebug() << "Get author likes next page, model:" << id << "max pages:" << maxPages
+             << "min entries:" << minEntries;
+
+    if (mGetAuthorFeedInProgress)
+    {
+        qDebug() << "Get author likes still in progress";
+        return;
+    }
+
+    if (maxPages <= 0)
+    {
+        // Protection against infinite loop.
+        qWarning() << "Maximum pages reached!";
+        return;
+    }
+
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    auto* authorFeedModel = (*model).get();
+    const auto& cursor = authorFeedModel->getCursorNextPage();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    getAuthorLikes(id, AUTHOR_LIKES_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
 int Skywalker::createAuthorFeedModel(const BasicProfile& author, QEnums::AuthorFeedFilter filter)
