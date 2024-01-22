@@ -101,7 +101,7 @@ QString GifUtils::getGiphyMediaUrl(const QString& link) const
 
 // Example: https://tenor.com/view/happy-thursday-mawnin-gif-8975369713728247911
 // Result:  https://tenor.com/view/happy-thursday-mawnin-gif-8975369713728247911.gif
-// NOTE: there can be a county code between the host and "view:, e.g. https://tenor.com/nl/view/
+// NOTE: there can be a county code between the host and "view", e.g. https://tenor.com/nl/view/
 QString GifUtils::getTenorViewGif(const QString& link) const
 {
     qDebug() << "Get Tenor view GIF url for:" << link;
