@@ -51,7 +51,7 @@ Page {
         Rectangle {
             id: avatar
             x: parent.width - width - 10
-            y: (bannerImg.visible ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height) - height / 2
+            y: getAvatarY()
             width: 104
             height: width
             radius: width / 2
@@ -70,6 +70,16 @@ Page {
         }
     }
 
+    function getBannerBottomY() {
+        return bannerImg.visible ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height;
+    }
+
+    function getAvatarY() {
+        const contentShift = Math.max(authorFeedView.contentY + getBannerBottomY(), 0)
+        const shift = Math.min(contentShift, avatar.height / 2 + 10)
+        return getBannerBottomY() - avatar.height / 2 - shift
+    }
+
     footer: Rectangle {
         width: parent.width
 
@@ -83,13 +93,21 @@ Page {
 
     ListView {
         id: authorFeedView
-        y: avatar.y + avatar.height / 2 + 10
+        y: getBannerBottomY() + 10
         width: parent.width
         height: parent.height - y
+        contentHeight: parent.height * 2
         spacing: 0
-        model: skywalker.getAuthorFeedModel(page.modelId)
+        model: 1
+        boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: guiSettings.flickDeceleration
-        ScrollIndicator.vertical: ScrollIndicator {}
+
+        onContentYChanged: {
+            if (contentY > -headerItem.getFeedMenuBarHeight() + 10) {
+                contentY = -headerItem.getFeedMenuBarHeight() + 10
+                interactive = false
+            }
+        }
 
         header: Column {
             width: parent.width
@@ -260,87 +278,117 @@ Page {
                 onLinkActivated: (link) => root.openLink(link)
             }
 
-            Text {
+            TabBar {
+                id: feedMenuBar
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
-                topPadding: 10
-                bottomPadding: 10
-                font.bold: true
-                color: guiSettings.textColor
-                text: qsTr("Posts")
+                //topPadding: 10
+                //bottomPadding: 10
+
+                TabButton {
+                    text: qsTr("Posts")
+                }
+                TabButton {
+                    text: qsTr("Replies")
+                }
+                TabButton {
+                    text: qsTr("Media")
+                }
             }
 
             Rectangle {
                 x: -parent.leftPadding
                 width: parent.width
-                height: 1
+                Layout.preferredHeight: 1
                 color: guiSettings.separatorColor
             }
-        }
 
-        delegate: PostFeedViewDelegate {
-            viewWidth: authorFeedView.width
-        }
-
-        FlickableRefresher {
-            inProgress: skywalker.getAuthorFeedInProgress
-            verticalOvershoot: authorFeedView.verticalOvershoot
-            topOvershootFun: () => getFeed()
-            bottomOvershootFun: () => getFeedNextPage()
-            topText: ""
-        }
-
-        BusyIndicator {
-            id: busyIndicator
-            anchors.centerIn: parent
-            running: skywalker.getAuthorFeedInProgress
-        }
-
-        EmptyListIndication {
-            id: noPostIndication
-            y: parent.headerItem ? parent.headerItem.height : 0
-            svg: {
-                if (author.viewer.blockedBy || blocking) {
-                    return svgOutline.block
-                } else if (authorMuted) {
-                    return svgOutline.mute
-                } else if (!contentVisible()) {
-                    return svgOutline.hideVisibility
-                }
-
-                return svgOutline.noPosts
+            function getFeedMenuBarHeight() {
+                return feedMenuBar.height
             }
-            text: {
-                if (!author.viewer.blockingByList.isNull()) {
-                    return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.blockingByList.name}</a>`)
-                } else if (blocking) {
-                    return qsTr("You blocked this account")
-                } else if (author.viewer.blockedBy) {
-                    return qsTr("You are blocked")
-                } else if (!author.viewer.mutedByList.isNull()) {
-                    return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.mutedByList.name}</a>`)
-                } else if (authorMuted) {
-                    return qsTr("You muted this account")
-                } else if (!contentVisible()) {
-                    return contentWarning
-                }
-
-                return qsTr("No posts")
-            }
-            list: authorFeedView
-
-            onLinkActivated: (link) => root.viewListByUri(link, false)
         }
-        Text {
-            anchors.top: noPostIndication.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
-            elide: Text.ElideRight
-            textFormat: Text.RichText
-            text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
-            visible: authorFeedView.count === 0 && !blocking && !author.viewer.blockedBy &&
-                     !authorMuted && contentVisibilityIsWarning()
-            onLinkActivated: {
-                showWarnedMedia = true
-                getFeed()
+
+        delegate: ListView {
+            width: parent.width
+            height: page.height - page.header.height
+            clip: true
+            spacing: 0
+            model: skywalker.getAuthorFeedModel(page.modelId)
+            flickDeceleration: guiSettings.flickDeceleration
+            ScrollIndicator.vertical: ScrollIndicator {}
+            interactive: !authorFeedView.interactive
+
+            onVerticalOvershootChanged: {
+                if (verticalOvershoot < 0) {
+                    contentY = 0
+                    authorFeedView.interactive = true
+                }
+            }
+
+            delegate: PostFeedViewDelegate {
+                viewWidth: authorFeedView.width
+            }
+
+            FlickableRefresher {
+                inProgress: skywalker.getAuthorFeedInProgress
+                verticalOvershoot: authorFeedView.verticalOvershoot
+                topOvershootFun: () => getFeed()
+                bottomOvershootFun: () => getFeedNextPage()
+                topText: ""
+            }
+
+            BusyIndicator {
+                id: busyIndicator
+                anchors.centerIn: parent
+                running: skywalker.getAuthorFeedInProgress
+            }
+
+            EmptyListIndication {
+                id: noPostIndication
+                y: parent.headerItem ? parent.headerItem.height : 0
+                svg: {
+                    if (author.viewer.blockedBy || blocking) {
+                        return svgOutline.block
+                    } else if (authorMuted) {
+                        return svgOutline.mute
+                    } else if (!contentVisible()) {
+                        return svgOutline.hideVisibility
+                    }
+
+                    return svgOutline.noPosts
+                }
+                text: {
+                    if (!author.viewer.blockingByList.isNull()) {
+                        return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.blockingByList.name}</a>`)
+                    } else if (blocking) {
+                        return qsTr("You blocked this account")
+                    } else if (author.viewer.blockedBy) {
+                        return qsTr("You are blocked")
+                    } else if (!author.viewer.mutedByList.isNull()) {
+                        return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.mutedByList.name}</a>`)
+                    } else if (authorMuted) {
+                        return qsTr("You muted this account")
+                    } else if (!contentVisible()) {
+                        return contentWarning
+                    }
+
+                    return qsTr("No posts")
+                }
+                list: authorFeedView
+
+                onLinkActivated: (link) => root.viewListByUri(link, false)
+            }
+            Text {
+                anchors.top: noPostIndication.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                elide: Text.ElideRight
+                textFormat: Text.RichText
+                text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
+                visible: authorFeedView.count === 0 && !blocking && !author.viewer.blockedBy &&
+                         !authorMuted && contentVisibilityIsWarning()
+                onLinkActivated: {
+                    showWarnedMedia = true
+                    getFeed()
+                }
             }
         }
     }
