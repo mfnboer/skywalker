@@ -96,6 +96,20 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
             if (mustHideContent(post))
                 continue;
 
+            if (post.isReply() && !post.isRepost())
+            {
+                auto replyRef = post.getViewPostReplyRef();
+
+                if (replyRef)
+                {
+                    page->addPost(replyRef->mParent);
+                    post.setPostType(QEnums::POST_LAST_REPLY);
+                    post.setParentInThread(true);
+                    auto& parentPost = page->mFeed.back();
+                    parentPost.setPostType(QEnums::POST_ROOT);
+                }
+            }
+
             page->addPost(post);
         }
         else
