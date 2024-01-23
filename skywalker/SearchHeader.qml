@@ -42,6 +42,7 @@ Rectangle {
                 id: searchText
                 EnterKeyAction.actionId: EnterKeyAction.Search
                 width: parent.width
+                clip: true
                 padding: 5
                 rightPadding: clearButton.width
                 font.pointSize: guiSettings.scaledFont(9/8)
@@ -63,7 +64,6 @@ Rectangle {
                     width: height
                     height: parent.height + 10
                     iconColor: guiSettings.textColor
-                    Material.background: "transparent"
                     svg: svgOutline.close
                     visible: searchText.displayText.length > 0
                     onClicked: searchText.clear()
