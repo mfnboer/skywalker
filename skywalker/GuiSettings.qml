@@ -100,7 +100,7 @@ Item {
         let wordSequence = stringList[0]
 
         for (let i = 1; i < stringList.length - 1; ++i)
-            wordSequence =+ ", " + stringList[i]
+            wordSequence += ", " + stringList[i]
 
         if (stringList.length > 1) {
             wordSequence += qsTr(" and ")
