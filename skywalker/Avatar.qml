@@ -27,6 +27,7 @@ Item {
             width: parent.width
             source: avatarItem.avatarUrl
             fillMode: Image.PreserveAspectFit
+            maxRetry: 60
         }
     }
     Rectangle {

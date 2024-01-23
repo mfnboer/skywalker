@@ -1,6 +1,7 @@
 import QtQuick
 
 Image {
+    property int maxRetry: 5
     property int retryCount: 0
 
     id: img
@@ -21,11 +22,11 @@ Image {
 
         console.debug("Failed to load image:", img.source)
 
-        if (retryCount >= 5)
+        if (retryCount >= maxRetry)
             return
 
-        let retrySeconds = 2 ** retryCount
-        retryTimer.interval = retrySeconds * 1000
+        let retryMs = 2 ** Math.min(retryCount, 5)
+        retryTimer.interval = retryMs * 1000
         retryTimer.start()
         retryCount++
 

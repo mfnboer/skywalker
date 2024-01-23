@@ -95,6 +95,8 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
     if (!postMaster())
         return;
 
+    emit postProgress(tr("Posting"));
+
     if (replyToUri.isEmpty())
     {
         postMaster()->createPost(text, nullptr,
@@ -138,6 +140,8 @@ void PostUtils::post(const QString& text, const LinkCard* card,
 
     if (!postMaster())
         return;
+
+    emit postProgress(tr("Posting"));
 
     if (replyToUri.isEmpty())
     {
