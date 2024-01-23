@@ -1698,7 +1698,7 @@ void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int
     mBsky->getLists(atId, limit, makeOptionalCursor(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
-            qDebug() << "getListListAll succeded, id:" << modelId;
+            qDebug() << "getListListAll succeeded, id:" << modelId;
             const auto* model = mListListModels.get(modelId);
 
             if (model)
@@ -1803,7 +1803,7 @@ void Skywalker::getListListNextPage(int id, int limit, int maxPages, int minEntr
 
 int Skywalker::createListListModel(ListListModel::Type type, ListListModel::Purpose purpose, const QString& atId)
 {
-    auto model = std::make_unique<ListListModel>(type, purpose, atId, mFavoriteFeeds, this);
+    auto model = std::make_unique<ListListModel>(type, purpose, atId, mFavoriteFeeds, this, this);
     const int id = mListListModels.put(std::move(model));
     return id;
 }

@@ -16,6 +16,8 @@ Page {
     property bool showWarnedMedia: false
     readonly property int feedListModelId: skywalker.createFeedListModel()
     property bool hasFeeds: false
+    readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
+    property bool hasLists: false
 
     signal closed
 
@@ -126,6 +128,7 @@ Page {
                         id: moreMenu
                         MenuItem {
                             text: qsTr("Translate")
+                            enabled: author.description
                             onTriggered: root.translateText(author.description)
 
                             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -286,12 +289,15 @@ Page {
 
                 TabButton {
                     text: qsTr("Posts")
+                    width: implicitWidth
                 }
                 TabButton {
                     text: qsTr("Replies")
+                    width: implicitWidth
                 }
                 TabButton {
                     text: qsTr("Media")
+                    width: implicitWidth
                 }
                 TabButton {
                     text: qsTr("Likes")
@@ -302,6 +308,11 @@ Page {
                     text: qsTr("Feeds")
                     visible: hasFeeds
                     width: hasFeeds ? implicitWidth : 0
+                }
+                TabButton {
+                    text: qsTr("Lists")
+                    visible: hasLists
+                    width: hasLists ? implicitWidth : 0
                 }
             }
 
@@ -409,13 +420,11 @@ Page {
                 FlickableRefresher {
                     inProgress: skywalker.getFeedInProgress
                     verticalOvershoot: authorFeedList.verticalOvershoot
-                    topOvershootFun: () => getFeedList(feedListModelId)
                     bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
                     topText: ""
                 }
 
                 BusyIndicator {
-                    id: busyIndicator
                     anchors.centerIn: parent
                     running: skywalker.getFeedInProgress
                 }
@@ -424,6 +433,57 @@ Page {
                     svg: svgOutline.noPosts
                     text: qsTr("No feeds")
                     list: authorFeedList
+                }
+            }
+
+            // Lists
+            ListView {
+                id: authorListList
+                width: parent.width
+                height: parent.height
+                clip: true
+                spacing: 0
+                model: skywalker.getListListModel(listListModelId)
+                flickDeceleration: guiSettings.flickDeceleration
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
+
+                onContentYChanged: {
+                    if (contentY <= 0) {
+                        contentY = 0
+                        authorFeedView.interactive = true
+                    }
+                }
+
+                onCountChanged: hasLists = count
+
+                delegate: ListViewDelegate {
+                    viewWidth: authorFeedView.width
+                    ownLists: false
+                    allowEdit: false
+
+                    onBlockList: (list) => graphUtils.blockList(list.uri)
+                    onUnblockList: (list, blockedUri) => graphUtils.unblockList(list.uri, blockedUri)
+                    onMuteList: (list) => graphUtils.muteList(list.uri)
+                    onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
+                }
+
+                FlickableRefresher {
+                    inProgress: skywalker.getListListInProgress
+                    verticalOvershoot: authorListList.verticalOvershoot
+                    bottomOvershootFun: () => getListListNextPage(listListModelId)
+                    topText: ""
+                }
+
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: skywalker.getListListInProgress
+                }
+
+                EmptyListIndication {
+                    svg: svgOutline.noLists
+                    text: qsTr("No lists")
+                    list: authorListList
                 }
             }
         }
@@ -472,6 +532,11 @@ Page {
         }
 
         onUnmuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+
+        onBlockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     GuiSettings {
@@ -501,6 +566,16 @@ Page {
     function getFeedListNextPage(modelId) {
         if (mustGetFeed())
             skywalker.getAuthorFeedListNextPage(author.did, modelId)
+    }
+
+    function getListList(modelId) {
+        if (mustGetFeed())
+            skywalker.getListList(modelId)
+    }
+
+    function getListListNextPage(modelId) {
+        if (mustGetFeed())
+            skywalker.getListListNextPage(modelId)
     }
 
     function updateLists() {
@@ -575,6 +650,7 @@ Page {
 
     Component.onDestruction: {
         skywalker.removeFeedListModel(feedListModelId)
+        skywalker.removeListListModel(listListModelId)
     }
 
     Component.onCompleted: {
@@ -582,5 +658,6 @@ Page {
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)
         getFeedList(feedListModelId)
+        getListList(listListModelId)
     }
 }

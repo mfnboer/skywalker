@@ -12,6 +12,7 @@ Rectangle {
     required property bool listSaved
     required property bool listPinned
     property bool ownLists: true
+    property bool allowEdit: true
     property int margin: 10
     property int maxTextLines: 1000
 
@@ -20,7 +21,6 @@ Rectangle {
     height: grid.height
     color: guiSettings.backgroundColor
 
-    signal listClicked(listview list)
     signal updateList(listview list)
     signal deleteList(listview list)
     signal blockList(listview list)
@@ -70,6 +70,14 @@ Rectangle {
                 font.bold: true
                 color: guiSettings.textColor
                 text: list.name
+            }
+
+            Text {
+                width: parent.width
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: guiSettings.listTypeName(list.purpose)
             }
 
             Text {
@@ -193,6 +201,7 @@ Rectangle {
 
         MenuItem {
             text: qsTr("Edit")
+            enabled: allowEdit
             onTriggered: updateList(list)
 
             MenuItemSvg { svg: svgOutline.edit }
@@ -225,6 +234,7 @@ Rectangle {
 
         MenuItem {
             text: qsTr("Translate")
+            enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -280,6 +290,7 @@ Rectangle {
 
         MenuItem {
             text: qsTr("Translate")
+            enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -307,6 +318,7 @@ Rectangle {
 
         MenuItem {
             text: qsTr("Edit")
+            enabled: allowEdit
             onTriggered: updateList(list)
 
             MenuItemSvg { svg: svgOutline.edit }
@@ -338,6 +350,7 @@ Rectangle {
 
         MenuItem {
             text: qsTr("Translate")
+            enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -381,6 +394,7 @@ Rectangle {
 
         MenuItem {
             text: qsTr("Translate")
+            enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -405,5 +419,9 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function listClicked(list) {
+        root.viewListByUri(list.uri, true)
     }
 }

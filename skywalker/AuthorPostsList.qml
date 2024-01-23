@@ -47,7 +47,6 @@ ListView {
     FlickableRefresher {
         inProgress: skywalker.getAuthorFeedInProgress
         verticalOvershoot: authorPostsList.verticalOvershoot
-        //topOvershootFun: () => getFeed(modelId)
         bottomOvershootFun: () => getFeedNextPage(modelId)
         topText: ""
     }

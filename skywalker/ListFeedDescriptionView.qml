@@ -204,6 +204,7 @@ Page {
 
         MenuItem {
             text: qsTr("Translate")
+            enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -257,6 +258,7 @@ Page {
 
         MenuItem {
             text: qsTr("Translate")
+            enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -304,6 +306,7 @@ Page {
 
         MenuItem {
             text: qsTr("Translate")
+            enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }

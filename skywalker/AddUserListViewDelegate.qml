@@ -43,7 +43,7 @@ Rectangle {
         }
 
         Column {
-            spacing: 5
+            spacing: 0
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.rightMargin: view.margin
@@ -61,12 +61,21 @@ Rectangle {
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
-                text: qsTr(`${guiSettings.listTypeName(list.purpose)} by @${listCreator.handle}`)
+                text: guiSettings.listTypeName(list.purpose)
+            }
+
+            Text {
+                topPadding: 5
+                width: parent.width
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: `@${listCreator.handle}`
             }
         }
 
         SvgButton {
-            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignTop
             svg: memberCheck === QEnums.TRIPLE_BOOL_YES ? svgOutline.remove : svgOutline.add
             visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
 

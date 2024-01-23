@@ -138,6 +138,7 @@ Page {
                 }
                 MenuItem {
                     text: qsTr("Translate")
+                    enabled: feed.description
                     onTriggered: root.translateText(feed.description)
 
                     MenuItemSvg {

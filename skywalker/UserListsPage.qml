@@ -76,8 +76,6 @@ Page {
             delegate: ListViewDelegate {
                 viewWidth: page.width
                 ownLists: false
-
-                onListClicked: (list) => root.viewListByUri(list.uri, true)
             }
 
             EmptyListIndication {
