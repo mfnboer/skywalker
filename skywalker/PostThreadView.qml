@@ -61,6 +61,9 @@ ListView {
                         if (link.startsWith("did:")) {
                             skywalker.getDetailedProfile(link)
                         }
+                        else if (link.startsWith("at:")) {
+                            root.viewListByUri(link, false)
+                        }
                     }
                 }
 
@@ -87,13 +90,16 @@ ListView {
                     }
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST) {
-                        let lists = model.getReplyRestrictionLists()
+                        const lists = model.getReplyRestrictionLists()
+                        let listNames = []
 
-                        for (let i = 0; i < lists.length; ++i)
-                            lists[i] = `<b>${(lists[i])}</b>`
+                        for (let i = 0; i < lists.length; ++i) {
+                            const l = lists[i]
+                            listNames.push(`<a href="${l.uri}" style="color: ${guiSettings.linkColor};">${l.name}</a>`)
+                        }
 
-                        const names = guiSettings.toWordSequence(lists)
-                        restrictionList.push(qsTr(`members of ${lists}`))
+                        const names = guiSettings.toWordSequence(listNames)
+                        restrictionList.push(qsTr(`members of ${names}`))
                     }
 
                     if (!restrictionList) {

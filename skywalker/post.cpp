@@ -512,15 +512,18 @@ QEnums::ReplyRestriction Post::getReplyRestriction() const
     return QEnums::REPLY_RESTRICTION_NOBODY;
 }
 
-QStringList Post::getReplyRestrictionLists() const
+ListViewBasicList Post::getReplyRestrictionLists() const
 {
     if (!mPost || !mPost->mThreadgate)
         return {};
 
-    QStringList lists;
+    ListViewBasicList lists;
 
     for (const auto& l : mPost->mThreadgate->mLists)
-        lists.append(l->mName);
+    {
+        ListViewBasic view(l.get());
+        lists.append(view);
+    }
 
     return lists;
 }

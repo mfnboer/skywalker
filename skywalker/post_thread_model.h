@@ -22,7 +22,7 @@ public:
     // if the root is not in the thread, but the first post has replies disabled.
     Q_INVOKABLE QEnums::ReplyRestriction getReplyRestriction() const;
     Q_INVOKABLE BasicProfile getReplyRestrictionAuthor() const;
-    Q_INVOKABLE QStringList getReplyRestrictionLists() const;
+    Q_INVOKABLE ListViewBasicList getReplyRestrictionLists() const;
 
     Q_INVOKABLE QVariant getData(int row, AbstractPostFeedModel::Role role);
 

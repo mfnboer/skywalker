@@ -68,7 +68,7 @@ BasicProfile PostThreadModel::getReplyRestrictionAuthor() const
     return post.getAuthor();
 }
 
-QStringList PostThreadModel::getReplyRestrictionLists() const
+ListViewBasicList PostThreadModel::getReplyRestrictionLists() const
 {
     if (mFeed.empty())
         return {};

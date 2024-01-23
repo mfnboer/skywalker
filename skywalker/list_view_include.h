@@ -82,4 +82,6 @@ private:
     std::optional<ListViewerState> mViewer;
 };
 
+using ListViewBasicList = QList<ListViewBasic>;
+
 }
