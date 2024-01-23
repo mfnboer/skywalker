@@ -34,7 +34,7 @@ ListView {
     }
 
     onContentYChanged: {
-        if (contentY <= 0) {
+        if (contentY < 0) {
             contentY = 0
             enclosingView.interactive = true
         }
@@ -47,7 +47,7 @@ ListView {
     FlickableRefresher {
         inProgress: skywalker.getAuthorFeedInProgress
         verticalOvershoot: authorPostsList.verticalOvershoot
-        topOvershootFun: () => getFeed(modelId)
+        //topOvershootFun: () => getFeed(modelId)
         bottomOvershootFun: () => getFeedNextPage(modelId)
         topText: ""
     }
