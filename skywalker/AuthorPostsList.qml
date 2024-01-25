@@ -33,11 +33,9 @@ ListView {
         }
     }
 
-    onContentYChanged: {
-        if (contentY < 0) {
-            contentY = 0
+    onVerticalOvershootChanged: {
+        if (verticalOvershoot < 0)
             enclosingView.interactive = true
-        }
     }
 
     delegate: PostFeedViewDelegate {

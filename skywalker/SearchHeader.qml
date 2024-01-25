@@ -63,7 +63,6 @@ Rectangle {
                     y: parent.y - parent.padding
                     width: height
                     height: parent.height + 10
-                    iconColor: guiSettings.textColor
                     svg: svgOutline.close
                     visible: searchText.displayText.length > 0
                     onClicked: searchText.clear()

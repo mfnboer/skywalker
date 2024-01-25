@@ -404,11 +404,9 @@ Page {
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
 
-                onContentYChanged: {
-                    if (contentY <= 0) {
-                        contentY = 0
-                        authorFeedView.interactive = true
-                    }
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0)
+                        enclosingView.interactive = true
                 }
 
                 onCountChanged: hasFeeds = count
@@ -448,11 +446,9 @@ Page {
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
 
-                onContentYChanged: {
-                    if (contentY <= 0) {
-                        contentY = 0
-                        authorFeedView.interactive = true
-                    }
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0)
+                        enclosingView.interactive = true
                 }
 
                 onCountChanged: hasLists = count
