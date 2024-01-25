@@ -1029,6 +1029,24 @@ void Skywalker::getDetailedProfile(const QString& author)
         });
 }
 
+void Skywalker::updateUserProfile()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Update user profile";
+    const auto* session = mBsky->getSession();
+
+    mBsky->getProfile(session->mDid,
+        [this](auto profile){
+            auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
+            mUserProfile = Profile(shared);
+            emit avatarUrlChanged();
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "updateUserProfile failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 Q_INVOKABLE void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
 {
     Q_ASSERT(mBsky);

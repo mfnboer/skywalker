@@ -77,6 +77,7 @@ public:
     Q_INVOKABLE void getNotificationsNextPage();
     Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
+    Q_INVOKABLE void updateUserProfile();
     Q_INVOKABLE void clearAuthorFeed(int id);
     Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 20, int minEntries = 10);

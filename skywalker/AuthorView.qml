@@ -8,6 +8,10 @@ Page {
     required property detailedprofile author
     required property int modelId
 
+    property string authorName: author.displayName
+    property string authorDescription: author.description
+    property string authorAvatar: author.avatarUrl
+    property string authorBanner: author.banner
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
     property bool authorMuted: author.viewer.muted
@@ -28,9 +32,9 @@ Page {
             id: bannerImg
             anchors.top: parent.top
             width: parent.width
-            source: author.banner
+            source: authorBanner
             fillMode: Image.PreserveAspectFit
-            visible: author.banner && contentVisible() && status === Image.Ready
+            visible: authorBanner && contentVisible() && status === Image.Ready
         }
 
         Rectangle {
@@ -65,9 +69,9 @@ Page {
                 anchors.centerIn: parent
                 width: parent.width - 4
                 height: parent.height - 4
-                avatarUrl: !contentVisible() ? "" : author.avatarUrl
+                avatarUrl: !contentVisible() ? "" : authorAvatar
                 onClicked:  {
-                    if (author.avatarUrl)
+                    if (authorAvatar)
                         root.viewFullImage([author.imageView], 0)
                 }
             }
@@ -126,10 +130,19 @@ Page {
 
                     Menu {
                         id: moreMenu
+
+                        MenuItem {
+                            text: qsTr("Edit")
+                            enabled: isUser(author)
+                            onTriggered: editAuthor(author)
+
+                            MenuItemSvg { svg: svgOutline.edit }
+                        }
+
                         MenuItem {
                             text: qsTr("Translate")
-                            enabled: author.description
-                            onTriggered: root.translateText(author.description)
+                            enabled: authorDescription
+                            onTriggered: root.translateText(authorDescription)
 
                             MenuItemSvg { svg: svgOutline.googleTranslate }
                         }
@@ -199,7 +212,7 @@ Page {
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: author.name
+                text: authorName
             }
 
             RowLayout {
@@ -277,7 +290,7 @@ Page {
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
                 color: guiSettings.textColor
-                text: postUtils.linkiFy(author.description, guiSettings.linkColor)
+                text: postUtils.linkiFy(authorDescription, guiSettings.linkColor)
                 visible: contentVisible()
 
                 onLinkActivated: (link) => root.openLink(link)
@@ -537,6 +550,29 @@ Page {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function editAuthor(author) {
+        let component = Qt.createComponent("EditProfile.qml")
+        let editPage = component.createObject(page, {
+                skywalker: skywalker,
+                authorDid: author.did,
+                authorName: authorName,
+                authorDescription: authorDescription,
+                authorAvatar: authorAvatar,
+                authorBanner: authorBanner
+            })
+        editPage.profileUpdated.connect((name, description, avatar, banner) => {
+            statusPopup.show(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
+            authorName = name
+            authorDescription = description
+            authorAvatar = avatar
+            authorBanner = banner
+            skywalker.updateUserProfile()
+            root.popStack()
+        })
+        editPage.onClosed.connect(() => { root.popStack() })
+        root.pushStack(editPage)
     }
 
     function mentionPost(text = "", imgSource = "") {

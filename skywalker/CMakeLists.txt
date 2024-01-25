@@ -264,6 +264,7 @@ qt_add_qml_module(libskywalker
         SOURCES gif_utils.h
         SOURCES gif_utils.cpp
         QML_FILES AuthorPostsList.qml
+        QML_FILES EditProfile.qml
 )
 
 if (NOT ANDROID)

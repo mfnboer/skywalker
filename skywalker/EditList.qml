@@ -117,7 +117,7 @@ Page {
                 property bool isUpdated: false
 
                 id: avatar
-                width: 180
+                width: 100
                 avatarUrl: list.avatar
 
                 onClicked: {
@@ -133,6 +133,7 @@ Page {
 
                 SvgButton {
                     x: parent.width - width
+                    width: 40
                     height: width
                     svg: svgOutline.close
                     visible: avatar.avatarUrl
@@ -234,8 +235,6 @@ Page {
     }
 
     GraphUtils {
-        property listview nullList
-
         id: graphUtils
         skywalker: editListPage.skywalker
 

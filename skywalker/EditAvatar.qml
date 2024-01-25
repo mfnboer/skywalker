@@ -8,6 +8,9 @@ Page {
     required property string photoSource
     property double relativeRadius: 0.5
     property double maskOpacity: 0.8
+    property int maskWidth: getMaskSize()
+    property int maskHeight: maskWidth
+    property int pageMargin: 10
 
     signal closed
     signal selected(rect rectangle)
@@ -15,7 +18,7 @@ Page {
     id: page
     width: parent.width
     height: parent.height
-    padding: 10
+    padding: pageMargin
 
     header: SimpleHeader {
         text: qsTr("Edit Photo")
@@ -31,8 +34,8 @@ Page {
     }
 
     Image {
-        property int boundingWidth: getMaskSize()
-        property int boundingHeight: getMaskSize()
+        property int boundingWidth: maskWidth
+        property int boundingHeight: maskHeight
         property double minScale: 1
         property bool zooming: false
 
@@ -138,6 +141,7 @@ Page {
         }
 
         function getSelectRect() {
+            console.debug("BOUNDING SIZE:", img.boundingWidth, img.boundingHeight)
             let s = img.getImgScale()
             let imgSize = img.getImgSize()
 
@@ -193,7 +197,7 @@ Page {
     Shape {
         id: topLeftMask
         x: 0
-        y: (parent.height - helpText.height - getMaskSize()) / 2
+        y: (parent.height - helpText.height - maskHeight) / 2
         width: getRadius()
         height: width
 
@@ -235,7 +239,7 @@ Page {
     Shape {
         id: bottomLeftMask
         x: topLeftMask.x
-        y: topLeftMask.y + getMaskSize() - width
+        y: topLeftMask.y + maskHeight - width
         width: getRadius()
         height: width
 

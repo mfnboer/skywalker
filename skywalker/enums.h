@@ -164,6 +164,12 @@ public:
         AUTHOR_FEED_FILTER_MEDIA
     };
     Q_ENUM(AuthorFeedFilter)
+
+    enum PhotoType {
+        PHOTO_TYPE_AVATAR,
+        PHOTO_TYPE_BANNER
+    };
+    Q_ENUM(PhotoType)
 };
 
 }
