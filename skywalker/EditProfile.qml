@@ -413,7 +413,7 @@ Page {
         return authorName !== nameField.displayText ||
                 authorDescription !== descriptionField.text ||
                 authorAvatar !== avatar.avatarUrl ||
-                authorBanner !== banner.source
+                authorBanner !== banner.source.toString()
     }
 
     function cancel() {

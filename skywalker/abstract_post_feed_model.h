@@ -17,7 +17,7 @@ namespace Skywalker {
 class AbstractPostFeedModel : public QAbstractListModel, public LocalPostModelChanges
 {
     Q_OBJECT
-    QML_ELEMENT
+    //QML_ELEMENT
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
 
@@ -74,7 +74,6 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     const Post& getPost(int index) const { return mFeed.at(index); }
-    void updatePostIndexTimestamps();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

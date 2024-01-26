@@ -8,10 +8,13 @@ Page {
     required property detailedprofile author
     required property int modelId
 
-    property string authorName: author.displayName
-    property string authorDescription: author.description
-    property string authorAvatar: author.avatarUrl
-    property string authorBanner: author.banner
+    // Initialize properties in onCompleted.
+    // For some weird reason description and banner are not available here.
+    // Must have something to do with those properties being in subclasses of BasicProfile.
+    property string authorName
+    property string authorDescription
+    property string authorAvatar
+    property string authorBanner
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
     property bool authorMuted: author.viewer.muted
@@ -346,6 +349,7 @@ Page {
         }
 
         delegate: StackLayout {
+            id: feedStack
             width: parent.width
 
             // -1 to make the interactive enable/disable work
@@ -355,6 +359,7 @@ Page {
 
             // Posts
             AuthorPostsList {
+                id: authorPostsList
                 author: page.author
                 enclosingView: authorFeedView
                 getFeed: (id) => page.getFeed(id)
@@ -368,6 +373,7 @@ Page {
 
             // Replies
             AuthorPostsList {
+                id: authorRepliesList
                 author: page.author
                 enclosingView: authorFeedView
                 getFeed: (id) => page.getFeed(id)
@@ -381,6 +387,7 @@ Page {
 
             // Media
             AuthorPostsList {
+                id: authorMediaList
                 author: page.author
                 enclosingView: authorFeedView
                 getFeed: (id) => page.getFeed(id)
@@ -394,6 +401,7 @@ Page {
 
             // Likes
             AuthorPostsList {
+                id: authorLikesList
                 author: page.author
                 enclosingView: authorFeedView
                 getFeed: (id) => skywalker.getAuthorLikes(id)
@@ -566,13 +574,33 @@ Page {
             statusPopup.show(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
             authorName = name
             authorDescription = description
-            authorAvatar = avatar
-            authorBanner = banner
+            setAuthorAvatar(avatar)
+            setAuthorBanner(banner)
             skywalker.updateUserProfile()
             root.popStack()
         })
         editPage.onClosed.connect(() => { root.popStack() })
         root.pushStack(editPage)
+    }
+
+    function setAuthorAvatar(source) {
+        if (source === authorAvatar)
+            return
+
+        if (authorAvatar.startsWith("image://"))
+            postUtils.dropPhoto(authorAvatar)
+
+        authorAvatar = source
+    }
+
+    function setAuthorBanner(source) {
+        if (source === authorBanner)
+            return
+
+        if (authorBanner.startsWith("image://"))
+            postUtils.dropPhoto(authorBanner)
+
+        authorBanner = source
     }
 
     function mentionPost(text = "", imgSource = "") {
@@ -681,11 +709,17 @@ Page {
     }
 
     Component.onDestruction: {
+        setAuthorAvatar("")
+        setAuthorBanner("")
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
     }
 
     Component.onCompleted: {
+        authorName = author.displayName
+        authorDescription = author.description
+        authorAvatar = author.avatarUrl
+        authorBanner = author.banner
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)

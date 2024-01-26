@@ -120,13 +120,13 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
         mDidAvatarBlobMap[did] = std::move(avatarBlob);
 
         bskyClient()->uploadBlob(blob, mimeType,
-            [this, presence=getPresence(), did, name, description](auto blob){
+            [this, presence=getPresence(), did, name, description, updateAvatar](auto blob){
                 if (!presence)
                     return;
 
                 auto avaBlob = std::move(mDidAvatarBlobMap[did]);
                 mDidAvatarBlobMap.erase(did);
-                continueUpdateProfile(did, name, description, std::move(avaBlob), true, std::move(blob), true);
+                continueUpdateProfile(did, name, description, std::move(avaBlob), updateAvatar, std::move(blob), true);
             },
             [this, presence=getPresence()](const QString& error, const QString& msg){
                 if (!presence)

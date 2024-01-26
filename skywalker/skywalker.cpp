@@ -1039,6 +1039,7 @@ void Skywalker::updateUserProfile()
         [this](auto profile){
             auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
             mUserProfile = Profile(shared);
+            AuthorCache::instance().setUser(mUserProfile);
             emit avatarUrlChanged();
         },
         [this](const QString& error, const QString& msg){
