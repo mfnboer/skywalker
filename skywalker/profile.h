@@ -65,7 +65,9 @@ public:
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileView* profile);
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
-    BasicProfile(const QString& did, const QString& handle, const QString& displayName, const QString& avatarUrl);
+    BasicProfile(const QString& did, const QString& handle, const QString& displayName,
+                 const QString& avatarUrl, const ProfileViewerState& viewer = {},
+                 const QStringList& labelTexts = {});
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
     Q_INVOKABLE bool isNull() const;
@@ -87,6 +89,10 @@ public:
     bool isVolatile() const;
 
     BasicProfile nonVolatileCopy() const;
+
+    // Setting only makes sense for a non-volatile instance
+    void setDisplayName(const QString& displayName) { mDisplayName = displayName; }
+    void setAvatarUrl(const QString& avatarUrl) { mAvatarUrl = avatarUrl; }
 
 protected:
     const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;
@@ -117,12 +123,21 @@ public:
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
+    Profile(const QString& did, const QString& handle, const QString& displayName,
+            const QString& avatarUrl, const ProfileViewerState& viewer,
+            const QStringList& labelTexts, const QString& description);
 
     QString getDescription() const;
+
+    Profile nonVolatileCopy() const;
+
+    void setDescription(const QString& description) { mDescription = description; }
 
 private:
     ATProto::AppBskyActor::ProfileView::SharedPtr mProfile;
     ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mDetailedProfile;
+
+    QString mDescription;
 };
 
 class DetailedProfile : public Profile
@@ -137,14 +152,27 @@ class DetailedProfile : public Profile
 public:
     DetailedProfile() = default;
     explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
+    DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
+                    const QString& avatarUrl, const ProfileViewerState& viewer,
+                    const QStringList& labelTexts, const QString& description,
+                    const QString& banner, int followersCount, int followsCount, int postsCount);
 
     QString getBanner() const;
     int getFollowersCount() const;
     int getFollowsCount() const;
     int getPostsCount() const;
 
+    DetailedProfile nonVolatileCopy() const;
+
+    void setBanner(const QString& banner) { mBanner = banner; }
+
 private:
     ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mDetailedProfile;
+
+    QString mBanner;
+    int mFollowersCount = 0;
+    int mFollowsCount = 0;
+    int mPostsCount = 0;
 };
 
 }

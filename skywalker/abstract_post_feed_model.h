@@ -93,6 +93,7 @@ protected:
     virtual void repostCountChanged() override;
     virtual void repostUriChanged() override;
     virtual void postDeletedChanged() override;
+    virtual void profileChanged() override;
 
     using TimelineFeed = std::deque<Post>;
     TimelineFeed mFeed;

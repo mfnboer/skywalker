@@ -47,11 +47,15 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* pro
     Q_ASSERT(mProfileDetailedView);
 }
 
-BasicProfile::BasicProfile(const QString& did, const QString& handle, const QString& displayName, const QString& avatarUrl) :
+BasicProfile::BasicProfile(const QString& did, const QString& handle, const QString& displayName,
+                           const QString& avatarUrl, const ProfileViewerState& viewer,
+                           const QStringList& labelTexts) :
     mDid(did),
     mHandle(handle),
     mDisplayName(displayName),
-    mAvatarUrl(avatarUrl)
+    mAvatarUrl(avatarUrl),
+    mViewer(viewer),
+    mLabelTexts(labelTexts)
 {
 }
 
@@ -193,9 +197,8 @@ bool BasicProfile::isVolatile() const
 
 BasicProfile BasicProfile::nonVolatileCopy() const
 {
-    BasicProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl());
-    profile.mViewer = getViewer();
-    profile.mLabelTexts = getLabelTexts();
+    BasicProfile profile(getDid(), getHandle(), getDisplayName(),
+                         getAvatarUrl(), getViewer(), getLabelTexts());
     return profile;
 }
 
@@ -221,6 +224,14 @@ Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& pr
 {
 }
 
+Profile::Profile(const QString& did, const QString& handle, const QString& displayName,
+                 const QString& avatarUrl, const ProfileViewerState& viewer,
+                 const QStringList& labelTexts, const QString& description) :
+    BasicProfile(did, handle, displayName, avatarUrl, viewer, labelTexts),
+    mDescription(description)
+{
+}
+
 QString Profile::getDescription() const
 {
     if (mProfileView)
@@ -229,7 +240,14 @@ QString Profile::getDescription() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mDescription.value_or("");
 
-    return {};
+    return mDescription;
+}
+
+Profile Profile::nonVolatileCopy() const
+{
+    Profile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl(),
+                    getViewer(), getLabelTexts(), getDescription());
+    return profile;
 }
 
 DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
@@ -238,24 +256,44 @@ DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetaile
 {
 }
 
+DetailedProfile:: DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
+                const QString& avatarUrl, const ProfileViewerState& viewer,
+                const QStringList& labelTexts, const QString& description,
+                const QString& banner, int followersCount, int followsCount, int postsCount) :
+    Profile(did, handle, displayName, avatarUrl, viewer, labelTexts, description),
+    mBanner(banner),
+    mFollowersCount(followersCount),
+    mFollowsCount(followsCount),
+    mPostsCount(postsCount)
+{
+}
+
 QString DetailedProfile::getBanner() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : QString();
+    return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : mBanner;
 }
 
 int DetailedProfile::getFollowersCount() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mFollowersCount : 0;
+    return mProfileDetailedView ? mProfileDetailedView->mFollowersCount : mFollowersCount;
 }
 
 int DetailedProfile::getFollowsCount() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mFollowsCount : 0;
+    return mProfileDetailedView ? mProfileDetailedView->mFollowsCount : mFollowsCount;
 }
 
 int DetailedProfile::getPostsCount() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mPostsCount : 0;
+    return mProfileDetailedView ? mProfileDetailedView->mPostsCount : mPostsCount;
+}
+
+DetailedProfile DetailedProfile::nonVolatileCopy() const
+{
+    DetailedProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl(),
+                            getViewer(), getLabelTexts(), getDescription(), getBanner(),
+                            getFollowersCount(), getFollowsCount(), getPostsCount());
+    return profile;
 }
 
 }

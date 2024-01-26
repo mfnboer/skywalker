@@ -1029,23 +1029,19 @@ void Skywalker::getDetailedProfile(const QString& author)
         });
 }
 
-void Skywalker::updateUserProfile()
+void Skywalker::updateUserProfile(const QString& displayName, const QString& description,
+                                  const QString& avatar)
 {
-    Q_ASSERT(mBsky);
-    qDebug() << "Update user profile";
-    const auto* session = mBsky->getSession();
+    mUserProfile = mUserProfile.nonVolatileCopy();
+    mUserProfile.setDisplayName(displayName);
+    mUserProfile.setDescription(description);
+    mUserProfile.setAvatarUrl(avatar);
+    AuthorCache::instance().setUser(mUserProfile);
 
-    mBsky->getProfile(session->mDid,
-        [this](auto profile){
-            auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
-            mUserProfile = Profile(shared);
-            AuthorCache::instance().setUser(mUserProfile);
-            emit avatarUrlChanged();
-        },
-        [this](const QString& error, const QString& msg){
-            qDebug() << "updateUserProfile failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
-        });
+    makeLocalModelChange(
+        [this](LocalPostModelChanges* model){ model->updateProfile(mUserProfile); });
+
+    emit avatarUrlChanged();
 }
 
 Q_INVOKABLE void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)

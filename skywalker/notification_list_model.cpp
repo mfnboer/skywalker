@@ -604,6 +604,13 @@ void NotificationListModel::postDeletedChanged()
     changeData({ int(Role::NotificationReasonPostLocallyDeleted) });
 }
 
+void NotificationListModel::profileChanged()
+{
+    // The only profile change can be the profile of the user.
+    // Notifications do not show the user.
+    qDebug() << "Profile changes not handled.";
+}
+
 void NotificationListModel::postBookmarkedChanged()
 {
     changeData({ int(Role::NotificationPostBookmarked) });

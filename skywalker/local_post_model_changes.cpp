@@ -10,9 +10,16 @@ const LocalPostModelChanges::Change* LocalPostModelChanges::getLocalChange(const
     return it != mChanges.end() ? &it->second : nullptr;
 }
 
+const BasicProfile* LocalPostModelChanges::getProfileChange(const QString& did) const
+{
+    auto it = mProfileChanges.find(did);
+    return it != mProfileChanges.end() ? &it->second : nullptr;
+}
+
 void LocalPostModelChanges::clearLocalChanges()
 {
     mChanges.clear();
+    mProfileChanges.clear();
 }
 
 void LocalPostModelChanges::updatePostIndexTimestamps()
@@ -55,6 +62,12 @@ void LocalPostModelChanges::updatePostDeleted(const QString& cid)
 {
     mChanges[cid].mPostDeleted = true;
     postDeletedChanged();
+}
+
+void LocalPostModelChanges::updateProfile(const BasicProfile& profile)
+{
+    mProfileChanges[profile.getDid()] = profile.nonVolatileCopy();
+    profileChanged();
 }
 
 }

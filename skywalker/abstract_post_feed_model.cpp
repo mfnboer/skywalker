@@ -104,7 +104,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     switch (Role(role))
     {
     case Role::Author:
-        return QVariant::fromValue(post.getAuthor());
+    {
+        const auto author = post.getAuthor();
+        const auto* profileChange = getProfileChange(author.getDid());
+        return QVariant::fromValue(profileChange ? *profileChange : author);
+    }
     case Role::PostText:
         return post.getFormattedText();
     case Role::PostPlainText:
@@ -125,7 +129,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostRepostedByName:
     {
         const auto& repostedBy = post.getRepostedBy();
-        return repostedBy ? repostedBy->getName() : QVariant();
+
+        if (!repostedBy)
+            return {};
+
+        const auto* profileChange = getProfileChange(repostedBy->getDid());
+        return profileChange ? profileChange->getName() : repostedBy->getName();
     }
     case Role::PostRecord:
     {
@@ -178,8 +187,13 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.isParentInThread();
     case Role::PostReplyToAuthor:
     {
-        const auto& author = post.getReplyToAuthor();
-        return author ? QVariant::fromValue(*author) : QVariant();
+        const auto author = post.getReplyToAuthor();
+
+        if (!author)
+            return {};
+
+        const auto* profileChange = getProfileChange(author->getDid());
+        return QVariant::fromValue(profileChange ? *profileChange : *author);
     }
     case Role::PostReplyRootCid:
         return post.getReplyRootCid();
@@ -338,6 +352,11 @@ void AbstractPostFeedModel::repostUriChanged()
 void AbstractPostFeedModel::postDeletedChanged()
 {
     changeData({ int(Role::PostLocallyDeleted) });
+}
+
+void AbstractPostFeedModel::profileChanged()
+{
+    changeData({ int(Role::Author), int(Role::PostReplyToAuthor), int(Role::PostRepostedByName) });
 }
 
 void AbstractPostFeedModel::postBookmarkedChanged()

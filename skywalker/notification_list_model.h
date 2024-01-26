@@ -91,6 +91,7 @@ protected:
     virtual void repostCountChanged() override;
     virtual void repostUriChanged() override;
     virtual void postDeletedChanged() override;
+    virtual void profileChanged() override;
 
     QHash<int, QByteArray> roleNames() const override;
 

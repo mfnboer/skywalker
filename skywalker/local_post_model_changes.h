@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "profile.h"
 #include <QHashFunctions>
 #include <QString>
 #include <optional>
@@ -26,10 +27,13 @@ public:
         bool mPostDeleted = false;
     };
 
+    static void updateUser(const BasicProfile& profile);
+
     LocalPostModelChanges() = default;
     virtual ~LocalPostModelChanges() = default;
 
     const Change* getLocalChange(const QString& cid) const;
+    const BasicProfile* getProfileChange(const QString& did) const;
     void clearLocalChanges();
 
     void updatePostIndexTimestamps();
@@ -40,6 +44,8 @@ public:
     void updateLikeUri(const QString& cid, const QString& likeUri);
     void updatePostDeleted(const QString& cid);
 
+    void updateProfile(const BasicProfile& profile);
+
 protected:
     virtual void postIndexTimestampChanged() = 0;
     virtual void likeCountChanged() = 0;
@@ -49,9 +55,15 @@ protected:
     virtual void repostUriChanged() = 0;
     virtual void postDeletedChanged() = 0;
 
+    virtual void profileChanged() = 0;
+
 private:
     // Mapping from post CID to change
     std::unordered_map<QString, Change> mChanges;
+
+    // Mapping from DID to change
+    // Only the profile of the user can be changed.
+    std::unordered_map<QString, BasicProfile> mProfileChanges;
 };
 
 }

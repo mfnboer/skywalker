@@ -427,7 +427,7 @@ Page {
 
                 onVerticalOvershootChanged: {
                     if (verticalOvershoot < 0)
-                        enclosingView.interactive = true
+                        authorFeedView.interactive = true
                 }
 
                 onCountChanged: hasFeeds = count
@@ -469,7 +469,7 @@ Page {
 
                 onVerticalOvershootChanged: {
                     if (verticalOvershoot < 0)
-                        enclosingView.interactive = true
+                        authorFeedView.interactive = true
                 }
 
                 onCountChanged: hasLists = count
@@ -576,7 +576,7 @@ Page {
             authorDescription = description
             setAuthorAvatar(avatar)
             setAuthorBanner(banner)
-            skywalker.updateUserProfile()
+            skywalker.updateUserProfile(name, description, avatar)
             root.popStack()
         })
         editPage.onClosed.connect(() => { root.popStack() })
