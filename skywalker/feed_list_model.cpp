@@ -36,7 +36,11 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
     case Role::FeedLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : feed.getViewer().getLike();
     case Role::FeedCreator:
-        return QVariant::fromValue(feed.getCreator());
+    {
+        auto creator = feed.getCreator();
+        const Profile* profileChange = getProfileChange(creator.getDid());
+        return QVariant::fromValue(profileChange ? *profileChange : creator);
+    }
     case Role::FeedSaved:
         return mFavoriteFeeds.isSavedFeed(feed.getUri());
     case Role::FeedPinned:
@@ -62,6 +66,7 @@ void FeedListModel::clear()
 
     mCursor.clear();
     clearLocalChanges();
+    clearLocalProfileChanges();
 }
 
 void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, const QString& cursor)
@@ -139,6 +144,11 @@ void FeedListModel::likeCountChanged()
 void FeedListModel::likeUriChanged()
 {
     changeData({ int(Role::FeedLikeUri) });
+}
+
+void FeedListModel::profileChanged()
+{
+    changeData({ int(Role::FeedCreator) });
 }
 
 void FeedListModel::feedSavedChanged()

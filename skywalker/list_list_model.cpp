@@ -47,7 +47,11 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
     case Role::List:
         return QVariant::fromValue(list);
     case Role::ListCreator:
-        return QVariant::fromValue(list.getCreator());
+    {
+        auto creator = list.getCreator();
+        const Profile* profileChange = getProfileChange(creator.getDid());
+        return QVariant::fromValue(profileChange ? *profileChange : creator);
+    }
     case Role::ListBlockedUri:
         return change && change->mBlocked ? *change->mBlocked : list.getViewer().getBlocked();
     case Role::ListMuted:
@@ -83,6 +87,7 @@ void ListListModel::clear()
     mMemberCheckResults.clear();
     mCursor.clear();
     clearLocalChanges();
+    clearLocalProfileChanges();
 }
 
 int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor)
@@ -303,6 +308,11 @@ void ListListModel::mutedChanged()
 void ListListModel::memberListItemUriChanged()
 {
     changeData({ int(Role::MemberCheck), int(Role::MemberListItemUri) });
+}
+
+void ListListModel::profileChanged()
+{
+    changeData({ int(Role::ListCreator) });
 }
 
 void ListListModel::listSavedChanged()

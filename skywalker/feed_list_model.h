@@ -3,6 +3,7 @@
 #pragma once
 #include "generator_view.h"
 #include "local_feed_model_changes.h"
+#include "local_profile_changes.h"
 #include <QAbstractListModel>
 #include <deque>
 
@@ -10,7 +11,9 @@ namespace Skywalker {
 
 class FavoriteFeeds;
 
-class FeedListModel : public QAbstractListModel, public LocalFeedModelChanges
+class FeedListModel : public QAbstractListModel,
+                      public LocalFeedModelChanges,
+                      public LocalProfileChanges
 {
     Q_OBJECT
 public:
@@ -39,8 +42,13 @@ public:
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
+
+    // LocalFeedModelChanges
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
+
+    // LocalProfileChanges
+    virtual void profileChanged() override;
 
 private:
     void feedSavedChanged();

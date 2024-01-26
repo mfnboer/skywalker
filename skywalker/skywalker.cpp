@@ -907,6 +907,35 @@ void Skywalker::updatePostIndexTimestamps()
     makeLocalModelChange([](LocalPostModelChanges* model){ model->updatePostIndexTimestamps(); });
 }
 
+void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update)
+{
+    // Apply change to all active models. When a model gets refreshed (after clear)
+    // or deleted, then the local changes will disapper.
+
+    update(&mTimelineModel);
+
+    for (auto& [_, model] : mPostThreadModels.items())
+        update(model.get());
+
+    for (auto& [_, model] : mAuthorFeedModels.items())
+        update(model.get());
+
+    for (auto& [_, model] : mSearchPostFeedModels.items())
+        update(model.get());
+
+    for (auto& [_, model] : mPostFeedModels.items())
+        update(model.get());
+
+    if (mBookmarksModel)
+        update(mBookmarksModel.get());
+
+    for (auto& [_, model] : mFeedListModels.items())
+        update(model.get());
+
+    for (auto& [_, model] : mListListModels.items())
+        update(model.get());
+}
+
 void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update)
 {
     // Apply change to all active models. When a model gets refreshed (after clear)
@@ -1039,7 +1068,7 @@ void Skywalker::updateUserProfile(const QString& displayName, const QString& des
     AuthorCache::instance().setUser(mUserProfile);
 
     makeLocalModelChange(
-        [this](LocalPostModelChanges* model){ model->updateProfile(mUserProfile); });
+        [this](LocalProfileChanges* model){ model->updateProfile(mUserProfile); });
 
     emit avatarUrlChanged();
 }

@@ -137,6 +137,7 @@ public:
     Q_INVOKABLE void clearPassword();
     Q_INVOKABLE void signOut();
 
+    void makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalFeedModelChanges*)>& update);

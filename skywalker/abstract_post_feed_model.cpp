@@ -28,6 +28,7 @@ void AbstractPostFeedModel::clearFeed()
     mStoredCidQueue = {};
     mEndOfFeed = false;
     clearLocalChanges();
+    clearLocalProfileChanges();
 }
 
 void AbstractPostFeedModel::storeCid(const QString& cid)
@@ -106,7 +107,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::Author:
     {
         const auto author = post.getAuthor();
-        const auto* profileChange = getProfileChange(author.getDid());
+        const BasicProfile* profileChange = getProfileChange(author.getDid());
         return QVariant::fromValue(profileChange ? *profileChange : author);
     }
     case Role::PostText:
@@ -133,7 +134,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         if (!repostedBy)
             return {};
 
-        const auto* profileChange = getProfileChange(repostedBy->getDid());
+        const BasicProfile* profileChange = getProfileChange(repostedBy->getDid());
         return profileChange ? profileChange->getName() : repostedBy->getName();
     }
     case Role::PostRecord:
@@ -192,7 +193,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         if (!author)
             return {};
 
-        const auto* profileChange = getProfileChange(author->getDid());
+        const BasicProfile* profileChange = getProfileChange(author->getDid());
         return QVariant::fromValue(profileChange ? *profileChange : *author);
     }
     case Role::PostReplyRootCid:

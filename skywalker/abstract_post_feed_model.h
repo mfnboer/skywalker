@@ -4,6 +4,7 @@
 #include "bookmarks.h"
 #include "content_filter.h"
 #include "local_post_model_changes.h"
+#include "local_profile_changes.h"
 #include "muted_words.h"
 #include "post.h"
 #include "profile_store.h"
@@ -14,10 +15,11 @@
 
 namespace Skywalker {
 
-class AbstractPostFeedModel : public QAbstractListModel, public LocalPostModelChanges
+class AbstractPostFeedModel : public QAbstractListModel,
+                              public LocalPostModelChanges,
+                              public LocalProfileChanges
 {
     Q_OBJECT
-    //QML_ELEMENT
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
 
@@ -86,6 +88,7 @@ protected:
     void setEndOfFeed(bool endOfFeed) { mEndOfFeed = endOfFeed; }
     bool mustHideContent(const Post& post) const;
 
+    // LocalPostModelChanges
     virtual void postIndexTimestampChanged() override;
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
@@ -93,6 +96,8 @@ protected:
     virtual void repostCountChanged() override;
     virtual void repostUriChanged() override;
     virtual void postDeletedChanged() override;
+
+    // LocalProfileChanges
     virtual void profileChanged() override;
 
     using TimelineFeed = std::deque<Post>;

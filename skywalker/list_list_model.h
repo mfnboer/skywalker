@@ -4,6 +4,7 @@
 #include "graph_utils.h"
 #include "list_view.h"
 #include "local_list_model_changes.h"
+#include "local_profile_changes.h"
 #include <QAbstractListModel>
 #include <deque>
 
@@ -12,7 +13,9 @@ namespace Skywalker {
 class FavoriteFeeds;
 class Skywalker;
 
-class ListListModel : public QAbstractListModel, public LocalListModelChanges
+class ListListModel : public QAbstractListModel,
+                      public LocalListModelChanges,
+                      public LocalProfileChanges
 {
     Q_OBJECT
 public:
@@ -59,9 +62,14 @@ public:
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
+
+    // LocalListModelChanges
     virtual void blockedChanged() override;
     virtual void mutedChanged() override;
     virtual void memberListItemUriChanged() override;
+
+    // LocalProfileChanges
+    virtual void profileChanged() override;
 
 private:
     using ListList = std::deque<ListView>;
