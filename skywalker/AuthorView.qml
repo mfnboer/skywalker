@@ -127,20 +127,18 @@ Page {
 
             RowLayout {
                 SvgButton {
+                    svg: svgOutline.edit
+                    onClicked: editAuthor(author)
+                    visible: isUser(author)
+                }
+
+                SvgButton {
                     id: moreButton
                     svg: svgOutline.moreVert
                     onClicked: moreMenu.open()
 
                     Menu {
                         id: moreMenu
-
-                        MenuItem {
-                            text: qsTr("Edit")
-                            enabled: isUser(author)
-                            onTriggered: editAuthor(author)
-
-                            MenuItemSvg { svg: svgOutline.edit }
-                        }
 
                         MenuItem {
                             text: qsTr("Translate")

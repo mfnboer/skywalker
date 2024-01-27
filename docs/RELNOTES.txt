@@ -1,3 +1,8 @@
+next
+====
+* Edit your profile
+* Bug fixes
+
 0.7
 ===
 * Replies, media, feeds and lists, added to profile page
