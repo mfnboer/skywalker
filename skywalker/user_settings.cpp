@@ -255,4 +255,14 @@ bool UserSettings::getGifAutoPlay() const
     return mSettings.value("gifAutoPlay", true).toBool();
 }
 
+void UserSettings::saveMutedRepostsListUri(const QString& did, const QString& uri)
+{
+    mSettings.setValue(key(did, "mutedRepostsListUri"), uri);
+}
+
+QString UserSettings::getMutedRepostsListUri(const QString& did) const
+{
+    return mSettings.value(key(did, "mutedRepostsListUri")).toString();
+}
+
 }

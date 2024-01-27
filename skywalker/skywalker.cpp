@@ -37,7 +37,8 @@ Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
     mMutedWords(this),
-    mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, mUserPreferences, this),
+    mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+                   mBookmarks, mMutedWords, mUserPreferences, this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mFavoriteFeeds(this),
     mUserSettings(this)
@@ -263,7 +264,7 @@ void Skywalker::getUserPreferences()
         [this](auto prefs){
             mUserPreferences = prefs;
             updateFavoriteFeeds();
-            emit getUserPreferencesOK();
+            loadMutedReposts();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
@@ -288,6 +289,9 @@ void Skywalker::saveFavoriteFeeds()
 
 void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs)
 {
+    Q_ASSERT(mBsky);
+    qDebug() << "Save user preferences";
+
     mBsky->putPreferences(prefs,
         [this, prefs]{
             qDebug() << "saveUserPreferences ok";
@@ -296,6 +300,52 @@ void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs)
         [this](const QString& error, const QString& msg){
             qDebug() << "saveUserPreferences failed:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Load muted reposts, maxPages:" << maxPages << "cursor:" << cursor;
+
+    if (maxPages <= 0)
+    {
+        qWarning() << "Max pages reached";
+
+        emit statusMessage(tr("Too many muted reposts!"), QEnums::STATUS_LEVEL_ERROR);
+
+        // Either their are too many muted reposts, or the cursor got in a loop.
+        // We signal OK as there is no way out of this situation without starting
+        // up the app.
+        emit getUserPreferencesOK();
+        return;
+    }
+
+    const QString uri = mUserSettings.getMutedRepostsListUri(mUserDid);
+
+    if (uri.isEmpty())
+    {
+        qDebug() << "No muted reposts list uri saved.";
+        emit getUserPreferencesOK();
+        return;
+    }
+
+    mBsky->getList(uri, 100, makeOptionalCursor(cursor),
+        [this, maxPages](auto output){
+            for (const auto& item : output->mItems)
+            {
+                const BasicProfile profile(item->mSubject.get());
+                mMutedReposts.add(profile);
+
+                if (output->mCursor)
+                    loadMutedReposts(maxPages - 1, *output->mCursor);
+                else
+                    emit getUserPreferencesOK();
+            }
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "loadMutedReposts failed:" << error << " - " << msg;
+            emit getUserPreferencesFailed();
         });
 }
 
@@ -860,7 +910,9 @@ void Skywalker::getPostThread(const QString& uri)
     mBsky->getPostThread(uri, {}, {},
         [this](auto thread){
             setGetPostThreadInProgress(false);
-            auto model = std::make_unique<PostThreadModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
+            auto model = std::make_unique<PostThreadModel>(
+                mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+                mMutedWords, this);
             int postEntryIndex = model->setPostThread(std::move(thread));
 
             if (postEntryIndex < 0)
@@ -1292,7 +1344,9 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
 
 int Skywalker::createAuthorFeedModel(const BasicProfile& author, QEnums::AuthorFeedFilter filter)
 {
-    auto model = std::make_unique<AuthorFeedModel>(author, mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
+    auto model = std::make_unique<AuthorFeedModel>(
+        author, mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+        mMutedWords, this);
     model->setFilter(filter);
     const int id = mAuthorFeedModels.put(std::move(model));
     return id;
@@ -1313,7 +1367,9 @@ void Skywalker::removeAuthorFeedModel(int id)
 
 int Skywalker::createSearchPostFeedModel()
 {
-    auto model = std::make_unique<SearchPostFeedModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
+    auto model = std::make_unique<SearchPostFeedModel>(
+        mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+        mMutedWords, this);
     const int id = mSearchPostFeedModels.put(std::move(model));
     return id;
 }
@@ -1425,7 +1481,7 @@ void Skywalker::removeFeedListModel(int id)
 int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
-            mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords,
+            mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks, mMutedWords,
             mUserPreferences, this);
     model->setGeneratorView(generatorView);
     const int id = mPostFeedModels.put(std::move(model));
@@ -1435,7 +1491,8 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 int Skywalker::createPostFeedModel(const ListView& listView)
 {
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
-                                                 mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords,
+                                                 mUserDid, mUserFollows, mMutedReposts,
+                                                 mContentFilter, mBookmarks, mMutedWords,
                                                  mUserPreferences, this);
     model->setListView(listView);
     const int id = mPostFeedModels.put(std::move(model));
@@ -2107,7 +2164,9 @@ void Skywalker::saveUserPreferences()
 
 const BookmarksModel* Skywalker::createBookmarksModel()
 {
-    mBookmarksModel = std::make_unique<BookmarksModel>(mUserDid, mUserFollows, mContentFilter, mBookmarks, mMutedWords, this);
+    mBookmarksModel = std::make_unique<BookmarksModel>(
+        mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+        mMutedWords, this);
 
     connect(mBookmarksModel.get(), &BookmarksModel::failure, this,
             [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
@@ -2259,6 +2318,7 @@ void Skywalker::signOut()
     mUserProfile = {};
     mLoggedOutVisibility = true;
     mUserFollows.clear();
+    mMutedReposts.clear();
     setUnreadNotificationCount(0);
     mBookmarksModel = nullptr;
     mBookmarks.clear();

@@ -8,12 +8,13 @@ namespace Skywalker {
 
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
+                             const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
                              const Bookmarks& bookmarks,
                              const MutedWords& mutedWords,
                              const ATProto::UserPreferences& userPrefs,
                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, contentFilter, bookmarks, mutedWords, parent),
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, parent),
     mUserPreferences(userPrefs),
     mFeedName(feedName)
 {}

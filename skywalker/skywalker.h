@@ -170,6 +170,7 @@ public:
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
+    ProfileStore& getMutedReposts() { return mMutedReposts; }
     const ContentFilter& getContentFilter() const { return mContentFilter; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
@@ -238,6 +239,7 @@ private:
     void shareImage(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
     void saveUserPreferences(const ATProto::UserPreferences& prefs);
+    void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void disableDebugLogging();
     void restoreDebugLogging();
 
@@ -249,6 +251,7 @@ private:
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
+    ProfileStore mMutedReposts;
     ATProto::UserPreferences mUserPreferences;
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;

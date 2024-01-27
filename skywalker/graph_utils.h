@@ -45,6 +45,10 @@ public:
     Q_INVOKABLE void muteList(const QString& listUri);
     Q_INVOKABLE void unmuteList(const QString& listUri);
 
+    Q_INVOKABLE bool areRepostsMuted(const QString& did) const;
+    Q_INVOKABLE void muteReposts(const BasicProfile& profile);
+    Q_INVOKABLE void unmuteReposts(const QString& did);
+
 signals:
     void followOk(QString uri);
     void followFailed(QString error);
@@ -82,12 +86,17 @@ signals:
     void muteListFailed(QString error);
     void unmuteListOk();
     void unmuteListFailed(QString error);
+    void muteRepostsOk();
+    void muteRepostsFailed(QString error);
+    void unmuteRepostsOk();
+    void unmuteRepostsFailed(QString error);
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
                             const QString& description, ATProto::Blob::Ptr blob);
     void continueUpdateList(const QString& listUri, const QString& name,
                             const QString& description, ATProto::Blob::Ptr blob, bool updateAvatar);
+    void continueMuteReposts(const BasicProfile& profile, const QString& listUri);
 
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;

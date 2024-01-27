@@ -69,6 +69,7 @@ public:
     using Ptr = std::unique_ptr<AbstractPostFeedModel>;
 
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
+                          const IProfileStore& mutedReposts,
                           const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                           const MutedWords& mutedWords, QObject* parent = nullptr);
 
@@ -105,6 +106,7 @@ protected:
 
     const QString& mUserDid;
     const IProfileStore& mFollowing;
+    const IProfileStore& mMutedReposts;
     const ContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
     const MutedWords& mMutedWords;

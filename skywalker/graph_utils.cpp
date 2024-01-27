@@ -559,4 +559,103 @@ void GraphUtils::unmuteList(const QString& listUri)
         });
 }
 
+bool GraphUtils::areRepostsMuted(const QString& did) const
+{
+    Q_ASSERT(mSkywalker);
+    return mSkywalker->getMutedReposts().contains(did);
+}
+
+void GraphUtils::muteReposts(const BasicProfile& profile)
+{
+    Q_ASSERT(mSkywalker);
+    auto* userSettings = mSkywalker->getUserSettings();
+    Q_ASSERT(userSettings);
+    const QString uri = userSettings->getMutedRepostsListUri(profile.getDid());
+
+    if (uri.isEmpty())
+    {
+        if (!graphMaster())
+            return;
+
+        graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::MOD_LIST, "Skywalker muted reposts", {}, {},
+            [this, presence=getPresence(), profile](const QString& uri, const QString&){
+                if (!presence)
+                    return;
+
+                mSkywalker->getUserSettings()->saveMutedRepostsListUri(profile.getDid(), uri);
+                continueMuteReposts(profile, uri);
+            },
+            [this, presence=getPresence()](const QString& error, const QString& msg){
+                if (!presence)
+                    return;
+
+                qDebug() << "Create mute reposts list failed:" << error << " - " << msg;
+                emit muteRepostsFailed(msg);
+            });
+    }
+    else
+    {
+        continueMuteReposts(profile, uri);
+    }
+}
+
+void GraphUtils::continueMuteReposts(const BasicProfile& profile, const QString& listUri)
+{
+    if (!graphMaster())
+        return;
+
+    graphMaster()->addUserToList(listUri, profile.getDid(),
+        [this, presence=getPresence(), listUri, profile](const QString&, const QString&){
+            if (!presence)
+                return;
+
+            mSkywalker->getMutedReposts().add(profile);
+            emit muteRepostsOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "mute reposts failed:" << error << " - " << msg;
+            emit muteRepostsFailed(msg);
+        });
+}
+
+void GraphUtils::unmuteReposts(const QString& did)
+{
+    Q_ASSERT(mSkywalker);
+    auto* userSettings = mSkywalker->getUserSettings();
+    Q_ASSERT(userSettings);
+    const QString listUri = userSettings->getMutedRepostsListUri(did);
+
+    if (listUri.isEmpty())
+    {
+        qWarning() << "No muted reposts list uri saved.";
+        mSkywalker->getMutedReposts().remove(did);
+        emit unmuteRepostsOk();
+        return;
+    }
+
+    if (!graphMaster())
+        return;
+
+    QString listItemUri; // TODO
+
+    graphMaster()->undo(listItemUri,
+        [this, presence=getPresence(), did]{
+            if (!presence)
+                return;
+
+            mSkywalker->getMutedReposts().remove(did);
+            emit unmuteRepostsOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Unmute reposts failed:" << error << " - " << msg;
+            emit unmuteRepostsFailed(msg);
+        });
+}
+
 }

@@ -9,11 +9,13 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
+                                             const IProfileStore& mutedReposts,
                                              const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                                              const MutedWords& mutedWords, QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
     mFollowing(following),
+    mMutedReposts(mutedReposts),
     mContentFilter(contentFilter),
     mBookmarks(bookmarks),
     mMutedWords(mutedWords)
@@ -76,6 +78,12 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
     if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
     {
         qDebug() << "Hide post:" << post.getCid() << warning;
+        return true;
+    }
+
+    if (post.isRepost() && mMutedReposts.contains(post.getRepostedBy()->getDid()))
+    {
+        qDebug() << "Mute repost, did:" << post.getRepostedBy()->getDid();
         return true;
     }
 

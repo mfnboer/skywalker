@@ -19,6 +19,7 @@ public:
     static constexpr int MAX_PAGE_SIZE = 25; // Max posts in a getPost request
 
     explicit BookmarksModel(const QString& userDid, const IProfileStore& following,
+                            const IProfileStore& mutedReposts,
                             const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                             const MutedWords& mutedWords, QObject* parent = nullptr);
 

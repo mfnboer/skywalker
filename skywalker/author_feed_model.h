@@ -13,6 +13,7 @@ public:
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
     AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following,
+                    const IProfileStore& mutedReposts,
                     const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                     const MutedWords& mutedWords, QObject* parent = nullptr);
 

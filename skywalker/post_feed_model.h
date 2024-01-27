@@ -21,6 +21,7 @@ public:
 
     explicit PostFeedModel(const QString& feedName,
                            const QString& userDid, const IProfileStore& following,
+                           const IProfileStore& mutedReposts,
                            const ContentFilter& contentFilter,
                            const Bookmarks& bookmarks,
                            const MutedWords& mutedWords,
