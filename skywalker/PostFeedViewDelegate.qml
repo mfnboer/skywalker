@@ -13,7 +13,7 @@ Rectangle {
     required property string postText
     required property string postPlainText
     required property date postIndexedDateTime
-    required property string postRepostedByName
+    required property basicprofile postRepostedByAuthor
     required property list<imageview> postImages
     required property var postExternal // externalview (var allows NULL)
     required property var postRecord // recordview
@@ -120,7 +120,7 @@ Rectangle {
             width: avatar.width
             height: repostedByText.height
             color: "transparent"
-            visible: postRepostedByName && !postGapId && !postLocallyDeleted
+            visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
 
             SvgImage {
                 anchors.right: parent.right
@@ -135,11 +135,16 @@ Rectangle {
             width: parent.width - avatar.width - postEntry.margin * 2
             Layout.fillWidth: true
             elide: Text.ElideRight
-            text: qsTr(`Reposted by ${postRepostedByName}`)
+            text: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            visible: postRepostedByName && !postGapId && !postLocallyDeleted
+            visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: skywalker.getDetailedProfile(postRepostedByAuthor.did)
+            }
         }
 
         // Author and content

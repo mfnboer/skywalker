@@ -30,7 +30,7 @@ public:
         PostText, // Formatted
         PostPlainText,
         PostIndexedDateTime,
-        PostRepostedByName,
+        PostRepostedByAuthor,
         PostImages,
         PostExternal,
         PostRecord,

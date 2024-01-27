@@ -1,6 +1,7 @@
 next
 ====
 * Edit your profile
+* Click on "Reposted by..." to show repost author
 * Bug fixes
 
 0.7

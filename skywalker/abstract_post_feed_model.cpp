@@ -127,7 +127,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         auto external = post.getExternalView();
         return external ? QVariant::fromValue(*external) : QVariant();
     }
-    case Role::PostRepostedByName:
+    case Role::PostRepostedByAuthor:
     {
         const auto& repostedBy = post.getRepostedBy();
 
@@ -135,7 +135,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return {};
 
         const BasicProfile* profileChange = getProfileChange(repostedBy->getDid());
-        return profileChange ? profileChange->getName() : repostedBy->getName();
+        return QVariant::fromValue(profileChange ? *profileChange : *repostedBy);
     }
     case Role::PostRecord:
     {
@@ -277,7 +277,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostText), "postText" },
         { int(Role::PostPlainText), "postPlainText" },
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
-        { int(Role::PostRepostedByName), "postRepostedByName" },
+        { int(Role::PostRepostedByAuthor), "postRepostedByAuthor" },
         { int(Role::PostImages), "postImages" },
         { int(Role::PostExternal), "postExternal" },
         { int(Role::PostRecord), "postRecord" },
@@ -357,7 +357,7 @@ void AbstractPostFeedModel::postDeletedChanged()
 
 void AbstractPostFeedModel::profileChanged()
 {
-    changeData({ int(Role::Author), int(Role::PostReplyToAuthor), int(Role::PostRepostedByName) });
+    changeData({ int(Role::Author), int(Role::PostReplyToAuthor), int(Role::PostRepostedByAuthor) });
 }
 
 void AbstractPostFeedModel::postBookmarkedChanged()
