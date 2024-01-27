@@ -202,6 +202,21 @@ BasicProfile BasicProfile::nonVolatileCopy() const
     return profile;
 }
 
+void BasicProfile::setAvatarUrl(const QString& avatarUrl)
+{
+    mAvatarUrl = avatarUrl;
+
+    if (avatarUrl.startsWith("image://"))
+    {
+        auto* provider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+        mAvatarSource = std::make_shared<SharedImageSource>(avatarUrl, provider);
+    }
+    else
+    {
+        mAvatarSource = nullptr;
+    }
+}
+
 Profile::Profile(const ATProto::AppBskyActor::ProfileView* profile) :
     BasicProfile(profile)
 {

@@ -3,6 +3,7 @@
 #pragma once
 #include "image_view.h"
 #include "list_view_include.h"
+#include "shared_image_provider.h"
 #include <atproto/lib/lexicon/app_bsky_actor.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -92,7 +93,9 @@ public:
 
     // Setting only makes sense for a non-volatile instance
     void setDisplayName(const QString& displayName) { mDisplayName = displayName; }
-    void setAvatarUrl(const QString& avatarUrl) { mAvatarUrl = avatarUrl; }
+
+    // If avatarUrl is a "image://", then the profile takes ownership of the image
+    void setAvatarUrl(const QString& avatarUrl);
 
 protected:
     const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;
@@ -105,6 +108,7 @@ private:
     QString mHandle;
     QString mDisplayName;
     QString mAvatarUrl;
+    SharedImageSource::SharedPtr mAvatarSource;
     ProfileViewerState mViewer;
     QStringList mLabelTexts;
 };

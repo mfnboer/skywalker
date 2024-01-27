@@ -574,23 +574,16 @@ Page {
             statusPopup.show(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
             authorName = name
             authorDescription = description
-            setAuthorAvatar(avatar)
+            authorAvatar = avatar
             setAuthorBanner(banner)
+
+            // NOTE: if avatar is an "image://" source, then the profile takes ownership
             skywalker.updateUserProfile(name, description, avatar)
+
             root.popStack()
         })
         editPage.onClosed.connect(() => { root.popStack() })
         root.pushStack(editPage)
-    }
-
-    function setAuthorAvatar(source) {
-        if (source === authorAvatar)
-            return
-
-        if (authorAvatar.startsWith("image://"))
-            postUtils.dropPhoto(authorAvatar)
-
-        authorAvatar = source
     }
 
     function setAuthorBanner(source) {
@@ -709,7 +702,6 @@ Page {
     }
 
     Component.onDestruction: {
-        setAuthorAvatar("")
         setAuthorBanner("")
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)

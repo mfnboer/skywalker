@@ -77,8 +77,11 @@ public:
     Q_INVOKABLE void getNotificationsNextPage();
     Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
+
+    // If avatar is a "image://", then the profile takes ownership of the image
     Q_INVOKABLE void updateUserProfile(const QString& displayName, const QString& description,
                                        const QString& avatar);
+
     Q_INVOKABLE void clearAuthorFeed(int id);
     Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 20, int minEntries = 10);

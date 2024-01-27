@@ -60,6 +60,8 @@ public:
 
     void setCid(const QString& cid) { mCid = cid; }
     void setName(const QString& name) { mName = name; }
+
+    // If avatar is a "image://", then the list view takes ownership of the image
     void setAvatar(const QString& avatar);
 
 protected:
