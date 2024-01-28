@@ -7,5 +7,6 @@ namespace Skywalker {
 
 constexpr char const* HOME_FEED = "home";
 constexpr char const* INVALID_HANDLE = "handle.invalid";
+constexpr char const* RKEY_MUTED_REPOSTS = "skywalker-muted-reposts";
 
 }

@@ -32,7 +32,7 @@ public:
                                 bool updateAvatar);
     Q_INVOKABLE void deleteList(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri, bool viewPosts = false);
-    Q_INVOKABLE void addListUser(const QString& listUri, const QString& did);
+    Q_INVOKABLE void addListUser(const QString& listUri, const BasicProfile& profile);
     Q_INVOKABLE void removeListUser(const QString& listUri, const QString& listItemUri);
     Q_INVOKABLE void isListUser(const QString& listUri, const QString& did, int maxPages = 10, const std::optional<QString> cursor = {});
 
@@ -96,7 +96,6 @@ private:
                             const QString& description, ATProto::Blob::Ptr blob);
     void continueUpdateList(const QString& listUri, const QString& name,
                             const QString& description, ATProto::Blob::Ptr blob, bool updateAvatar);
-    void continueMuteReposts(const BasicProfile& profile, const QString& listUri);
 
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;

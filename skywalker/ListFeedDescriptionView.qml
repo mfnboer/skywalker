@@ -386,7 +386,7 @@ Page {
         let component = Qt.createComponent("SearchAuthor.qml")
         let searchPage = component.createObject(page, { skywalker: skywalker })
         searchPage.onAuthorClicked.connect((profile) => {
-            graphUtils.addListUser(list.uri, profile.did)
+            graphUtils.addListUser(list.uri, profile)
             root.popStack()
         })
         searchPage.onClosed.connect(() => { root.popStack() })

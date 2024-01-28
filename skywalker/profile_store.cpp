@@ -43,6 +43,56 @@ size_t ProfileStore::size()
     return mDidProfileMap.size();
 }
 
+void ProfileListItemStore::add(const BasicProfile& profile)
+{
+    Q_ASSERT(false);
+    qWarning() << "Profile should be stored with list item uri:" << profile.getHandleOrDid();
+}
+
+void ProfileListItemStore::remove(const QString& did)
+{
+    ProfileStore::remove(did);
+
+    auto it = mDidListItemUriMap.find(did);
+
+    if (it != mDidListItemUriMap.end())
+    {
+        mListItemUriDidMap.erase(it->second);
+        mDidListItemUriMap.erase(it);
+    }
+}
+
+void ProfileListItemStore::clear()
+{
+    ProfileStore::clear();
+    mDidListItemUriMap.clear();
+    mListItemUriDidMap.clear();
+}
+
+void ProfileListItemStore::add(const BasicProfile& profile, const QString& listItemUri)
+{
+    const QString& did = profile.getDid();
+    Q_ASSERT(!did.isEmpty());
+    if (did.isEmpty())
+        return;
+
+    ProfileStore::add(profile);
+    mDidListItemUriMap[did] = listItemUri;
+    mListItemUriDidMap[listItemUri] = did;
+}
+
+const QString* ProfileListItemStore::getListItemUri(const QString& did) const
+{
+    auto it = mDidListItemUriMap.find(did);
+    return it != mDidListItemUriMap.end() ? &it->second : nullptr;
+}
+
+const QString* ProfileListItemStore::getDidByListItemUri(const QString& listItemUri) const
+{
+    auto it = mListItemUriDidMap.find(listItemUri);
+    return it != mListItemUriDidMap.end() ? &it->second : nullptr;
+}
+
 void IndexedProfileStore::add(const BasicProfile& profile)
 {
     ProfileStore::add(profile);

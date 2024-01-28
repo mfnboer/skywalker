@@ -30,6 +30,29 @@ private:
     std::unordered_map<QString, BasicProfile> mDidProfileMap;
 };
 
+class ProfileListItemStore : public ProfileStore
+{
+public:
+    virtual void add(const BasicProfile& profile) override;
+    virtual void remove(const QString& did) override;
+    virtual void clear() override;
+
+    void add(const BasicProfile& profile, const QString& listItemUri);
+    const QString* getListItemUri(const QString& did) const;
+    const QString* getDidByListItemUri(const QString& listItemUri) const;
+
+    const QString& getListUri() const { return mListUri; }
+    void setListUri(const QString& uri) { mListUri = uri; }
+    bool isListCreated() const { return mListCreated; }
+    void setListCreaded(bool created) { mListCreated = created; }
+
+private:
+    std::unordered_map<QString, QString> mDidListItemUriMap;
+    std::unordered_map<QString, QString> mListItemUriDidMap;
+    QString mListUri;
+    bool mListCreated = false;
+};
+
 class IndexedProfileStore : public ProfileStore
 {
 public:

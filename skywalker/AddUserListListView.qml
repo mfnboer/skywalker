@@ -27,7 +27,7 @@ ListView {
     delegate: AddUserListViewDelegate {
         viewWidth: view.width
 
-        onAddToList: (listUri) => graphUtils.addListUser(listUri, author.did)
+        onAddToList: (listUri) => graphUtils.addListUser(listUri, author)
         onRemoveFromList: (listUri, listItemUri) => graphUtils.removeListUser(listUri, listItemUri)
     }
 

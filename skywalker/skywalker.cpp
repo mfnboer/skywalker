@@ -308,6 +308,9 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
     Q_ASSERT(mBsky);
     qDebug() << "Load muted reposts, maxPages:" << maxPages << "cursor:" << cursor;
 
+    const QString uri = mUserSettings.getMutedRepostsListUri(mUserDid);
+    mMutedReposts.setListUri(uri);
+
     if (maxPages <= 0)
     {
         qWarning() << "Max pages reached";
@@ -321,31 +324,34 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         return;
     }
 
-    const QString uri = mUserSettings.getMutedRepostsListUri(mUserDid);
-
-    if (uri.isEmpty())
-    {
-        qDebug() << "No muted reposts list uri saved.";
-        emit getUserPreferencesOK();
-        return;
-    }
-
     mBsky->getList(uri, 100, makeOptionalCursor(cursor),
         [this, maxPages](auto output){
+            mMutedReposts.setListCreaded(true);
+
             for (const auto& item : output->mItems)
             {
                 const BasicProfile profile(item->mSubject.get());
-                mMutedReposts.add(profile);
-
-                if (output->mCursor)
-                    loadMutedReposts(maxPages - 1, *output->mCursor);
-                else
-                    emit getUserPreferencesOK();
+                mMutedReposts.add(profile, item->mUri);
             }
+
+            if (output->mCursor)
+                loadMutedReposts(maxPages - 1, *output->mCursor);
+            else
+                emit getUserPreferencesOK();
         },
         [this](const QString& error, const QString& msg){
-            qDebug() << "loadMutedReposts failed:" << error << " - " << msg;
-            emit getUserPreferencesFailed();
+            mMutedReposts.setListCreaded(false);
+
+            if (ATProto::Client::isListNotFoundError(error, msg))
+            {
+                qDebug() << "No muted reposts list:" << error << " - " << msg;
+                emit getUserPreferencesOK();
+            }
+            else
+            {
+                qWarning() << "loadMutedReposts failed:" << error << " - " << msg;
+                emit getUserPreferencesFailed();
+            }
         });
 }
 

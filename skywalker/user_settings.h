@@ -76,7 +76,6 @@ public:
     void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
 
-    void saveMutedRepostsListUri(const QString& did, const QString& uri);
     QString getMutedRepostsListUri(const QString& did) const;
 
 private:
