@@ -5,6 +5,7 @@
 #include "enums.h"
 #include "local_author_model_changes.h"
 #include "profile.h"
+#include "profile_store.h"
 #include <QAbstractListModel>
 #include <deque>
 
@@ -18,7 +19,8 @@ public:
         Author = Qt::UserRole + 1,
         FollowingUri,
         BlockingUri,
-        ListItemUri
+        ListItemUri,
+        MutedReposts
     };
 
     struct ListEntry
@@ -32,7 +34,8 @@ public:
     using Type = QEnums::AuthorListType;
     using Ptr = std::unique_ptr<AuthorListModel>;
 
-    AuthorListModel(Type type, const QString& atId, const ContentFilter& contentFilter, QObject* parent = nullptr);
+    AuthorListModel(Type type, const QString& atId, const IProfileStore& mutedReposts,
+                    const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -63,6 +66,7 @@ private:
 
     Type mType;
     QString mAtId;
+    const IProfileStore& mMutedReposts;
     const ContentFilter& mContentFilter;
 
     AuthorList mList;

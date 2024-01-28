@@ -10,10 +10,12 @@ AuthorListModel::ListEntry::ListEntry(const Profile& profile, const QString& lis
 {
 }
 
-AuthorListModel::AuthorListModel(Type type, const QString& atId, const ContentFilter& contentFilter, QObject* parent) :
+AuthorListModel::AuthorListModel(Type type, const QString& atId, const IProfileStore& mutedReposts,
+                                 const ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
     mAtId(atId),
+    mMutedReposts(mutedReposts),
     mContentFilter(contentFilter)
 {
     qDebug() << "New author list model type:" << type << "atId:" << atId;
@@ -44,6 +46,8 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return change && change->mBlockingUri ? *change->mBlockingUri : author.getViewer().getBlocking();
     case Role::ListItemUri:
         return entry.mListItemUri;
+    case Role::MutedReposts:
+        return mMutedReposts.contains(author.getDid());
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -159,7 +163,8 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
         { int(Role::Author), "author" },
         { int(Role::FollowingUri), "followingUri" },
         { int(Role::BlockingUri), "blockingUri" },
-        { int(Role::ListItemUri), "listItemUri" }
+        { int(Role::ListItemUri), "listItemUri" },
+        { int(Role::MutedReposts), "mutedReposts" }
     };
 
     return roles;

@@ -43,7 +43,7 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void clear();
+    Q_INVOKABLE void clear();
 
     // Returns the number of lists added
     int addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor);

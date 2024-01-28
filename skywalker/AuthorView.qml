@@ -18,6 +18,7 @@ Page {
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
     property bool authorMuted: author.viewer.muted
+    property bool authorMutedReposts: false
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
@@ -120,6 +121,11 @@ Page {
             }
         }
 
+        onVerticalOvershootChanged: {
+            if (verticalOvershoot < 0)
+                refresh()
+        }
+
         header: Column {
             width: parent.width
             leftPadding: 10
@@ -178,6 +184,19 @@ Page {
                             MenuItemSvg { svg: blocking ? svgOutline.unblock : svgOutline.block }
                         }
                         MenuItem {
+                           text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
+                           enabled: !isUser(author)
+                           onTriggered: {
+                               if (authorMutedReposts)
+                                   graphUtils.unmuteReposts(author.did)
+                               else
+                                   graphUtils.muteReposts(author)
+                           }
+
+                           MenuItemSvg { svg: svgOutline.repost }
+                        }
+
+                        MenuItem {
                             text: qsTr("Update lists")
                             onTriggered: updateLists()
 
@@ -225,6 +244,10 @@ Page {
                     elide: Text.ElideRight
                     color: guiSettings.handleColor
                     text: `@${author.handle}`
+                }
+                SkyLabel {
+                    text: qsTr("muted reposts")
+                    visible: authorMutedReposts
                 }
                 SkyLabel {
                     text: qsTr("follows you")
@@ -451,6 +474,14 @@ Page {
                     text: qsTr("No feeds")
                     list: authorFeedList
                 }
+
+                function refresh() {
+                    getFeedList(feedListModelId)
+                }
+
+                function clear() {
+                    model.clear()
+                }
             }
 
             // Lists
@@ -500,7 +531,35 @@ Page {
                     text: qsTr("No lists")
                     list: authorListList
                 }
+
+                function refresh() {
+                    getListList(listListModelId)
+                }
+
+                function clear() {
+                    model.clear()
+                }
             }
+
+            function refresh() {
+                for (let i = 0; i < children.length; ++i) {
+                    children[i].refresh()
+                }
+            }
+
+            function clear() {
+                for (let i = 0; i < children.length; ++i) {
+                    children[i].clear()
+                }
+            }
+        }
+
+        function refresh() {
+            itemAtIndex(0).refresh()
+        }
+
+        function clear() {
+            itemAtIndex(0).clear()
         }
     }
 
@@ -524,26 +583,28 @@ Page {
 
         onBlockOk: (uri) => {
                        blocking = uri
-                       skywalker.clearAuthorFeed(modelId)
+                       authorFeedView.clear()
                    }
 
         onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onUnblockOk: {
             blocking = ""
+            // Refreshing often gives an error immediately after unblock: authorFeedView.refresh()
         }
 
         onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onMuteOk: {
             authorMuted = true
-            skywalker.clearAuthorFeed(modelId)
+            authorFeedView.clear()
         }
 
         onMuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onUnmuteOk: {
             authorMuted = false
+            authorFeedView.refresh()
         }
 
         onUnmuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -552,6 +613,18 @@ Page {
         onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onMuteRepostsOk: {
+            authorMutedReposts = graphUtils.areRepostsMuted(author.did)
+            authorFeedView.refresh()
+        }
+        onMuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onUnmuteRepostsOk: {
+            authorMutedReposts = graphUtils.areRepostsMuted(author.did)
+            authorFeedView.refresh()
+        }
+        onUnmuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     GuiSettings {
@@ -710,6 +783,7 @@ Page {
         authorDescription = author.description
         authorAvatar = author.avatarUrl
         authorBanner = author.banner
+        authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)

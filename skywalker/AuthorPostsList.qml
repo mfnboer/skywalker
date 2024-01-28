@@ -76,6 +76,16 @@ ListView {
         id: guiSettings
     }
 
+    function refresh() {
+        if (modelId >= 0)
+            getFeed(modelId)
+    }
+
+    function clear() {
+        if (modelId >= 0)
+            skywalker.clearAuthorFeed(modelId)
+    }
+
     Component.onDestruction: {
         if (modelId >= 0)
             skywalker.removeAuthorFeedModel(modelId)

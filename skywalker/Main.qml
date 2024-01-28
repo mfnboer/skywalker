@@ -313,6 +313,17 @@ ApplicationWindow {
             close()
         }
 
+        onMutedReposts: {
+            let userSettings = skywalker.getUserSettings()
+            let did = skywalker.getUserDid()
+            let listUri = userSettings.getMutedRepostsListUri(did)
+            let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, listUri)
+            viewAuthorList(modelId, qsTr("Muted Reposts"),
+                    qsTr("Reposts from these accounts are removed from your feed."),
+                    false)
+            close()
+        }
+
         onModLists: {
             let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
             viewModerationLists(modelId)

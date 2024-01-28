@@ -34,7 +34,7 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void clear();
+    Q_INVOKABLE void clear();
     void addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, const QString& cursor);
     void addFeeds(const QList<GeneratorView>& feeds);
     const QString& getCursor() const { return mCursor; }

@@ -13,6 +13,7 @@ Drawer {
     signal contentFiltering()
     signal blockedAccounts()
     signal mutedAccounts()
+    signal mutedReposts()
     signal modLists()
     signal userLists()
     signal mutedWords()
@@ -113,6 +114,14 @@ Drawer {
 
                     MenuItemSvg {
                         svg: svgOutline.mute
+                    }
+                }
+                MenuItem {
+                    text: qsTr("Muted Reposts")
+                    onTriggered: mutedReposts()
+
+                    MenuItemSvg {
+                        svg: svgOutline.repost
                     }
                 }
                 MenuItem {

@@ -1646,10 +1646,13 @@ void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const Q
 
             (*model)->addAuthors(std::move(output->mItems), output->mCursor.value_or(""));
         },
-        [this](const QString& error, const QString& msg){
+        [this, atId](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
             qDebug() << "getListMembersAuthorList failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+
+            // The muted reposts list may not have been created. Consider it as empty.
+            if (atId != mUserSettings.getMutedRepostsListUri(mUserDid))
+                emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1742,7 +1745,7 @@ void Skywalker::getAuthorListNextPage(int id)
 
 int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
 {
-    auto model = std::make_unique<AuthorListModel>(type, atId, mContentFilter, this);
+    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mContentFilter, this);
     const int id = mAuthorListModels.put(std::move(model));
     return id;
 }

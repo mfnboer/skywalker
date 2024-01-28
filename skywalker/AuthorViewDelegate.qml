@@ -9,6 +9,7 @@ Rectangle {
     required property profile author
     required property string followingUri
     required property string listItemUri // empty when the author list is not an item list
+    required property bool mutedReposts
     property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
     property bool showFollow: true
@@ -96,6 +97,10 @@ Rectangle {
                 SkyLabel {
                     text: qsTr("list muted")
                     visible: !author.viewer.mutedByList.isNull()
+                }
+                SkyLabel {
+                    text: qsTr("muted reposts")
+                    visible: mutedReposts
                 }
             }
         }
