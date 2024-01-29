@@ -382,8 +382,8 @@ Page {
                 getFeedNextPage: (id) => page.getFeedNextPage(id)
                 getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                 getEmptyListIndicationText: () => page.getEmptyListIndicationText()
-                visibilityShowProfileLink: () => page.visibilityShowProfileLink()
-                disableWarning: (id) => page.disableWarning(id)
+                visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                disableWarning: () => page.disableWarning()
                 modelId: page.modelId
             }
 
@@ -396,8 +396,8 @@ Page {
                 getFeedNextPage: (id) => page.getFeedNextPage(id)
                 getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                 getEmptyListIndicationText: () => page.getEmptyListIndicationText()
-                visibilityShowProfileLink: () => page.visibilityShowProfileLink()
-                disableWarning: (id) => page.disableWarning(id)
+                visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                disableWarning: () => page.disableWarning()
                 feedFilter: QEnums.AUTHOR_FEED_FILTER_REPLIES
             }
 
@@ -410,8 +410,8 @@ Page {
                 getFeedNextPage: (id) => page.getFeedNextPage(id)
                 getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                 getEmptyListIndicationText: () => page.getEmptyListIndicationText()
-                visibilityShowProfileLink: () => page.visibilityShowProfileLink()
-                disableWarning: (id) => page.disableWarning(id)
+                visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                disableWarning: () => page.disableWarning()
                 feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
             }
 
@@ -424,8 +424,8 @@ Page {
                 getFeedNextPage: (id) => skywalker.getAuthorLikesNextPage(id)
                 getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                 getEmptyListIndicationText: () => page.getEmptyListIndicationText()
-                visibilityShowProfileLink: () => page.visibilityShowProfileLink()
-                disableWarning: (id) => page.disableWarning(id)
+                visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                disableWarning: () => page.disableWarning()
                 feedFilter: QEnums.AUTHOR_FEED_FILTER_NONE
             }
 
@@ -774,14 +774,14 @@ Page {
                 QEnums.CONTENT_VISIBILITY_WARN_POST].includes(contentVisibility) && !showWarnedMedia
     }
 
-    function visibilityShowProfileLink() {
-        return authorFeedView.count === 0 && !blocking && !author.viewer.blockedBy &&
+    function visibilityShowProfileLink(list) {
+        return list.count === 0 && !blocking && !author.viewer.blockedBy &&
                 !authorMuted && contentVisibilityIsWarning()
     }
 
-    function disableWarning(modelId) {
+    function disableWarning() {
         showWarnedMedia = true
-        getFeed(modelId)
+        authorFeedView.refresh()
     }
 
     function getEmptyListIndicationSvg() {

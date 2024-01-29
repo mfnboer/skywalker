@@ -71,11 +71,8 @@ ListView {
         elide: Text.ElideRight
         textFormat: Text.RichText
         text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
-        visible: visibilityShowProfileLink()
-        onLinkActivated: {
-            if (modelId >= 0)
-                disableWarning(modelId)
-        }
+        visible: visibilityShowProfileLink(authorPostsList)
+        onLinkActivated: disableWarning()
     }
 
     Timer {

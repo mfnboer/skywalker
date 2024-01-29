@@ -36,7 +36,8 @@ ApplicationWindow {
 
             event.accepted = false
 
-            if (item instanceof ComposePost || item instanceof EditList) {
+            // TODO: need something better than this
+            if (item instanceof ComposePost || item instanceof EditList || item instanceof EditProfile) {
                 item.cancel()
                 return
             }
