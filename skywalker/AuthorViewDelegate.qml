@@ -8,7 +8,9 @@ Rectangle {
     required property int viewWidth
     required property profile author
     required property string followingUri
+    required property string blockingUri
     required property string listItemUri // empty when the author list is not an item list
+    required property bool authorMuted
     required property bool mutedReposts
     property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
@@ -84,7 +86,7 @@ Rectangle {
                 }
                 SkyLabel {
                     text: qsTr("blocked")
-                    visible: author.viewer.blocking && author.viewer.blockingByList.isNull()
+                    visible: blockingUri && author.viewer.blockingByList.isNull()
                 }
                 SkyLabel {
                     text: qsTr("list blocked")
@@ -92,7 +94,7 @@ Rectangle {
                 }
                 SkyLabel {
                     text: qsTr("muted")
-                    visible: author.viewer.muted && author.viewer.mutedByList.isNull()
+                    visible: authorMuted && author.viewer.mutedByList.isNull()
                 }
                 SkyLabel {
                     text: qsTr("list muted")

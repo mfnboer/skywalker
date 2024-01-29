@@ -20,6 +20,7 @@ public:
         FollowingUri,
         BlockingUri,
         ListItemUri,
+        AuthorMuted,
         MutedReposts
     };
 
@@ -57,6 +58,8 @@ protected:
 
     virtual void blockingUriChanged() override;
     virtual void followingUriChanged() override;
+    virtual void mutedChanged() override;
+    virtual void mutedRepostsChanged() override;
 
 private:
     using AuthorList = std::deque<ListEntry>;

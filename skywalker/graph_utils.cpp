@@ -133,7 +133,7 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
 
             mSkywalker->makeLocalModelChange(
                 [did](LocalAuthorModelChanges* model){
-                    model->updateFollowingUri(did, "");
+                    model->updateBlockingUri(did, "");
                 });
 
             emit unblockOk();
@@ -153,9 +153,16 @@ void GraphUtils::mute(const QString& did)
         return;
 
     bskyClient()->muteActor(did,
-        [this, presence=getPresence()]{
-            if (presence)
-                emit muteOk();
+        [this, presence=getPresence(), did]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [did](LocalAuthorModelChanges* model){
+                    model->updateMuted(did, true);
+                });
+
+            emit muteOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -172,9 +179,16 @@ void GraphUtils::unmute(const QString& did)
         return;
 
     bskyClient()->unmuteActor(did,
-        [this, presence=getPresence()]{
-            if (presence)
-                emit unmuteOk();
+        [this, presence=getPresence(), did]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [did](LocalAuthorModelChanges* model){
+                    model->updateMuted(did, false);
+                });
+
+            emit unmuteOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -417,6 +431,12 @@ void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile
                 qDebug() << "List item is a muted repost, list-uri:" << listUri
                          << "item-uri:" << itemUri << "did:" << profile.getDid();
                 mutedReposts.add(profile, itemUri);
+
+                mSkywalker->makeLocalModelChange(
+                    [did=profile.getDid()](LocalAuthorModelChanges* model){
+                        model->updateMutedReposts(did, true);
+                    });
+
                 emit muteRepostsOk();
             }
 
@@ -463,7 +483,14 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
                 if (did)
                 {
                     qDebug() << "Remove muted repost:" << *did;
+                    const QString didCopy = *did;
                     mutedReposts.remove(*did);
+
+                    mSkywalker->makeLocalModelChange(
+                        [didCopy](LocalAuthorModelChanges* model){
+                            model->updateMutedReposts(didCopy, false);
+                        });
+
                     emit unmuteRepostsOk();
                 }
             }

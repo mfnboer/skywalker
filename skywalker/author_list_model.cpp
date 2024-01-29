@@ -46,8 +46,10 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return change && change->mBlockingUri ? *change->mBlockingUri : author.getViewer().getBlocking();
     case Role::ListItemUri:
         return entry.mListItemUri;
+    case Role::AuthorMuted:
+        return change && change->mMuted ? *change->mMuted : author.getViewer().isMuted();
     case Role::MutedReposts:
-        return mMutedReposts.contains(author.getDid());
+        return change && change->mMutedReposts ? *change->mMutedReposts : mMutedReposts.contains(author.getDid());
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -164,6 +166,7 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
         { int(Role::FollowingUri), "followingUri" },
         { int(Role::BlockingUri), "blockingUri" },
         { int(Role::ListItemUri), "listItemUri" },
+        { int(Role::AuthorMuted), "authorMuted" },
         { int(Role::MutedReposts), "mutedReposts" }
     };
 
@@ -178,6 +181,16 @@ void AuthorListModel::blockingUriChanged()
 void AuthorListModel::followingUriChanged()
 {
     changeData({ int(Role::FollowingUri) });
+}
+
+void AuthorListModel::mutedChanged()
+{
+    changeData({ int(Role::AuthorMuted) });
+}
+
+void AuthorListModel::mutedRepostsChanged()
+{
+    changeData({ int(Role::MutedReposts) });
 }
 
 void AuthorListModel::changeData(const QList<int>& roles)
