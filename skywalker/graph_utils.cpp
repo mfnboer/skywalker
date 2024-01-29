@@ -4,6 +4,7 @@
 #include "definitions.h"
 #include "photo_picker.h"
 #include "skywalker.h"
+#include <atproto/lib/at_uri.h>
 
 namespace Skywalker {
 
@@ -328,9 +329,16 @@ void GraphUtils::deleteList(const QString& listUri)
         return;
 
     graphMaster()->undo(listUri,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), listUri]{
             if (!presence)
                 return;
+
+            ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+            if (listUri == mutedReposts.getListUri())
+            {
+                qDebug() << "Muted reposts list deleted!";
+                mutedReposts.setListCreated(false);
+            }
 
             emit deleteListOk();
         },
@@ -640,13 +648,15 @@ void GraphUtils::muteReposts(const BasicProfile& profile)
             return;
 
         graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::MOD_LIST,
-            "Skywalker muted reposts", {}, {}, RKEY_MUTED_REPOSTS,
+            "Skywalker muted reposts",
+            "Used by Skywalker to keep track of muted reposts. Do not delete.",
+            {}, RKEY_MUTED_REPOSTS,
             [this, presence=getPresence(), profile](const QString& uri, const QString&){
                 if (!presence)
                     return;
 
                 Q_ASSERT(uri == mSkywalker->getMutedReposts().getListUri());
-                mSkywalker->getMutedReposts().setListCreaded(true);
+                mSkywalker->getMutedReposts().setListCreated(true);
                 addListUser(uri, profile);
             },
             [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -673,6 +683,12 @@ void GraphUtils::unmuteReposts(const QString& did)
         return;
 
     removeListUser(mutedReposts.getListUri(), *listItemUri);
+}
+
+bool GraphUtils::isInternalList(const QString& listUri) const
+{
+    ATProto::ATUri atUri(listUri);
+    return atUri.isValid() && atUri.getRkey() == RKEY_MUTED_REPOSTS;
 }
 
 }

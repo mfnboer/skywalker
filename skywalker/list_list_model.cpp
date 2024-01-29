@@ -225,6 +225,9 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
 
     for (auto&& listView : lists)
     {
+        if (mExcludeInternalLists && mGraphUtils.isInternalList(listView->mUri))
+            continue;
+
         if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN ||
             listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mPurpose))
         {

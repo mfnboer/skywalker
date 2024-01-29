@@ -326,7 +326,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 
     mBsky->getList(uri, 100, makeOptionalCursor(cursor),
         [this, maxPages](auto output){
-            mMutedReposts.setListCreaded(true);
+            mMutedReposts.setListCreated(true);
 
             for (const auto& item : output->mItems)
             {
@@ -340,7 +340,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
                 emit getUserPreferencesOK();
         },
         [this](const QString& error, const QString& msg){
-            mMutedReposts.setListCreaded(false);
+            mMutedReposts.setListCreated(false);
 
             if (ATProto::Client::isListNotFoundError(error, msg))
             {
@@ -1212,11 +1212,13 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
 
             if (entriesToAdd > 0)
                 getAuthorFeedNextPage(id, maxPages - 1, entriesToAdd);
+            else
+                emit getAuthorFeedOk(id);
         },
-        [this](const QString& error, const QString& msg){
+        [this, id](const QString& error, const QString& msg){
             setGetAuthorFeedInProgress(false);
             qDebug() << "getAuthorFeed failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit getAuthorFeedFailed(id, error, msg);
         });
 }
 

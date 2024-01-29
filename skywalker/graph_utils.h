@@ -49,6 +49,9 @@ public:
     Q_INVOKABLE void muteReposts(const BasicProfile& profile);
     Q_INVOKABLE void unmuteReposts(const QString& did);
 
+    // Check if a list is a list internally used by Skywalker
+    bool isInternalList(const QString& listUri) const;
+
 signals:
     void followOk(QString uri);
     void followFailed(QString error);

@@ -1,6 +1,7 @@
 next
 ====
 * Edit your profile
+* Mute reposts from specific users
 * Click on "Reposted by..." to show repost author
 * Bug fixes
 

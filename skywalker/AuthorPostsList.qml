@@ -26,7 +26,7 @@ ListView {
     interactive: !enclosingView.interactive
 
     StackLayout.onIsCurrentItemChanged: {
-        if (StackLayout.isCurrentItem && modelId < 0) {
+        if (StackLayout.isCurrentItem && modelId < 0 && !skywalker.getAuthorFeedInProgress) {
             modelId = skywalker.createAuthorFeedModel(author, feedFilter)
             model = skywalker.getAuthorFeedModel(modelId)
             getFeed(modelId)
@@ -45,7 +45,10 @@ ListView {
     FlickableRefresher {
         inProgress: skywalker.getAuthorFeedInProgress
         verticalOvershoot: authorPostsList.verticalOvershoot
-        bottomOvershootFun: () => getFeedNextPage(modelId)
+        bottomOvershootFun: () => {
+            if (modelId >= 0)
+                getFeedNextPage(modelId)
+        }
         topText: ""
     }
 
@@ -69,11 +72,56 @@ ListView {
         textFormat: Text.RichText
         text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show profile") + "</a>"
         visible: visibilityShowProfileLink()
-        onLinkActivated: disableWarning(modelId)
+        onLinkActivated: {
+            if (modelId >= 0)
+                disableWarning(modelId)
+        }
+    }
+
+    Timer {
+        readonly property int maxRetry: 1
+        property int retryAttempts: maxRetry
+
+        id: retryGetFeedTimer
+        interval: 500
+        onTriggered: {
+            if (modelId >= 0) {
+                console.debug("RETRY GET FEED:", modelId)
+                getFeed(modelId)
+            }
+            else {
+                console.debug("NO MODEL")
+                resetRetryAttempts()
+            }
+        }
+
+        function retry() {
+            if (retryAttempts <= 0) {
+                resetRetryAttempts()
+                return false
+            }
+
+            --retryAttempts
+            start()
+            return true
+        }
+
+        function resetRetryAttempts() {
+            console.debug("RESET RETRY ATTEMPTS")
+            retryAttempts = maxRetry
+        }
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function feedOk() {
+        retryGetFeedTimer.resetRetryAttempts()
+    }
+
+    function retryGetFeed() {
+        return retryGetFeedTimer.retry()
     }
 
     function refresh() {
@@ -86,8 +134,15 @@ ListView {
             skywalker.clearAuthorFeed(modelId)
     }
 
+    function removeModel() {
+        if (modelId >= 0) {
+            const id = modelId
+            modelId = -1
+            skywalker.removeAuthorFeedModel(id)
+        }
+    }
+
     Component.onDestruction: {
-        if (modelId >= 0)
-            skywalker.removeAuthorFeedModel(modelId)
+        removeModel()
     }
 }

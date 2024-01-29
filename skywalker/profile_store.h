@@ -44,7 +44,7 @@ public:
     const QString& getListUri() const { return mListUri; }
     void setListUri(const QString& uri) { mListUri = uri; }
     bool isListCreated() const { return mListCreated; }
-    void setListCreaded(bool created) { mListCreated = created; }
+    void setListCreated(bool created) { mListCreated = created; }
 
 private:
     std::unordered_map<QString, QString> mDidListItemUriMap;

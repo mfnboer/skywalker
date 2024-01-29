@@ -39,6 +39,7 @@ public:
                   QObject* parent = nullptr);
 
     Q_INVOKABLE void setMemberCheckDid(const QString& did) { mMemberCheckDid = did; }
+    Q_INVOKABLE void setExcludeInternalLists(bool exclude) { mExcludeInternalLists = exclude; }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -92,6 +93,7 @@ private:
     GraphUtils mGraphUtils;
     QString mMemberCheckDid;
     std::unordered_map<QString, std::optional<QString>> mMemberCheckResults; // listUri -> listItemUri
+    bool mExcludeInternalLists = false;
 };
 
 }

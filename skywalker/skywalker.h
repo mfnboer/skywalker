@@ -195,6 +195,8 @@ signals:
     void getFeedInProgressChanged();
     void getNotificationsInProgressChanged();
     void sessionExpired(QString error);
+    void getAuthorFeedOk(int modelId);
+    void getAuthorFeedFailed(int modelId, QString error, QString msg);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);
     void avatarUrlChanged();

@@ -80,6 +80,9 @@ ApplicationWindow {
     }
 
     Skywalker {
+        signal authorFeedOk(int modelId)
+        signal authorFeedError(int modelId, string error, string msg)
+
         id: skywalker
 
         onLoginOk: start()
@@ -182,6 +185,9 @@ ApplicationWindow {
             let modelId = skywalker.createAuthorFeedModel(profile)
             viewAuthor(profile, modelId)
         }
+
+        onGetAuthorFeedOk: (modelId) => authorFeedOk(modelId)
+        onGetAuthorFeedFailed: (modelId, error, msg) => authorFeedError(modelId, error, msg)
 
         onGetFeedGeneratorOK: (generatorView, viewPosts) => {
             if (viewPosts)

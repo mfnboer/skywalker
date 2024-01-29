@@ -121,11 +121,6 @@ Page {
             }
         }
 
-        onVerticalOvershootChanged: {
-            if (verticalOvershoot < 0)
-                refresh()
-        }
-
         header: Column {
             width: parent.width
             leftPadding: 10
@@ -541,9 +536,38 @@ Page {
                 }
             }
 
-            function refresh() {
+            function feedOk(modelId) {
                 for (let i = 0; i < children.length; ++i) {
-                    children[i].refresh()
+                    let c = children[i]
+
+                    if (c instanceof AuthorPostsList && c.modelId === modelId) {
+                        c.feedOk()
+                    }
+                }
+            }
+
+            function retryGetFeed(modelId) {
+                for (let i = 0; i < children.length; ++i) {
+                    let c = children[i]
+
+                    if (c instanceof AuthorPostsList && c.modelId === modelId) {
+                        return c.retryGetFeed()
+                    }
+                }
+
+                return false
+            }
+
+            function refresh() {
+                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0)
+
+                for (let i = 0; i < children.length; ++i) {
+                    let c = children[i]
+
+                    if (c instanceof AuthorPostsList && c.modelId !== page.modelId)
+                        c.removeModel()
+                    else
+                        children[i].refresh()
                 }
             }
 
@@ -552,6 +576,18 @@ Page {
                     children[i].clear()
                 }
             }
+        }
+
+        function feedOk(modelId) {
+            itemAtIndex(0).feedOk(modelId)
+        }
+
+        function retryGetFeed(modelId, error, msg) {
+            // TODO: define error strings in a central place
+            if (error === "BlockedActor" && itemAtIndex(0).retryGetFeed(modelId))
+                return
+
+            statusPopup.show(msg, QEnums.STATUS_LEVEL_ERROR)
         }
 
         function refresh() {
@@ -590,7 +626,7 @@ Page {
 
         onUnblockOk: {
             blocking = ""
-            // Refreshing often gives an error immediately after unblock: authorFeedView.refresh()
+            authorFeedView.refresh()
         }
 
         onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -672,6 +708,14 @@ Page {
         root.composePost(mentionText + text, imgSource)
     }
 
+    function feedOkHandler(modelId) {
+        authorFeedView.feedOk(modelId)
+    }
+
+    function feedFailedHandler(modelId, error, msg) {
+        authorFeedView.retryGetFeed(modelId, error, msg)
+    }
+
     function getFeed(modelId) {
         if (mustGetFeed())
             skywalker.getAuthorFeed(modelId, 100)
@@ -704,7 +748,9 @@ Page {
 
     function updateLists() {
         let listModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, skywalker.getUserDid())
-        skywalker.getListListModel(listModelId).setMemberCheckDid(author.did)
+        let listModel = skywalker.getListListModel(listModelId)
+        listModel.setMemberCheckDid(author.did)
+        listModel.setExcludeInternalLists(true)
         let component = Qt.createComponent("AddUserListListView.qml")
         let view = component.createObject(page, { author: author, modelId: listModelId, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() })
@@ -773,12 +819,18 @@ Page {
     }
 
     Component.onDestruction: {
+        skywalker.onAuthorFeedError.disconnect(feedFailedHandler)
+        skywalker.onAuthorFeedOk.disconnect(feedOkHandler)
+
         setAuthorBanner("")
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
     }
 
     Component.onCompleted: {
+        skywalker.onAuthorFeedError.connect(feedFailedHandler)
+        skywalker.onAuthorFeedOk.connect(feedOkHandler)
+
         authorName = author.displayName
         authorDescription = author.description
         authorAvatar = author.avatarUrl
