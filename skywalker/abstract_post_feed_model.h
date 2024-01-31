@@ -20,6 +20,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
                               public LocalProfileChanges
 {
     Q_OBJECT
+    QML_ELEMENT
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
 
