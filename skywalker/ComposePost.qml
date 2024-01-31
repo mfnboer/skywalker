@@ -267,6 +267,27 @@ Page {
             }
         }
 
+        ComboBox {
+            id: fontSelector
+            x: addGif.x + addGif.width + 15
+            y: 5 + restrictionRow.height + footerSeparator.height
+            height: 34
+            model: ["Normal", "𝗕𝗼𝗹𝗱", "𝘐𝘵𝘢𝘭𝘪𝘤", "𝙼𝚘𝚗𝚘", "𝓒𝓾𝓻𝓼𝓲𝓿𝓮", "Ｗｉｄｅ", "Ⓑⓤⓑⓑⓛⓔ", "🅂🅀🅄🄰🅁🄴"]
+
+            background: Rectangle {
+                implicitWidth: 150
+                implicitHeight: 34
+                border.color: guiSettings.buttonColor
+                border.width: 2
+                color: "transparent"
+            }
+
+            Component.onCompleted: {
+                fontSelector.contentItem.color = guiSettings.buttonColor
+                fontSelector.indicator.color = guiSettings.buttonColor
+            }
+        }
+
         TextLengthCounter {
             y: 10 + restrictionRow.height + footerSeparator.height
             anchors.rightMargin: 10
@@ -335,10 +356,27 @@ Page {
 
             onTextChanged: {
                 highlightFacets()
+                const prevGraphemeLength = graphemeLength
                 updateGraphemeLength()
+
+                if (graphemeLength > prevGraphemeLength)
+                    makeBold()
             }
 
             onPreeditTextChanged: updateGraphemeLength()
+
+            function makeBold() {
+                const modifiedTillCursor = postUtils.applyFontToLastTypedChar(
+                                             postText.text, postText.preeditText,
+                                             postText.cursorPosition, fontSelector.currentIndex)
+
+                if (modifiedTillCursor) {
+                    const fullText = modifiedTillCursor + postText.text.slice(postText.cursorPosition)
+                    postText.clear()
+                    postText.text = fullText
+                    postText.cursorPosition = modifiedTillCursor.length
+                }
+            }
 
             function highlightFacets() {
                 postUtils.extractMentionsAndLinks(postText.text,

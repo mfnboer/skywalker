@@ -170,6 +170,19 @@ public:
         PHOTO_TYPE_BANNER
     };
     Q_ENUM(PhotoType)
+
+    enum FontType
+    {
+        FONT_NORMAL,
+        FONT_BOLD,
+        FONT_ITALIC,
+        FONT_MONOSPACE,
+        FONT_CURSIVE,
+        FONT_FULLWIDTH,
+        FONT_BUBBLE,
+        FONT_SQUARE
+    };
+    Q_ENUM(FontType)
 };
 
 }

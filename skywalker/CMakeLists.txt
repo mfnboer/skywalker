@@ -267,6 +267,8 @@ qt_add_qml_module(libskywalker
         QML_FILES EditProfile.qml
         SOURCES local_profile_changes.h
         SOURCES local_profile_changes.cpp
+        SOURCES unicode_fonts.h
+        SOURCES unicode_fonts.cpp
 )
 
 if (NOT ANDROID)

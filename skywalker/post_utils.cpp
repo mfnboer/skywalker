@@ -5,6 +5,7 @@
 #include "photo_picker.h"
 #include "shared_image_provider.h"
 #include "skywalker.h"
+#include "unicode_fonts.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QImageReader>
 
@@ -642,7 +643,7 @@ void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& hig
 
 void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,
                                         int cursor)
-{   
+{
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
     const auto facets = ATProto::RichTextMaster::parseFacets(fullText);
 
@@ -745,6 +746,48 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
     if (!listLinkFound)
         setFirstListLink({});
+}
+
+QString PostUtils::applyFontToLastTypedChar(const QString& text,const QString& preeditText,
+                                            int cursor, QEnums::FontType font)
+{
+    if (font == QEnums::FONT_NORMAL)
+        return {};
+
+    if (!mEditMention.isEmpty())
+    {
+        qDebug() << "Editing a mention";
+        return {};
+    }
+
+    QString modifiedText = text.sliced(0, cursor) + preeditText;
+
+    if (modifiedText.isEmpty())
+        return {};
+
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, modifiedText);
+    boundaryFinder.toEnd();
+    const auto previousBoundary = boundaryFinder.toPreviousBoundary();
+
+    if (previousBoundary == -1)
+    {
+        qWarning() << "No previous grapheme boundary:" << modifiedText;
+        return {};
+    }
+
+    // We want to detect ascii alphanums that occupy only 1 UCS2 position.
+    if (previousBoundary != modifiedText.size() - 1)
+        return {};
+
+    const auto lastChar = modifiedText.back();
+    const uint convertedUcs4 = UnicodeFonts::convertToFont(lastChar, font);
+
+    if (!convertedUcs4)
+        return {};
+
+    modifiedText.chop(1);
+    modifiedText += QChar::fromUcs4(convertedUcs4);
+    return modifiedText;
 }
 
 QString PostUtils::linkiFy(const QString& text, const QString& colorName)

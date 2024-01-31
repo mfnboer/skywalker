@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include "facet_highlighter.h"
 #include "generator_view.h"
 #include "image_reader.h"
@@ -51,6 +52,12 @@ public:
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                              int cursor);
+
+    // Returns a new text up to cursor with the last type char transformed into font.
+    // Returns null string if last typed char was not a transformable char.
+    Q_INVOKABLE QString applyFontToLastTypedChar(const QString& text,const QString& preeditText,
+                                                 int cursor, QEnums::FontType font);
+
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE QString linkiFy(const QString& text, const QString& colorName);
     Q_INVOKABLE int graphemeLength(const QString& text) const;
