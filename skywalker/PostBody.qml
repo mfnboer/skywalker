@@ -173,7 +173,7 @@ Column {
         if (unicodeFonts.graphemeLength(postPlainText) > 5)
             return false
 
-        return postUtils.onlyEmojis(postPlainText)
+        return unicodeFonts.onlyEmojis(postPlainText)
     }
 
     function showPostAttachements() {

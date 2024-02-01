@@ -62,7 +62,6 @@ public:
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
     Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
     Q_INVOKABLE void getQuoteList(const QString& httpsUri);
-    Q_INVOKABLE static bool onlyEmojis(const QString& text);
 
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);

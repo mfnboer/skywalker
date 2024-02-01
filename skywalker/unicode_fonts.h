@@ -26,6 +26,9 @@ public:
     static QString toPlainText(const QString& text);
     Q_INVOKABLE static QString normalizeToNFKD(const QString& text);
     Q_INVOKABLE static int graphemeLength(const QString& text);
+    Q_INVOKABLE static bool onlyEmojis(const QString& text);
+
+    static bool isEmoji(uint c);
 };
 
 }

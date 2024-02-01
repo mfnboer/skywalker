@@ -162,4 +162,41 @@ int UnicodeFonts::graphemeLength(const QString& text)
     return length;
 }
 
+bool UnicodeFonts::onlyEmojis(const QString& text)
+{
+    qDebug() << "EMOJI?" << text;
+    for (const auto c : text.toUcs4())
+    {
+        qDebug() << "Code point:" << c;
+        if (!isEmoji(c))
+            return false;
+    }
+
+    return true;
+}
+
+bool UnicodeFonts::isEmoji(uint c)
+{
+    static const std::map<uint, uint> RANGES = {
+        {0x0200D, 0x0200D}, // Zero Width Joiner to combine codepoints
+        {0x02600, 0x026FF}, // Miscellaneous symbols
+        {0x02700, 0x027BF}, // Dingbats
+        {0x0FE0E, 0x0FE0F}, // variation selectors
+        {0x1F300, 0x1F5FF}, // Miscellaneous Symbols and Pictographs
+        {0x1F600, 0x1F64F}, // Emoticons
+        {0x1F680, 0x1F6FF}, // Transport and Map Symbols
+        {0x1F700, 0x1FAFF}
+    };
+
+    auto it = RANGES.upper_bound(c);
+
+    if (it == RANGES.begin())
+        return false;
+
+    --it;
+
+    return c >= it->first && c <= it->second;
+}
+
+
 }
