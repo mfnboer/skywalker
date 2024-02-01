@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "unicode_fonts.h"
+#include <QQuickTextDocument>
 #include <unordered_map>
 
 namespace Skywalker {
@@ -136,6 +137,29 @@ bool UnicodeFonts::convertLastCharsToFont(QString& text, int numChars, FontType 
     text.chop(text.size() - convertBoundary);
     text += converted;
     return true;
+}
+
+QString UnicodeFonts::toPlainText(const QString& text)
+{
+    QTextDocument doc;
+    doc.setHtml(text);
+    return doc.toPlainText();
+}
+
+QString UnicodeFonts::normalizeToNFKD(const QString& text)
+{
+    return text.normalized(QString::NormalizationForm_KD);
+}
+
+int UnicodeFonts::graphemeLength(const QString& text)
+{
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int length = 0;
+
+    while (boundaryFinder.toNextBoundary() != -1)
+        ++length;
+
+    return length;
 }
 
 }

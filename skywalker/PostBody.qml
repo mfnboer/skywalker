@@ -162,7 +162,7 @@ Column {
 
     function getPostFontSize() {
         return onlyEmojisPost() ?
-                    guiSettings.scaledFont(postUtils.graphemeLength(postPlainText) === 1 ? 9 : 3) :
+                    guiSettings.scaledFont(unicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
                     guiSettings.scaledFont(1)
     }
 
@@ -170,7 +170,7 @@ Column {
         if (!postPlainText)
             return false
 
-        if (postUtils.graphemeLength(postPlainText) > 5)
+        if (unicodeFonts.graphemeLength(postPlainText) > 5)
             return false
 
         return postUtils.onlyEmojis(postPlainText)

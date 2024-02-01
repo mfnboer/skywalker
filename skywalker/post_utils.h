@@ -29,8 +29,6 @@ class PostUtils : public WrappedSkywalker, public Presence
 public:
     explicit PostUtils(QObject* parent = nullptr);
 
-    static QString toPlainText(const QString& text);
-
     Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
@@ -60,13 +58,11 @@ public:
 
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE QString linkiFy(const QString& text, const QString& colorName);
-    Q_INVOKABLE int graphemeLength(const QString& text) const;
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
     Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
     Q_INVOKABLE void getQuoteList(const QString& httpsUri);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
-    Q_INVOKABLE static QString normalizeText(const QString& text);
 
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);

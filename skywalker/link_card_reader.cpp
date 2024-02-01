@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "link_card_reader.h"
-#include "post_utils.h"
+#include "unicode_fonts.h"
 #include <QRegularExpression>
 
 namespace Skywalker {
@@ -94,26 +94,26 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     if (match.hasMatch())
     {
-        card->setTitle(PostUtils::toPlainText(match.captured(3)));
+        card->setTitle(UnicodeFonts::toPlainText(match.captured(3)));
     }
     else
     {
         match = ogTitleRE2.match(data);
         if (match.hasMatch())
-            card->setTitle(PostUtils::toPlainText(match.captured(1)));
+            card->setTitle(UnicodeFonts::toPlainText(match.captured(1)));
     }
 
     match = ogDescriptionRE.match(data);
 
     if (match.hasMatch())
     {
-        card->setDescription(PostUtils::toPlainText(match.captured(3)));
+        card->setDescription(UnicodeFonts::toPlainText(match.captured(3)));
     }
     else
     {
         match = ogDescriptionRE2.match(data);
         if (match.hasMatch())
-            card->setDescription(PostUtils::toPlainText(match.captured(1)));
+            card->setDescription(UnicodeFonts::toPlainText(match.captured(1)));
     }
 
     QString imgUrl;

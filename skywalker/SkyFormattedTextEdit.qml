@@ -46,8 +46,8 @@ TextEdit {
     }
 
     function updateGraphemeLength() {
-        graphemeLength = postUtils.graphemeLength(editText.text) +
-                postUtils.graphemeLength(preeditText) -
+        graphemeLength = unicodeFonts.graphemeLength(editText.text) +
+                unicodeFonts.graphemeLength(preeditText) -
                 postUtils.getLinkShorteningReduction()
     }
 
@@ -94,6 +94,10 @@ TextEdit {
             editMentionCursorY = editText.cursorRectangle.y
             typeaheadSearchTimer.start()
         }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

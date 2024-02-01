@@ -400,7 +400,7 @@ Page {
             }
 
             // Text can only be changed outside onPreeditTextChanged.
-            // This timer makes the call to makeBold async.
+            // This timer makes the call to applyFont async.
             Timer {
                 property int numChars: 1
 
@@ -408,7 +408,7 @@ Page {
                 interval: 0
                 onTriggered: {
                     postText.textChangeInProgress = true
-                    postText.makeBold(numChars)
+                    postText.applyFont(numChars)
                     postText.textChangeInProgress = false
                 }
 
@@ -418,7 +418,7 @@ Page {
                 }
             }
 
-            function makeBold(numChars) {
+            function applyFont(numChars) {
                 const modifiedTillCursor = postUtils.applyFontToLastTypedChars(
                                              postText.text, postText.preeditText,
                                              postText.cursorPosition, numChars,
@@ -440,8 +440,8 @@ Page {
             function updateGraphemeLength() {
                 const prevGraphemeLength = graphemeLength
 
-                graphemeLength = postUtils.graphemeLength(postText.text) +
-                        postUtils.graphemeLength(preeditText) -
+                graphemeLength = unicodeFonts.graphemeLength(postText.text) +
+                        unicodeFonts.graphemeLength(preeditText) -
                         postUtils.getLinkShorteningReduction()
 
                 return graphemeLength - prevGraphemeLength
@@ -808,6 +808,10 @@ Page {
 
                 page.quoteList = list
             }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     Timer {

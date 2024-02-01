@@ -541,6 +541,10 @@ ApplicationWindow {
         onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
     }
 
+    UnicodeFonts {
+        id: unicodeFonts
+    }
+
     GuiSettings {
         id: guiSettings
     }
@@ -1100,7 +1104,7 @@ ApplicationWindow {
 
     function translateText(text) {
         const lang = Qt.locale().name.split("_")[0]
-        const normalized = postUtils.normalizeText(text)
+        const normalized = unicodeFonts.normalizeToNFKD(text)
         const encoded = encodeURIComponent(normalized)
         const url = `https://translate.google.com/?hl=${lang}&sl=auto&tl=${lang}&text=${encoded}&op=translate`
         Qt.openUrlExternally(url)

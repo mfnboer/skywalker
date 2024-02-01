@@ -7,8 +7,11 @@
 
 namespace Skywalker {
 
-class UnicodeFonts
+class UnicodeFonts : public QObject
 {
+    Q_OBJECT
+    QML_ELEMENT
+
 public:
     using FontType = QEnums::FontType;
 
@@ -19,6 +22,10 @@ public:
     static uint convertToFont(QChar c, FontType font);
 
     static bool convertLastCharsToFont(QString& text, int numChars, FontType font);
+
+    static QString toPlainText(const QString& text);
+    Q_INVOKABLE static QString normalizeToNFKD(const QString& text);
+    Q_INVOKABLE static int graphemeLength(const QString& text);
 };
 
 }

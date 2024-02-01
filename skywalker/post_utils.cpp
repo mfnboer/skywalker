@@ -11,13 +11,6 @@
 
 namespace Skywalker {
 
-QString PostUtils::toPlainText(const QString& text)
-{
-    QTextDocument doc;
-    doc.setHtml(text);
-    return doc.toPlainText();
-}
-
 PostUtils::PostUtils(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
@@ -712,7 +705,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
             }
 
             const auto shortLink = ATProto::RichTextMaster::shortenWebLink(facet.mMatch);
-            const int reduction = graphemeLength(facet.mMatch) - graphemeLength(shortLink);
+            const int reduction = UnicodeFonts::graphemeLength(facet.mMatch) - UnicodeFonts::graphemeLength(shortLink);
             qDebug() << "SHORT:" << shortLink << "reduction:" << reduction;
             mLinkShorteningReduction += reduction;
             break;
@@ -773,17 +766,6 @@ QString PostUtils::linkiFy(const QString& text, const QString& colorName)
     return ATProto::RichTextMaster::linkiFy(text, colorName);
 }
 
-int PostUtils::graphemeLength(const QString& text) const
-{
-    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
-    int length = 0;
-
-    while (boundaryFinder.toNextBoundary() != -1)
-        ++length;
-
-    return length;
-}
-
 void PostUtils::getQuotePost(const QString& httpsUri)
 {
     if (!postMaster())
@@ -836,11 +818,6 @@ bool PostUtils::onlyEmojis(const QString& text)
     }
 
     return true;
-}
-
-QString PostUtils::normalizeText(const QString& text)
-{
-    return text.normalized(QString::NormalizationForm_KD);
 }
 
 bool PostUtils::isEmoji(uint c)
