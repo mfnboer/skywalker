@@ -176,6 +176,7 @@ public:
         FONT_NORMAL,
         FONT_BOLD,
         FONT_ITALIC,
+        FONT_STRIKETHROUGH,
         FONT_MONOSPACE,
         FONT_CURSIVE,
         FONT_FULLWIDTH,

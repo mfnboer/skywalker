@@ -70,4 +70,47 @@ uint UnicodeFonts::convertToFont(QChar c, FontType font)
         return c.unicode() - 'a' + fontCodePoint.mLowerA;
 }
 
+bool UnicodeFonts::convertLastCharToFont(QString& text, FontType font)
+{
+    if (font == QEnums::FONT_NORMAL)
+        return false;
+
+    if (text.isEmpty())
+        return false;
+
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    boundaryFinder.toEnd();
+    const auto previousBoundary = boundaryFinder.toPreviousBoundary();
+
+    if (previousBoundary == -1)
+    {
+        qWarning() << "No previous grapheme boundary:" << text;
+        return false;
+    }
+
+    // We want to detect ascii alphanums that occupy only 1 UCS2 position.
+    if (previousBoundary != text.size() - 1)
+        return false;
+
+    const auto lastChar = text.back();
+
+    switch (font)
+    {
+    case QEnums::FONT_STRIKETHROUGH:
+        text += "\u0336"; // Combining Long Stroke Overlay
+        return true;
+    default:
+        break;
+    }
+
+    const uint convertedUcs4 = convertToFont(lastChar, font);
+
+    if (!convertedUcs4)
+        return false;
+
+    text.chop(1);
+    text += QChar::fromUcs4(convertedUcs4);
+    return true;
+}
+
 }

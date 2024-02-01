@@ -762,32 +762,10 @@ QString PostUtils::applyFontToLastTypedChar(const QString& text,const QString& p
 
     QString modifiedText = text.sliced(0, cursor) + preeditText;
 
-    if (modifiedText.isEmpty())
-        return {};
+    if (UnicodeFonts::convertLastCharToFont(modifiedText, font))
+        return modifiedText;
 
-    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, modifiedText);
-    boundaryFinder.toEnd();
-    const auto previousBoundary = boundaryFinder.toPreviousBoundary();
-
-    if (previousBoundary == -1)
-    {
-        qWarning() << "No previous grapheme boundary:" << modifiedText;
-        return {};
-    }
-
-    // We want to detect ascii alphanums that occupy only 1 UCS2 position.
-    if (previousBoundary != modifiedText.size() - 1)
-        return {};
-
-    const auto lastChar = modifiedText.back();
-    const uint convertedUcs4 = UnicodeFonts::convertToFont(lastChar, font);
-
-    if (!convertedUcs4)
-        return {};
-
-    modifiedText.chop(1);
-    modifiedText += QChar::fromUcs4(convertedUcs4);
-    return modifiedText;
+    return {};
 }
 
 QString PostUtils::linkiFy(const QString& text, const QString& colorName)
