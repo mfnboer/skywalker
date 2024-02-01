@@ -748,8 +748,8 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
         setFirstListLink({});
 }
 
-QString PostUtils::applyFontToLastTypedChar(const QString& text,const QString& preeditText,
-                                            int cursor, QEnums::FontType font)
+QString PostUtils::applyFontToLastTypedChars(const QString& text,const QString& preeditText,
+                                             int cursor, int numChars, QEnums::FontType font)
 {
     if (font == QEnums::FONT_NORMAL)
         return {};
@@ -762,7 +762,7 @@ QString PostUtils::applyFontToLastTypedChar(const QString& text,const QString& p
 
     QString modifiedText = text.sliced(0, cursor) + preeditText;
 
-    if (UnicodeFonts::convertLastCharToFont(modifiedText, font))
+    if (UnicodeFonts::convertLastCharsToFont(modifiedText, numChars, font))
         return modifiedText;
 
     return {};
@@ -836,6 +836,11 @@ bool PostUtils::onlyEmojis(const QString& text)
     }
 
     return true;
+}
+
+QString PostUtils::normalizeText(const QString& text)
+{
+    return text.normalized(QString::NormalizationForm_KD);
 }
 
 bool PostUtils::isEmoji(uint c)

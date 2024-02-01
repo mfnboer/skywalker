@@ -1100,7 +1100,8 @@ ApplicationWindow {
 
     function translateText(text) {
         const lang = Qt.locale().name.split("_")[0]
-        const encoded = encodeURIComponent(text)
+        const normalized = postUtils.normalizeText(text)
+        const encoded = encodeURIComponent(normalized)
         const url = `https://translate.google.com/?hl=${lang}&sl=auto&tl=${lang}&text=${encoded}&op=translate`
         Qt.openUrlExternally(url)
     }

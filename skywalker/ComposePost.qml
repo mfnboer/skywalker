@@ -383,8 +383,9 @@ Page {
                 textChangeInProgress = true
                 highlightFacets()
 
-                if (updateGraphemeLength() === 1)
-                    updateTextTimer.start()
+                const added = updateGraphemeLength()
+                if (added > 0)
+                    updateTextTimer.set(added)
 
                 textChangeInProgress = false
             }
@@ -393,26 +394,35 @@ Page {
                 if (textChangeInProgress)
                     return
 
-                if (updateGraphemeLength() === 1)
-                    updateTextTimer.start()
+                const added = updateGraphemeLength()
+                if (added > 0)
+                    updateTextTimer.set(added)
             }
 
             // Text can only be changed outside onPreeditTextChanged.
             // This timer makes the call to makeBold async.
             Timer {
+                property int numChars: 1
+
                 id: updateTextTimer
                 interval: 0
                 onTriggered: {
                     postText.textChangeInProgress = true
-                    postText.makeBold()
+                    postText.makeBold(numChars)
                     postText.textChangeInProgress = false
+                }
+
+                function set(num) {
+                    numChars = num
+                    start()
                 }
             }
 
-            function makeBold() {
-                const modifiedTillCursor = postUtils.applyFontToLastTypedChar(
+            function makeBold(numChars) {
+                const modifiedTillCursor = postUtils.applyFontToLastTypedChars(
                                              postText.text, postText.preeditText,
-                                             postText.cursorPosition, fontSelector.currentIndex)
+                                             postText.cursorPosition, numChars,
+                                             fontSelector.currentIndex)
 
                 if (modifiedTillCursor) {
                     const fullText = modifiedTillCursor + postText.text.slice(postText.cursorPosition)

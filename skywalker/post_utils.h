@@ -55,8 +55,8 @@ public:
 
     // Returns a new text up to cursor with the last type char transformed into font.
     // Returns null string if last typed char was not a transformable char.
-    Q_INVOKABLE QString applyFontToLastTypedChar(const QString& text,const QString& preeditText,
-                                                 int cursor, QEnums::FontType font);
+    Q_INVOKABLE QString applyFontToLastTypedChars(const QString& text,const QString& preeditText,
+                                                  int cursor, int numChars, QEnums::FontType font);
 
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE QString linkiFy(const QString& text, const QString& colorName);
@@ -66,6 +66,7 @@ public:
     Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
     Q_INVOKABLE void getQuoteList(const QString& httpsUri);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
+    Q_INVOKABLE static QString normalizeText(const QString& text);
 
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);

@@ -1,3 +1,9 @@
+next
+====
+* Bold, italic, cursive and other fonts for post composition
+* Normalize text before translation
+* Bug fixes
+
 1.0
 ===
 * Edit your profile

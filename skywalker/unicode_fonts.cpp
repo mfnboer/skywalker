@@ -6,6 +6,9 @@
 namespace Skywalker {
 
 namespace {
+
+constexpr char const* COMBINING_LONG_STROKE_OVERLAY = "\u0336";
+
 struct FontCodePoint
 {
     uint mUpperA;
@@ -32,7 +35,7 @@ uint UnicodeFonts::convertToFont(QChar c, FontType font)
         { QEnums::FONT_MONOSPACE, { 0x1D670, 0x1D68A, 0x1D7F6 } },
         { QEnums::FONT_CURSIVE, { 0x1D4D0, 0x1D4EA, 0 } },
         { QEnums::FONT_FULLWIDTH, { 0xFF21, 0xFF41, 0xFF10 } },
-        { QEnums::FONT_BUBBLE, { 0x24B6, 0x24D0, 0x2459 } }, // NOTE: 0 = 0x24EA
+        { QEnums::FONT_BUBBLE, { 0x24B6, 0x24D0, 0x245F } }, // NOTE: 0 = 0x24EA
         { QEnums::FONT_SQUARE, { 0x1F130, 0x1F130, 0 } } // NOTE: only upper case
     };
 
@@ -70,7 +73,7 @@ uint UnicodeFonts::convertToFont(QChar c, FontType font)
         return c.unicode() - 'a' + fontCodePoint.mLowerA;
 }
 
-bool UnicodeFonts::convertLastCharToFont(QString& text, FontType font)
+bool UnicodeFonts::convertLastCharsToFont(QString& text, int numChars, FontType font)
 {
     if (font == QEnums::FONT_NORMAL)
         return false;
@@ -78,38 +81,60 @@ bool UnicodeFonts::convertLastCharToFont(QString& text, FontType font)
     if (text.isEmpty())
         return false;
 
+    if (numChars < 1 || numChars > text.length())
+        return false;
+
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
     boundaryFinder.toEnd();
-    const auto previousBoundary = boundaryFinder.toPreviousBoundary();
+    auto convertBoundary = boundaryFinder.position();
+    QString converted;
+    bool conversionDone = false;
 
-    if (previousBoundary == -1)
+    for (int i = 0; i < numChars; ++i)
     {
-        qWarning() << "No previous grapheme boundary:" << text;
+        const auto lastBoundary = convertBoundary;
+        convertBoundary = boundaryFinder.toPreviousBoundary();
+        const auto graphemeLen = lastBoundary - convertBoundary;
+
+        if (convertBoundary == -1)
+        {
+            qWarning() << "No previous grapheme boundary:" << i << "text:" << text;
+            return false;
+        }
+
+        QString grapheme = text.sliced(convertBoundary, graphemeLen);
+
+        if (font == QEnums::FONT_STRIKETHROUGH)
+        {
+            converted.push_front(COMBINING_LONG_STROKE_OVERLAY);
+            converted.push_front(grapheme);
+            conversionDone = true;
+        }
+        else if (graphemeLen == 1)
+        {
+            const auto ch = grapheme.back();
+            const char32_t convertedUcs4 = convertToFont(ch, font);
+
+            if (convertedUcs4)
+            {
+                converted.push_front(QString::fromUcs4(&convertedUcs4, 1));
+                conversionDone = true;
+            }
+            else
+            {
+                converted.push_front(grapheme);
+            }
+        }
+    }
+
+    if (!conversionDone)
+    {
+        qDebug() << "Nothing to convert, font:" << font << "num:" << numChars << "text:" << text;
         return false;
     }
 
-    // We want to detect ascii alphanums that occupy only 1 UCS2 position.
-    if (previousBoundary != text.size() - 1)
-        return false;
-
-    const auto lastChar = text.back();
-
-    switch (font)
-    {
-    case QEnums::FONT_STRIKETHROUGH:
-        text += "\u0336"; // Combining Long Stroke Overlay
-        return true;
-    default:
-        break;
-    }
-
-    const uint convertedUcs4 = convertToFont(lastChar, font);
-
-    if (!convertedUcs4)
-        return false;
-
-    text.chop(1);
-    text += QChar::fromUcs4(convertedUcs4);
+    text.chop(text.size() - convertBoundary);
+    text += converted;
     return true;
 }
 

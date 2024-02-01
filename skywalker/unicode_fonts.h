@@ -18,7 +18,7 @@ public:
     // Returns 0 if there is no conversion
     static uint convertToFont(QChar c, FontType font);
 
-    static bool convertLastCharToFont(QString& text, FontType font);
+    static bool convertLastCharsToFont(QString& text, int numChars, FontType font);
 };
 
 }
