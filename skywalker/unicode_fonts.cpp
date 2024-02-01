@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "unicode_fonts.h"
+#include <unordered_map>
 
 namespace Skywalker {
 

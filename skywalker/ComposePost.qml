@@ -329,6 +329,7 @@ Page {
         TextEdit {
             readonly property int maxLength: 300
             property int graphemeLength: 0
+            property bool textChangeInProgress: false
 
             id: postText
             y: replyToColumn.visible ? replyToColumn.height + 5 : 0
@@ -355,15 +356,37 @@ Page {
             }
 
             onTextChanged: {
-                highlightFacets()
-                const prevGraphemeLength = graphemeLength
-                updateGraphemeLength()
+                if (textChangeInProgress)
+                    return
 
-                if (graphemeLength > prevGraphemeLength)
-                    makeBold()
+                textChangeInProgress = true
+                highlightFacets()
+
+                if (updateGraphemeLength() === 1)
+                    updateTextTimer.start()
+
+                textChangeInProgress = false
             }
 
-            onPreeditTextChanged: updateGraphemeLength()
+            onPreeditTextChanged: {
+                if (textChangeInProgress)
+                    return
+
+                if (updateGraphemeLength() === 1)
+                    updateTextTimer.start()
+            }
+
+            // Text can only be changed outside onPreeditTextChanged.
+            // This timer makes the call to makeBold async.
+            Timer {
+                id: updateTextTimer
+                interval: 0
+                onTriggered: {
+                    postText.textChangeInProgress = true
+                    postText.makeBold()
+                    postText.textChangeInProgress = false
+                }
+            }
 
             function makeBold() {
                 const modifiedTillCursor = postUtils.applyFontToLastTypedChar(
@@ -384,9 +407,13 @@ Page {
             }
 
             function updateGraphemeLength() {
+                const prevGraphemeLength = graphemeLength
+
                 graphemeLength = postUtils.graphemeLength(postText.text) +
                         postUtils.graphemeLength(preeditText) -
                         postUtils.getLinkShorteningReduction()
+
+                return graphemeLength - prevGraphemeLength
             }
 
             Text {
