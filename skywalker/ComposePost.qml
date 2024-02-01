@@ -268,6 +268,8 @@ Page {
         }
 
         ComboBox {
+            property bool pressedWithVirtualKeyboard: false
+
             id: fontSelector
             x: addGif.x + addGif.width + 15
             y: 5 + restrictionRow.height + footerSeparator.height
@@ -280,6 +282,25 @@ Page {
                 border.color: guiSettings.buttonColor
                 border.width: 2
                 color: "transparent"
+            }
+
+            onPressedChanged: {
+                // On Android, a press on the combobox makes the virtual keyboard to close.
+                // This causes to popup to close or not open at all. Open it after the
+                // keyboard has closed.
+                if (pressed && Qt.inputMethod.keyboardRectangle.y > 0)
+                    pressedWithVirtualKeyboard = true
+            }
+
+            popup.onClosed: postText.forceActiveFocus()
+
+            function virtualKeyboardClosed() {
+                if (pressedWithVirtualKeyboard) {
+                    pressedWithVirtualKeyboard = false
+
+                    if (!popup.opened)
+                        popup.open()
+                }
             }
 
             Component.onCompleted: {
@@ -672,15 +693,18 @@ Page {
         onPhotoPicked: (imgSource) => {
             pickingImage = false
             page.photoPicked(imgSource)
+            postText.forceActiveFocus()
         }
 
         onPhotoPickFailed: (error) => {
             pickingImage = false
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            postText.forceActiveFocus()
         }
 
         onPhotoPickCanceled: {
             pickingImage = false
+            postText.forceActiveFocus()
         }
 
         onEditMentionChanged: {
@@ -947,6 +971,7 @@ Page {
             }
             else {
                 textFooter.height = textFooter.getFooterHeight()
+                fontSelector.virtualKeyboardClosed()
             }
         }
     }
