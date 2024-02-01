@@ -73,11 +73,11 @@ void LinkCardReader::getLinkCard(const QString& link)
 
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
-    static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
     static const QRegularExpression ogTitleRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'][^>]*>)");
-    static const QRegularExpression ogDescriptionRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogDescriptionRE(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?description[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
     static const QRegularExpression ogDescriptionRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'][^>]*>)");
-    static const QRegularExpression ogImageRE(R"(<meta [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
+    static const QRegularExpression ogImageRE(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?image[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
     static const QRegularExpression ogImageRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'][^>]*>)");
 
     mInProgress = nullptr;
