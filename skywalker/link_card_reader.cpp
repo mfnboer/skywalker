@@ -71,14 +71,50 @@ void LinkCardReader::getLinkCard(const QString& link)
     connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ requestSslFailed(reply); });
 }
 
+static QString matchRegexes(const std::vector<QRegularExpression>& regexes, const QByteArray& data, const QString& group)
+{
+    for (const auto& re : regexes)
+    {
+        auto match = re.match(data);
+
+        if (match.hasMatch())
+            return match.captured(group);
+    }
+
+    return {};
+}
+
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
-    static const QRegularExpression ogTitleRE(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?title[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
-    static const QRegularExpression ogTitleRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'][^>]*>)");
-    static const QRegularExpression ogDescriptionRE(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?description[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
-    static const QRegularExpression ogDescriptionRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'][^>]*>)");
-    static const QRegularExpression ogImageRE(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?image[\"'] [^>]*content=[\"']([^'^\"]+?)[\"'][^>]*>)");
-    static const QRegularExpression ogImageRE2(R"(<meta [^>]*content=[\"']([^'^\"]+?)[\"'] [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'][^>]*>)");
+    static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?title[\"'] [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
+    static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'][^>]*>)");
+
+    static const std::vector<QRegularExpression> ogTitleREs = {
+        QRegularExpression(ogTitleStr1.arg('"')),
+        QRegularExpression(ogTitleStr1.arg('\'')),
+        QRegularExpression(ogTitleStr2.arg('"')),
+        QRegularExpression(ogTitleStr2.arg('\''))
+    };
+
+    static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?description[\"'] [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
+    static const QString ogDescriptionStr2(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'][^>]*>)");
+
+    static const std::vector<QRegularExpression> ogDescriptionREs = {
+        QRegularExpression(ogDescriptionStr1.arg('"')),
+        QRegularExpression(ogDescriptionStr1.arg('\'')),
+        QRegularExpression(ogDescriptionStr2.arg('"')),
+        QRegularExpression(ogDescriptionStr2.arg('\''))
+    };
+
+    static const QString ogImageStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?image[\"'] [^>]*content=%1(?<image>[^%1]+?)%1[^>]*>)");
+    static const QString ogImageStr2(R"(<meta [^>]*content=%1(?<image>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'][^>]*>)");
+
+    static const std::vector<QRegularExpression> ogImageREs = {
+        QRegularExpression(ogImageStr1.arg('"')),
+        QRegularExpression(ogImageStr1.arg('\'')),
+        QRegularExpression(ogImageStr2.arg('"')),
+        QRegularExpression(ogImageStr2.arg('\''))
+    };
 
     mInProgress = nullptr;
 
@@ -90,46 +126,17 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     auto card = std::make_unique<LinkCard>(this);
     const auto data = reply->readAll();
-    auto match = ogTitleRE.match(data);
 
-    if (match.hasMatch())
-    {
-        card->setTitle(UnicodeFonts::toPlainText(match.captured(3)));
-    }
-    else
-    {
-        match = ogTitleRE2.match(data);
-        if (match.hasMatch())
-            card->setTitle(UnicodeFonts::toPlainText(match.captured(1)));
-    }
+    const QString title = matchRegexes(ogTitleREs, data, "title");
+    if (!title.isEmpty())
+        card->setTitle(UnicodeFonts::toPlainText(title));
 
-    match = ogDescriptionRE.match(data);
+    const QString description = matchRegexes(ogDescriptionREs, data, "description");
+    if (!description.isEmpty())
+        card->setDescription(UnicodeFonts::toPlainText(description));
 
-    if (match.hasMatch())
-    {
-        card->setDescription(UnicodeFonts::toPlainText(match.captured(3)));
-    }
-    else
-    {
-        match = ogDescriptionRE2.match(data);
-        if (match.hasMatch())
-            card->setDescription(UnicodeFonts::toPlainText(match.captured(1)));
-    }
-
-    QString imgUrl;
+    const QString imgUrl = matchRegexes(ogImageREs, data, "image");;
     const auto& url = reply->request().url();
-    match = ogImageRE.match(data);
-
-    if (match.hasMatch())
-    {
-        imgUrl = match.captured(3);
-    }
-    else
-    {
-        match = ogImageRE2.match(data);
-        if (match.hasMatch())
-            imgUrl = match.captured(1);
-    }
 
     if (!imgUrl.isEmpty())
     {
