@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "facet_highlighter.h"
+#include "font_downloader.h"
 #include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
@@ -36,6 +37,15 @@ void FacetHighlighter::highlightBlock(const QString& text)
         case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
             break;
         }
+    }
+
+    static const QRegularExpression enclosingKeycapRE("(.\uFE0F\u20E3)");
+    auto i = text.indexOf(enclosingKeycapRE);
+
+    while (i != -1)
+    {
+        setFormat(i, 3, FontDownloader::getEmojiFont());
+        i = text.indexOf(enclosingKeycapRE, i + 3);
     }
 }
 

@@ -126,6 +126,10 @@ bool UnicodeFonts::convertLastCharsToFont(QString& text, int numChars, FontType 
                 converted.push_front(grapheme);
             }
         }
+        else
+        {
+            converted.push_front(grapheme);
+        }
     }
 
     if (!conversionDone)

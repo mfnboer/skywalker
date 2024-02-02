@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <QFont>
 
 namespace Skywalker {
 
@@ -11,6 +12,7 @@ public:
     static void addApplicationFonts();
     static void downloadEmojiFont();
     static float getFontScale();
+    static QFont getEmojiFont();
 };
 
 }
