@@ -3,6 +3,7 @@ next
 * Bold, italic, cursive and other fonts for post composition
 * Normalize text before translation
 * Improved link card extraction
+* Render Combining Enclosing Keycap character properly
 * Bug fixes
 
 1.0
