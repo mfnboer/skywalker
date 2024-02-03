@@ -1,5 +1,5 @@
-next
-====
+1.1
+===
 * Bold, italic, cursive and other fonts for post composition
 * Normalize text before translation
 * Improved link card extraction
