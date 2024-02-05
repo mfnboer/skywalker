@@ -21,6 +21,8 @@ class ListListModel : public QAbstractListModel,
 public:
     enum class Role {
         List = Qt::UserRole + 1,
+        ListUri,
+        ListName,
         ListCreator,
         ListBlockedUri,
         ListMuted,

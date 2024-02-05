@@ -269,6 +269,7 @@ qt_add_qml_module(libskywalker
         SOURCES local_profile_changes.cpp
         SOURCES unicode_fonts.h
         SOURCES unicode_fonts.cpp
+        QML_FILES PagingComboBox.qml
 )
 
 if (NOT ANDROID)

@@ -46,6 +46,10 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
     {
     case Role::List:
         return QVariant::fromValue(list);
+    case Role::ListUri:
+        return list.getUri();
+    case Role::ListName:
+        return list.getName();
     case Role::ListCreator:
     {
         auto creator = list.getCreator();
@@ -243,6 +247,8 @@ QHash<int, QByteArray> ListListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::List), "list" },
+        { int(Role::ListUri), "listUri" },
+        { int(Role::ListName), "listName" },
         { int(Role::ListCreator), "listCreator" },
         { int(Role::ListBlockedUri), "listBlockedUri" },
         { int(Role::ListMuted), "listMuted" },

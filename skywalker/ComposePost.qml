@@ -13,9 +13,14 @@ Page {
     property list<string> images: initialImage ? [initialImage] : []
     property list<string> altTexts: initialImage ? [""] : []
     property bool pickingImage: false
+
+    // Reply restrictions
     property bool restrictReply: false
     property bool allowReplyMentioned: false
     property bool allowReplyFollowing: false
+    property list<int> allowListIndexes: [0, 0, 0]
+    property list<bool> allowLists: [false, false, false]
+    property int restrictionsListModelId: -1
 
     // Reply-to
     property basicprofile replyToAuthor
@@ -938,16 +943,34 @@ Page {
     }
 
     function addReplyRestrictions() {
+        if (restrictionsListModelId < 0) {
+            restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+            skywalker.getListList(restrictionsListModelId)
+        }
+
         let component = Qt.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(page, {
                 restrictReply: page.restrictReply,
                 allowMentioned: page.allowReplyMentioned,
-                allowFollowing: page.allowReplyFollowing
+                allowFollowing: page.allowReplyFollowing,
+                allowList1: page.allowLists[0],
+                allowList2: page.allowLists[1],
+                allowList3: page.allowLists[2],
+                allowList1Index: page.allowListIndexes[0],
+                allowList2Index: page.allowListIndexes[1],
+                allowList3Index: page.allowListIndexes[2],
+                listModelId: page.restrictionsListModelId
         })
         restrictionsPage.onAccepted.connect(() => {
                 page.restrictReply = restrictionsPage.restrictReply
                 page.allowReplyMentioned = restrictionsPage.allowMentioned
                 page.allowReplyFollowing = restrictionsPage.allowFollowing
+                page.allowLists[0] = restrictionsPage.allowList1
+                page.allowLists[1] = restrictionsPage.allowList2
+                page.allowLists[2] = restrictionsPage.allowList3
+                page.allowListIndexes[0] = restrictionsPage.allowList1Index
+                page.allowListIndexes[1] = restrictionsPage.allowList2Index
+                page.allowListIndexes[2] = restrictionsPage.allowList3Index
                 restrictionsPage.destroy()
         })
         restrictionsPage.onRejected.connect(() => restrictionsPage.destroy())
@@ -992,6 +1015,9 @@ Page {
 
     Component.onDestruction: {
         page.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
+
+        if (restrictionsListModelId >= 0)
+            skywalker.removeListListModel(restrictionsListModelId)
     }
 
     Component.onCompleted: {
