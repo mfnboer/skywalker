@@ -1,3 +1,7 @@
+next
+====
+* Small caps font
+
 1.1
 ===
 * Bold, italic, cursive and other fonts for post composition

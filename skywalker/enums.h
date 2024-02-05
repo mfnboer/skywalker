@@ -178,6 +178,7 @@ public:
         FONT_ITALIC,
         FONT_STRIKETHROUGH,
         FONT_MONOSPACE,
+        FONT_SMALL_CAPS,
         FONT_CURSIVE,
         FONT_FULLWIDTH,
         FONT_BUBBLE,

@@ -28,6 +28,17 @@ bool UnicodeFonts::isDigit(QChar c)
     return (c >= '0' && c <= '9');
 }
 
+uint UnicodeFonts::convertToSmallCaps(QChar c)
+{
+    static const QString SMALL_CAPS = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ";
+
+    if (c < 'a' || c > 'z')
+        return 0;
+
+    const auto ch = SMALL_CAPS[c.unicode() - 'a'];
+    return ch.unicode();
+}
+
 uint UnicodeFonts::convertToFont(QChar c, FontType font)
 {
     static std::unordered_map<FontType, FontCodePoint> FONT_CODE_POINTS = {
@@ -45,6 +56,9 @@ uint UnicodeFonts::convertToFont(QChar c, FontType font)
 
     if (!isAlpha(c) && !isDigit(c))
         return 0;
+
+    if (font == QEnums::FONT_SMALL_CAPS)
+        return convertToSmallCaps(c);
 
     auto it = FONT_CODE_POINTS.find(font);
     Q_ASSERT(it != FONT_CODE_POINTS.end());
