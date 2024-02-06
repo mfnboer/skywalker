@@ -18,7 +18,7 @@ Page {
     property bool restrictReply: false
     property bool allowReplyMentioned: false
     property bool allowReplyFollowing: false
-    property list<int> allowListIndexes: [0, 0, 0]
+    property list<int> allowListIndexes: [0, 1, 2]
     property list<bool> allowLists: [false, false, false]
     property int restrictionsListModelId: -1
 
@@ -173,22 +173,35 @@ Page {
                     if (!restrictReply)
                         return qsTr("Everyone can reply")
 
-                    let restrictedListText = ""
+                    let restrictionList = []
 
-                    if (allowReplyMentioned)
-                        restrictedListText = qsTr("mentioned")
+                    if (allowReplyMentioned && allowReplyFollowing)
+                        restrictionList.push(qsTr("mentioned and followed users"))
+                    else if (allowReplyMentioned)
+                        restrictionList.push(qsTr("mentioned users"))
+                    else if (allowReplyFollowing)
+                        restrictionList.push(qsTr("followed users"))
 
-                    if (allowReplyFollowing) {
-                        if (restrictedListText)
-                            restrictedListText += qsTr(" and ")
+                    let listNames = []
 
-                        restrictedListText += qsTr("followed")
+                    for (let i = 0; i < allowLists.length; ++i) {
+                        if (allowLists[i]) {
+                            let model = skywalker.getListListModel(restrictionsListModelId)
+                            const listView = model.getEntry(allowListIndexes[i])
+                            listNames.push(`<b>${listView.name}</b>`)
+                        }
                     }
 
-                    if (restrictedListText)
-                        return qsTr(`Only ${restrictedListText} users can reply`)
+                    if (listNames.length > 0) {
+                        const names = guiSettings.toWordSequence(listNames)
+                        restrictionList.push(qsTr(`members of ${names}`))
+                    }
 
-                    return qsTr("Replies disabled")
+                    if (restrictionList.length === 0)
+                        return qsTr("Replies disabled")
+
+                    const restrictedListText = guiSettings.toWordSequence(restrictionList)
+                    return qsTr(`Only ${restrictedListText} can reply`)
                 }
             }
 
@@ -953,24 +966,16 @@ Page {
                 restrictReply: page.restrictReply,
                 allowMentioned: page.allowReplyMentioned,
                 allowFollowing: page.allowReplyFollowing,
-                allowList1: page.allowLists[0],
-                allowList2: page.allowLists[1],
-                allowList3: page.allowLists[2],
-                allowList1Index: page.allowListIndexes[0],
-                allowList2Index: page.allowListIndexes[1],
-                allowList3Index: page.allowListIndexes[2],
+                allowLists: page.allowLists,
+                allowListIndexes: page.allowListIndexes,
                 listModelId: page.restrictionsListModelId
         })
         restrictionsPage.onAccepted.connect(() => {
                 page.restrictReply = restrictionsPage.restrictReply
                 page.allowReplyMentioned = restrictionsPage.allowMentioned
                 page.allowReplyFollowing = restrictionsPage.allowFollowing
-                page.allowLists[0] = restrictionsPage.allowList1
-                page.allowLists[1] = restrictionsPage.allowList2
-                page.allowLists[2] = restrictionsPage.allowList3
-                page.allowListIndexes[0] = restrictionsPage.allowList1Index
-                page.allowListIndexes[1] = restrictionsPage.allowList2Index
-                page.allowListIndexes[2] = restrictionsPage.allowList3Index
+                page.allowLists = restrictionsPage.allowLists
+                page.allowListIndexes = restrictionsPage.allowListIndexes
                 restrictionsPage.destroy()
         })
         restrictionsPage.onRejected.connect(() => restrictionsPage.destroy())

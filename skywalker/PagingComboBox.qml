@@ -7,6 +7,7 @@ ComboBox {
     required property bool inProgress
     property var bottomOvershootFun: null
     property int initialIndex: 0
+    property color backgroundColor: Material.dialogColor
 
     id: control
 
@@ -28,6 +29,15 @@ ComboBox {
             color: Material.dialogColor
             radius: 2
         }
+    }
+
+    background: Rectangle {
+        implicitWidth: 140
+        implicitHeight: 40
+        color: backgroundColor
+        border.color: contentItem.color
+        border.width: 2
+        radius: 2
     }
 
     onCountChanged: {

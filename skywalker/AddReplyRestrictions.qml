@@ -7,20 +7,55 @@ Dialog {
     required property bool restrictReply
     required property bool allowMentioned
     required property bool allowFollowing
-    required property bool allowList1
-    required property int allowList1Index
-    required property bool allowList2
-    required property int allowList2Index
-    required property bool allowList3
-    required property int allowList3Index
+    required property list<bool> allowLists
+    required property list<int> allowListIndexes
     required property int listModelId
+    property list<bool> duplicateList: [false, false, false]
+    property list<var> comboBoxList: [null, null, null]
 
+    id: restrictionDialog
     width: parent.width
     contentHeight: restrictionColumn.height
     title: qsTr("Who can reply?")
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
+
+    onAllowListsChanged: {
+        allowLists.forEach((allow) => {
+                            if (allow)
+                                restrictReply = true
+                        })
+
+        checkUniqueLists()
+    }
+
+    onAllowListIndexesChanged: checkUniqueLists()
+
+    function checkUniqueLists() {
+        let duplicates = false
+        let lists = []
+        duplicateList = [false, false, false]
+
+        for (let i = 0; i < allowLists.length; ++i) {
+            if (allowLists[i]) {
+                const index = allowListIndexes[i]
+
+                if (lists.includes(index)) {
+                    duplicateList[i] = true
+                    duplicates = true
+                    continue
+                }
+
+                lists.push(index)
+            }
+        }
+
+        let okButton = standardButton(Dialog.Ok)
+
+        if (okButton)
+            okButton.enabled = !duplicates
+    }
 
     Column {
         id: restrictionColumn
@@ -35,23 +70,19 @@ Dialog {
                 if (checked) {
                     allowMentioned = false
                     allowFollowing = false
-                    allowList1 = false
-                    allowList2 = false
-                    allowList3 = false
+                    allowLists = [false, false, false]
                 }
             }
         }
         CheckBox {
-            checked: restrictReply && !allowMentioned && !allowFollowing && !allowList1 && !allowList2 && !allowList3
+            checked: restrictReply && !allowMentioned && !allowFollowing && !allowLists[0] && !allowLists[1] && !allowLists[2]
             text: qsTr("Nobody")
             onCheckedChanged: {
                 if (checked) {
                     restrictReply = true
                     allowMentioned = false
                     allowFollowing = false
-                    allowList1 = false
-                    allowList2 = false
-                    allowList3 = false
+                    allowLists = [false, false, false]
                 }
             }
         }
@@ -75,95 +106,47 @@ Dialog {
                     restrictReply = true
             }
         }
-        Row {
+
+        Repeater {
+            property alias restrictReply: restrictionDialog.restrictReply
+
             width: parent.width
-            visible: list1.count > 0
+            model: allowLists
 
-            CheckBox {
-                id: allowList1CheckBox
-                checked: allowList1
-                text: qsTr("Allow users from list:")
-                onCheckStateChanged: {
-                    allowList1 = checked
+            Row {
+                required property int index
 
-                    if (checked)
-                        restrictReply = true
+                width: parent.width
+                visible: listComboBox.count > index
+
+                CheckBox {
+                    id: allowListCheckBox
+                    checked: allowLists[parent.index]
+                    text: qsTr("Allow users from list:")
+                    onCheckStateChanged: allowLists[parent.index] = checked
+                }
+                PagingComboBox {
+                    id: listComboBox
+                    width: parent.width - allowListCheckBox.width
+                    height: allowListCheckBox.height
+                    model: skywalker.getListListModel(listModelId)
+                    valueRole: "listUri"
+                    textRole: "listName"
+                    inProgress: skywalker.getListListInProgress
+                    bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
+                    initialIndex: allowListIndexes[parent.index]
+                    backgroundColor: duplicateList[parent.index] ? guiSettings.errorColor : Material.dialogColor
+                    enabled: allowLists[parent.index]
+
+                    onCurrentIndexChanged: allowListIndexes[parent.index] = currentIndex
+
+                    Component.onCompleted: comboBoxList[parent.index] = listComboBox
                 }
             }
-            PagingComboBox {
-                id: list1
-                width: parent.width - allowList1CheckBox.width
-                height: allowList1CheckBox.height
-                model: skywalker.getListListModel(listModelId)
-                valueRole: "listUri"
-                textRole: "listName"
-                inProgress: skywalker.getListListInProgress
-                bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
-                initialIndex: allowList1Index
-                enabled: allowList1
-
-                onCurrentIndexChanged: allowList1Index = currentIndex
-            }
         }
-        Row {
-            width: parent.width
-            visible: list2.count > 1
+    }
 
-            CheckBox {
-                id: allowList2CheckBox
-                checked: allowList2
-                text: qsTr("Allow users from list:")
-                onCheckStateChanged: {
-                    allowList2 = checked
-
-                    if (checked)
-                        restrictReply = true
-                }
-            }
-            PagingComboBox {
-                id: list2
-                width: parent.width - allowList1CheckBox.width
-                height: allowList1CheckBox.height
-                model: skywalker.getListListModel(listModelId)
-                valueRole: "listUri"
-                textRole: "listName"
-                inProgress: skywalker.getListListInProgress
-                bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
-                initialIndex: allowList2Index
-                enabled: allowList2
-
-                onCurrentIndexChanged: allowList2Index = currentIndex
-            }
-        }
-        Row {
-            width: parent.width
-            visible: list3.count > 2
-
-            CheckBox {
-                id: allowList3CheckBox
-                checked: allowList3
-                text: qsTr("Allow users from list:")
-                onCheckStateChanged: {
-                    allowList3 = checked
-
-                    if (checked)
-                        restrictReply = true
-                }
-            }
-            PagingComboBox {
-                id: list3
-                width: parent.width - allowList1CheckBox.width
-                height: allowList1CheckBox.height
-                model: skywalker.getListListModel(listModelId)
-                valueRole: "listUri"
-                textRole: "listName"
-                inProgress: skywalker.getListListInProgress
-                bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
-                initialIndex: allowList3Index
-                enabled: allowList3
-
-                onCurrentIndexChanged: allowList3Index = currentIndex
-            }
-        }
+    GuiSettings {
+        id: guiSettings
     }
 }
