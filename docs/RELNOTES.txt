@@ -1,7 +1,7 @@
 next
 ====
+* Use lists as reply restriction
 * Small caps font
-* List rules in threadGate
 
 1.1
 ===
