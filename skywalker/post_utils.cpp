@@ -170,14 +170,14 @@ void PostUtils::post(const QString& text, const LinkCard* card,
         });
 }
 
-void PostUtils::addThreadgate(const QString& uri, bool allowMention, bool allowFollowing)
+void PostUtils::addThreadgate(const QString& uri, bool allowMention, bool allowFollowing, const QStringList& allowLists)
 {
     qDebug() << "Add threadgate uri:" << uri << "mention:" << allowMention << "following:" << allowFollowing;
 
     if (!postMaster())
         return;
 
-    mPostMaster->addThreadgate(uri, allowMention, allowFollowing,
+    mPostMaster->addThreadgate(uri, allowMention, allowFollowing, allowLists,
         [this, presence=getPresence()]{
             if (!presence)
                 return;

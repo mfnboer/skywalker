@@ -37,7 +37,7 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid);
-    Q_INVOKABLE void addThreadgate(const QString& uri, bool allowMention, bool allowFollowing);
+    Q_INVOKABLE void addThreadgate(const QString& uri, bool allowMention, bool allowFollowing, const QStringList& allowLists);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void like(const QString& uri, const QString& cid);

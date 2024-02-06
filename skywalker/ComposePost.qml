@@ -706,7 +706,7 @@ Page {
 
         onPostOk: (uri, cid) => {
             if (page.restrictReply)
-                postUtils.addThreadgate(uri, page.allowReplyMentioned, page.allowReplyFollowing)
+                postUtils.addThreadgate(uri, page.allowReplyMentioned, page.allowReplyFollowing, page.getReplyRestrictionListUris())
             else
                 postDone()
         }
@@ -980,6 +980,20 @@ Page {
         })
         restrictionsPage.onRejected.connect(() => restrictionsPage.destroy())
         restrictionsPage.open()
+    }
+
+    function getReplyRestrictionListUris() {
+        let uris = []
+
+        for (let i = 0; i < allowLists.length; ++i) {
+            if (allowLists[i]) {
+                let model = skywalker.getListListModel(restrictionsListModelId)
+                const listView = model.getEntry(allowListIndexes[i])
+                uris.push(listView.uri)
+            }
+        }
+
+        return uris
     }
 
     function getQuoteUri() {

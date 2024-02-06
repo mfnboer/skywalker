@@ -1,6 +1,7 @@
 next
 ====
 * Small caps font
+* List rules in threadGate
 
 1.1
 ===
