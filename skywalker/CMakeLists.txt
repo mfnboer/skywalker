@@ -270,6 +270,7 @@ qt_add_qml_module(libskywalker
         SOURCES unicode_fonts.h
         SOURCES unicode_fonts.cpp
         QML_FILES PagingComboBox.qml
+        QML_FILES AddContentWarning.qml
 )
 
 if (NOT ANDROID)

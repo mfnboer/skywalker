@@ -22,6 +22,12 @@ Page {
     property list<bool> allowLists: [false, false, false]
     property int restrictionsListModelId: -1
 
+    // Content warnings
+    property bool cwSuggestive: false
+    property bool cwNudity: false
+    property bool cwPorn: false
+    property bool cwGore: false
+
     // Reply-to
     property basicprofile replyToAuthor
     property string replyToPostUri: ""
@@ -90,12 +96,13 @@ Page {
 
                 const qUri = getQuoteUri()
                 const qCid = getQuoteCid()
+                const labels = getContentLabels()
 
                 if (linkCard.card) {
                     postUtils.post(postText.text, linkCard.card,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
-                                   qUri, qCid)
+                                   qUri, qCid, labels)
                 } else if (gifAttachment.gif) {
                     tenor.registerShare(gifAttachment.gif)
 
@@ -110,12 +117,12 @@ Page {
                     postUtils.post(postText.text, gifCard,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
-                                   qUri, qCid)
+                                   qUri, qCid, labels)
                 } else {
                     postUtils.post(postText.text, images, altTexts,
                                    replyToPostUri, replyToPostCid,
                                    replyRootPostUri, replyRootPostCid,
-                                   qUri, qCid);
+                                   qUri, qCid, labels);
                 }
             }
         }
@@ -202,7 +209,7 @@ Page {
 
                     const restrictedListText = guiSettings.toWordSequence(restrictionList)
                     return qsTr(`Only ${restrictedListText} can reply`)
-                }
+                }   
             }
 
             MouseArea {
@@ -324,6 +331,26 @@ Page {
             Component.onCompleted: {
                 fontSelector.contentItem.color = guiSettings.buttonColor
                 fontSelector.indicator.color = guiSettings.buttonColor
+            }
+        }
+
+        SvgImage {
+            id: contentWarningIcon
+            anchors.left: fontSelector.right
+            anchors.leftMargin: 15
+            y: height + 5 + restrictionRow.height + footerSeparator.height
+            width: 34
+            height: 34
+            color: hasContentWarning() ? guiSettings.errorColor : guiSettings.linkColor
+            svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
+            visible: hasImageContent()
+
+            MouseArea {
+                y: -parent.height
+                width: parent.width
+                height: parent.height
+                enabled: hasImageContent()
+                onClicked: page.addContentWarning()
             }
         }
 
@@ -994,6 +1021,53 @@ Page {
         }
 
         return uris
+    }
+
+    function addContentWarning() {
+        let component = Qt.createComponent("AddContentWarning.qml")
+        let cwPage = component.createObject(page, {
+                suggestive: cwSuggestive,
+                nudity: cwNudity,
+                porn: cwPorn,
+                gore: cwGore
+        })
+        cwPage.onAccepted.connect(() => {
+                cwSuggestive = cwPage.suggestive
+                cwNudity = cwPage.nudity
+                cwPorn = cwPage.porn
+                cwGore = cwPage.gore
+                cwPage.destroy()
+        })
+        cwPage.onRejected.connect(() => cwPage.destroy())
+        cwPage.open()
+    }
+
+    function hasImageContent() {
+        return gifAttachment.gif ||
+                (linkCard.card && linkCard.card.thumb) ||
+                page.images.length > 0
+    }
+
+    function hasContentWarning() {
+        return hasImageContent() && (cwSuggestive || cwNudity || cwPorn || cwGore)
+    }
+
+    function getContentLabels() {
+        let labels = []
+
+        if (!hasImageContent())
+            return labels
+
+        if (cwSuggestive)
+            labels.push("suggestive")
+        if (cwNudity)
+            labels.push("nudity")
+        if (cwPorn)
+            labels.push("porn")
+        if (cwGore)
+            labels.push("gore")
+
+        return labels
     }
 
     function getQuoteUri() {

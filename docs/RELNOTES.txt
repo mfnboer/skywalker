@@ -1,6 +1,7 @@
 next
 ====
 * Use lists as reply restriction
+* Set content warning on a post
 * Small caps font
 
 1.1

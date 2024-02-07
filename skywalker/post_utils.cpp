@@ -82,7 +82,8 @@ static ATProto::AppBskyFeed::PostReplyRef::Ptr createReplyRef(
 void PostUtils::post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
-                     const QString& quoteUri, const QString& quoteCid)
+                     const QString& quoteUri, const QString& quoteCid,
+                     const QStringList& labels)
 {
     qDebug() << "Posting:" << text;
 
@@ -94,15 +95,15 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
     if (replyToUri.isEmpty())
     {
         postMaster()->createPost(text, nullptr,
-            [this, presence=getPresence(), imageFileNames, altTexts, quoteUri, quoteCid](auto post){
+            [this, presence=getPresence(), imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
                 if (presence)
-                    continuePost(imageFileNames, altTexts, post, quoteUri, quoteCid);
+                    continuePost(imageFileNames, altTexts, post, quoteUri, quoteCid, labels);
             });
         return;
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
+        [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels]
         {
             if (!presence)
                 return;
@@ -110,9 +111,9 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
             postMaster()->createPost(text, std::move(replyRef),
-                [this, presence, imageFileNames, altTexts, quoteUri, quoteCid](auto post){
+                [this, presence, imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
                     if (presence)
-                        continuePost(imageFileNames, altTexts , post, quoteUri, quoteCid);
+                        continuePost(imageFileNames, altTexts , post, quoteUri, quoteCid, labels);
                 });
         },
         [this, presence=getPresence()] (const QString& error, const QString& msg){
@@ -127,7 +128,8 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
 void PostUtils::post(const QString& text, const LinkCard* card,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
-                     const QString& quoteUri, const QString& quoteCid)
+                     const QString& quoteUri, const QString& quoteCid,
+                     const QStringList& labels)
 {
     Q_ASSERT(card);
     qDebug() << "Posting:" << text;
@@ -140,15 +142,15 @@ void PostUtils::post(const QString& text, const LinkCard* card,
     if (replyToUri.isEmpty())
     {
         postMaster()->createPost(text, nullptr,
-            [this, presence=getPresence(), card, quoteUri, quoteCid](auto post){
+            [this, presence=getPresence(), card, quoteUri, quoteCid, labels](auto post){
                 if (presence)
-                    continuePost(card, post, quoteUri, quoteCid);
+                    continuePost(card, post, quoteUri, quoteCid, labels);
             });
         return;
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid]
+        [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels]
         {
             if (!presence)
                 return;
@@ -156,9 +158,9 @@ void PostUtils::post(const QString& text, const LinkCard* card,
             auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
             postMaster()->createPost(text, std::move(replyRef),
-                [this, presence, card, quoteUri, quoteCid](auto post){
+                [this, presence, card, quoteUri, quoteCid, labels](auto post){
                     if (presence)
-                        continuePost(card, post, quoteUri, quoteCid);
+                        continuePost(card, post, quoteUri, quoteCid, labels);
                 });
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -194,8 +196,10 @@ void PostUtils::addThreadgate(const QString& uri, bool allowMention, bool allowF
 }
 
 void PostUtils::continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
-                             const QString& quoteUri, const QString& quoteCid)
+                             const QString& quoteUri, const QString& quoteCid, const QStringList& labels)
 {
+    ATProto::PostMaster::addLabelsToPost(*post, labels);
+
     if (quoteUri.isEmpty())
     {
         continuePost(imageFileNames, altTexts, post);
@@ -260,8 +264,10 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
 }
 
 void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
-                             const QString& quoteUri, const QString& quoteCid)
+                             const QString& quoteUri, const QString& quoteCid, const QStringList& labels)
 {
+    ATProto::PostMaster::addLabelsToPost(*post, labels);
+
     if (quoteUri.isEmpty())
     {
         continuePost(card, post);
