@@ -49,13 +49,13 @@ BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* pro
 
 BasicProfile::BasicProfile(const QString& did, const QString& handle, const QString& displayName,
                            const QString& avatarUrl, const ProfileViewerState& viewer,
-                           const QStringList& labelTexts) :
+                           const ContentLabelList& contentLabels) :
     mDid(did),
     mHandle(handle),
     mDisplayName(displayName),
     mAvatarUrl(avatarUrl),
     mViewer(viewer),
-    mLabelTexts(labelTexts)
+    mContentLabels(contentLabels)
 {
 }
 
@@ -173,7 +173,7 @@ ProfileViewerState BasicProfile::getViewer() const
     return mViewer;
 }
 
-QStringList BasicProfile::getLabelTexts() const
+ContentLabelList BasicProfile::getContentLabels() const
 {
     const ContentFilter::LabelList* labels = nullptr;
 
@@ -185,9 +185,9 @@ QStringList BasicProfile::getLabelTexts() const
         labels = &mProfileDetailedView->mLabels;
 
     if (!labels)
-        return mLabelTexts;
+        return mContentLabels;
 
-    return ContentFilter::getLabelTexts(*labels);
+    return ContentFilter::getContentLabels(*labels);
 }
 
 bool BasicProfile::isVolatile() const
@@ -198,7 +198,7 @@ bool BasicProfile::isVolatile() const
 BasicProfile BasicProfile::nonVolatileCopy() const
 {
     BasicProfile profile(getDid(), getHandle(), getDisplayName(),
-                         getAvatarUrl(), getViewer(), getLabelTexts());
+                         getAvatarUrl(), getViewer(), getContentLabels());
     return profile;
 }
 
@@ -241,8 +241,8 @@ Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& pr
 
 Profile::Profile(const QString& did, const QString& handle, const QString& displayName,
                  const QString& avatarUrl, const ProfileViewerState& viewer,
-                 const QStringList& labelTexts, const QString& description) :
-    BasicProfile(did, handle, displayName, avatarUrl, viewer, labelTexts),
+                 const ContentLabelList& contentLabels, const QString& description) :
+    BasicProfile(did, handle, displayName, avatarUrl, viewer, contentLabels),
     mDescription(description)
 {
 }
@@ -261,7 +261,7 @@ QString Profile::getDescription() const
 Profile Profile::nonVolatileCopy() const
 {
     Profile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl(),
-                    getViewer(), getLabelTexts(), getDescription());
+                    getViewer(), getContentLabels(), getDescription());
     return profile;
 }
 
@@ -273,9 +273,9 @@ DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetaile
 
 DetailedProfile:: DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
                 const QString& avatarUrl, const ProfileViewerState& viewer,
-                const QStringList& labelTexts, const QString& description,
+                const ContentLabelList& contentLabels, const QString& description,
                 const QString& banner, int followersCount, int followsCount, int postsCount) :
-    Profile(did, handle, displayName, avatarUrl, viewer, labelTexts, description),
+    Profile(did, handle, displayName, avatarUrl, viewer, contentLabels, description),
     mBanner(banner),
     mFollowersCount(followersCount),
     mFollowsCount(followsCount),
@@ -306,7 +306,7 @@ int DetailedProfile::getPostsCount() const
 DetailedProfile DetailedProfile::nonVolatileCopy() const
 {
     DetailedProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl(),
-                            getViewer(), getLabelTexts(), getDescription(), getBanner(),
+                            getViewer(), getContentLabels(), getDescription(), getBanner(),
                             getFollowersCount(), getFollowsCount(), getPostsCount());
     return profile;
 }

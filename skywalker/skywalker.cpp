@@ -2051,15 +2051,15 @@ void Skywalker::copyPostTextToClipboard(const QString& text)
     emit statusMessage(tr("Post text copied to clipboard"));
 }
 
-QEnums::ContentVisibility Skywalker::getContentVisibility(const QStringList& labelTexts) const
+QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels) const
 {
-    const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(labelTexts);
+    const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(contentLabels);
     return visibility;
 }
 
-QString Skywalker::getContentWarning(const QStringList& labelTexts) const
+QString Skywalker::getContentWarning(const ContentLabelList& contentLabels) const
 {
-    const auto [_, warning] = mContentFilter.getVisibilityAndWarning(labelTexts);
+    const auto [_, warning] = mContentFilter.getVisibilityAndWarning(contentLabels);
     return warning;
 }
 

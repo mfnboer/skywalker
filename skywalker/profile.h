@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "content_label.h"
 #include "image_view.h"
 #include "list_view_include.h"
 #include "shared_image_provider.h"
@@ -58,7 +59,7 @@ class BasicProfile
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
-    Q_PROPERTY(QStringList labels READ getLabelTexts FINAL)
+    Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
     QML_VALUE_TYPE(basicprofile)
 
 public:
@@ -68,7 +69,7 @@ public:
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
     BasicProfile(const QString& did, const QString& handle, const QString& displayName,
                  const QString& avatarUrl, const ProfileViewerState& viewer = {},
-                 const QStringList& labelTexts = {});
+                 const ContentLabelList& contentLabels = {});
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
     Q_INVOKABLE bool isNull() const;
@@ -79,7 +80,7 @@ public:
     QString getAvatarUrl() const;
     ImageView getImageView() const;
     ProfileViewerState getViewer() const;
-    QStringList getLabelTexts() const;
+    ContentLabelList getContentLabels() const;
 
     Q_INVOKABLE bool hasInvalidHandle() const;
 
@@ -110,7 +111,7 @@ private:
     QString mAvatarUrl;
     SharedImageSource::SharedPtr mAvatarSource;
     ProfileViewerState mViewer;
-    QStringList mLabelTexts;
+    ContentLabelList mContentLabels;
 };
 
 using BasicProfileList = QList<BasicProfile>;
@@ -129,7 +130,7 @@ public:
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
     Profile(const QString& did, const QString& handle, const QString& displayName,
             const QString& avatarUrl, const ProfileViewerState& viewer,
-            const QStringList& labelTexts, const QString& description);
+            const ContentLabelList& contentLabels, const QString& description);
 
     QString getDescription() const;
 
@@ -158,7 +159,7 @@ public:
     explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
     DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
                     const QString& avatarUrl, const ProfileViewerState& viewer,
-                    const QStringList& labelTexts, const QString& description,
+                    const ContentLabelList& contentLabels, const QString& description,
                     const QString& banner, int followersCount, int followsCount, int postsCount);
 
     QString getBanner() const;

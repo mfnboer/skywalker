@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuick.Controls
+import skywalker
 
 ScrollView {
-    required property list<string> contentLabels
-    readonly property list<string> nonSystemLabels: filterSystemLabels()
+    required property list<contentlabel> contentLabels
+    readonly property list<contentlabel> nonSystemLabels: filterSystemLabels()
 
     width: Math.min(parent.width, labelRow.width)
     height: labelRow.height
@@ -20,12 +21,12 @@ ScrollView {
             model: nonSystemLabels
 
             SkyLabel {
-                required property string modelData
+                required property contentlabel modelData
                 backgroundColor: guiSettings.contentLabelColor
                 font.pointSize: guiSettings.scaledFont(5/8)
                 font.italic: true
                 color: guiSettings.textColor
-                text: modelData
+                text: modelData.text
             }
         }
     }
@@ -38,7 +39,7 @@ ScrollView {
         let labels = []
 
         for (let i = 0; i < contentLabels.length; ++i) {
-            if (!contentLabels[i].startsWith("!"))
+            if (!contentLabels[i].isSystemLabel())
                 labels.push(contentLabels[i])
         }
 

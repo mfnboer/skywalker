@@ -22,7 +22,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
-    Q_PROPERTY(QStringList contentLabels READ getLabelTexts FINAL)
+    Q_PROPERTY(ContentLabelList contentLabels READ getContentLabels FINAL)
     Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility FINAL)
     Q_PROPERTY(QString contentWarning READ getContentWarning FINAL)
     Q_PROPERTY(QEnums::MutedPostReason mutedReason READ getMutedReason FINAL)
@@ -51,7 +51,7 @@ public:
     QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
-    QStringList getLabelTexts() const;
+    ContentLabelList getContentLabels() const;
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
     std::vector<QString> getHashtags() const override;
     QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }

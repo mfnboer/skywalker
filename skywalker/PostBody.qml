@@ -7,7 +7,7 @@ Column {
     required property string postText
     required property list<imageview> postImages
     required property date postDateTime
-    required property list<string> postContentLabels
+    required property list<contentlabel> postContentLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
     required property int postMuted // QEnums::MutedPostReason

@@ -40,7 +40,7 @@ Rectangle {
     required property int postReplyRestriction // QEnums::ReplyRestriction flags
     required property bool postBookmarked
     required property bool postBookmarkNotFound
-    required property list<string> postLabels
+    required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
     required property int postMutedReason // QEnums::MutedPostReason

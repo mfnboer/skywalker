@@ -158,12 +158,12 @@ QVariant RecordView::getExternal() const
     return QVariant::fromValue(ExternalView(external.get()));
 }
 
-QStringList RecordView::getLabelTexts() const
+ContentLabelList RecordView::getContentLabels() const
 {
     if (!mRecord)
         return {};
 
-    return ContentFilter::getLabelTexts(mRecord->mLabels);
+    return ContentFilter::getContentLabels(mRecord->mLabels);
 }
 
 const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& RecordView::getLabels() const

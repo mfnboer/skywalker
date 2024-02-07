@@ -227,7 +227,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostBookmarkNotFound:
         return post.isBookmarkNotFound();
     case Role::PostLabels:
-        return ContentFilter::getLabelTexts(post.getLabels());
+        return QVariant::fromValue(ContentFilter::getContentLabels(post.getLabels()));
     case Role::PostContentVisibility:
     {
         const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabels());

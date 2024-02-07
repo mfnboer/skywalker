@@ -123,19 +123,26 @@ void ContentFilter::initLabelGroupMap()
     }
 }
 
-QStringList ContentFilter::getLabelTexts(const LabelList& labels)
+ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
 {
-    QStringList labelTexts;
+    ContentLabelList contentLabels;
 
     for (const auto& label : labels)
     {
+        const ContentLabel contentLabel(label->mSrc, label->mVal, label->mCreatedAt);
+
         if (!label->mNeg)
-            labelTexts.append(label->mVal);
+        {
+            contentLabels.append(contentLabel);
+        }
         else
-            labelTexts.removeAll(label->mVal);
+        {
+            contentLabels.removeIf([&contentLabel](const ContentLabel& l)
+                                   { return l.getText() == contentLabel.getText(); });
+        }
     }
 
-    return labelTexts;
+    return contentLabels;
 }
 
 QEnums::ContentVisibility ContentFilter::getGroupVisibility(const QString& groupId) const
@@ -186,24 +193,24 @@ QString ContentFilter::getWarning(const QString& label) const
 
 std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const
 {
-    const auto labelTexts = getLabelTexts(labels);
-    return getVisibilityAndWarning(labelTexts);
+    const auto contentLabels = getContentLabels(labels);
+    return getVisibilityAndWarning(contentLabels);
 }
 
-std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const QStringList& labelTexts) const
+std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const ContentLabelList& contentLabels) const
 {
     QEnums::ContentVisibility visibility = QEnums::CONTENT_VISIBILITY_SHOW;
     QString warning;
 
-    for (const auto& labelText : labelTexts)
+    for (const auto& label : contentLabels)
     {
-        const auto v = getVisibility(labelText);
+        const auto v = getVisibility(label.getText());
 
         if (v <= visibility)
             continue;
 
         visibility = v;
-        warning = getWarning(labelText);
+        warning = getWarning(label.getText());
     }
 
     return {visibility, warning};

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "content_label.h"
 #include "enums.h"
 #include <atproto/lib/user_preferences.h>
 #include <atproto/lib/lexicon/com_atproto_label.h>
@@ -42,7 +43,8 @@ public:
     static const std::vector<ContentGroup> CONTENT_GROUP_LIST;
     static const ContentGroupMap& getContentGroups();
 
-    static QStringList getLabelTexts(const LabelList& labels);
+    // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
+    static ContentLabelList getContentLabels(const LabelList& labels);
 
     explicit ContentFilter(const ATProto::UserPreferences& userPreferences);
 
@@ -51,7 +53,7 @@ public:
     QString getWarning(const QString& label) const;
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const;
-    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const QStringList& labelTexts) const;
+    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
 
 private:
     static ContentGroupMap CONTENT_GROUPS;

@@ -20,7 +20,7 @@ Rectangle {
     required property var notificationReasonPostRecordWithMedia // record_with_media_view
     required property date notificationReasonPostTimestamp
     required property bool notificationReasonPostNotFound
-    required property list<string> notificationReasonPostLabels
+    required property list<contentlabel> notificationReasonPostLabels
     required property bool notificationReasonPostLocallyDeleted
     required property date notificationTimestamp
     required property bool notificationIsRead
@@ -44,7 +44,7 @@ Rectangle {
     required property int notificationPostReplyCount
     required property bool notificationPostBookmarked
     required property bool notificationPostNotFound
-    required property list<string> notificationPostLabels
+    required property list<contentlabel> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
     required property int notificationPostMutedReason // QEnums::MutedPostReason
