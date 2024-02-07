@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "author_list_model.h"
+#include "author_cache.h"
 
 namespace Skywalker {
 
@@ -98,6 +99,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listIte
     for (const auto& item : listItems)
     {
         ListEntry entry(Profile(item->mSubject.get()), item->mUri);
+        AuthorCache::instance().put(entry.mProfile);
         mList.push_back(entry);
     }
 
@@ -110,6 +112,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listIte
 void AuthorListModel::prependAuthor(const Profile& author, const QString& listItemUri)
 {
     qDebug() << "Preprend author:" << author.getHandle();
+    AuthorCache::instance().put(author);
 
     beginInsertRows({}, 0, 0);
     mList.push_front(ListEntry(author, listItemUri));
@@ -153,7 +156,9 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
             continue;
         }
 
-        list.push_back(ListEntry(Profile(author.get())));
+        const ListEntry entry(Profile(author.get()));
+        AuthorCache::instance().put(entry.mProfile);
+        list.push_back(entry);
     }
 
     return list;
