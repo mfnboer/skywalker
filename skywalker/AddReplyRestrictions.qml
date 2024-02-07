@@ -11,7 +11,6 @@ Dialog {
     required property list<int> allowListIndexes
     required property int listModelId
     property list<bool> duplicateList: [false, false, false]
-    property list<var> comboBoxList: [null, null, null]
 
     id: restrictionDialog
     width: parent.width
@@ -57,91 +56,113 @@ Dialog {
             okButton.enabled = !duplicates
     }
 
-    Column {
-        id: restrictionColumn
-        width: parent.width
+    Flickable {
+        anchors.fill: parent
+        clip: true
+        contentWidth: parent.width
+        contentHeight: restrictionColumn.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
 
-        CheckBox {
-            checked: !restrictReply
-            text: qsTr("Everyone")
-            onCheckedChanged: {
-                restrictReply = !checked
-
-                if (checked) {
-                    allowMentioned = false
-                    allowFollowing = false
-                    allowLists = [false, false, false]
-                }
-            }
-        }
-        CheckBox {
-            checked: restrictReply && !allowMentioned && !allowFollowing && !allowLists[0] && !allowLists[1] && !allowLists[2]
-            text: qsTr("Nobody")
-            onCheckedChanged: {
-                if (checked) {
-                    restrictReply = true
-                    allowMentioned = false
-                    allowFollowing = false
-                    allowLists = [false, false, false]
-                }
-            }
-        }
-        CheckBox {
-            checked: allowMentioned
-            text: qsTr("Users mentioned in your post")
-            onCheckedChanged: {
-                allowMentioned = checked
-
-                if (checked)
-                    restrictReply = true
-            }
-        }
-        CheckBox {
-            checked: allowFollowing
-            text: qsTr("Users you follow")
-            onCheckStateChanged: {
-                allowFollowing = checked
-
-                if (checked)
-                    restrictReply = true
-            }
-        }
-
-        Repeater {
-            property alias restrictReply: restrictionDialog.restrictReply
-
+        Column {
+            id: restrictionColumn
             width: parent.width
-            model: allowLists
 
-            Row {
-                required property int index
+            CheckBox {
+                checked: !restrictReply
+                text: qsTr("Everyone")
+                onCheckedChanged: {
+                    restrictReply = !checked
 
+                    if (checked) {
+                        allowMentioned = false
+                        allowFollowing = false
+                        allowLists = [false, false, false]
+                    }
+                }
+            }
+            CheckBox {
+                checked: restrictReply && !allowMentioned && !allowFollowing && !allowLists[0] && !allowLists[1] && !allowLists[2]
+                text: qsTr("Nobody")
+                onCheckedChanged: {
+                    if (checked) {
+                        restrictReply = true
+                        allowMentioned = false
+                        allowFollowing = false
+                        allowLists = [false, false, false]
+                    }
+                }
+            }
+            CheckBox {
+                checked: allowMentioned
+                text: qsTr("Users mentioned in your post")
+                onCheckedChanged: {
+                    allowMentioned = checked
+
+                    if (checked)
+                        restrictReply = true
+                }
+            }
+            CheckBox {
+                checked: allowFollowing
+                text: qsTr("Users you follow")
+                onCheckStateChanged: {
+                    allowFollowing = checked
+
+                    if (checked)
+                        restrictReply = true
+                }
+            }
+
+            Repeater {
+                property alias restrictReply: restrictionDialog.restrictReply
+
+                id: listRestrictions
                 width: parent.width
-                visible: listComboBox.count > index
+                model: allowLists
 
-                CheckBox {
-                    id: allowListCheckBox
-                    checked: allowLists[parent.index]
-                    text: qsTr("Allow users from list:")
-                    onCheckStateChanged: allowLists[parent.index] = checked
+                function available() {
+                    const item = itemAt(0)
+                    return item && item.visible
                 }
-                PagingComboBox {
-                    id: listComboBox
-                    width: parent.width - allowListCheckBox.width
-                    height: allowListCheckBox.height
-                    model: skywalker.getListListModel(listModelId)
-                    valueRole: "listUri"
-                    textRole: "listName"
-                    inProgress: skywalker.getListListInProgress
-                    bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
-                    initialIndex: allowListIndexes[parent.index]
-                    backgroundColor: duplicateList[parent.index] ? guiSettings.errorColor : Material.dialogColor
-                    enabled: allowLists[parent.index]
 
-                    onCurrentIndexChanged: allowListIndexes[parent.index] = currentIndex
+                Row {
+                    required property int index
 
-                    Component.onCompleted: comboBoxList[parent.index] = listComboBox
+                    width: parent.width
+                    visible: listComboBox.count > index
+
+                    CheckBox {
+                        id: allowListCheckBox
+                        checked: allowLists[parent.index]
+                        text: qsTr("Users from list:")
+                        onCheckStateChanged: allowLists[parent.index] = checked
+                    }
+                    PagingComboBox {
+                        id: listComboBox
+                        width: parent.width - allowListCheckBox.width
+                        height: allowListCheckBox.height
+                        model: skywalker.getListListModel(listModelId)
+                        valueRole: "listUri"
+                        textRole: "listName"
+                        inProgress: skywalker.getListListInProgress
+                        bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
+                        initialIndex: allowListIndexes[parent.index]
+                        backgroundColor: duplicateList[parent.index] ? guiSettings.errorColor : Material.dialogColor
+                        enabled: allowLists[parent.index]
+
+                        onCurrentIndexChanged: allowListIndexes[parent.index] = currentIndex
+                    }
                 }
+            }
+
+            Text {
+                width: parent.width
+                color: guiSettings.textColor
+                wrapMode: Text.Wrap
+                font.italic: true
+                text: qsTr("User lists can also be used to restrict who can reply. You have no user lists at this moment.");
+                visible: listRestrictions.count === 0 || !listRestrictions.available()
             }
         }
     }
