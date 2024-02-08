@@ -341,7 +341,7 @@ Page {
             y: height + 5 + restrictionRow.height + footerSeparator.height
             width: 34
             height: 34
-            color: hasContentWarning() ? guiSettings.errorColor : guiSettings.linkColor
+            color: guiSettings.linkColor
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
             visible: hasImageContent()
 
@@ -1059,7 +1059,7 @@ Page {
             return labels
 
         if (cwSuggestive)
-            labels.push("suggestive")
+            labels.push("sexual")
         if (cwNudity)
             labels.push("nudity")
         if (cwPorn)

@@ -1170,6 +1170,10 @@ ApplicationWindow {
         userSettings.setLinkColor(guiSettings.linkColor)
     }
 
+    function getSkywalker() {
+        return skywalker
+    }
+
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)
         console.debug("Font pt:", Qt.application.font.pointSize)

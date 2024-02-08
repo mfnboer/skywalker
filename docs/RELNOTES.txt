@@ -2,6 +2,7 @@ next
 ====
 * Use lists as reply restriction
 * Set content warning on a post
+* Content label colors: grey = moderator, blue = user
 * Small caps font
 
 1.1

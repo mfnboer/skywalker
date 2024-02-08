@@ -16,7 +16,10 @@ class ProfileUtils : public WrappedSkywalker, public Presence
 public:
     explicit ProfileUtils(QObject* parent = nullptr);
 
+    Q_INVOKABLE void getHandle(const QString& did);
+
     // The token will be returned in the emitted signal
+    // atId is handle or did.
     Q_INVOKABLE void getProfileView(const QString& atId, const QString& token);
 
     // ImgSource must be a 'file://' or 'image://' reference.
@@ -25,6 +28,7 @@ public:
                                    const QString& bannerImgSource, bool updateBanner);
 
 signals:
+    void handle(QString handle, QString did);
     void profileViewOk(Profile profile, const QString& token);
     void profileViewFailed(QString error);
     void updateProfileProgress(QString msg);

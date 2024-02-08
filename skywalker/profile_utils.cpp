@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "profile_utils.h"
+#include "author_cache.h"
 #include "photo_picker.h"
 #include "skywalker.h"
 
@@ -36,6 +37,32 @@ ATProto::ProfileMaster* ProfileUtils::profileMaster()
     }
 
     return mProfileMaster.get();
+}
+
+void ProfileUtils::getHandle(const QString& did)
+{
+    const auto* profile = AuthorCache::instance().get(did);
+
+    if (profile)
+    {
+        emit handle(profile->getHandle(), did);
+        return;
+    }
+
+    if (!bskyClient())
+        return;
+
+    bskyClient()->getProfile(did,
+        [this, presence=getPresence()](auto profile){
+            if (!presence)
+                return;
+
+            AuthorCache::instance().put(BasicProfile(profile.get()));
+            emit handle(profile->mHandle, profile->mDid);
+        },
+        [](const QString& error, const QString& msg){
+            qDebug() << "getProfileView failed:" << error << " - " << msg;
+        });
 }
 
 void ProfileUtils::getProfileView(const QString& atId, const QString& token)

@@ -272,6 +272,7 @@ qt_add_qml_module(libskywalker
         QML_FILES PagingComboBox.qml
         QML_FILES AddContentWarning.qml
         SOURCES content_label.h
+        QML_FILES ContentLabelInfo.qml
 )
 
 if (NOT ANDROID)
