@@ -4,6 +4,7 @@ next
 * Set content warning on a post
 * Content label colors: grey = moderator, blue = user
 * Setting to require ALT text on images before posting
+* Support "from:me" search to search for own posts
 * Small caps font
 
 1.1

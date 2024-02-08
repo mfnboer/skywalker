@@ -63,6 +63,7 @@ private:
     void localSearchAuthorsTypeahead(const QString& typed, int limit);
     void getPosts(const std::vector<QString>& uris);
     void getProfiles(const std::vector<QString>& users);
+    QString preProcessSearchText(const QString& text) const;
 
     BasicProfileList mAuthorTypeaheadList;
     int mSearchPostFeedModelId = -1;

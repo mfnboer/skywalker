@@ -219,6 +219,28 @@ void SearchUtils::localSearchAuthorsTypeahead(const QString& typed, int limit)
     setAuthorTypeaheadList(profileList);
 }
 
+QString SearchUtils::preProcessSearchText(const QString& text) const
+{
+    static const QString FROM_ME = "from:me";
+    static const auto FROM_ME_SIZE = FROM_ME.length();
+
+    const auto index = text.indexOf(FROM_ME);
+
+    if (index == -1)
+        return text;
+
+    if (index > 0 && !text.at(index - 1).isSpace())
+        return text;
+
+    if (index < text.length() - FROM_ME_SIZE && !text.at(index + FROM_ME_SIZE).isSpace())
+        return text;
+
+    const QString& handle = getSkywalker()->getUser().getHandle();
+    const QString newText = text.sliced(0, index + 5) + handle + text.sliced(index + FROM_ME_SIZE);
+    qDebug() << text << " --> " << newText;
+    return newText;
+}
+
 void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries, const QString& cursor)
 {
     qDebug() << "Search posts:" << text << "cursor:" << cursor << "max pages:"
@@ -233,9 +255,11 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
         return;
     }
 
+    const auto searchText = preProcessSearchText(text);
+
     setSearchPostsInProgress(true);
-    bskyClient()->searchPosts(text, {}, mSkywalker->makeOptionalCursor(cursor),
-        [this, presence=getPresence(), text, maxPages, minEntries, cursor](auto feed){
+    bskyClient()->searchPosts(searchText, {}, mSkywalker->makeOptionalCursor(cursor),
+        [this, presence=getPresence(), searchText, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
 
@@ -250,7 +274,7 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
             int entriesToAdd = minEntries - added;
 
             if (entriesToAdd > 0)
-                getNextPageSearchPosts(text, maxPages - 1, entriesToAdd);
+                getNextPageSearchPosts(searchText, maxPages - 1, entriesToAdd);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -305,9 +329,11 @@ void SearchUtils::searchActors(const QString& text, const QString& cursor)
         return;
     }
 
+    const auto searchText = preProcessSearchText(text);
+
     setSearchActorsInProgress(true);
-    bskyClient()->searchActors(text, {}, mSkywalker->makeOptionalCursor(cursor),
-        [this, presence=getPresence(), text, cursor](auto output){
+    bskyClient()->searchActors(searchText, {}, mSkywalker->makeOptionalCursor(cursor),
+        [this, presence=getPresence(), searchText, cursor](auto output){
             if (!presence)
                 return;
 
