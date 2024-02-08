@@ -53,6 +53,9 @@ Page {
     property listview quoteList
     property listview nullList
 
+    readonly property string userDid: skywalker.getUserDid()
+    readonly property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
+
     signal closed
 
     id: page
@@ -90,7 +93,7 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
 
-            enabled: postText.graphemeLength <= postText.maxLength && page.hasContent()
+            enabled: postText.graphemeLength <= postText.maxLength && page.hasContent() && checkAltText()
             onClicked: {
                 postButton.enabled = false
 
@@ -563,6 +566,17 @@ Page {
                             svg: svgOutline.close
                             onClicked: page.removeImage(index)
                         }
+
+                        SkyLabel {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            backgroundColor: guiSettings.errorColor
+                            horizontalAlignment: Text.AlignHCenter
+                            color: "white"
+                            text: "ALT text missing"
+                            visible: requireAltText && !hasAltText(index)
+                        }
                     }
                 }
             }
@@ -915,6 +929,19 @@ Page {
         return altTexts[index].length > 0
     }
 
+    function checkAltText() {
+        if (!requireAltText)
+            return true
+
+        for (let i = 0; i < images.length; ++i)
+        {
+            if (!hasAltText(i))
+                return false
+        }
+
+        return true
+    }
+
     // "file://" or "image://" source
     function photoPicked(source) {
         console.debug("IMAGE:", source)
@@ -984,7 +1011,7 @@ Page {
 
     function addReplyRestrictions() {
         if (restrictionsListModelId < 0) {
-            restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+            restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, userDid)
             skywalker.getListList(restrictionsListModelId)
         }
 

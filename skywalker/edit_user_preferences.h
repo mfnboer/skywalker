@@ -22,6 +22,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool hideQuotePosts READ getHideQuotePosts WRITE setHideQuotePosts NOTIFY hideQuotePostsChanged FINAL)
     Q_PROPERTY(QEnums::DisplayMode displayMode READ getDisplayMode WRITE setDisplayMode NOTIFY displayModeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
+    Q_PROPERTY(bool requireAltText READ getRequireAltText WRITE setRequireAltText NOTIFY requireAltTextChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -62,7 +63,10 @@ public:
     void setDisplayMode(QEnums::DisplayMode displayMode);
 
     bool getGifAutoPlay() const { return mGifAutoPlay; }
-    void setGifAutoPlay(const bool autoPlay);
+    void setGifAutoPlay(bool autoPlay);
+
+    bool getRequireAltText() const { return mRequireAltText; }
+    void setRequireAltText(bool require);
 
     bool isLocalSettingsModified() const { return mLocalSettingsModified; }
     void setLocalSettingsModified(bool modified) { mLocalSettingsModified = modified; }
@@ -75,6 +79,7 @@ signals:
     void hideQuotePostsChanged();
     void displayModeChanged();
     void gifAutoPlayChanged();
+    void requireAltTextChanged();
 
 private:
     QString mEmail;
@@ -93,6 +98,7 @@ private:
     // Local app settings
     QEnums::DisplayMode mDisplayMode = QEnums::DISPLAY_MODE_SYSTEM;
     bool mGifAutoPlay = true;
+    bool mRequireAltText = false;
     bool mLocalSettingsModified = false;
 };
 

@@ -89,13 +89,23 @@ void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
     }
 }
 
-void EditUserPreferences::setGifAutoPlay(const bool autoPlay)
+void EditUserPreferences::setGifAutoPlay(bool autoPlay)
 {
     if (autoPlay != mGifAutoPlay)
     {
         mGifAutoPlay = autoPlay;
         setLocalSettingsModified(true);
         emit gifAutoPlayChanged();
+    }
+}
+
+void EditUserPreferences::setRequireAltText(bool require)
+{
+    if (require != mRequireAltText)
+    {
+        mRequireAltText = require;
+        setLocalSettingsModified(true);
+        emit requireAltTextChanged();
     }
 }
 

@@ -257,6 +257,16 @@ bool UserSettings::getGifAutoPlay() const
     return mSettings.value("gifAutoPlay", true).toBool();
 }
 
+void UserSettings::setRequireAltText(const QString& did, bool require)
+{
+    mSettings.setValue(key(did, "requireAltText"), require);
+}
+
+bool UserSettings::getRequireAltText(const QString& did) const
+{
+    return mSettings.value(key(did, "requireAltText"), false).toBool();
+}
+
 QString UserSettings::getMutedRepostsListUri(const QString& did) const
 {
     const ATProto::ATUri uri(did, ATProto::ATUri::COLLECTION_GRAPH_LIST, RKEY_MUTED_REPOSTS);
