@@ -135,15 +135,31 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     if (!description.isEmpty())
         card->setDescription(UnicodeFonts::toPlainText(description));
 
-    const QString imgUrl = matchRegexes(ogImageREs, data, "image");;
+    const QString imgUrlString = matchRegexes(ogImageREs, data, "image");
     const auto& url = reply->request().url();
 
-    if (!imgUrl.isEmpty())
+    if (!imgUrlString.isEmpty())
     {
-        if (imgUrl.startsWith("/"))
-            card->setThumb(url.toString() + imgUrl);
+        QUrl imgUrl(imgUrlString);
+
+        if (imgUrl.isRelative())
+        {
+            if (QDir::isAbsolutePath(imgUrlString))
+            {
+                imgUrl.setHost(url.host());
+                imgUrl.setScheme(url.scheme());
+                imgUrl.setPort(url.port());
+                card->setThumb(imgUrl.toString());
+            }
+            else
+            {
+                card->setThumb(url.toString() + imgUrlString);
+            }
+        }
         else
-            card->setThumb(imgUrl);
+        {
+            card->setThumb(imgUrlString);
+        }
     }
 
     if (card->isEmpty())

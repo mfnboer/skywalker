@@ -1,3 +1,7 @@
+next
+====
+* Suppport absolute path in relative url for linkcard image.
+
 1.2
 ===
 * Use lists as reply restriction
