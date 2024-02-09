@@ -12,11 +12,15 @@ Page {
 
     id: page
 
+    Accessible.role: Accessible.Pane
+
     header: Rectangle {
         width: parent.width
         height: guiSettings.headerHeight
         z: guiSettings.headerZLevel
         color: guiSettings.headerColor
+
+        Accessible.role: Accessible.Pane
 
         RowLayout {
             width: parent.width
@@ -28,6 +32,11 @@ Page {
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
                 onClicked: page.canceled()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("go back")
+                Accessible.description: qsTr("Go back to the previous page.")
+                Accessible.onPressAction: clicked()
             }
             Text {
                 Layout.alignment: Qt.AlignVCenter
@@ -36,6 +45,9 @@ Page {
                 font.pointSize: guiSettings.scaledFont(10/8)
                 color: guiSettings.headerTextColor
                 text: qsTr("Sign in as")
+
+                Accessible.role: Accessible.TitleBar
+                Accessible.name: qsTr("Select user to sign in")
             }
         }
     }

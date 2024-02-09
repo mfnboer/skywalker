@@ -145,7 +145,7 @@ ApplicationWindow {
             skywalker.bookmarks.load(userSettings)
             skywalker.mutedWords.load(userSettings)
 
-            setStartupStatus("Rewinding timeline")
+            setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
             userSettings.updateLastSignInTimestamp(did)
         }

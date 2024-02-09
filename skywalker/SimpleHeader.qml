@@ -16,6 +16,8 @@ Rectangle {
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
+    Accessible.role: Accessible.Pane
+
     RowLayout
     {
         id: headerRow
@@ -27,6 +29,10 @@ Rectangle {
             Material.background: backIsCancel ? guiSettings.buttonColor : "transparent"
             svg: backIsCancel ? svgOutline.cancel : svgOutline.arrowBack
             onClicked: headerRect.back()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: backIsCancel ? qsTr("cancel") : qsTr("go back")
+            Accessible.description: backIsCancel ? "" : qsTr("Go back to the previous page.")
         }
         Text {
             id: headerTexts
@@ -37,6 +43,9 @@ Rectangle {
             color: guiSettings.headerTextColor
             elide: Text.ElideRight
             text: headerRect.text
+
+            Accessible.role: Accessible.TitleBar
+            Accessible.name: text
         }
     }
 

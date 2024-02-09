@@ -17,6 +17,8 @@ ListView {
     clip: true
     flickDeceleration: guiSettings.flickDeceleration
 
+    Accessible.role: Accessible.List
+
     delegate: Rectangle {
         required property basicprofile modelData
         property alias author: authorEntry.modelData
@@ -25,6 +27,10 @@ ListView {
         width: searchList.width
         height: grid.height
         color: guiSettings.backgroundColor
+
+        Accessible.role: Accessible.Button
+        Accessible.name: author.name
+        Accessible.onPressAction: authorClicked(author)
 
         GridLayout {
             id: grid
@@ -41,6 +47,8 @@ ListView {
                 height: avatarImg.height
                 Layout.fillHeight: true
                 color: "transparent"
+
+                Accessible.role: Accessible.Pane
 
                 Avatar {
                     id: avatarImg
@@ -70,6 +78,10 @@ ListView {
                 svg: svgOutline.delete
                 onClicked: deleteClicked(author)
                 visible: allowDelete && author.did
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`delete ${author.name}`)
+                Accessible.onPressAction: clicked()
             }
             Rectangle {
                 visible: !deleteButton.visible

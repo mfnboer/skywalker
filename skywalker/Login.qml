@@ -15,6 +15,8 @@ Page {
     id: loginPage
     width: parent.width
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
         onBack: loginPage.canceled()
@@ -31,6 +33,9 @@ Page {
             font.bold: true
             color: guiSettings.textColor
             text: qsTr("Sign into")
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: text
         }
 
         ComboBox {
@@ -44,6 +49,9 @@ Page {
             inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
             enabled: isNewAccount()
             activeFocusOnTab: false
+
+            Accessible.role: Accessible.ComboBox
+            Accessible.editable: enabled
         }
 
         Text {
@@ -53,6 +61,9 @@ Page {
             font.bold: true
             color: guiSettings.textColor
             text: qsTr("Account")
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: text
         }
 
         SkyTextInput {
@@ -64,7 +75,7 @@ Page {
             focus: true
             svgIcon: svgOutline.atSign
             initialText: user
-            placeholderText: qsTr("User")
+            placeholderText: qsTr("User name")
             inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
             maximumLength: 253
             validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
@@ -91,6 +102,9 @@ Page {
             wrapMode: Text.Wrap
             text: error
             visible: error
+
+            Accessible.role: Accessible.AlertMessage
+            Accessible.name: text
         }
     }
 
@@ -103,6 +117,10 @@ Page {
             const handle = autoCompleteHandle(userField.text, hostField.editText)
             loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did)
         }
+
+        Accessible.role: Accessible.Button
+        Accessible.name: text
+        Accessible.onPressAction: if (enabled) clicked()
     }
 
     GuiSettings {

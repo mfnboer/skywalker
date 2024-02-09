@@ -10,6 +10,9 @@ Page {
     height: parent.height
     background: Rectangle { color: guiSettings.skywalkerLogoColor }
 
+    Accessible.role: Accessible.Window
+    Accessible.name: qsTr("Signing in, please wait")
+
     Column {
         width: parent.width
         height: parent.height

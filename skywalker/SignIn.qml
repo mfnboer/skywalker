@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import skywalker
 
 Page {
     signal signIn()
@@ -8,6 +9,8 @@ Page {
     width: parent.width
     height: parent.height
     background: Rectangle { color: guiSettings.skywalkerLogoColor }
+
+    Accessible.role: Accessible.Pane
 
     Column {
         width: parent.width
@@ -21,6 +24,9 @@ Page {
             font.bold: true
             font.pointSize: guiSettings.scaledFont(3.5)
             text: "Skywalker"
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: text
         }
         Text {
             id: description
@@ -33,6 +39,9 @@ Page {
             text: qsTr("Explore the <b>Bluesky</b> social media network with Skywalker. To use Skywalker you must have a Bluesky account. If you do not have an account yet, then create one using the official Bluesky app or on <a href=\"https://bsky.app/\" style=\"color: ivory; font-weight: bold;\">https://bsky.app</a>")
 
             onLinkActivated: (link) => { root.openLink(link) }
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: unicodeFonts.toPlainText(text)
         }
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -40,6 +49,9 @@ Page {
             height: Math.min(parent.height - title.height - description.height - warranty.height - signInButton.height - whitespace.height, parent.width)
             fillMode: Image.PreserveAspectFit
             source: "/images/skywalker.png"
+
+            Accessible.role: Accessible.Graphic
+            Accessible.name: qsTr("Skywalker logo")
         }
         Text {
             id: warranty
@@ -49,12 +61,19 @@ Page {
             wrapMode: Text.Wrap
             color: "white"
             text: qsTr("Skywalker comes with ABSOLUTELY NO WARRANTY.")
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: text
         }
         SkyButton {
             id: signInButton
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Sign In")
             onClicked: signIn()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.onPressAction: clicked()
         }
         Rectangle {
             id: whitespace
@@ -62,6 +81,10 @@ Page {
             height: 10
             color: "transparent"
         }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

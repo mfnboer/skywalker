@@ -7,11 +7,16 @@ Dialog {
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
+    Accessible.role: Accessible.Dialog
+
     Label {
         id: msgLabel
         anchors.fill: parent
         textFormat: Text.StyledText
         wrapMode: Text.Wrap
+
+        Accessible.role: Accessible.StaticText
+        Accessible.name: text
     }
 
     function show(msg) {

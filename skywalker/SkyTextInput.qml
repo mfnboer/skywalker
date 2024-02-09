@@ -20,6 +20,8 @@ Rectangle {
     border.color: guiSettings.borderColor
     color: guiSettings.backgroundColor
 
+    Accessible.role: Accessible.Pane
+
     TextInput {
         id: textField
         width: parent.width
@@ -32,6 +34,11 @@ Rectangle {
         color: guiSettings.textColor
         selectionColor: guiSettings.selectionColor
         text: skyTextInput.initialText
+
+        Accessible.role: Accessible.EditableText
+        Accessible.name: placeholderText
+        Accessible.passwordEdit: echoMode === TextInput.Password
+        Accessible.editable: enabled
 
         Text {
             anchors.fill: parent
