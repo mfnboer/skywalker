@@ -59,6 +59,10 @@ Rectangle {
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 2 : 0
     border.color: guiSettings.borderColor
 
+    Accessible.role: Accessible.Button
+    Accessible.name: getSpeech()
+    Accessible.onPressAction: openPostThread()
+
     GridLayout {
         id: grid
         columns: 2
@@ -215,6 +219,10 @@ Rectangle {
                 visible: !postIsPlaceHolder && !postLocallyDeleted
 
                 onClicked: skywalker.getDetailedProfile(author.did)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`show profile of ${author.handle}`)
+                Accessible.onPressAction: clicked()
             }
         }
         Column {
@@ -489,15 +497,32 @@ Rectangle {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound
-        onClicked: {
-            console.debug("POST CLICKED:", postUri)
+        onClicked: openPostThread()
+    }
+
+    GuiSettings {
+        id: guiSettings
+    }
+
+    function openPostThread() {
+        if (!(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound)
+        {
             if (postUri)
                 skywalker.getPostThread(postUri)
         }
     }
 
-    GuiSettings {
-        id: guiSettings
+    function getSpeech() {
+        const time = guiSettings.isToday(postIndexedDateTime) ?
+            postIndexedDateTime.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
+            postIndexedDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
+
+        const reposted = !postRepostedByAuthor.isNull() ? qsTr(`(reposted by ${postRepostedByAuthor.name})`) : ""
+
+        const replyTo = postIsReply ? qsTr(`(reply to ${postReplyToAuthor.name})`) : ""
+
+        let speech = `${author.name} ${time} ${replyTo} ${reposted} ${postPlainText}`
+        return speech
     }
 
     function isUser(author) {

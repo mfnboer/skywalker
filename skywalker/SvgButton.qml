@@ -18,6 +18,7 @@ RoundButton {
         y: height + button.imageMargin
         svg: button.svg
         color: button.iconColor
+        Accessible.ignored: true
     }
 
     GuiSettings {

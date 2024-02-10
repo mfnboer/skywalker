@@ -16,6 +16,10 @@ Rectangle {
     color: "transparent"
     visible: list.count === 0
 
+    Accessible.role: Accessible.StaticText
+    Accessible.name: text
+    Accessible.description: Accessible.name
+
     SvgImage {
         id: noListsImage
         width: 150

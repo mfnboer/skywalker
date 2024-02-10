@@ -129,11 +129,11 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     const QString title = matchRegexes(ogTitleREs, data, "title");
     if (!title.isEmpty())
-        card->setTitle(UnicodeFonts::toPlainText(title));
+        card->setTitle(toPlainText(title));
 
     const QString description = matchRegexes(ogDescriptionREs, data, "description");
     if (!description.isEmpty())
-        card->setDescription(UnicodeFonts::toPlainText(description));
+        card->setDescription(toPlainText(description));
 
     const QString imgUrlString = matchRegexes(ogImageREs, data, "image");
     const auto& url = reply->request().url();
@@ -172,6 +172,16 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     card->setLink(url.toString());
     mCardCache.insert(url, card.get());
     emit linkCard(card.release());
+}
+
+QString LinkCardReader::toPlainText(const QString& text)
+{
+    // Texts in linkcard text often contain double encoded ampersands, e.g.
+    // &amp;#8216;
+    // That should be &#8216;
+    QString plain(text);
+    plain.replace("&amp;#", "&#");
+    return UnicodeFonts::toPlainText(plain);
 }
 
 void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)

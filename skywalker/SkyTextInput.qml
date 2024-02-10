@@ -36,9 +36,9 @@ Rectangle {
         text: skyTextInput.initialText
 
         Accessible.role: Accessible.EditableText
-        Accessible.name: placeholderText
+        Accessible.name: text ? text : qsTr(`Enter ${placeholderText}`)
+        Accessible.description: Accessible.name
         Accessible.passwordEdit: echoMode === TextInput.Password
-        Accessible.editable: enabled
 
         Text {
             anchors.fill: parent
@@ -48,6 +48,7 @@ Rectangle {
             color: guiSettings.placeholderTextColor
             text: placeholderText
             visible: parent.displayText.length === 0
+            Accessible.ignored: true
         }
 
         SvgImage {
@@ -59,6 +60,7 @@ Rectangle {
             color: parent.color
             svg: svgIcon
             visible: !svgIcon.isNull()
+            Accessible.ignored: true
         }
     }
 

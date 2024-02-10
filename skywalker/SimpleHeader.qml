@@ -22,6 +22,7 @@ Rectangle {
     {
         id: headerRow
         width: parent.width
+        Accessible.role: Accessible.Pane
 
         SvgButton {
             id: backButton
@@ -33,6 +34,7 @@ Rectangle {
             Accessible.role: Accessible.Button
             Accessible.name: backIsCancel ? qsTr("cancel") : qsTr("go back")
             Accessible.description: backIsCancel ? "" : qsTr("Go back to the previous page.")
+            Accessible.onPressAction: clicked()
         }
         Text {
             id: headerTexts
@@ -46,6 +48,7 @@ Rectangle {
 
             Accessible.role: Accessible.TitleBar
             Accessible.name: text
+            Accessible.description: Accessible.name
         }
     }
 

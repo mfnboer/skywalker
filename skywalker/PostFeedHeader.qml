@@ -20,6 +20,8 @@ Rectangle {
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
+    Accessible.role: Accessible.Pane
+
     RowLayout {
         id: headerRow
         width: parent.width
@@ -33,6 +35,10 @@ Rectangle {
             visible: !showAsHome
 
             onClicked: header.closed()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("go back")
+            Accessible.description: Accessible.name
         }
         FeedAvatar {
             Layout.leftMargin: 10
@@ -44,6 +50,10 @@ Rectangle {
             visible: showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: header.feedName
+            Accessible.onPressAction: clicked()
         }
         Text {
             id: headerTexts
@@ -55,12 +65,19 @@ Rectangle {
             color: guiSettings.headerTextColor
             text: header.feedName
 
+            Accessible.role: Accessible.ButtonDropDown
+            Accessible.name: qsTr(`${text}, press to select other feed`)
+            Accessible.description: Accessible.name
+            Accessible.onPressAction: expandFeeds()
+
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
-                    if (expandFeedsButton.visible)
-                        expandFeedsButton.onClicked()
-                }
+                onClicked: parent.expandFeeds()
+            }
+
+            function expandFeeds() {
+                if (expandFeedsButton.visible)
+                    expandFeedsButton.onClicked()
             }
         }
         ExpandFeedsButton {
@@ -79,6 +96,11 @@ Rectangle {
             visible: !showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: header.feedName
+            Accessible.description: Accessible.name
+            Accessible.onPressAction: header.feedAvatarClicked()
         }
         Item {
             Layout.rightMargin: 10
@@ -86,6 +108,7 @@ Rectangle {
             height: parent.height - 10
             width: height
             visible: showAsHome
+            Accessible.role: Accessible.Pane
 
             Avatar {
                 id: avatar
@@ -94,6 +117,11 @@ Rectangle {
                 avatarUrl: skywalker.avatarUrl
                 onClicked: root.showSettingsDrawer()
                 onPressAndHold: root.showSwitchUserDrawer()
+
+                Accessible.role: Accessible.ButtonMenu
+                Accessible.name: qsTr("Skywalker menu")
+                Accessible.description: Accessible.name
+                Accessible.onPressAction: clicked()
             }
         }
     }

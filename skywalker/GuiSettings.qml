@@ -50,6 +50,8 @@ Item {
     // Misc
     readonly property real flickDeceleration: 1000
 
+    Accessible.ignored: true
+
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;
     }
@@ -76,6 +78,13 @@ Item {
 
         duration = duration / 12
         return Math.round(duration) + qsTr("yr", "years")
+    }
+
+    function isToday(date) {
+        const today = new Date()
+        return date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
     }
 
     function askYesNoQuestion(parent, question, onYesCb) {

@@ -28,6 +28,7 @@ Rectangle {
         width: parent.width
         height: 1
         color: guiSettings.separatorColor
+        Accessible.ignored: true
     }
 
     RowLayout {
@@ -39,6 +40,12 @@ Rectangle {
             height: parent.height
             Layout.fillWidth: true
             color: guiSettings.backgroundColor
+
+            Accessible.role: Accessible.PageTab
+            Accessible.name: homeActive ?
+                                 qsTr(`${timeline.unreadPosts} posts from top of feed, press to go to top`) :
+                                 qsTr("show feed")
+            Accessible.onPressAction: homeClicked()
 
             SvgImage {
                 id: homeButton
@@ -105,6 +112,10 @@ Rectangle {
             Layout.fillWidth: true
             color: guiSettings.backgroundColor
 
+            Accessible.role: Accessible.PageTab
+            Accessible.name: qsTr("search")
+            Accessible.onPressAction: searchClicked()
+
             SvgImage {
                 id: searchButton
                 y: height + 5
@@ -125,6 +136,10 @@ Rectangle {
             height: parent.height
             Layout.fillWidth: true
             color: guiSettings.backgroundColor
+
+            Accessible.role: Accessible.PageTab
+            Accessible.name: qsTr("feeds")
+            Accessible.onPressAction: searchClicked()
 
             SvgImage {
                 id: feedsButton
@@ -147,6 +162,10 @@ Rectangle {
             Layout.fillWidth: true
             color: guiSettings.backgroundColor
 
+            Accessible.role: Accessible.PageTab
+            Accessible.name: skywalker.unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
+            Accessible.onPressAction: notificationsClicked()
+
             SvgImage {
                 id: notificationsButton
                 y: height + 5
@@ -155,6 +174,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
                 svg: notificationsActive ? svgFilled.notifications : svgOutline.notifications
+                Accessible.ignored: true
 
                 Rectangle {
                     x: parent.width - 17
@@ -188,6 +208,10 @@ Rectangle {
     PostButton {
         x: parent.width - width - 10
         y: -height - 10
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("post")
+        Accessible.onPressAction: clicked()
     }
 
     GuiSettings {

@@ -15,6 +15,7 @@ Page {
     Column {
         width: parent.width
         height: parent.height
+        Accessible.role: Accessible.Pane
 
         Text {
             id: title
@@ -27,6 +28,7 @@ Page {
 
             Accessible.role: Accessible.StaticText
             Accessible.name: text
+            Accessible.description: Accessible.name
         }
         Text {
             id: description
@@ -64,6 +66,7 @@ Page {
 
             Accessible.role: Accessible.StaticText
             Accessible.name: text
+            Accessible.description: Accessible.name
         }
         SkyButton {
             id: signInButton
@@ -73,6 +76,7 @@ Page {
 
             Accessible.role: Accessible.Button
             Accessible.name: text
+            Accessible.description: Accessible.name
             Accessible.onPressAction: clicked()
         }
         Rectangle {
@@ -80,6 +84,7 @@ Page {
             width: 10
             height: 10
             color: "transparent"
+            Accessible.ignored: true
         }
     }
 

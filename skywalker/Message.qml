@@ -6,8 +6,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-
-    Accessible.role: Accessible.Dialog
+    Accessible.role: Accessible.Pane
 
     Label {
         id: msgLabel
@@ -17,6 +16,7 @@ Dialog {
 
         Accessible.role: Accessible.StaticText
         Accessible.name: text
+        Accessible.description: Accessible.name
     }
 
     function show(msg) {

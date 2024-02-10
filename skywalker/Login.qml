@@ -25,6 +25,7 @@ Page {
     ColumnLayout {
         id: loginForm
         width: parent.width
+        Accessible.role: Accessible.Pane
 
         Text {
             Layout.fillWidth: true
@@ -51,6 +52,8 @@ Page {
             activeFocusOnTab: false
 
             Accessible.role: Accessible.ComboBox
+            Accessible.name: qsTr(`Sign into network ${editText}`)
+            Accessible.description: qsTr("Choose network to sign into")
             Accessible.editable: enabled
         }
 
@@ -64,6 +67,7 @@ Page {
 
             Accessible.role: Accessible.StaticText
             Accessible.name: text
+            Accessible.description: Accessible.name
         }
 
         SkyTextInput {
@@ -105,6 +109,7 @@ Page {
 
             Accessible.role: Accessible.AlertMessage
             Accessible.name: text
+            Accessible.description: Accessible.name
         }
     }
 
@@ -120,6 +125,7 @@ Page {
 
         Accessible.role: Accessible.Button
         Accessible.name: text
+        Accessible.description: qsTr("Press OK to sign in")
         Accessible.onPressAction: if (enabled) clicked()
     }
 

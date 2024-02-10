@@ -16,6 +16,8 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
+    Accessible.role: Accessible.List
+
     header: PostFeedHeader {
         skywalker: timelineView.skywalker
         feedName: qsTr("Home feed")
@@ -80,6 +82,7 @@ ListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: skywalker.getTimelineInProgress && !skywalker.autoUpdateTimelineInProgress
+        Accessible.role: Accessible.ProgressBar
     }
 
     GuiSettings {

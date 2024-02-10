@@ -10,6 +10,7 @@ SvgButton {
     opacity: 0.6
     imageMargin: 20
     svg: svgOutline.chat
+
     onClicked: {
         if (overrideOnClicked)
             overrideOnClicked()

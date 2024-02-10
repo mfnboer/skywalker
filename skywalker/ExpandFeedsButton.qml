@@ -11,6 +11,11 @@ SvgButton {
     svg: svgOutline.expandMore
     onClicked: feedsMenu.open()
 
+    Accessible.role: Accessible.ButtonDropDown
+    Accessible.name: qsTr("select other feed")
+    Accessible.description: qsTr("Pressing this button will drop down a list of your favorite feeds")
+    Accessible.onPressAction: clicked()
+
     Menu {
         id: feedsMenu
 
@@ -35,6 +40,11 @@ SvgButton {
             }
 
             onTriggered: root.viewTimeline()
+
+            Accessible.role: Accessible.MenuItem
+            Accessible.name: contentItem.text
+            Accessible.description: Accessible.name
+            Accessible.onPressAction: triggered()
         }
 
         Instantiator {
@@ -62,6 +72,11 @@ SvgButton {
                 }
 
                 onTriggered: viewFeed()
+
+                Accessible.role: Accessible.MenuItem
+                Accessible.name: contentItem.text
+                Accessible.description: Accessible.name
+                Accessible.onPressAction: triggered()
 
                 function viewFeed() {
                     if (modelData.isGeneratorView)

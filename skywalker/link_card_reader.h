@@ -25,6 +25,7 @@ signals:
     void linkCard(LinkCard*);
 
 private:
+    QString toPlainText(const QString& text);
     void extractLinkCard(QNetworkReply* reply);
     void requestFailed(QNetworkReply* reply, int errCode);
     void requestSslFailed(QNetworkReply* reply);
