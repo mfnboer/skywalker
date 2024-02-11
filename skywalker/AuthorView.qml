@@ -260,6 +260,7 @@ Page {
                     anchors.left: parent.left
                     anchors.right: undefined
                     contentLabels: author.labels
+                    contentAuthorDid: author.did
                 }
             }
 

@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    required property basicprofile postAuthor
     required property string postText
     required property list<imageview> postImages
     required property date postDateTime
@@ -187,7 +188,7 @@ Column {
 
         if (postContentLabels.length > 0) {
             let component = Qt.createComponent("ContentLabels.qml")
-            component.createObject(postBody, {contentLabels: postContentLabels})
+            component.createObject(postBody, {contentLabels: postContentLabels, contentAuthorDid: postAuthor.did})
         }
 
         if (postExternal) {

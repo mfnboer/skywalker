@@ -3,6 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 ScrollView {
+    required property string contentAuthorDid
     required property list<contentlabel> contentLabels
     readonly property list<contentlabel> nonSystemLabels: filterSystemLabels()
 
@@ -29,7 +30,7 @@ ScrollView {
             SkyLabel {
                 required property contentlabel modelData
 
-                backgroundColor: modelData.did === skywalker.getUserDid() ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
+                backgroundColor: modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
                 font.pointSize: guiSettings.scaledFont(5/8)
                 font.italic: true
                 color: guiSettings.textColor
@@ -60,7 +61,8 @@ ScrollView {
 
     function showInfo(contentLabel) {
         let component = Qt.createComponent("ContentLabelInfo.qml")
-        let infoPage = component.createObject(root.currentStackItem(), { label: contentLabel })
+        let infoPage = component.createObject(root.currentStackItem(),
+                { contentAuthorDid: contentAuthorDid, label: contentLabel })
         infoPage.onAccepted.connect(() => infoPage.destroy())
         infoPage.onRejected.connect(() => infoPage.destroy())
         infoPage.open()

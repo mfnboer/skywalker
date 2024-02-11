@@ -33,6 +33,7 @@ Column {
 
     PostBody {
         width: parent.width - 20
+        postAuthor: author
         postText: quoteColumn.postText
         postImages: []
         postContentLabels: []

@@ -157,6 +157,7 @@ Rectangle {
                 id: postBody
                 width: parent.width
                 Layout.fillWidth: true
+                postAuthor: notificationAuthor
                 postText: notificationPostText
                 postPlainText: notificationPostPlainText
                 postImages: notificationPostImages
@@ -280,6 +281,7 @@ Rectangle {
                 topPadding: 5
                 width: parent.width
                 Layout.fillWidth: true
+                postAuthor: skywalker.getUser()
                 postText: {
                     if (notificationReasonPostLocallyDeleted)
                         return "DELETED"

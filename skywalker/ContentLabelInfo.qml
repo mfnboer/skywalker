@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Dialog {
+    required property string contentAuthorDid
     required property contentlabel label
     readonly property string contentWarning: skywalker.getContentWarning([label])
 
@@ -43,7 +44,7 @@ Dialog {
             Layout.fillWidth: true
             color: guiSettings.textColor
             elide: Text.ElideRight
-            text: skywalker.getUserDid() === label.did ? qsTr("User") : qsTr("Moderator")
+            text: contentAuthorDid === label.did ? qsTr("User") : qsTr("Moderator")
         }
 
         Text {

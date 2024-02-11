@@ -38,6 +38,7 @@ Item {
 
         PostBody {
             width: parent.width
+            postAuthor: record.author
             postText: record.postTextFormatted
             postImages: record.images
             postContentLabels: record.contentLabels
