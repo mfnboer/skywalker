@@ -35,6 +35,12 @@ RoundedFrame {
         onClicked: root.viewFullImage(images, 0)
     }
 
+    AccessibleImage {
+        image: img
+        alt: img.imageView.alt
+        visible: filter.imageVisible()
+    }
+
     FilteredImageWarning {
         id: filter
         width: parent.width

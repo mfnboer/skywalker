@@ -76,6 +76,27 @@ RoundedFrame {
         }
     }
 
+    AccessibleImage {
+        image: img1
+        alt: img1.imageView.alt
+        visible: filter.imageVisible()
+    }
+    AccessibleImage {
+        image: img2
+        alt: img2.imageView.alt
+        visible: filter.imageVisible()
+    }
+    AccessibleImage {
+        image: img3
+        alt: img3.imageView.alt
+        visible: filter.imageVisible()
+    }
+    AccessibleImage {
+        image: img4
+        alt: img4.imageView.alt
+        visible: filter.imageVisible()
+    }
+
     FilteredImageWarning {
         id: filter
         width: parent.width

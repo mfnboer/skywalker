@@ -61,7 +61,7 @@ Rectangle {
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()
-    Accessible.onPressAction: openPostThread()
+    Accessible.onPressAction: performAccessiblePressAction()
 
     GridLayout {
         id: grid
@@ -247,6 +247,7 @@ Rectangle {
             }
 
             PostBody {
+                id: postBody
                 width: parent.width
                 postAuthor: author
                 postText: postEntry.postText
@@ -360,10 +361,7 @@ Rectangle {
             text: `<a href=\"showMore\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show more posts") + "</a>"
             visible: postGapId > 0
 
-            onLinkActivated: {
-                if (!skywalker.getTimelineInProgress)
-                    skywalker.getTimelineForGap(postGapId)
-            }
+            onLinkActivated: getGapPosts()
 
             MouseArea {
                 anchors.fill: parent
@@ -513,7 +511,53 @@ Rectangle {
         }
     }
 
+    function getGapPosts() {
+        if (!skywalker.getTimelineInProgress)
+            skywalker.getTimelineForGap(postGapId)
+    }
+
+    function performAccessiblePressAction() {
+        if (postLocallyDeleted)
+            return
+
+        if (postIsPlaceHolder) {
+            if (postGapId > 0)
+                getGapPosts()
+
+            return
+        }
+
+        if (postBody.postVisible())
+            openPostThread()
+    }
+
     function getSpeech() {
+        if (postLocallyDeleted)
+            return qsTr("deleted post")
+
+        if (postIsPlaceHolder) {
+            if (postGapId > 0)
+                return qsTr("show more more posts")
+
+            if (postNotFound)
+                return qsTr("post not found")
+
+            if (postBlocked)
+                return qsTr("post blocked")
+
+            if (postNotSupported)
+                return qsTr("not supported")
+
+            return ""
+        }
+
+        if (!postBody.postVisible())
+            return getHiddenPostSpeech()
+
+        return getPostSpeech()
+    }
+
+    function getPostSpeech() {
         const time = guiSettings.isToday(postIndexedDateTime) ?
             postIndexedDateTime.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
             postIndexedDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
@@ -523,7 +567,23 @@ Rectangle {
         const replyTo = postIsReply ? qsTr(`(reply to ${postReplyToAuthor.name})`) : ""
 
         let speech = `${author.name} ${time} ${replyTo} ${reposted} ${postPlainText}`
+
+        if (postImages.length === 1)
+            speech += qsTr("\n1 picture attached")
+        else if (postImages.length > 1)
+            speech += qsTr(`\n${postImages.length} pictures attached`)
+
         return speech
+    }
+
+    function getHiddenPostSpeech() {
+        if (postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST)
+            return postContentWarning
+
+        if (postBody.mutePost)
+            return postBody.getMuteText()
+
+        return postContentWarning
     }
 
     function isUser(author) {

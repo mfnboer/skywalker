@@ -14,6 +14,10 @@ Row {
     height: Math.max(imgIcon.height, contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnText.height : hideText.height)
     spacing: 10
 
+    Accessible.role: warnText.visible ? Accessible.Link : Accessible.StaticText
+    Accessible.name: warnText.visible ? qsTr(`Hidden image content: ${contentWarning}. Press to show pictures`) : qsTr(`Hidden image content: ${contentWarning}`)
+    Accessible.onPressAction: if (warnText.visible) warnText.linkActivated("")
+
     SvgImage {
         id: imgIcon
         width: 30

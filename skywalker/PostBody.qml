@@ -68,7 +68,7 @@ Column {
             }
         }
 
-        // The content warning is shown then the post is not muted
+        // The content warning is shown when the post is not muted
         Text {
             id: warnText
             width: parent.width
@@ -106,17 +106,6 @@ Column {
                 // The post may still not be visible due to content filtering
                 if (postVisible())
                     showPostAttachements()
-            }
-
-            function getMuteText() {
-                switch (postMuted) {
-                case QEnums.MUTED_POST_AUTHOR:
-                    return qsTr("You muted this account")
-                case QEnums.MUTED_POST_WORDS:
-                    return qsTr("Post has muted words")
-                }
-
-                return qsTr("Muted post")
             }
         }
 
@@ -159,6 +148,17 @@ Column {
         return ![QEnums.CONTENT_VISIBILITY_HIDE_POST,
                  QEnums.CONTENT_VISIBILITY_WARN_POST].includes(postContentVisibility) ||
                showWarnedPost
+    }
+
+    function getMuteText() {
+        switch (postMuted) {
+        case QEnums.MUTED_POST_AUTHOR:
+            return qsTr("You muted this account")
+        case QEnums.MUTED_POST_WORDS:
+            return qsTr("Post has muted words")
+        }
+
+        return qsTr("Muted post")
     }
 
     function getPostFontSize() {

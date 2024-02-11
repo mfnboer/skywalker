@@ -36,6 +36,9 @@ ScrollView {
                 color: guiSettings.textColor
                 text: modelData.text
 
+                Accessible.role: Accessible.StaticText
+                Accessible.name: qsTr(`content label: ${text}`)
+
                 MouseArea {
                     anchors.fill: parent
                     onClicked: showInfo(modelData)

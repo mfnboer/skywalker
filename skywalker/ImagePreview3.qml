@@ -50,7 +50,6 @@ RoundedFrame {
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(2)
         }
-
     }
     MouseArea {
         enabled: filter.imageVisible()
@@ -70,6 +69,22 @@ RoundedFrame {
             if (index >= 0)
                 root.viewFullImage(images, index)
         }
+    }
+
+    AccessibleImage {
+        image: img1
+        alt: img1.imageView.alt
+        visible: filter.imageVisible()
+    }
+    AccessibleImage {
+        image: img2
+        alt: img2.imageView.alt
+        visible: filter.imageVisible()
+    }
+    AccessibleImage {
+        image: img3
+        alt: img3.imageView.alt
+        visible: filter.imageVisible()
     }
 
     FilteredImageWarning {
