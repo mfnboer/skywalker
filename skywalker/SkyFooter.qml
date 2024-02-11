@@ -43,7 +43,7 @@ Rectangle {
 
             Accessible.role: Accessible.PageTab
             Accessible.name: homeActive ?
-                                 qsTr(`${timeline.unreadPosts} posts from top of feed, press to go to top`) :
+                                 qsTr(`${timeline.unreadPosts} posts from top of timeline, press to go to top`) :
                                  qsTr("show feed")
             Accessible.onPressAction: homeClicked()
 

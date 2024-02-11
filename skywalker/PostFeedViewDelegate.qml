@@ -499,6 +499,10 @@ Rectangle {
         onClicked: openPostThread()
     }
 
+    GifUtils {
+        id: gifUtils
+    }
+
     GuiSettings {
         id: guiSettings
     }
@@ -562,16 +566,23 @@ Rectangle {
             postIndexedDateTime.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
             postIndexedDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
 
-        const reposted = !postRepostedByAuthor.isNull() ? qsTr(`(reposted by ${postRepostedByAuthor.name})`) : ""
+        const reposted = !postRepostedByAuthor.isNull() ? qsTr(`\n\nreposted by ${postRepostedByAuthor.name}`) : ""
 
-        const replyTo = postIsReply ? qsTr(`(reply to ${postReplyToAuthor.name})`) : ""
+        const replyTo = postIsReply ? qsTr(`\n\nreply to ${postReplyToAuthor.name}`) : ""
 
-        let speech = `${author.name} ${time} ${replyTo} ${reposted} ${postPlainText}`
+        let speech = `${author.name}\n\n${time} ${replyTo} ${reposted}\n\n${postPlainText}`
 
         if (postImages.length === 1)
-            speech += qsTr("\n1 picture attached")
+            speech += qsTr("\n\n1 picture attached")
         else if (postImages.length > 1)
-            speech += qsTr(`\n${postImages.length} pictures attached`)
+            speech += qsTr(`\n\n${postImages.length} pictures attached`)
+
+        if (postExternal) {
+            if (gifUtils.isGif(postExternal.uri))
+                speech += qsTr("\n\nGIF image attached")
+            else
+                speech += qsTr("\n\nlink card attached")
+        }
 
         return speech
     }

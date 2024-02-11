@@ -13,6 +13,10 @@ Item {
     height: filter.imageVisible() ? (gifUtils.isGif(postExternal.uri) ? gifImage.height + tenorAttribution.height : card.columnHeight)
                                   : filter.height
 
+    Accessible.role: Accessible.Link
+    Accessible.name: getSpeech()
+    Accessible.onPressAction: if (isLinkEnabled()) openExternalLink()
+
     LinkCardView {
         id: card
         anchors.fill: parent
@@ -61,11 +65,26 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.openLink(postExternal.uri)
-        enabled: !gifUtils.isGif(postExternal.uri) && filter.imageVisible()
+        onClicked: openExternalLink()
+        enabled: isLinkEnabled()
     }
 
     GifUtils {
         id: gifUtils
+    }
+
+    function isLinkEnabled() {
+        return !gifUtils.isGif(postExternal.uri) && filter.imageVisible()
+    }
+
+    function openExternalLink() {
+        root.openLink(postExternal.uri)
+    }
+
+    function getSpeech() {
+        if (gifUtils.isGif(postExternal.uri))
+            return qsTr(`GIF image: ${postExternal.title}`)
+
+        return qsTr("link card:") + postExternal.title + "\n\n" + postExternal.description
     }
 }

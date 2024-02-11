@@ -35,6 +35,10 @@ Column {
             visible: !bookmarkNotFound
             enabled: !replyDisabled
             onClicked: reply()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: (replyDisabled ? qsTr("reply not allowed") : qsTr("reply")) + statSpeech(replyCount, "reply", "replies")
+            Accessible.onPressAction: if (enabled) clicked()
         }
         StatIcon {
             width: parent.width / 5
@@ -43,6 +47,10 @@ Column {
             statistic: repostCount
             visible: !bookmarkNotFound
             onClicked: repost()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
+            Accessible.onPressAction: clicked()
         }
         StatIcon {
             width: parent.width / 5
@@ -51,12 +59,20 @@ Column {
             statistic: likeCount
             visible: !bookmarkNotFound
             onClicked: like()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
+            Accessible.onPressAction: clicked()
         }
         StatIcon {
             width: parent.width / 5
             iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
             svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
             onClicked: bookmark()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
+            Accessible.onPressAction: clicked()
         }
         StatIcon {
             width: parent.width / 5
@@ -65,6 +81,10 @@ Column {
             visible: !bookmarkNotFound
             onClicked: moreMenu.open()
 
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("more options")
+            Accessible.onPressAction: clicked()
+
             Menu {
                 id: moreMenu
 
@@ -72,43 +92,53 @@ Column {
                     text: qsTr("Translate")
                     onTriggered: translatePost()
 
-                    MenuItemSvg {
-                        svg: svgOutline.googleTranslate
-                    }
+                    MenuItemSvg { svg: svgOutline.googleTranslate }
+
+                    Accessible.role: Accessible.MenuItem
+                    Accessible.name: text
+                    Accessible.onPressAction: triggered()
                 }
 
                 MenuItem {
                     text: qsTr("Copy post text")
                     onTriggered: copyPostText()
 
-                    MenuItemSvg {
-                        svg: svgOutline.copy
-                    }
+                    MenuItemSvg { svg: svgOutline.copy }
+
+                    Accessible.role: Accessible.MenuItem
+                    Accessible.name: text
+                    Accessible.onPressAction: triggered()
                 }
                 MenuItem {
                     text: qsTr("Share")
                     onTriggered: share()
 
-                    MenuItemSvg {
-                        svg: svgOutline.share
-                    }
+                    MenuItemSvg { svg: svgOutline.share }
+
+                    Accessible.role: Accessible.MenuItem
+                    Accessible.name: text
+                    Accessible.onPressAction: triggered()
                 }
                 MenuItem {
                     text: qsTr("Delete")
                     enabled: authorIsUser
                     onTriggered: deletePost()
 
-                    MenuItemSvg {
-                        svg: svgOutline.delete
-                    }
+                    MenuItemSvg { svg: svgOutline.delete }
+
+                    Accessible.role: Accessible.MenuItem
+                    Accessible.name: text
+                    Accessible.onPressAction: triggered()
                 }
                 MenuItem {
                     text: qsTr("Report post")
                     onTriggered: reportPost()
 
-                    MenuItemSvg {
-                        svg: svgOutline.report
-                    }
+                    MenuItemSvg { svg: svgOutline.report }
+
+                    Accessible.role: Accessible.MenuItem
+                    Accessible.name: text
+                    Accessible.onPressAction: triggered()
                 }
             }
         }
@@ -116,5 +146,15 @@ Column {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function statSpeech(stat, textSingular, textPlural) {
+        if (stat === 0)
+            return ""
+
+        if (stat === 1)
+            return `, 1 ${textSingular}`
+
+        return `, ${stat} ${textPlural}`
     }
 }
