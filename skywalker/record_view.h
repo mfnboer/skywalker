@@ -18,6 +18,7 @@ class RecordView : public NormalizedWordIndex
 {
     Q_GADGET
     Q_PROPERTY(QString postUri READ getUri FINAL)
+    Q_PROPERTY(QString postPlainText READ getText FINAL)
     Q_PROPERTY(QString postTextFormatted READ getFormattedText FINAL)
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)

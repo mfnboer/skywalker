@@ -499,8 +499,8 @@ Rectangle {
         onClicked: openPostThread()
     }
 
-    GifUtils {
-        id: gifUtils
+    AccessibilityUtils {
+        id: accessibilityUtils
     }
 
     GuiSettings {
@@ -543,48 +543,16 @@ Rectangle {
             if (postGapId > 0)
                 return qsTr("show more more posts")
 
-            if (postNotFound)
-                return qsTr("post not found")
-
-            if (postBlocked)
-                return qsTr("post blocked")
-
-            if (postNotSupported)
-                return qsTr("not supported")
-
-            return ""
+            return accessibilityUtils.getPostNotAvailableSpeech(
+                    postNotFound, postBlocked, postNotSupported)
         }
 
         if (!postBody.postVisible())
             return getHiddenPostSpeech()
 
-        return getPostSpeech()
-    }
-
-    function getPostSpeech() {
-        const time = guiSettings.isToday(postIndexedDateTime) ?
-            postIndexedDateTime.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
-            postIndexedDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
-
-        const reposted = !postRepostedByAuthor.isNull() ? qsTr(`\n\nreposted by ${postRepostedByAuthor.name}`) : ""
-
-        const replyTo = postIsReply ? qsTr(`\n\nreply to ${postReplyToAuthor.name}`) : ""
-
-        let speech = `${author.name}\n\n${time} ${replyTo} ${reposted}\n\n${postPlainText}`
-
-        if (postImages.length === 1)
-            speech += qsTr("\n\n1 picture attached")
-        else if (postImages.length > 1)
-            speech += qsTr(`\n\n${postImages.length} pictures attached`)
-
-        if (postExternal) {
-            if (gifUtils.isGif(postExternal.uri))
-                speech += qsTr("\n\nGIF image attached")
-            else
-                speech += qsTr("\n\nlink card attached")
-        }
-
-        return speech
+        return accessibilityUtils.getPostSpeech(postIndexedDateTime, author, postPlainText,
+                postImages, postExternal, postRecord, postRecordWithMedia,
+                postRepostedByAuthor, postIsReply, postReplyToAuthor)
     }
 
     function getHiddenPostSpeech() {

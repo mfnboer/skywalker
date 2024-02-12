@@ -274,6 +274,7 @@ qt_add_qml_module(libskywalker
         SOURCES content_label.h
         QML_FILES ContentLabelInfo.qml
         QML_FILES AccessibleImage.qml
+        QML_FILES AccessibilityUtils.qml
 )
 
 if (NOT ANDROID)

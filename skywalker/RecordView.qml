@@ -9,6 +9,10 @@ Item {
     width: parent.width
     height: recordColumn.height + 10
 
+    Accessible.role: Accessible.Button
+    Accessible.name: getSpeech()
+    Accessible.onPressAction: showRecord()
+
     Column {
         id: recordColumn
         width: parent.width - 10
@@ -102,14 +106,38 @@ Item {
     MouseArea {
         z: -1 // Let other mouse areas, e.g. images, get on top
         anchors.fill: parent
-        onClicked: {
-            if (record.postUri)
-                skywalker.getPostThread(record.postUri)
-            else if (record.feedAvailable)
-                root.viewPostFeed(record.feed)
-            else if (record.listAvailable)
-                root.viewList(record.list)
+        onClicked: showRecord()
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
+    }
+
+    function showRecord() {
+        if (record.postUri)
+            skywalker.getPostThread(record.postUri)
+        else if (record.feedAvailable)
+            root.viewPostFeed(record.feed)
+        else if (record.listAvailable)
+            root.viewList(record.list)
+    }
+
+    function getSpeech() {
+        if (record.available && record.postUri) {
+            let speech = accessibilityUtils.getPostSpeech(record.postDateTime, record.author,
+                    record.postPlainText, record.images, record.external, null, null,
+                    accessibilityUtils.nullAuthor, false, accessibilityUtils.nullAuthor)
+            return qsTr(`quoted post\n\n${speech}`)
         }
+        else if (record.feedAvailable) {
+            return accessibilityUtils.getFeedSpeech(record.feed)
+        }
+        else if (record.listAvailable) {
+            return accessibilityUtils.getListSpeech(record.list)
+        }
+
+        return accessibilityUtils.getPostNotAvailableSpeech(
+                record.notFound, record.blocked, record.notSupported)
     }
 
     GuiSettings {

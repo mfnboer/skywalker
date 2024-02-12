@@ -80,13 +80,6 @@ Item {
         return Math.round(duration) + qsTr("yr", "years")
     }
 
-    function isToday(date) {
-        const today = new Date()
-        return date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
-    }
-
     function askYesNoQuestion(parent, question, onYesCb) {
         let component = Qt.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Yes | Dialog.No })
