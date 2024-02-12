@@ -175,6 +175,7 @@ Page {
 
     Menu {
         id: moreMenuOwnUserList
+        modal: true
 
         MenuItem {
             text: qsTr("Edit")
@@ -225,6 +226,7 @@ Page {
 
     Menu {
         id: moreMenuOtherUserList
+        modal: true
 
         MenuItem {
             text: isSavedList ? qsTr("Unsave list") : qsTr("Save list")
@@ -279,6 +281,7 @@ Page {
 
     Menu {
         id: moreMenuModList
+        modal: true
 
         MenuItem {
             text: qsTr("Edit")

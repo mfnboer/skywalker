@@ -18,6 +18,7 @@ SvgButton {
 
     Menu {
         id: feedsMenu
+        modal: true
 
         MenuItem {
             contentItem: Text {

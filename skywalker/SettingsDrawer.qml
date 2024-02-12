@@ -91,6 +91,7 @@ Drawer {
 
             Menu {
                 id: moderationMenu
+                modal: true
 
                 MenuItem {
                     text: qsTr("Content Filtering")

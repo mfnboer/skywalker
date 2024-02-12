@@ -146,6 +146,7 @@ Page {
 
         Menu {
             id: moreMenu
+            modal: true
 
             MenuItem {
                 text: qsTr("Save picture")

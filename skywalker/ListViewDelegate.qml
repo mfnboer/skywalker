@@ -198,6 +198,7 @@ Rectangle {
 
     Menu {
         id: moreMenuOwnUserList
+        modal: true
 
         MenuItem {
             text: qsTr("Edit")
@@ -259,6 +260,7 @@ Rectangle {
 
     Menu {
         id: moreMenuOtherUserList
+        modal: true
 
         MenuItem {
             text: listSaved ? qsTr("Unsave list") : qsTr("Save list")
@@ -315,6 +317,7 @@ Rectangle {
 
     Menu {
         id: moreMenuOwnModList
+        modal: true
 
         MenuItem {
             text: qsTr("Edit")
@@ -375,6 +378,7 @@ Rectangle {
 
     Menu {
         id: moreMenuOtherModList
+        modal: true
 
         MenuItem {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")

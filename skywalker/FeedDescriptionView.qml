@@ -105,6 +105,8 @@ Page {
 
             Menu {
                 id: moreMenu
+                modal: true
+
                 MenuItem {
                     text: isSavedFeed ? qsTr("Unsave feed") : qsTr("Save feed")
                     onTriggered: {
