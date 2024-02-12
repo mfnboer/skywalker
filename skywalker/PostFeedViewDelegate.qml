@@ -266,42 +266,54 @@ Rectangle {
 
             // Reposts and likes in detailed view of post entry in thread view
             Row {
-               width: parent.width
-               topPadding: 10
-               bottomPadding: 5
-               visible: postThreadType & QEnums.THREAD_ENTRY
+                width: parent.width
+                topPadding: 10
+                bottomPadding: 5
+                visible: postThreadType & QEnums.THREAD_ENTRY
 
-               Text {
-                   rightPadding: 30
-                   color: guiSettings.linkColor
-                   textFormat: Text.StyledText
-                   text: postRepostCount > 1 ? qsTr(`<b>${postRepostCount}</b> reposts`) : qsTr(`<b>${postRepostCount}</b> repost`)
-                   visible: postRepostCount
+                Text {
+                    rightPadding: 30
+                    color: guiSettings.linkColor
+                    textFormat: Text.StyledText
+                    text: postRepostCount > 1 ? qsTr(`<b>${postRepostCount}</b> reposts`) : qsTr(`<b>${postRepostCount}</b> repost`)
+                    visible: postRepostCount
 
-                   MouseArea {
-                       anchors.fill: parent
-                       onClicked: {
-                           let modelId = skywalker.createAuthorListModel(
-                                    QEnums.AUTHOR_LIST_REPOSTS, postUri)
-                           root.viewAuthorList(modelId, qsTr("Reposted by"));
-                       }
-                   }
-               }
-               Text {
-                   color: guiSettings.linkColor
-                   textFormat: Text.StyledText
-                   text: postLikeCount > 1 ? qsTr(`<b>${postLikeCount}</b> likes`) : qsTr(`<b>${postLikeCount}</b> like`)
-                   visible: postLikeCount
+                    Accessible.role: Accessible.Link
+                    Accessible.name: unicodeFonts.toPlainText(text)
+                    Accessible.onPressAction: showReposts()
 
-                   MouseArea {
-                       anchors.fill: parent
-                       onClicked: {
-                           let modelId = skywalker.createAuthorListModel(
-                                    QEnums.AUTHOR_LIST_LIKES, postUri)
-                           root.viewAuthorList(modelId, qsTr("Liked by"));
-                       }
-                   }
-               }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: parent.showReposts()
+                    }
+
+                    function showReposts() {
+                        let modelId = skywalker.createAuthorListModel(
+                                QEnums.AUTHOR_LIST_REPOSTS, postUri)
+                        root.viewAuthorList(modelId, qsTr("Reposted by"));
+                    }
+                }
+                Text {
+                    color: guiSettings.linkColor
+                    textFormat: Text.StyledText
+                    text: postLikeCount > 1 ? qsTr(`<b>${postLikeCount}</b> likes`) : qsTr(`<b>${postLikeCount}</b> like`)
+                    visible: postLikeCount
+
+                    Accessible.role: Accessible.Link
+                    Accessible.name: unicodeFonts.toPlainText(text)
+                    Accessible.onPressAction: showLikes()
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: parent.showLikes()
+                    }
+
+                    function showLikes() {
+                        let modelId = skywalker.createAuthorListModel(
+                                QEnums.AUTHOR_LIST_LIKES, postUri)
+                        root.viewAuthorList(modelId, qsTr("Liked by"));
+                    }
+                }
             }
 
             // Stats
@@ -497,6 +509,10 @@ Rectangle {
         anchors.fill: parent
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound
         onClicked: openPostThread()
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     AccessibilityUtils {

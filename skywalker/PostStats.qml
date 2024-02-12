@@ -89,57 +89,37 @@ Column {
                 id: moreMenu
                 modal: true
 
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Translate")
                     onTriggered: translatePost()
 
                     MenuItemSvg { svg: svgOutline.googleTranslate }
-
-                    Accessible.role: Accessible.MenuItem
-                    Accessible.name: text
-                    Accessible.onPressAction: triggered()
                 }
 
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Copy post text")
                     onTriggered: copyPostText()
 
                     MenuItemSvg { svg: svgOutline.copy }
-
-                    Accessible.role: Accessible.MenuItem
-                    Accessible.name: text
-                    Accessible.onPressAction: triggered()
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Share")
                     onTriggered: share()
 
                     MenuItemSvg { svg: svgOutline.share }
-
-                    Accessible.role: Accessible.MenuItem
-                    Accessible.name: text
-                    Accessible.onPressAction: triggered()
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Delete")
                     enabled: authorIsUser
                     onTriggered: deletePost()
 
                     MenuItemSvg { svg: svgOutline.delete }
-
-                    Accessible.role: Accessible.MenuItem
-                    Accessible.name: text
-                    Accessible.onPressAction: triggered()
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Report post")
                     onTriggered: reportPost()
 
                     MenuItemSvg { svg: svgOutline.report }
-
-                    Accessible.role: Accessible.MenuItem
-                    Accessible.name: text
-                    Accessible.onPressAction: triggered()
                 }
             }
         }

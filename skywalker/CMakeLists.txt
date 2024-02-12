@@ -275,6 +275,8 @@ qt_add_qml_module(libskywalker
         QML_FILES ContentLabelInfo.qml
         QML_FILES AccessibleImage.qml
         QML_FILES AccessibilityUtils.qml
+        QML_FILES AccessibleMenuItem.qml
+        QML_FILES AccessibleTabButton.qml
 )
 
 if (NOT ANDROID)

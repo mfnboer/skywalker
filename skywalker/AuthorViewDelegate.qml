@@ -25,6 +25,10 @@ Rectangle {
     height: grid.height
     color: guiSettings.backgroundColor
 
+    Accessible.role: Accessible.Button
+    Accessible.name: author.name
+    Accessible.onPressAction: skywalker.getDetailedProfile(author.did)
+
     GridLayout {
         id: grid
         columns: 3
@@ -115,17 +119,29 @@ Rectangle {
                 text: qsTr("Follow")
                 visible: !followingUri && !isUser(author) && showAuthor && showFollow
                 onClicked: follow(author)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`press to follow ${author.name}`)
+                Accessible.onPressAction: clicked()
             }
             SkyButton {
                 flat: true
                 text: qsTr("Following")
                 visible: followingUri && !isUser(author) && showAuthor && showFollow
                 onClicked: unfollow(author.did, followingUri)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`press to unfollow ${author.name}`)
+                Accessible.onPressAction: clicked()
             }
             SvgButton {
                 svg: svgOutline.delete
                 visible: listItemUri && allowDeleteItem
                 onClicked: confirmDelete()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`press to delete ${author.name}`)
+                Accessible.onPressAction: clicked()
             }
         }
 

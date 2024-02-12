@@ -35,6 +35,10 @@ Rectangle {
                     Material.background: "transparent"
                     svg: svgOutline.arrowBack
                     onClicked: header.closed()
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("go back")
+                    Accessible.onPressAction: clicked()
                 }
                 Text {
                     id: headerTexts
@@ -45,6 +49,10 @@ Rectangle {
                     font.pointSize: guiSettings.scaledFont(10/8)
                     color: guiSettings.headerTextColor
                     text: title
+
+                    Accessible.role: Accessible.TitleBar
+                    Accessible.name: text
+                    Accessible.description: Accessible.name
                 }
             }
         }
@@ -53,6 +61,10 @@ Rectangle {
             height: descriptionText.height
             color: guiSettings.backgroundColor
             visible: description
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: description
+            Accessible.description: Accessible.name
 
             Text {
                 id: descriptionText

@@ -31,7 +31,15 @@ Page {
 
     id: page
 
+    Accessible.role: Accessible.Pane
+
     header: Rectangle {
+        width: parent.width
+        height: bannerImg.visible ? bannerImg.height : noBanner.height
+
+        Accessible.role: Accessible.StaticText
+        Accessible.name: author.name
+
         ImageAutoRetry {
             id: bannerImg
             anchors.top: parent.top
@@ -58,6 +66,10 @@ Page {
             opacity: 0.5
             svg: svgOutline.arrowBack
             onClicked: page.closed()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("go back")
+            Accessible.onPressAction: clicked()
         }
 
         Rectangle {
@@ -82,14 +94,10 @@ Page {
         }
     }
 
-    function getBannerBottomY() {
-        return bannerImg.visible ? bannerImg.y + bannerImg.height : noBanner.y + noBanner.height;
-    }
-
     function getAvatarY() {
-        const contentShift = Math.max(authorFeedView.contentY + getBannerBottomY(), 0)
+        const contentShift = Math.max(authorFeedView.contentY + header.height, 0)
         const shift = Math.min(contentShift, avatar.height / 2 + 10)
-        return getBannerBottomY() - avatar.height / 2 - shift
+        return header.height - avatar.height / 2 - shift
     }
 
     footer: Rectangle {
@@ -100,12 +108,16 @@ Page {
             y: -height - 10
             svg: (isUser(author) || author.hasInvalidHandle()) ? svgOutline.chat : svgOutline.atSign
             overrideOnClicked: () => mentionPost()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr(`post and mention ${author.name}`)
+            Accessible.onPressAction: clicked()
         }
     }
 
     ListView {
         id: authorFeedView
-        y: getBannerBottomY() + 10
+        y: 10
         width: parent.width
         height: parent.height - y
         contentHeight: parent.height * 2
@@ -126,11 +138,18 @@ Page {
             leftPadding: 10
             rightPadding: 10
 
+            Accessible.role: Accessible.StaticText
+            Accessible.name: qsTr(`${author.name}\n\n${author.handle}\n\n${author.description}`)
+
             RowLayout {
                 SvgButton {
                     svg: svgOutline.edit
                     onClicked: editAuthor(author)
                     visible: isUser(author)
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("edit your profile")
+                    Accessible.onPressAction: clicked()
                 }
 
                 SvgButton {
@@ -138,24 +157,28 @@ Page {
                     svg: svgOutline.moreVert
                     onClicked: moreMenu.open()
 
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("more options")
+                    Accessible.onPressAction: clicked()
+
                     Menu {
                         id: moreMenu
                         modal: true
 
-                        MenuItem {
+                        AccessibleMenuItem {
                             text: qsTr("Translate")
                             enabled: authorDescription
                             onTriggered: root.translateText(authorDescription)
 
                             MenuItemSvg { svg: svgOutline.googleTranslate }
                         }
-                        MenuItem {
+                        AccessibleMenuItem {
                             text: qsTr("Share")
                             onTriggered: skywalker.shareAuthor(author)
 
                             MenuItemSvg { svg: svgOutline.share }
                         }
-                        MenuItem {
+                        AccessibleMenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
                             enabled: !isUser(author) && author.viewer.mutedByList.isNull()
                             onTriggered: {
@@ -167,7 +190,7 @@ Page {
 
                             MenuItemSvg { svg: authorMuted ? svgOutline.unmute : svgOutline.mute }
                         }
-                        MenuItem {
+                        AccessibleMenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
                             enabled: !isUser(author) && author.viewer.blockingByList.isNull()
                             onTriggered: {
@@ -179,7 +202,7 @@ Page {
 
                             MenuItemSvg { svg: blocking ? svgOutline.unblock : svgOutline.block }
                         }
-                        MenuItem {
+                        AccessibleMenuItem {
                            text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
                            enabled: !isUser(author)
                            onTriggered: {
@@ -192,13 +215,13 @@ Page {
                            MenuItemSvg { svg: svgOutline.repost }
                         }
 
-                        MenuItem {
+                        AccessibleMenuItem {
                             text: qsTr("Update lists")
                             onTriggered: updateLists()
 
                             MenuItemSvg { svg: svgOutline.list }
                         }
-                        MenuItem {
+                        AccessibleMenuItem {
                             text: qsTr("Report account")
                             onTriggered: root.reportAuthor(author)
 
@@ -210,12 +233,20 @@ Page {
                     text: qsTr("Follow")
                     visible: !following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.follow(author)
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr(`press to follow ${author.name}`)
+                    Accessible.onPressAction: clicked()
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
                     visible: following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.unfollow(author.did, following)
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr(`press to unfollow ${author.name}`)
+                    Accessible.onPressAction: clicked()
                 }
             }
 
@@ -276,22 +307,34 @@ Page {
                     color: guiSettings.linkColor
                     text: qsTr(`<b>${author.followersCount}</b> followers`)
 
+                    Accessible.role: Accessible.Link
+                    Accessible.name: unicodeFonts.toPlainText(text)
+                    Accessible.onPressAction: showFollowers()
+
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
-                            let modelId = skywalker.createAuthorListModel(
-                                    QEnums.AUTHOR_LIST_FOLLOWERS, author.did)
-                            root.viewAuthorList(modelId, qsTr("Followers"))
-                        }
+                        onClicked: parent.showFollowers()
+                    }
+
+                    function showFollowers() {
+                        let modelId = skywalker.createAuthorListModel(
+                                QEnums.AUTHOR_LIST_FOLLOWERS, author.did)
+                        root.viewAuthorList(modelId, qsTr("Followers"))
                     }
                 }
                 Text {
                     color: guiSettings.linkColor
                     text: qsTr(`<b>${author.followsCount}</b> following`)
 
+                    Accessible.role: Accessible.Link
+                    Accessible.name: unicodeFonts.toPlainText(text)
+                    Accessible.onPressAction: showFollowing()
+
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
+                        onClicked: parent.showFollowing()
+
+                        function showFollowing() {
                             let modelId = skywalker.createAuthorListModel(
                                     QEnums.AUTHOR_LIST_FOLLOWS, author.did)
                             root.viewAuthorList(modelId, qsTr("Following"))
@@ -301,6 +344,9 @@ Page {
                 Text {
                     color: guiSettings.textColor
                     text: qsTr(`<b>${author.postsCount}</b> posts`)
+
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: unicodeFonts.toPlainText(text)
                 }
             }
 
@@ -321,29 +367,29 @@ Page {
                 id: feedMenuBar
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
 
-                TabButton {
+                AccessibleTabButton {
                     text: qsTr("Posts")
                     width: implicitWidth
                 }
-                TabButton {
+                AccessibleTabButton {
                     text: qsTr("Replies")
                     width: implicitWidth
                 }
-                TabButton {
+                AccessibleTabButton {
                     text: qsTr("Media")
                     width: implicitWidth
                 }
-                TabButton {
+                AccessibleTabButton {
                     text: qsTr("Likes")
                     visible: isUser(author)
                     width: isUser(author) ? implicitWidth : 0
                 }
-                TabButton {
+                AccessibleTabButton {
                     text: qsTr("Feeds")
                     visible: hasFeeds
                     width: hasFeeds ? implicitWidth : 0
                 }
-                TabButton {
+                AccessibleTabButton {
                     text: qsTr("Lists")
                     visible: hasLists
                     width: hasLists ? implicitWidth : 0
@@ -371,7 +417,7 @@ Page {
             width: parent.width
 
             // -1 to make the interactive enable/disable work
-            height: page.height - getBannerBottomY() - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0)
+            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0)
 
             currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
 
@@ -663,6 +709,10 @@ Page {
             authorFeedView.refresh()
         }
         onUnmuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

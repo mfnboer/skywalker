@@ -8,6 +8,9 @@ Label {
     background: Rectangle { color: backgroundColor; radius: 2 }
     font.pointSize: guiSettings.labelFontSize
 
+    Accessible.role: Accessible.StaticText
+    Accessible.name: text
+
     GuiSettings {
         id: guiSettings
     }
