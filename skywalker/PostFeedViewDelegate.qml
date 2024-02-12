@@ -221,7 +221,7 @@ Rectangle {
                 onClicked: skywalker.getDetailedProfile(author.did)
 
                 Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`show profile of ${author.handle}`)
+                Accessible.name: qsTr(`show profile of ${author.name}`)
                 Accessible.onPressAction: clicked()
             }
         }

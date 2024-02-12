@@ -20,6 +20,13 @@ Item {
             date.getFullYear() === today.getFullYear()
     }
 
+    function getTimeSpeech(date) {
+        const time = isToday(date) ?
+            date.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
+            date.toLocaleString(Qt.locale(), Locale.ShortFormat)
+        return time
+    }
+
     function getPostSpeech(postIndexedDateTime,
                            author,
                            postPlainText,
@@ -29,14 +36,9 @@ Item {
                            postRecordWithMedia,
                            postRepostedByAuthor,
                            postIsReply, postReplyToAuthor) {
-        const time = isToday(postIndexedDateTime) ?
-            postIndexedDateTime.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
-            postIndexedDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
-
+        const time = getTimeSpeech(postIndexedDateTime)
         const reposted = !postRepostedByAuthor.isNull() ? qsTr(`\n\nreposted by ${postRepostedByAuthor.name}`) : ""
-
         const replyTo = postIsReply ? qsTr(`\n\nreply to ${postReplyToAuthor.name}`) : ""
-
         let speech = `${author.name}\n\n${time} ${replyTo} ${reposted}\n\n${postPlainText}`
 
         if (postImages.length === 1)

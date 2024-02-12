@@ -58,6 +58,10 @@ Rectangle {
     height: grid.height
     color: notificationIsRead ? "transparent" : guiSettings.postHighLightColor
 
+    Accessible.role: Accessible.Button
+    Accessible.name: getSpeech()
+    Accessible.onPressAction: openNotification()
+
     GridLayout {
         id: grid
         columns: 2
@@ -82,6 +86,10 @@ Rectangle {
                 visible: showPost()
 
                 onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`show profile of ${notificationAuthor.name}`)
+                Accessible.onPressAction: clicked()
             }
             SvgImage {
                 x: parent.x + 14
@@ -231,6 +239,10 @@ Rectangle {
                     avatarUrl: notificationAuthor.avatarUrl
 
                     onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr(`show profile of ${notificationAuthor.name}`)
+                    Accessible.onPressAction: clicked()
                 }
                 Repeater {
                     model: Math.min(notificationOtherAuthors.length, 4)
@@ -243,6 +255,10 @@ Rectangle {
                         avatarUrl: notificationOtherAuthors[index].avatarUrl
 
                         onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr(`show profile of ${notificationOtherAuthors[index].name}`)
+                        Accessible.onPressAction: clicked()
                     }
                 }
                 Text {
@@ -260,15 +276,7 @@ Rectangle {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
                     color: guiSettings.textColor
-                    text: {
-                        `<b>${notificationAuthor.name}</b> ` +
-                        (notificationOtherAuthors.length > 0 ?
-                            (notificationOtherAuthors.length > 1 ?
-                                qsTr(`and ${(notificationOtherAuthors.length)} others `) :
-                                qsTr(`and <b>${(notificationOtherAuthors[0].name)}</b> `)) :
-                            "") +
-                        reasonText()
-                    }
+                    text: authorsAndReasonText()
                 }
                 Text {
                     text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
@@ -318,6 +326,10 @@ Rectangle {
                     avatarUrl: notificationInviteCodeUsedBy.avatarUrl
 
                     onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr(`show profile of ${notificationInviteCodeUsedBy.name}`)
+                    Accessible.onPressAction: clicked()
                 }
 
                 SkyButton {
@@ -368,17 +380,26 @@ Rectangle {
     MouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
-        onClicked: {
-            console.debug("NOTIFICATION CLICKED")
-            if (notificationPostUri)
-                skywalker.getPostThread(notificationPostUri)
-            else if (notificationInviteCode)
-                skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
-        }
+        onClicked: openNotification()
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function openNotification() {
+        if (notificationPostUri)
+            skywalker.getPostThread(notificationPostUri)
+        else if (notificationInviteCode)
+            skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
     }
 
     function showPost() {
@@ -409,8 +430,72 @@ Rectangle {
             return qsTr("started following you")
         case QEnums.NOTIFICATION_REASON_REPOST:
             return qsTr("reposted your post")
+        case QEnums.NOTIFICATION_REASON_MENTION:
+            return qsTr("mentioned you")
+        case QEnums.NOTIFICATION_REASON_REPLY:
+            return qsTr("replied to you")
+        case QEnums.NOTIFICATION_REASON_QUOTE:
+            return qsTr("quoted you")
         default:
             return "UNKNOW REASON: " + notificationReason
         }
+    }
+
+    function authorsAndReasonText() {
+        return `<b>${notificationAuthor.name}</b> ` +
+            (notificationOtherAuthors.length > 0 ?
+                (notificationOtherAuthors.length > 1 ?
+                    qsTr(`and ${(notificationOtherAuthors.length)} others `) :
+                    qsTr(`and <b>${(notificationOtherAuthors[0].name)}</b> `)) :
+                "") +
+            reasonText()
+    }
+
+    function getReasonPostSpeech() {
+        if (notificationReasonPostLocallyDeleted)
+            return qsTr("deleted post")
+
+        if (notificationReasonPostNotFound)
+            return qsTr("not found")
+
+        return accessibilityUtils.getPostSpeech(notificationReasonPostTimestamp,
+                skywalker.getUser(), notificationReasonPostPlainText, notificationReasonPostImages,
+                notificationReasonPostExternal, notificationReasonPostRecord,
+                notificationReasonPostRecordWithMedia,
+                accessibilityUtils.nullAuthor, false, accessibilityUtils.nullAuthor)
+    }
+
+    function getAggregatableSpeech() {
+        const reason = unicodeFonts.toPlainText(authorsAndReasonText())
+        const time = accessibilityUtils.getTimeSpeech(notificationTimestamp)
+        let speech = `${time} ${reason}`
+
+        if (showPostForAggregatableReason()) {
+            const postSpeech = getReasonPostSpeech()
+            speech += `\n\n${postSpeech}`
+        }
+
+        return speech
+    }
+
+    function getPostSpeech() {
+        const reason = reasonText()
+        const time = accessibilityUtils.getTimeSpeech(notificationTimestamp)
+        const postSpeech = accessibilityUtils.getPostSpeech(notificationPostTimestamp,
+                notificationAuthor, notificationPostPlainText, notificationPostImages,
+                notificationPostExternal, notificationPostRecord,
+                notificationPostRecordWithMedia, accessibilityUtils.nullAuthor,
+                notificationReason === QEnums.NOTIFICATION_REASON_REPLY, replyToAuthor)
+
+        let speech = `${time} ${notificationAuthor.name} ${reason}\n\n${postSpeech}`
+        return speech
+    }
+
+    function getSpeech() {
+        if (isAggregatableReason())
+            return getAggregatableSpeech()
+
+        if (showPost())
+            return getPostSpeech()
     }
 }
