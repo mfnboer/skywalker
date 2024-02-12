@@ -1,5 +1,6 @@
 next
 ====
+* Proper rendering of combined emoji's like rainbow and trans flags.
 * Suppport absolute path in relative url for linkcard image.
 
 1.2

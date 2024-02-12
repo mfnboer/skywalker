@@ -15,6 +15,8 @@ public:
 
 protected:
     void highlightBlock(const QString& text) override;
+    void setEmojiFontKeycaps(const QString& text);
+    void setEmojiFontCombinedEmojis(const QString& text);
 
 private:
     QColor mHighlightColor;
