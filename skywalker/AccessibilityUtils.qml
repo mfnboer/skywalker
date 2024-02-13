@@ -93,4 +93,15 @@ Item {
         let speech = qsTr(`${(guiSettings.listTypeName(list.purpose))} by ${list.creator.name}\n\n${list.description}`)
         return speech
     }
+
+    function getContentPrefVisibilitySpeech(pref) {
+        switch (pref) {
+        case QEnums.CONTENT_PREF_VISIBILITY_HIDE:
+            return "hide"
+        case QEnums.CONTENT_PREF_VISIBILITY_WARN:
+            return "warn"
+        case QEnums.CONTENT_PREF_VISIBILITY_SHOW:
+            return "show"
+        }
+    }
 }

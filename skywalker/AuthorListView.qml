@@ -17,9 +17,12 @@ ListView {
 
     id: authorListView
     spacing: 0
+    clip: true
     model: skywalker.getAuthorListModel(modelId)
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
+
+    Accessible.role: Accessible.List
 
     header: SimpleDescriptionHeader {
         title: authorListView.title

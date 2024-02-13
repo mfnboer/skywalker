@@ -11,8 +11,11 @@ ListView {
     id: bookmarksView
     spacing: 0
     model: skywalker.createBookmarksModel()
+    clip: true
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
+
+    Accessible.role: Accessible.List
 
     header: SimpleHeader {
         text: qsTr("Bookmarks") + ` (${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize})`

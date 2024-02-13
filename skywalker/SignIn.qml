@@ -52,8 +52,7 @@ Page {
             fillMode: Image.PreserveAspectFit
             source: "/images/skywalker.png"
 
-            Accessible.role: Accessible.Graphic
-            Accessible.name: qsTr("Skywalker logo")
+            Accessible.ignored: true
         }
         Text {
             id: warranty

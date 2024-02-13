@@ -6,7 +6,8 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Accessible.role: Accessible.Pane
+
+    Accessible.role: Accessible.Dialog
 
     Label {
         id: msgLabel

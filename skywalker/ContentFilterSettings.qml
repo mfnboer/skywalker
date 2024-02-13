@@ -11,6 +11,8 @@ Page {
     id: page
     padding: 10
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: qsTr("Content Filtering")
         onBack: page.closed()
@@ -25,6 +27,10 @@ Page {
         text: qsTr("Adult content")
         checked: page.model.adultContent
         onCheckedChanged: page.model.adultContent = checked
+
+        Accessible.role: Accessible.Button
+        Accessible.name: text
+        Accessible.onPressAction: toggle()
     }
 
     ListView {
@@ -37,6 +43,8 @@ Page {
         model: page.model
         flickDeceleration: guiSettings.flickDeceleration
 
+        Accessible.role: Accessible.List
+
         delegate: GridLayout {
             required property var model
             required property contentgroup contentGroup
@@ -46,12 +54,16 @@ Page {
             columns: 2
 
             Text {
+                id: titleText
                 Layout.fillWidth: true
                 font.bold: true
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
                 text: contentGroup.title
                 color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: `${titleText.text}\n\n${subTitleText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
             }
             Row {
                 id: buttonRow
@@ -66,6 +78,8 @@ Page {
                         if (checked)
                             model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_HIDE
                     }
+
+                    Accessible.name: qsTr(`hide ${titleText.text}`)
                 }
                 SkyRadioButton {
                     checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_WARN
@@ -75,6 +89,8 @@ Page {
                         if (checked)
                             model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_WARN
                     }
+
+                    Accessible.name: qsTr(`warn for ${titleText.text}`)
                 }
                 SkyRadioButton {
                     checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW
@@ -84,6 +100,8 @@ Page {
                         if (checked)
                             model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_SHOW
                     }
+
+                    Accessible.name: qsTr(`show ${titleText.text}`)
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
@@ -91,16 +109,22 @@ Page {
                     color: guiSettings.buttonColor
                     text: qsTr("Hide")
                     visible: contentGroup.isAdult && !page.model.adultContent
+
+                    Accessible.ignored: true
                 }
             }
 
             Text {
+                id: subTitleText
                 bottomPadding: 5
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
                 text: contentGroup.subTitle
                 color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: `${titleText.text}\n\n${subTitleText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
             }
 
             Rectangle {
@@ -109,11 +133,23 @@ Page {
                 Layout.preferredHeight: 1
                 color: guiSettings.separatorColor
             }
-        }
 
-        GuiSettings {
-            id: guiSettings
-        }
+            function getContentPrefVisibilitySpeech() {
+                if (contentGroup.isAdult && !page.model.adultContent)
+                    return qsTr("hide, adult content is disabled")
+
+                return accessibilityUtils.getContentPrefVisibilitySpeech(contentPrefVisibility)
+            }
+
+        }   
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 
     Component.onDestruction: {

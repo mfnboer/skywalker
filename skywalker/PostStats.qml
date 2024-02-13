@@ -89,6 +89,12 @@ Column {
                 id: moreMenu
                 modal: true
 
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    Accessible.name: qsTr("close more options menu")
+                }
                 AccessibleMenuItem {
                     text: qsTr("Translate")
                     onTriggered: translatePost()

@@ -12,12 +12,14 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
 
+    Accessible.role: Accessible.Dialog
+
     SkyTextInput {
         id: textInput
         width: parent.width
         svgIcon: svgOutline.mutedWords
         initialText: editWord
-        placeholderText: qsTr("Enter word/phrase to mute")
+        placeholderText: qsTr("Word/phrase to mute")
         enabled: true
     }
 

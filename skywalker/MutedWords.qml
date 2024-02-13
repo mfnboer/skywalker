@@ -16,6 +16,8 @@ ListView {
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
+    Accessible.role: Accessible.List
+
     header: SimpleHeader {
         text: qsTr("Muted words") + ` (${view.count} / ${skywalker.mutedWords.maxSize})`
         onBack: view.closed()
@@ -25,6 +27,10 @@ ListView {
             svg: svgOutline.add
             onClicked: addWord()
             visible: view.count < skywalker.mutedWords.maxSize
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr(`add word to mute`)
+            Accessible.onPressAction: clicked()
         }
     }
     headerPositioning: ListView.OverlayHeader
@@ -45,18 +51,29 @@ ListView {
                 font.pointSize: guiSettings.scaledFont(9/8)
                 color: guiSettings.textColor
                 text: modelData
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: text
             }
             SvgButton {
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 svg: svgOutline.edit
                 onClicked: editWord(entryText.text)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`edit ${entryText.text}`)
+                Accessible.onPressAction: clicked()
             }
             SvgButton {
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 svg: svgOutline.delete
                 onClicked: skywalker.mutedWords.removeEntry(entryText.text)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`delete ${entryText.text}`)
+                Accessible.onPressAction: clicked()
             }
         }
 

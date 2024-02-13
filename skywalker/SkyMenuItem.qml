@@ -11,6 +11,11 @@ Item {
     width: itemRow.width
     height: itemRow.height
 
+    Accessible.role: Accessible.MenuItem
+    Accessible.name: text
+    Accessible.description: Accessible.name
+    Accessible.onPressAction: menuItem.clicked()
+
     Row {
         id: itemRow
         topPadding: 10

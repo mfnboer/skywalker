@@ -14,6 +14,8 @@ ApplicationWindow {
     visible: true
     title: "Skywalker"
 
+    Accessible.role: Accessible.Application
+
     onClosing: (event) => {
         if (Qt.platform.os !== "android") {
             return
@@ -267,11 +269,30 @@ ApplicationWindow {
         }
     }
 
+    // Hack for Talkback
+    // When a popup menu (drawer) is shown, then Talkback still lets the user navigate
+    // throught the controls on the window underneath. The user may activate a control
+    // and the popup stayse open forever!
+    // Making this full screen rectangle visible, blocks Talkback from window beneath.
+    Rectangle {
+        id: popupShield
+        anchors.fill: parent
+        color: "black"
+        opacity: 0.2
+        visible: false
+
+        Accessible.role: Accessible.Window
+    }
+
     SettingsDrawer {
         id: settingsDrawer
         height: parent.height
         edge: Qt.RightEdge
         dragMargin: 0
+        modal: true
+
+        onAboutToShow: enablePopupShield(true)
+        onAboutToHide: enablePopupShield(false)
 
         onProfile: {
             let did = skywalker.getUserDid()
@@ -386,6 +407,10 @@ ApplicationWindow {
         height: parent.height * 0.7
         edge: Qt.BottomEdge
         dragMargin: 0
+        modal: true
+
+        onAboutToShow: enablePopupShield(true)
+        onAboutToHide: enablePopupShield(false)
 
         onSelectedUser: (profile) => {
             if (!profile.did) {
@@ -426,6 +451,10 @@ ApplicationWindow {
         width: parent.width
         edge: Qt.BottomEdge
         dragMargin: 0
+        modal: true
+
+        onAboutToShow: enablePopupShield(true)
+        onAboutToHide: enablePopupShield(false)
 
         Column {
             id: menuColumn
@@ -438,13 +467,16 @@ ApplicationWindow {
                 SvgButton {
                     id: closeButton
                     anchors.right: parent.right
-                    iconColor: guiSettings.textColor
-                    Material.background: "transparent"
                     svg: svgOutline.close
                     onClicked: repostDrawer.close()
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("cancel repost")
+                    Accessible.onPressAction: clicked()
                 }
 
                 Button {
+                    id: repostButton
                     anchors.horizontalCenter: parent.horizontalCenter
                     Material.background: guiSettings.buttonColor
                     contentItem: Text {
@@ -460,9 +492,15 @@ ApplicationWindow {
 
                         repostDrawer.close()
                     }
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: contentItem.text
+                    Accessible.onPressAction: clicked()
+
                 }
             }
             Button {
+                id: quotePostButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 Material.background: guiSettings.buttonColor
                 contentItem: Text {
@@ -475,6 +513,10 @@ ApplicationWindow {
                                       repostDrawer.repostAuthor)
                     repostDrawer.close()
                 }
+
+                Accessible.role: Accessible.Button
+                Accessible.name: contentItem.text
+                Accessible.onPressAction: clicked()
             }
         }
 
@@ -547,6 +589,10 @@ ApplicationWindow {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function enablePopupShield(enable) {
+        popupShield.visible = enable
     }
 
     function showSettingsDrawer() {

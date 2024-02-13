@@ -9,6 +9,7 @@ Drawer {
     signal selectedUser(basicprofile user)
 
     id: drawer
+    Accessible.role: Accessible.Pane
 
     SimpleAuthorListView {
         anchors.fill: parent
@@ -28,16 +29,21 @@ Drawer {
                 font.pointSize: guiSettings.scaledFont(10/8)
                 color: guiSettings.textColor
                 text: qsTr("Switch Account")
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: text
             }
 
             SvgButton {
                 id: closeButton
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
                 svg: svgOutline.close
                 onClicked: drawer.close()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("cancel switch user")
+                Accessible.onPressAction: clicked()
             }
         }
         headerPositioning: ListView.OverlayHeader

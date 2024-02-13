@@ -24,6 +24,7 @@ Drawer {
     signal signOut()
     signal about()
 
+    id: drawer
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
     padding: 20
 
@@ -33,27 +34,40 @@ Drawer {
         width: Math.max(profileItem.width, moderationItem.width, settingsItem.width) + 70
         spacing: 5
 
-        Avatar {
-            width: 60
-            height: width
-            avatarUrl: user.avatarUrl
-            onClicked: profile()
-        }
+        Column {
+            width: parent.width
+            spacing: 5
 
-        Text {
-            wrapMode: Text.Wrap
-            elide: Text.ElideRight
-            maximumLineCount: 2
-            font.bold: true
-            color: guiSettings.textColor
-            text: user.name
-        }
+            Accessible.role: Accessible.StaticText
+            Accessible.name: `${user.name} @${user.handle}`
 
-        Text {
-            elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(7/8)
-            color: guiSettings.handleColor
-            text: `@${user.handle}`
+            Avatar {
+                id: avatar
+                width: 60
+                height: width
+                avatarUrl: user.avatarUrl
+                onClicked: profile()
+            }
+
+            Text {
+                id: nameText
+                width: parent.width
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                maximumLineCount: 2
+                font.bold: true
+                color: guiSettings.textColor
+                text: user.name
+            }
+
+            Text {
+                id: handleText
+                width: parent.width
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: `@${user.handle}`
+            }
         }
 
         Rectangle {
@@ -93,53 +107,47 @@ Drawer {
                 id: moderationMenu
                 modal: true
 
-                MenuItem {
+                onAboutToShow: enableSettingsPopupShield(true)
+                onAboutToHide: enableSettingsPopupShield(false)
+
+                CloseMenuItem {
+                    Accessible.name: qsTr("close moderation menu")
+                }
+                AccessibleMenuItem {
                     text: qsTr("Content Filtering")
                     onTriggered: contentFiltering()
 
-                    MenuItemSvg {
-                        svg: svgOutline.visibility
-                    }
+                    MenuItemSvg { svg: svgOutline.visibility }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Blocked Accounts")
                     onTriggered: blockedAccounts()
 
-                    MenuItemSvg {
-                        svg: svgOutline.block
-                    }
+                    MenuItemSvg { svg: svgOutline.block }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Muted Accounts")
                     onTriggered: mutedAccounts()
 
-                    MenuItemSvg {
-                        svg: svgOutline.mute
-                    }
+                    MenuItemSvg { svg: svgOutline.mute }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Muted Reposts")
                     onTriggered: mutedReposts()
 
-                    MenuItemSvg {
-                        svg: svgOutline.repost
-                    }
+                    MenuItemSvg { svg: svgOutline.repost }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Moderation Lists")
                     onTriggered: modLists()
 
-                    MenuItemSvg {
-                        svg: svgOutline.list
-                    }
+                    MenuItemSvg { svg: svgOutline.list }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Muted Words")
                     onTriggered: mutedWords()
 
-                    MenuItemSvg {
-                        svg: svgOutline.mutedWords
-                    }
+                    MenuItemSvg { svg: svgOutline.mutedWords }
                 }
             }
         }
@@ -180,7 +188,33 @@ Drawer {
         }
     }
 
+    SvgButton {
+        id: closeButton
+        anchors.right: userColumn.right
+        anchors.top: userColumn.top
+        svg: svgOutline.close
+        onClicked: drawer.close()
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("close menu")
+        Accessible.onPressAction: clicked()
+    }
+
+    Rectangle {
+        id: settingsPopupShield
+        anchors.fill: parent
+        color: "black"
+        opacity: 0.2
+        visible: false
+
+        Accessible.role: Accessible.Window
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    function enableSettingsPopupShield(enable) {
+        settingsPopupShield.visible = enable
     }
 }

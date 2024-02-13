@@ -18,6 +18,10 @@ RadioButton {
         text: radio.text
     }
 
+    Accessible.role: Accessible.RadioButton
+    Accessible.name: text
+    Accessible.onToggleAction: toggle()
+
     GuiSettings {
         id: guiSettings
     }
