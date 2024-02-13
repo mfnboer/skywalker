@@ -58,7 +58,7 @@ void FacetHighlighter::setEmojiFontKeycaps(const QString& text)
 
 void FacetHighlighter::setEmojiFontCombinedEmojis(const QString& text)
 {
-    // ZWJ Emoji's are not alway correctly rendered. Somehow the primary font
+    // ZWJ Emoji's are not always correctly rendered. Somehow the primary font
     // renders them as 2 separate emoji's.
     //
     // Example: the rainbow flag: \U0001F3F3\uFE0F\u200D\U0001F308"

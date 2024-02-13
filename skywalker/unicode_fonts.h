@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
 
     static bool isEmoji(uint c);
+    static bool isKeycapEmoji(const QString& grapheme);
 
 private:
     static uint convertToSmallCaps(QChar c);

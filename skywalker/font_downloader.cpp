@@ -21,7 +21,7 @@ static QString setEmojiFontCombinedEmojis(const QString& text)
 {
     static const QString emojiSpanStart = QString("<span style=\"font-family:'%1'\">").arg(EMOJI_FONT_FAMILY);
 
-    // ZWJ Emoji's are not alway correctly rendered. Somehow the primary font
+    // ZWJ Emoji's are not always correctly rendered. Somehow the primary font
     // renders them as 2 separate emoji's.
     //
     // Example: the rainbow flag: \U0001F3F3\uFE0F\u200D\U0001F308"
@@ -30,6 +30,9 @@ static QString setEmojiFontCombinedEmojis(const QString& text)
     //          \U0001F308 =       rainbow
     //
     // Explicity set emoji font for long emoji graphemes.
+
+    // Force Combining Enclosing Keycap character to be rendered by the emoji font.
+    // The primary Roboto font renders it as 2 glyphs
 
     QString result;
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
@@ -46,7 +49,7 @@ static QString setEmojiFontCombinedEmojis(const QString& text)
 
         if (len > 2)
         {
-            if (UnicodeFonts::onlyEmojis(grapheme))
+            if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
             {
                 if (startEmojis == -1)
                 {
@@ -119,11 +122,7 @@ void FontDownloader::initAppFonts()
     qDebug() << "Font style hint:" << font.styleHint();
     qDebug() << "Font scale:" << fontScale;
 
-    // Force Combining Enclosing Keycap character to be rendered by the emoji font.
-    // The primary Roboto font renders it as 2 glyphs
-    const QRegularExpression enclosingKeycapRE("(.\uFE0F\u20E3)");
     const QString replacementKeycap = QString("<span style=\"font-family:'%1'\">\\1</span>").arg(EMOJI_FONT_FAMILY);
-    ATProto::RichTextMaster::addHtmlClenupReplacement(enclosingKeycapRE, replacementKeycap);
     ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return setEmojiFontCombinedEmojis(s); });
 }
 

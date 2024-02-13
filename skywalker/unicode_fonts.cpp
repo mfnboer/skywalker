@@ -216,5 +216,11 @@ bool UnicodeFonts::isEmoji(uint c)
     return c >= it->first && c <= it->second;
 }
 
+bool UnicodeFonts::isKeycapEmoji(const QString& grapheme)
+{
+    static const QRegularExpression enclosingKeycapRE("(.\uFE0F\u20E3)");
+    const auto match = enclosingKeycapRE.match(grapheme);
+    return match.hasMatch();
+}
 
 }
