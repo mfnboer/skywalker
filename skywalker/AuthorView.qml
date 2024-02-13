@@ -38,7 +38,7 @@ Page {
         height: bannerImg.visible ? bannerImg.height : noBanner.height
 
         Accessible.role: Accessible.StaticText
-        Accessible.name: author.name
+        Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
         ImageAutoRetry {
             id: bannerImg
@@ -126,6 +126,8 @@ Page {
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: guiSettings.flickDeceleration
 
+        Accessible.role: Accessible.List
+
         onContentYChanged: {
             if (contentY > -headerItem.getFeedMenuBarHeight() + 10) {
                 contentY = -headerItem.getFeedMenuBarHeight() + 10
@@ -139,7 +141,7 @@ Page {
             rightPadding: 10
 
             Accessible.role: Accessible.StaticText
-            Accessible.name: qsTr(`${author.name}\n\n${author.handle}\n\n${author.description}`)
+            Accessible.name: qsTr(`${author.name}\n\n@${author.handle}\n\n${author.description}`)
 
             RowLayout {
                 SvgButton {

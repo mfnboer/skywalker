@@ -85,6 +85,7 @@ Item {
         if (gifUtils.isGif(postExternal.uri))
             return qsTr(`GIF image: ${postExternal.title}`)
 
-        return qsTr("link card:") + postExternal.title + "\n\n" + postExternal.description
+        const hostname = new URL(postExternal.uri).hostname
+        return qsTr("link card: ") + postExternal.title + "\n\nfrom: " + hostname + "\n\n" + postExternal.description
     }
 }

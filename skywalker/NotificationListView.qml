@@ -12,8 +12,11 @@ ListView {
     id: notificationListView
     spacing: 0
     model: skywalker.notificationListModel
+    clip: true
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
+
+    Accessible.role: Accessible.List
 
     header: SimpleHeader {
         text: qsTr("Notifications")

@@ -14,6 +14,8 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
+    Accessible.role: Accessible.List
+
     header: SimpleHeader {
         height: restrictionRow.visible ? guiSettings.headerHeight + restrictionRow.height : guiSettings.headerHeight
         text: qsTr("Post thread")
@@ -27,6 +29,9 @@ ListView {
             border.width: 1
             border.color: guiSettings.headerColor
             visible: model.getReplyRestriction() !== QEnums.REPLY_RESTRICTION_NONE
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: unicodeFonts.toPlainText(restrictionText.text)
 
             Rectangle {
                 id: restrictionRow
@@ -125,6 +130,10 @@ ListView {
             y: -height - 10
             svg: svgOutline.reply
             overrideOnClicked: () => reply()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr(`reply to ${(getReplyToAuthor().name)}`)
+            Accessible.onPressAction: clicked()
         }
     }
     footerPositioning: ListView.OverlayFooter
@@ -139,8 +148,16 @@ ListView {
         onTriggered: positionViewAtIndex(postEntryIndex, ListView.Center)
     }
 
+    UnicodeFonts {
+        id: unicodeFonts
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    function getReplyToAuthor() {
+        return model.getData(postEntryIndex, AbstractPostFeedModel.Author)
     }
 
     function reply(initialText = "", imageSource = "") {
@@ -148,7 +165,7 @@ ListView {
         const postCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostCid)
         const postText = model.getData(postEntryIndex, AbstractPostFeedModel.PostText)
         const postIndexedDateTime = model.getData(postEntryIndex, AbstractPostFeedModel.PostIndexedDateTime)
-        const author = model.getData(postEntryIndex, AbstractPostFeedModel.Author)
+        const author = getReplyToAuthor()
         const postReplyRootUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootUri)
         const postReplyRootCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootCid)
 
