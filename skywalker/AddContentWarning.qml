@@ -17,6 +17,9 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
 
+    Accessible.role: Accessible.Dialog
+    Accessible.name: title
+
     Flickable {
         anchors.fill: parent
         clip: true
@@ -29,22 +32,23 @@ Dialog {
             id: warningColumn
             width: parent.width
 
-            CheckBox {
+            AccessibleCheckBox {
                 checked: suggestive
                 text: qsTr("Sexually suggestive")
                 onCheckedChanged: suggestive = checked
             }
-            CheckBox {
+            AccessibleCheckBox {
                 checked: nudity
                 text: qsTr("Nudity")
                 onCheckedChanged: nudity = checked
             }
-            CheckBox {
+            AccessibleCheckBox {
                 checked: porn
                 text: qsTr("Pornography / Sexually explicit")
                 onCheckedChanged: porn = checked
+                Accessible.onPressAction: toggle()
             }
-            CheckBox {
+            AccessibleCheckBox {
                 checked: gore
                 text: qsTr("Violent / Bloody")
                 onCheckedChanged: gore = checked

@@ -32,13 +32,11 @@ Page {
     id: page
 
     Accessible.role: Accessible.Pane
+    Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
     header: Rectangle {
         width: parent.width
         height: bannerImg.visible ? bannerImg.height : noBanner.height
-
-        Accessible.role: Accessible.StaticText
-        Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
         ImageAutoRetry {
             id: bannerImg
@@ -340,13 +338,13 @@ Page {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: parent.showFollowing()
+                        onClicked: parent.showFollowing()   
+                    }
 
-                        function showFollowing() {
-                            let modelId = skywalker.createAuthorListModel(
-                                    QEnums.AUTHOR_LIST_FOLLOWS, author.did)
-                            root.viewAuthorList(modelId, qsTr("Following"))
-                        }
+                    function showFollowing() {
+                        let modelId = skywalker.createAuthorListModel(
+                                QEnums.AUTHOR_LIST_FOLLOWS, author.did)
+                        root.viewAuthorList(modelId, qsTr("Following"))
                     }
                 }
                 Text {

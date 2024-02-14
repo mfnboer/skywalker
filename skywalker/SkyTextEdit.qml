@@ -16,7 +16,13 @@ TextEdit {
     clip: true
     focus: true
 
+    Accessible.role: Accessible.EditableText
+    Accessible.name: placeholder.visible ? placeholderText : text
+    Accessible.multiLine: true
+    Accessible.editable: true
+
     Text {
+        id: placeholder
         anchors.fill: parent
         padding: parent.padding
         leftPadding: parent.leftPadding

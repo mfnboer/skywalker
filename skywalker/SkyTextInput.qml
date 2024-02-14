@@ -38,6 +38,7 @@ Rectangle {
         Accessible.role: Accessible.EditableText
         Accessible.name: text ? text : qsTr(`Enter ${placeholderText}`)
         Accessible.description: Accessible.name
+        Accessible.editable: true
         Accessible.passwordEdit: echoMode === TextInput.Password
 
         Text {

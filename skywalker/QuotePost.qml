@@ -10,6 +10,15 @@ Column {
     id: quoteColumn
     padding: 10
 
+    Accessible.role: Accessible.StaticText
+    Accessible.name: getSpeech()
+
+    function getSpeech() {
+        const time = accessibilityUtils.getTimeSpeech(postDateTime)
+        const speech = `${author.name}\n\n${time}\n\n${postText}`
+        return speech
+    }
+
     RowLayout {
         width: parent.width - 20
 
@@ -42,5 +51,9 @@ Column {
         postMuted: QEnums.MUTED_POST_NONE
         postDateTime: postDateTime
         maxTextLines: 5
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
     }
 }

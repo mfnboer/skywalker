@@ -19,6 +19,8 @@ Popup {
     }
     closePolicy: Popup.CloseOnPressOutside
 
+    onOpened: statusText.forceActiveFocus()
+
     Label {
         id: statusText
         padding: 10
@@ -30,6 +32,10 @@ Popup {
         elide: Text.ElideRight
         color: guiSettings.textColor
         text: "Status"
+
+        Accessible.role: Accessible.StaticText
+        Accessible.name: text
+        Accessible.description: Accessible.name
     }
     SvgButton {
         id: closeButton
@@ -39,6 +45,10 @@ Popup {
         Material.background: "transparent"
         svg: svgOutline.close
         onClicked: statusPopup.close()
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("close status message")
+        Accessible.onPressAction: clicked()
     }
 
     MouseArea {

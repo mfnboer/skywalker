@@ -13,6 +13,8 @@ Rectangle {
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
+    Accessible.role: Accessible.Pane
+
     Text {
         anchors.leftMargin: 10
         anchors.left: parent.left
@@ -21,6 +23,10 @@ Rectangle {
         font.pointSize: guiSettings.scaledFont(10/8)
         color: guiSettings.headerTextColor
         text: headerItem.title
+
+        Accessible.role: Accessible.TitleBar
+        Accessible.name: text
+        Accessible.description: Accessible.name
     }
 
     SvgButton {
@@ -29,6 +35,10 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         svg: headerItem.buttonSvg
         onClicked: buttonClicked()
+
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Ok")
+        Accessible.onPressAction: clicked()
     }
 
     GuiSettings {

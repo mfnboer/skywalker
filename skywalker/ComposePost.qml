@@ -75,6 +75,10 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.cancel
             onClicked: page.cancel()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("cancel posting")
+            Accessible.onPressAction: clicked()
         }
 
         Avatar {
@@ -84,6 +88,10 @@ Page {
             avatarUrl: skywalker.avatarUrl
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("your avatar")
+            Accessible.onPressAction: clicked()
         }
 
         SkyButton {
@@ -94,7 +102,13 @@ Page {
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
 
             enabled: postText.graphemeLength <= postText.maxLength && page.hasContent() && checkAltText()
-            onClicked: {
+            onClicked: sendPost()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: replyToPostUri ? qsTr("send reply") : qsTr("send post")
+            Accessible.onPressAction: if (enabled) clicked()
+
+            function sendPost() {
                 postButton.enabled = false
 
                 const qUri = getQuoteUri()
@@ -158,6 +172,15 @@ Page {
             color: "transparent"
             visible: !replyToPostUri
 
+            Accessible.role: Accessible.Link
+            Accessible.name: getRestrictionsSpeech()
+            Accessible.onPressAction: page.addReplyRestrictions()
+
+            function getRestrictionsSpeech() {
+                const speech = unicodeFonts.toPlainText(restrictionText.text)
+                return qsTr(`${speech}, press to change reply restrictions`)
+            }
+
             SvgImage {
                 id: restrictionIcon
                 x: 10
@@ -166,6 +189,8 @@ Page {
                 height: 20
                 color: guiSettings.linkColor
                 svg: restrictReply ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions
+
+                Accessible.ignored: true
             }
             Text {
                 id: restrictionText
@@ -178,6 +203,8 @@ Page {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 wrapMode: Text.Wrap
                 text: getRestrictionText()
+
+                Accessible.ignored: true
 
                 function getRestrictionText() {
                     if (!restrictReply)
@@ -236,8 +263,27 @@ Page {
             opacity: 1
             svg: svgOutline.addImage
 
+            Rectangle {
+                y: -parent.height
+                width: parent.width
+                height: parent.height
+                color: "transparent"
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("add picture")
+                Accessible.onPressAction: if (parent.mustEnable()) parent.selectImage()
+            }
+
             function mustEnable() {
                 return page.images.length < maxImages && imageScroller.visible && !pickingImage
+            }
+
+            function selectImage() {
+                if (Qt.platform.os === "android") {
+                    pickingImage = postUtils.pickPhoto()
+                } else {
+                    fileDialog.open()
+                }
             }
 
             MouseArea {
@@ -245,14 +291,7 @@ Page {
                 width: parent.width
                 height: parent.height
                 enabled: addImage.mustEnable()
-
-                onClicked: {
-                    if (Qt.platform.os === "android") {
-                        pickingImage = postUtils.pickPhoto()
-                    } else {
-                        fileDialog.open()
-                    }
-                }
+                onClicked: parent.selectImage()
             }
         }
 
@@ -266,8 +305,34 @@ Page {
             opacity: 1
             svg: svgOutline.addGif
 
+            Rectangle {
+                y: -parent.height
+                width: parent.width
+                height: parent.height
+                color: "transparent"
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("add GIF")
+                Accessible.onPressAction: if (parent.mustEnable()) parent.selectGif()
+            }
+
             function mustEnable() {
                 return !gifAttachment.visible && !linkCard.visible && page.images.length === 0
+            }
+
+            function selectGif() {
+                if (!tenorSearchView)
+                {
+                    let component = Qt.createComponent("TenorSearch.qml")
+                    tenorSearchView = component.createObject(root)
+                    tenorSearchView.onClosed.connect(() => { root.currentStack().pop() })
+                    tenorSearchView.onSelected.connect((gif) => {
+                            gifAttachment.show(gif)
+                            root.currentStack().pop()
+                    })
+                }
+
+                root.pushStack(tenorSearchView)
             }
 
             MouseArea {
@@ -277,21 +342,7 @@ Page {
                 width: parent.width
                 height: parent.height
                 enabled: addGif.mustEnable()
-
-                onClicked: {
-                    if (!tenorSearchView)
-                    {
-                        let component = Qt.createComponent("TenorSearch.qml")
-                        tenorSearchView = component.createObject(root)
-                        tenorSearchView.onClosed.connect(() => { root.currentStack().pop() })
-                        tenorSearchView.onSelected.connect((gif) => {
-                                gifAttachment.show(gif)
-                                root.currentStack().pop()
-                        })
-                    }
-
-                    root.pushStack(tenorSearchView)
-                }
+                onClicked: parent.selectGif()
             }
         }
 
@@ -322,6 +373,8 @@ Page {
 
             popup.onClosed: postText.forceActiveFocus()
 
+            Accessible.ignored: true
+
             function virtualKeyboardClosed() {
                 if (pressedWithVirtualKeyboard) {
                     pressedWithVirtualKeyboard = false
@@ -347,6 +400,17 @@ Page {
             color: guiSettings.linkColor
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
             visible: hasImageContent()
+
+            Rectangle {
+                y: -parent.height
+                width: parent.width
+                height: parent.height
+                color: "transparent"
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("add content warning")
+                Accessible.onPressAction: if (hasImageContent()) page.addContentWarning()
+            }
 
             MouseArea {
                 y: -parent.height
@@ -413,6 +477,12 @@ Page {
             clip: true
             focus: true
             text: initialText
+
+            Accessible.role: Accessible.EditableText
+            Accessible.name: text ? text : qsTr("Say something nice")
+            Accessible.description: Accessible.name
+            Accessible.editable: true
+            Accessible.multiLine: true
 
             onCursorRectangleChanged: {
                 let editMentionY = postUtils.editMentionCursorY
@@ -496,6 +566,7 @@ Page {
             }
 
             Text {
+                id: placeHolderText
                 anchors.fill: parent
                 leftPadding: postText.leftPadding
                 rightPadding: postText.rightPadding
@@ -513,6 +584,8 @@ Page {
             editText: postText
             searchUtils: searchUtils
             postUtils: postUtils
+
+            Accessible.name: qsTr("you can select a user from the list below")
         }
 
         // Image attachments
@@ -547,6 +620,9 @@ Page {
                         autoTransform: true
                         source: modelData
 
+                        Accessible.role: Accessible.StaticText
+                        Accessible.name: qsTr(`picture ${(index + 1)}: `) + (hasAltText(index) ? altTexts[index] : "no alt text")
+
                         onStatusChanged: {
                             if (status === Image.Error){
                                 statusPopup.show(qsTr("Cannot load image"), QEnums.STATUS_LEVEL_ERROR);
@@ -558,6 +634,10 @@ Page {
                             flat: hasAltText(index)
                             text: hasAltText(index) ? qsTr("ALT") : qsTr("+ALT", "add alternative text button")
                             onClicked: editAltText(index)
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: hasAltText(index) ? qsTr(`edit alt text for picture ${(index + 1)}`) : qsTr(`add alt text to picture ${(index + 1)}`)
+                            Accessible.onPressAction: clicked()
                         }
 
                         SvgButton {
@@ -565,6 +645,10 @@ Page {
                             height: width
                             svg: svgOutline.close
                             onClicked: page.removeImage(index)
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr(`remove picture ${(index + 1)}`)
+                            Accessible.onPressAction: clicked()
                         }
 
                         SkyLabel {
@@ -576,6 +660,9 @@ Page {
                             color: "white"
                             text: "ALT text missing"
                             visible: requireAltText && !hasAltText(index)
+
+                            Accessible.role: Accessible.StaticText
+                            Accessible.name: qsTr(`picture ${(index + 1)}: `) + text
                         }
                     }
                 }
@@ -594,6 +681,9 @@ Page {
             source: gif ? gif.smallUrl : ""
             visible: gif
 
+            Accessible.role: Accessible.StaticText
+            Accessible.name: qsTr("GIF image")
+
             function show(gif) {
                 gifAttachment.gif = gif
                 linkCard.hide()
@@ -608,6 +698,10 @@ Page {
                 height: width
                 svg: svgOutline.close
                 onClicked: gifAttachment.hide()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("remove GIF image")
+                Accessible.onPressAction: clicked()
             }
         }
 
@@ -625,6 +719,17 @@ Page {
             description: card ? card.description : ""
             thumbUrl: card ? card.thumb : ""
             visible: card
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: getSpeech()
+
+            function getSpeech() {
+                if (!card)
+                    return ""
+
+                const hostname = new URL(card.link).hostname
+                return qsTr("link card: ") + card.title + "\n\nfrom: " + hostname + "\n\n" + card.description
+            }
 
             function show(card) {
                 linkCard.card = card
@@ -899,11 +1004,11 @@ Page {
 
     Timer {
         id: focusTimer
-        interval: 100
+        interval: 200
         onTriggered: {
             postText.cursorPosition = initialText.length
             flick.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
-            postText.focus = true
+            postText.forceActiveFocus()
         }
     }
 

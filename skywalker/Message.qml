@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtTextToSpeech
 
 Dialog {
     id: msgDialog
@@ -7,7 +8,7 @@ Dialog {
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
-    Accessible.role: Accessible.Dialog
+    onOpened: msgLabel.focus = true
 
     Label {
         id: msgLabel

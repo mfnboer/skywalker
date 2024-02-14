@@ -59,12 +59,16 @@ Item {
             width: parent.width
             feed: record.feed
             visible: record.feedAvailable
+
+            Accessible.ignored: true
         }
 
         QuoteList {
             width: parent.width
             list: record.list
             visible: record.listAvailable
+
+            Accessible.ignored: true
         }
 
         Text {
@@ -72,18 +76,24 @@ Item {
             color: guiSettings.textColor
             text: qsTr("NOT FOUND")
             visible: record.notFound
+
+            Accessible.ignored: true
         }
         Text {
             width: parent.width
             color: guiSettings.textColor
             text: qsTr("BLOCKED")
             visible: record.blocked
+
+            Accessible.ignored: true
         }
         Text {
             width: parent.width
             color: guiSettings.textColor
             text: qsTr("NOT SUPPORTED")
             visible: record.notSupported
+
+            Accessible.ignored: true
         }
         Text {
             width: parent.width
@@ -94,6 +104,8 @@ Item {
             font.pointSize: guiSettings.scaledFont(7/8)
             text: record.unsupportedType
             visible: record.notSupported
+
+            Accessible.ignored: true
         }
     }
     Rectangle {

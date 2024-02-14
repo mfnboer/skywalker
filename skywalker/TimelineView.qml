@@ -17,6 +17,7 @@ ListView {
     ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List
+    Accessible.name: qsTr("timeline")
 
     header: PostFeedHeader {
         skywalker: timelineView.skywalker

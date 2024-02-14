@@ -278,6 +278,7 @@ qt_add_qml_module(libskywalker
         QML_FILES AccessibleMenuItem.qml
         QML_FILES AccessibleTabButton.qml
         QML_FILES CloseMenuItem.qml
+        QML_FILES AccessibleCheckBox.qml
 )
 
 if (NOT ANDROID)

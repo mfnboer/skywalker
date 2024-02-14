@@ -20,6 +20,9 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
 
+    Accessible.role: Accessible.Dialog
+    Accessible.name: title
+
     onAllowListsChanged: {
         allowLists.forEach((allow) => {
                             if (allow)
@@ -68,7 +71,7 @@ Dialog {
             id: restrictionColumn
             width: parent.width
 
-            CheckBox {
+            AccessibleCheckBox {
                 checked: !restrictReply
                 text: qsTr("Everyone")
                 onCheckedChanged: {
@@ -81,7 +84,7 @@ Dialog {
                     }
                 }
             }
-            CheckBox {
+            AccessibleCheckBox {
                 checked: restrictReply && !allowMentioned && !allowFollowing && !allowLists[0] && !allowLists[1] && !allowLists[2]
                 text: qsTr("Nobody")
                 onCheckedChanged: {
@@ -93,7 +96,7 @@ Dialog {
                     }
                 }
             }
-            CheckBox {
+            AccessibleCheckBox {
                 checked: allowMentioned
                 text: qsTr("Users mentioned in your post")
                 onCheckedChanged: {
@@ -103,7 +106,7 @@ Dialog {
                         restrictReply = true
                 }
             }
-            CheckBox {
+            AccessibleCheckBox {
                 checked: allowFollowing
                 text: qsTr("Users you follow")
                 onCheckStateChanged: {
@@ -132,7 +135,7 @@ Dialog {
                     width: parent.width
                     visible: listComboBox.count > index
 
-                    CheckBox {
+                    AccessibleCheckBox {
                         id: allowListCheckBox
                         checked: allowLists[parent.index]
                         text: qsTr("Users from list:")

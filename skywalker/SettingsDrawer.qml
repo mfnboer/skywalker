@@ -28,6 +28,9 @@ Drawer {
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
     padding: 20
 
+    Accessible.role: Accessible.Pane
+    Accessible.name: qsTr("Skywalker menu")
+
     Column {
         id: userColumn
         anchors.top: parent.top

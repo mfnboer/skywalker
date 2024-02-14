@@ -8,6 +8,9 @@ Column {
     id: quoteColumn
     padding: 10
 
+    Accessible.role: Accessible.StaticText
+    Accessible.name: accessibilityUtils.getFeedSpeech(feed)
+
     RowLayout {
         width: parent.width - 20
 
@@ -49,6 +52,10 @@ Column {
         textFormat: Text.RichText
         color: guiSettings.textColor
         text: feed.description
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
     }
 
     GuiSettings {
