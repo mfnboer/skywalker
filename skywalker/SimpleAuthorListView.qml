@@ -48,7 +48,7 @@ ListView {
                 Layout.fillHeight: true
                 color: "transparent"
 
-                Accessible.role: Accessible.Pane
+                Accessible.ignored: true
 
                 Avatar {
                     id: avatarImg
@@ -68,6 +68,8 @@ ListView {
                 font.bold: true
                 color: guiSettings.textColor
                 text: author.name
+
+                Accessible.ignored: true
             }
 
             SvgButton {
@@ -95,6 +97,8 @@ ListView {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: author.handle ? `@${author.handle}` : ""
+
+                Accessible.ignored: true
             }
 
             Rectangle {

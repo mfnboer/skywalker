@@ -74,6 +74,8 @@ Rectangle {
                 elide: Text.ElideRight
                 color: guiSettings.textColor
                 text: description
+
+                Accessible.ignored: true
             }
         }
         Rectangle {

@@ -44,6 +44,8 @@ Rectangle {
             Layout.fillHeight: true
             color: "transparent"
 
+            Accessible.ignored: true
+
             Avatar {
                 id: avatarImg
                 x: parent.x + 8
@@ -65,6 +67,8 @@ Rectangle {
                 font.bold: true
                 color: guiSettings.textColor
                 text: author.name
+
+                Accessible.ignored: true
             }
             Text {
                 width: parent.width
@@ -72,6 +76,8 @@ Rectangle {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: `@${author.handle}`
+
+                Accessible.ignored: true
             }
 
             ContentLabels {
@@ -145,7 +151,7 @@ Rectangle {
             }
         }
 
-        Text {
+        AccessibleText {
             rightPadding: 10
             Layout.columnSpan: 2
             Layout.fillWidth: true
