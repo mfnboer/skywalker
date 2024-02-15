@@ -24,6 +24,8 @@ Page {
     id: editProfilePage
     width: parent.width
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: qsTr("Edit Profile")
         backIsCancel: true
@@ -40,6 +42,10 @@ Page {
                 updateProfileButton.enabled = false
                 updateProfile()
             }
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("save profile")
+            Accessible.onPressAction: if (enabled) clicked()
         }
     }
 
@@ -108,7 +114,7 @@ Page {
             y: 10
             width: editProfilePage.width - 2 * x
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 font.bold: true
                 color: guiSettings.textColor
@@ -130,6 +136,10 @@ Page {
                     source: authorBanner
                     fillMode: Image.PreserveAspectFit
 
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("change banner")
+                    Accessible.onPressAction: pickBannerPhoto()
+
                     MouseArea {
                         anchors.fill: parent
                         onClicked: pickBannerPhoto()
@@ -146,6 +156,10 @@ Page {
                             banner.setUrl("")
                             dropCreatedBanner()
                         }
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("delete banner")
+                        Accessible.onPressAction: clicked()
                     }
 
                     function setUrl(url) {
@@ -178,6 +192,10 @@ Page {
                             avatarUrl: authorAvatar
                             onClicked: pickAvatarPhoto()
 
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("change avatar")
+                            Accessible.onPressAction: clicked()
+
                             SvgButton {
                                 x: parent.width - width + 10
                                 y: parent.height - height + 10
@@ -190,6 +208,10 @@ Page {
                                     avatar.setUrl("")
                                     dropCreatedAvatar()
                                 }
+
+                                Accessible.role: Accessible.Button
+                                Accessible.name: qsTr("delete avatar")
+                                Accessible.onPressAction: clicked()
                             }
 
                             function setUrl(url) {
@@ -201,7 +223,7 @@ Page {
                 }
             }
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
@@ -218,7 +240,7 @@ Page {
                 maximumLength: 64
             }
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
