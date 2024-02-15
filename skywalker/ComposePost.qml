@@ -291,11 +291,13 @@ Page {
                 width: parent.width
                 height: parent.height
                 enabled: addImage.mustEnable()
-                onClicked: parent.selectImage()
+                onClicked: addImage.selectImage()
             }
         }
 
         SvgImage {
+            property var tenorSearchView: null
+
             id: addGif
             x: addImage.x + addImage.width + 10
             y: height + 5 + restrictionRow.height + footerSeparator.height
@@ -342,13 +344,11 @@ Page {
                 width: parent.width
                 height: parent.height
                 enabled: addGif.mustEnable()
-                onClicked: parent.selectGif()
+                onClicked: addGif.selectGif()
             }
         }
 
         ComboBox {
-            property bool pressedWithVirtualKeyboard: false
-
             id: fontSelector
             x: addGif.x + addGif.width + 15
             y: 5 + restrictionRow.height + footerSeparator.height
