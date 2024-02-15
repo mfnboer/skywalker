@@ -281,6 +281,8 @@ qt_add_qml_module(libskywalker
         QML_FILES AccessibleCheckBox.qml
         QML_FILES AccessibleText.qml
         QML_FILES AccessibleSwitch.qml
+        SOURCES emoji_fix_highlighter.h
+        SOURCES emoji_fix_highlighter.cpp
 )
 
 if (NOT ANDROID)

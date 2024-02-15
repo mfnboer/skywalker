@@ -229,4 +229,9 @@ bool UnicodeFonts::isKeycapEmoji(const QString& grapheme)
     return match.hasMatch();
 }
 
+void UnicodeFonts::setEmojiFixDocument(QQuickTextDocument* doc)
+{
+    mEmojiFixer.setDocument(doc->textDocument());
+}
+
 }

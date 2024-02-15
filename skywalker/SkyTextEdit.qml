@@ -1,4 +1,5 @@
 import QtQuick
+import skywalker
 
 TextEdit {
     property string placeholderText
@@ -34,7 +35,15 @@ TextEdit {
         visible: skyTextEdit.length + skyTextEdit.preeditText.length === 0
     }
 
+    UnicodeFonts {
+        id: unicodeFonts
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onCompleted: {
+        unicodeFonts.setEmojiFixDocument(textDocument)
     }
 }

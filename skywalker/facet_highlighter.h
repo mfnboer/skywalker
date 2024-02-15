@@ -1,11 +1,11 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-#include <QSyntaxHighlighter>
+#include "emoji_fix_highlighter.h"
 
 namespace Skywalker {
 
-class FacetHighlighter : public QSyntaxHighlighter
+class FacetHighlighter : public EmojiFixHighlighter
 {
     Q_OBJECT
 
@@ -15,8 +15,6 @@ public:
 
 protected:
     void highlightBlock(const QString& text) override;
-    void setEmojiFontKeycaps(const QString& text);
-    void setEmojiFontCombinedEmojis(const QString& text);
 
 private:
     QColor mHighlightColor;
