@@ -23,6 +23,7 @@ Page {
     SkyTextEdit {
         id: altText
         placeholderText: qsTr("Description to help users with visual impairments")
+        placeholderPointSize: guiSettings.scaledFont(7/8)
     }
 
     Image {

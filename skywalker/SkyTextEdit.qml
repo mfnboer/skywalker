@@ -2,8 +2,12 @@ import QtQuick
 import skywalker
 
 TextEdit {
+    property string initialText
     property string placeholderText
-    property double placeholderPointSize: guiSettings.scaledFont(7/8)
+    property double placeholderPointSize: guiSettings.scaledFont(9/8)
+    property bool singleLine: false
+    property int graphemeLength: 0
+    property int maxGraphemeLength: -1
 
     id: skyTextEdit
     width: page.width
@@ -16,11 +20,31 @@ TextEdit {
     selectionColor: guiSettings.selectionColor
     clip: true
     focus: true
+    text: initialText
 
     Accessible.role: Accessible.EditableText
     Accessible.name: placeholder.visible ? placeholderText : text
     Accessible.multiLine: true
     Accessible.editable: true
+
+    onTextChanged: {
+        updateGraphemeLength()
+
+        if (!singleLine)
+            return
+
+        const index = text.indexOf("\n")
+
+        if (index >= 0)
+            remove(index, text.length)
+    }
+
+    onPreeditTextChanged: updateGraphemeLength()
+
+    function updateGraphemeLength() {
+        graphemeLength = unicodeFonts.graphemeLength(skyTextEdit.text) +
+                unicodeFonts.graphemeLength(preeditText)
+    }
 
     Text {
         id: placeholder
@@ -28,11 +52,17 @@ TextEdit {
         padding: parent.padding
         leftPadding: parent.leftPadding
         rightPadding: parent.rightPadding
+        topPadding: parent.topPadding
+        bottomPadding: parent.bottomPadding
         font.pointSize: placeholderPointSize
         color: guiSettings.placeholderTextColor
         elide: Text.ElideRight
         text: placeholderText
         visible: skyTextEdit.length + skyTextEdit.preeditText.length === 0
+    }
+
+    function maxGraphemeLengthExceeded() {
+        return maxGraphemeLength > -1 && graphemeLength > maxGraphemeLength
     }
 
     UnicodeFonts {
@@ -45,5 +75,6 @@ TextEdit {
 
     Component.onCompleted: {
         unicodeFonts.setEmojiFixDocument(textDocument)
+        cursorPosition = text.length
     }
 }

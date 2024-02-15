@@ -36,7 +36,7 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
-            enabled: changesMade()
+            enabled: changesMade() && !nameField.maxGraphemeLengthExceeded()
 
             onClicked: {
                 updateProfileButton.enabled = false
@@ -231,13 +231,25 @@ Page {
                 text: qsTr("Name")
             }
 
-            SkyTextInput {
-                id: nameField
+            Rectangle {
                 Layout.fillWidth: true
-                focus: true
-                initialText: authorName
-                placeholderText: qsTr("Your name")
-                maximumLength: 64
+                Layout.preferredHeight: nameField.height
+                radius: 10
+                border.width: 1
+                border.color: guiSettings.borderColor
+                color: "transparent"
+
+                SkyTextEdit {
+                    id: nameField
+                    width: parent.width
+                    topPadding: 10
+                    bottomPadding: 10
+                    focus: true
+                    initialText: authorName
+                    placeholderText: qsTr("Your name")
+                    singleLine: true
+                    maxGraphemeLength: 64
+                }
             }
 
             AccessibleText {
@@ -332,7 +344,7 @@ Page {
     }
 
     function updateProfile() {
-        profileUtils.updateProfile(authorDid, nameField.displayText, descriptionField.text,
+        profileUtils.updateProfile(authorDid, nameField.text, descriptionField.text,
                                    avatar.avatarUrl, avatar.isUpdated, banner.source, banner.isUpdated)
     }
 
@@ -342,7 +354,7 @@ Page {
         createdAvatarSource = ""
         createdBannerSource = ""
         statusPopup.close()
-        editProfilePage.profileUpdated(nameField.displayText, descriptionField.text,
+        editProfilePage.profileUpdated(nameField.text, descriptionField.text,
                                        avatar.avatarUrl, banner.source)
     }
 
@@ -432,7 +444,7 @@ Page {
     }
 
     function changesMade() {
-        return authorName !== nameField.displayText ||
+        return authorName !== nameField.text ||
                 authorDescription !== descriptionField.text ||
                 authorAvatar !== avatar.avatarUrl ||
                 authorBanner !== banner.source.toString()

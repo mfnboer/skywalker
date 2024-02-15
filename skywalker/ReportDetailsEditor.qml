@@ -20,5 +20,6 @@ Page {
     SkyTextEdit {
         id: detailsText
         placeholderText: qsTr("Enter a reason or any other details here")
+        placeholderPointSize: guiSettings.scaledFont(7/8)
     }
 }

@@ -31,7 +31,7 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
-            enabled: nameField.displayText.length > 0 && changesMade()
+            enabled: nameField.text.length > 0 && !nameField.maxGraphemeLengthExceeded() && changesMade()
 
             onClicked: {
                 createListButton.enabled = false
@@ -173,13 +173,25 @@ Page {
                 text: qsTr("List Name")
             }
 
-            SkyTextInput {
-                id: nameField
+            Rectangle {
                 Layout.fillWidth: true
-                focus: true
-                initialText: list.name
-                placeholderText: qsTr("List name")
-                maximumLength: 64
+                Layout.preferredHeight: nameField.height
+                radius: 10
+                border.width: 1
+                border.color: guiSettings.borderColor
+                color: "transparent"
+
+                SkyTextEdit {
+                    id: nameField
+                    width: parent.width
+                    topPadding: 10
+                    bottomPadding: 10
+                    focus: true
+                    initialText: list.name
+                    placeholderText: qsTr("List name")
+                    singleLine: true
+                    maxGraphemeLength: 64
+                }
             }
 
             Text {
@@ -259,7 +271,7 @@ Page {
         // Immediate after creation the list view is not yet available on Bluesky.
         // Therefore we internally create a view.
         onCreateListOk: (uri, cid) => {
-            let listView = graphUtils.makeListView(uri, cid, nameField.displayText, purpose,
+            let listView = graphUtils.makeListView(uri, cid, nameField.text, purpose,
                                                    avatar.avatarUrl, skywalker.getUserProfile(),
                                                    descriptionField.text)
             editListPage.listCreated(listView)
@@ -286,11 +298,11 @@ Page {
     }
 
     function createList() {
-        graphUtils.createList(purpose, nameField.displayText, descriptionField.text, avatar.avatarUrl)
+        graphUtils.createList(purpose, nameField.text, descriptionField.text, avatar.avatarUrl)
     }
 
     function updateList() {
-        graphUtils.updateList(list.uri, nameField.displayText, descriptionField.text, avatar.avatarUrl, avatar.isUpdated)
+        graphUtils.updateList(list.uri, nameField.text, descriptionField.text, avatar.avatarUrl, avatar.isUpdated)
     }
 
     function updateListDone(uri, cid) {
@@ -298,7 +310,7 @@ Page {
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
         statusPopup.close()
-        editListPage.listUpdated(cid, nameField.displayText, descriptionField.text, avatar.avatarUrl)
+        editListPage.listUpdated(cid, nameField.text, descriptionField.text, avatar.avatarUrl)
     }
 
     // "file://" or "image://" source
@@ -322,7 +334,7 @@ Page {
     }
 
     function changesMade() {
-        return list.name !== nameField.displayText ||
+        return list.name !== nameField.text ||
                 list.description !== descriptionField.text ||
                 list.avatar !== avatar.avatarUrl
     }
