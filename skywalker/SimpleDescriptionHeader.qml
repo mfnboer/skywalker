@@ -71,9 +71,10 @@ Rectangle {
                 width: parent.width
                 padding: 10
                 wrapMode: Text.Wrap
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: description
+                text: unicodeFonts.toCleanedHtml(description)
 
                 Accessible.ignored: true
             }
@@ -83,6 +84,10 @@ Rectangle {
             height: 1
             color: guiSettings.separatorColor
             visible: description
+        }
+
+        UnicodeFonts {
+            id: unicodeFonts
         }
 
         GuiSettings {

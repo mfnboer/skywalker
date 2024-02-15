@@ -56,21 +56,23 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: feed.displayName
+                text: unicodeFonts.toCleanedHtml(feed.displayName)
             }
 
             Text {
                 topPadding: 5
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: feedCreator.name
+                text: unicodeFonts.toCleanedHtml(feedCreator.name)
 
                 Accessible.role: Accessible.Link
-                Accessible.name: text
+                Accessible.name: feedCreator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(feedCreator.did)
 
                 MouseArea {
@@ -258,6 +260,10 @@ Rectangle {
             console.debug("FEED CLICKED:", feed.displayName)
             generatorView.feedClicked(feed)
         }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     AccessibilityUtils {

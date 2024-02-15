@@ -51,7 +51,6 @@ Item {
             postMuted: record.mutedReason
             postExternal: record.external
             postDateTime: record.postDateTime
-            maxTextLines: 6
             visible: record.available
         }
 

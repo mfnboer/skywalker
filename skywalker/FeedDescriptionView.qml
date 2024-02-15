@@ -70,18 +70,19 @@ Page {
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: feed.displayName
+                text: unicodeFonts.toCleanedHtml(feed.displayName)
             }
 
             Text {
                 topPadding: 5
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: feed.creator.name
+                text: unicodeFonts.toCleanedHtml(feed.creator.name)
 
                 Accessible.role: Accessible.Link
-                Accessible.name: text
+                Accessible.name: feed.creator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(feed.creator.did)
 
                 MouseArea {
@@ -238,6 +239,10 @@ Page {
             feedLikeUri = ""
         }
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     AccessibilityUtils {

@@ -64,10 +64,11 @@ ListView {
             Text {
                 topPadding: rowPadding
                 Layout.fillWidth: true
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: author.name
+                text: unicodeFonts.toCleanedHtml(author.name)
 
                 Accessible.ignored: true
             }
@@ -119,6 +120,10 @@ ListView {
             let visibility = skywalker.getContentVisibility(author.labels)
             return visibility === QEnums.CONTENT_VISIBILITY_SHOW
         }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

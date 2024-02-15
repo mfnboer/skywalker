@@ -225,7 +225,8 @@ Page {
                         if (allowLists[i]) {
                             let model = skywalker.getListListModel(restrictionsListModelId)
                             const listView = model.getEntry(allowListIndexes[i])
-                            listNames.push(`<b>${listView.name}</b>`)
+                            const listName = unicodeFonts.toCleanedHtml(listView.name)
+                            listNames.push(`<b>${listName}</b>`)
                         }
                     }
 

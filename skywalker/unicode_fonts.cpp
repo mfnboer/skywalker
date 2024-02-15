@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "unicode_fonts.h"
+#include <atproto/lib/rich_text_master.h>
 #include <QQuickTextDocument>
 #include <unordered_map>
 
@@ -162,6 +163,11 @@ QString UnicodeFonts::toPlainText(const QString& text)
     QTextDocument doc;
     doc.setHtml(text);
     return doc.toPlainText();
+}
+
+QString UnicodeFonts::toCleanedHtml(const QString& text)
+{
+    return ATProto::RichTextMaster::toCleanedHtml(text);
 }
 
 QString UnicodeFonts::normalizeToNFKD(const QString& text)

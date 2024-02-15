@@ -68,12 +68,16 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: view.margin
 
-            AccessibleText {
+            Text {
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: list.name
+                text: unicodeFonts.toCleanedHtml(list.name)
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: list.name
             }
 
             AccessibleText {
@@ -87,12 +91,13 @@ Rectangle {
             Text {
                 topPadding: 5
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: listCreator.name
+                text: unicodeFonts.toCleanedHtml(listCreator.name)
 
                 Accessible.role: Accessible.Link
-                Accessible.name: text
+                Accessible.name: listCreator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(listCreator.did)
 
                 MouseArea {
@@ -454,6 +459,10 @@ Rectangle {
                 svg: svgOutline.report
             }
         }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

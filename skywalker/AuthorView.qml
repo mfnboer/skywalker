@@ -259,13 +259,14 @@ Page {
             Text {
                 id: nameText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: authorName
+                text: unicodeFonts.toCleanedHtml(authorName)
             }
 
             RowLayout {
@@ -856,13 +857,15 @@ Page {
 
     function getEmptyListIndicationText() {
         if (!author.viewer.blockingByList.isNull()) {
-            return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.blockingByList.name}</a>`)
+            const listName = unicodeFonts.toCleanedHtml(author.viewer.blockingByList.name)
+            return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
         } else if (blocking) {
             return qsTr("You blocked this account")
         } else if (author.viewer.blockedBy) {
             return qsTr("You are blocked")
         } else if (!author.viewer.mutedByList.isNull()) {
-            return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${author.viewer.mutedByList.name}</a>`)
+            const listName = unicodeFonts.toCleanedHtml(author.viewer.mutedByList.name)
+            return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
         } else if (authorMuted) {
             return qsTr("You muted this account")
         } else if (!contentVisible()) {

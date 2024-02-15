@@ -344,10 +344,11 @@ Rectangle {
 
             Text {
                 width: parent.width
+                textFormat: Text.RichText
                 wrapMode: Text.Wrap
                 color: guiSettings.textColor
                 text: {
-                    `<b>${notificationInviteCodeUsedBy.name}</b> ` +
+                    `<b>${(unicodeFonts.toCleanedHtml(notificationInviteCodeUsedBy.name))}</b> ` +
                     qsTr("used your invite code") + ": " + notificationInviteCode
                 }
             }
@@ -442,11 +443,11 @@ Rectangle {
     }
 
     function authorsAndReasonText() {
-        return `<b>${notificationAuthor.name}</b> ` +
+        return `<b>${(unicodeFonts.toCleanedHtml(notificationAuthor.name))}</b> ` +
             (notificationOtherAuthors.length > 0 ?
                 (notificationOtherAuthors.length > 1 ?
                     qsTr(`and ${(notificationOtherAuthors.length)} others `) :
-                    qsTr(`and <b>${(notificationOtherAuthors[0].name)}</b> `)) :
+                    qsTr(`and <b>${(unicodeFonts.toCleanedHtml(notificationOtherAuthors[0].name))}</b> `)) :
                 "") +
             reasonText()
     }
@@ -487,7 +488,7 @@ Rectangle {
                 notificationPostRecordWithMedia, accessibilityUtils.nullAuthor,
                 notificationReason === QEnums.NOTIFICATION_REASON_REPLY, replyToAuthor)
 
-        let speech = `${time} ${notificationAuthor.name} ${reason}\n\n${postSpeech}`
+        let speech = `${time} ${(unicodeFonts.toCleanedHtml(notificationAuthor.name))} ${reason}\n\n${postSpeech}`
         return speech
     }
 

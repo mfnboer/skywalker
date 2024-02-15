@@ -65,37 +65,39 @@ Page {
             leftPadding: 10
             rightPadding: 10
 
-            AccessibleText {
+            Text {
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: list.name
+                text: unicodeFonts.toCleanedHtml(list.name)
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: list.name
             }
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.listTypeName(list.purpose)
-
-                Accessible.role: Accessible.StaticText
-                Accessible.name: text
             }
 
             Text {
                 topPadding: 5
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: list.creator.name
+                text: unicodeFonts.toCleanedHtml(list.creator.name)
 
                 Accessible.role: Accessible.Link
-                Accessible.name: text
+                Accessible.name: list.creator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(list.creator.did)
 
                 MouseArea {
@@ -398,6 +400,10 @@ Page {
 
         onProfileViewOk: (profile, listItemUri) => authorListView.model.prependAuthor(profile, listItemUri)
         onProfileViewFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

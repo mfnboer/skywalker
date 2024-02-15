@@ -31,7 +31,7 @@ Column {
         wrapMode: Text.Wrap
         maximumLineCount: maxTextLines
         elide: Text.ElideRight
-        textFormat: Text.RichText
+        textFormat: maxTextLines < 1000 ? Text.AutoText : Text.RichText
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         text: postText

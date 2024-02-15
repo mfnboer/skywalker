@@ -100,7 +100,8 @@ ListView {
 
                         for (let i = 0; i < lists.length; ++i) {
                             const l = lists[i]
-                            listNames.push(`<a href="${l.uri}" style="color: ${guiSettings.linkColor};">${l.name}</a>`)
+                            const listName = unicodeFonts.toCleanedHtml(l.name)
+                            listNames.push(`<a href="${l.uri}" style="color: ${guiSettings.linkColor};">${listName}</a>`)
                         }
 
                         const names = guiSettings.toWordSequence(listNames)

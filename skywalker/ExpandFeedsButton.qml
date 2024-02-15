@@ -56,8 +56,9 @@ SvgButton {
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: feedAvatar.width + 5
                     color: guiSettings.textColor
+                    textFormat: Text.RichText
                     elide: Text.ElideRight
-                    text: modelData.name
+                    text: unicodeFonts.toCleanedHtml(modelData.name)
                 }
 
                 FeedAvatar {
@@ -122,6 +123,10 @@ SvgButton {
 
             return true
         }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

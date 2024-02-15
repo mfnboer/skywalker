@@ -19,6 +19,9 @@ Rectangle {
     height: grid.height
     color: guiSettings.backgroundColor
 
+    Accessible.role: Accessible.StaticText
+    Accessible.name: `${listTypeNameText.text} ${list.name} by ${listCreatorHandleText.text}`
+
     GridLayout {
         id: grid
         columns: 3
@@ -49,28 +52,38 @@ Rectangle {
             Layout.rightMargin: view.margin
 
             Text {
+                id: listNameText
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: list.name
+                text: unicodeFonts.toCleanedHtml(list.name)
+
+                Accessible.ignored: true
             }
 
             Text {
+                id: listTypeNameText
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.listTypeName(list.purpose)
+
+                Accessible.ignored: true
             }
 
             Text {
+                id: listCreatorHandleText
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: `@${listCreator.handle}`
+
+                Accessible.ignored: true
             }
         }
 
@@ -80,6 +93,10 @@ Rectangle {
             visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
 
             onClicked: updateList()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("add") : qsTr("remove")
+            Accessible.onPressAction: clicked()
         }
 
         Rectangle {

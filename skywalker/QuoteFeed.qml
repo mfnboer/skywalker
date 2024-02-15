@@ -28,10 +28,11 @@ Column {
 
             Text {
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: feed.displayName
+                text: unicodeFonts.toCleanedHtml(feed.displayName)
             }
 
             Text {
@@ -52,6 +53,10 @@ Column {
         textFormat: Text.RichText
         color: guiSettings.textColor
         text: feed.description
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     AccessibilityUtils {

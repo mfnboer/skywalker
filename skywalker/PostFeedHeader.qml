@@ -60,13 +60,15 @@ Rectangle {
             Layout.fillWidth: !showAsHome
             Layout.alignment: Qt.AlignVCenter
             leftPadding: header.feedAvatar ? 0 : 10
+            textFormat: Text.RichText
+            elide: Text.ElideRight
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
-            text: header.feedName
+            text: unicodeFonts.toCleanedHtml(header.feedName)
 
             Accessible.role: Accessible.ButtonDropDown
-            Accessible.name: qsTr(`${text}, press to select other feed`)
+            Accessible.name: qsTr(`${header.feedName}, press to select other feed`)
             Accessible.description: Accessible.name
             Accessible.onPressAction: expandFeeds()
 
@@ -124,6 +126,10 @@ Rectangle {
                 Accessible.onPressAction: clicked()
             }
         }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

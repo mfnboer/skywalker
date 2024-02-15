@@ -96,9 +96,10 @@ ListView {
                 id: nameText
                 topPadding: 5
                 Layout.fillWidth: true
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: modelData.usedBy.name
+                text: unicodeFonts.toCleanedHtml(modelData.usedBy.name)
                 visible: modelData.used
             }
 
@@ -157,6 +158,10 @@ ListView {
         color: guiSettings.textColor
         text: qsTr("You do not yet have any invide codes.")
         visible: !failedToLoad && inviteCodeList.count === 0
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

@@ -15,7 +15,8 @@ GridLayout {
     Text {
         Layout.fillWidth: true
         elide: Text.ElideRight
-        text: authorName
+        textFormat: Text.RichText
+        text: unicodeFonts.toCleanedHtml(authorName)
         font.bold: true
         color: guiSettings.textColor
     }
@@ -33,6 +34,10 @@ GridLayout {
         font.pointSize: guiSettings.scaledFont(7/8)
         color: guiSettings.handleColor
         visible: postThreadType & QEnums.THREAD_ENTRY
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

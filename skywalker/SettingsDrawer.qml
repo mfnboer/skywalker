@@ -50,17 +50,22 @@ Drawer {
                 height: width
                 avatarUrl: user.avatarUrl
                 onClicked: profile()
+
+                Accessible.ignored: true
             }
 
             Text {
                 id: nameText
                 width: parent.width
                 wrapMode: Text.Wrap
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 maximumLineCount: 2
                 font.bold: true
                 color: guiSettings.textColor
-                text: user.name
+                text: unicodeFonts.toCleanedHtml(user.name)
+
+                Accessible.ignored: true
             }
 
             Text {
@@ -70,6 +75,8 @@ Drawer {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: `@${user.handle}`
+
+                Accessible.ignored: true
             }
         }
 
@@ -211,6 +218,10 @@ Drawer {
         visible: false
 
         Accessible.role: Accessible.Window
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

@@ -98,10 +98,11 @@ Page {
                     Layout.fillWidth: true
 
                     Text {
+                        textFormat: Text.RichText
                         elide: Text.ElideRight
                         font.bold: true
                         color: guiSettings.textColor
-                        text: author.name
+                        text: unicodeFonts.toCleanedHtml(author.name)
                     }
                     Text {
                         elide: Text.ElideRight
@@ -203,6 +204,10 @@ Page {
         }
 
         onReportFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

@@ -28,10 +28,11 @@ Column {
 
             Text {
                 width: parent.width
+                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: list.name
+                text: unicodeFonts.toCleanedHtml(list.name)
             }
 
             Text {
@@ -52,6 +53,10 @@ Column {
         textFormat: Text.RichText
         color: guiSettings.textColor
         text: list.description
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     AccessibilityUtils {
