@@ -27,16 +27,13 @@ Page {
         width: parent.width
         Accessible.role: Accessible.Pane
 
-        Text {
+        AccessibleText {
             Layout.fillWidth: true
             topPadding: 10
             leftPadding: 10
             font.bold: true
             color: guiSettings.textColor
             text: qsTr("Sign into")
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
         }
 
         ComboBox {
@@ -57,17 +54,13 @@ Page {
             Accessible.editable: enabled
         }
 
-        Text {
+        AccessibleText {
             Layout.fillWidth: true
             topPadding: 10
             leftPadding: 10
             font.bold: true
             color: guiSettings.textColor
             text: qsTr("Account")
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
-            Accessible.description: Accessible.name
         }
 
         SkyTextInput {
@@ -151,5 +144,8 @@ Page {
 
     Component.onCompleted: {
         userField.setFocus()
+
+        if (error)
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 }

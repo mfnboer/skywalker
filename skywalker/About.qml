@@ -16,7 +16,7 @@ Page {
         width: parent.width
         height: parent.height
 
-        Text {
+        AccessibleText {
             id: title
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
@@ -24,29 +24,20 @@ Page {
             font.bold: true
             font.pointSize: guiSettings.scaledFont(3.5)
             text: "Skywalker"
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
         }
-        Text {
+        AccessibleText {
             id: version
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             color: "white"
             text: qsTr("Version") + ": " + skywalker.VERSION
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
         }
-        Text {
+        AccessibleText {
             id: author
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             color: "white"
             text: "\u00A9 2024 Michel de Boer"
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
         }
         Text {
             id: handle
@@ -69,7 +60,7 @@ Page {
 
             Accessible.ignored: true
         }
-        Text {
+        AccessibleText {
             id: warranty
             width: parent.width
             padding: 10
@@ -77,9 +68,6 @@ Page {
             wrapMode: Text.Wrap
             color: "white"
             text: qsTr("Skywalker comes with ABSOLUTELY NO WARRANTY.")
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
         }
         SkyButton {
             id: okButton

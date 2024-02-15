@@ -11,6 +11,8 @@ Page {
 
     signal closed()
 
+    Accessible.role: Accessible.Pane
+
     header: Rectangle {
         width: parent.width
         height: guiSettings.headerHeight
@@ -27,8 +29,12 @@ Page {
                 Material.background: "transparent"
                 svg: svgOutline.arrowBack
                 onClicked: page.closed()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("go back")
+                Accessible.onPressAction: clicked()
             }
-            Text {
+            AccessibleText {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
                 font.bold: true
@@ -52,7 +58,7 @@ Page {
             width: parent.width
             columns: 2
 
-            Text {
+            AccessibleText {
                 Layout.columnSpan: 2
                 font.pointSize: guiSettings.scaledFont(9/8)
                 font.bold: true
@@ -60,7 +66,7 @@ Page {
                 text: qsTr("Account")
             }
 
-            Text {
+            AccessibleText {
                 color: guiSettings.textColor
                 text: qsTr("Email:")
             }
@@ -69,11 +75,16 @@ Page {
                 height: mailText.height
                 color: "transparent"
 
+                Accessible.role: Accessible.StaticText
+                Accessible.name: userPrefs.email + (userPrefs.emailConfirmed ? qsTr(", confirmed") : "")
+
                 Text {
                     id: mailText
                     color: guiSettings.textColor
                     elide: Text.ElideRight
                     text: userPrefs.email
+
+                    Accessible.ignored: true
                 }
                 SvgImage {
                     anchors.left: mailText.right
@@ -83,31 +94,33 @@ Page {
                     color: guiSettings.buttonColor
                     svg: svgOutline.check
                     visible: userPrefs.emailConfirmed
+
+                    Accessible.ignored: true
                 }
             }
 
-            Text {
+            AccessibleText {
                 color: guiSettings.textColor
                 text: qsTr("Birthday:")
             }
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 color: guiSettings.textColor
                 text: userPrefs.birthDate
             }
 
-            Text {
+            AccessibleText {
                 color: guiSettings.textColor
                 text: qsTr("PDS:")
             }
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 color: guiSettings.textColor
                 elide: Text.ElideRight
                 text: userPrefs.pds
             }
 
-            Text {
+            AccessibleText {
                 Layout.columnSpan: 2
                 topPadding: 20
                 font.pointSize: guiSettings.scaledFont(9/8)
@@ -135,6 +148,10 @@ Page {
                 checked: !userPrefs.loggedOutVisibility
                 onCheckedChanged: userPrefs.loggedOutVisibility = !checked
 
+                Accessible.role: Accessible.Button
+                Accessible.name: contentItem.text
+                Accessible.onPressAction: toggle()
+
                 Component.onCompleted: {
                     loggedoutSwitch.indicator.x = loggedoutSwitch.leftPadding
                 }
@@ -146,7 +163,7 @@ Page {
             anchors.top: accountGrid.bottom
             width: parent.width
 
-            Text {
+            AccessibleText {
                 topPadding: 20
                 font.pointSize: guiSettings.scaledFont(9/8)
                 font.bold: true
@@ -154,26 +171,26 @@ Page {
                 text: qsTr("Home feed preferences")
             }
 
-            Switch {
+            AccessibleSwitch {
                 text: qsTr("Show replies")
                 checked: !userPrefs.hideReplies
                 onCheckedChanged: userPrefs.hideReplies = !checked
             }
 
-            Switch {
+            AccessibleSwitch {
                 text: qsTr("Replies to followed users only")
                 checked: userPrefs.hideRepliesByUnfollowed
                 enabled: !userPrefs.hideReplies
                 onCheckedChanged: userPrefs.hideRepliesByUnfollowed = checked
             }
 
-            Switch {
+            AccessibleSwitch {
                 text: qsTr("Show reposts")
                 checked: !userPrefs.hideReposts
                 onCheckedChanged: userPrefs.hideReposts = !checked
             }
 
-            Switch {
+            AccessibleSwitch {
                 text: qsTr("Show quote posts")
                 checked: !userPrefs.hideQuotePosts
                 onCheckedChanged: userPrefs.hideQuotePosts = !checked
@@ -185,7 +202,7 @@ Page {
             anchors.top: homeFeedColumn.bottom
             width: parent.width
 
-            Text {
+            AccessibleText {
                 topPadding: 20
                 font.pointSize: guiSettings.scaledFont(9/8)
                 font.bold: true
@@ -193,7 +210,7 @@ Page {
                 text: qsTr("Post composition")
             }
 
-            Switch {
+            AccessibleSwitch {
                 text: qsTr("Require ALT text on images")
                 checked: userPrefs.requireAltText
                 onCheckedChanged: userPrefs.requireAltText = checked
@@ -205,7 +222,7 @@ Page {
             anchors.top: postCompositionColumn.bottom
             width: parent.width
 
-            Text {
+            AccessibleText {
                 topPadding: 20
                 font.pointSize: guiSettings.scaledFont(9/8)
                 font.bold: true
@@ -252,7 +269,7 @@ Page {
                 }
             }
 
-            Switch {
+            AccessibleSwitch {
                 text: qsTr("GIF auto play")
                 checked: userPrefs.gifAutoPlay
                 onCheckedChanged: userPrefs.gifAutoPlay = checked

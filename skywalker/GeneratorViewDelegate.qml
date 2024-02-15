@@ -42,6 +42,10 @@ Rectangle {
             avatarUrl: feed.avatar
 
             onClicked: feedClicked(feed)
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr(`go to feed: ${feed.displayName}`)
+            Accessible.onPressAction: clicked()
         }
 
         Column {
@@ -50,7 +54,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: generatorView.margin
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
@@ -65,6 +69,9 @@ Rectangle {
                 color: guiSettings.textColor
                 text: feedCreator.name
 
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(feedCreator.did)
 
                 MouseArea {
                     anchors.fill:  parent
@@ -79,6 +86,9 @@ Rectangle {
                 color: guiSettings.handleColor
                 text: "@" + feedCreator.handle
 
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(feedCreator.did)
 
                 MouseArea {
                     anchors.fill:  parent
@@ -97,6 +107,10 @@ Rectangle {
                 width: 40
                 height: width
                 color: "transparent"
+
+                Accessible.role: Accessible.Button
+                Accessible.name: feedPinned ? qsTr("remove from favorites") : qsTr("add to favorites")
+                Accessible.onPressAction: favoriteClicked(feed, !feedPinned)
 
                 SvgImage {
                     id: favoIcon
@@ -122,6 +136,10 @@ Rectangle {
                 Material.background: flat ? guiSettings.labelColor : guiSettings.buttonColor
                 svg: feedSaved ? svgOutline.remove : svgOutline.add
                 onClicked: addClicked(feed, !feedSaved)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: feedSaved ? qsTr("remove from saved feeds") : qsTr("save feed")
+                Accessible.onPressAction: clicked()
             }
         }
 
@@ -140,6 +158,9 @@ Rectangle {
             text: feed.formattedDescription
 
             onLinkActivated: (link) => root.openLink(link)
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: feed.description
         }
 
         Row {
@@ -156,6 +177,10 @@ Rectangle {
                 statistic: feedLikeCount
 
                 onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, "like", "likes")
+                Accessible.onPressAction: clicked()
             }
 
             StatIcon {
@@ -164,34 +189,35 @@ Rectangle {
                 svg: svgOutline.moreVert
                 onClicked: moreMenu.open()
 
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("more options")
+                Accessible.onPressAction: clicked()
+
                 Menu {
                     id: moreMenu
                     modal: true
 
-                    MenuItem {
+                    CloseMenuItem {
+                        Accessible.name: qsTr("close more options menu")
+                    }
+                    AccessibleMenuItem {
                         text: qsTr("Translate")
                         enabled: feed.description
                         onTriggered: root.translateText(feed.description)
 
-                        MenuItemSvg {
-                            svg: svgOutline.googleTranslate
-                        }
+                        MenuItemSvg { svg: svgOutline.googleTranslate }
                     }
-                    MenuItem {
+                    AccessibleMenuItem {
                         text: qsTr("Share")
                         onTriggered: skywalker.shareFeed(feed)
 
-                        MenuItemSvg {
-                            svg: svgOutline.share
-                        }
+                        MenuItemSvg { svg: svgOutline.share }
                     }
-                    MenuItem {
+                    AccessibleMenuItem {
                         text: qsTr("Report feed")
                         onTriggered: root.reportFeed(feed)
 
-                        MenuItemSvg {
-                            svg: svgOutline.report
-                        }
+                        MenuItemSvg { svg: svgOutline.report }
                     }
                 }
             }
@@ -212,7 +238,7 @@ Rectangle {
         }
 
         // End of feed indication
-        Text {
+        AccessibleText {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
@@ -232,6 +258,10 @@ Rectangle {
             console.debug("FEED CLICKED:", feed.displayName)
             generatorView.feedClicked(feed)
         }
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
     }
 
     GuiSettings {

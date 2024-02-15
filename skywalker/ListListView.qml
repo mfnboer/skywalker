@@ -18,6 +18,8 @@ ListView {
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
+    Accessible.role: Accessible.List
+
     header: Rectangle {
         width: parent.width
         height: headerRow.height
@@ -28,7 +30,7 @@ ListView {
             id: headerRow
             width: parent.width
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 padding: 10
                 wrapMode: Text.Wrap
@@ -42,6 +44,10 @@ ListView {
                 svg: svgOutline.add
                 visible: ownLists
                 onClicked: newList()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("create new list")
+                Accessible.onPressAction: clicked()
             }
         }
     }

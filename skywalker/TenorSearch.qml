@@ -8,6 +8,9 @@ Page {
     signal selected(tenorgif gif)
 
     id: page
+    clip: true
+
+    Accessible.role: Accessible.Pane
 
     header: SearchHeader {
         minSearchTextLength: 2
@@ -73,6 +76,10 @@ Page {
 
                     onWidthChanged: imgLabel.adjustWidth()
 
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr(`GIF category: ${category.searchTerm}`)
+                    Accessible.onPressAction: searchTenor(category.searchTerm)
+
                     Label {
                         id: imgLabel
                         anchors.centerIn: parent
@@ -86,6 +93,8 @@ Page {
                         text: category.searchTerm
 
                         onWidthChanged: adjustWidth()
+
+                        Accessible.ignored: true
 
                         function adjustWidth() {
                             if (width > parent.width)
@@ -129,6 +138,10 @@ Page {
                         height: gif.overviewSize.height
                         fillMode: Image.Stretch
                         source: gif.smallUrl
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: `GIF: ${gif.description}`
+                        Accessible.onPressAction: selected(gif)
 
                         MouseArea {
                             anchors.fill: parent
@@ -182,8 +195,12 @@ Page {
         viewStack.showGifs()
     }
 
+    Component.onDestruction: {
+        page.header.unfocus()
+    }
+
     Component.onCompleted: {
         tenor.getCategories()
-        page.header.unfocus()
+        page.header.unocus()
     }
 }

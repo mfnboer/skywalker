@@ -52,6 +52,10 @@ Rectangle {
 
             onClicked: listClicked(list)
 
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr(`show members of list ${list.name}`)
+            Accessible.onPressAction: clicked()
+
             FavoriteStar {
                 width: 20
                 visible: listPinned
@@ -64,7 +68,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: view.margin
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
@@ -72,7 +76,7 @@ Rectangle {
                 text: list.name
             }
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
@@ -87,6 +91,9 @@ Rectangle {
                 color: guiSettings.textColor
                 text: listCreator.name
 
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(listCreator.did)
 
                 MouseArea {
                     anchors.fill:  parent
@@ -101,6 +108,9 @@ Rectangle {
                 color: guiSettings.handleColor
                 text: "@" + listCreator.handle
 
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(listCreator.did)
 
                 MouseArea {
                     anchors.fill:  parent
@@ -127,6 +137,10 @@ Rectangle {
                 height: width
                 svg: svgOutline.group
                 onClicked: root.viewListByUri(list.uri, false)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr(`show members of list ${list.name}`)
+                Accessible.onPressAction: skywalker.getDetailedProfile(listCreator.did)
             }
 
             SvgButton {
@@ -152,6 +166,10 @@ Rectangle {
                         break
                     }
                 }
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("more options")
+                Accessible.onPressAction: clicked()
             }
         }
 
@@ -170,6 +188,11 @@ Rectangle {
             visible: text
 
             onLinkActivated: (link) => root.openLink(link)
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: list.description
+
+
         }
 
         Rectangle {
@@ -200,7 +223,10 @@ Rectangle {
         id: moreMenuOwnUserList
         modal: true
 
-        MenuItem {
+        CloseMenuItem {
+            Accessible.name: qsTr("close more options menu")
+        }
+        AccessibleMenuItem {
             text: qsTr("Edit")
             enabled: allowEdit
             onTriggered: updateList(list)
@@ -208,7 +234,7 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.edit }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Delete")
             enabled: ownLists
             onTriggered: deleteList(list)
@@ -216,7 +242,7 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.delete }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: listPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
             onTriggered: {
                 if (listPinned)
@@ -233,7 +259,7 @@ Rectangle {
             }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Translate")
             enabled: list.description
             onTriggered: root.translateText(list.description)
@@ -241,14 +267,14 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.googleTranslate }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Share")
             onTriggered: skywalker.shareList(list)
 
             MenuItemSvg { svg: svgOutline.share }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 
@@ -262,7 +288,10 @@ Rectangle {
         id: moreMenuOtherUserList
         modal: true
 
-        MenuItem {
+        CloseMenuItem {
+            Accessible.name: qsTr("close more options menu")
+        }
+        AccessibleMenuItem {
             text: listSaved ? qsTr("Unsave list") : qsTr("Save list")
             enabled: listCreator.did !== skywalker.getUserDid()
             onTriggered: {
@@ -277,7 +306,7 @@ Rectangle {
             MenuItemSvg { svg: listSaved ? svgOutline.remove : svgOutline.add }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: listPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
             onTriggered: {
                 skywalker.favoriteFeeds.pinList(list, !listPinned)
@@ -290,7 +319,7 @@ Rectangle {
             }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Translate")
             enabled: list.description
             onTriggered: root.translateText(list.description)
@@ -298,14 +327,14 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.googleTranslate }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Share")
             onTriggered: skywalker.shareList(list)
 
             MenuItemSvg { svg: svgOutline.share }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 
@@ -319,7 +348,10 @@ Rectangle {
         id: moreMenuOwnModList
         modal: true
 
-        MenuItem {
+        CloseMenuItem {
+            Accessible.name: qsTr("close more options menu")
+        }
+        AccessibleMenuItem {
             text: qsTr("Edit")
             enabled: allowEdit
             onTriggered: updateList(list)
@@ -327,7 +359,7 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.edit }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Delete")
             enabled: ownLists
             onTriggered: deleteList(list)
@@ -335,7 +367,7 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.delete }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")
             onTriggered: listMuted ? unmuteList(list) : muteList(list)
             enabled: !listBlockedUri || listMuted
@@ -343,7 +375,7 @@ Rectangle {
             MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
             onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
             enabled: !listMuted || listBlockedUri
@@ -351,7 +383,7 @@ Rectangle {
             MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Translate")
             enabled: list.description
             onTriggered: root.translateText(list.description)
@@ -359,14 +391,14 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.googleTranslate }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Share")
             onTriggered: skywalker.shareList(list)
 
             MenuItemSvg { svg: svgOutline.share }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 
@@ -380,7 +412,10 @@ Rectangle {
         id: moreMenuOtherModList
         modal: true
 
-        MenuItem {
+        CloseMenuItem {
+            Accessible.name: qsTr("close more options menu")
+        }
+        AccessibleMenuItem {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")
             onTriggered: listMuted ? unmuteList(list) : muteList(list)
             enabled: !listBlockedUri || listMuted
@@ -388,7 +423,7 @@ Rectangle {
             MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
             onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
             enabled: !listMuted || listBlockedUri
@@ -396,7 +431,7 @@ Rectangle {
             MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Translate")
             enabled: list.description
             onTriggered: root.translateText(list.description)
@@ -404,14 +439,14 @@ Rectangle {
             MenuItemSvg { svg: svgOutline.googleTranslate }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Share")
             onTriggered: skywalker.shareList(list)
 
             MenuItemSvg { svg: svgOutline.share }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 

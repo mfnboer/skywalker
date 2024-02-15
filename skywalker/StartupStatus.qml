@@ -10,14 +10,14 @@ Page {
     height: parent.height
     background: Rectangle { color: guiSettings.skywalkerLogoColor }
 
-    Accessible.role: Accessible.Window
+    Accessible.role: Accessible.Pane
     Accessible.name: qsTr("Signing in, please wait")
 
     Column {
         width: parent.width
         height: parent.height
 
-        Text {
+        AccessibleText {
             id: title
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
@@ -26,7 +26,7 @@ Page {
             font.pointSize: guiSettings.scaledFont(3.5)
             text: "Skywalker"
         }
-        Text {
+        AccessibleText {
             id: status
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
@@ -45,6 +45,8 @@ Page {
             height: Math.min(parent.height - title.height - status.height, parent.width)
             fillMode: Image.PreserveAspectFit
             source: "/images/skywalker.png"
+
+            Accessible.ignored: true
         }
     }
 
@@ -54,5 +56,6 @@ Page {
 
     function setStatus(msg) {
         status.text = msg
+        status.forceActiveFocus()
     }
 }

@@ -17,6 +17,8 @@ Page {
 
     id: page
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: guiSettings.listTypeName(list.purpose)
         onBack: closed()
@@ -47,6 +49,9 @@ Page {
                     root.viewFullImage([list.imageView], 0)
             }
 
+            Accessible.role: Accessible.StaticText
+            Accessible.name: qsTr("list avatar") + (isPinnedList ? qsTr(", one of your favorites") : "")
+
             FavoriteStar {
                 width: 30
                 visible: isPinnedList
@@ -60,7 +65,7 @@ Page {
             leftPadding: 10
             rightPadding: 10
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
@@ -77,6 +82,9 @@ Page {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.listTypeName(list.purpose)
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: text
             }
 
             Text {
@@ -85,6 +93,10 @@ Page {
                 elide: Text.ElideRight
                 color: guiSettings.textColor
                 text: list.creator.name
+
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(list.creator.did)
 
                 MouseArea {
                     anchors.fill:  parent
@@ -99,6 +111,10 @@ Page {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: "@" + list.creator.handle
+
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(list.creator.did)
 
                 MouseArea {
                     anchors.fill:  parent
@@ -132,6 +148,10 @@ Page {
                         break
                     }
                 }
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("more options")
+                Accessible.onPressAction: clicked()
             }
 
             SvgButton {
@@ -139,6 +159,10 @@ Page {
                 svg: svgOutline.addUser
                 visible: isOwnList()
                 onClicked: page.addUser()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("add user to list")
+                Accessible.onPressAction: clicked()
             }
         }
 
@@ -155,6 +179,9 @@ Page {
             text: list.formattedDescription
 
             onLinkActivated: (link) => root.openLink(link)
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: list.description
         }
     }
 
@@ -177,14 +204,17 @@ Page {
         id: moreMenuOwnUserList
         modal: true
 
-        MenuItem {
+        CloseMenuItem {
+            Accessible.name: qsTr("close more options menu")
+        }
+        AccessibleMenuItem {
             text: qsTr("Edit")
             onTriggered: editList()
 
             MenuItemSvg { svg: svgOutline.edit }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: isPinnedList ? qsTr("Remove favorite") : qsTr("Add favorite")
             onTriggered: {
                 if (isPinnedList)
@@ -203,20 +233,20 @@ Page {
             }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Translate")
             enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
         }
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Share")
             onTriggered: skywalker.shareList(list)
 
             MenuItemSvg { svg: svgOutline.share }
         }
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 
@@ -228,7 +258,10 @@ Page {
         id: moreMenuOtherUserList
         modal: true
 
-        MenuItem {
+        CloseMenuItem {
+            Accessible.name: qsTr("close more options menu")
+        }
+        AccessibleMenuItem {
             text: isSavedList ? qsTr("Unsave list") : qsTr("Save list")
             onTriggered: {
                 if (isSavedList)
@@ -243,7 +276,7 @@ Page {
 
             MenuItemSvg { svg: isSavedList ? svgOutline.remove : svgOutline.add }
         }
-        MenuItem {
+        AccessibleMenuItem {
             text: isPinnedList ? qsTr("Remove favorite") : qsTr("Add favorite")
             onTriggered: {
                 skywalker.favoriteFeeds.pinList(list, !isPinnedList)
@@ -258,20 +291,20 @@ Page {
             }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Translate")
             enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
         }
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Share")
             onTriggered: skywalker.shareList(list)
 
             MenuItemSvg { svg: svgOutline.share }
         }
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 
@@ -283,7 +316,10 @@ Page {
         id: moreMenuModList
         modal: true
 
-        MenuItem {
+        CloseMenuItem {
+            Accessible.name: qsTr("close more options menu")
+        }
+        AccessibleMenuItem {
             text: qsTr("Edit")
             onTriggered: editList()
             enabled: isOwnList()
@@ -291,7 +327,7 @@ Page {
             MenuItemSvg { svg: svgOutline.edit }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")
             onTriggered: listMuted ? graphUtils.unmuteList(list.uri) : graphUtils.muteList(list.uri)
             enabled: !listBlockedUri || listMuted
@@ -299,7 +335,7 @@ Page {
             MenuItemSvg { svg: listMuted ? svgOutline.unmute : svgOutline.mute }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
             onTriggered: listBlockedUri ? graphUtils.unblockList(list.uri, listBlockedUri) : graphUtils.blockList(list.uri)
             enabled: !listMuted || listBlockedUri
@@ -307,20 +343,20 @@ Page {
             MenuItemSvg { svg: listBlockedUri ? svgOutline.unblock : svgOutline.block }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Translate")
             enabled: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: svgOutline.googleTranslate }
         }
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Share")
             onTriggered: skywalker.shareList(list)
 
             MenuItemSvg { svg: svgOutline.share }
         }
-        MenuItem {
+        AccessibleMenuItem {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 

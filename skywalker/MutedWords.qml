@@ -41,7 +41,7 @@ ListView {
         width: view.width
 
         RowLayout {
-            Text {
+            AccessibleText {
                 id: entryText
                 Layout.fillWidth: true
                 leftPadding: 10
@@ -51,9 +51,6 @@ ListView {
                 font.pointSize: guiSettings.scaledFont(9/8)
                 color: guiSettings.textColor
                 text: modelData
-
-                Accessible.role: Accessible.StaticText
-                Accessible.name: text
             }
             SvgButton {
                 iconColor: guiSettings.textColor

@@ -20,6 +20,8 @@ Page {
     height: parent.height
     padding: pageMargin
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: qsTr("Edit Photo")
         backIsCancel: true
@@ -30,6 +32,10 @@ Page {
             anchors.top: parent.top
             svg: svgOutline.check
             onClicked: selected(img.getSelectRect())
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("save avatar")
+            Accessible.onPressAction: clicked()
         }
     }
 
@@ -287,7 +293,7 @@ Page {
         anchors.bottomMargin: -10
         color: "black"
 
-        Text {
+        AccessibleText {
             id: helpText
             width: parent.width - 20
             horizontalAlignment: Text.AlignHCenter

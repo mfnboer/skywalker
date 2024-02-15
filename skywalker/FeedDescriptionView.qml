@@ -15,6 +15,8 @@ Page {
 
     id: page
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: qsTr("Feed")
         onBack: closed()
@@ -44,6 +46,9 @@ Page {
                     root.viewFullImage([feed.imageView], 0)
             }
 
+            Accessible.role: Accessible.StaticText
+            Accessible.name: qsTr("feed avatar") + (isPinnedFeed ? qsTr(", one of your favorites") : "")
+
             FavoriteStar {
                 width: 30
                 visible: isPinnedFeed
@@ -57,7 +62,7 @@ Page {
             leftPadding: 10
             rightPadding: 10
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
@@ -75,6 +80,10 @@ Page {
                 color: guiSettings.textColor
                 text: feed.creator.name
 
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(feed.creator.did)
+
                 MouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(feed.creator.did)
@@ -89,6 +98,9 @@ Page {
                 color: guiSettings.handleColor
                 text: "@" + feed.creator.handle
 
+                Accessible.role: Accessible.Link
+                Accessible.name: text
+                Accessible.onPressAction: skywalker.getDetailedProfile(feed.creator.did)
 
                 MouseArea {
                     anchors.fill:  parent
@@ -103,11 +115,18 @@ Page {
 
             onClicked: moreMenu.open()
 
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("more options")
+            Accessible.onPressAction: clicked()
+
             Menu {
                 id: moreMenu
                 modal: true
 
-                MenuItem {
+                CloseMenuItem {
+                    Accessible.name: qsTr("close more options menu")
+                }
+                AccessibleMenuItem {
                     text: isSavedFeed ? qsTr("Unsave feed") : qsTr("Save feed")
                     onTriggered: {
                         if (isSavedFeed)
@@ -124,7 +143,7 @@ Page {
                         svg: isSavedFeed ? svgOutline.remove : svgOutline.add
                     }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: isPinnedFeed ? qsTr("Remove favorite") : qsTr("Add favorite")
                     onTriggered: {
                         skywalker.favoriteFeeds.pinFeed(feed, !isPinnedFeed)
@@ -138,7 +157,7 @@ Page {
                         color: isPinnedFeed ? guiSettings.favoriteColor : guiSettings.textColor
                     }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Translate")
                     enabled: feed.description
                     onTriggered: root.translateText(feed.description)
@@ -147,7 +166,7 @@ Page {
                         svg: svgOutline.googleTranslate
                     }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Share")
                     onTriggered: skywalker.shareFeed(feed)
 
@@ -155,7 +174,7 @@ Page {
                         svg: svgOutline.share
                     }
                 }
-                MenuItem {
+                AccessibleMenuItem {
                     text: qsTr("Report feed")
                     onTriggered: root.reportFeed(feed)
 
@@ -179,6 +198,9 @@ Page {
             text: feed.formattedDescription
 
             onLinkActivated: (link) => root.openLink(link)
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: feed.description
         }
 
         Rectangle {
@@ -194,6 +216,10 @@ Page {
                 statistic: feedLikeCount
 
                 onClicked: likeFeed(feedLikeUri, feed.uri, feed.cid)
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, "like", "likes")
+                Accessible.onPressAction: clicked()
             }
         }
     }
@@ -212,6 +238,10 @@ Page {
             feedLikeUri = ""
         }
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
     }
 
     GuiSettings {

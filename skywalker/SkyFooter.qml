@@ -42,9 +42,7 @@ Rectangle {
             color: guiSettings.backgroundColor
 
             Accessible.role: Accessible.PageTab
-            Accessible.name: homeActive ?
-                                 qsTr(`${timeline.unreadPosts} posts from top of timeline, press to go to top`) :
-                                 qsTr("show feed")
+            Accessible.name: getHomeSpeech()
             Accessible.onPressAction: homeClicked()
 
             SvgImage {
@@ -139,7 +137,7 @@ Rectangle {
 
             Accessible.role: Accessible.PageTab
             Accessible.name: qsTr("feeds")
-            Accessible.onPressAction: searchClicked()
+            Accessible.onPressAction: feedsClicked()
 
             SvgImage {
                 id: feedsButton
@@ -216,5 +214,18 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function getHomeSpeech() {
+        if (!homeActive)
+            return qsTr("show feed")
+
+        if (unreadPosts === 0)
+            return qsTr("You are at the top of your time line")
+
+        if (unreadPosts === 1)
+            return qsTr("1 post from the top of your time line")
+
+        return qsTr(`${timeline.unreadPosts} posts from top of your timeline, press to go to top`)
     }
 }

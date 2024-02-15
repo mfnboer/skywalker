@@ -11,6 +11,9 @@ Page {
     signal closed
 
     id: page
+    clip: true
+
+    Accessible.role: Accessible.Pane
 
     header: SearchHeader {
         placeHolderText: qsTr("Search feeds")
@@ -47,10 +50,10 @@ Page {
         id: feedsBar
         width: parent.width
 
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Search results")
         }
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Saved feeds")
         }
     }
@@ -71,12 +74,10 @@ Page {
             flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
+            Accessible.role: Accessible.List
+
             delegate: GeneratorViewDelegate {
                 viewWidth: page.width
-
-                // onFeedClicked: (feed) => root.viewPostFeed(feed)
-                // onAddClicked: (feed, add) => saveFeed(feed, add)
-                // onFavoriteClicked: (feed, add) => pinFeed(feed, add)
             }
 
             FlickableRefresher {
@@ -109,12 +110,11 @@ Page {
             flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
+            Accessible.role: Accessible.List
+
             delegate: GeneratorViewDelegate {
                 viewWidth: page.width
 
-                // onFeedClicked: (feed) => root.viewPostFeed(feed)
-                // onAddClicked: (feed, add) => saveFeed(feed, add)
-                // onFavoriteClicked: (feed, add) => pinFeed(feed, add)
             }
 
             EmptyListIndication {

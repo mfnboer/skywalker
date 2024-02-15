@@ -11,6 +11,8 @@ Page {
 
     signal closed
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: qsTr("Moderation lists")
         onBack: page.closed()
@@ -20,13 +22,13 @@ Page {
         id: listsBar
         width: parent.width
 
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Your lists")
         }
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Blocked lists")
         }
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Muted lists")
         }
     }

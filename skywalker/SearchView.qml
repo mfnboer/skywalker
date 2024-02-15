@@ -11,6 +11,9 @@ Page {
     signal closed
 
     id: page
+    clip: true
+
+    Accessible.role: Accessible.Pane
 
     header: SearchHeader {
         onBack: page.closed()
@@ -52,7 +55,7 @@ Page {
 
         onAuthorClicked: (profile) => { page.skywalker.getDetailedProfile(profile.did) }
 
-        Text {
+        AccessibleText {
             topPadding: 10
             anchors.horizontalCenter: parent.horizontalCenter
             color: Material.color(Material.Grey)
@@ -67,10 +70,10 @@ Page {
         width: parent.width
         visible: !page.isTyping
 
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Posts")
         }
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Users")
         }
     }
@@ -93,6 +96,8 @@ Page {
             flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
+            Accessible.role: Accessible.List
+
             delegate: PostFeedViewDelegate {
                 viewWidth: postsView.width
             }
@@ -104,7 +109,7 @@ Page {
                 topText: ""
             }
 
-            Text {
+            AccessibleText {
                 topPadding: 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: Material.color(Material.Grey)
@@ -129,6 +134,8 @@ Page {
             flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
+            Accessible.role: Accessible.List
+
             delegate: AuthorViewDelegate {
                 viewWidth: postsView.width
                 onFollow: (profile) => { graphUtils.follow(profile) }
@@ -142,7 +149,7 @@ Page {
                 topText: ""
             }
 
-            Text {
+            AccessibleText {
                 topPadding: 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: Material.color(Material.Grey)

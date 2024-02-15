@@ -18,7 +18,7 @@ Page {
         onBack: page.closed()
     }
 
-    Switch {
+    AccessibleSwitch {
         topPadding: 10
         bottomPadding: 20
         id: adultContentSwitch

@@ -11,6 +11,8 @@ Page {
 
     signal closed
 
+    Accessible.role: Accessible.Pane
+
     header: SimpleHeader {
         text: qsTr("User lists")
         onBack: page.closed()
@@ -20,10 +22,10 @@ Page {
         id: listsBar
         width: parent.width
 
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Your lists")
         }
-        TabButton {
+        AccessibleTabButton {
             text: qsTr("Saved lists")
         }
     }

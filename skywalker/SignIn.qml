@@ -11,13 +11,14 @@ Page {
     background: Rectangle { color: guiSettings.skywalkerLogoColor }
 
     Accessible.role: Accessible.Pane
+    Accessible.name: "Skywalker"
 
     Column {
         width: parent.width
         height: parent.height
         Accessible.role: Accessible.Pane
 
-        Text {
+        AccessibleText {
             id: title
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
@@ -25,10 +26,6 @@ Page {
             font.bold: true
             font.pointSize: guiSettings.scaledFont(3.5)
             text: "Skywalker"
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
-            Accessible.description: Accessible.name
         }
         Text {
             id: description
@@ -54,7 +51,7 @@ Page {
 
             Accessible.ignored: true
         }
-        Text {
+        AccessibleText {
             id: warranty
             width: parent.width
             padding: 10
@@ -62,10 +59,6 @@ Page {
             wrapMode: Text.Wrap
             color: "white"
             text: qsTr("Skywalker comes with ABSOLUTELY NO WARRANTY.")
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
-            Accessible.description: Accessible.name
         }
         SkyButton {
             id: signInButton

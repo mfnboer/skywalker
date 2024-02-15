@@ -131,17 +131,15 @@ Column {
         }
     }
 
+    AccessibilityUtils {
+        id: accessibilityUtils
+    }
+
     GuiSettings {
         id: guiSettings
     }
 
     function statSpeech(stat, textSingular, textPlural) {
-        if (stat === 0)
-            return ""
-
-        if (stat === 1)
-            return `, 1 ${textSingular}`
-
-        return `, ${stat} ${textPlural}`
+        return accessibilityUtils.statSpeech(stat, textSingular, textPlural)
     }
 }

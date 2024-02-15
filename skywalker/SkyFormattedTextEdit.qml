@@ -23,6 +23,12 @@ TextEdit {
     clip: true
     text: initialText
 
+    Accessible.role: Accessible.EditableText
+    Accessible.name: text ? text : qsTr(`Enter ${placeholderText}`)
+    Accessible.description: Accessible.name
+    Accessible.editable: true
+    Accessible.multiLine: true
+
     onCursorRectangleChanged: {
         let editMentionY = postUtils.editMentionCursorY
         let cursorY = cursorRectangle.y

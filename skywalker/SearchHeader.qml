@@ -30,6 +30,10 @@ Rectangle {
             Material.background: "transparent"
             svg: svgOutline.arrowBack
             onClicked: headerRect.back()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("go back")
+            Accessible.onPressAction: clicked()
         }
 
         Rectangle {
@@ -56,6 +60,11 @@ Rectangle {
                 // Does not work with Android
                 Keys.onReleased: (event) => { headerRect.keyRelease(event) }
 
+                Accessible.role: Accessible.EditableText
+                Accessible.name: placeHolder.visible ? placeHolderText : text
+                Accessible.editable: true
+                Accessible.searchEdit: true
+
                 SvgButton {
                     id: clearButton
                     anchors.right: parent.right
@@ -66,16 +75,23 @@ Rectangle {
                     svg: svgOutline.close
                     visible: searchText.displayText.length > 0
                     onClicked: searchText.clear()
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("clear search text")
+                    Accessible.onPressAction: clicked()
                 }
             }
 
             Text {
+                id: placeHolder
                 width: searchText.width
                 padding: searchText.padding
                 font.pointSize: searchText.font.pointSize
                 color: guiSettings.placeholderTextColor
                 text: headerRect.placeHolderText
                 visible: searchText.displayText.length === 0
+
+                Accessible.ignored: true
             }
         }
 
@@ -90,6 +106,10 @@ Rectangle {
             onClicked: headerRect.search(searchText.displayText)
             enabled: searchText.displayText.length >= headerRect.minSearchTextLength
             visible: headerRect.showSearchButton
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("start search for posts and users")
+            Accessible.onPressAction: if (enabled) clicked()
         }
     }
 

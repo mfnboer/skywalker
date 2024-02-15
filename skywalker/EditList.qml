@@ -17,6 +17,9 @@ Page {
 
     id: editListPage
     width: parent.width
+    clip: true
+
+    Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
         text: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
@@ -38,6 +41,10 @@ Page {
                 else
                     updateList()
             }
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("save list")
+            Accessible.onPressAction: if (enabled) clicked()
         }
     }
 
@@ -131,6 +138,10 @@ Page {
                     }
                 }
 
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("change list avatar")
+                Accessible.onPressAction: clicked()
+
                 SvgButton {
                     x: parent.width - width
                     width: 40
@@ -142,6 +153,10 @@ Page {
                         avatar.setUrl("")
                         dropCreatedAvatar()
                     }
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("delete list avatar")
+                    Accessible.onPressAction: clicked()
                 }
 
                 function setUrl(url) {
@@ -163,7 +178,7 @@ Page {
                 Layout.fillWidth: true
                 focus: true
                 initialText: list.name
-                placeholderText: qsTr("Name your list")
+                placeholderText: qsTr("List name")
                 maximumLength: 64
             }
 
@@ -197,7 +212,7 @@ Page {
                     bottomPadding: 10
                     parentPage: editListPage
                     parentFlick: flick
-                    placeholderText: qsTr("Describe your list")
+                    placeholderText: qsTr("List description")
                     initialText: list.description
                 }
             }

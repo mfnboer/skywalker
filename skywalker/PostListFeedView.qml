@@ -18,6 +18,9 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}
 
+    Accessible.role: Accessible.List
+    Accessible.name: postListFeedView.model.feedName
+
     header: PostFeedHeader {
         skywalker: postListFeedView.skywalker
         feedName: postListFeedView.model.feedName
