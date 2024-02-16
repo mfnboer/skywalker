@@ -61,13 +61,12 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 3
 
-            Text {
+            SkyCleanedText {
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(author.name)
+                plainText: author.name
 
                 Accessible.ignored: true
             }
@@ -174,10 +173,6 @@ Rectangle {
         z: -1
         anchors.fill: parent
         onClicked: skywalker.getDetailedProfile(author.did)
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     GuiSettings {

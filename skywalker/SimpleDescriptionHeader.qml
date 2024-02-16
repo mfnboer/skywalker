@@ -66,15 +66,14 @@ Rectangle {
             Accessible.name: description
             Accessible.description: Accessible.name
 
-            Text {
+            SkyCleanedText {
                 id: descriptionText
                 width: parent.width
                 padding: 10
                 wrapMode: Text.Wrap
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(description)
+                plainText: description
 
                 Accessible.ignored: true
             }
@@ -84,10 +83,6 @@ Rectangle {
             height: 1
             color: guiSettings.separatorColor
             visible: description
-        }
-
-        UnicodeFonts {
-            id: unicodeFonts
         }
 
         GuiSettings {

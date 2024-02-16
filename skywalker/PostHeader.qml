@@ -12,18 +12,21 @@ GridLayout {
     columns: 2
     rowSpacing: 0
 
-    Text {
+    SkyCleanedText {
         Layout.fillWidth: true
         elide: Text.ElideRight
-        textFormat: Text.RichText
-        text: unicodeFonts.toCleanedHtml(authorName)
+        plainText: authorName
         font.bold: true
         color: guiSettings.textColor
+
+        Accessible.ignored: true
     }
     Text {
         text: guiSettings.durationToString(postIndexedSecondsAgo)
         font.pointSize: guiSettings.scaledFont(7/8)
         color: Material.color(Material.Grey)
+
+        Accessible.ignored: true
     }
 
     Text {
@@ -34,10 +37,8 @@ GridLayout {
         font.pointSize: guiSettings.scaledFont(7/8)
         color: guiSettings.handleColor
         visible: postThreadType & QEnums.THREAD_ENTRY
-    }
 
-    UnicodeFonts {
-        id: unicodeFonts
+        Accessible.ignored: true
     }
 
     GuiSettings {

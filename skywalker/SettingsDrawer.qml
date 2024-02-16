@@ -54,16 +54,15 @@ Drawer {
                 Accessible.ignored: true
             }
 
-            Text {
+            SkyCleanedText {
                 id: nameText
                 width: parent.width
                 wrapMode: Text.Wrap
-                textFormat: Text.RichText
                 elide: Text.ElideRight
-                maximumLineCount: 2
+                maximumLineCount: 2 // TODO
                 font.bold: true
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(user.name)
+                plainText: user.name
 
                 Accessible.ignored: true
             }
@@ -218,10 +217,6 @@ Drawer {
         visible: false
 
         Accessible.role: Accessible.Window
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     GuiSettings {

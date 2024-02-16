@@ -134,17 +134,18 @@ Rectangle {
                 svg: svgOutline.repost
             }
         }
-        Text {
+        SkyCleanedText {
             id: repostedByText
             width: parent.width - avatar.width - postEntry.margin * 2
             Layout.fillWidth: true
-            textFormat: Text.RichText
             elide: Text.ElideRight
-            text: qsTr(`Reposted by ${(unicodeFonts.toCleanedHtml(postRepostedByAuthor.name))}`)
+            plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
             visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+
+            Accessible.ignored: true
 
             MouseArea {
                 anchors.fill: parent

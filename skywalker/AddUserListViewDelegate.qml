@@ -51,14 +51,13 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: view.margin
 
-            Text {
+            SkyCleanedText {
                 id: listNameText
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(list.name)
+                plainText: list.name
 
                 Accessible.ignored: true
             }

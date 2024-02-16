@@ -256,17 +256,18 @@ Page {
                 }
             }
 
-            Text {
+            SkyCleanedText {
                 id: nameText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
-                maximumLineCount: 2
+                maximumLineCount: 2 // TODO: max line count cleaned text
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(authorName)
+                plainText: authorName
+
+                Accessible.ignored: true
             }
 
             RowLayout {

@@ -26,13 +26,14 @@ Column {
         Column {
             Layout.fillWidth: true
 
-            Text {
+            SkyCleanedText {
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(feed.displayName)
+                plainText: feed.displayName
+
+                Accessible.ignored: true
             }
 
             Text {
@@ -41,6 +42,8 @@ Column {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: qsTr(`feed by @${feed.creator.handle}`)
+
+                Accessible.ignored: true
             }
         }
     }
@@ -53,10 +56,6 @@ Column {
         textFormat: Text.RichText
         color: guiSettings.textColor
         text: feed.description
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     AccessibilityUtils {

@@ -283,6 +283,7 @@ qt_add_qml_module(libskywalker
         QML_FILES AccessibleSwitch.qml
         SOURCES emoji_fix_highlighter.h
         SOURCES emoji_fix_highlighter.cpp
+        QML_FILES SkyCleanedText.qml
 )
 
 if (NOT ANDROID)

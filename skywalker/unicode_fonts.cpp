@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "unicode_fonts.h"
+#include "font_downloader.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QQuickTextDocument>
 #include <unordered_map>
@@ -188,10 +189,8 @@ int UnicodeFonts::graphemeLength(const QString& text)
 
 bool UnicodeFonts::onlyEmojis(const QString& text)
 {
-    qDebug() << "EMOJI?" << text;
     for (const auto c : text.toUcs4())
     {
-        qDebug() << "Code point:" << c;
         if (!isEmoji(c))
             return false;
     }
@@ -232,6 +231,104 @@ bool UnicodeFonts::isKeycapEmoji(const QString& grapheme)
 void UnicodeFonts::setEmojiFixDocument(QQuickTextDocument* doc)
 {
     mEmojiFixer.setDocument(doc->textDocument());
+}
+
+QString UnicodeFonts::setEmojiFontCombinedEmojis(const QString& text)
+{
+    static const QString emojiSpanStart = QString("<span style=\"font-family:'%1'\">").arg(FontDownloader::getEmojiFontFamily());
+    static const QString emojiSpanEnd = "</span>";
+
+    // ZWJ Emoji's are not always correctly rendered. Somehow the primary font
+    // renders them as 2 separate emoji's.
+    //
+    // Example: the rainbow flag: \U0001F3F3\uFE0F\u200D\U0001F308"
+    //          \U0001F3F3\uFE0F = white flag
+    //          \u200D =           ZWJ
+    //          \U0001F308 =       rainbow
+    //
+    // Explicity set emoji font for long emoji graphemes.
+
+    // Force Combining Enclosing Keycap character to be rendered by the emoji font.
+    // The primary Roboto font renders it as 2 glyphs
+
+    QString result;
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int prev = 0;
+    int next;
+
+    int startEmojis = -1;
+    int lenEmojis = 0;
+
+    while ((next = boundaryFinder.toNextBoundary()) != -1)
+    {
+        const int len = next - prev;
+        const QString grapheme = text.sliced(prev, len);
+
+        if (len > 2)
+        {
+            if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
+            {
+                if (startEmojis == -1)
+                {
+                    startEmojis = prev;
+                    lenEmojis = len;
+                }
+                else
+                {
+                    lenEmojis += len;
+                }
+            }
+            else
+            {
+                if (startEmojis != -1)
+                {
+                    result += emojiSpanStart + text.sliced(startEmojis, lenEmojis) + emojiSpanEnd;
+                    startEmojis = -1;
+                }
+
+                result += grapheme;
+            }
+        }
+        else {
+            if (startEmojis != -1)
+            {
+                result += emojiSpanStart + text.sliced(startEmojis, lenEmojis) + emojiSpanEnd;
+                startEmojis = -1;
+            }
+
+            result += grapheme;
+        }
+
+        prev = next;
+    }
+
+    if (startEmojis != -1)
+        result += emojiSpanStart + text.sliced(startEmojis) + emojiSpanEnd;
+
+    return result;
+}
+
+bool UnicodeFonts::hasCombinedEmojis(const QString& text)
+{
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int prev = 0;
+    int next;
+
+    while ((next = boundaryFinder.toNextBoundary()) != -1)
+    {
+        const int len = next - prev;
+        const QString grapheme = text.sliced(prev, len);
+
+        if (len > 2)
+        {
+            if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
+                return true;
+        }
+
+        prev = next;
+    }
+
+    return false;
 }
 
 }

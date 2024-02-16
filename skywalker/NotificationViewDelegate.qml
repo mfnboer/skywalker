@@ -488,7 +488,7 @@ Rectangle {
                 notificationPostRecordWithMedia, accessibilityUtils.nullAuthor,
                 notificationReason === QEnums.NOTIFICATION_REASON_REPLY, replyToAuthor)
 
-        let speech = `${time} ${(unicodeFonts.toCleanedHtml(notificationAuthor.name))} ${reason}\n\n${postSpeech}`
+        let speech = `${time} ${notificationAuthor.name} ${reason}\n\n${postSpeech}`
         return speech
     }
 

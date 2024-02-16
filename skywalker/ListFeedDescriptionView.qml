@@ -65,19 +65,15 @@ Page {
             leftPadding: 10
             rightPadding: 10
 
-            Text {
+            SkyCleanedText {
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
-                maximumLineCount: 2
+                maximumLineCount: 2 // TODO
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(list.name)
-
-                Accessible.role: Accessible.StaticText
-                Accessible.name: list.name
+                plainText: list.name
             }
 
             AccessibleText {
@@ -88,13 +84,12 @@ Page {
                 text: guiSettings.listTypeName(list.purpose)
             }
 
-            Text {
+            SkyCleanedText {
                 topPadding: 5
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(list.creator.name)
+                text: list.creator.name
 
                 Accessible.role: Accessible.Link
                 Accessible.name: list.creator.name
@@ -400,10 +395,6 @@ Page {
 
         onProfileViewOk: (profile, listItemUri) => authorListView.model.prependAuthor(profile, listItemUri)
         onProfileViewFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     GuiSettings {

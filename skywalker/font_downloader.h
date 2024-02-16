@@ -12,6 +12,7 @@ public:
     static void addApplicationFonts();
     static void downloadEmojiFont();
     static float getFontScale();
+    static QString getEmojiFontFamily();
     static QFont getEmojiFont();
 };
 

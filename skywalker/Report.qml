@@ -97,18 +97,21 @@ Page {
                 Column {
                     Layout.fillWidth: true
 
-                    Text {
-                        textFormat: Text.RichText
+                    SkyCleanedText {
                         elide: Text.ElideRight
                         font.bold: true
                         color: guiSettings.textColor
-                        text: unicodeFonts.toCleanedHtml(author.name)
+                        plainText: author.name
+
+                        Accessible.ignored: true
                     }
                     Text {
                         elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(7/8)
                         color: guiSettings.handleColor
                         text: author.handle ? `@${author.handle}` : ""
+
+                        Accessible.ignored: true
                     }
                 }
             }
@@ -204,10 +207,6 @@ Page {
         }
 
         onReportFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     GuiSettings {

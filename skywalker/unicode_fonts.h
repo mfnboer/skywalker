@@ -30,10 +30,12 @@ public:
     Q_INVOKABLE static QString normalizeToNFKD(const QString& text);
     Q_INVOKABLE static int graphemeLength(const QString& text);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
+    Q_INVOKABLE static bool hasCombinedEmojis(const QString& text);
     Q_INVOKABLE void setEmojiFixDocument(QQuickTextDocument* doc);
 
     static bool isEmoji(uint c);
     static bool isKeycapEmoji(const QString& grapheme);
+    static QString setEmojiFontCombinedEmojis(const QString& text);
 
 private:
     static uint convertToSmallCaps(QChar c);

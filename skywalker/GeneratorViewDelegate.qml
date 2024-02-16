@@ -54,22 +54,20 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: generatorView.margin
 
-            AccessibleText {
+            SkyCleanedText {
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(feed.displayName)
+                plainText: feed.displayName
             }
 
-            Text {
+            SkyCleanedText {
                 topPadding: 5
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(feedCreator.name)
+                plainText: feedCreator.name
 
                 Accessible.role: Accessible.Link
                 Accessible.name: feedCreator.name
@@ -260,10 +258,6 @@ Rectangle {
             console.debug("FEED CLICKED:", feed.displayName)
             generatorView.feedClicked(feed)
         }
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     AccessibilityUtils {

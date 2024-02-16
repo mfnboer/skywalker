@@ -62,24 +62,23 @@ Page {
             leftPadding: 10
             rightPadding: 10
 
-            AccessibleText {
+            SkyCleanedText {
                 width: parent.width
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
-                maximumLineCount: 2
+                maximumLineCount: 2 // TODO
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(feed.displayName)
+                plainText: feed.displayName
             }
 
-            Text {
+            SkyCleanedText {
                 topPadding: 5
                 width: parent.width
-                textFormat: Text.RichText
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: unicodeFonts.toCleanedHtml(feed.creator.name)
+                plainText: feed.creator.name
 
                 Accessible.role: Accessible.Link
                 Accessible.name: feed.creator.name
@@ -239,10 +238,6 @@ Page {
             feedLikeUri = ""
         }
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     AccessibilityUtils {

@@ -52,13 +52,14 @@ SvgButton {
             id: menuInstantiator
             model: []
             delegate: MenuItem {
-                contentItem: Text {
+                contentItem: SkyCleanedText {
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: feedAvatar.width + 5
                     color: guiSettings.textColor
-                    textFormat: Text.RichText
                     elide: Text.ElideRight
-                    text: unicodeFonts.toCleanedHtml(modelData.name)
+                    plainText: modelData.name
+
+                    Accessible.ignored: true
                 }
 
                 FeedAvatar {
@@ -123,10 +124,6 @@ SvgButton {
 
             return true
         }
-    }
-
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     GuiSettings {

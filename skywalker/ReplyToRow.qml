@@ -15,18 +15,15 @@ Row {
         svg: svgOutline.reply
     }
 
-    Text {
+    SkyCleanedText {
         id: replyToText
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width - replyImg.width
-        textFormat: Text.RichText
         elide: Text.ElideRight
         color: Material.color(Material.Grey)
         font.pointSize: guiSettings.scaledFont(7/8)
-        text: qsTr(`Reply to ${(unicodeFonts.toCleanedHtml(authorName))}`)
-    }
+        plainText: qsTr(`Reply to ${authorName}`)
 
-    UnicodeFonts {
-        id: unicodeFonts
+        Accessible.ignored: true
     }
 }

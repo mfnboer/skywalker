@@ -57,7 +57,7 @@ ListView {
                     font.italic: true
                     font.pointSize: guiSettings.scaledFont(7/8)
                     wrapMode: Text.Wrap
-                    maximumLineCount: 3
+                    maximumLineCount: 3 // TODO
                     elide: Text.ElideRight
                     textFormat: Text.RichText
                     text: restrictionRow.getRestrictionText()
