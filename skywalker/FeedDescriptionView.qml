@@ -66,7 +66,7 @@ Page {
                 width: parent.width
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
-                maximumLineCount: 2 // TODO
+                maximumLineCount: 2
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor

@@ -75,12 +75,18 @@ Text {
         if (wrapMode === Text.NoWrap)
             return
 
+        if (ellipsis.visible)
+            return
+
+        if (fontMetrics.height <= 0)
+            return
+
         const numLines = Math.floor(height / fontMetrics.height)
 
         if (numLines <= maximumLineCount)
             return
 
-        height = fontMetrics.height * maximumLineCount
+        height = height * (maximumLineCount / numLines)
         ellipsis.visible = true
     }
 
@@ -97,6 +103,9 @@ Text {
     }
 
     function determineTextFormat() {
+        text = plainText
+        height = undefined
+
         if (isRichText())
             return
 

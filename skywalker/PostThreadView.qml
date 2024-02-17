@@ -48,7 +48,7 @@ ListView {
                     color: guiSettings.textColor
                     svg: svgOutline.replyRestrictions
                 }
-                Text {
+                SkyCleanedText {
                     id: restrictionText
                     anchors.left: restrictionIcon.right
                     anchors.right: parent.right
@@ -57,10 +57,10 @@ ListView {
                     font.italic: true
                     font.pointSize: guiSettings.scaledFont(7/8)
                     wrapMode: Text.Wrap
-                    maximumLineCount: 3 // TODO
+                    maximumLineCount: 3
                     elide: Text.ElideRight
                     textFormat: Text.RichText
-                    text: restrictionRow.getRestrictionText()
+                    plainText: restrictionRow.getRestrictionText()
 
                     onLinkActivated: (link) => {
                         if (link.startsWith("did:")) {
@@ -70,6 +70,8 @@ ListView {
                             root.viewListByUri(link, false)
                         }
                     }
+
+                    Accessible.ignored: true
                 }
 
                 function getRestrictionText() {

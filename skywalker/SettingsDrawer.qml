@@ -59,7 +59,7 @@ Drawer {
                 width: parent.width
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
-                maximumLineCount: 2 // TODO
+                maximumLineCount: 2
                 font.bold: true
                 color: guiSettings.textColor
                 plainText: user.name
