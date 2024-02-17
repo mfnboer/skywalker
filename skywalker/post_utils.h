@@ -49,7 +49,8 @@ public:
     Q_INVOKABLE void savePhoto(const QString& sourceUrl);
     Q_INVOKABLE void dropPhoto(const QString& source);
     Q_INVOKABLE QString cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize);
-    Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor);
+    Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
+                                          int maxLength = -1, const QString& lengthExceededColor = {});
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                              int cursor);
 

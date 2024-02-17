@@ -3,6 +3,7 @@
 #pragma once
 #include "enums.h"
 #include "emoji_fix_highlighter.h"
+#include "grapheme_info.h"
 #include <QQuickTextDocument>
 #include <QtQmlIntegration>
 #include <QObject>
@@ -29,9 +30,10 @@ public:
     Q_INVOKABLE static QString toCleanedHtml(const QString& text);
     Q_INVOKABLE static QString normalizeToNFKD(const QString& text);
     Q_INVOKABLE static int graphemeLength(const QString& text);
+    Q_INVOKABLE static GraphemeInfo getGraphemeInfo(const QString& text);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
     Q_INVOKABLE static bool hasCombinedEmojis(const QString& text);
-    Q_INVOKABLE void setEmojiFixDocument(QQuickTextDocument* doc);
+    Q_INVOKABLE void setEmojiFixDocument(QQuickTextDocument* doc, int maxLength = -1, const QString& lengthExceededColor = {});
 
     static bool isEmoji(uint c);
     static bool isKeycapEmoji(const QString& grapheme);

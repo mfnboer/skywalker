@@ -11,13 +11,18 @@ class EmojiFixHighlighter : public QSyntaxHighlighter
 
 public:
     explicit EmojiFixHighlighter(QTextDocument* parent = nullptr);
+    void setMaxLength(int maxLength, const QString& lengthExceededColor);
 
 protected:
     void highlightBlock(const QString& text) override;
 
 private:
+    void highlightLengthExceeded(const QString& text);
     void setEmojiFontKeycaps(const QString& text);
     void setEmojiFontCombinedEmojis(const QString& text);
+
+    int mMaxLength = -1;
+    QColor mLengthExceededColor;
 };
 
 }

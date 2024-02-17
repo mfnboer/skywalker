@@ -634,10 +634,12 @@ void PostUtils::setFirstListLink(const QString& link)
     emit firstListLinkChanged();
 }
 
-void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor)
+void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
+        int maxLength, const QString& lengthExceededColor)
 {
     mFacetHighlighter.setDocument(doc->textDocument());
     mFacetHighlighter.setHighlightColor(highlightColor);
+    mFacetHighlighter.setMaxLength(maxLength, lengthExceededColor);
 }
 
 void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,

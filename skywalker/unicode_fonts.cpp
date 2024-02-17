@@ -187,6 +187,25 @@ int UnicodeFonts::graphemeLength(const QString& text)
     return length;
 }
 
+GraphemeInfo UnicodeFonts::getGraphemeInfo(const QString& text)
+{
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int length = 0;
+    std::vector<int> charPositions;
+    int prev = 0;
+    int next = 0;
+
+    while ((next = boundaryFinder.toNextBoundary()) != -1)
+    {
+        charPositions.push_back(prev);
+        prev = next;
+        ++length;
+    }
+
+    GraphemeInfo info(length, charPositions);
+    return info;
+}
+
 bool UnicodeFonts::onlyEmojis(const QString& text)
 {
     for (const auto c : text.toUcs4())
@@ -228,8 +247,9 @@ bool UnicodeFonts::isKeycapEmoji(const QString& grapheme)
     return match.hasMatch();
 }
 
-void UnicodeFonts::setEmojiFixDocument(QQuickTextDocument* doc)
+void UnicodeFonts::setEmojiFixDocument(QQuickTextDocument* doc, int maxLength, const QString& lengthExceededColor)
 {
+    mEmojiFixer.setMaxLength(maxLength, lengthExceededColor);
     mEmojiFixer.setDocument(doc->textDocument());
 }
 

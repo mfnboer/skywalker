@@ -11,10 +11,22 @@ EmojiFixHighlighter::EmojiFixHighlighter(QTextDocument* parent) :
 {
 }
 
+void EmojiFixHighlighter::setMaxLength(int maxLength, const QString& lengthExceededColor)
+{
+    mMaxLength = maxLength;
+    mLengthExceededColor = lengthExceededColor;
+}
+
 void EmojiFixHighlighter::highlightBlock(const QString& text)
 {
     setEmojiFontKeycaps(text);
     setEmojiFontCombinedEmojis(text);
+    highlightLengthExceeded(text);
+}
+
+void EmojiFixHighlighter::highlightLengthExceeded(const QString&)
+{
+    // TODO
 }
 
 void EmojiFixHighlighter::setEmojiFontKeycaps(const QString& text)

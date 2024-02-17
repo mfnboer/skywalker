@@ -62,6 +62,7 @@ Drawer {
                 maximumLineCount: 2
                 font.bold: true
                 color: guiSettings.textColor
+                ellipsisBackgroundColor: Material.dialogColor
                 plainText: user.name
 
                 Accessible.ignored: true

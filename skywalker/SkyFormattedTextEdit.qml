@@ -9,6 +9,7 @@ TextEdit {
     property string initialText: ""
     property string placeholderText
     property int graphemeLength: 0
+    property int maxLength: -1
 
     id: editText
     width: parentPage.width
@@ -45,6 +46,11 @@ TextEdit {
     }
 
     onPreeditTextChanged: updateGraphemeLength()
+
+    onMaxLengthChanged: {
+        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+                                       editText.maxLength, guiSettings.errorColor)
+    }
 
     function highlightFacets() {
         postUtils.extractMentionsAndLinks(editText.text,
@@ -122,7 +128,8 @@ TextEdit {
 
     Component.onCompleted: {
         createAuthorTypeaheadView()
-        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor)
+        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+                                       editText.maxLength, guiSettings.errorColor)
     }
 }
 

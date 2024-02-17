@@ -55,14 +55,28 @@ Page {
         height: getFooterHeight()
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
-        visible: descriptionField.activeFocus
+        visible: nameField.activeFocus || descriptionField.activeFocus
 
         function getFooterHeight() {
             return guiSettings.footerHeight
         }
 
         TextLengthBar {
+            textField: nameField
+            visible: nameField.activeFocus
+        }
+
+        TextLengthCounter {
+            y: 10
+            anchors.rightMargin: 10
+            anchors.right: parent.right
+            textField: nameField
+            visible: nameField.activeFocus
+        }
+
+        TextLengthBar {
             textField: descriptionField
+            visible: descriptionField.activeFocus
         }
 
         TextLengthCounter {
@@ -70,6 +84,7 @@ Page {
             anchors.rightMargin: 10
             anchors.right: parent.right
             textField: descriptionField
+            visible: descriptionField.activeFocus
         }
     }
 
@@ -248,7 +263,7 @@ Page {
                     initialText: authorName
                     placeholderText: qsTr("Your name")
                     singleLine: true
-                    maxGraphemeLength: 64
+                    maxLength: 64
                 }
             }
 
@@ -274,8 +289,6 @@ Page {
                 color: "transparent"
 
                 SkyFormattedTextEdit {
-                    readonly property int maxLength: 300
-
                     id: descriptionField
                     width: parent.width
                     topPadding: 10
@@ -284,6 +297,7 @@ Page {
                     parentFlick: flick
                     placeholderText: qsTr("Describe yourself")
                     initialText: authorDescription
+                    maxLength: 300
                 }
             }
         }
@@ -482,6 +496,6 @@ Page {
     }
 
     Component.onCompleted: {
-        nameField.setFocus()
+        nameField.forceActiveFocus()
     }
 }

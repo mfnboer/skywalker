@@ -89,7 +89,7 @@ Page {
                 width: parent.width
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: list.creator.name
+                plainText: list.creator.name
 
                 Accessible.role: Accessible.Link
                 Accessible.name: list.creator.name

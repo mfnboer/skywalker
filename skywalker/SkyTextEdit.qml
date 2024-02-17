@@ -7,7 +7,7 @@ TextEdit {
     property double placeholderPointSize: guiSettings.scaledFont(9/8)
     property bool singleLine: false
     property int graphemeLength: 0
-    property int maxGraphemeLength: -1
+    property int maxLength: -1
 
     id: skyTextEdit
     width: page.width
@@ -62,7 +62,7 @@ TextEdit {
     }
 
     function maxGraphemeLengthExceeded() {
-        return maxGraphemeLength > -1 && graphemeLength > maxGraphemeLength
+        return maxLength > -1 && graphemeLength > maxLength
     }
 
     UnicodeFonts {
@@ -74,7 +74,7 @@ TextEdit {
     }
 
     Component.onCompleted: {
-        unicodeFonts.setEmojiFixDocument(textDocument)
+        unicodeFonts.setEmojiFixDocument(textDocument, maxLength, guiSettings.errorColor)
         cursorPosition = text.length
     }
 }

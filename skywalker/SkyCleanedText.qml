@@ -55,13 +55,13 @@ Text {
             return
 
         const ratio = width / contentWidth
-        const newLength = elidedText.length * ratio - 1
+        const graphemeInfo = unicodeFonts.getGraphemeInfo(elidedText)
+        const newLength = Math.floor(graphemeInfo.length * ratio - 1)
 
         if (newLength < 1)
             return
 
-        // TODO: should slice graphemes
-        elidedText = elidedText.slice(0, newLength) + "…"
+        elidedText = graphemeInfo.sliced(elidedText, 0, newLength) + "…"
         setElidedText()
     }
 
