@@ -1,32 +1,49 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 Text {
     required property string plainText
     property string elidedText
+    property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
 
     id: theText
+    clip: true
     text: plainText
 
+    onPlainTextChanged: determineTextFormat()
     onWidthChanged: resetText()
-    onTextChanged: elideRichText()
+    onHeightChanged: capLinesRichText()
 
-    // TODO: num lines = HEIGHT / FONT HEIGHT (approx)
-    onHeightChanged: console.debug("FONT HEIGHT:", fontMetrics.height, "FONT PT:", font.pointSize, "HEIGHT:", height, plainText)
+    onTextChanged: {
+        elideRichText()
+        capLinesRichText()
+    }
 
     Accessible.role: Accessible.StaticText
     Accessible.name: plainText
 
+    function isRichText() {
+        return textFormat === Text.RichText
+    }
+
+    function setElidedText() {
+        if (mustClean)
+            text = unicodeFonts.toCleanedHtml(elidedText)
+        else
+            text = elidedText
+    }
+
     function elideRichText() {
-        if (!mustClean)
+        if (!isRichText())
             return
 
         if (elide !== Text.ElideRight)
             return
 
         if (wrapMode !== Text.NoWrap)
-            return // TODO
+            return
 
         if (contentWidth <= width)
             return
@@ -34,20 +51,72 @@ Text {
         if (elidedText.length < 2)
             return
 
-        elidedText = elidedText.slice(0, elidedText.length - 2) + "…"
-        text = unicodeFonts.toCleanedHtml(elidedText)
+        if (contentWidth <= 0)
+            return
+
+        const ratio = width / contentWidth
+        const newLength = elidedText.length * ratio - 1
+
+        if (newLength < 1)
+            return
+
+        // TODO: should slice graphemes
+        elidedText = elidedText.slice(0, newLength) + "…"
+        setElidedText()
+    }
+
+    function capLinesRichText() {
+        if (!isRichText())
+            return
+
+        if (elide !== Text.ElideRight)
+            return
+
+        if (wrapMode === Text.NoWrap)
+            return
+
+        const numLines = Math.floor(height / fontMetrics.height)
+
+        if (numLines <= maximumLineCount)
+            return
+
+        height = fontMetrics.height * maximumLineCount
+        ellipsis.visible = true
     }
 
     function resetText() {
-        if (!mustClean)
+        if (!isRichText())
             return
 
         if (elidedText !== plainText) {
             elidedText = plainText
-            text = unicodeFonts.toCleanedHtml(elidedText)
+            setElidedText()
         }
 
         elideRichText()
+    }
+
+    function determineTextFormat() {
+        if (isRichText())
+            return
+
+        if (unicodeFonts.hasCombinedEmojis(plainText)) {
+            textFormat = Text.RichText
+            mustClean = true
+            resetText()
+        }
+    }
+
+    Label {
+        id: ellipsis
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        leftPadding: 10
+        font: theText.font
+        color: theText.color
+        background: Rectangle { color: ellipsisBackgroundColor }
+        text: "…"
+        visible: false
     }
 
     FontMetrics {
@@ -59,13 +128,7 @@ Text {
         id: unicodeFonts
     }
 
-    Component.onCompleted: {
-        if (unicodeFonts.hasCombinedEmojis(plainText)) {
-            textFormat = Text.RichText
-            mustClean = true
-
-        }
-
-        resetText()
+    GuiSettings {
+        id: guiSettings
     }
 }

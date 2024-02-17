@@ -53,7 +53,6 @@ Column {
         wrapMode: Text.Wrap
         maximumLineCount: 5
         elide: Text.ElideRight
-        textFormat: Text.RichText
         color: guiSettings.textColor
         text: feed.description
     }

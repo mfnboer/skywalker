@@ -350,6 +350,8 @@ Page {
         }
 
         ComboBox {
+            property bool pressedWithVirtualKeyboard: false
+
             id: fontSelector
             x: addGif.x + addGif.width + 15
             y: 5 + restrictionRow.height + footerSeparator.height
@@ -456,6 +458,7 @@ Page {
             author: replyToAuthor
             postText: replyToPostText
             postDateTime: replyToPostDateTime
+            ellipsisBackgroundColor: guiSettings.postHighLightColor
             visible: replyToPostUri
         }
 
@@ -766,6 +769,7 @@ Page {
             author: quoteAuthor
             postText: quoteText
             postDateTime: quoteDateTime
+            ellipsisBackgroundColor: guiSettings.postHighLightColor
             visible: quoteUri
         }
 

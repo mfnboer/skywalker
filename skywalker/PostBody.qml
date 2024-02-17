@@ -18,27 +18,31 @@ Column {
     property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
     property int maxTextLines: 1000
+    property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property bool attachmentsInitialized: false
 
     id: postBody
 
-    Text {
+    SkyCleanedText {
         id: bodyText
         width: parent.width
         Layout.fillWidth: true
         wrapMode: Text.Wrap
         maximumLineCount: maxTextLines
+        ellipsisBackgroundColor: postBody.ellipsisBackgroundColor
         elide: Text.ElideRight
-        textFormat: maxTextLines < 1000 ? Text.AutoText : Text.RichText
+        textFormat: Text.RichText
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
-        text: postText
+        plainText: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
         visible: postVisible()
 
         onLinkActivated: (link) => root.openLink(link)
+
+        Accessible.ignored: true
     }
 
     Row {

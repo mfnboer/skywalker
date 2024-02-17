@@ -6,6 +6,7 @@ Column {
     property basicprofile author
     property string postText
     property date postDateTime
+    property string ellipsisBackgroundColor: guiSettings.backgroundColor
 
     id: quoteColumn
     padding: 10
@@ -51,9 +52,14 @@ Column {
         postMuted: QEnums.MUTED_POST_NONE
         postDateTime: postDateTime
         maxTextLines: 5
+        ellipsisBackgroundColor: quoteColumn.ellipsisBackgroundColor
     }
 
     AccessibilityUtils {
         id: accessibilityUtils
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }
