@@ -49,7 +49,7 @@ TextEdit {
 
     onMaxLengthChanged: {
         postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
-                                       editText.maxLength, guiSettings.errorColor)
+                                       editText.maxLength, guiSettings.textLengthExceededColor)
     }
 
     function highlightFacets() {
@@ -129,7 +129,7 @@ TextEdit {
     Component.onCompleted: {
         createAuthorTypeaheadView()
         postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
-                                       editText.maxLength, guiSettings.errorColor)
+                                       editText.maxLength, guiSettings.textLengthExceededColor)
     }
 }
 

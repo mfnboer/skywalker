@@ -191,14 +191,12 @@ GraphemeInfo UnicodeFonts::getGraphemeInfo(const QString& text)
 {
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
     int length = 0;
-    std::vector<int> charPositions;
-    int prev = 0;
+    std::vector<int> charPositions = {0, };
     int next = 0;
 
     while ((next = boundaryFinder.toNextBoundary()) != -1)
     {
-        charPositions.push_back(prev);
-        prev = next;
+        charPositions.push_back(next);
         ++length;
     }
 

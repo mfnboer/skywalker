@@ -12,11 +12,14 @@ FacetHighlighter::FacetHighlighter(QTextDocument* parent) :
 
 void FacetHighlighter::setHighlightColor(const QString& colorName)
 {
-    mHighlightColor = QColor::fromString(colorName);
+    const auto color = QColor::fromString(colorName);
+    mHighlightFormat.setForeground(color);
 }
 
 void FacetHighlighter::highlightBlock(const QString& text)
 {
+    EmojiFixHighlighter::highlightBlock(text);
+
     // NOTE: unfortunately the text does not contain text from the preedit buffer.
     const auto facets = ATProto::RichTextMaster::parseFacets(text);
 
@@ -28,7 +31,7 @@ void FacetHighlighter::highlightBlock(const QString& text)
         case ATProto::RichTextMaster::ParsedMatch::Type::LINK:
         {
             const int facetLength = facet.mEndIndex - facet.mStartIndex;
-            setFormat(facet.mStartIndex, facetLength, mHighlightColor);
+            addFormat(facet.mStartIndex, facetLength, mHighlightFormat);
             break;
         }
         case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
@@ -37,8 +40,6 @@ void FacetHighlighter::highlightBlock(const QString& text)
             break;
         }
     }
-
-    EmojiFixHighlighter::highlightBlock(text);
 }
 
 }

@@ -17,7 +17,7 @@ protected:
     void highlightBlock(const QString& text) override;
 
 private:
-    QColor mHighlightColor;
+    QTextCharFormat mHighlightFormat;
 };
 
 }

@@ -1255,6 +1255,6 @@ Page {
         // Then make sue the text field is in the visible area.
         focusTimer.start()
         postUtils.setHighlightDocument(postText.textDocument, guiSettings.linkColor,
-                                       postText.maxLength, guiSettings.errorColor)
+                                       postText.maxLength, guiSettings.textLengthExceededColor)
     }
 }

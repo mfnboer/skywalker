@@ -15,6 +15,7 @@ public:
 
 protected:
     void highlightBlock(const QString& text) override;
+    void addFormat(int start, int sz, const QTextCharFormat& fmt);
 
 private:
     void highlightLengthExceeded(const QString& text);
@@ -22,7 +23,8 @@ private:
     void setEmojiFontCombinedEmojis(const QString& text);
 
     int mMaxLength = -1;
-    QColor mLengthExceededColor;
+    QTextCharFormat mLengthExceededFormat;
+    QTextCharFormat mEmojiFormat;
 };
 
 }

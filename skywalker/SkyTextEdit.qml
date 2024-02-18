@@ -74,7 +74,7 @@ TextEdit {
     }
 
     Component.onCompleted: {
-        unicodeFonts.setEmojiFixDocument(textDocument, maxLength, guiSettings.errorColor)
+        unicodeFonts.setEmojiFixDocument(textDocument, maxLength, guiSettings.textLengthExceededColor)
         cursorPosition = text.length
     }
 }

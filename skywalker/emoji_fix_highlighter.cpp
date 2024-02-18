@@ -9,24 +9,78 @@ namespace Skywalker {
 EmojiFixHighlighter::EmojiFixHighlighter(QTextDocument* parent) :
     QSyntaxHighlighter(parent)
 {
+    mEmojiFormat.setFont(FontDownloader::getEmojiFont());
 }
 
 void EmojiFixHighlighter::setMaxLength(int maxLength, const QString& lengthExceededColor)
 {
     mMaxLength = maxLength;
-    mLengthExceededColor = lengthExceededColor;
+    mLengthExceededFormat.setBackground(QColor(lengthExceededColor));
+}
+
+void EmojiFixHighlighter::addFormat(int start, int sz, const QTextCharFormat& fmt)
+{
+    const int end = start + sz;
+
+    for (int i = start; i < end; ++i)
+    {
+        auto f = format(i);
+        f.merge(fmt);
+        setFormat(i, 1, f);
+    }
 }
 
 void EmojiFixHighlighter::highlightBlock(const QString& text)
 {
+    highlightLengthExceeded(text);
     setEmojiFontKeycaps(text);
     setEmojiFontCombinedEmojis(text);
-    highlightLengthExceeded(text);
 }
 
-void EmojiFixHighlighter::highlightLengthExceeded(const QString&)
+void EmojiFixHighlighter::highlightLengthExceeded(const QString& text)
 {
-    // TODO
+    if (mMaxLength == -1)
+        return;
+
+    int totalLength = 0;
+    const int prevLength = previousBlockState();
+
+    if (currentBlock().blockNumber() > 0)
+    {
+        if (prevLength == -1)
+            return;
+
+        totalLength = prevLength + 1; // +1 for newline
+    }
+
+    const auto graphemeInfo = UnicodeFonts::getGraphemeInfo(text);
+    const int blockLength = graphemeInfo.getLength();
+    totalLength += blockLength;
+    qDebug() << "BLOCK:" << currentBlock().blockNumber() << "LEN:" << blockLength << currentBlock().length() << "TOTAL:" << totalLength;
+    setCurrentBlockState(totalLength);
+
+    if (totalLength <= mMaxLength)
+    {
+        QTextCharFormat fmt;
+        fmt.setFont(document()->defaultFont());
+        setFormat(0, text.length(), fmt);
+    }
+    else if (prevLength >= mMaxLength)
+    {
+        setFormat(0, text.length(), mLengthExceededFormat);
+    }
+    else
+    {
+        const int inMaxGraphemes = mMaxLength - prevLength;
+        Q_ASSERT(inMaxGraphemes > 0);
+        const int charPos = graphemeInfo.getCharPos(inMaxGraphemes - 1);
+        QTextCharFormat fmt;
+        fmt.setFont(document()->defaultFont());
+        setFormat(0, charPos, fmt);
+
+        const auto exceededLen = text.length() - charPos;
+        setFormat(charPos, exceededLen, mLengthExceededFormat);
+    }
 }
 
 void EmojiFixHighlighter::setEmojiFontKeycaps(const QString& text)
@@ -36,7 +90,7 @@ void EmojiFixHighlighter::setEmojiFontKeycaps(const QString& text)
 
     while (i != -1)
     {
-        setFormat(i, 3, FontDownloader::getEmojiFont());
+        addFormat(i, 3, mEmojiFormat);
         i = text.indexOf(enclosingKeycapRE, i + 3);
     }
 }
@@ -66,7 +120,7 @@ void EmojiFixHighlighter::setEmojiFontCombinedEmojis(const QString& text)
             const QString grapheme = text.sliced(prev, len);
 
             if (UnicodeFonts::onlyEmojis(grapheme))
-                setFormat(prev, len, FontDownloader::getEmojiFont());
+                addFormat(prev, len, mEmojiFormat);
         }
 
         prev = next;
