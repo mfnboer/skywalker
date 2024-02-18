@@ -561,10 +561,13 @@ Page {
 
             function updateGraphemeLength() {
                 const prevGraphemeLength = graphemeLength
+                const linkShorteningReduction = postUtils.getLinkShorteningReduction();
 
                 graphemeLength = unicodeFonts.graphemeLength(postText.text) +
                         unicodeFonts.graphemeLength(preeditText) -
-                        postUtils.getLinkShorteningReduction()
+                        linkShorteningReduction
+
+                postUtils.setHighLightMaxLength(postText.maxLength + linkShorteningReduction)
 
                 return graphemeLength - prevGraphemeLength
             }

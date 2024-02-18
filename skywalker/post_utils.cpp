@@ -642,6 +642,11 @@ void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& hig
     mFacetHighlighter.setMaxLength(maxLength, lengthExceededColor);
 }
 
+void PostUtils::setHighLightMaxLength(int maxLength)
+{
+    mFacetHighlighter.setMaxLength(maxLength);
+}
+
 void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,
                                         int cursor)
 {

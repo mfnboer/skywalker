@@ -18,6 +18,16 @@ void EmojiFixHighlighter::setMaxLength(int maxLength, const QString& lengthExcee
     mLengthExceededFormat.setBackground(QColor(lengthExceededColor));
 }
 
+void EmojiFixHighlighter::setMaxLength(int maxLength)
+{
+    if (maxLength != mMaxLength)
+    {
+        qDebug() << "Max length change from" << mMaxLength << "to" << maxLength << ": re-highlight";
+        mMaxLength = maxLength;
+        rehighlight();
+    }
+}
+
 void EmojiFixHighlighter::addFormat(int start, int sz, const QTextCharFormat& fmt)
 {
     const int end = start + sz;

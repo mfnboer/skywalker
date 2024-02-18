@@ -12,6 +12,7 @@ class EmojiFixHighlighter : public QSyntaxHighlighter
 public:
     explicit EmojiFixHighlighter(QTextDocument* parent = nullptr);
     void setMaxLength(int maxLength, const QString& lengthExceededColor);
+    void setMaxLength(int maxLength);
 
 protected:
     void highlightBlock(const QString& text) override;
