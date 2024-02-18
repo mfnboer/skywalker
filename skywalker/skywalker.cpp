@@ -2270,11 +2270,11 @@ void Skywalker::shareImage(const QString& contentUri, const QString& text)
     }
 
     int fd = openContentUri(contentUri);
-    QImage img = readImageFd(fd);
+    auto [img, error] = readImageFd(fd);
 
     if (img.isNull())
     {
-        showStatusMessage(tr("Could not read imgage file."), QEnums::STATUS_LEVEL_ERROR);
+        showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         return;
     }
 

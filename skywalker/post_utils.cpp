@@ -829,11 +829,11 @@ void PostUtils::sharePhoto(int fd)
 
     mPickingPhoto = false;
     qDebug() << "Share photo fd:" << fd;
-    QImage img = readImageFd(fd);
+    auto [img, error] = readImageFd(fd);
 
     if (img.isNull())
     {
-        emit photoPickFailed(tr("Could not read image file."));
+        emit photoPickFailed(error);
         return;
     }
 

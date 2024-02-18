@@ -98,20 +98,21 @@ int openContentUri(const QString& contentUri)
 #endif
 }
 
-QImage readImageFd(int fd)
+std::tuple<QImage, QString> readImageFd(int fd)
 {
     if (fd < 0)
     {
         qWarning() << "Invalid file descriptor";
-        return {};
+        return { QImage{}, "Invalid file descriptor (file not found)" };
     }
 
     QFile file;
 
     if (!file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle))
     {
-        qWarning() << "Could not open file";
-        return {};
+        const QString fileError = file.errorString();
+        qWarning() << "Could not open file:" << fileError;
+        return { QImage{}, "Could not open file: " + fileError };
     }
 
     QImageReader reader(&file);
@@ -120,11 +121,12 @@ QImage readImageFd(int fd)
 
     if (img.isNull())
     {
-        qWarning() << "Could not read image data.";
-        return {};
+        QString readError = reader.errorString();
+        qWarning() << "Could not read image data:" << readError;
+        return { QImage{}, "Could not read image data: " + readError };
     }
 
-    return img;
+    return { img, "" };
 }
 
 bool pickPhoto()

@@ -3,13 +3,14 @@
 #pragma once
 #include <QImage>
 #include <QString>
+#include <tuple>
 
 namespace Skywalker {
 
 bool checkReadMediaPermission();
 bool checkWriteMediaPermission();
 int openContentUri(const QString& contentUri);
-QImage readImageFd(int fd);
+std::tuple<QImage, QString> readImageFd(int fd);
 
 // Start photo pick selector on Android.
 bool pickPhoto();
