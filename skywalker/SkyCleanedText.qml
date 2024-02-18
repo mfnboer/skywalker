@@ -105,6 +105,7 @@ Text {
     function determineTextFormat() {
         text = plainText
         height = undefined
+        ellipsis.visible = false
 
         if (isRichText())
             return
