@@ -36,8 +36,6 @@ public:
     Q_INVOKABLE void getNextPageSearchActors(const QString& text);
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
-    Q_INVOKABLE void legacySearchPosts(const QString& text);
-    Q_INVOKABLE void legacySearchActors(const QString& text);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel();
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
@@ -61,8 +59,6 @@ signals:
 private:
     void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList);
     void localSearchAuthorsTypeahead(const QString& typed, int limit);
-    void getPosts(const std::vector<QString>& uris);
-    void getProfiles(const std::vector<QString>& users);
     QString preProcessSearchText(const QString& text) const;
 
     BasicProfileList mAuthorTypeaheadList;

@@ -66,7 +66,6 @@ void EmojiFixHighlighter::highlightLengthExceeded(const QString& text)
     const auto graphemeInfo = UnicodeFonts::getGraphemeInfo(text);
     const int blockLength = graphemeInfo.getLength();
     totalLength += blockLength;
-    qDebug() << "BLOCK:" << currentBlock().blockNumber() << "LEN:" << blockLength << currentBlock().length() << "TOTAL:" << totalLength;
     setCurrentBlockState(totalLength);
 
     if (totalLength <= mMaxLength)
