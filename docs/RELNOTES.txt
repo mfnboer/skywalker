@@ -1,5 +1,5 @@
-next
-====
+1.3
+===
 * TalkBack support (Android screen reader)
 * Proper rendering of combined emoji's like rainbow and trans flags.
 * Highlight text that exceeds the length limit when typing a post.
