@@ -2,6 +2,8 @@
 // License: GPLv3
 #include "file_utils.h"
 #include <QDateTime>
+#include <QDir>
+#include <QStandardPaths>
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
@@ -10,6 +12,8 @@
 #endif
 
 namespace {
+
+constexpr char const* APP_DATA_SUB_DIR = "skywalker";
 
 #if defined(Q_OS_ANDROID)
 bool checkPermission(const QString& permission)
@@ -67,6 +71,37 @@ bool checkWriteMediaPermission()
         return checkPermission(WRITE_EXTERNAL_STORAGE);
 #endif
     return true;
+}
+
+QString getAppDataPath(const QString& subDir)
+{
+#if defined(Q_OS_ANDROID)
+    QJniObject jsSubDir = QJniObject::fromString(QString("%1/%2").arg(APP_DATA_SUB_DIR, subDir));
+    auto pathObj = QJniObject::callStaticMethod<jstring>(
+        "com/gmail/mfnboer/FileUtils",
+        "getAppDataPath",
+        "(Ljava/lang/String;)Ljava/lang/String;",
+        jsSubDir.object<jstring>());
+
+    if (!pathObj.isValid())
+    {
+        qWarning() << "Could not get app data path:" << subDir;
+        return {};
+    }
+
+    return pathObj.toString();
+#else
+    auto path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    const QString appDataPath = path + "/" + APP_DATA_SUB_DIR + "/" + subDir;
+
+    if (!QDir().mkpath(appDataPath))
+    {
+        qWarning() << "Failed to create path:" << appDataPath;
+        return {};
+    }
+
+    return appDataPath;
+#endif
 }
 
 int openContentUri(const QString& contentUri)

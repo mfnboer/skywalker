@@ -120,8 +120,6 @@ private:
     void sharePhoto(int fd);
     void cancelPhotoPicking();
 
-    static bool isEmoji(uint c);
-
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
     std::unique_ptr<ATProto::PostMaster> mPostMaster;

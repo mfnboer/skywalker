@@ -288,6 +288,8 @@ qt_add_qml_module(libskywalker
         SOURCES grapheme_info.cpp
         SOURCES file_utils.h
         SOURCES file_utils.cpp
+        SOURCES draft_posts.h
+        SOURCES draft_posts.cpp
 )
 
 if (NOT ANDROID)

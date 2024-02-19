@@ -59,26 +59,6 @@ ImageReader* PostUtils::imageReader()
     return mImageReader.get();
 }
 
-static ATProto::AppBskyFeed::PostReplyRef::Ptr createReplyRef(
-        const QString& replyToUri, const QString& replyToCid,
-        const QString& replyRootUri, const QString& replyRootCid)
-{
-    if (replyToUri.isEmpty() || replyToCid.isEmpty())
-        return nullptr;
-
-    auto replyRef = std::make_unique<ATProto::AppBskyFeed::PostReplyRef>();
-
-    replyRef->mParent = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
-    replyRef->mParent->mUri = replyToUri;
-    replyRef->mParent->mCid = replyToCid;
-
-    replyRef->mRoot = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
-    replyRef->mRoot->mUri = replyRootUri.isEmpty() ? replyToUri : replyRootUri;
-    replyRef->mRoot->mCid = replyRootCid.isEmpty() ? replyToCid : replyRootCid;
-
-    return replyRef;
-}
-
 void PostUtils::post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
@@ -108,7 +88,7 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
             if (!presence)
                 return;
 
-            auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+            auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
             postMaster()->createPost(text, std::move(replyRef),
                 [this, presence, imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
@@ -155,7 +135,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
             if (!presence)
                 return;
 
-            auto replyRef = createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+            auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
             postMaster()->createPost(text, std::move(replyRef),
                 [this, presence, card, quoteUri, quoteCid, labels](auto post){

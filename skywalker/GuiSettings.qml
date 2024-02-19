@@ -81,6 +81,15 @@ Item {
         return Math.round(duration) + qsTr("yr", "years")
     }
 
+    function askDiscardSaveQuestion(parent, question, onDiscardCb, onSaveCb) {
+        let component = Qt.createComponent("Message.qml")
+        let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save })
+        message.onDiscarded.connect(() => { message.destroy(); onDiscardCb() })
+        message.onAccepted.connect(() => { message.destroy(); onSaveCb() })
+        message.onRejected.connect(() => message.destroy())
+        message.show(question)
+    }
+
     function askYesNoQuestion(parent, question, onYesCb) {
         let component = Qt.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Yes | Dialog.No })

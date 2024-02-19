@@ -982,6 +982,17 @@ Page {
             }
     }
 
+    DraftPosts {
+        id: draftPosts
+
+        onSaveDraftPostOk: {
+            statusPopup.show("Saved post as draft", QEnums.STATUS_LEVEL_INFO)
+            page.closed()
+        }
+
+        onSaveDraftPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     UnicodeFonts {
         id: unicodeFonts
     }
@@ -1104,10 +1115,22 @@ Page {
             return
         }
 
-        guiSettings.askYesNoQuestion(
+        guiSettings.askDiscardSaveQuestion(
                     page,
-                    qsTr("Do you really want to discard your draft post?"),
-                    () => page.closed())
+                    qsTr("Do you want to discard your post or save it as draft?"),
+                    () => page.closed(),
+                    () => page.saveDraftPost())
+    }
+
+    function saveDraftPost() {
+        const qUri = getQuoteUri()
+        const qCid = getQuoteCid()
+        const labels = getContentLabels()
+
+        draftPosts.saveDraftPost(postText.text, images, altTexts,
+                                 replyToPostUri, replyToPostCid,
+                                 replyRootPostUri, replyRootPostCid,
+                                 qUri, qCid, labels)
     }
 
     function editAltText(index) {
