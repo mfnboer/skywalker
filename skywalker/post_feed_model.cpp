@@ -541,9 +541,6 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             if (mustHideContent(post))
                 continue;
 
-            //const BasicProfile author(feedEntry->mPost->mAuthor.get());
-            //AuthorCache::instance().put(author);
-
             const auto& replyRef = post.getViewPostReplyRef();
 
             // Reposted replies are displayed without thread context

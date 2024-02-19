@@ -211,7 +211,7 @@ void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& na
         emit createListProgress(tr("Uploading avatar"));
 
         QByteArray blob;
-        const QString mimeType = createBlob(blob, avatarImgSource);
+        const QString mimeType = PhotoPicker::createBlob(blob, avatarImgSource);
 
         if (blob.isEmpty())
         {
@@ -273,7 +273,7 @@ void GraphUtils::updateList(const QString& listUri, const QString& name,
         emit updateListProgress(tr("Uploading avatar"));
 
         QByteArray blob;
-        const QString mimeType = createBlob(blob, avatarImgSource);
+        const QString mimeType = PhotoPicker::createBlob(blob, avatarImgSource);
 
         if (blob.isEmpty())
         {

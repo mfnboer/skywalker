@@ -238,7 +238,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
 
     const auto& fileName = imageFileNames[imgIndex];
     QByteArray blob;
-    const QString mimeType = createBlob(blob, fileName);
+    const QString mimeType = PhotoPicker::createBlob(blob, fileName);
 
     if (blob.isEmpty())
     {
@@ -326,7 +326,7 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
     QString mimeType;
 
     if (!thumb.isNull())
-        mimeType = createBlob(blob, thumb, card->getThumb());
+        mimeType = PhotoPicker::createBlob(blob, thumb, card->getThumb());
 
     if (blob.isEmpty())
     {
@@ -543,7 +543,7 @@ void PostUtils::deletePost(const QString& postUri, const QString& cid)
 
 bool PostUtils::pickPhoto()
 {
-    const bool permission = ::Skywalker::pickPhoto();
+    const bool permission = PhotoPicker::pickPhoto();
 
     if (!permission)
     {
@@ -561,7 +561,7 @@ bool PostUtils::pickPhoto()
 
 void PostUtils::savePhoto(const QString& sourceUrl)
 {
-    ::Skywalker::savePhoto(sourceUrl,
+    PhotoPicker::savePhoto(sourceUrl,
         [this, presence=getPresence()]{
             if (!presence)
                 return;
@@ -579,7 +579,7 @@ void PostUtils::savePhoto(const QString& sourceUrl)
 
 QString PostUtils::cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize)
 {
-    QImage img = ::Skywalker::cutRect(source, rect);
+    QImage img = PhotoPicker::cutRect(source, rect);
 
     if (img.isNull())
         return {};
@@ -829,7 +829,7 @@ void PostUtils::sharePhoto(int fd)
 
     mPickingPhoto = false;
     qDebug() << "Share photo fd:" << fd;
-    auto [img, error] = readImageFd(fd);
+    auto [img, error] = PhotoPicker::readImageFd(fd);
 
     if (img.isNull())
     {

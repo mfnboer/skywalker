@@ -286,6 +286,8 @@ qt_add_qml_module(libskywalker
         QML_FILES SkyCleanedText.qml
         SOURCES grapheme_info.h
         SOURCES grapheme_info.cpp
+        SOURCES file_utils.h
+        SOURCES file_utils.cpp
 )
 
 if (NOT ANDROID)

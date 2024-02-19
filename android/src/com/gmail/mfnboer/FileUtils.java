@@ -66,6 +66,13 @@ public class FileUtils {
         return path.getAbsolutePath();
     }
 
+    public static String getAppDataPath(String subDir) {
+        Context context = QtNative.getContext();
+        File path = context.getDir(subDir, Context.MODE_PRIVATE);
+        Log.d(LOGTAG, path.getAbsolutePath());
+        return path.getAbsolutePath();
+    }
+
 // Make a media file show up in the gallery
 public static void scanMediaFile(String fileName) {
     Log.d(LOGTAG, "Scan media file=" + fileName);

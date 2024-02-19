@@ -5,11 +5,8 @@
 #include <QString>
 #include <tuple>
 
-namespace Skywalker {
+namespace Skywalker::PhotoPicker {
 
-bool checkReadMediaPermission();
-bool checkWriteMediaPermission();
-int openContentUri(const QString& contentUri);
 std::tuple<QImage, QString> readImageFd(int fd);
 
 // Start photo pick selector on Android.
@@ -27,8 +24,6 @@ QString createBlob(QByteArray& blob, const QString& imgName);
 QString createBlob(QByteArray& blob, QImage img, const QString& fileName = "");
 
 QImage cutRect(const QString& imgName, const QRect& rect);
-
-QString resolveContentUriToFile(const QString& contentUri);
 
 void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
                const std::function<void(const QString&)>& errorCb);

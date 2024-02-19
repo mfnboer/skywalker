@@ -96,7 +96,7 @@ void ProfileUtils::updateProfile(const QString& did, const QString& name, const 
         emit updateProfileProgress(tr("Uploading avatar"));
 
         QByteArray blob;
-        const QString mimeType = createBlob(blob, avatarImgSource);
+        const QString mimeType = PhotoPicker::createBlob(blob, avatarImgSource);
 
         if (blob.isEmpty())
         {
@@ -136,7 +136,7 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
         emit updateProfileProgress(tr("Uploading banner"));
 
         QByteArray blob;
-        const QString mimeType = createBlob(blob, bannerImgSource);
+        const QString mimeType = PhotoPicker::createBlob(blob, bannerImgSource);
 
         if (blob.isEmpty())
         {

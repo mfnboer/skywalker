@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "photo_picker.h"
+#include "file_utils.h"
 #include "image_reader.h"
 #include "shared_image_provider.h"
 #include <QtGlobal>
@@ -22,81 +23,9 @@ namespace {
 constexpr qsizetype MAX_IMAGE_BYTES = 1000000;
 constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
 
-#if defined(Q_OS_ANDROID)
-bool checkPermission(const QString& permission)
-{
-    auto checkResult = QtAndroidPrivate::checkPermission(permission);
-    if (checkResult.result() != QtAndroidPrivate::Authorized)
-    {
-        qDebug() << "Permission check failed:" << permission;
-        auto requestResult = QtAndroidPrivate::requestPermission(permission);
-
-        if (requestResult.result() != QtAndroidPrivate::Authorized)
-        {
-            qWarning() << "No permission:" << permission;
-            return false;
-        }
-    }
-
-    return true;
-}
-#endif
-
 }
 
-namespace Skywalker {
-
-bool checkReadMediaPermission()
-{
-#if defined(Q_OS_ANDROID)
-    static const QString READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
-    static const QString READ_MEDIA_IMAGES = "android.permission.READ_MEDIA_IMAGES";
-    static const QString READ_MEDIA_VISUAL_USER_SELECTED = "android.permission.READ_MEDIA_VISUAL_USER_SELECTED";
-
-    const auto osVersion = QOperatingSystemVersion::current();
-
-    if (osVersion > QOperatingSystemVersion::Android13)
-        return checkPermission(READ_MEDIA_IMAGES) && checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
-
-    if (osVersion >= QOperatingSystemVersion::Android13)
-        return checkPermission(READ_MEDIA_IMAGES);
-
-    return checkPermission(READ_EXTERNAL_STORAGE);
-#else
-    return true;
-#endif
-}
-
-bool checkWriteMediaPermission()
-{
-#if defined(Q_OS_ANDROID)
-    static const QString WRITE_EXTERNAL_STORAGE = "android.permission.WRITE_EXTERNAL_STORAGE";
-
-    const auto osVersion = QOperatingSystemVersion::current();
-
-    if (osVersion < QOperatingSystemVersion::Android11)
-        return checkPermission(WRITE_EXTERNAL_STORAGE);
-#endif
-    return true;
-}
-
-int openContentUri(const QString& contentUri)
-{
-#if defined(Q_OS_ANDROID)
-    QJniObject uri = QJniObject::fromString(contentUri);
-
-    int fd = QJniObject::callStaticMethod<int>(
-        "com/gmail/mfnboer/FileUtils",
-        "openContentUriString",
-        "(Ljava/lang/String;)I",
-        uri.object<jstring>());
-
-    return fd;
-#else
-    qWarning() << "Cannot handle content-URI:" << contentUri;
-    return -1;
-#endif
-}
+namespace Skywalker::PhotoPicker {
 
 std::tuple<QImage, QString> readImageFd(int fd)
 {
@@ -132,36 +61,12 @@ std::tuple<QImage, QString> readImageFd(int fd)
 bool pickPhoto()
 {
 #ifdef Q_OS_ANDROID
-    if (!checkReadMediaPermission())
+    if (!FileUtils::checkReadMediaPermission())
         return false;
 
     QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker", "start");
 #endif
     return true;
-}
-
-QString resolveContentUriToFile(const QString &contentUriString) {
-#ifdef Q_OS_ANDROID
-    QJniObject uri = QJniObject::fromString(contentUriString);
-
-    // Call the Java method
-    QJniObject result = QJniObject::callStaticObjectMethod(
-        "com/gmail/mfnboer/FileUtils",
-        "resolveContentUriToFile",
-        "(Ljava/lang/String;)Ljava/lang/String;",
-        uri.object<jstring>());
-
-    if (!result.isValid())
-    {
-        qWarning() << "Could not resolve content-uri:" << contentUriString;
-        return {};
-    }
-
-    return result.toString();
-#else
-    Q_UNUSED(contentUriString)
-    return {};
-#endif
 }
 
 QImage loadImage(const QString& imgName)
@@ -304,14 +209,9 @@ static QString getPicturesPath()
 #endif
 }
 
-static QString createDateTimeName()
-{
-    return QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-}
-
 static QString createPictureFileName()
 {
-    return QString("SKYWALKER_%1.jpg").arg(createDateTimeName());
+    return QString("SKYWALKER_%1.jpg").arg(FileUtils::createDateTimeName());
 }
 
 void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
@@ -324,7 +224,7 @@ void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
 
     imageReader.getImage(sourceUrl,
         [successCb, errorCb](QImage img){
-            if (!checkWriteMediaPermission())
+            if (!FileUtils::checkWriteMediaPermission())
             {
                 errorCb(QObject::tr("No permission to save pictures"));
                 return;

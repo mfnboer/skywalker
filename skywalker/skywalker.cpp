@@ -3,6 +3,7 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "definitions.h"
+#include "file_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
@@ -2265,14 +2266,14 @@ QDateTime Skywalker::getSyncTimestamp() const
 
 void Skywalker::shareImage(const QString& contentUri, const QString& text)
 {
-    if (!checkReadMediaPermission())
+    if (!FileUtils::checkReadMediaPermission())
     {
         showStatusMessage(tr("No permission to access images."), QEnums::STATUS_LEVEL_ERROR);
         return;
     }
 
-    int fd = openContentUri(contentUri);
-    auto [img, error] = readImageFd(fd);
+    int fd = FileUtils::openContentUri(contentUri);
+    auto [img, error] = PhotoPicker::readImageFd(fd);
 
     if (img.isNull())
     {
