@@ -1108,7 +1108,9 @@ void Skywalker::getDetailedProfile(const QString& author)
     mBsky->getProfile(author,
         [this](auto profile){
             auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
-            emit getDetailedProfileOK(DetailedProfile(shared));
+            const DetailedProfile detailedProfile(shared);
+            AuthorCache::instance().put(detailedProfile);
+            emit getDetailedProfileOK(detailedProfile);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getDetailedProfile failed:" << error << " - " << msg;

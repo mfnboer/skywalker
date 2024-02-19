@@ -95,7 +95,14 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost, int rawIndex)
     Q_ASSERT((feedViewPost && rawIndex >= 0) || (!feedViewPost && rawIndex == -1));
 
     if (feedViewPost)
+    {
         mPost = feedViewPost->mPost.get();
+
+        const BasicProfile profile = getAuthor();
+
+        if (!profile.isNull())
+            AuthorCache::instance().put(profile);
+    }
 }
 
 Post::Post(const ATProto::AppBskyFeed::PostView* postView, int rawIndex) :
@@ -103,6 +110,10 @@ Post::Post(const ATProto::AppBskyFeed::PostView* postView, int rawIndex) :
     mRawIndex(rawIndex)
 {
     Q_ASSERT(postView);
+    const BasicProfile profile = getAuthor();
+
+    if (!profile.isNull())
+        AuthorCache::instance().put(profile);
 }
 
 const QString& Post::getCid() const
