@@ -1130,7 +1130,11 @@ Page {
         draftPosts.saveDraftPost(postText.text, images, altTexts,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
-                                 qUri, qCid, labels)
+                                 replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
+                                 replyToPostDateTime,
+                                 qUri, qCid, quoteAuthor, unicodeFonts.toPlainText(quoteText),
+                                 quoteDateTime, quoteFeed, quoteList,
+                                 labels)
     }
 
     function editAltText(index) {

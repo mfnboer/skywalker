@@ -3,7 +3,7 @@
 #include "draft_posts.h"
 #include "file_utils.h"
 #include "photo_picker.h"
-#include <QJsonDocument>
+#include <atproto/lib/xjson.h>
 
 namespace Skywalker {
 
@@ -22,7 +22,12 @@ void DraftPosts::saveDraftPost(const QString& text,
                                const QStringList& imageFileNames, const QStringList& altTexts,
                                const QString& replyToUri, const QString& replyToCid,
                                const QString& replyRootUri, const QString& replyRootCid,
+                               const BasicProfile& replyToAuthor, const QString& replyToText,
+                               const QDateTime& replyToDateTime,
                                const QString& quoteUri, const QString& quoteCid,
+                               const BasicProfile& quoteAuthor, const QString& quoteText,
+                               const QDateTime& quoteDateTime,
+                               const GeneratorView& quoteFeed, const ListView& quoteList,
                                const QStringList& labels)
 {
     Q_ASSERT(imageFileNames.size() == altTexts.size());
@@ -54,10 +59,7 @@ void DraftPosts::saveDraftPost(const QString& text,
 
         if (!blob)
         {
-            // Cleanup already saved images
-            for (int j = 0; j < i; ++j)
-                dropImage(draftsPath, dateTime, j);
-
+            dropImages(draftsPath, dateTime, i);
             return;
         }
 
@@ -67,12 +69,11 @@ void DraftPosts::saveDraftPost(const QString& text,
 
     // TODO threadgate
 
-    if (!save(*post, draftsPath, dateTime))
-    {
-        // Cleanup already saved images
-        for (int j = 0; j < imageFileNames.size(); ++j)
-            dropImage(draftsPath, dateTime, j);
-    }
+    auto replyToPost = createReplyToPost(replyToUri, replyToAuthor, replyToText, replyToDateTime);
+    auto quote = createQuote(quoteUri, quoteAuthor, quoteText, quoteDateTime, quoteFeed, quoteList);
+
+    if (!save(*post, std::move(replyToPost), std::move(quote), draftsPath, dateTime))
+        dropImages(draftsPath, dateTime, imageFileNames.size());
 }
 
 QString DraftPosts::createDraftPostFileName(const QString& baseName) const
@@ -85,7 +86,187 @@ QString DraftPosts::createDraftImageFileName(const QString& baseName, int seq) c
     return QString("SWI%1_%2.jpg").arg(seq).arg(baseName);
 }
 
-bool DraftPosts::save(const ATProto::AppBskyFeed::Record::Post& post, const QString& draftsPath, const QString& baseName)
+ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(const BasicProfile& author) const
+{
+    if (author.isNull())
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
+    view->mDid = author.getDid();
+    view->mHandle = author.getHandle();
+    view->mDisplayName = author.getDisplayName();
+    view->mAvatar = author.getAvatarUrl();
+
+    return view;
+}
+
+ATProto::AppBskyActor::ProfileView::Ptr DraftPosts::createProfileView(const Profile& author) const
+{
+    if (author.isNull())
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyActor::ProfileView>();
+    view->mDid = author.getDid();
+    view->mHandle = author.getHandle();
+    view->mDisplayName = author.getDisplayName();
+    view->mAvatar = author.getAvatarUrl();
+
+    return view;
+}
+
+DraftPosts::ReplyToPost::Ptr DraftPosts::createReplyToPost(const QString& replyToUri, const BasicProfile& author,
+                                                           const QString& text, const QDateTime& dateTime) const
+{
+    if (replyToUri.isEmpty())
+        return nullptr;
+
+    auto replyToPost = std::make_unique<ReplyToPost>();
+    replyToPost->mAuthor = createProfileViewBasic(author);
+    replyToPost->mText = text;
+    replyToPost->mDateTime = dateTime;
+    return replyToPost;
+}
+
+DraftPosts::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const BasicProfile& quoteAuthor,
+                                   const QString& quoteText, const QDateTime& quoteDateTime,
+                                   const GeneratorView& quoteFeed, const ListView& quoteList) const
+{
+    if (quoteUri.isEmpty())
+        return nullptr;
+
+    const ATProto::ATUri atUri(quoteUri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Invalid quote uri:" << quoteUri;
+        return nullptr;
+    }
+
+    auto quote = std::make_unique<Quote>();
+
+    if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_POST)
+    {
+        quote->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+        quote->mRecord = createQuotePost(quoteAuthor, quoteText, quoteDateTime);
+    }
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_GENERATOR)
+    {
+        quote->mRecordType = ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW;
+        quote->mRecord = createQuoteFeed(quoteFeed);
+    }
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_GRAPH_LIST)
+    {
+        quote->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW;
+        quote->mRecord = createQuoteList(quoteList);
+    }
+    else
+    {
+        qWarning() << "Unknown quote type:" << quoteUri;
+        return nullptr;
+    }
+
+    return quote;
+}
+
+DraftPosts::QuotePost::Ptr DraftPosts::createQuotePost(const BasicProfile& author,
+                                       const QString& text, const QDateTime& dateTime) const
+{
+    auto quotePost = std::make_unique<QuotePost>();
+    quotePost->mAuthor = createProfileViewBasic(author);
+    quotePost->mText = text;
+    quotePost->mDateTime = dateTime;
+    return quotePost;
+}
+
+ATProto::AppBskyFeed::GeneratorView::Ptr DraftPosts::createQuoteFeed(const GeneratorView& feed) const
+{
+    auto view = std::make_unique<ATProto::AppBskyFeed::GeneratorView>();
+    view->mUri = feed.getUri();
+    view->mCid = feed.getCid();
+    view->mDid = feed.getDid();
+    view->mCreator = createProfileView(feed.getCreator());
+    view->mDisplayName = feed.getDisplayName();
+    view->mDescription = feed.getDescription();
+    view->mAvatar = feed.getAvatar();
+    view->mIndexedAt = QDateTime::currentDateTimeUtc();
+    return view;
+}
+
+ATProto::AppBskyGraph::ListView::Ptr DraftPosts::createQuoteList(const ListView& list) const
+{
+    auto view = std::make_unique<ATProto::AppBskyGraph::ListView>();
+    view->mUri = list.getUri();
+    view->mCid = list.getCid();
+    view->mCreator = createProfileView(list.getCreator());
+    view->mName = list.getName();
+    view->mPurpose = ATProto::AppBskyGraph::ListPurpose(list.getPurpose());
+    view->mDescription = list.getDescription();
+    view->mAvatar = list.getAvatar();
+    return view;
+}
+
+QJsonObject DraftPosts::ReplyToPost::toJson() const
+{
+    QJsonObject json;
+    Q_ASSERT(mAuthor);
+
+    if (mAuthor)
+        json.insert("author", mAuthor->toJson());
+
+    json.insert("text", mText);
+    json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+    return json;
+}
+
+QJsonObject DraftPosts::QuotePost::toJson() const
+{
+    QJsonObject json;
+    Q_ASSERT(mAuthor);
+
+    if (mAuthor)
+        json.insert("author", mAuthor->toJson());
+
+    json.insert("text", mText);
+    json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+    return json;
+}
+
+QJsonObject DraftPosts::Quote::toJson() const
+{
+    QJsonObject json;
+    json.insert("$type", ATProto::recordTypeToString(mRecordType));
+
+    switch (mRecordType)
+    {
+    case ATProto::RecordType::APP_BSKY_FEED_POST:
+        json.insert("post", std::get<QuotePost::Ptr>(mRecord)->toJson());
+        break;
+    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+        json.insert("feed", std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord)->toJson());
+        break;
+    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+        json.insert("list", std::get<ATProto::AppBskyGraph::ListView::Ptr>(mRecord)->toJson());
+        break;
+    default:
+        qWarning() << "Unknown record type:" << (int)mRecordType;
+        Q_ASSERT(false);
+    }
+
+    return json;
+}
+
+QJsonDocument DraftPosts::createJsonDoc(const ATProto::AppBskyFeed::Record::Post& post,
+                                        ReplyToPost::Ptr replyToPost, Quote::Ptr quote) const
+{
+    QJsonObject jsonDraft;
+    jsonDraft.insert("post", post.toJson());
+    ATProto::XJsonObject::insertOptionalJsonObject<ReplyToPost>(jsonDraft, "replyToPost", replyToPost);
+    ATProto::XJsonObject::insertOptionalJsonObject<Quote>(jsonDraft, "quote", quote);
+    return QJsonDocument(jsonDraft);
+}
+
+bool DraftPosts::save(const ATProto::AppBskyFeed::Record::Post& post, ReplyToPost::Ptr replyToPost,
+                      Quote::Ptr quote, const QString& draftsPath, const QString& baseName)
 {
     const QString postFileName = createDraftPostFileName(baseName);
     const QString fileName = QString("%1/%2").arg(draftsPath, postFileName);
@@ -106,8 +287,8 @@ bool DraftPosts::save(const ATProto::AppBskyFeed::Record::Post& post, const QStr
         return false;
     }
 
-    const auto json = QJsonDocument(post.toJson());
-    const QByteArray data = json.toJson(QJsonDocument::Compact);
+    const auto jsonDraft = createJsonDoc(post, std::move(replyToPost), std::move(quote));
+    const QByteArray data = jsonDraft.toJson(QJsonDocument::Compact);
 
     if (file.write(data) == -1)
     {
@@ -150,6 +331,12 @@ ATProto::Blob::Ptr DraftPosts::saveImage(const QString& imgName, const QString& 
     blob->mMimeType = "image/jpeg";
     blob->mSize = img.sizeInBytes();
     return blob;
+}
+
+void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count)
+{
+    for (int j = 0; j < count; ++j)
+        dropImage(draftsPath, baseName, j);
 }
 
 void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, int seq)
