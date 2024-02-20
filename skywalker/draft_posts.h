@@ -72,11 +72,22 @@ private:
         using Ptr = std::unique_ptr<Quote>;
     };
 
+    struct Draft
+    {
+        ATProto::AppBskyFeed::Record::Post::Ptr mPost;
+        ReplyToPost::Ptr mReplyToPost;
+        Quote::Ptr mQuote;
+
+        QJsonObject toJson() const;
+
+        using Ptr = std::unique_ptr<Draft>;
+    };
+
     QString createDraftPostFileName(const QString& baseName) const;
     QString createDraftImageFileName(const QString& baseName, int seq) const;
 
-    ATProto::AppBskyActor::ProfileViewBasic::Ptr createProfileViewBasic(const BasicProfile& author) const;
-    ATProto::AppBskyActor::ProfileView::Ptr createProfileView(const Profile& author) const;
+    static ATProto::AppBskyActor::ProfileViewBasic::Ptr createProfileViewBasic(const BasicProfile& author);
+    static ATProto::AppBskyActor::ProfileView::Ptr createProfileView(const Profile& author);
 
     ReplyToPost::Ptr createReplyToPost(const QString& replyToUri, const BasicProfile& author,
                                        const QString& text, const QDateTime& dateTime) const;
@@ -89,11 +100,19 @@ private:
     ATProto::AppBskyFeed::GeneratorView::Ptr createQuoteFeed(const GeneratorView& feed) const;
     ATProto::AppBskyGraph::ListView::Ptr createQuoteList(const ListView& list) const;
 
-    QJsonDocument createJsonDoc(const ATProto::AppBskyFeed::Record::Post& post,
-                                ReplyToPost::Ptr replyToPost, Quote::Ptr quote) const;
+    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft::Ptr draft, const QString& draftsPath) const;
+    ATProto::AppBskyEmbed::EmbedView::Ptr createEmbedView(
+        const ATProto::AppBskyEmbed::Embed* embed, Quote::Ptr quote, const QString& draftsPath) const;
+    ATProto::AppBskyEmbed::ImagesView::Ptr createImagesView(
+        const ATProto::AppBskyEmbed::Images* images, const QString& draftsPath) const;
+    ATProto::AppBskyEmbed::ExternalView::Ptr createExternalView(
+        const ATProto::AppBskyEmbed::External* external, const QString& draftsPath) const;
+    ATProto::AppBskyEmbed::RecordView::Ptr createRecordView(
+        const ATProto::AppBskyEmbed::Record* record, Quote::Ptr quote) const;
+    ATProto::AppBskyEmbed::RecordWithMediaView::Ptr createRecordWithMediaView(
+        const ATProto::AppBskyEmbed::RecordWithMedia* record, Quote::Ptr quote, const QString& draftsPath) const;
 
-    bool save(const ATProto::AppBskyFeed::Record::Post& post, ReplyToPost::Ptr replyToPost,
-              Quote::Ptr quote, const QString& draftsPath, const QString& baseName);
+    bool save(Draft::Ptr draft, const QString& draftsPath, const QString& baseName);
 
     ATProto::Blob::Ptr saveImage(const QString& imgName, const QString& draftsPath,
                                  const QString& baseName, int seq);

@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "draft_posts.h"
+#include "author_cache.h"
 #include "file_utils.h"
 #include "photo_picker.h"
 #include <atproto/lib/xjson.h>
@@ -10,6 +11,11 @@ namespace Skywalker {
 namespace {
 
 constexpr char const* DRAFT_POSTS_DIR = "sw-draft-posts";
+
+QString createAbsPath(const QString& draftsPath, const QString& fileName)
+{
+    return QString("%1/%2").arg(draftsPath, fileName);
+}
 
 }
 
@@ -46,11 +52,12 @@ void DraftPosts::saveDraftPost(const QString& text,
     ATProto::AppBskyFeed::PostReplyRef::Ptr replyRef = replyToUri.isEmpty() ? nullptr :
             ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-    auto post = ATProto::PostMaster::createPostWithoutFacets(text, std::move(replyRef));
-    ATProto::PostMaster::addLabelsToPost(*post, labels);
+    auto draft = std::make_unique<Draft>();
+    draft->mPost = ATProto::PostMaster::createPostWithoutFacets(text, std::move(replyRef));
+    ATProto::PostMaster::addLabelsToPost(*draft->mPost, labels);
 
     if (!quoteUri.isEmpty())
-        ATProto::PostMaster::addQuoteToPost(*post, quoteUri, quoteCid);
+        ATProto::PostMaster::addQuoteToPost(*draft->mPost, quoteUri, quoteCid);
 
     for (int i = 0; i < imageFileNames.size(); ++i)
     {
@@ -64,15 +71,16 @@ void DraftPosts::saveDraftPost(const QString& text,
         }
 
         const QString& altText = altTexts[i];
-        ATProto::PostMaster::addImageToPost(*post, std::move(blob), altText);
+        ATProto::PostMaster::addImageToPost(*draft->mPost, std::move(blob), altText);
     }
 
     // TODO threadgate
+    // TODO gif (external)
 
-    auto replyToPost = createReplyToPost(replyToUri, replyToAuthor, replyToText, replyToDateTime);
-    auto quote = createQuote(quoteUri, quoteAuthor, quoteText, quoteDateTime, quoteFeed, quoteList);
+    draft->mReplyToPost = createReplyToPost(replyToUri, replyToAuthor, replyToText, replyToDateTime);
+    draft->mQuote = createQuote(quoteUri, quoteAuthor, quoteText, quoteDateTime, quoteFeed, quoteList);
 
-    if (!save(*post, std::move(replyToPost), std::move(quote), draftsPath, dateTime))
+    if (!save(std::move(draft), draftsPath, dateTime))
         dropImages(draftsPath, dateTime, imageFileNames.size());
 }
 
@@ -86,7 +94,7 @@ QString DraftPosts::createDraftImageFileName(const QString& baseName, int seq) c
     return QString("SWI%1_%2.jpg").arg(seq).arg(baseName);
 }
 
-ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(const BasicProfile& author) const
+ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(const BasicProfile& author)
 {
     if (author.isNull())
         return nullptr;
@@ -100,7 +108,7 @@ ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(
     return view;
 }
 
-ATProto::AppBskyActor::ProfileView::Ptr DraftPosts::createProfileView(const Profile& author) const
+ATProto::AppBskyActor::ProfileView::Ptr DraftPosts::createProfileView(const Profile& author)
 {
     if (author.isNull())
         return nullptr;
@@ -250,26 +258,175 @@ QJsonObject DraftPosts::Quote::toJson() const
     default:
         qWarning() << "Unknown record type:" << (int)mRecordType;
         Q_ASSERT(false);
+        break;
     }
 
     return json;
 }
 
-QJsonDocument DraftPosts::createJsonDoc(const ATProto::AppBskyFeed::Record::Post& post,
-                                        ReplyToPost::Ptr replyToPost, Quote::Ptr quote) const
+ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft::Ptr draft, const QString& draftsPath) const
 {
-    QJsonObject jsonDraft;
-    jsonDraft.insert("post", post.toJson());
-    ATProto::XJsonObject::insertOptionalJsonObject<ReplyToPost>(jsonDraft, "replyToPost", replyToPost);
-    ATProto::XJsonObject::insertOptionalJsonObject<Quote>(jsonDraft, "quote", quote);
-    return QJsonDocument(jsonDraft);
+    auto postView = std::make_unique<ATProto::AppBskyFeed::PostView>();
+    postView->mUri = "draft";
+    postView->mCid = "draft";
+    postView->mAuthor = createProfileViewBasic(AuthorCache::instance().getUser());
+    postView->mIndexedAt = draft->mPost->mCreatedAt;
+    postView->mEmbed = createEmbedView(draft->mPost->mEmbed.get(), std::move(draft->mQuote), draftsPath);
+    postView->mRecord = std::move(draft->mPost);
+    postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+    // TODO LABELS
+    // TODO THREADGATE
+
+    return postView;
 }
 
-bool DraftPosts::save(const ATProto::AppBskyFeed::Record::Post& post, ReplyToPost::Ptr replyToPost,
-                      Quote::Ptr quote, const QString& draftsPath, const QString& baseName)
+ATProto::AppBskyEmbed::EmbedView::Ptr DraftPosts::createEmbedView(
+    const ATProto::AppBskyEmbed::Embed* embed, Quote::Ptr quote, const QString& draftsPath) const
+{
+    if (!embed)
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyEmbed::EmbedView>();
+
+    switch (embed->mType)
+    {
+    case ATProto::AppBskyEmbed::EmbedType::IMAGES:
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+        view->mEmbed = createImagesView(std::get<ATProto::AppBskyEmbed::Images::Ptr>(embed->mEmbed).get(), draftsPath);
+        break;
+    case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
+        view->mEmbed = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(embed->mEmbed).get(), draftsPath);
+        break;
+    case ATProto::AppBskyEmbed::EmbedType::RECORD:
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+        view->mEmbed = createRecordView(std::get<ATProto::AppBskyEmbed::Record::Ptr>(embed->mEmbed).get(), std::move(quote));
+        break;
+    case ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA:
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+        view->mEmbed = createRecordWithMediaView(std::get<ATProto::AppBskyEmbed::RecordWithMedia::Ptr>(embed->mEmbed).get(), std::move(quote), draftsPath);
+        break;
+    case ATProto::AppBskyEmbed::EmbedType::UNKNOWN:
+        qWarning() << "Unknown embed type";
+        break;
+    }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(
+    const ATProto::AppBskyEmbed::Images* images, const QString& draftsPath) const
+{
+    if (!images || images->mImages.empty())
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyEmbed::ImagesView>();
+
+    for (const auto& image : images->mImages)
+    {
+        auto imgView = std::make_unique<ATProto::AppBskyEmbed::ImagesViewImage>();
+        const QString path = createAbsPath(draftsPath, image->mImage->mRefLink);
+        imgView->mThumb = "file://" + path;
+        imgView->mFullSize = "file://" + path;
+        imgView->mAlt = image->mAlt;
+        view->mImages.push_back(std::move(imgView));
+    }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::ExternalView::Ptr DraftPosts::createExternalView(
+    const ATProto::AppBskyEmbed::External*, const QString&) const
+{
+    // TODO GIF
+    return nullptr;
+}
+
+ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
+    const ATProto::AppBskyEmbed::Record* record, Quote::Ptr quote) const
+{
+    if (!record || !quote)
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyEmbed::RecordView>();
+
+    switch (quote->mRecordType)
+    {
+    case ATProto::RecordType::APP_BSKY_FEED_POST:
+    {
+        auto& quotePost = std::get<QuotePost::Ptr>(quote->mRecord);
+        auto post = std::make_unique<ATProto::AppBskyFeed::Record::Post>();
+        post->mText = quotePost->mText;
+        post->mCreatedAt = quotePost->mDateTime;
+
+        auto viewRecord = std::make_unique<ATProto::AppBskyEmbed::RecordViewRecord>();
+        viewRecord->mUri = record->mRecord->mUri;
+        viewRecord->mCid = record->mRecord->mCid;
+        viewRecord->mAuthor = std::move(quotePost->mAuthor);
+        viewRecord->mValue = std::move(post);
+        viewRecord->mValueType = ATProto::RecordType::APP_BSKY_FEED_POST;
+        viewRecord->mIndexedAt = quotePost->mDateTime;
+
+        view->mRecordType = ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD;
+        view->mRecord = std::move(viewRecord);
+        break;
+    }
+    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+        view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW;
+        view->mRecord = std::move(std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(quote->mRecord));
+        break;
+    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+        view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW;
+        view->mRecord = std::move(std::get<ATProto::AppBskyGraph::ListView::Ptr>(quote->mRecord));
+        break;
+    default:
+        qWarning() << "Unknown record type" << (int)quote->mRecordType;
+        break;
+    }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::Ptr DraftPosts::createRecordWithMediaView(
+    const ATProto::AppBskyEmbed::RecordWithMedia* record, Quote::Ptr quote, const QString& draftsPath) const
+{
+    if (!record || !quote)
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record->mRecord.get(), std::move(quote));
+
+    switch (record->mMediaType)
+    {
+    case ATProto::AppBskyEmbed::EmbedType::IMAGES:
+        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+        view->mMedia = createImagesView(std::get<ATProto::AppBskyEmbed::Images::Ptr>(record->mMedia).get(), draftsPath);
+        break;
+    case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
+        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
+        view->mMedia = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(record->mMedia).get(), draftsPath);
+        break;
+    default:
+        qWarning() << "Invalid media type:" << (int)record->mMediaType;
+        break;
+    }
+
+    return view;
+}
+
+QJsonObject DraftPosts::Draft::toJson() const
+{
+    QJsonObject json;
+    json.insert("post", mPost->toJson());
+    ATProto::XJsonObject::insertOptionalJsonObject<ReplyToPost>(json, "replyToPost", mReplyToPost);
+    ATProto::XJsonObject::insertOptionalJsonObject<Quote>(json, "quote", mQuote);
+    return json;
+}
+
+bool DraftPosts::save(Draft::Ptr draft, const QString& draftsPath, const QString& baseName)
 {
     const QString postFileName = createDraftPostFileName(baseName);
-    const QString fileName = QString("%1/%2").arg(draftsPath, postFileName);
+    const QString fileName = createAbsPath(draftsPath, postFileName);
     qDebug() << "Draft post name:" << fileName;
     QFile file(fileName);
 
@@ -287,7 +444,7 @@ bool DraftPosts::save(const ATProto::AppBskyFeed::Record::Post& post, ReplyToPos
         return false;
     }
 
-    const auto jsonDraft = createJsonDoc(post, std::move(replyToPost), std::move(quote));
+    const auto jsonDraft = QJsonDocument(draft->toJson());
     const QByteArray data = jsonDraft.toJson(QJsonDocument::Compact);
 
     if (file.write(data) == -1)
@@ -316,7 +473,7 @@ ATProto::Blob::Ptr DraftPosts::saveImage(const QString& imgName, const QString& 
     }
 
     const QString imgFileName = createDraftImageFileName(baseName, seq);
-    const QString fileName = QString("%1/%2").arg(draftsPath, imgFileName);
+    const QString fileName = createAbsPath(draftsPath, imgFileName);
     qDebug() << "Draft image file name:" << fileName;
 
     if (!img.save(fileName))
@@ -342,7 +499,7 @@ void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, 
 void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, int seq)
 {
     const QString imgFileName = createDraftImageFileName(baseName, seq);
-    const QString fileName = QString("%1/%2").arg(draftsPath, imgFileName);
+    const QString fileName = createAbsPath(draftsPath, imgFileName);
     qDebug() << "Drop draft image:" << fileName;
     QFile::remove(fileName);
 }
