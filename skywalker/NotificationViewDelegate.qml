@@ -274,6 +274,7 @@ Rectangle {
 
                 Text {
                     Layout.fillWidth: true
+                    textFormat: Text.RichText
                     wrapMode: Text.Wrap
                     color: guiSettings.textColor
                     text: authorsAndReasonText()

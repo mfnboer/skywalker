@@ -37,9 +37,14 @@ public:
         mOverviewSize(mSmallSize)
     {}
 
+    bool isNull() const { return mUrl.isEmpty(); }
     const QString& getId() const { return mId; }
     const QString& getDescription() const { return mDescription; }
+    const QString& getUrl() const { return mUrl; }
+    const QString& getImageUrl() const { return mImageUrl; }
     const QString& getSearchTerm() const { return mSearchTerm; }
+    const QString& getSmallUrl() const { return mSmallUrl; }
+    QSize getSmallSize() const { return mSmallSize; }
     QSize getOverviewSize() const { return mOverviewSize; }
     void setOverviewSize(QSize size) { mOverviewSize = size; }
 

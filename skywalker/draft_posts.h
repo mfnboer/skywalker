@@ -4,6 +4,7 @@
 #include "generator_view.h"
 #include "list_view.h"
 #include "profile.h"
+#include "tenor_gif.h"
 #include <atproto/lib/post_master.h>
 #include <QJsonDocument>
 #include <QString>
@@ -20,6 +21,8 @@ class DraftPosts : public QObject
 public:
     explicit DraftPosts(QObject* parent = nullptr);
 
+    Q_INVOKABLE bool hasDrafts() const;
+
     Q_INVOKABLE void saveDraftPost(const QString& text,
                                    const QStringList& imageFileNames, const QStringList& altTexts,
                                    const QString& replyToUri, const QString& replyToCid,
@@ -30,7 +33,9 @@ public:
                                    const BasicProfile& quoteAuthor, const QString& quoteText,
                                    const QDateTime& quoteDateTime,
                                    const GeneratorView& quoteFeed, const ListView& quoteList,
-                                   const QStringList& labels);
+                                   const TenorGif gif, const QStringList& labels,
+                                   bool restrictReplies, bool allowMention, bool allowFollowing,
+                                   const QStringList& allowLists);
 
 signals:
     void saveDraftPostOk();
@@ -46,6 +51,7 @@ private:
         QJsonObject toJson() const;
 
         using Ptr = std::unique_ptr<ReplyToPost>;
+        static Ptr fromJson(const QJsonObject& json);
     };
 
     struct QuotePost
@@ -57,6 +63,7 @@ private:
         QJsonObject toJson() const;
 
         using Ptr = std::unique_ptr<QuotePost>;
+        static Ptr fromJson(const QJsonObject& json);
     };
 
     struct Quote
@@ -70,6 +77,7 @@ private:
         QJsonObject toJson() const;
 
         using Ptr = std::unique_ptr<Quote>;
+        static Ptr fromJson(const QJsonObject& json);
     };
 
     struct Draft
@@ -77,12 +85,15 @@ private:
         ATProto::AppBskyFeed::Record::Post::Ptr mPost;
         ReplyToPost::Ptr mReplyToPost;
         Quote::Ptr mQuote;
+        ATProto::AppBskyFeed::Threadgate::Ptr mThreadgate;
 
         QJsonObject toJson() const;
 
         using Ptr = std::unique_ptr<Draft>;
+        static Ptr fromJson(const QJsonObject& json);
     };
 
+    QString getDraftUri() const;
     QString createDraftPostFileName(const QString& baseName) const;
     QString createDraftImageFileName(const QString& baseName, int seq) const;
 
@@ -100,13 +111,19 @@ private:
     ATProto::AppBskyFeed::GeneratorView::Ptr createQuoteFeed(const GeneratorView& feed) const;
     ATProto::AppBskyGraph::ListView::Ptr createQuoteList(const ListView& list) const;
 
-    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft::Ptr draft, const QString& draftsPath) const;
+    ATProto::AppBskyFeed::FeedViewPost::Ptr convertDraftToFeedViewPost(Draft& draft, const QString& draftsPath) const;
+    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft& draft, const QString& draftsPath) const;
+    ATProto::AppBskyFeed::ThreadgateView::Ptr createThreadgateView(Draft& draft) const;
+    ATProto::AppBskyFeed::Record::Post::Ptr createReplyToPost(const Draft& draft) const;
+    ATProto::AppBskyFeed::PostView::Ptr convertReplyToPostView(Draft& draft) const;
+    ATProto::AppBskyFeed::ReplyRef::Ptr createReplyRef(Draft& draft) const;
+    ATProto::ComATProtoLabel::LabelList createContentLabels(const ATProto::AppBskyFeed::Record::Post& post) const;
     ATProto::AppBskyEmbed::EmbedView::Ptr createEmbedView(
         const ATProto::AppBskyEmbed::Embed* embed, Quote::Ptr quote, const QString& draftsPath) const;
     ATProto::AppBskyEmbed::ImagesView::Ptr createImagesView(
         const ATProto::AppBskyEmbed::Images* images, const QString& draftsPath) const;
     ATProto::AppBskyEmbed::ExternalView::Ptr createExternalView(
-        const ATProto::AppBskyEmbed::External* external, const QString& draftsPath) const;
+        const ATProto::AppBskyEmbed::External* external) const;
     ATProto::AppBskyEmbed::RecordView::Ptr createRecordView(
         const ATProto::AppBskyEmbed::Record* record, Quote::Ptr quote) const;
     ATProto::AppBskyEmbed::RecordWithMediaView::Ptr createRecordWithMediaView(
@@ -117,8 +134,16 @@ private:
     ATProto::Blob::Ptr saveImage(const QString& imgName, const QString& draftsPath,
                                  const QString& baseName, int seq);
 
-    void dropImages(const QString& draftsPath, const QString& baseName, int count);
-    void dropImage(const QString& draftsPath, const QString& baseName, int seq);
+    void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
+    bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
+                         const QStringList& imageFileNames, const QStringList& altTexts,
+                         const QString& draftsPath, const QString& baseName);
+    void dropImages(const QString& draftsPath, const QString& baseName, int count) const;
+    void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;
+
+    QStringList getDraftPostFiles(const QString& draftsPath) const;
+    Draft::Ptr loadDraft(const QString& fileName, const QString& draftsPath) const;
+    ATProto::AppBskyFeed::PostFeed loadDraftFeed() const;
 };
 
 }

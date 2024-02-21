@@ -24,6 +24,13 @@ DraftPosts::DraftPosts(QObject* parent) :
 {
 }
 
+bool DraftPosts::hasDrafts() const
+{
+    const QString draftsPath = FileUtils::getAppDataPath(DRAFT_POSTS_DIR);
+    const auto files = getDraftPostFiles(draftsPath);
+    return !files.empty();
+}
+
 void DraftPosts::saveDraftPost(const QString& text,
                                const QStringList& imageFileNames, const QStringList& altTexts,
                                const QString& replyToUri, const QString& replyToCid,
@@ -34,7 +41,9 @@ void DraftPosts::saveDraftPost(const QString& text,
                                const BasicProfile& quoteAuthor, const QString& quoteText,
                                const QDateTime& quoteDateTime,
                                const GeneratorView& quoteFeed, const ListView& quoteList,
-                               const QStringList& labels)
+                               const TenorGif gif, const QStringList& labels,
+                               bool restrictReplies, bool allowMention, bool allowFollowing,
+                               const QStringList& allowLists)
 {
     Q_ASSERT(imageFileNames.size() == altTexts.size());
     qDebug() << "Save draft post:" << text;
@@ -59,29 +68,30 @@ void DraftPosts::saveDraftPost(const QString& text,
     if (!quoteUri.isEmpty())
         ATProto::PostMaster::addQuoteToPost(*draft->mPost, quoteUri, quoteCid);
 
-    for (int i = 0; i < imageFileNames.size(); ++i)
+    if (!addImagesToPost(*draft->mPost, imageFileNames, altTexts, draftsPath, dateTime))
+        return;
+
+    if (!gif.isNull())
+        addGifToPost(*draft->mPost, gif);
+
+    if (restrictReplies)
     {
-        const QString& imgName = imageFileNames[i];
-        auto blob = saveImage(imgName, draftsPath, dateTime, i);
-
-        if (!blob)
-        {
-            dropImages(draftsPath, dateTime, i);
-            return;
-        }
-
-        const QString& altText = altTexts[i];
-        ATProto::PostMaster::addImageToPost(*draft->mPost, std::move(blob), altText);
+        draft->mThreadgate = ATProto::PostMaster::createThreadgate(
+                getDraftUri(), allowMention, allowFollowing, allowLists);
     }
-
-    // TODO threadgate
-    // TODO gif (external)
 
     draft->mReplyToPost = createReplyToPost(replyToUri, replyToAuthor, replyToText, replyToDateTime);
     draft->mQuote = createQuote(quoteUri, quoteAuthor, quoteText, quoteDateTime, quoteFeed, quoteList);
 
     if (!save(std::move(draft), draftsPath, dateTime))
         dropImages(draftsPath, dateTime, imageFileNames.size());
+}
+
+QString DraftPosts::getDraftUri() const
+{
+    const QString userDid = AuthorCache::instance().getUser().getDid();
+    ATProto::ATUri atUri(userDid, "skywalker.draft", "draft-post");
+    return atUri.toString();
 }
 
 QString DraftPosts::createDraftPostFileName(const QString& baseName) const
@@ -226,6 +236,16 @@ QJsonObject DraftPosts::ReplyToPost::toJson() const
     return json;
 }
 
+DraftPosts::ReplyToPost::Ptr DraftPosts::ReplyToPost::fromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+    auto replyToPost = std::make_unique<ReplyToPost>();
+    replyToPost->mAuthor = xjson.getRequiredObject<ATProto::AppBskyActor::ProfileViewBasic>("author");
+    replyToPost->mText = xjson.getRequiredString("text");
+    replyToPost->mDateTime = xjson.getRequiredDateTime("date");
+    return replyToPost;
+}
+
 QJsonObject DraftPosts::QuotePost::toJson() const
 {
     QJsonObject json;
@@ -237,6 +257,16 @@ QJsonObject DraftPosts::QuotePost::toJson() const
     json.insert("text", mText);
     json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
     return json;
+}
+
+DraftPosts::QuotePost::Ptr DraftPosts::QuotePost::fromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+    auto quotePost = std::make_unique<QuotePost>();
+    quotePost->mAuthor = xjson.getRequiredObject<ATProto::AppBskyActor::ProfileViewBasic>("author");
+    quotePost->mText = xjson.getRequiredString("text");
+    quotePost->mDateTime = xjson.getRequiredDateTime("date");
+    return quotePost;
 }
 
 QJsonObject DraftPosts::Quote::toJson() const
@@ -264,20 +294,150 @@ QJsonObject DraftPosts::Quote::toJson() const
     return json;
 }
 
-ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft::Ptr draft, const QString& draftsPath) const
+DraftPosts::Quote::Ptr DraftPosts::Quote::fromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+    auto quote = std::make_unique<Quote>();
+    const QString rawRecordType = xjson.getRequiredString("$type");
+    quote->mRecordType = ATProto::stringToRecordType(rawRecordType);
+
+    switch (quote->mRecordType)
+    {
+    case ATProto::RecordType::APP_BSKY_FEED_POST:
+        quote->mRecord = xjson.getRequiredObject<QuotePost>("post");
+        break;
+    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+        quote->mRecord = xjson.getRequiredObject<ATProto::AppBskyFeed::GeneratorView>("feed");
+        break;
+    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+        quote->mRecord = xjson.getRequiredObject<ATProto::AppBskyGraph::ListView>("list");
+        break;
+    default:
+        qWarning() << "Invalid record type:" << rawRecordType;
+        throw ATProto::InvalidJsonException("Invalid record type");
+    }
+
+    return quote;
+}
+
+ATProto::AppBskyFeed::FeedViewPost::Ptr DraftPosts::convertDraftToFeedViewPost(Draft& draft, const QString& draftsPath) const
+{
+    auto feedView = std::make_unique<ATProto::AppBskyFeed::FeedViewPost>();
+    feedView->mPost = convertDraftToPostView(draft, draftsPath);
+    feedView->mReply = createReplyRef(draft);
+    return feedView;
+}
+
+ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft& draft, const QString& draftsPath) const
 {
     auto postView = std::make_unique<ATProto::AppBskyFeed::PostView>();
-    postView->mUri = "draft";
+    postView->mUri = getDraftUri();
     postView->mCid = "draft";
     postView->mAuthor = createProfileViewBasic(AuthorCache::instance().getUser());
-    postView->mIndexedAt = draft->mPost->mCreatedAt;
-    postView->mEmbed = createEmbedView(draft->mPost->mEmbed.get(), std::move(draft->mQuote), draftsPath);
-    postView->mRecord = std::move(draft->mPost);
+    postView->mIndexedAt = draft.mPost->mCreatedAt;
+    postView->mEmbed = createEmbedView(draft.mPost->mEmbed.get(), std::move(draft.mQuote), draftsPath);
+    postView->mLabels = createContentLabels(*draft.mPost);
+    postView->mRecord = std::move(draft.mPost);
     postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
-    // TODO LABELS
-    // TODO THREADGATE
+    postView->mThreadgate = createThreadgateView(draft);
 
     return postView;
+}
+
+ATProto::AppBskyFeed::ThreadgateView::Ptr DraftPosts::createThreadgateView(Draft& draft) const
+{
+    if (!draft.mThreadgate)
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyFeed::ThreadgateView>();
+    view->mRecord = std::move(draft.mThreadgate);
+    return view;
+}
+
+ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createReplyToPost(const Draft& draft) const
+{
+    if (!draft.mReplyToPost)
+        return nullptr;
+
+    auto post = std::make_unique<ATProto::AppBskyFeed::Record::Post>();
+    post->mText = draft.mReplyToPost->mText;
+    post->mCreatedAt = draft.mReplyToPost->mDateTime;
+    return post;
+}
+
+ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertReplyToPostView(Draft& draft) const
+{
+    if (!draft.mReplyToPost)
+        return nullptr;
+
+    Q_ASSERT(draft.mPost->mReply);
+    Q_ASSERT(draft.mPost->mReply->mParent);
+
+    if (!draft.mPost->mReply || !draft.mPost->mReply->mParent)
+    {
+        qWarning() << "Reply parent information missing from draft for reply:" << draft.mReplyToPost->mText;
+        return nullptr;
+    }
+
+    auto view = std::make_unique<ATProto::AppBskyFeed::PostView>();
+    view->mUri = draft.mPost->mReply->mParent->mUri;
+    view->mCid = draft.mPost->mReply->mParent->mCid;
+    view->mAuthor = std::move(draft.mReplyToPost->mAuthor);
+    view->mRecord = createReplyToPost(draft);
+    view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+    view->mIndexedAt = draft.mReplyToPost->mDateTime;
+    return view;
+}
+
+ATProto::AppBskyFeed::ReplyRef::Ptr DraftPosts::createReplyRef(Draft& draft) const
+{
+    if (!draft.mReplyToPost)
+        return nullptr;
+
+    Q_ASSERT(draft.mPost->mReply);
+    Q_ASSERT(draft.mPost->mReply->mRoot);
+
+    if (!draft.mPost->mReply || !draft.mPost->mReply->mRoot)
+    {
+        qWarning() << "Reply root information missing from draft for reply:" << draft.mReplyToPost->mText;
+        return nullptr;
+    }
+
+    auto replyRef = std::make_unique<ATProto::AppBskyFeed::ReplyRef>();
+
+    replyRef->mParent = std::make_unique<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mParent->mType = ATProto::AppBskyFeed::PostElementType::POST_VIEW;
+    replyRef->mParent->mPost = convertReplyToPostView(draft);
+
+    // We did not save the root post in the draft. Set it to NOT FOUND. The post composer
+    // does not need it.
+    replyRef->mRoot = std::make_unique<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mRoot->mType = ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST;
+    auto notFound = std::make_unique<ATProto::AppBskyFeed::NotFoundPost>();
+    notFound->mUri = draft.mPost->mReply->mRoot->mUri;
+    replyRef->mRoot->mPost = std::move(notFound);
+
+    return replyRef;
+}
+
+ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post) const
+{
+    if (!post.mLabels)
+        return {};
+
+    const QString userDid = AuthorCache::instance().getUser().getDid();
+    ATProto::ComATProtoLabel::LabelList labels;
+
+    for (const auto& selfLabel : post.mLabels->mValues)
+    {
+        auto label = std::make_unique<ATProto::ComATProtoLabel::Label>();
+        label->mVal = selfLabel->mVal;
+        label->mSrc = userDid;
+        label->mUri = getDraftUri();
+        label->mCreatedAt = post.mCreatedAt;
+    }
+
+    return labels;
 }
 
 ATProto::AppBskyEmbed::EmbedView::Ptr DraftPosts::createEmbedView(
@@ -296,7 +456,7 @@ ATProto::AppBskyEmbed::EmbedView::Ptr DraftPosts::createEmbedView(
         break;
     case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
-        view->mEmbed = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(embed->mEmbed).get(), draftsPath);
+        view->mEmbed = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(embed->mEmbed).get());
         break;
     case ATProto::AppBskyEmbed::EmbedType::RECORD:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
@@ -336,10 +496,20 @@ ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(
 }
 
 ATProto::AppBskyEmbed::ExternalView::Ptr DraftPosts::createExternalView(
-    const ATProto::AppBskyEmbed::External*, const QString&) const
+    const ATProto::AppBskyEmbed::External* external) const
 {
-    // TODO GIF
-    return nullptr;
+    if (!external || !external->mExternal)
+        return nullptr;
+
+    auto view = std::make_unique<ATProto::AppBskyEmbed::ExternalView>();
+    view->mExternal = std::make_unique<ATProto::AppBskyEmbed::ExternalViewExternal>();
+    view->mExternal->mUri = external->mExternal->mUri;
+    view->mExternal->mTitle = external->mExternal->mTitle;
+    view->mExternal->mDescription = external->mExternal->mDescription;
+
+    // NOTE: the small gif size and url are encoded as URL params to this thumbnail image.
+    view->mExternal->mThumb = external->mExternal->mThumb->mRefLink;
+    return view;
 }
 
 ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
@@ -404,7 +574,7 @@ ATProto::AppBskyEmbed::RecordWithMediaView::Ptr DraftPosts::createRecordWithMedi
         break;
     case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
         view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
-        view->mMedia = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(record->mMedia).get(), draftsPath);
+        view->mMedia = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(record->mMedia).get());
         break;
     default:
         qWarning() << "Invalid media type:" << (int)record->mMediaType;
@@ -420,7 +590,18 @@ QJsonObject DraftPosts::Draft::toJson() const
     json.insert("post", mPost->toJson());
     ATProto::XJsonObject::insertOptionalJsonObject<ReplyToPost>(json, "replyToPost", mReplyToPost);
     ATProto::XJsonObject::insertOptionalJsonObject<Quote>(json, "quote", mQuote);
+    ATProto::XJsonObject::insertOptionalJsonObject<ATProto::AppBskyFeed::Threadgate>(json, "threadgate", mThreadgate);
     return json;
+}
+
+DraftPosts::Draft::Ptr DraftPosts::Draft::fromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+    auto draft = std::make_unique<Draft>();
+    draft->mReplyToPost = xjson.getOptionalObject<ReplyToPost>("replyToPost");
+    draft->mQuote = xjson.getOptionalObject<Quote>("quote");
+    draft->mThreadgate = xjson.getOptionalObject<ATProto::AppBskyFeed::Threadgate>("threadgate");
+    return draft;
 }
 
 bool DraftPosts::save(Draft::Ptr draft, const QString& draftsPath, const QString& baseName)
@@ -490,18 +671,117 @@ ATProto::Blob::Ptr DraftPosts::saveImage(const QString& imgName, const QString& 
     return blob;
 }
 
-void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count)
+void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
+{
+    QUrlQuery query{
+        { "smallWidth", QString::number(gif.getSmallSize().width()) },
+        { "smallHeight", QString::number(gif.getSmallSize().height()) },
+        { "smallUrl", gif.getSmallUrl() }
+    };
+    QUrl imageUrl(gif.getImageUrl());
+    imageUrl.setQuery(query);
+
+    auto blob = std::make_unique<ATProto::Blob>();
+    blob->mRefLink = imageUrl.toString();
+    blob->mMimeType = "image";
+    blob->mSize = 0;
+
+    ATProto::PostMaster::addExternalToPost(post, gif.getUrl(), gif.getDescription(), "", std::move(blob));
+}
+
+bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
+                     const QStringList& imageFileNames, const QStringList& altTexts,
+                     const QString& draftsPath, const QString& baseName)
+{
+    for (int i = 0; i < imageFileNames.size(); ++i)
+    {
+        const QString& imgName = imageFileNames[i];
+        auto blob = saveImage(imgName, draftsPath, baseName, i);
+
+        if (!blob)
+        {
+            dropImages(draftsPath, baseName, i);
+            return false;
+        }
+
+        const QString& altText = altTexts[i];
+        ATProto::PostMaster::addImageToPost(post, std::move(blob), altText);
+    }
+
+    return true;
+}
+
+void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count) const
 {
     for (int j = 0; j < count; ++j)
         dropImage(draftsPath, baseName, j);
 }
 
-void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, int seq)
+void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, int seq) const
 {
     const QString imgFileName = createDraftImageFileName(baseName, seq);
     const QString fileName = createAbsPath(draftsPath, imgFileName);
     qDebug() << "Drop draft image:" << fileName;
     QFile::remove(fileName);
+}
+
+QStringList DraftPosts::getDraftPostFiles(const QString& draftsPath) const
+{
+    QDir dir(draftsPath);
+    return dir.entryList({"SWP_*.json"}, QDir::Files, QDir::Time | QDir::Reversed);
+}
+
+DraftPosts::Draft::Ptr DraftPosts::loadDraft(const QString& fileName, const QString& draftsPath) const
+{
+    QDir dir(draftsPath);
+    const QString absFileName = dir.absoluteFilePath(fileName);
+    QFile file(absFileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qWarning() << "Cannot open file:" << absFileName;
+        return nullptr;
+    }
+
+    const QByteArray data = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+
+    if (doc.isNull())
+    {
+        qWarning() << "Not valid JSON:" << absFileName;
+        return nullptr;
+    }
+
+    try {
+        auto draft = Draft::fromJson(doc.object());
+        return draft;
+    } catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "File format error:" << e.msg();
+        qInfo() << doc.object();
+        return nullptr;
+    }
+}
+
+ATProto::AppBskyFeed::PostFeed DraftPosts::loadDraftFeed() const
+{
+    const QString draftsPath = FileUtils::getAppDataPath(DRAFT_POSTS_DIR);
+    auto fileList = getDraftPostFiles(draftsPath);
+    ATProto::AppBskyFeed::PostFeed postFeed;
+
+    for (const auto& file : fileList)
+    {
+        auto draft = loadDraft(file, draftsPath);
+
+        if (draft)
+        {
+            auto feedViewPost = convertDraftToFeedViewPost(*draft, draftsPath);
+            postFeed.push_back(std::move(feedViewPost));
+        }
+
+        // TODO: remove drafts we cannot read
+    }
+
+    return postFeed;
 }
 
 }

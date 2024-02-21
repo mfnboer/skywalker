@@ -679,6 +679,7 @@ Page {
         // GIF attachment
         AnimatedImage {
             property var gif: null
+            property tenorgif nullGif
 
             id: gifAttachment
             x: 10
@@ -1126,6 +1127,7 @@ Page {
         const qUri = getQuoteUri()
         const qCid = getQuoteCid()
         const labels = getContentLabels()
+        const gif = gifAttachment.gif ? gifAttachment.gif : gifAttachment.nullGif
 
         draftPosts.saveDraftPost(postText.text, images, altTexts,
                                  replyToPostUri, replyToPostCid,
@@ -1134,7 +1136,9 @@ Page {
                                  replyToPostDateTime,
                                  qUri, qCid, quoteAuthor, unicodeFonts.toPlainText(quoteText),
                                  quoteDateTime, quoteFeed, quoteList,
-                                 labels)
+                                 gif, labels,
+                                 restrictReply, allowReplyMentioned, allowReplyFollowing,
+                                 getReplyRestrictionListUris())
     }
 
     function editAltText(index) {
@@ -1187,6 +1191,7 @@ Page {
             }
         }
 
+        console.debug("Restriction lists:", uris)
         return uris
     }
 
