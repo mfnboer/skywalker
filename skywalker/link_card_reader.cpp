@@ -63,6 +63,10 @@ void LinkCardReader::getLinkCard(const QString& link)
     }
 
     QNetworkRequest request(url);
+
+    // Without this YouTube Shorts does not load
+    request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, true);
+
     QNetworkReply* reply = mNetwork.get(request);
     mInProgress = reply;
 
