@@ -34,12 +34,11 @@ Page {
                 id: imgRect
                 color: "black"
 
-                Text {
+                SkyCleanedText {
                     id: altText
                     width: parent.width
                     anchors.bottom: parent.bottom
                     wrapMode: Text.Wrap
-                    elide: Text.ElideRight
                     color: "white"
                     text: images[index].alt
                     visible: images[index].alt && isCurrentItem
