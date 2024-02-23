@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "draft_posts_model.h"
 #include "generator_view.h"
 #include "list_view.h"
 #include "profile.h"
@@ -37,6 +38,8 @@ public:
                                    bool restrictReplies, bool allowMention, bool allowFollowing,
                                    const QStringList& allowLists);
 
+    Q_INVOKABLE void loadDraftPostsModel(DraftPostsModel* model);
+
 signals:
     void saveDraftPostOk();
     void saveDraftPostFailed(QString error);
@@ -68,7 +71,17 @@ private:
 
     struct Quote
     {
-        ATProto::RecordType mRecordType;
+        enum class RecordType
+        {
+            QUOTE_POST,
+            QUOTE_FEED,
+            QUOTE_LIST,
+            UNKNOWN
+        };
+
+        static RecordType stringToRecordType(const QString& str);
+
+        RecordType mRecordType;
 
         std::variant<QuotePost::Ptr,
                      ATProto::AppBskyFeed::GeneratorView::Ptr,
@@ -94,6 +107,7 @@ private:
     };
 
     QString getDraftUri() const;
+    QString getDraftsPath() const;
     QString createDraftPostFileName(const QString& baseName) const;
     QString createDraftImageFileName(const QString& baseName, int seq) const;
 

@@ -823,6 +823,19 @@ Page {
         }
     }
 
+    Text {
+        id: draftsLink
+        anchors.centerIn: parent
+        font.pointSize: guiSettings.scaledFont(9/8)
+        text: qsTr("<a href=\"drafts\">Drafts</a>")
+        visible: !hasContent() && draftPosts.hasDrafts()
+        onLinkActivated: showDraftPosts()
+
+        Accessible.role: Accessible.Link
+        Accessible.name: unicodeFonts.toPlainText(text)
+        Accessible.onPressAction: showDraftPosts()
+    }
+
     StatusPopup {
         id: statusPopup
     }
@@ -1139,6 +1152,13 @@ Page {
                                  gif, labels,
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
+    }
+
+    function showDraftPosts() {
+        let component = Qt.createComponent("DraftPostsView.qml")
+        let draftsPage = component.createObject(page, { skywalker: skywalker })
+        draftsPage.onClosed.connect(() => root.popStack())
+        root.pushStack(draftsPage)
     }
 
     function editAltText(index) {

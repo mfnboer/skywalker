@@ -6,6 +6,7 @@
 #include "bookmarks.h"
 #include "bookmarks_model.h"
 #include "content_group_list_model.h"
+#include "draft_posts_model.h"
 #include "edit_user_preferences.h"
 #include "favorite_feeds.h"
 #include "feed_list_model.h"
@@ -132,6 +133,8 @@ public:
     // NOTE: destroys the previous model
     Q_INVOKABLE const BookmarksModel* createBookmarksModel();
     Q_INVOKABLE void deleteBookmarksModel();
+    Q_INVOKABLE DraftPostsModel* createDraftPostsModel();
+    Q_INVOKABLE void deleteDraftPostsModel();
 
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
@@ -263,6 +266,7 @@ private:
     Bookmarks mBookmarks;
     BookmarksModel::Ptr mBookmarksModel;
     MutedWords mMutedWords;
+    DraftPostsModel::Ptr mDraftPostsModel;
     PostFeedModel mTimelineModel;
 
     bool mAutoUpdateTimelineInProgress = false;

@@ -2197,6 +2197,20 @@ void Skywalker::deleteBookmarksModel()
     mBookmarksModel = nullptr;
 }
 
+DraftPostsModel* Skywalker::createDraftPostsModel()
+{
+    mDraftPostsModel = std::make_unique<DraftPostsModel>(
+        mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+        mMutedWords, this);
+
+    return mDraftPostsModel.get();
+}
+
+void Skywalker::deleteDraftPostsModel()
+{
+    mDraftPostsModel = nullptr;
+}
+
 bool Skywalker::sendAppToBackground()
 {
 #ifdef Q_OS_ANDROID
@@ -2341,6 +2355,7 @@ void Skywalker::signOut()
     mBookmarksModel = nullptr;
     mBookmarks.clear();
     mMutedWords.clear();
+    mDraftPostsModel = nullptr;
     mFavoriteFeeds.clear();
     mUserSettings.setActiveUserDid({});
     setAutoUpdateTimelineInProgress(false);

@@ -39,8 +39,6 @@ Q_INVOKABLE bool GifUtils::isGif(const QString& link) const
 
 QString GifUtils::getGifUrl(const QString& link) const
 {
-    qDebug() << "Get GIF url for:" << link;
-
     if (link.startsWith(GIPHY_GIFS_PREFIX))
         return getGiphyGifUrl(link);
 
@@ -60,7 +58,6 @@ QString GifUtils::getGifUrl(const QString& link) const
     if (link.startsWith(TENOR_MEDIA_PREFIX))
         return getTenorMediaGif(link);
 
-    qDebug() << "Unsupported link";
     return {};
 }
 

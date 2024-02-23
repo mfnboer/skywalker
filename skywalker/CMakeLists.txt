@@ -290,6 +290,10 @@ qt_add_qml_module(libskywalker
         SOURCES file_utils.cpp
         SOURCES draft_posts.h
         SOURCES draft_posts.cpp
+        SOURCES draft_posts_model.h
+        SOURCES draft_posts_model.cpp
+        QML_FILES DraftPostsView.qml
+        QML_FILES DraftPostViewDelegate.qml
 )
 
 if (NOT ANDROID)

@@ -40,7 +40,7 @@ Page {
                     anchors.bottom: parent.bottom
                     wrapMode: Text.Wrap
                     color: "white"
-                    text: images[index].alt
+                    plainText: images[index].alt
                     visible: images[index].alt && isCurrentItem
                 }
                 ImageAutoRetry {
