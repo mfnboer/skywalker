@@ -474,7 +474,8 @@ Rectangle {
                 skywalker.getUser(), notificationReasonPostPlainText, notificationReasonPostImages,
                 notificationReasonPostExternal, notificationReasonPostRecord,
                 notificationReasonPostRecordWithMedia,
-                accessibilityUtils.nullAuthor, false, accessibilityUtils.nullAuthor)
+                accessibilityUtils.nullAuthor,
+                notificationReasonPostIsReply, notificationReasonPostReplyToAuthor)
     }
 
     function getAggregatableSpeech() {
