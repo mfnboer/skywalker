@@ -14,6 +14,8 @@ Rectangle {
     required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
     required property string notificationReasonPostPlainText
+    required property bool notificationReasonPostIsReply
+    required property basicprofile notificationReasonPostReplyToAuthor
     required property list<imageview> notificationReasonPostImages
     required property var notificationReasonPostExternal // externalview (var allows NULL)
     required property var notificationReasonPostRecord // recordview
@@ -48,6 +50,7 @@ Rectangle {
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
     required property int notificationPostMutedReason // QEnums::MutedPostReason
+    required property bool notificationPostIsReply
     required property basicprofile replyToAuthor
     required property string notificationInviteCode
     required property basicprofile notificationInviteCodeUsedBy
@@ -158,7 +161,7 @@ Rectangle {
             ReplyToRow {
                 width: parent.width
                 authorName: replyToAuthor.name
-                visible: notificationReason === QEnums.NOTIFICATION_REASON_REPLY
+                visible: notificationPostIsReply
             }
 
             PostBody {
@@ -284,6 +287,13 @@ Rectangle {
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: Material.color(Material.Grey)
                 }
+            }
+
+            // Reply to
+            ReplyToRow {
+                width: parent.width
+                authorName: notificationReasonPostReplyToAuthor.name
+                visible: showPostForAggregatableReason() && notificationReasonPostIsReply
             }
 
             PostBody {
@@ -487,7 +497,7 @@ Rectangle {
                 notificationAuthor, notificationPostPlainText, notificationPostImages,
                 notificationPostExternal, notificationPostRecord,
                 notificationPostRecordWithMedia, accessibilityUtils.nullAuthor,
-                notificationReason === QEnums.NOTIFICATION_REASON_REPLY, replyToAuthor)
+                notificationPostIsReply, replyToAuthor)
 
         let speech = `${time} ${notificationAuthor.name} ${reason}\n\n${postSpeech}`
         return speech

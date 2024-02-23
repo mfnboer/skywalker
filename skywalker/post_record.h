@@ -20,6 +20,7 @@ public:
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
     BasicProfile getReplyToAuthor() const;
+    bool isReply() const;
     bool hasEmbeddedContent() const;
 
 private:

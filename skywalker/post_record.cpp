@@ -82,6 +82,11 @@ BasicProfile PostRecord::getReplyToAuthor() const
     return *author;
 }
 
+bool PostRecord::isReply() const
+{
+    return getReplyRootRef() != nullptr;
+}
+
 bool PostRecord::hasEmbeddedContent() const
 {
     return mRecord ? mRecord->mEmbed != nullptr : false;

@@ -351,6 +351,13 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReasonPost(mReasonPostCache).getFormattedText();
     case Role::NotificationReasonPostPlainText:
         return notification.getReasonPost(mReasonPostCache).getText();
+    case Role::NotificationReasonPostIsReply:
+        return notification.getReasonPost(mReasonPostCache).isReply();
+    case Role::NotificationReasonPostReplyToAuthor:
+    {
+        const auto author = notification.getReasonPost(mReasonPostCache).getReplyToAuthor();
+        return author ? QVariant::fromValue(*author) : QVariant();
+    }
     case Role::NotificationReasonPostImages:
         return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getImages());
     case Role::NotificationReasonPostExternal:
@@ -502,6 +509,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         return QEnums::MUTED_POST_NONE;
     }
+    case Role::NotificationPostIsReply:
+        return notification.getPostRecord().isReply();
     case Role::ReplyToAuthor:
         return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
     case Role::NotificationInviteCode:
@@ -526,6 +535,8 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonSubjectCid), "notificationReasonSubjectCid" },
         { int(Role::NotificationReasonPostText), "notificationReasonPostText" },
         { int(Role::NotificationReasonPostPlainText), "notificationReasonPostPlainText" },
+        { int(Role::NotificationReasonPostIsReply), "notificationReasonPostIsReply" },
+        { int(Role::NotificationReasonPostReplyToAuthor), "notificationReasonPostReplyToAuthor" },
         { int(Role::NotificationReasonPostImages), "notificationReasonPostImages" },
         { int(Role::NotificationReasonPostTimestamp), "notificationReasonPostTimestamp" },
         { int(Role::NotificationReasonPostExternal), "notificationReasonPostExternal" },
@@ -560,6 +571,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostContentVisibility), "notificationPostContentVisibility" },
         { int(Role::NotificationPostContentWarning), "notificationPostContentWarning" },
         { int(Role::NotificationPostMutedReason), "notificationPostMutedReason" },
+        { int(Role::NotificationPostIsReply), "notificationPostIsReply" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::NotificationInviteCode), "notificationInviteCode" },
         { int(Role::NotificationInviteCodeUsedBy), "notificationInviteCodeUsedBy" },
