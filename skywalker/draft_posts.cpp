@@ -192,9 +192,10 @@ DraftPostData* DraftPosts::getDraftPostData(const DraftPostsModel* model, int in
             const int smallWidth = query.queryItemValue("smallWidth").toInt();
             const int smallHeight = query.queryItemValue("smallHeight").toInt();
 
+            // NOTE: The id is set to empty. This will avoid restration in Tenor::registerShare
             TenorGif gif("", externalView->getTitle(), "", externalView->getUri(),
                          smallUrl, QSize(smallWidth, smallHeight),
-                         thumbUrl.toString(QUrl::RemoveQuery), QSize{});
+                         thumbUrl.toString(QUrl::RemoveQuery), QSize(1, 1));
             data->setGif(gif);
         }
     }

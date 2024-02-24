@@ -68,9 +68,18 @@ public class FileUtils {
 
     public static String getAppDataPath(String subDir) {
         Context context = QtNative.getContext();
-        File path = context.getDir(subDir, Context.MODE_PRIVATE);
-        Log.d(LOGTAG, path.getAbsolutePath());
-        return path.getAbsolutePath();
+        File path = context.getFilesDir();
+        File subPath = new File(path, subDir);
+
+        try {
+            subPath.mkdirs();
+        } catch (SecurityException e) {
+            Log.w(LOGTAG, "Could not create path: " + subPath + " details: " + e.getMessage());
+            return null;
+        }
+
+        Log.d(LOGTAG, subPath.getAbsolutePath());
+        return subPath.getAbsolutePath();
     }
 
 // Make a media file show up in the gallery

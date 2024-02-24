@@ -126,7 +126,7 @@ Rectangle {
     }
 
     MouseArea {
-        z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
+        z: 200 // Cover all mouse areas. Only the draft post can be selected.
         anchors.fill: parent
         onClicked: selectDraft()
     }

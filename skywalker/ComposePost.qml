@@ -56,6 +56,8 @@ Page {
     readonly property string userDid: skywalker.getUserDid()
     readonly property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
 
+    property tenorgif attachedGif
+
     signal closed
 
     id: page
@@ -121,15 +123,15 @@ Page {
                                    replyRootPostUri, replyRootPostCid,
                                    qUri, qCid, labels)
                 } else if (gifAttachment.gif) {
-                    tenor.registerShare(gifAttachment.gif)
+                    tenor.registerShare(attachedGif)
 
                     let gifCard = linkCardReader.makeLinkCard(
-                            gifAttachment.gif.url,
-                            gifAttachment.gif.description + " (via Tenor)\nPosted from Skywalker @skywalkerapp.bsky.social",
+                            attachedGif.url,
+                            attachedGif.description + " (via Tenor)\nPosted from Skywalker @skywalkerapp.bsky.social",
                             qsTr("This GIF has been posted from Skywalker for Android. " +
                                  "Get Skywalker from Google Play.") +
                                  ("\nBluesky: @skywalkerapp.bsky.social"),
-                            gifAttachment.gif.imageUrl)
+                            attachedGif.imageUrl)
 
                     postUtils.post(postText.text, gifCard,
                                    replyToPostUri, replyToPostCid,
@@ -339,8 +341,6 @@ Page {
             }
 
             MouseArea {
-                property var tenorSearchView: null
-
                 y: -parent.height
                 width: parent.width
                 height: parent.height
@@ -693,6 +693,10 @@ Page {
             Accessible.name: qsTr("GIF image")
 
             function show(gif) {
+                // For some reasong the gif property of the AnimatedImage gets destroyed
+                // after setting it from a draft after the AnimatedImage gets displayed.
+                // The copy in attached gif can be used for sending/saving.
+                attachedGif = gif
                 gifAttachment.gif = gif
                 linkCard.hide()
             }
@@ -1140,7 +1144,7 @@ Page {
         const qUri = getQuoteUri()
         const qCid = getQuoteCid()
         const labels = getContentLabels()
-        const gif = gifAttachment.gif ? gifAttachment.gif : gifAttachment.nullGif
+        const gif = gifAttachment.gif ? attachedGif : gifAttachment.nullGif
 
         draftPosts.saveDraftPost(postText.text, images, altTexts,
                                  replyToPostUri, replyToPostCid,

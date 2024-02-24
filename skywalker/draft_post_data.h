@@ -38,6 +38,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(bool allowFollowing READ allowFollowing WRITE setAllowFollowing NOTIFY allowFollowingChanged FINAL)
     Q_PROPERTY(QStringList allowLists READ allowLists WRITE setAllowLists NOTIFY allowListsChanged FINAL)
     Q_PROPERTY(QString draftPostFileName READ draftPostFileName WRITE setDraftPostFileName NOTIFY draftPostFileNameChanged FINAL)
+    QML_ELEMENT
 
 public:
     explicit DraftPostData(QObject* parent = nullptr) : QObject(parent) {}
@@ -76,7 +77,7 @@ public:
     void setQuoteFeed(const GeneratorView &newQuoteFeed);
     ListView quoteList() const;
     void setQuoteList(const ListView& newQuoteList);
-    TenorGif gif() const;
+    const TenorGif& gif() const;
     void setGif(const TenorGif &newGif);
     QStringList labels() const;
     void setLabels(const QStringList &newLabels);
@@ -350,7 +351,7 @@ inline void DraftPostData::setQuoteList(const ListView& newQuoteList)
     emit quoteListChanged();
 }
 
-inline TenorGif DraftPostData::gif() const
+inline const TenorGif& DraftPostData::gif() const
 {
     return mGif;
 }

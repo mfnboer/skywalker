@@ -201,6 +201,6 @@ Page {
 
     Component.onCompleted: {
         tenor.getCategories()
-        page.header.unocus()
+        page.header.unfocus()
     }
 }
