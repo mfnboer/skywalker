@@ -1977,6 +1977,7 @@ void Skywalker::shareFeed(const GeneratorView& feed)
     if (!atUri.isValid())
         return;
 
+    // TODO: use ATUri::toHttpsUri
     const QString authorId = feed.getCreator().getDid();
     const QString shareUri = QString("https://bsky.app/profile/%1/feed/%2")
                                  .arg(authorId, atUri.getRkey());

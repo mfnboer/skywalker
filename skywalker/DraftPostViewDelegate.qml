@@ -21,6 +21,9 @@ Rectangle {
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
     required property int postMutedReason // QEnums::MutedPostReason
+    required property bool endOfFeed
+
+    signal selected
 
     id: draftPostView
     width: grid.width
@@ -41,7 +44,7 @@ Rectangle {
         Rectangle {
             id: avatar
             width: guiSettings.threadBarWidth * 5
-            height: avatarImg.height + 5
+            height: avatarImg.height + 10
             Layout.fillHeight: true
             color: "transparent"
 
@@ -97,6 +100,29 @@ Rectangle {
                 postDateTime: draftPostView.postIndexedDateTime
             }
         }
+
+        // Separator
+        Rectangle {
+            width: parent.width
+            Layout.columnSpan: 2
+            Layout.preferredHeight: 1
+            Layout.fillWidth: true
+            color: guiSettings.separatorColor
+        }
+
+        // End of feed indication
+        Text {
+            width: parent.width
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            topPadding: 10
+            elide: Text.ElideRight
+            color: guiSettings.textColor
+            text: qsTr("End of drafts")
+            font.italic: true
+            visible: endOfFeed
+        }
     }
 
     MouseArea {
@@ -120,6 +146,6 @@ Rectangle {
     }
 
     function selectDraft() {
-        console.debug("TODO")
+        selected()
     }
 }

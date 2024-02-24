@@ -7,6 +7,8 @@ namespace Skywalker {
 
 class DraftPostsModel : public AbstractPostFeedModel
 {
+    Q_OBJECT
+
 public:
     using Ptr = std::unique_ptr<DraftPostsModel>;
 
@@ -15,7 +17,7 @@ public:
                     const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                     const MutedWords& mutedWords, QObject* parent = nullptr);
 
-    void clear();
+    Q_INVOKABLE void clear();
     void setFeed(ATProto::AppBskyFeed::PostFeed feed);
 
 private:

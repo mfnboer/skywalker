@@ -197,6 +197,10 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
 
 void Tenor::registerShare(const TenorGif& gif)
 {
+    // ID will be empty if the gif was save as part of a draft post
+    if (gif.getId().isEmpty())
+        return;
+
     qDebug() << "Register share:" << gif.getDescription() <<
             "id:" << gif.getId() << "q:" << gif.getSearchTerm();
 

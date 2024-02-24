@@ -55,6 +55,11 @@ QString RecordView::getUri() const
     return mRecord ? mRecord->mUri : QString();
 }
 
+QString RecordView::getCid() const
+{
+    return mRecord ? mRecord->mCid : QString();
+}
+
 QString RecordView::getText() const
 {
     if (!mRecord)

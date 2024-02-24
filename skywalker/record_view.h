@@ -46,6 +46,7 @@ public:
     explicit RecordView(const ATProto::AppBskyEmbed::RecordView& view);
 
     QString getUri() const;
+    QString getCid() const;
     QString getText() const override;
     QString getFormattedText() const;
     BasicProfile getAuthor() const;

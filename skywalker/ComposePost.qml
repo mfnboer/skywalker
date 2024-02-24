@@ -828,7 +828,7 @@ Page {
         anchors.centerIn: parent
         font.pointSize: guiSettings.scaledFont(9/8)
         text: qsTr("<a href=\"drafts\">Drafts</a>")
-        visible: !hasContent() && draftPosts.hasDrafts()
+        visible: !hasContent() && !replyToPostUri && !quoteUri && draftPosts.hasDrafts()
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
@@ -1146,7 +1146,7 @@ Page {
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
-                                 replyToPostDateTime,
+                                 replyToPostDateTime, openedAsQuotePost,
                                  qUri, qCid, quoteAuthor, unicodeFonts.toPlainText(quoteText),
                                  quoteDateTime, quoteFeed, quoteList,
                                  gif, labels,
@@ -1158,7 +1158,50 @@ Page {
         let component = Qt.createComponent("DraftPostsView.qml")
         let draftsPage = component.createObject(page, { skywalker: skywalker })
         draftsPage.onClosed.connect(() => root.popStack())
+        draftsPage.onSelected.connect((draftData) => {
+            setDraftPost(draftData)
+            draftData.destroy()
+            root.popStack()
+        })
+
         root.pushStack(draftsPage)
+    }
+
+    function setDraftPost(draftData) {
+        linkCard.hide()
+        gifAttachment.hide()
+
+        postText.text = draftData.text
+
+        images = []
+        altTexts = []
+
+        for (let i = 0; i < draftData.images.length; ++i) {
+            images.push(draftData.images[i].fullSizeUrl)
+            altTexts.push(draftData.images[i].alt)
+        }
+
+        replyToAuthor = draftData.replyToAuthor
+        replyToPostUri = draftData.replyToUri
+        replyToPostCid = draftData.replyToCid
+        replyRootPostUri = draftData.replyRootUri
+        replyRootPostCid = draftData.replyRootCid
+        replyToPostText = draftData.replyToText
+        replyToPostDateTime = draftData.replyToDateTime
+
+        openedAsQuotePost = draftData.openAsQuotePost
+        quoteUri = draftData.quoteUri
+        quoteCid = draftData.quoteCid
+        quoteAuthor = draftData.quoteAuthor
+        quoteText = draftData.quoteText
+        quoteDateTime = draftData.quoteDateTime
+        quoteFeed = draftData.quoteFeed
+        quoteList = draftData.quoteList
+
+        if (draftData.gif.isNull())
+            gifAttachment.hide()
+        else
+            gifAttachment.show(draftData.gif)
     }
 
     function editAltText(index) {

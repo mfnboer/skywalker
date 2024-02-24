@@ -7,6 +7,7 @@ ListView {
     required property var skywalker
 
     signal closed
+    signal selected(var data)
 
     id: view
     spacing: 0
@@ -25,7 +26,9 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     delegate: DraftPostViewDelegate {
+        required property int index
         viewWidth: view.width
+        onSelected: view.selected(draftPosts.getDraftPostData(model, index))
     }
 
     EmptyListIndication {
@@ -41,10 +44,6 @@ ListView {
 
     GuiSettings {
         id: guiSettings
-    }
-
-    Component.onDestruction: {
-        skywalker.deleteDraftPostsModel()
     }
 
     Component.onCompleted: {

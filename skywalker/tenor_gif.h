@@ -37,7 +37,7 @@ public:
         mOverviewSize(mSmallSize)
     {}
 
-    bool isNull() const { return mUrl.isEmpty(); }
+    Q_INVOKABLE bool isNull() const { return mUrl.isEmpty(); }
     const QString& getId() const { return mId; }
     const QString& getDescription() const { return mDescription; }
     const QString& getUrl() const { return mUrl; }

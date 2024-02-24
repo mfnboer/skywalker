@@ -3,6 +3,7 @@
 #include "draft_posts.h"
 #include "author_cache.h"
 #include "file_utils.h"
+#include "gif_utils.h"
 #include "photo_picker.h"
 #include <atproto/lib/xjson.h>
 #include <unordered_map>
@@ -95,6 +96,91 @@ void DraftPosts::loadDraftPostsModel(DraftPostsModel* model)
 {
     auto feed = loadDraftFeed();
     model->setFeed(std::move(feed));
+}
+
+static void setRecordViewData(DraftPostData* data, const RecordView* recordView)
+{
+    if (recordView->getAvailable())
+    {
+        const QString uri = recordView->getUri();
+        const ATProto::ATUri atUri(uri);
+        const QString httpsUri = atUri.toHttpsUri();
+
+        if (!httpsUri.isEmpty())
+            data->setOpenAsQuotePost(!data->text().contains(httpsUri));
+
+        data->setQuoteUri(uri);
+        data->setQuoteCid(recordView->getCid());
+        data->setQuoteAuthor(recordView->getAuthor());
+        data->setQuoteText(recordView->getText());
+        data->setQuoteDateTime(recordView->getIndexedAt());
+    }
+    else if (recordView->getFeedAvailable())
+    {
+        data->setQuoteFeed(recordView->getFeed());
+    }
+    else  if (recordView->getListAvailable())
+    {
+        data->setQuoteList(recordView->getList());
+    }
+}
+
+DraftPostData* DraftPosts::getDraftPostData(const DraftPostsModel* model, int index)
+{
+    const Post& post = model->getPost(index);
+    auto* data = new DraftPostData(this);
+    data->setText(post.getText());
+    data->setImages(post.getImages());
+    data->setReplyToUri(post.getReplyToUri());
+    data->setReplyToCid(post.getReplyToCid());
+    data->setReplyRootUri(post.getReplyRootUri());
+    data->setReplyRootCid(post.getReplyRootCid());
+
+    if (post.getReplyToAuthor())
+        data->setReplyToAuthor(*post.getReplyToAuthor());
+
+    const auto replyView = post.getViewPostReplyRef();
+    if (replyView)
+    {
+        data->setReplyToText(replyView->mParent.getText());
+        data->setReplyToDateTime(replyView->mParent.getIndexedAt());
+    }
+
+    const auto recordView = post.getRecordView();
+    if (recordView)
+        setRecordViewData(data, recordView.get());
+
+    const auto recordMediaView = post.getRecordWithMediaView();
+    if (recordMediaView)
+    {
+        data->setImages(recordMediaView->getImages());
+        setRecordViewData(data, &recordMediaView->getRecord());
+    }
+
+    const auto externalView = post.getExternalView();
+    if (externalView)
+    {
+        GifUtils gifUtils;
+
+        if (gifUtils.isTenorLink(externalView->getUri()))
+        {
+            const QUrl thumbUrl(externalView->getThumbUrl());
+            const QUrlQuery query(thumbUrl.query());
+            const QString smallUrl = query.queryItemValue("smallUrl");
+            const int smallWidth = query.queryItemValue("smallWidth").toInt();
+            const int smallHeight = query.queryItemValue("smallHeight").toInt();
+
+            TenorGif gif("", externalView->getTitle(), "", externalView->getUri(),
+                         smallUrl, QSize(smallWidth, smallHeight),
+                         thumbUrl.toString(QUrl::RemoveQuery), QSize{});
+            data->setGif(gif);
+        }
+    }
+
+    // TODO: labels
+    // TODO: threadgate
+
+    return data;
 }
 
 QString DraftPosts::getDraftUri() const
@@ -366,8 +452,8 @@ DraftPosts::Quote::Ptr DraftPosts::Quote::fromJson(const QJsonObject& json)
 ATProto::AppBskyFeed::FeedViewPost::Ptr DraftPosts::convertDraftToFeedViewPost(Draft& draft, const QString& draftsPath) const
 {
     auto feedView = std::make_unique<ATProto::AppBskyFeed::FeedViewPost>();
-    feedView->mPost = convertDraftToPostView(draft, draftsPath);
     feedView->mReply = createReplyRef(draft);
+    feedView->mPost = convertDraftToPostView(draft, draftsPath);
     return feedView;
 }
 
@@ -772,7 +858,7 @@ void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, i
 QStringList DraftPosts::getDraftPostFiles(const QString& draftsPath) const
 {
     QDir dir(draftsPath);
-    return dir.entryList({"SWP_*.json"}, QDir::Files, QDir::Time | QDir::Reversed);
+    return dir.entryList({"SWP_*.json"}, QDir::Files, QDir::Time);
 }
 
 DraftPosts::Draft::Ptr DraftPosts::loadDraft(const QString& fileName, const QString& draftsPath) const

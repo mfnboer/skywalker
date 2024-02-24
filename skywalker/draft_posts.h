@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "draft_post_data.h"
 #include "draft_posts_model.h"
 #include "generator_view.h"
 #include "list_view.h"
@@ -39,6 +40,7 @@ public:
                                    const QStringList& allowLists);
 
     Q_INVOKABLE void loadDraftPostsModel(DraftPostsModel* model);
+    Q_INVOKABLE DraftPostData* getDraftPostData(const DraftPostsModel* model, int index);
 
 signals:
     void saveDraftPostOk();
