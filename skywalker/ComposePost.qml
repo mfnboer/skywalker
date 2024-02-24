@@ -1146,7 +1146,7 @@ Page {
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
-                                 replyToPostDateTime, openedAsQuotePost,
+                                 replyToPostDateTime,
                                  qUri, qCid, quoteAuthor, unicodeFonts.toPlainText(quoteText),
                                  quoteDateTime, quoteFeed, quoteList,
                                  gif, labels,
@@ -1160,6 +1160,7 @@ Page {
         draftsPage.onClosed.connect(() => root.popStack())
         draftsPage.onSelected.connect((draftData) => {
             setDraftPost(draftData)
+            draftPosts.removeDraftPost(draftData.draftPostFileName)
             draftData.destroy()
             root.popStack()
         })
@@ -1170,11 +1171,10 @@ Page {
     function setDraftPost(draftData) {
         linkCard.hide()
         gifAttachment.hide()
-
-        postText.text = draftData.text
-
         images = []
         altTexts = []
+
+        postText.text = draftData.text
 
         for (let i = 0; i < draftData.images.length; ++i) {
             images.push(draftData.images[i].fullSizeUrl)

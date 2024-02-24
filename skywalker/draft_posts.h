@@ -41,6 +41,7 @@ public:
 
     Q_INVOKABLE void loadDraftPostsModel(DraftPostsModel* model);
     Q_INVOKABLE DraftPostData* getDraftPostData(const DraftPostsModel* model, int index);
+    Q_INVOKABLE void removeDraftPost(const QString& fileName);
 
 signals:
     void saveDraftPostOk();
@@ -108,10 +109,11 @@ private:
         static Ptr fromJson(const QJsonObject& json);
     };
 
-    QString getDraftUri() const;
+    QString getDraftUri(const QString& fileName) const;
     QString getDraftsPath() const;
     QString createDraftPostFileName(const QString& baseName) const;
     QString createDraftImageFileName(const QString& baseName, int seq) const;
+    QString getBaseNameFromPostFileName(const QString& fileName) const;
 
     static ATProto::AppBskyActor::ProfileViewBasic::Ptr createProfileViewBasic(const BasicProfile& author);
     static ATProto::AppBskyActor::ProfileView::Ptr createProfileView(const Profile& author);
@@ -127,13 +129,13 @@ private:
     ATProto::AppBskyFeed::GeneratorView::Ptr createQuoteFeed(const GeneratorView& feed) const;
     ATProto::AppBskyGraph::ListView::Ptr createQuoteList(const ListView& list) const;
 
-    ATProto::AppBskyFeed::FeedViewPost::Ptr convertDraftToFeedViewPost(Draft& draft, const QString& draftsPath) const;
-    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft& draft, const QString& draftsPath) const;
+    ATProto::AppBskyFeed::FeedViewPost::Ptr convertDraftToFeedViewPost(Draft& draft, const QString& fileName, const QString& draftsPath) const;
+    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft& draft, const QString& fileName, const QString& draftsPath) const;
     ATProto::AppBskyFeed::ThreadgateView::Ptr createThreadgateView(Draft& draft) const;
     ATProto::AppBskyFeed::Record::Post::Ptr createReplyToPost(const Draft& draft) const;
     ATProto::AppBskyFeed::PostView::Ptr convertReplyToPostView(Draft& draft) const;
     ATProto::AppBskyFeed::ReplyRef::Ptr createReplyRef(Draft& draft) const;
-    ATProto::ComATProtoLabel::LabelList createContentLabels(const ATProto::AppBskyFeed::Record::Post& post) const;
+    ATProto::ComATProtoLabel::LabelList createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& fileName) const;
     ATProto::AppBskyEmbed::EmbedView::Ptr createEmbedView(
         const ATProto::AppBskyEmbed::Embed* embed, Quote::Ptr quote, const QString& draftsPath) const;
     ATProto::AppBskyEmbed::ImagesView::Ptr createImagesView(
@@ -156,10 +158,11 @@ private:
                          const QString& draftsPath, const QString& baseName);
     void dropImages(const QString& draftsPath, const QString& baseName, int count) const;
     void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;
+    void dropDraftPost(const QString& draftsPath, const QString& fileName);
 
     QStringList getDraftPostFiles(const QString& draftsPath) const;
     Draft::Ptr loadDraft(const QString& fileName, const QString& draftsPath) const;
-    ATProto::AppBskyFeed::PostFeed loadDraftFeed() const;
+    ATProto::AppBskyFeed::PostFeed loadDraftFeed();
 };
 
 }

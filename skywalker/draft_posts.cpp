@@ -81,8 +81,9 @@ void DraftPosts::saveDraftPost(const QString& text,
 
     if (restrictReplies)
     {
+        const QString fileName = createDraftPostFileName(dateTime);
         draft->mThreadgate = ATProto::PostMaster::createThreadgate(
-                getDraftUri(), allowMention, allowFollowing, allowLists);
+                getDraftUri(fileName), allowMention, allowFollowing, allowLists);
     }
 
     draft->mReplyToPost = createReplyToPost(replyToUri, replyToAuthor, replyToText, replyToDateTime);
@@ -125,12 +126,33 @@ static void setRecordViewData(DraftPostData* data, const RecordView* recordView)
     }
 }
 
+static void setImages(DraftPostData* data, const QList<ImageView>& images)
+{
+    QList<ImageView> draftImages;
+    auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+
+    // Add images to image provider so the actual draft files can be removed
+    for (const auto& imgView : images)
+    {
+        const QImage img = PhotoPicker::loadImage(imgView.getFullSizeUrl());
+
+        if (!img.isNull())
+        {
+            const QString imgSource = imgProvider->addImage(img);
+            ImageView draftImg(imgSource, imgView.getAlt());
+            draftImages.push_back(draftImg);
+        }
+    }
+
+    data->setImages(draftImages);
+}
+
 DraftPostData* DraftPosts::getDraftPostData(const DraftPostsModel* model, int index)
 {
     const Post& post = model->getPost(index);
     auto* data = new DraftPostData(this);
     data->setText(post.getText());
-    data->setImages(post.getImages());
+    setImages(data, post.getImages());
     data->setReplyToUri(post.getReplyToUri());
     data->setReplyToCid(post.getReplyToCid());
     data->setReplyRootUri(post.getReplyRootUri());
@@ -180,13 +202,31 @@ DraftPostData* DraftPosts::getDraftPostData(const DraftPostsModel* model, int in
     // TODO: labels
     // TODO: threadgate
 
+    ATProto::ATUri atUri(post.getUri());
+    if (atUri.isValid())
+    {
+        const QString fileName = atUri.getRkey();
+        qDebug() << "Draf post file name:" << fileName;
+        data->setDraftPostFileName(fileName);
+    }
+    else
+    {
+        qWarning() << "Invalid post at-uri:" << post.getUri();
+    }
+
     return data;
 }
 
-QString DraftPosts::getDraftUri() const
+void DraftPosts::removeDraftPost(const QString& fileName)
+{
+    qDebug() << "Remove draft post:" << fileName;
+    dropDraftPost(getDraftsPath(), fileName);
+}
+
+QString DraftPosts::getDraftUri(const QString& fileName) const
 {
     const QString userDid = AuthorCache::instance().getUser().getDid();
-    ATProto::ATUri atUri(userDid, "skywalker.draft", "draft-post");
+    ATProto::ATUri atUri(userDid, "skywalker.draft", fileName);
     return atUri.toString();
 }
 
@@ -213,6 +253,20 @@ QString DraftPosts::createDraftPostFileName(const QString& baseName) const
 QString DraftPosts::createDraftImageFileName(const QString& baseName, int seq) const
 {
     return QString("SWI%1_%2.jpg").arg(seq).arg(baseName);
+}
+
+QString DraftPosts::getBaseNameFromPostFileName(const QString& fileName) const
+{
+    auto parts = fileName.split('_');
+    if (parts.size() != 2)
+        return {};
+
+    parts = parts[1].split('.');
+    if (parts.size() != 2)
+        return {};
+
+    qDebug() << "Base name from:" << fileName << "=" << parts[0];
+    return parts[0];
 }
 
 ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(const BasicProfile& author)
@@ -449,23 +503,23 @@ DraftPosts::Quote::Ptr DraftPosts::Quote::fromJson(const QJsonObject& json)
     return quote;
 }
 
-ATProto::AppBskyFeed::FeedViewPost::Ptr DraftPosts::convertDraftToFeedViewPost(Draft& draft, const QString& draftsPath) const
+ATProto::AppBskyFeed::FeedViewPost::Ptr DraftPosts::convertDraftToFeedViewPost(Draft& draft, const QString& fileName, const QString& draftsPath) const
 {
     auto feedView = std::make_unique<ATProto::AppBskyFeed::FeedViewPost>();
     feedView->mReply = createReplyRef(draft);
-    feedView->mPost = convertDraftToPostView(draft, draftsPath);
+    feedView->mPost = convertDraftToPostView(draft, fileName, draftsPath);
     return feedView;
 }
 
-ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft& draft, const QString& draftsPath) const
+ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft& draft, const QString& fileName, const QString& draftsPath) const
 {
     auto postView = std::make_unique<ATProto::AppBskyFeed::PostView>();
-    postView->mUri = getDraftUri();
+    postView->mUri = getDraftUri(fileName);
     postView->mCid = "draft";
     postView->mAuthor = createProfileViewBasic(AuthorCache::instance().getUser());
     postView->mIndexedAt = draft.mPost->mCreatedAt;
     postView->mEmbed = createEmbedView(draft.mPost->mEmbed.get(), std::move(draft.mQuote), draftsPath);
-    postView->mLabels = createContentLabels(*draft.mPost);
+    postView->mLabels = createContentLabels(*draft.mPost, fileName);
     postView->mRecord = std::move(draft.mPost);
     postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
     postView->mThreadgate = createThreadgateView(draft);
@@ -549,7 +603,7 @@ ATProto::AppBskyFeed::ReplyRef::Ptr DraftPosts::createReplyRef(Draft& draft) con
     return replyRef;
 }
 
-ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post) const
+ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& fileName) const
 {
     if (!post.mLabels)
         return {};
@@ -562,7 +616,7 @@ ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProt
         auto label = std::make_unique<ATProto::ComATProtoLabel::Label>();
         label->mVal = selfLabel->mVal;
         label->mSrc = userDid;
-        label->mUri = getDraftUri();
+        label->mUri = getDraftUri(fileName);
         label->mCreatedAt = post.mCreatedAt;
     }
 
@@ -855,6 +909,29 @@ void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, i
     QFile::remove(fileName);
 }
 
+void DraftPosts::dropDraftPost(const QString& draftsPath, const QString& fileName)
+{
+    const QString baseName = getBaseNameFromPostFileName(fileName);
+
+    if (baseName.isEmpty())
+    {
+        qWarning() << "Invalid file name:" << fileName;
+        return;
+    }
+
+    QDir dir(draftsPath);
+    const QString filePattern = QString("*%1*").arg(baseName);
+    const auto files = dir.entryList({filePattern});
+
+    for (const auto& file : files)
+    {
+        if (dir.remove(file))
+            qDebug() << "Removed draft file:" << file << "in dir:" << draftsPath;
+        else
+            qWarning() << "Failed to remove draft file:" << file << "in dir:" << draftsPath;
+    }
+}
+
 QStringList DraftPosts::getDraftPostFiles(const QString& draftsPath) const
 {
     QDir dir(draftsPath);
@@ -892,7 +969,7 @@ DraftPosts::Draft::Ptr DraftPosts::loadDraft(const QString& fileName, const QStr
     }
 }
 
-ATProto::AppBskyFeed::PostFeed DraftPosts::loadDraftFeed() const
+ATProto::AppBskyFeed::PostFeed DraftPosts::loadDraftFeed()
 {
     const QString draftsPath = getDraftsPath();
 
@@ -908,11 +985,13 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::loadDraftFeed() const
 
         if (draft)
         {
-            auto feedViewPost = convertDraftToFeedViewPost(*draft, draftsPath);
+            auto feedViewPost = convertDraftToFeedViewPost(*draft, file, draftsPath);
             postFeed.push_back(std::move(feedViewPost));
         }
-
-        // TODO: remove drafts we cannot read
+        else
+        {
+            dropDraftPost(draftsPath, file);
+        }
     }
 
     return postFeed;

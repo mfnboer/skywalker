@@ -37,6 +37,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(bool allowMention READ allowMention WRITE setAllowMention NOTIFY allowMentionChanged FINAL)
     Q_PROPERTY(bool allowFollowing READ allowFollowing WRITE setAllowFollowing NOTIFY allowFollowingChanged FINAL)
     Q_PROPERTY(QStringList allowLists READ allowLists WRITE setAllowLists NOTIFY allowListsChanged FINAL)
+    Q_PROPERTY(QString draftPostFileName READ draftPostFileName WRITE setDraftPostFileName NOTIFY draftPostFileNameChanged FINAL)
 
 public:
     explicit DraftPostData(QObject* parent = nullptr) : QObject(parent) {}
@@ -87,6 +88,8 @@ public:
     void setAllowFollowing(bool newAllowFollowing);
     QStringList allowLists() const;
     void setAllowLists(const QStringList &newAllowLists);
+    QString draftPostFileName() const;
+    void setDraftPostFileName(const QString &newDraftPostFileName);
 
 signals:
     void textChanged();
@@ -111,8 +114,8 @@ signals:
     void allowMentionChanged();
     void allowFollowingChanged();
     void allowListsChanged();
-
     void openAsQuotePostChanged();
+    void draftPostFileNameChanged();
 
 private:
     QString mText;
@@ -138,6 +141,7 @@ private:
     bool mAllowMention;
     bool mAllowFollowing;
     QStringList mAllowLists;
+    QString mDraftPostFileName;
 };
 
 inline QString DraftPostData::text() const
@@ -422,6 +426,19 @@ inline void DraftPostData::setAllowLists(const QStringList &newAllowLists)
     emit allowListsChanged();
 }
 
+inline QString DraftPostData::draftPostFileName() const
+{
+    return mDraftPostFileName;
+}
+
+inline void DraftPostData::setDraftPostFileName(const QString &newDraftPostFileName)
+{
+    if (mDraftPostFileName == newDraftPostFileName)
+        return;
+    mDraftPostFileName = newDraftPostFileName;
+    emit draftPostFileNameChanged();
+}
+
 inline bool DraftPostData::openAsQuotePost() const
 {
     return mOpenAsQuotePost;
@@ -436,5 +453,3 @@ inline void DraftPostData::setOpenAsQuotePost(bool newOpenAsQuotePost)
 }
 
 }
-
-Q_DECLARE_METATYPE(Skywalker::DraftPostData)
