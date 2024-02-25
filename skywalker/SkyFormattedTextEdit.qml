@@ -10,6 +10,7 @@ TextEdit {
     property string placeholderText
     property int graphemeLength: 0
     property int maxLength: -1
+    property bool enableLinkShortening: true
 
     id: editText
     width: parentPage.width
@@ -60,7 +61,7 @@ TextEdit {
     function updateGraphemeLength() {
         graphemeLength = unicodeFonts.graphemeLength(editText.text) +
                 unicodeFonts.graphemeLength(preeditText) -
-                postUtils.getLinkShorteningReduction()
+                (enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0)
     }
 
     Text {

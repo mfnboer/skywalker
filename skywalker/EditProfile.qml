@@ -297,7 +297,8 @@ Page {
                     parentFlick: flick
                     placeholderText: qsTr("Describe yourself")
                     initialText: authorDescription
-                    maxLength: 300
+                    maxLength: 256
+                    enableLinkShortening: false
                 }
             }
         }
