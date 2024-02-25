@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "draft_posts.h"
 #include "author_cache.h"
+#include "content_filter.h"
 #include "file_utils.h"
 #include "gif_utils.h"
 #include "photo_picker.h"
@@ -147,6 +148,64 @@ static void setImages(DraftPostData* data, const QList<ImageView>& images)
     data->setImages(draftImages);
 }
 
+static void setGif(DraftPostData* data, const ExternalView* externalView)
+{
+    GifUtils gifUtils;
+
+    if (gifUtils.isTenorLink(externalView->getUri()))
+    {
+        const QUrl thumbUrl(externalView->getThumbUrl());
+        const QUrlQuery query(thumbUrl.query());
+        const QString smallUrl = query.queryItemValue("smallUrl");
+        const int smallWidth = query.queryItemValue("smallWidth").toInt();
+        const int smallHeight = query.queryItemValue("smallHeight").toInt();
+
+        // NOTE: The id is set to empty. This will avoid restration in Tenor::registerShare
+        TenorGif gif("", externalView->getTitle(), "", externalView->getUri(),
+                     smallUrl, QSize(smallWidth, smallHeight),
+                     thumbUrl.toString(QUrl::RemoveQuery), QSize(1, 1));
+        data->setGif(gif);
+    }
+}
+
+static void setLabels(DraftPostData* data, const Post& post)
+{
+    QStringList labelNames;
+    const auto labels = ContentFilter::getContentLabels(post.getLabels());
+
+    for (const auto& label : labels)
+        labelNames.push_back(label.getText());
+
+    data->setLabels(labelNames);
+}
+
+static void setReplyRestrictions(DraftPostData* data, const Post& post)
+{
+    const auto restriction = post.getReplyRestriction();
+
+    if (restriction == QEnums::REPLY_RESTRICTION_NONE)
+        return;
+
+    data->setRestrictReplies(true);
+
+    if (restriction & QEnums::REPLY_RESTRICTION_NOBODY)
+        return;
+
+    data->setAllowMention(restriction & QEnums::REPLY_RESTRICTION_MENTIONED);
+    data->setAllowFollowing(restriction & QEnums::REPLY_RESTRICTION_FOLLOWING);
+
+    if (restriction & QEnums::REPLY_RESTRICTION_LIST)
+    {
+        QStringList allowLists;
+        const auto lists = post.getReplyRestrictionLists();
+
+        for (const auto& list : lists)
+            allowLists.push_back(list.getUri());
+
+        data->setAllowLists(allowLists);
+    }
+}
+
 DraftPostData* DraftPosts::getDraftPostData(const DraftPostsModel* model, int index)
 {
     const Post& post = model->getPost(index);
@@ -181,27 +240,10 @@ DraftPostData* DraftPosts::getDraftPostData(const DraftPostsModel* model, int in
 
     const auto externalView = post.getExternalView();
     if (externalView)
-    {
-        GifUtils gifUtils;
+        setGif(data, externalView.get());
 
-        if (gifUtils.isTenorLink(externalView->getUri()))
-        {
-            const QUrl thumbUrl(externalView->getThumbUrl());
-            const QUrlQuery query(thumbUrl.query());
-            const QString smallUrl = query.queryItemValue("smallUrl");
-            const int smallWidth = query.queryItemValue("smallWidth").toInt();
-            const int smallHeight = query.queryItemValue("smallHeight").toInt();
-
-            // NOTE: The id is set to empty. This will avoid restration in Tenor::registerShare
-            TenorGif gif("", externalView->getTitle(), "", externalView->getUri(),
-                         smallUrl, QSize(smallWidth, smallHeight),
-                         thumbUrl.toString(QUrl::RemoveQuery), QSize(1, 1));
-            data->setGif(gif);
-        }
-    }
-
-    // TODO: labels
-    // TODO: threadgate
+    setLabels(data, post);
+    setReplyRestrictions(data, post);
 
     ATProto::ATUri atUri(post.getUri());
     if (atUri.isValid())
@@ -535,6 +577,15 @@ ATProto::AppBskyFeed::ThreadgateView::Ptr DraftPosts::createThreadgateView(Draft
 
     auto view = std::make_unique<ATProto::AppBskyFeed::ThreadgateView>();
     view->mRecord = std::move(draft.mThreadgate);
+
+    for (const auto& list : view->mRecord->mAllowList)
+    {
+        auto listView = std::make_unique<ATProto::AppBskyGraph::ListViewBasic>();
+        listView->mUri = list->mList;
+        listView->mName = list->mList;
+        view->mLists.push_back(std::move(listView));
+    }
+
     return view;
 }
 
@@ -619,6 +670,7 @@ ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProt
         label->mSrc = userDid;
         label->mUri = getDraftUri(fileName);
         label->mCreatedAt = post.mCreatedAt;
+        labels.push_back(std::move(label));
     }
 
     return labels;

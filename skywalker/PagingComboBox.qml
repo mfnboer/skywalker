@@ -7,9 +7,12 @@ ComboBox {
     required property bool inProgress
     property var bottomOvershootFun: null
     property int initialIndex: 0
+    property string findValue
     property color backgroundColor: Material.dialogColor
 
     id: control
+
+    signal valueFound
 
     popup: Popup {
         y: control.height - 1
@@ -41,6 +44,18 @@ ComboBox {
     }
 
     onCountChanged: {
+        if (findValue && currentIndex < 0) {
+            const valueIndex = indexOfValue(findValue)
+
+            if (valueIndex >= 0) {
+                currentIndex = valueIndex
+                valueFound()
+            }
+            else {
+                control.bottomOvershootFun()
+            }
+        }
+
         if (count > 0 && currentIndex < 0)
             currentIndex = initialIndex
     }

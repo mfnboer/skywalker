@@ -138,9 +138,9 @@ private:
     ListView mQuoteList;
     TenorGif mGif;
     QStringList mLabels;
-    bool mRestrictReplies;
-    bool mAllowMention;
-    bool mAllowFollowing;
+    bool mRestrictReplies = false;
+    bool mAllowMention = false;
+    bool mAllowFollowing = false;
     QStringList mAllowLists;
     QString mDraftPostFileName;
 };

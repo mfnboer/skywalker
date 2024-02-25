@@ -20,6 +20,7 @@ Page {
     property bool allowReplyFollowing: false
     property list<int> allowListIndexes: [0, 1, 2]
     property list<bool> allowLists: [false, false, false]
+    property list<string> allowListUrisFromDraft: []
     property int restrictionsListModelId: -1
 
     // Content warnings
@@ -231,6 +232,9 @@ Page {
                             listNames.push(`<b>${listName}</b>`)
                         }
                     }
+
+                    if (listNames.length === 0)
+                        listNames = allowListUrisFromDraft
 
                     if (listNames.length > 0) {
                         const names = guiSettings.toWordSequence(listNames)
@@ -1206,6 +1210,14 @@ Page {
             gifAttachment.hide()
         else
             gifAttachment.show(draftData.gif)
+
+        setContentWarnings(draftData.labels)
+        restrictReply = draftData.restrictReplies
+        allowReplyMentioned = draftData.allowMention
+        allowReplyFollowing = draftData.allowFollowing
+        allowListUrisFromDraft = draftData.allowLists
+        allowListIndexes = [0, 1, 2]
+        allowLists = [false, false, false]
     }
 
     function editAltText(index) {
@@ -1233,6 +1245,7 @@ Page {
                 allowFollowing: page.allowReplyFollowing,
                 allowLists: page.allowLists,
                 allowListIndexes: page.allowListIndexes,
+                allowListUrisFromDraft: page.allowListUrisFromDraft,
                 listModelId: page.restrictionsListModelId
         })
         restrictionsPage.onAccepted.connect(() => {
@@ -1241,6 +1254,7 @@ Page {
                 page.allowReplyFollowing = restrictionsPage.allowFollowing
                 page.allowLists = restrictionsPage.allowLists
                 page.allowListIndexes = restrictionsPage.allowListIndexes
+                allowListUrisFromDraft = []
                 restrictionsPage.destroy()
         })
         restrictionsPage.onRejected.connect(() => restrictionsPage.destroy())
@@ -1248,6 +1262,9 @@ Page {
     }
 
     function getReplyRestrictionListUris() {
+        if (allowListUrisFromDraft.length > 0)
+            return allowListUrisFromDraft
+
         let uris = []
 
         for (let i = 0; i < allowLists.length; ++i) {
@@ -1307,6 +1324,24 @@ Page {
             labels.push("gore")
 
         return labels
+    }
+
+    function setContentWarnings(labels) {
+        cwSuggestive = false
+        cwNudity = false
+        cwPorn = false
+        cwGore = false
+
+        labels.forEach((label) => {
+            if (label === "sexual")
+                cwSuggestive = true
+            else if (label === "nudity")
+                cwNudity = true
+            else if (label === "porn")
+                cwPorn = true
+            else if (label === "gore")
+                cwGore = true
+        })
     }
 
     function getQuoteUri() {

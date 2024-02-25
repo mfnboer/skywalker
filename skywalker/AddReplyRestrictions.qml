@@ -9,6 +9,7 @@ Dialog {
     required property bool allowFollowing
     required property list<bool> allowLists
     required property list<int> allowListIndexes
+    required property list<string> allowListUrisFromDraft
     required property int listModelId
     property list<bool> duplicateList: [false, false, false]
 
@@ -122,7 +123,7 @@ Dialog {
 
                 id: listRestrictions
                 width: parent.width
-                model: allowLists
+                model: allowLists.length
 
                 function available() {
                     const item = itemAt(0)
@@ -151,10 +152,12 @@ Dialog {
                         inProgress: skywalker.getListListInProgress
                         bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
                         initialIndex: allowListIndexes[parent.index]
+                        findValue: getListUriFromDraft(parent.index)
                         backgroundColor: duplicateList[parent.index] ? guiSettings.errorColor : Material.dialogColor
                         enabled: allowLists[parent.index]
 
                         onCurrentIndexChanged: allowListIndexes[parent.index] = currentIndex
+                        onValueFound: allowLists[parent.index] = true
                     }
                 }
             }
@@ -172,5 +175,9 @@ Dialog {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function getListUriFromDraft(index) {
+        return index < allowListUrisFromDraft.length ? allowListUrisFromDraft[index] : ""
     }
 }
