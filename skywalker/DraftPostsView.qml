@@ -40,6 +40,7 @@ ListView {
 
     DraftPosts {
         id: draftPosts
+        skywalker: view.skywalker
     }
 
     GuiSettings {

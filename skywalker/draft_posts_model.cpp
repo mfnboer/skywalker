@@ -42,7 +42,8 @@ void DraftPostsModel::setFeed(ATProto::AppBskyFeed::PostFeed feed)
         mFeed.push_back(post);
     }
 
-    mFeed.back().setEndOfFeed(true);
+    if (!mFeed.empty())
+        mFeed.back().setEndOfFeed(true);
 
     endInsertRows();
 }

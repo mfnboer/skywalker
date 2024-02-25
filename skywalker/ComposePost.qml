@@ -1006,6 +1006,7 @@ Page {
 
     DraftPosts {
         id: draftPosts
+        skywalker: page.skywalker
 
         onSaveDraftPostOk: {
             statusPopup.show("Saved post as draft", QEnums.STATUS_LEVEL_INFO)

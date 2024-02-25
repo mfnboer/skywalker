@@ -5,8 +5,10 @@
 #include "draft_posts_model.h"
 #include "generator_view.h"
 #include "list_view.h"
+#include "presence.h"
 #include "profile.h"
 #include "tenor_gif.h"
+#include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <QJsonDocument>
 #include <QString>
@@ -15,7 +17,7 @@
 
 namespace Skywalker {
 
-class DraftPosts : public QObject
+class DraftPosts : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     QML_ELEMENT
@@ -98,6 +100,7 @@ private:
 
     struct Draft
     {
+        QString mRef; // Reference used in image filename: SWI_<ref>.jpg
         ATProto::AppBskyFeed::Record::Post::Ptr mPost;
         ReplyToPost::Ptr mReplyToPost;
         Quote::Ptr mQuote;
@@ -146,6 +149,8 @@ private:
         const ATProto::AppBskyEmbed::Record* record, Quote::Ptr quote) const;
     ATProto::AppBskyEmbed::RecordWithMediaView::Ptr createRecordWithMediaView(
         const ATProto::AppBskyEmbed::RecordWithMedia* record, Quote::Ptr quote, const QString& draftsPath) const;
+
+    bool writeRecord(Draft::Ptr draft, const QString& draftsPath);
 
     bool save(Draft::Ptr draft, const QString& draftsPath, const QString& baseName);
 

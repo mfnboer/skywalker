@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "draft_posts.h"
+#include "definitions.h"
 #include "author_cache.h"
 #include "content_filter.h"
 #include "file_utils.h"
@@ -23,7 +24,8 @@ QString createAbsPath(const QString& draftsPath, const QString& fileName)
 }
 
 DraftPosts::DraftPosts(QObject* parent) :
-    QObject(parent)
+    WrappedSkywalker(parent),
+    Presence()
 {
 }
 
@@ -68,6 +70,7 @@ void DraftPosts::saveDraftPost(const QString& text,
             ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
     auto draft = std::make_unique<Draft>();
+    draft->mRef = dateTime;
     draft->mPost = ATProto::PostMaster::createPostWithoutFacets(text, std::move(replyRef));
     ATProto::PostMaster::addLabelsToPost(*draft->mPost, labels);
 
@@ -457,7 +460,7 @@ DraftPosts::ReplyToPost::Ptr DraftPosts::ReplyToPost::fromJson(const QJsonObject
 QJsonObject DraftPosts::QuotePost::toJson() const
 {
     QJsonObject json;
-    json.insert("$type", "skywalker.draft.defs#quotePost");
+    json.insert("$type", DRAFT_DEFS_QUOTE_POST);
     Q_ASSERT(mAuthor);
 
     if (mAuthor)
@@ -481,7 +484,7 @@ DraftPosts::QuotePost::Ptr DraftPosts::QuotePost::fromJson(const QJsonObject& js
 DraftPosts::Quote::RecordType DraftPosts::Quote::stringToRecordType(const QString& str)
 {
     static const std::unordered_map<QString, RecordType> recordMapping = {
-        { "skywalker.draft.defs#quotePost", RecordType::QUOTE_POST },
+        { DRAFT_DEFS_QUOTE_POST, RecordType::QUOTE_POST },
         { "app.bsky.feed.defs#generatorView", RecordType::QUOTE_FEED },
         { "app.bsky.graph.defs#listView", RecordType::QUOTE_LIST }
     };
@@ -823,6 +826,8 @@ ATProto::AppBskyEmbed::RecordWithMediaView::Ptr DraftPosts::createRecordWithMedi
 QJsonObject DraftPosts::Draft::toJson() const
 {
     QJsonObject json;
+    json.insert("$type", COLLECTION_DRAFT_POST);
+    json.insert("ref", mRef);
     json.insert("post", mPost->toJson());
     ATProto::XJsonObject::insertOptionalJsonObject<ReplyToPost>(json, "replyToPost", mReplyToPost);
     ATProto::XJsonObject::insertOptionalJsonObject<Quote>(json, "quote", mQuote);
@@ -834,11 +839,36 @@ DraftPosts::Draft::Ptr DraftPosts::Draft::fromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject xjson(json);
     auto draft = std::make_unique<Draft>();
+    draft->mRef = xjson.getRequiredString("ref");
     draft->mPost = xjson.getRequiredObject<ATProto::AppBskyFeed::Record::Post>("post");
     draft->mReplyToPost = xjson.getOptionalObject<ReplyToPost>("replyToPost");
     draft->mQuote = xjson.getOptionalObject<Quote>("quote");
     draft->mThreadgate = xjson.getOptionalObject<ATProto::AppBskyFeed::Threadgate>("threadgate");
     return draft;
+}
+
+bool DraftPosts::writeRecord(Draft::Ptr draft, const QString& draftsPath)
+{
+    if (!bskyClient())
+        return false;
+
+    const QString& repo = AuthorCache::instance().getUser().getDid();
+    const auto json = draft->toJson();
+
+    bskyClient()->createRecord(repo, COLLECTION_DRAFT_POST, {}, json,
+        [this](auto /* strongRef */) {
+            emit saveDraftPostOk();
+        },
+        [this, ref=draft->mRef, draftsPath](const QString& error, const QString& msg) {
+            qDebug() << "Failed to write draft post:" << error << "-" << msg;
+
+            // There may be no images, but if there are any, they should be dropped.
+            dropImages(draftsPath, ref, 4);
+
+            emit saveDraftPostFailed(msg);
+        });
+
+    return true;
 }
 
 bool DraftPosts::save(Draft::Ptr draft, const QString& draftsPath, const QString& baseName)
