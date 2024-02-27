@@ -37,7 +37,8 @@ class DraftPostData : public QObject
     Q_PROPERTY(bool allowMention READ allowMention WRITE setAllowMention NOTIFY allowMentionChanged FINAL)
     Q_PROPERTY(bool allowFollowing READ allowFollowing WRITE setAllowFollowing NOTIFY allowFollowingChanged FINAL)
     Q_PROPERTY(QStringList allowLists READ allowLists WRITE setAllowLists NOTIFY allowListsChanged FINAL)
-    Q_PROPERTY(QString draftPostFileName READ draftPostFileName WRITE setDraftPostFileName NOTIFY draftPostFileNameChanged FINAL)
+    Q_PROPERTY(QString recordUri READ recordUri WRITE setRecordUri NOTIFY recordUriChanged FINAL)
+    Q_PROPERTY(QString draftRef READ draftRef WRITE setDraftRef NOTIFY draftRefChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -89,8 +90,10 @@ public:
     void setAllowFollowing(bool newAllowFollowing);
     QStringList allowLists() const;
     void setAllowLists(const QStringList &newAllowLists);
-    QString draftPostFileName() const;
-    void setDraftPostFileName(const QString &newDraftPostFileName);
+    QString recordUri() const;
+    void setRecordUri(const QString &newRecordUri);
+    QString draftRef() const;
+    void setDraftRef(const QString &newDraftRef);
 
 signals:
     void textChanged();
@@ -116,7 +119,9 @@ signals:
     void allowFollowingChanged();
     void allowListsChanged();
     void openAsQuotePostChanged();
-    void draftPostFileNameChanged();
+    void recordUriChanged();
+
+    void draftRefChanged();
 
 private:
     QString mText;
@@ -142,7 +147,8 @@ private:
     bool mAllowMention = false;
     bool mAllowFollowing = false;
     QStringList mAllowLists;
-    QString mDraftPostFileName;
+    QString mRecordUri;
+    QString mDraftRef;
 };
 
 inline QString DraftPostData::text() const
@@ -427,17 +433,30 @@ inline void DraftPostData::setAllowLists(const QStringList &newAllowLists)
     emit allowListsChanged();
 }
 
-inline QString DraftPostData::draftPostFileName() const
+inline QString DraftPostData::recordUri() const
 {
-    return mDraftPostFileName;
+    return mRecordUri;
 }
 
-inline void DraftPostData::setDraftPostFileName(const QString &newDraftPostFileName)
+inline void DraftPostData::setRecordUri(const QString &newRecordUri)
 {
-    if (mDraftPostFileName == newDraftPostFileName)
+    if (mRecordUri == newRecordUri)
         return;
-    mDraftPostFileName = newDraftPostFileName;
-    emit draftPostFileNameChanged();
+    mRecordUri = newRecordUri;
+    emit recordUriChanged();
+}
+
+inline QString DraftPostData::draftRef() const
+{
+    return mDraftRef;
+}
+
+inline void DraftPostData::setDraftRef(const QString &newDraftRef)
+{
+    if (mDraftRef == newDraftRef)
+        return;
+    mDraftRef = newDraftRef;
+    emit draftRefChanged();
 }
 
 inline bool DraftPostData::openAsQuotePost() const

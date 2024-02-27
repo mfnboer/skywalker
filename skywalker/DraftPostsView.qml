@@ -4,14 +4,11 @@ import QtQuick.Layouts
 import skywalker
 
 ListView {
-    required property var skywalker
-
     signal closed
-    signal selected(var data)
+    signal selected(int index)
 
     id: view
     spacing: 0
-    model: skywalker.createDraftPostsModel()
     clip: true
     flickDeceleration: guiSettings.flickDeceleration
     boundsBehavior: Flickable.StopAtBounds
@@ -28,7 +25,7 @@ ListView {
     delegate: DraftPostViewDelegate {
         required property int index
         viewWidth: view.width
-        onSelected: view.selected(draftPosts.getDraftPostData(model, index))
+        onSelected: view.selected(index)
     }
 
     EmptyListIndication {
@@ -38,16 +35,7 @@ ListView {
         list: view
     }
 
-    DraftPosts {
-        id: draftPosts
-        skywalker: view.skywalker
-    }
-
     GuiSettings {
         id: guiSettings
-    }
-
-    Component.onCompleted: {
-        draftPosts.loadDraftPostsModel(model)
     }
 }

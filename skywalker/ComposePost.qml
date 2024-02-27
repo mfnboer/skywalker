@@ -836,7 +836,7 @@ Page {
         anchors.centerIn: parent
         font.pointSize: guiSettings.scaledFont(9/8)
         text: qsTr("<a href=\"drafts\">Drafts</a>")
-        visible: !hasContent() && !replyToPostUri && !quoteUri && draftPosts.hasDrafts()
+        visible: !hasContent() && !replyToPostUri && !quoteUri && draftPosts.hasDrafts
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
@@ -1009,11 +1009,13 @@ Page {
         skywalker: page.skywalker
 
         onSaveDraftPostOk: {
-            statusPopup.show("Saved post as draft", QEnums.STATUS_LEVEL_INFO)
+            statusPopup.show(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
             page.closed()
         }
 
         onSaveDraftPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUploadingImage: (seq) => statusPopup.show(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
+        onLoadDraftPostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     UnicodeFonts {
@@ -1165,11 +1167,12 @@ Page {
 
     function showDraftPosts() {
         let component = Qt.createComponent("DraftPostsView.qml")
-        let draftsPage = component.createObject(page, { skywalker: skywalker })
+        let draftsPage = component.createObject(page, { model: draftPosts.getDraftPostsModel() })
         draftsPage.onClosed.connect(() => root.popStack())
-        draftsPage.onSelected.connect((draftData) => {
+        draftsPage.onSelected.connect((index) => {
+            const draftData = draftPosts.getDraftPostData(index)
             setDraftPost(draftData)
-            draftPosts.removeDraftPost(draftData.draftPostFileName)
+            draftPosts.removeDraftPost(draftData.recordUri)
             draftData.destroy()
             root.popStack()
         })
@@ -1394,5 +1397,7 @@ Page {
         focusTimer.start()
         postUtils.setHighlightDocument(postText.textDocument, guiSettings.linkColor,
                                        postText.maxLength, guiSettings.textLengthExceededColor)
+
+        draftPosts.loadDraftPosts()
     }
 }

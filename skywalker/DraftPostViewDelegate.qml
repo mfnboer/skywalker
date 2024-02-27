@@ -50,7 +50,7 @@ Rectangle {
 
             Avatar {
                 id: avatarImg
-                x: parent.x + 8
+                x: parent.x + draftPostView.margin
                 y: postHeader.y + 5
                 width: parent.width - 13
                 height: width
@@ -62,7 +62,7 @@ Rectangle {
 
         Column {
             id: postColumn
-            width: parent.width - avatar.width - draftPostView.margin * 2
+            Layout.preferredWidth: parent.width - avatar.width - draftPostView.margin
             topPadding: 5
 
             PostHeader {
@@ -147,5 +147,9 @@ Rectangle {
 
     function selectDraft() {
         selected()
+    }
+
+    Component.onCompleted: {
+        console.debug("DRAFT:", postText)
     }
 }

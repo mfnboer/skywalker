@@ -214,7 +214,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
         return;
     }
 
-    emit postProgress(tr("Uploading image") + QString(" #%1").arg(imgIndex + 1));
+    emit postProgress(tr("Uploading image #%1").arg(imgIndex + 1));
 
     const auto& fileName = imageFileNames[imgIndex];
     QByteArray blob;
@@ -222,7 +222,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
 
     if (blob.isEmpty())
     {
-        emit postFailed(tr("Could not load image") + QString(" #%1").arg(imgIndex + 1));
+        emit postFailed(tr("Could not load image #%1").arg(imgIndex + 1));
         return;
     }
 

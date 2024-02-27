@@ -65,8 +65,6 @@ QString GifUtils::getGifUrl(const QString& link) const
 // Result:  https://i.giphy.com/ycTrWycYMLlUNoHl73.gif
 QString GifUtils::getGiphyGifUrl(const QString& link) const
 {
-    qDebug() << "Get Giphy GIF url for:" << link;
-
     const QUrl url(link);
     if (!url.isValid())
         return {};
@@ -80,13 +78,11 @@ QString GifUtils::getGiphyGifUrl(const QString& link) const
     const auto& gifId = gifLongIdParts.back();
     const QString gifLink = "https://i.giphy.com/" + gifId + ".gif";
 
-    qDebug() << "GIF url:" << gifLink;
     return gifLink;
 }
 
 QString GifUtils::getGiphyMediaUrl(const QString& link) const
 {
-    qDebug() << "Get Giphy media GIF url for:" << link;
     const QUrl url(link);
 
     if (!url.isValid())
@@ -101,8 +97,6 @@ QString GifUtils::getGiphyMediaUrl(const QString& link) const
 // NOTE: there can be a county code between the host and "view", e.g. https://tenor.com/nl/view/
 QString GifUtils::getTenorViewGif(const QString& link) const
 {
-    qDebug() << "Get Tenor view GIF url for:" << link;
-
     const QUrl url(link);
     if (!url.isValid())
         return {};
@@ -112,7 +106,6 @@ QString GifUtils::getTenorViewGif(const QString& link) const
         return {};
 
     const QString gifLink = url.toString(QUrl::RemoveQuery) + ".gif";
-    qDebug() << "GIF url:" << gifLink;
     return gifLink;
 }
 
@@ -129,12 +122,10 @@ QString GifUtils::getTenorViewGif(const QString& link) const
 // Ad = medium GIF
 QString GifUtils::getTenorMediaGif(const QString& link) const
 {
-    qDebug() << "Get Tenor media GIF url for:" << link;
     QString gifLink = link;
 
     if (link.endsWith(".mp4") || link.endsWith(".webm"))
     {
-        qDebug() << "Convert video url to GIF url:" << link;
         const QUrl url(link);
 
         if (!url.isValid())
@@ -160,8 +151,6 @@ QString GifUtils::getTenorMediaGif(const QString& link) const
         pathParts[pathParts.size() - 2] = baseTenorId + "Ad";
         pathParts[pathParts.size() - 1] = baseFileName + ".gif";
         gifLink = TENOR_MEDIA_PREFIX + pathParts.join("/");
-
-        qDebug() << "Converted video url to GIF url:" << gifLink;
     }
 
     if (gifLink.endsWith(".gif"))
@@ -175,8 +164,6 @@ QString GifUtils::getTenorMediaGif(const QString& link) const
 // Tenor:   https://media.tenor.com/nG9mD0Dl8vsAAAPo/yay.mp4
 QString GifUtils::convertGrayskyToTenor(const QString& link) const
 {
-    qDebug() << "Convert Graysky to Tenor:" << link;
-
     const QUrl url(link);
     if (!url.isValid())
         return {};

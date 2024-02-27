@@ -2198,18 +2198,11 @@ void Skywalker::deleteBookmarksModel()
     mBookmarksModel = nullptr;
 }
 
-DraftPostsModel* Skywalker::createDraftPostsModel()
+DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 {
-    mDraftPostsModel = std::make_unique<DraftPostsModel>(
+    return std::make_unique<DraftPostsModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-        mMutedWords, this);
-
-    return mDraftPostsModel.get();
-}
-
-void Skywalker::deleteDraftPostsModel()
-{
-    mDraftPostsModel = nullptr;
+        mMutedWords, nullptr);
 }
 
 bool Skywalker::sendAppToBackground()
@@ -2356,7 +2349,6 @@ void Skywalker::signOut()
     mBookmarksModel = nullptr;
     mBookmarks.clear();
     mMutedWords.clear();
-    mDraftPostsModel = nullptr;
     mFavoriteFeeds.clear();
     mUserSettings.setActiveUserDid({});
     setAutoUpdateTimelineInProgress(false);

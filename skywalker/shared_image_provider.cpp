@@ -83,8 +83,28 @@ QImage SharedImageProvider::getImage(const QString& source)
     return it->second;
 }
 
+void SharedImageProvider::replaceImage(const QString& source, const QImage& image)
+{
+    const QString id = getIdFromSource(source);
+
+    if (id.isEmpty())
+        return;
+
+    const auto it = mImages.find(id);
+
+    if (it == mImages.end())
+    {
+        qWarning() << "Image not found:" << source;
+        return;
+    }
+
+    mImages[id] = image;
+    qDebug() << "Replaced image for source:" << source << "id:" << id;
+}
+
 QImage SharedImageProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
 {
+    // TODO: need lock? Can be called by multiple threads
     const auto it = mImages.find(id);
 
     if (it == mImages.end())

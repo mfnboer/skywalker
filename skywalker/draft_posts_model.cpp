@@ -34,6 +34,9 @@ void DraftPostsModel::setFeed(ATProto::AppBskyFeed::PostFeed feed)
 
     mRawFeed = std::move(feed);
 
+    if (mRawFeed.empty())
+        return;
+
     beginInsertRows({}, 0, mRawFeed.size() - 1);
 
     for (int i = 0; i < (int)mRawFeed.size(); ++i)

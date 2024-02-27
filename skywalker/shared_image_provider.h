@@ -18,6 +18,7 @@ public:
     QString addImage(const QImage& image);
     void removeImage(const QString& source);
     QImage getImage(const QString& source);
+    void replaceImage(const QString& source, const QImage& image);
 
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
 

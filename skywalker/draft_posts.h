@@ -14,18 +14,20 @@
 #include <QString>
 #include <QObject>
 #include <QtQmlIntegration>
+#include <unordered_map>
 
 namespace Skywalker {
 
 class DraftPosts : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
+    Q_PROPERTY(bool hasDrafts READ hasDrafts NOTIFY draftsChanged FINAL)
     QML_ELEMENT
 
 public:
     explicit DraftPosts(QObject* parent = nullptr);
 
-    Q_INVOKABLE bool hasDrafts() const;
+    bool hasDrafts() const;
 
     Q_INVOKABLE void saveDraftPost(const QString& text,
                                    const QStringList& imageFileNames, const QStringList& altTexts,
@@ -41,15 +43,26 @@ public:
                                    bool restrictReplies, bool allowMention, bool allowFollowing,
                                    const QStringList& allowLists);
 
-    Q_INVOKABLE void loadDraftPostsModel(DraftPostsModel* model);
-    Q_INVOKABLE DraftPostData* getDraftPostData(const DraftPostsModel* model, int index);
-    Q_INVOKABLE void removeDraftPost(const QString& fileName);
+    Q_INVOKABLE void loadDraftPosts();
+    Q_INVOKABLE DraftPostsModel* getDraftPostsModel();
+    Q_INVOKABLE DraftPostData* getDraftPostData(int index);
+    Q_INVOKABLE void removeDraftPost(const QString& recordUri);
 
 signals:
     void saveDraftPostOk();
     void saveDraftPostFailed(QString error);
+    void uploadingImage(int seq);
+    void loadDraftPostsOk();
+    void loadDraftPostsFailed(QString error);
+    void draftsChanged();
 
 private:
+    using CidImgSourceMap = std::unordered_map<QString, QString>;
+    using UploadImageSuccessCb = std::function<void(ATProto::Blob::Ptr)>;
+    using SuccessCb = std::function<void()>;
+    using DoneCb = std::function<void()>;
+    using ErrorCb = std::function<void(const QString& error, const QString& message)>;
+
     struct ReplyToPost
     {
         ATProto::AppBskyActor::ProfileViewBasic::Ptr mAuthor;
@@ -100,7 +113,6 @@ private:
 
     struct Draft
     {
-        QString mRef; // Reference used in image filename: SWI_<ref>.jpg
         ATProto::AppBskyFeed::Record::Post::Ptr mPost;
         ReplyToPost::Ptr mReplyToPost;
         Quote::Ptr mQuote;
@@ -112,11 +124,9 @@ private:
         static Ptr fromJson(const QJsonObject& json);
     };
 
-    QString getDraftUri(const QString& fileName) const;
-    QString getDraftsPath() const;
-    QString createDraftPostFileName(const QString& baseName) const;
-    QString createDraftImageFileName(const QString& baseName, int seq) const;
-    QString getBaseNameFromPostFileName(const QString& fileName) const;
+    using DraftList = std::vector<Draft::Ptr>;
+
+    QString getDraftUri(const QString& ref) const;
 
     static ATProto::AppBskyActor::ProfileViewBasic::Ptr createProfileViewBasic(const BasicProfile& author);
     static ATProto::AppBskyActor::ProfileView::Ptr createProfileView(const Profile& author);
@@ -132,42 +142,38 @@ private:
     ATProto::AppBskyFeed::GeneratorView::Ptr createQuoteFeed(const GeneratorView& feed) const;
     ATProto::AppBskyGraph::ListView::Ptr createQuoteList(const ListView& list) const;
 
-    ATProto::AppBskyFeed::FeedViewPost::Ptr convertDraftToFeedViewPost(Draft& draft, const QString& fileName, const QString& draftsPath) const;
-    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft& draft, const QString& fileName, const QString& draftsPath) const;
+    ATProto::AppBskyFeed::FeedViewPost::Ptr convertDraftToFeedViewPost(Draft& draft, const QString& recordUri);
+    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft& draft, const QString& recordUri);
     ATProto::AppBskyFeed::ThreadgateView::Ptr createThreadgateView(Draft& draft) const;
     ATProto::AppBskyFeed::Record::Post::Ptr createReplyToPost(const Draft& draft) const;
     ATProto::AppBskyFeed::PostView::Ptr convertReplyToPostView(Draft& draft) const;
     ATProto::AppBskyFeed::ReplyRef::Ptr createReplyRef(Draft& draft) const;
-    ATProto::ComATProtoLabel::LabelList createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& fileName) const;
+    ATProto::ComATProtoLabel::LabelList createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
     ATProto::AppBskyEmbed::EmbedView::Ptr createEmbedView(
-        const ATProto::AppBskyEmbed::Embed* embed, Quote::Ptr quote, const QString& draftsPath) const;
-    ATProto::AppBskyEmbed::ImagesView::Ptr createImagesView(
-        const ATProto::AppBskyEmbed::Images* images, const QString& draftsPath) const;
-    ATProto::AppBskyEmbed::ExternalView::Ptr createExternalView(
-        const ATProto::AppBskyEmbed::External* external) const;
-    ATProto::AppBskyEmbed::RecordView::Ptr createRecordView(
-        const ATProto::AppBskyEmbed::Record* record, Quote::Ptr quote) const;
+        const ATProto::AppBskyEmbed::Embed* embed, Quote::Ptr quote);
+    ATProto::AppBskyEmbed::ImagesView::Ptr createImagesView(const ATProto::AppBskyEmbed::Images* images);
+    ATProto::AppBskyEmbed::ExternalView::Ptr createExternalView(const ATProto::AppBskyEmbed::External* external) const;
+    ATProto::AppBskyEmbed::RecordView::Ptr createRecordView(const ATProto::AppBskyEmbed::Record* record, Quote::Ptr quote) const;
     ATProto::AppBskyEmbed::RecordWithMediaView::Ptr createRecordWithMediaView(
-        const ATProto::AppBskyEmbed::RecordWithMedia* record, Quote::Ptr quote, const QString& draftsPath) const;
+        const ATProto::AppBskyEmbed::RecordWithMedia* record, Quote::Ptr quote);
 
-    bool writeRecord(Draft::Ptr draft, const QString& draftsPath);
-
-    bool save(Draft::Ptr draft, const QString& draftsPath, const QString& baseName);
-
-    ATProto::Blob::Ptr saveImage(const QString& imgName, const QString& draftsPath,
-                                 const QString& baseName, int seq);
+    bool writeRecord(const Draft& draft);
+    void listRecords();
+    void deleteRecord(const QString& recordUri);
+    bool uploadImage(const QString& imageName, const UploadImageSuccessCb& successCb, const ErrorCb& errorCb);
+    void loadImage(const QString& cid, const SuccessCb& successCb, const ErrorCb& errorCb);
+    void loadImageList(QStringList cidList, const DoneCb& doneCb);
+    void loadImages(const DoneCb& doneCb);
 
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
-    bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
+    void addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
                          const QStringList& imageFileNames, const QStringList& altTexts,
-                         const QString& draftsPath, const QString& baseName);
-    void dropImages(const QString& draftsPath, const QString& baseName, int count) const;
-    void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;
-    void dropDraftPost(const QString& draftsPath, const QString& fileName);
+                         const std::function<void()>& continueCb, int imgSeq = 1);
 
-    QStringList getDraftPostFiles(const QString& draftsPath) const;
-    Draft::Ptr loadDraft(const QString& fileName, const QString& draftsPath) const;
-    ATProto::AppBskyFeed::PostFeed loadDraftFeed();
+    QString getImgSource(const QString& cid) const;
+
+    DraftPostsModel::Ptr mDraftPostsModel;
+    CidImgSourceMap mCidImgSourceMap;
 };
 
 }
