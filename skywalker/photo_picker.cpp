@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "photo_picker.h"
+#include "atproto_image_provider.h"
 #include "file_utils.h"
 #include "image_reader.h"
 #include "shared_image_provider.h"
@@ -71,6 +72,8 @@ bool pickPhoto()
 
 QImage loadImage(const QString& imgName)
 {
+    qDebug() << "Load image:" << imgName;
+
     if (imgName.startsWith("file://"))
     {
         const QString fileName = imgName.sliced(7);
@@ -84,9 +87,15 @@ QImage loadImage(const QString& imgName)
 
         return img;
     }
-    else if (imgName.startsWith("image://"))
+    else if (imgName.startsWith(QString("image://") + SharedImageProvider::SHARED_IMAGE))
     {
         auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+        auto img = imgProvider->getImage(imgName);
+        return img;
+    }
+    else if (imgName.startsWith(QString("image://") + ATProtoImageProvider::DRAFT_IMAGE))
+    {
+        auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
         auto img = imgProvider->getImage(imgName);
         return img;
     }

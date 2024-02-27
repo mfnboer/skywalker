@@ -1,7 +1,10 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <QHashFunctions>
+#include <QMutex>
 #include <QQuickImageProvider>
+#include <unordered_map>
 
 namespace Skywalker {
 
@@ -25,11 +28,12 @@ public:
 private:
     QString getIdFromSource(const QString& source) const;
 
-    std::map<QString, QImage> mImages; // id -> image
+    QMutex mMutex;
+    std::unordered_map<QString, QImage> mImages; // id -> image
     int mNextId = 1;
     QString mName;
 
-    static std::map<QString, SharedImageProvider*> sProviders; // name -> provider
+    static std::unordered_map<QString, SharedImageProvider*> sProviders; // name -> provider
 };
 
 class SharedImageSource

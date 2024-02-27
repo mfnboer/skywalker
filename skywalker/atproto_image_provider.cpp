@@ -1,0 +1,134 @@
+// Copyright (C) 2024 Michel de Boer
+// License: GPLv3
+#include "atproto_image_provider.h"
+#include <QTimer>
+
+namespace Skywalker {
+
+std::unordered_map<QString, ATProtoImageProvider*> ATProtoImageProvider::sProviders;
+
+ATProtoImageProvider* ATProtoImageProvider::getProvider(const QString& name)
+{
+    auto& provider = sProviders[name];
+
+    if (!provider)
+        provider = new ATProtoImageProvider(name);
+
+    return provider;
+}
+
+ATProtoImageProvider::ATProtoImageProvider(const QString& name) :
+    mName(name)
+{
+}
+
+ATProtoImageProvider::~ATProtoImageProvider()
+{
+    Q_ASSERT(mImages.empty());
+}
+
+QString ATProtoImageProvider::createImageSource(const QString& host, const QString& did, const QString& cid) const
+{
+    const QString source = QString("image://%1/%2/%3/%4").arg(mName, host, did, cid);
+    return source;
+}
+
+QString ATProtoImageProvider::idToSource(const QString& id) const
+{
+    const QString source = QString("image://%1/%2").arg(mName, id);
+    return source;
+}
+
+
+void ATProtoImageProvider::addImage(const QString& id, const QImage& img)
+{
+    const QString source = idToSource(id);
+
+    QMutexLocker locker(&mMutex);
+    mImages[source] = img;
+}
+
+QImage ATProtoImageProvider::getImage(const QString& source)
+{
+    QMutexLocker locker(&mMutex);
+    auto it = mImages.find(source);
+    return it != mImages.end() ? it->second : QImage();
+}
+
+void ATProtoImageProvider::clear()
+{
+    QMutexLocker locker(&mMutex);
+    mImages.clear();
+}
+
+QQuickImageResponse* ATProtoImageProvider::requestImageResponse(const QString& id, const QSize& requestedSize)
+{
+    auto* response = new ATProtoImageResponse(mName, id, requestedSize);
+    return response;
+}
+
+
+ATProtoImageResponse::ATProtoImageResponse(const QString& providerName, const QString& id, const QSize& requestedSize) :
+    mProviderName(providerName),
+    mId(id),
+    mRequestedSize(requestedSize)
+{
+    const auto idParts = id.split('/');
+
+    if (idParts.size() != 3)
+    {
+        qWarning() << "Invalid id:" << id;
+        QTimer::singleShot(0, this, [this]{ handleDone(QImage()); });
+        return;
+    }
+
+    const QString& host = idParts[0];
+    const QString& did = idParts[1];
+    const QString& cid = idParts[2];
+    loadImage(host, did, cid);
+}
+
+QQuickTextureFactory* ATProtoImageResponse::textureFactory() const
+{
+    return QQuickTextureFactory::textureFactoryForImage(mImage);
+}
+
+void ATProtoImageResponse::handleDone(QImage img)
+{
+    if (mRequestedSize.isValid())
+        mImage = img.scaled(mRequestedSize);
+    else
+        mImage = img;
+
+    if (!img.isNull())
+    {
+        auto* provider = ATProtoImageProvider::getProvider(mProviderName);
+        provider->addImage(mId, img);
+    }
+
+    emit finished();
+}
+
+void ATProtoImageResponse::loadImage(const QString &host, const QString& did, const QString& cid)
+{
+    qDebug() << "Load image, host:" << host << "did:" << did << "cid:" << cid;
+
+    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    mClient = std::make_unique<ATProto::Client>(std::move(xrpc));
+
+    mClient->getBlob(did, cid,
+        [this, did, cid](const QByteArray& bytes, const QString&){
+            QImage img;
+
+            if (!img.loadFromData(bytes))
+                qWarning() << "Cannot load image from data, did:" << did << "cid:" << cid;
+
+            handleDone(img);
+        },
+        [this, did, cid](const QString& error, const QString& msg){
+            qWarning() << "Failed to load image, did:" << did << "cid:" << cid << error << "-" << msg;
+            handleDone(QImage());
+        });
+}
+
+}

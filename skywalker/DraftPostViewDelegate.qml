@@ -62,7 +62,7 @@ Rectangle {
 
         Column {
             id: postColumn
-            Layout.preferredWidth: parent.width - avatar.width - draftPostView.margin
+            Layout.preferredWidth: parent.width - avatar.width - 2 * draftPostView.margin
             topPadding: 5
 
             PostHeader {

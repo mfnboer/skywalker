@@ -26,6 +26,7 @@ class DraftPosts : public WrappedSkywalker, public Presence
 
 public:
     explicit DraftPosts(QObject* parent = nullptr);
+    ~DraftPosts();
 
     bool hasDrafts() const;
 
@@ -161,9 +162,6 @@ private:
     void listRecords();
     void deleteRecord(const QString& recordUri);
     bool uploadImage(const QString& imageName, const UploadImageSuccessCb& successCb, const ErrorCb& errorCb);
-    void loadImage(const QString& cid, const SuccessCb& successCb, const ErrorCb& errorCb);
-    void loadImageList(QStringList cidList, const DoneCb& doneCb);
-    void loadImages(const DoneCb& doneCb);
 
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
     void addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,

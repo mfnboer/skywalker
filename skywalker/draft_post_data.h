@@ -38,7 +38,6 @@ class DraftPostData : public QObject
     Q_PROPERTY(bool allowFollowing READ allowFollowing WRITE setAllowFollowing NOTIFY allowFollowingChanged FINAL)
     Q_PROPERTY(QStringList allowLists READ allowLists WRITE setAllowLists NOTIFY allowListsChanged FINAL)
     Q_PROPERTY(QString recordUri READ recordUri WRITE setRecordUri NOTIFY recordUriChanged FINAL)
-    Q_PROPERTY(QString draftRef READ draftRef WRITE setDraftRef NOTIFY draftRefChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -92,8 +91,6 @@ public:
     void setAllowLists(const QStringList &newAllowLists);
     QString recordUri() const;
     void setRecordUri(const QString &newRecordUri);
-    QString draftRef() const;
-    void setDraftRef(const QString &newDraftRef);
 
 signals:
     void textChanged();
@@ -120,8 +117,6 @@ signals:
     void allowListsChanged();
     void openAsQuotePostChanged();
     void recordUriChanged();
-
-    void draftRefChanged();
 
 private:
     QString mText;
@@ -444,19 +439,6 @@ inline void DraftPostData::setRecordUri(const QString &newRecordUri)
         return;
     mRecordUri = newRecordUri;
     emit recordUriChanged();
-}
-
-inline QString DraftPostData::draftRef() const
-{
-    return mDraftRef;
-}
-
-inline void DraftPostData::setDraftRef(const QString &newDraftRef)
-{
-    if (mDraftRef == newDraftRef)
-        return;
-    mDraftRef = newDraftRef;
-    emit draftRefChanged();
 }
 
 inline bool DraftPostData::openAsQuotePost() const

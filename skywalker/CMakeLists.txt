@@ -295,6 +295,8 @@ qt_add_qml_module(libskywalker
         QML_FILES DraftPostsView.qml
         QML_FILES DraftPostViewDelegate.qml
         SOURCES draft_post_data.h
+        SOURCES atproto_image_provider.h
+        SOURCES atproto_image_provider.cpp
 )
 
 if (NOT ANDROID)

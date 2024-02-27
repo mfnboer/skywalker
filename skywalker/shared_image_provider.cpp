@@ -5,7 +5,7 @@
 
 namespace Skywalker {
 
-std::map<QString, SharedImageProvider*> SharedImageProvider::sProviders;
+std::unordered_map<QString, SharedImageProvider*> SharedImageProvider::sProviders;
 
 SharedImageProvider* SharedImageProvider::getProvider(const QString& name)
 {
@@ -47,6 +47,7 @@ QString SharedImageProvider::getIdFromSource(const QString& source) const
 
 QString SharedImageProvider::addImage(const QImage& image)
 {
+    QMutexLocker locker(&mMutex);
     QString id = QString("SharedImg_%1").arg(mNextId++);
     mImages[id] = image;
     QString source = QString("image://%1/%2").arg(mName, id);
@@ -61,6 +62,7 @@ void SharedImageProvider::removeImage(const QString& source)
     if (id.isEmpty())
         return;
 
+    QMutexLocker locker(&mMutex);
     mImages.erase(id);
     qDebug() << "Removed source:" << source << "id:" << id << "total:" << mImages.size();
 }
@@ -72,6 +74,7 @@ QImage SharedImageProvider::getImage(const QString& source)
     if (id.isEmpty())
         return {};
 
+    QMutexLocker locker(&mMutex);
     const auto it = mImages.find(id);
 
     if (it == mImages.end())
@@ -90,6 +93,7 @@ void SharedImageProvider::replaceImage(const QString& source, const QImage& imag
     if (id.isEmpty())
         return;
 
+    QMutexLocker locker(&mMutex);
     const auto it = mImages.find(id);
 
     if (it == mImages.end())
@@ -104,7 +108,7 @@ void SharedImageProvider::replaceImage(const QString& source, const QImage& imag
 
 QImage SharedImageProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
 {
-    // TODO: need lock? Can be called by multiple threads
+    QMutexLocker locker(&mMutex);
     const auto it = mImages.find(id);
 
     if (it == mImages.end())

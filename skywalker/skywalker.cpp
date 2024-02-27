@@ -2202,7 +2202,7 @@ DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 {
     return std::make_unique<DraftPostsModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-        mMutedWords, nullptr);
+        mMutedWords, this);
 }
 
 bool Skywalker::sendAppToBackground()

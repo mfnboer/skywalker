@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "draft_posts.h"
+#include "atproto_image_provider.h"
 #include "definitions.h"
 #include "content_filter.h"
 #include "gif_utils.h"
@@ -14,6 +15,12 @@ DraftPosts::DraftPosts(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
 {
+}
+
+DraftPosts::~DraftPosts()
+{
+    auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
+    imgProvider->clear();
 }
 
 bool DraftPosts::hasDrafts() const
@@ -214,7 +221,7 @@ DraftPostData* DraftPosts::getDraftPostData(int index)
     const auto recordMediaView = post.getRecordWithMediaView();
     if (recordMediaView)
     {
-        data->setImages(recordMediaView->getImages());
+        setImages(data, recordMediaView->getImages());
         setRecordViewData(data, &recordMediaView->getRecord());
     }
 
@@ -226,9 +233,6 @@ DraftPostData* DraftPosts::getDraftPostData(int index)
     setReplyRestrictions(data, post);
 
     data->setRecordUri(post.getUri());
-
-    // NOTE: when converting a draft to a post view, the draft ref is stored in the CID
-    data->setDraftRef(post.getCid());
 
     return data;
 }
@@ -648,15 +652,15 @@ ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(const ATProt
     if (!images || images->mImages.empty())
         return nullptr;
 
+    auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
+    const QString host = bskyClient()->getHost();
+    const QString did = mSkywalker->getUserDid();
     auto view = std::make_unique<ATProto::AppBskyEmbed::ImagesView>();
 
     for (const auto& image : images->mImages)
     {
-
         const QString& cid = image->mImage->mRefLink;
-        auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
-        const QString imgSource = imgProvider->addImage(QImage());
-        mCidImgSourceMap[cid] = imgSource;
+        const QString imgSource = imgProvider->createImageSource(host, did, cid);
 
         auto imgView = std::make_unique<ATProto::AppBskyEmbed::ImagesViewImage>();
         imgView->mThumb = imgSource;
@@ -844,12 +848,6 @@ void DraftPosts::listRecords()
 
             emit draftsChanged();
             emit loadDraftPostsOk();
-#if 0
-            loadImages([this]{
-                emit draftsChanged();
-                emit loadDraftPostsOk();
-            });
-#endif
         },
         [this, presence=getPresence()](const QString& error, const QString& msg) {
             if (!presence)
@@ -918,82 +916,6 @@ QString DraftPosts::getImgSource(const QString& cid) const
 {
     auto it = mCidImgSourceMap.find(cid);
     return it != mCidImgSourceMap.end() ? it->second : "";
-}
-
-void DraftPosts::loadImage(const QString& cid, const SuccessCb& successCb, const ErrorCb& errorCb)
-{
-    Q_ASSERT(successCb);
-    Q_ASSERT(errorCb);
-
-    const QString did = mSkywalker->getUserDid();
-    qDebug() << "Loading image:" << cid << "from did:" << did;
-
-    bskyClient()->getBlob(did, cid,
-        [this, presence=getPresence(), cid, successCb, errorCb](const QByteArray& bytes, const QString&){
-            if (!presence)
-                return;
-
-            QImage img;
-            if (!img.loadFromData(bytes))
-            {
-                qWarning() << "Cannot load image from data:" << cid;
-                errorCb("FormatError", "Cannot load image from data.");
-                return;
-            }
-
-            const auto imgSource = getImgSource(cid);
-
-            if (imgSource.isEmpty())
-            {
-                qWarning() << "Unknown image cid:" << cid;
-                errorCb("InternalError", QString("Unknown image cid: %1").arg(cid));
-                return;
-            }
-
-            auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
-            imgProvider->replaceImage(imgSource, img);
-            successCb();
-        },
-        [presence=getPresence(), errorCb](const QString& error, const QString& msg){
-            if (!presence)
-                return;
-
-            qWarning() << "Load image failed:" << error << " - " << msg;
-            errorCb(error, msg);
-        });
-}
-
-void DraftPosts::loadImageList(QStringList cidList, const DoneCb& doneCb)
-{
-    if (cidList.isEmpty())
-    {
-        doneCb();
-        return;
-    }
-
-    const QString cid = cidList.first();
-    const auto remainingCidList = cidList.mid(1);
-
-    loadImage(cid,
-        [this, remainingCidList, doneCb]{
-            loadImageList(remainingCidList, doneCb);
-        },
-        [this, cid, remainingCidList, doneCb](const QString& error, const QString& msg){
-            qWarning() << "Could not load image:" << cid << error << " - " << msg;
-
-            // We continue loading. Better a missing image on a draft, then no draft at all.
-            loadImageList(remainingCidList, doneCb);
-        });
-}
-
-void DraftPosts::loadImages(const DoneCb& doneCb)
-{
-    QStringList cidList;;
-
-    for (const auto& [cid, _] : mCidImgSourceMap)
-        cidList.push_back(cid);
-
-    loadImageList(cidList, doneCb);
 }
 
 void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
