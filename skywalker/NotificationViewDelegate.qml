@@ -222,7 +222,7 @@ Rectangle {
                     }
                 }
 
-                onShare: skywalker.sharePost(notificationPostUri, notificationAuthor)
+                onShare: skywalker.sharePost(notificationPostUri)
                 onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
                 onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
                 onTranslatePost: root.translateText(notificationPostPlainText)

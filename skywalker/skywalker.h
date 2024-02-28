@@ -117,7 +117,7 @@ public:
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
     Q_INVOKABLE Profile getUserProfile() const { return mUserProfile; }
     Q_INVOKABLE BasicProfile getUser() const;
-    Q_INVOKABLE void sharePost(const QString& postUri, const BasicProfile& author);
+    Q_INVOKABLE void sharePost(const QString& postUri);
     Q_INVOKABLE void shareFeed(const GeneratorView& feed);
     Q_INVOKABLE void shareList(const ListView& list);
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);

@@ -1941,7 +1941,7 @@ BasicProfile Skywalker::getUser() const
     return AuthorCache::instance().getUser();
 }
 
-void Skywalker::sharePost(const QString& postUri, const BasicProfile& author)
+void Skywalker::sharePost(const QString& postUri)
 {
     qDebug() << "Share post:" << postUri;
     ATProto::ATUri atUri(postUri);
@@ -1949,9 +1949,8 @@ void Skywalker::sharePost(const QString& postUri, const BasicProfile& author)
     if (!atUri.isValid())
         return;
 
-    const QString authorId = author.getDid();
-    const QString shareUri = QString("https://bsky.app/profile/%1/post/%2")
-                                .arg(authorId, atUri.getRkey());
+    const QString shareUri = atUri.toHttpsUri();
+    Q_ASSERT(!shareUri.isEmpty());
 
 #ifdef Q_OS_ANDROID
     QJniObject jShareUri = QJniObject::fromString(shareUri);
@@ -1977,10 +1976,8 @@ void Skywalker::shareFeed(const GeneratorView& feed)
     if (!atUri.isValid())
         return;
 
-    // TODO: use ATUri::toHttpsUri
-    const QString authorId = feed.getCreator().getDid();
-    const QString shareUri = QString("https://bsky.app/profile/%1/feed/%2")
-                                 .arg(authorId, atUri.getRkey());
+    const QString shareUri = atUri.toHttpsUri();
+    Q_ASSERT(!shareUri.isEmpty());
 
 #ifdef Q_OS_ANDROID
     QJniObject jShareUri = QJniObject::fromString(shareUri);
@@ -2007,9 +2004,8 @@ void Skywalker::shareList(const ListView& list)
     if (!atUri.isValid())
         return;
 
-    const QString authorId = list.getCreator().getDid();
-    const QString shareUri = QString("https://bsky.app/profile/%1/lists/%2")
-                                 .arg(authorId, atUri.getRkey());
+    const QString shareUri = atUri.toHttpsUri();
+    Q_ASSERT(!shareUri.isEmpty());
 
 #ifdef Q_OS_ANDROID
     QJniObject jShareUri = QJniObject::fromString(shareUri);
