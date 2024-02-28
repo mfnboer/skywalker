@@ -11,7 +11,14 @@
 
 namespace Skywalker {
 
-class MutedWords : public QObject
+class IMutedWords
+{
+public:
+    virtual ~IMutedWords() = default;
+    virtual bool match(const NormalizedWordIndex& post) const = 0;
+};
+
+class MutedWords : public QObject, public IMutedWords
 {
     Q_OBJECT
     Q_PROPERTY(QStringList entries READ getEntries NOTIFY entriesChanged FINAL)
@@ -32,7 +39,7 @@ public:
     Q_INVOKABLE bool noticeSeen(const UserSettings* userSettings) const;
     Q_INVOKABLE void setNoticeSeen(UserSettings* userSettings, bool seen) const;
 
-    bool match(const NormalizedWordIndex& post) const;
+    bool match(const NormalizedWordIndex& post) const override;
 
 signals:
     void entriesChanged();
@@ -67,6 +74,12 @@ private:
     WordIndexType mHashTagIndex;
 
     bool mDirty = false;
+};
+
+class MutedWordsNoMutes : public IMutedWords
+{
+public:
+    bool match(const NormalizedWordIndex&) const override { return false; }
 };
 
 }

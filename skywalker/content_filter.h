@@ -12,6 +12,13 @@
 
 namespace Skywalker {
 
+class IContentFilter
+{
+public:
+    virtual ~IContentFilter() = default;
+    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const = 0;
+};
+
 class ContentGroup
 {
     Q_GADGET
@@ -35,7 +42,8 @@ public:
     QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
 };
 
-class ContentFilter {
+class ContentFilter : public IContentFilter
+{
 public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
     using ContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
@@ -52,7 +60,7 @@ public:
     QEnums::ContentVisibility getVisibility(const QString& label) const;
     QString getWarning(const QString& label) const;
 
-    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const;
+    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const override;
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
 
 private:
@@ -62,6 +70,15 @@ private:
 
     static std::unordered_map<QString, QString> sLabelGroupMap;
     const ATProto::UserPreferences& mUserPreferences;
+};
+
+class ContentFilterShowAll : public IContentFilter
+{
+public:
+    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList&) const override
+    {
+        return {QEnums::CONTENT_VISIBILITY_SHOW, ""};
+    }
 };
 
 }

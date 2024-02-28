@@ -71,8 +71,8 @@ public:
 
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
-                          const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                          const MutedWords& mutedWords, QObject* parent = nullptr);
+                          const IContentFilter& contentFilter, const Bookmarks& bookmarks,
+                          const IMutedWords& mutedWords, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -111,9 +111,9 @@ protected:
     const QString& mUserDid;
     const IProfileStore& mFollowing;
     const IProfileStore& mMutedReposts;
-    const ContentFilter& mContentFilter;
+    const IContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
-    const MutedWords& mMutedWords;
+    const IMutedWords& mMutedWords;
 
 private:
     void postBookmarkedChanged();

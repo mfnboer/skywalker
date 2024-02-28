@@ -2197,8 +2197,8 @@ void Skywalker::deleteBookmarksModel()
 DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 {
     return std::make_unique<DraftPostsModel>(
-        mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-        mMutedWords, this);
+        mUserDid, mUserFollows, mMutedReposts, mContentFilterShowAll, mBookmarks,
+        mMutedWordsNoMutes, this);
 }
 
 bool Skywalker::sendAppToBackground()

@@ -191,7 +191,7 @@ QString ContentFilter::getWarning(const QString& label) const
     return group->mWarning;
 }
 
-std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& labels) const
+std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const
 {
     const auto contentLabels = getContentLabels(labels);
     return getVisibilityAndWarning(contentLabels);

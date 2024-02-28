@@ -172,7 +172,6 @@ public:
     void setUnreadNotificationCount(int unread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
-    const ContentFilter& getContentFilter() const { return mContentFilter; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
@@ -260,11 +259,13 @@ private:
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     ContentFilter mContentFilter;
+    ContentFilterShowAll mContentFilterShowAll;
     std::unique_ptr<ContentGroupListModel> mContentGroupListModel;
 
     Bookmarks mBookmarks;
     BookmarksModel::Ptr mBookmarksModel;
     MutedWords mMutedWords;
+    MutedWordsNoMutes mMutedWordsNoMutes;
     PostFeedModel mTimelineModel;
 
     bool mAutoUpdateTimelineInProgress = false;
