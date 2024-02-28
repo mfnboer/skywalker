@@ -40,6 +40,13 @@ Item {
             }
         }
 
+        // Reply to
+        ReplyToRow {
+            width: parent.width
+            authorName: record.replyToAuthor.name
+            visible: record.postIsReply
+        }
+
         PostBody {
             width: parent.width
             postAuthor: record.author

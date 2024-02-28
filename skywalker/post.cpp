@@ -3,6 +3,7 @@
 #include "post.h"
 #include "author_cache.h"
 #include "user_settings.h"
+#include <atproto/lib/at_uri.h>
 #include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
@@ -337,15 +338,15 @@ QString Post::getReplyToAuthorDid() const
         return {};
 
     const auto& uri = record->mReply->mParent->mUri;
+    const ATProto::ATUri atUri(uri);
 
-    if (!uri.startsWith("at://did:"))
+    if (!atUri.isValid())
         return {};
 
-    const int end = uri.indexOf('/', 5);
-    if (end < 0)
+    if (atUri.authorityIsHandle())
         return {};
 
-    const auto did = uri.sliced(5, end - 5);
+    const auto did = atUri.getAuthority();
     qDebug() << "Extracted did from uri:" << uri << "did:" << did;
     return did;
 }

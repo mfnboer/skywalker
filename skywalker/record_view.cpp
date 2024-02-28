@@ -1,9 +1,11 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "record_view.h"
+#include "author_cache.h"
 #include "content_filter.h"
 #include "external_view.h"
 #include "user_settings.h"
+#include <atproto/lib/at_uri.h>
 #include <atproto/lib/rich_text_master.h>
 
 using namespace std::chrono_literals;
@@ -178,6 +180,44 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& RecordView::getLabels()
         return NO_LABELS;
 
     return mRecord->mLabels;
+}
+
+bool RecordView::isReply() const
+{
+    if (!mRecord)
+        return false;
+
+    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return false;
+
+    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
+    return post->mReply != nullptr;
+}
+
+BasicProfile RecordView::getReplyToAuthor() const
+{
+    if (!mRecord)
+        return {};
+
+    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
+
+    if (!post->mReply)
+        return {};
+
+    const ATProto::ATUri atUri(post->mReply->mParent->mUri);
+
+    if (!atUri.isValid())
+        return {};
+
+    if (atUri.authorityIsHandle())
+        return {};
+
+    const auto did = atUri.getAuthority();
+    auto* profile = AuthorCache::instance().get(did);
+    return profile ? *profile : BasicProfile();
 }
 
 std::vector<QString> RecordView::getHashtags() const
