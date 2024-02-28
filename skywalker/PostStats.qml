@@ -76,7 +76,6 @@ Column {
         }
         StatIcon {
             width: parent.width / 5
-            iconColor: guiSettings.statsColor
             svg: svgOutline.moreVert
             visible: !bookmarkNotFound
             onClicked: moreMenu.open()

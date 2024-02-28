@@ -17,8 +17,10 @@ public:
                     const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                     const MutedWords& mutedWords, QObject* parent = nullptr);
 
+    Q_INVOKABLE int getMaxDrafts() const;
     Q_INVOKABLE void clear();
     void setFeed(ATProto::AppBskyFeed::PostFeed feed);
+    void deleteDraft(int index);
 
 private:
     // This must be kept alive as long as there are posts in the feed dependend on it

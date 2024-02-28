@@ -82,6 +82,7 @@ public:
 protected:
     QHash<int, QByteArray> roleNames() const override;
     void clearFeed();
+    void deletePost(int index);
     void storeCid(const QString& cid);
     void removeStoredCid(const QString& cid);
     void cleanupStoredCids();
@@ -102,6 +103,8 @@ protected:
     // LocalProfileChanges
     virtual void profileChanged() override;
 
+    void changeData(const QList<int>& roles);
+
     using TimelineFeed = std::deque<Post>;
     TimelineFeed mFeed;
 
@@ -114,7 +117,6 @@ protected:
 
 private:
     void postBookmarkedChanged();
-    void changeData(const QList<int>& roles);
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;

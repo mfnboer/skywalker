@@ -24,6 +24,7 @@ Rectangle {
     required property bool endOfFeed
 
     signal selected
+    signal deleted
 
     id: draftPostView
     width: grid.width
@@ -101,6 +102,19 @@ Rectangle {
             }
         }
 
+        SvgButton {
+            Layout.alignment: Qt.AlignRight
+            Layout.columnSpan: 2
+            iconColor: guiSettings.textColor
+            Material.background: "transparent"
+            svg: svgOutline.delete
+            onClicked: { console.debug("DELETE"); deleted() }
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("delete draft post")
+            Accessible.onPressAction: clicked()
+        }
+
         // Separator
         Rectangle {
             width: parent.width
@@ -126,10 +140,12 @@ Rectangle {
     }
 
     MouseArea {
-        z: 200 // Cover all mouse areas. Only the draft post can be selected.
-        anchors.fill: parent
+        width: parent.width
+        height: postColumn.height
+        z: 100 // Cover all mouse areas. Only the draft post can be selected.
         onClicked: selectDraft()
     }
+
 
     AccessibilityUtils {
         id: accessibilityUtils
@@ -147,9 +163,5 @@ Rectangle {
 
     function selectDraft() {
         selected()
-    }
-
-    Component.onCompleted: {
-        console.debug("DRAFT:", postText)
     }
 }

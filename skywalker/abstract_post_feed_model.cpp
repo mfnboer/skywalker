@@ -33,6 +33,11 @@ void AbstractPostFeedModel::clearFeed()
     clearLocalProfileChanges();
 }
 
+void AbstractPostFeedModel::deletePost(int index)
+{
+    mFeed.erase(mFeed.begin() + index);
+}
+
 void AbstractPostFeedModel::storeCid(const QString& cid)
 {
     mStoredCids.insert(cid);

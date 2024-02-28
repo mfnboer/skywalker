@@ -25,10 +25,14 @@ class DraftPosts : public WrappedSkywalker, public Presence
     QML_ELEMENT
 
 public:
+    static constexpr int MAX_DRAFTS = 50;
+
     explicit DraftPosts(QObject* parent = nullptr);
     ~DraftPosts();
 
     bool hasDrafts() const;
+
+    Q_INVOKABLE bool canSaveDraft() const;
 
     Q_INVOKABLE void saveDraftPost(const QString& text,
                                    const QStringList& imageFileNames, const QStringList& altTexts,
@@ -47,7 +51,8 @@ public:
     Q_INVOKABLE void loadDraftPosts();
     Q_INVOKABLE DraftPostsModel* getDraftPostsModel();
     Q_INVOKABLE DraftPostData* getDraftPostData(int index);
-    Q_INVOKABLE void removeDraftPost(const QString& recordUri);
+    Q_INVOKABLE void removeDraftPost(int index);
+    Q_INVOKABLE void removeDraftPostsModel();
 
 signals:
     void saveDraftPostOk();

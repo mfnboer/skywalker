@@ -28,6 +28,11 @@ bool DraftPosts::hasDrafts() const
     return mDraftPostsModel && mDraftPostsModel->rowCount() > 0;
 }
 
+bool DraftPosts::canSaveDraft() const
+{
+    return mDraftPostsModel->rowCount() < MAX_DRAFTS;
+}
+
 void DraftPosts::saveDraftPost(const QString& text,
                                const QStringList& imageFileNames, const QStringList& altTexts,
                                const QString& replyToUri, const QString& replyToCid,
@@ -99,7 +104,7 @@ static void setRecordViewData(DraftPostData* data, const RecordView* recordView)
 
         data->setQuoteUri(uri);
         data->setQuoteCid(recordView->getCid());
-        data->setQuoteAuthor(recordView->getAuthor());
+        data->setQuoteAuthor(recordView->getAuthor().nonVolatileCopy());
         data->setQuoteText(recordView->getText());
         data->setQuoteDateTime(recordView->getIndexedAt());
     }
@@ -195,6 +200,12 @@ static void setReplyRestrictions(DraftPostData* data, const Post& post)
 
 DraftPostData* DraftPosts::getDraftPostData(int index)
 {
+    if (index < 0 || index >= mDraftPostsModel->rowCount())
+    {
+        qWarning() << "Invalid index:" << index << "count:" << mDraftPostsModel->rowCount();
+        return nullptr;
+    }
+
     const Post& post = mDraftPostsModel->getPost(index);
     auto* data = new DraftPostData(this);
     data->setText(post.getText());
@@ -205,7 +216,7 @@ DraftPostData* DraftPosts::getDraftPostData(int index)
     data->setReplyRootCid(post.getReplyRootCid());
 
     if (post.getReplyToAuthor())
-        data->setReplyToAuthor(*post.getReplyToAuthor());
+        data->setReplyToAuthor(post.getReplyToAuthor()->nonVolatileCopy());
 
     const auto replyView = post.getViewPostReplyRef();
     if (replyView)
@@ -237,10 +248,24 @@ DraftPostData* DraftPosts::getDraftPostData(int index)
     return data;
 }
 
-void DraftPosts::removeDraftPost(const QString& recordUri)
+void DraftPosts::removeDraftPost(int index)
 {
-    qDebug() << "Remove draft post:" << recordUri;
+    if (index < 0 || index >= mDraftPostsModel->rowCount())
+    {
+        qWarning() << "Invalid index:" << index << "count:" << mDraftPostsModel->rowCount();
+        return;
+    }
+
+    const Post& post = mDraftPostsModel->getPost(index);
+    const QString& recordUri = post.getUri();
+    qDebug() << "Remove draft post:" << index << "uri:" << recordUri;
     deleteRecord(recordUri);
+    mDraftPostsModel->deleteDraft(index);
+}
+
+void DraftPosts::removeDraftPostsModel()
+{
+    mDraftPostsModel = nullptr;
 }
 
 QString DraftPosts::getDraftUri(const QString& ref) const

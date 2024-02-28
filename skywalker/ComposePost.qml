@@ -1140,11 +1140,19 @@ Page {
             return
         }
 
-        guiSettings.askDiscardSaveQuestion(
+        if (draftPosts.canSaveDraft()) {
+            guiSettings.askDiscardSaveQuestion(
                     page,
                     qsTr("Do you want to discard your post or save it as draft?"),
                     () => page.closed(),
                     () => page.saveDraftPost())
+        }
+        else {
+            guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Do you want to to discard your post?<br>You cannot save more drafts."),
+                    () => page.closed())
+        }
     }
 
     function saveDraftPost() {
@@ -1172,10 +1180,11 @@ Page {
         draftsPage.onSelected.connect((index) => {
             const draftData = draftPosts.getDraftPostData(index)
             setDraftPost(draftData)
-            draftPosts.removeDraftPost(draftData.recordUri)
+            draftPosts.removeDraftPost(index)
             draftData.destroy()
             root.popStack()
         })
+        draftsPage.onDeleted.connect((index) => draftPosts.removeDraftPost(index))
 
         root.pushStack(draftsPage)
     }
@@ -1389,6 +1398,8 @@ Page {
 
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)
+
+        draftPosts.removeDraftPostsModel()
     }
 
     Component.onCompleted: {
