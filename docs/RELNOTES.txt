@@ -1,8 +1,8 @@
-next
-====
-* Save posts as drafts to edit and send later
+1.4
+===
 * Hashtags
-* Reply info in notifications
+* Save posts as drafts to edit and send later
+* Reply-to info in notifications and quote posts
 * Bug fixes
 
 1.3
