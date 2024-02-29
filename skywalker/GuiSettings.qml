@@ -51,6 +51,9 @@ Item {
     // Misc
     readonly property real flickDeceleration: 1000
 
+    // Identity
+    readonly property string skywalkerHandle: "@skywalker.thereforeiam.eu"
+
     Accessible.ignored: true
 
     function scaledFont(scaleFactor) {

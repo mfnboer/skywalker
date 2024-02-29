@@ -44,11 +44,11 @@ Page {
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             textFormat: Text.RichText
-            text: "<a href=\"did:plc:zzmeflm2wzrrgcaam6bw3kaf\" style=\"color: ivory;\">@skywalkerapp.bsky.social</a>"
+            text: `<a href=\"did:plc:zzmeflm2wzrrgcaam6bw3kaf\" style=\"color: ivory;\">${guiSettings.skywalkerHandle}</a>`
             onLinkActivated: (link) => skywalker.getDetailedProfile(link)
 
             Accessible.role: Accessible.Link
-            Accessible.name: "@skywalkerapp.bsky.social"
+            Accessible.name: `${guiSettings.skywalkerHandle}`
             Accessible.onPressAction: skywalker.getDetailedProfile("did:plc:zzmeflm2wzrrgcaam6bw3kaf")
         }
         Image {

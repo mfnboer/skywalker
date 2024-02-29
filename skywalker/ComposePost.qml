@@ -128,10 +128,10 @@ Page {
 
                     let gifCard = linkCardReader.makeLinkCard(
                             attachedGif.url,
-                            attachedGif.description + " (via Tenor)\nPosted from Skywalker @skywalkerapp.bsky.social",
+                            `${attachedGif.description} (via Tenor)\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
                             qsTr("This GIF has been posted from Skywalker for Android. " +
                                  "Get Skywalker from Google Play.") +
-                                 ("\nBluesky: @skywalkerapp.bsky.social"),
+                                 (`<br>Bluesky: ${guiSettings.skywalkerHandle}`),
                             attachedGif.imageUrl)
 
                     postUtils.post(postText.text, gifCard,
