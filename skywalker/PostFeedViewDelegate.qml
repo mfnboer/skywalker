@@ -229,9 +229,10 @@ Rectangle {
         }
         Column {
             id: postColumn
-            // Changed from width to Layout.preferredWidth. This seems to solve the issue
-            // where posts sometimes are too wide (like landscape mode)
-            Layout.preferredWidth: parent.width - avatar.width - postEntry.margin * 2
+            // Changfrom width to Layout.preferredWidth seems to solve the issue
+            // where posts sometimes are too wide (like landscape mode) but makes
+            // things very slow :-(
+            width: parent.width - avatar.width - postEntry.margin * 2
             visible: !postIsPlaceHolder && !postLocallyDeleted
 
             PostHeader {
