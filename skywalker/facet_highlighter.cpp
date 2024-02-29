@@ -29,12 +29,12 @@ void FacetHighlighter::highlightBlock(const QString& text)
         {
         case ATProto::RichTextMaster::ParsedMatch::Type::MENTION:
         case ATProto::RichTextMaster::ParsedMatch::Type::LINK:
+        case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
         {
             const int facetLength = facet.mEndIndex - facet.mStartIndex;
             addFormat(facet.mStartIndex, facetLength, mHighlightFormat);
             break;
         }
-        case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
         case ATProto::RichTextMaster::ParsedMatch::Type::PARTIAL_MENTION:
         case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
             break;

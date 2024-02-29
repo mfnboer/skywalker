@@ -7,6 +7,7 @@ Page {
     required property var skywalker
     property var timeline
     property bool isTyping: true
+    property string initialSearch
 
     signal closed
 
@@ -220,7 +221,18 @@ Page {
         page.header.unfocus()
     }
 
-    function show() {
+    function show(searchText = "") {
         page.header.forceFocus()
+        initialSearch = searchText
+
+        if (searchText) {
+            header.setSearchText(searchText)
+            searchUtils.search(searchText)
+        }
+    }
+
+    Component.onCompleted: {
+        if (initialSearch)
+            searchUtils.search(searchText)
     }
 }

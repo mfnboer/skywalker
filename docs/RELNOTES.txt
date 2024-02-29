@@ -1,6 +1,7 @@
 next
 ====
 * Save posts as drafts to edit and send later
+* Hashtags
 * Reply info in notifications
 * Bug fixes
 

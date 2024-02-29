@@ -117,6 +117,10 @@ Rectangle {
         id: guiSettings
     }
 
+    function setSearchText(text) {
+        searchText.text = text
+    }
+
     function getDisplayText() {
         return searchText.displayText
     }

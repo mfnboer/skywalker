@@ -610,6 +610,9 @@ ApplicationWindow {
         } else if (link.startsWith("did:")) {
             console.debug("DID-MENTION:", link)
             skywalker.getDetailedProfile(link)
+        } else if (link.startsWith("#")) {
+            console.debug("#-TAG:", link)
+            viewSearchView(link)
         } else {
             linkUtils.openLink(link)
         }
@@ -893,7 +896,7 @@ ApplicationWindow {
     function createSearchView() {
         let searchComponent = Qt.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
-                { skywalker: skywalker, timeline: getTimelineView() })
+                { skywalker: skywalker, timeline: getTimelineView(), })
         searchView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         searchStack.push(searchView)
     }
@@ -906,14 +909,14 @@ ApplicationWindow {
         }
     }
 
-    function viewSearchView() {
+    function viewSearchView(searchText = "") {
         unwindStack()
         stackLayout.currentIndex = stackLayout.searchIndex
 
         if (searchStack.depth === 0)
             createSearchView()
 
-        currentStackItem().show()
+        currentStackItem().show(searchText)
     }
 
     function createFeedsView() {
