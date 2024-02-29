@@ -102,11 +102,10 @@ Rectangle {
             }
         }
 
-        SvgButton {
+        StatIcon {
+            id: deleteButton
             Layout.alignment: Qt.AlignRight
             Layout.columnSpan: 2
-            iconColor: guiSettings.textColor
-            Material.background: "transparent"
             svg: svgOutline.delete
             onClicked: { console.debug("DELETE"); deleted() }
 
@@ -140,12 +139,18 @@ Rectangle {
     }
 
     MouseArea {
+        id: postMouseArea
         width: parent.width
         height: postColumn.height
         z: 100 // Cover all mouse areas. Only the draft post can be selected.
         onClicked: selectDraft()
     }
-
+    MouseArea {
+        width: parent.width - deleteButton.width
+        anchors.top: postMouseArea.bottom
+        anchors.bottom: parent.bottom
+        onClicked: selectDraft()
+    }
 
     AccessibilityUtils {
         id: accessibilityUtils
