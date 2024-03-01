@@ -29,10 +29,12 @@ private:
     void extractLinkCard(QNetworkReply* reply);
     void requestFailed(QNetworkReply* reply, int errCode);
     void requestSslFailed(QNetworkReply* reply);
+    void redirect(QNetworkReply* reply, const QUrl& redirectUrl);
 
     QNetworkAccessManager mNetwork;
     QCache<QUrl, LinkCard> mCardCache;
     QNetworkReply* mInProgress = nullptr;
+    QUrl mPrevDestination;
 };
 
 }

@@ -66,13 +66,16 @@ void LinkCardReader::getLinkCard(const QString& link)
 
     // Without this YouTube Shorts does not load
     request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, true);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
 
     QNetworkReply* reply = mNetwork.get(request);
     mInProgress = reply;
+    mPrevDestination = url;
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]{ extractLinkCard(reply); });
     connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ requestFailed(reply, errCode); });
     connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ requestSslFailed(reply); });
+    connect(reply, &QNetworkReply::redirected, this, [this, reply](const QUrl& url){ redirect(reply, url); });
 }
 
 static QString matchRegexes(const std::vector<QRegularExpression>& regexes, const QByteArray& data, const QString& group)
@@ -199,6 +202,22 @@ void LinkCardReader::requestSslFailed(QNetworkReply* reply)
 {
     mInProgress = nullptr;
     qDebug() << "SSL error, failed to get link:" << reply->request().url();
+}
+
+void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
+{
+    qDebug() << "Prev url:" << mPrevDestination << "redirect url:" << redirectUrl;
+
+    // Allow: https -> https, http -> http, http -> https
+    // Allow https -> http only if the host stays the same
+    if (mPrevDestination.scheme() == redirectUrl.scheme() ||
+        mPrevDestination.scheme() == "http" ||
+        mPrevDestination.host() == redirectUrl.host())
+    {
+        emit reply->redirectAllowed();
+    }
+
+    mPrevDestination = redirectUrl;
 }
 
 }
