@@ -4,7 +4,7 @@
 #include <muted_words.h>
 #include <post.h>
 #include <atproto/lib/post_master.h>
-#include <QTest>
+#include <QtTest/QTest>
 
 using namespace Skywalker;
 
@@ -198,6 +198,7 @@ private:
             const auto json = postRecord->toJson();
             mPostView.mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
             mPostView.mRecord = ATProto::AppBskyFeed::Record::Post::fromJson(json);
+            mPostView.mAuthor = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
         });
 
         return Post(&mPostView, 0);
