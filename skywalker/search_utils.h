@@ -15,6 +15,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(BasicProfileList authorTypeaheadList READ getAuthorTypeaheadList WRITE setAuthorTypeaheadList NOTIFY authorTypeaheadListChanged FINAL)
+    Q_PROPERTY(QStringList hashtagTypeaheadList READ getHashtagTypeaheadList WRITE setHashtagTypeaheadList NOTIFY hashtagTypeaheadListChanged FINAL)
     Q_PROPERTY(bool searchPostsInProgress READ getSearchPostsInProgress WRITE setSearchPostsInProgress NOTIFY searchPostsInProgressChanged FINAL)
     Q_PROPERTY(bool searchActorsInProgress READ getSearchActorsInProgress WRITE setSearchActorsInProgress NOTIFY searchActorsInProgressChanged FINAL)
     Q_PROPERTY(bool searchFeedsInProgress READ getSearchFeedsInProgress WRITE setSearchFeedsInProgress NOTIFY searchFeedsInProgressChanged FINAL)
@@ -30,6 +31,7 @@ public:
 
     Q_INVOKABLE void removeModels();
     Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20);
+    Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
     Q_INVOKABLE void searchPosts(const QString& text, int maxPages = 10, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchPosts(const QString& text, int maxPages = 10, int minEntries = 10);
     Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
@@ -43,6 +45,8 @@ public:
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);
+    const QStringList& getHashtagTypeaheadList() const { return mHashtagTypeaheadList; }
+    void setHashtagTypeaheadList(const QStringList& list);
     bool getSearchPostsInProgress() const { return mSearchPostsInProgress; }
     void setSearchPostsInProgress(bool inProgress);
     bool getSearchActorsInProgress() const { return mSearchActorsInProgress; }
@@ -52,6 +56,7 @@ public:
 
 signals:
     void authorTypeaheadListChanged();
+    void hashtagTypeaheadListChanged();
     void searchPostsInProgressChanged();
     void searchActorsInProgressChanged();
     void searchFeedsInProgressChanged();
@@ -62,6 +67,7 @@ private:
     QString preProcessSearchText(const QString& text) const;
 
     BasicProfileList mAuthorTypeaheadList;
+    QStringList mHashtagTypeaheadList;
     int mSearchPostFeedModelId = -1;
     int mSearchUsersModelId = -1;
     int mSearchFeedsModelId = -1;

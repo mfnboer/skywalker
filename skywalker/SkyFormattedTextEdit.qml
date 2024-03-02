@@ -33,10 +33,14 @@ TextEdit {
 
     onCursorRectangleChanged: {
         let editMentionY = postUtils.editMentionCursorY
+        let editTagY = postUtils.editTagCursorY
         let cursorY = cursorRectangle.y
 
         if (postUtils.editMention.length > 0 && editMentionY != cursorY)
             postUtils.editMention = ""
+
+        if (postUtils.editTag.length > 0 && editTagY != cursorY)
+            postUtils.editTag = ""
 
         parentFlick.ensureVisible(cursorRectangle)
     }
@@ -85,6 +89,15 @@ TextEdit {
         }
     }
 
+    Timer {
+        id: hashtagTypeaheadSearchTimer
+        interval: 500
+        onTriggered: {
+            if (postUtils.editTag.length > 0)
+                searchUtils.searchHashtagsTypeahead(postUtils.editTag, 10)
+        }
+    }
+
     SearchUtils {
         id: searchUtils
         skywalker: parentPage.skywalker
@@ -98,6 +111,7 @@ TextEdit {
 
     PostUtils {
         property double editMentionCursorY: 0
+        property double editTagCursorY: 0
 
         id: postUtils
         skywalker: parentPage.skywalker
@@ -106,6 +120,12 @@ TextEdit {
             console.debug(editMention)
             editMentionCursorY = editText.cursorRectangle.y
             typeaheadSearchTimer.start()
+        }
+
+        onEditTagChanged: {
+            console.debug(editTag)
+            editTagCursorY = postText.cursorRectangle.y
+            hashtagTypeaheadSearchTimer.start()
         }
     }
 
@@ -127,8 +147,19 @@ TextEdit {
             })
     }
 
+    function createHashtagTypeaheadView() {
+        let component = Qt.createComponent("HashtagTypeaheadView.qml")
+        let page = component.createObject(parentPage, {
+                parentPage: parentPage,
+                editText: editText,
+                searchUtils: searchUtils,
+                postUtils: postUtils
+            })
+    }
+
     Component.onCompleted: {
         createAuthorTypeaheadView()
+        createHashtagTypeaheadView()
         postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
                                        editText.maxLength, guiSettings.textLengthExceededColor)
     }

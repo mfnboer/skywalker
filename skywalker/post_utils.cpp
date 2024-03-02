@@ -578,6 +578,15 @@ void PostUtils::setEditMention(const QString& mention)
     emit editMentionChanged();
 }
 
+void PostUtils::setEditTag(const QString& tag)
+{
+    if (tag == mEditTag)
+        return;
+
+    mEditTag = tag;
+    emit editTagChanged();
+}
+
 void PostUtils::setFirstWebLink(const QString& link)
 {
     if (link == mFirstWebLink)
@@ -635,6 +644,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
     int preeditCursor = cursor + preeditText.length();
     bool editMentionFound = false;
+    bool editTagFound = false;
     bool webLinkFound = false;
     bool postLinkFound = false;
     bool feedLinkFound = false;
@@ -713,6 +723,13 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
             }
             break;
         case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
+            if (facet.mStartIndex < preeditCursor && preeditCursor <= facet.mEndIndex)
+            {
+                mEditTagIndex = facet.mStartIndex + 1;
+                setEditTag(facet.mMatch.sliced(1)); // strip #-symbol
+                editTagFound = true;
+            }
+            break;
         case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
             break;
         }
@@ -720,6 +737,9 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
     if (!editMentionFound)
         setEditMention({});
+
+    if (!editTagFound)
+        setEditTag({});
 
     if (!webLinkFound)
         setFirstWebLink({});
@@ -732,6 +752,20 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
     if (!listLinkFound)
         setFirstListLink({});
+}
+
+void PostUtils::cacheTags(const QString& text)
+{
+    const auto facets = ATProto::RichTextMaster::parseFacets(text);
+
+    for (const auto& facet : facets)
+    {
+        if (facet.mType == ATProto::RichTextMaster::ParsedMatch::Type::TAG)
+        {
+            auto& hashtags = mSkywalker->getUserHashtags();
+            hashtags.insert(facet.mMatch.sliced(1)); // strip #-symbol
+        }
+    }
 }
 
 QString PostUtils::applyFontToLastTypedChars(const QString& text,const QString& preeditText,

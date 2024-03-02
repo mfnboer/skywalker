@@ -8,8 +8,6 @@
 
 int main(int argc, char *argv[])
 {
-    QTEST_SET_MAIN_SOURCE_PATH
-
     TestHashTagIndex testHastTagIndex;
     QTest::qExec(&testHastTagIndex, argc, argv);
 

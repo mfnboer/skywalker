@@ -20,6 +20,7 @@ class PostUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(QString editMention READ getEditMention WRITE setEditMention NOTIFY editMentionChanged FINAL)
+    Q_PROPERTY(QString editTag READ getEditTag WRITE setEditTag NOTIFY editTagChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
     Q_PROPERTY(QString firstFeedLink READ getFirstFeedLink WRITE setFirstFeedLink NOTIFY firstFeedLinkChanged FINAL)
@@ -54,6 +55,7 @@ public:
     Q_INVOKABLE void setHighLightMaxLength(int maxLength);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
                                              int cursor);
+    Q_INVOKABLE void cacheTags(const QString& text);
 
     // Returns a new text up to cursor with the last type char transformed into font.
     // Returns null string if last typed char was not a transformable char.
@@ -61,6 +63,7 @@ public:
                                                   int cursor, int numChars, QEnums::FontType font);
 
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
+    Q_INVOKABLE int getEditTagIndex() const { return mEditTagIndex; }
     Q_INVOKABLE QString linkiFy(const QString& text, const QString& colorName);
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
@@ -69,6 +72,8 @@ public:
 
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);
+    const QString& getEditTag() const { return mEditTag; }
+    void setEditTag(const QString& tag);
     const QString& getFirstWebLink() const { return mFirstWebLink; }
     void setFirstWebLink(const QString& link);
     const QString& getFirstPostLink() const { return mFirstPostLink; }
@@ -99,6 +104,7 @@ signals:
     void photoPickFailed(QString error);
     void photoPickCanceled();
     void editMentionChanged();
+    void editTagChanged();
     void firstWebLinkChanged();
     void firstPostLinkChanged();
     void firstFeedLinkChanged();
@@ -125,6 +131,8 @@ private:
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     QString mEditMention; // Mention currently being edited (without @-symbol)
     int mEditMentionIndex = 0;
+    QString mEditTag; // Tag currently being edited (without #-symbol)
+    int mEditTagIndex = 0;
     QString mFirstPostLink; // HTTPS link to a post
     QString mFirstFeedLink; // HTTPS link to feed generator
     QString mFirstListLink; // HTTPS link to list ivew

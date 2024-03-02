@@ -299,6 +299,7 @@ qt_add_qml_module(libskywalker
         SOURCES atproto_image_provider.cpp
         SOURCES hashtag_index.h
         SOURCES hashtag_index.cpp
+        QML_FILES HashtagTypeaheadView.qml
 )
 
 if (NOT ANDROID)

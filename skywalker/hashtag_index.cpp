@@ -23,14 +23,27 @@ HashtagIndex::HashtagIndex(int maxEntries) :
 {
 }
 
-void HashtagIndex::insert(const QString& hashtag)
+void HashtagIndex::clear()
 {
-    auto* entry = new Entry(this, hashtag);
-    addToIndex(hashtag, entry->getNormalized());
-    mCache.insert(hashtag, entry);
+    mCache.clear();
+    mIndex.clear();
 }
 
-static void addToResult(const QString& match, std::vector<QString>& result, std::unordered_set<QString>& alreadyFound)
+void HashtagIndex::insert(const QString& hashtag)
+{
+    qDebug() << "Insert hashtag:" << hashtag;
+    auto* entry = new Entry(this, hashtag);
+    const QString normalized = entry->getNormalized();
+    mCache.insert(hashtag, entry);
+
+    // Adding to index must be done after insert in cache.
+    // If the entry already exists, then the cache will destroy the new entry which triggers
+    // removed from the index. The index not be removed as there is already an entry in the
+    // cache. addToIndex will re-insert in that case.
+    addToIndex(hashtag, normalized);
+}
+
+static void addToResult(const QString& match, QStringList& result, std::unordered_set<QString>& alreadyFound)
 {
     if (!alreadyFound.count(match))
     {
@@ -39,9 +52,11 @@ static void addToResult(const QString& match, std::vector<QString>& result, std:
     }
 }
 
-std::vector<QString> HashtagIndex::find(const QString& hashtag, size_t limit) const
+QStringList HashtagIndex::find(const QString& hashtag, int limit) const
 {
-    std::vector<QString> result;
+    qDebug() << "Find hashtag:" << hashtag << "limit:" << limit;
+
+    QStringList result;
     result.reserve(limit);
     std::unordered_set<QString> alreadyFound;
 
@@ -68,6 +83,7 @@ void HashtagIndex::addToIndex(const QString& hashtag, const QString& normalized)
 
 void HashtagIndex::removeFromIndex(const QString& hashtag, const QString& normalized)
 {
+    qDebug() << "Remove hashtag:" << hashtag;
     auto& hashtags = mIndex[normalized];
     hashtags.erase(hashtag);
 
@@ -75,7 +91,7 @@ void HashtagIndex::removeFromIndex(const QString& hashtag, const QString& normal
         mIndex.erase(normalized);
 }
 
-void HashtagIndex::findFullMatch(const QString& normalized, size_t limit, std::vector<QString>& result,
+void HashtagIndex::findFullMatch(const QString& normalized, int limit, QStringList& result,
                                  std::unordered_set<QString>& alreadyFound) const
 {
     auto it = mIndex.find(normalized);
@@ -92,7 +108,7 @@ void HashtagIndex::findFullMatch(const QString& normalized, size_t limit, std::v
     }
 }
 
-void HashtagIndex::findPrefixMatch(const QString& normalized, const QString& nonNormalized, size_t limit, std::vector<QString>& result,
+void HashtagIndex::findPrefixMatch(const QString& normalized, const QString& nonNormalized, int limit, QStringList& result,
                                    std::unordered_set<QString>& alreadyFound) const
 {
     size_t initialSize = result.size();

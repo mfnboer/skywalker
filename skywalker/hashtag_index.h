@@ -15,8 +15,9 @@ class HashtagIndex
 public:
     explicit HashtagIndex(int maxEntries);
 
+    void clear();
     void insert(const QString& hashtag);
-    std::vector<QString> find(const QString& hashtag, size_t limit) const;
+    QStringList find(const QString& hashtag, int limit) const;
 
 private:
     class Entry : public QObject
@@ -36,9 +37,9 @@ private:
 
     void addToIndex(const QString& hashtag, const QString& normalized);
     void removeFromIndex(const QString& hashtag, const QString& normalized);
-    void findFullMatch(const QString& normalized, size_t limit, std::vector<QString>& result,
+    void findFullMatch(const QString& normalized, int limit, QStringList& result,
                        std::unordered_set<QString>& alreadyFound) const;
-    void findPrefixMatch(const QString& normalized, const QString& nonNormalized, size_t limit, std::vector<QString>& result,
+    void findPrefixMatch(const QString& normalized, const QString& nonNormalized, int limit, QStringList& result,
                          std::unordered_set<QString>& alreadyFound) const;
 
     // normalized hashtag -> hashtags

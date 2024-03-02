@@ -136,6 +136,15 @@ void SearchUtils::setAuthorTypeaheadList(const BasicProfileList& list)
     emit authorTypeaheadListChanged();
 }
 
+void SearchUtils::setHashtagTypeaheadList(const QStringList& list)
+{
+    if (mHashtagTypeaheadList != list)
+    {
+        mHashtagTypeaheadList = list;
+        emit hashtagTypeaheadListChanged();
+    }
+}
+
 void SearchUtils::setSearchPostsInProgress(bool inProgress)
 {
     if (inProgress != mSearchPostsInProgress)
@@ -205,6 +214,13 @@ void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit)
 
             qWarning() << "Type ahead search failed:" << error << " - " << msg;
         });
+}
+
+void SearchUtils::searchHashtagsTypeahead(const QString& typed, int limit)
+{
+    auto& hashtags = mSkywalker->getUserHashtags();
+    const auto results = hashtags.find(typed, limit);
+    setHashtagTypeaheadList(results);
 }
 
 void SearchUtils::localSearchAuthorsTypeahead(const QString& typed, int limit)

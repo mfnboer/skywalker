@@ -144,6 +144,8 @@ Page {
                                    replyRootPostUri, replyRootPostCid,
                                    qUri, qCid, labels);
                 }
+
+                postUtils.cacheTags(postText.text)
             }
         }
     }
@@ -494,10 +496,14 @@ Page {
 
             onCursorRectangleChanged: {
                 let editMentionY = postUtils.editMentionCursorY
+                let editTagY = postUtils.editTagCursorY
                 let cursorY = cursorRectangle.y
 
                 if (postUtils.editMention.length > 0 && editMentionY != cursorY)
                     postUtils.editMention = ""
+
+                if (postUtils.editTag.length > 0 && editTagY != cursorY)
+                    postUtils.editTag = ""
 
                 flick.ensureVisible(cursorRectangle)
             }
@@ -597,6 +603,16 @@ Page {
             postUtils: postUtils
 
             Accessible.name: qsTr("you can select a user from the list below")
+        }
+
+        HashtagTypeaheadView {
+            y: postText.y + postText.cursorRectangle.y + postText.cursorRectangle.height + 5
+            parentPage: page
+            editText: postText
+            searchUtils: searchUtils
+            postUtils: postUtils
+
+            Accessible.name: qsTr("you can select a hashtag from the list below")
         }
 
         // Image attachments
@@ -876,6 +892,7 @@ Page {
 
     PostUtils {
         property double editMentionCursorY: 0
+        property double editTagCursorY: 0
 
         id: postUtils
         skywalker: page.skywalker
@@ -915,6 +932,12 @@ Page {
             console.debug(editMention)
             editMentionCursorY = postText.cursorRectangle.y
             typeaheadSearchTimer.start()
+        }
+
+        onEditTagChanged: {
+            console.debug(editTag)
+            editTagCursorY = postText.cursorRectangle.y
+            hashtagTypeaheadSearchTimer.start()
         }
 
         onFirstWebLinkChanged: {
@@ -1028,6 +1051,15 @@ Page {
         onTriggered: {
             if (postUtils.editMention.length > 0)
                 searchUtils.searchAuthorsTypeahead(postUtils.editMention, 10)
+        }
+    }
+
+    Timer {
+        id: hashtagTypeaheadSearchTimer
+        interval: 500
+        onTriggered: {
+            if (postUtils.editTag.length > 0)
+                searchUtils.searchHashtagsTypeahead(postUtils.editTag, 10)
         }
     }
 
@@ -1171,6 +1203,8 @@ Page {
                                  gif, labels,
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
+
+        postUtils.cacheTags(postText.text)
     }
 
     function showDraftPosts() {

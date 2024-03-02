@@ -33,7 +33,7 @@ SimpleAuthorListView {
         editText.clear() // also clears the preedit buffer
 
         // Add space and move the cursor 1 postion beyond the end
-        // of then mention. That causes the typeahead list to disappear.
+        // of the mention. That causes the typeahead list to disappear.
         const newText = fullText.slice(0, mentionStartIndex) + profile.handle + ' ' + fullText.slice(mentionEndIndex)
         editText.text = newText
         editText.cursorPosition = mentionStartIndex + profile.handle.length + 1

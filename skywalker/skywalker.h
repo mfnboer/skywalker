@@ -10,6 +10,7 @@
 #include "edit_user_preferences.h"
 #include "favorite_feeds.h"
 #include "feed_list_model.h"
+#include "hashtag_index.h"
 #include "invite_code.h"
 #include "item_store.h"
 #include "list_list_model.h"
@@ -174,6 +175,7 @@ public:
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
+    HashtagIndex& getUserHashtags() { return mUserHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
     DraftPostsModel::Ptr createDraftPostsModel();
 
@@ -293,6 +295,7 @@ private:
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;
 
+    HashtagIndex mUserHashtags;
     FavoriteFeeds mFavoriteFeeds;
     UserSettings mUserSettings;
     bool mDebugLogging = false;

@@ -33,6 +33,7 @@ static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
 static constexpr int AUTHOR_LIKES_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
+static constexpr int USER_HASHTAG_INDEX_SIZE = 100;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
@@ -41,6 +42,7 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                    mBookmarks, mMutedWords, mUserPreferences, this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
+    mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mUserSettings(this)
 {
@@ -2345,6 +2347,7 @@ void Skywalker::signOut()
     mBookmarksModel = nullptr;
     mBookmarks.clear();
     mMutedWords.clear();
+    mUserHashtags.clear(); // TODO: save
     mFavoriteFeeds.clear();
     mUserSettings.setActiveUserDid({});
     setAutoUpdateTimelineInProgress(false);
