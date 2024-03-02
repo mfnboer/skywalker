@@ -2,7 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <search_utils.h>
-#include <QTest>
+#include <QtTest/QTest>
 
 using namespace Skywalker;
 
@@ -51,5 +51,3 @@ private slots:
         QCOMPARE(SearchUtils::getNormalizedWords(input), output);
     }
 };
-
-QTEST_MAIN(TestSearchUtils)

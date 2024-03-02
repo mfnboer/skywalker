@@ -206,5 +206,3 @@ private:
 
     ATProto::AppBskyFeed::PostView mPostView;
 };
-
-QTEST_MAIN(TestMutedWords)

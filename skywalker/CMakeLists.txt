@@ -297,6 +297,8 @@ qt_add_qml_module(libskywalker
         SOURCES draft_post_data.h
         SOURCES atproto_image_provider.h
         SOURCES atproto_image_provider.cpp
+        SOURCES hashtag_index.h
+        SOURCES hashtag_index.cpp
 )
 
 if (NOT ANDROID)

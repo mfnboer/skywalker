@@ -3,7 +3,7 @@
 #pragma once
 #include <definitions.h>
 #include <post_feed_model.h>
-#include <QTest>
+#include <QtTest/QTest>
 
 using namespace Skywalker;
 using namespace std::chrono_literals;
@@ -444,5 +444,3 @@ private:
     PostFeedModel::Ptr mPostFeedModel;
     int mNextPostId = 1;
 };
-
-QTEST_MAIN(TestPostFeedModel)

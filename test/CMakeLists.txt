@@ -19,9 +19,12 @@ if (NOT ANDROID)
     add_link_options(-fsanitize=address)
 endif()
 
-qt_add_executable(test_search_utils test_search_utils.h)
-qt_add_executable(test_post_feed_model test_post_feed_model.h)
-qt_add_executable(test_muted_words test_muted_words.h)
+qt_add_executable(test_skywalker
+    test_hashtag_index.h
+    test_muted_words.h
+    test_post_feed_model.h
+    test_search_utils.h
+    main.cpp)
 
 set(LINK_LIBS
     PRIVATE libskywalker
@@ -31,6 +34,4 @@ set(LINK_LIBS
     PRIVATE Qt6::QuickControls2
 )
 
-target_link_libraries(test_search_utils ${LINK_LIBS})
-target_link_libraries(test_post_feed_model ${LINK_LIBS})
-target_link_libraries(test_muted_words ${LINK_LIBS})
+target_link_libraries(test_skywalker ${LINK_LIBS})
