@@ -15,7 +15,8 @@ public:
     DraftPostsModel(const QString& userDid, const IProfileStore& following,
                     const IProfileStore& mutedReposts,
                     const IContentFilter& contentFilter, const Bookmarks& bookmarks,
-                    const IMutedWords& mutedWords, QObject* parent = nullptr);
+                    const IMutedWords& mutedWords, HashtagIndex& hashtags,
+                    QObject* parent = nullptr);
 
     Q_INVOKABLE int getMaxDrafts() const;
     Q_INVOKABLE void clear();

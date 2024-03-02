@@ -7,8 +7,9 @@ namespace Skywalker {
 SearchPostFeedModel::SearchPostFeedModel(const QString& userDid, const IProfileStore& following,
                                          const IProfileStore& mutedReposts,
                                          const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                         const MutedWords& mutedWords, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, parent)
+                                         const MutedWords& mutedWords, HashtagIndex& hashtags,
+                                         QObject* parent) :
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent)
 {
 }
 
@@ -93,6 +94,7 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
             if (mustHideContent(post))
                 continue;
 
+            preprocess(post);
             page->addPost(post);
         }
         else

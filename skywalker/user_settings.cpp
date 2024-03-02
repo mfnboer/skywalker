@@ -273,4 +273,24 @@ QString UserSettings::getMutedRepostsListUri(const QString& did) const
     return uri.toString();
 }
 
+void UserSettings::setUserHashtags(const QString& did, const QStringList& hashtags)
+{
+    mSettings.setValue(key(did, "userHashtags"), hashtags);
+}
+
+QStringList UserSettings::getUserHashtags(const QString& did) const
+{
+    return mSettings.value(key(did, "userHashtags")).toStringList();
+}
+
+void UserSettings::setSeenHashtags(const QStringList& hashtags)
+{
+    mSettings.setValue("seenHashtags", hashtags);
+}
+
+QStringList UserSettings::getSeenHashtags() const
+{
+    return mSettings.value("seenHashtags").toStringList();
+}
+
 }

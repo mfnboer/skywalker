@@ -14,7 +14,8 @@ public:
     explicit PostThreadModel(const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                             const MutedWords& mutedWords, QObject* parent = nullptr);
+                             const MutedWords& mutedWords, HashtagIndex& hashtags,
+                             QObject* parent = nullptr);
 
     // Returns index of the entry post
     int setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
@@ -31,9 +32,13 @@ private:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
+
+        explicit Page(AbstractPostFeedModel& postFeedModel) : mPostFeedModel(postFeedModel) {}
+
         std::deque<Post> mFeed;
         ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
         int mEntryPostIndex = 0;
+        AbstractPostFeedModel& mPostFeedModel;
 
         Post& addPost(const Post& post);
         Post& prependPost(const Post& post);

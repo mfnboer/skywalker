@@ -43,6 +43,12 @@ void HashtagIndex::insert(const QString& hashtag)
     addToIndex(hashtag, normalized);
 }
 
+void HashtagIndex::insert(const QStringList& hashtags)
+{
+    for (const auto& tag : hashtags)
+        insert(tag);
+}
+
 static void addToResult(const QString& match, QStringList& result, std::unordered_set<QString>& alreadyFound)
 {
     if (!alreadyFound.count(match))
@@ -52,13 +58,19 @@ static void addToResult(const QString& match, QStringList& result, std::unordere
     }
 }
 
-QStringList HashtagIndex::find(const QString& hashtag, int limit) const
+QStringList HashtagIndex::find(const QString& hashtag, int limit, const QStringList& suppress) const
 {
     qDebug() << "Find hashtag:" << hashtag << "limit:" << limit;
 
     QStringList result;
     result.reserve(limit);
     std::unordered_set<QString> alreadyFound;
+
+    for (const auto& tag : suppress)
+    {
+        const auto normalizedTag = SearchUtils::normalizeText(tag);
+        alreadyFound.insert(normalizedTag);
+    }
 
     if (mCache.contains(hashtag))
         addToResult(hashtag, result, alreadyFound);

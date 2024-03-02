@@ -12,9 +12,10 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              const ContentFilter& contentFilter,
                              const Bookmarks& bookmarks,
                              const MutedWords& mutedWords,
+                             HashtagIndex& hashtags,
                              const ATProto::UserPreferences& userPrefs,
                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, parent),
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent),
     mUserPreferences(userPrefs),
     mFeedName(feedName)
 {}
@@ -578,6 +579,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                     if (allOutSideTopN || (allInTopN && rootTopNIndex < postTopNIndex))
                     {
+                        preprocess(replyRef->mRoot);
                         page->addPost(replyRef->mRoot);
                         page->mFeed.back().setPostType(QEnums::POST_ROOT);
                         rootAdded = true;
@@ -591,6 +593,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 {
                     if (allOutSideTopN || (allInTopN && parentTopNIndex < postTopNIndex))
                     {
+                        preprocess(replyRef->mParent);
                         page->addPost(replyRef->mParent, true);
                         auto& parentPost = page->mFeed.back();
                         parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
@@ -621,6 +624,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                     continue;
             }
 
+            preprocess(post);
             page->addPost(post);
         }
         else

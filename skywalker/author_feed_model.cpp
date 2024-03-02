@@ -7,8 +7,9 @@ namespace Skywalker {
 AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                 const MutedWords& mutedWords, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, parent),
+                                 const MutedWords& mutedWords, HashtagIndex& hashtags,
+                                 QObject* parent) :
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent),
     mAuthor(author.nonVolatileCopy())
 {
 }
@@ -111,6 +112,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
                 }
             }
 
+            preprocess(post);
             page->addPost(post);
         }
         else

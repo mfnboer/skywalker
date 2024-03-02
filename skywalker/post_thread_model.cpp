@@ -8,8 +8,9 @@ namespace Skywalker {
 PostThreadModel::PostThreadModel(const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                 const MutedWords& mutedWords, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, parent)
+                                 const MutedWords& mutedWords, HashtagIndex& hashtags,
+                                 QObject* parent) :
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -106,6 +107,7 @@ static void cacheAuthor(const Post& post)
 
 Post& PostThreadModel::Page::addPost(const Post& post)
 {
+    mPostFeedModel.preprocess(post);
     mFeed.push_back(post);
     mFeed.back().setPostType(QEnums::POST_THREAD);
     cacheAuthor(post);
@@ -114,6 +116,7 @@ Post& PostThreadModel::Page::addPost(const Post& post)
 
 Post& PostThreadModel::Page::prependPost(const Post& post)
 {
+    mPostFeedModel.preprocess(post);
     mFeed.push_front(post);
     mFeed.front().setPostType(QEnums::POST_THREAD);
     cacheAuthor(post);
@@ -161,7 +164,7 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
 
 PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread)
 {
-    auto page = std::make_unique<Page>();
+    auto page = std::make_unique<Page>(*this);
     page->mRawThread = std::move(thread);
 
     ATProto::AppBskyFeed::ThreadViewPost* viewPost = nullptr;

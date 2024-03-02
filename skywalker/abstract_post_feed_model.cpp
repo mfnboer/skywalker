@@ -11,14 +11,16 @@ using namespace std::chrono_literals;
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
                                              const IContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                             const IMutedWords& mutedWords, QObject* parent) :
+                                             const IMutedWords& mutedWords, HashtagIndex& hashtags,
+                                             QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
     mFollowing(following),
     mMutedReposts(mutedReposts),
     mContentFilter(contentFilter),
     mBookmarks(bookmarks),
-    mMutedWords(mutedWords)
+    mMutedWords(mutedWords),
+    mHashtags(hashtags)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
 }
@@ -99,6 +101,14 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
     }
 
     return false;
+}
+
+void AbstractPostFeedModel::preprocess(const Post& post)
+{
+    const auto hashtags = post.getHashtags();
+
+    for (const auto& tag : hashtags)
+        mHashtags.insert(tag);
 }
 
 int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const

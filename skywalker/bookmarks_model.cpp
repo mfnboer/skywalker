@@ -10,8 +10,9 @@ namespace Skywalker {
 BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& following,
                                const IProfileStore& mutedReposts,
                                const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                               const MutedWords& mutedWords, QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, parent)
+                               const MutedWords& mutedWords, HashtagIndex& hashtags,
+                               QObject* parent) :
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent)
 {
 }
 
@@ -88,6 +89,7 @@ void BookmarksModel::addPosts(const std::vector<QString>& postUris)
 
         if (post)
         {
+            preprocess(*post);
             mFeed.push_back(*post);
         }
         else

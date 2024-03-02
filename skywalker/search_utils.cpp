@@ -218,8 +218,16 @@ void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit)
 
 void SearchUtils::searchHashtagsTypeahead(const QString& typed, int limit)
 {
-    auto& hashtags = mSkywalker->getUserHashtags();
-    const auto results = hashtags.find(typed, limit);
+    const auto& hashtags = mSkywalker->getUserHashtags();
+    auto results = hashtags.find(typed, limit);
+
+    if (results.size() < limit)
+    {
+        const auto& seenHashtags = mSkywalker->getSeenHashtags();
+        const auto& seenResults = seenHashtags.find(typed, limit - results.size(), results);
+        results.append(seenResults);
+    }
+
     setHashtagTypeaheadList(results);
 }
 

@@ -146,6 +146,7 @@ ApplicationWindow {
             inviteCodeStore.load(lastSignIn)
             skywalker.bookmarks.load(userSettings)
             skywalker.mutedWords.load(userSettings)
+            skywalker.loadHashtags()
 
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()

@@ -130,6 +130,8 @@ public:
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();
+    Q_INVOKABLE void loadHashtags();
+    void saveHashtags();
 
     // NOTE: destroys the previous model
     Q_INVOKABLE const BookmarksModel* createBookmarksModel();
@@ -176,6 +178,7 @@ public:
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     std::optional<QString> makeOptionalCursor(const QString& cursor) const;
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
+    HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
     DraftPostsModel::Ptr createDraftPostsModel();
 
@@ -296,6 +299,7 @@ private:
     int mUnreadNotificationCount = 0;
 
     HashtagIndex mUserHashtags;
+    HashtagIndex mSeenHashtags;
     FavoriteFeeds mFavoriteFeeds;
     UserSettings mUserSettings;
     bool mDebugLogging = false;

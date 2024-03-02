@@ -81,6 +81,12 @@ public:
 
     Q_INVOKABLE QString getMutedRepostsListUri(const QString& did) const;
 
+    void setUserHashtags(const QString& did, const QStringList& hashtags);
+    QStringList getUserHashtags(const QString& did) const;
+
+    void setSeenHashtags(const QStringList& hashtags);
+    QStringList getSeenHashtags() const;
+
 private:
     QString key(const QString& did, const QString& subkey) const;
 

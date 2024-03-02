@@ -16,7 +16,7 @@ private slots:
     {
         mPostFeedModel = std::make_unique<PostFeedModel>(
             HOME_FEED, mUserDid, mFollowing, mMutedReposts, mContentFilter,
-            mBookmarks, mMutedWords, mUserPreferences);
+            mBookmarks, mMutedWords, mHashtags, mUserPreferences);
     }
 
     void cleanup()
@@ -441,6 +441,7 @@ private:
     ContentFilter mContentFilter{mUserPreferences};
     Bookmarks mBookmarks;
     MutedWords mMutedWords;
+    HashtagIndex mHashtags{10};
     PostFeedModel::Ptr mPostFeedModel;
     int mNextPostId = 1;
 };

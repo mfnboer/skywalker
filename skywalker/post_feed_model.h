@@ -25,6 +25,7 @@ public:
                            const ContentFilter& contentFilter,
                            const Bookmarks& bookmarks,
                            const MutedWords& mutedWords,
+                           HashtagIndex& hashtags,
                            const ATProto::UserPreferences& userPrefs,
                            QObject* parent = nullptr);
 

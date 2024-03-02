@@ -21,7 +21,8 @@ public:
     explicit BookmarksModel(const QString& userDid, const IProfileStore& following,
                             const IProfileStore& mutedReposts,
                             const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                            const MutedWords& mutedWords, QObject* parent = nullptr);
+                            const MutedWords& mutedWords, HashtagIndex& hashtags,
+                            QObject* parent = nullptr);
 
     void clear();
     void addBookmarks(const std::vector<QString>& postUris, ATProto::Client& bsky);

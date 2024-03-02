@@ -15,7 +15,8 @@ public:
     AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following,
                     const IProfileStore& mutedReposts,
                     const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                    const MutedWords& mutedWords, QObject* parent = nullptr);
+                    const MutedWords& mutedWords, HashtagIndex& hashtags,
+                    QObject* parent = nullptr);
 
     void setFilter(QEnums::AuthorFeedFilter filter) { mFilter = filter; }
 

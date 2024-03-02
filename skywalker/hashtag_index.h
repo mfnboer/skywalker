@@ -17,7 +17,9 @@ public:
 
     void clear();
     void insert(const QString& hashtag);
-    QStringList find(const QString& hashtag, int limit) const;
+    void insert(const QStringList& hashtags);
+    QStringList find(const QString& hashtag, int limit, const QStringList& suppress = {}) const;
+    QStringList getAllHashtags() const { return mCache.keys(); }
 
 private:
     class Entry : public QObject
