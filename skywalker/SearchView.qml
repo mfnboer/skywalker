@@ -7,6 +7,9 @@ Page {
     required property var skywalker
     property var timeline
     property bool isTyping: true
+    property bool isHashtagSearch: false
+    property bool isPostSearch: true
+    property string postSearchUser // empty, "me", handle
     property string initialSearch
 
     signal closed
@@ -17,16 +20,26 @@ Page {
     Accessible.role: Accessible.Pane
 
     header: SearchHeader {
+        placeHolderText: isPostSearch ? qsTr("Search posts") : qsTr("Search users")
         onBack: page.closed()
 
         onSearchTextChanged: (text) => {
             page.isTyping = true
 
             if (text.length > 0) {
-                typeaheadSearchTimer.start()
+                if (text.startsWith('#')) {
+                    page.isHashtagSearch = true
+                    hashtagTypeaheadSearchTimer.start()
+                }
+                else {
+                    page.isHashtagSearch = false
+                    authorTypeaheadSearchTimer.start()
+                }
             } else {
-                typeaheadSearchTimer.stop()
+                authorTypeaheadSearchTimer.stop()
+                hashtagTypeaheadSearchTimer.stop()
                 searchUtils.authorTypeaheadList = []
+                searchUtils.hashtagTypeaheadList = []
             }
         }
 
@@ -48,43 +61,86 @@ Page {
         onFeedsClicked: root.viewFeedsView()
     }
 
-    SimpleAuthorListView {
-        id: typeaheadView
-        anchors.fill: parent
-        model: searchUtils.authorTypeaheadList
-        visible: page.isTyping
+    Row {
+        id: searchModeBar
 
-        onAuthorClicked: (profile) => { page.skywalker.getDetailedProfile(profile.did) }
+        SvgButton {
+            anchors.verticalCenter: searchModeBar.verticalCenter
+            width: height
+            height: 35
+            radius: 3
+            imageMargin: 5
+            svg: page.isPostSearch ? svgOutline.chat : svgOutline.user
+            onClicked: page.isPostSearch = !page.isPostSearch
+
+            Accessible.role: Accessible.Button
+            Accessible.name: getSpeech()
+            Accessible.onPressAction: clicked()
+
+            function getSpeech() {
+                if (page.isPostSearch)
+                    return qsTr("Search mode is posts. Click to change to users.")
+                else
+                    return qsTr("Search mode is users. Click to change to posts.")
+            }
+        }
 
         AccessibleText {
-            topPadding: 10
-            anchors.horizontalCenter: parent.horizontalCenter
-            color: Material.color(Material.Grey)
-            elide: Text.ElideRight
-            text: qsTr("No matching user name found")
-            visible: typeaheadView.count === 0
+            id: searchModeText
+            anchors.verticalCenter: searchModeBar.verticalCenter
+            color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
+            text: page.isPostSearch ? qsTr(`Posts from ${page.getSearchPostScopeText()}`) : qsTr("Users")
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: page.changeSearchPostScope()
+                enabled: page.isPostSearch
+            }
         }
     }
 
-    TabBar {
-        id: searchResultsBar
+    Rectangle {
+        id: searchModeSeparator
+        anchors.top: searchModeBar.bottom
         width: parent.width
-        visible: !page.isTyping
+        height: 1
+        color: guiSettings.separatorColor
+    }
 
-        AccessibleTabButton {
-            text: qsTr("Posts")
-        }
-        AccessibleTabButton {
-            text: qsTr("Users")
+    SimpleAuthorListView {
+        id: typeaheadView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: parent.bottom
+        model: searchUtils.authorTypeaheadList
+        visible: page.isTyping && !page.isPostSearch && !page.isHashtagSearch
+
+        onAuthorClicked: (profile) => { page.skywalker.getDetailedProfile(profile.did) }
+    }
+
+    HashtagListView {
+        id: hastagTypeaheadView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: parent.bottom
+        model: searchUtils.hashtagTypeaheadList
+        visible: page.isTyping && page.isPostSearch && page.isHashtagSearch
+
+        onHashtagClicked: (tag) => {
+            const fullTag = `#${tag}`
+            page.header.setSearchText(fullTag)
+            searchUtils.search(fullTag)
         }
     }
 
     StackLayout {
         id: searchStack
-        anchors.top: searchResultsBar.bottom
+        anchors.top: searchModeSeparator.bottom
         anchors.bottom: parent.bottom
         width: parent.width
-        currentIndex: searchResultsBar.currentIndex
+        currentIndex: page.isPostSearch ? 0 : 1
         visible: !page.isTyping
 
         ListView {
@@ -110,13 +166,10 @@ Page {
                 topText: ""
             }
 
-            AccessibleText {
-                topPadding: 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: Material.color(Material.Grey)
-                elide: Text.ElideRight
+            EmptyListIndication {
+                svg: svgOutline.noPosts
                 text: qsTr("No posts found")
-                visible: postsView.count === 0 && !searchUtils.searchPostsInProgress
+                list: postsView
             }
 
             BusyIndicator {
@@ -150,13 +203,10 @@ Page {
                 topText: ""
             }
 
-            AccessibleText {
-                topPadding: 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: Material.color(Material.Grey)
-                elide: Text.ElideRight
+            EmptyListIndication {
+                svg: svgOutline.noUsers
                 text: qsTr("No users found")
-                visible: usersView.count === 0 && !searchUtils.searchActorsInProgress
+                list: usersView
             }
 
             BusyIndicator {
@@ -167,13 +217,24 @@ Page {
     }
 
     Timer {
-        id: typeaheadSearchTimer
+        id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
             const text = page.header.getDisplayText()
 
             if (text.length > 0)
                 searchUtils.searchAuthorsTypeahead(text)
+        }
+    }
+
+    Timer {
+        id: hashtagTypeaheadSearchTimer
+        interval: 500
+        onTriggered: {
+            const text = page.header.getDisplayText()
+
+            if (text.length > 1)
+                searchUtils.searchHashtagsTypeahead(text.slice(1)) // strip #-symbol
         }
     }
 
@@ -185,9 +246,19 @@ Page {
             page.isTyping = false
 
             if (query.length > 0) {
-                searchUtils.searchPosts(query)
+                scopedSearchPost(query)
                 searchUtils.searchActors(query)
             }
+        }
+
+        function scopedSearchPost(query) {
+            if (query.length === 0)
+                return
+
+            if (postSearchUser)
+                searchUtils.searchPosts(`from:${postSearchUser} ${query}`)
+            else
+                searchUtils.searchPosts(query)
         }
 
         Component.onDestruction: {
@@ -207,6 +278,38 @@ Page {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function changeSearchPostScope() {
+        let userName = ""
+        let otherHandle = ""
+
+        if (postSearchUser) {
+            if (postSearchUser === "me") {
+                userName = "me"
+            }
+            else {
+                userName = "other"
+                otherHandle = postSearchUser
+            }
+        }
+
+        let component = Qt.createComponent("SearchPostScope.qml")
+        let scopePage = component.createObject(page, { userName: userName, otherUserHandle: otherHandle })
+        scopePage.onRejected.connect(() => scopePage.destroy())
+        scopePage.onAccepted.connect(() => {
+                postSearchUser = scopePage.getUserName()
+                searchUtils.scopedSearchPost(page.header.getDisplayText())
+                scopePage.destroy()
+        })
+        scopePage.open()
+    }
+
+    function getSearchPostScopeText() {
+        if (postSearchUser === "me")
+            return postSearchUser
+
+        return postSearchUser ? `@${postSearchUser}` : "everyone"
     }
 
     function forceDestroy() {

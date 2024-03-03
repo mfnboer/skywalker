@@ -1,6 +1,8 @@
 1.5
 ===
 * Hashtag completion
+* Improved search. You can easily scope your search by user,
+  i.e. search posts from a user.
 * Removed underlines from links/hashtags/mentions
 
 1.4

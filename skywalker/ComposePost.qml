@@ -931,7 +931,7 @@ Page {
         onEditMentionChanged: {
             console.debug(editMention)
             editMentionCursorY = postText.cursorRectangle.y
-            typeaheadSearchTimer.start()
+            authorTypeaheadSearchTimer.start()
         }
 
         onEditTagChanged: {
@@ -1046,7 +1046,7 @@ Page {
     }
 
     Timer {
-        id: typeaheadSearchTimer
+        id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
             if (postUtils.editMention.length > 0)

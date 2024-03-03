@@ -81,7 +81,7 @@ TextEdit {
     }
 
     Timer {
-        id: typeaheadSearchTimer
+        id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
             if (postUtils.editMention.length > 0)
@@ -119,12 +119,12 @@ TextEdit {
         onEditMentionChanged: {
             console.debug(editMention)
             editMentionCursorY = editText.cursorRectangle.y
-            typeaheadSearchTimer.start()
+            authorTypeaheadSearchTimer.start()
         }
 
         onEditTagChanged: {
             console.debug(editTag)
-            editTagCursorY = postText.cursorRectangle.y
+            editTagCursorY = editText.cursorRectangle.y
             hashtagTypeaheadSearchTimer.start()
         }
     }

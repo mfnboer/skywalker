@@ -300,6 +300,8 @@ qt_add_qml_module(libskywalker
         SOURCES hashtag_index.h
         SOURCES hashtag_index.cpp
         QML_FILES HashtagTypeaheadView.qml
+        QML_FILES HashtagListView.qml
+        QML_FILES SearchPostScope.qml
 )
 
 if (NOT ANDROID)

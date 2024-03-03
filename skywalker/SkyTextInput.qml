@@ -13,6 +13,9 @@ Rectangle {
     property alias text: textField.text
     property alias displayText: textField.displayText
 
+    signal textEdited
+    signal editingFinished
+
     id: skyTextInput
     height: textField.height
     radius: 10
@@ -31,7 +34,7 @@ Rectangle {
         activeFocusOnTab: true
         enabled: skyTextInput.enabled
         font.pointSize: guiSettings.scaledFont(9/8)
-        color: guiSettings.textColor
+        color: enabled ? guiSettings.textColor : guiSettings.disabledColor
         selectionColor: guiSettings.selectionColor
         text: skyTextInput.initialText
 
@@ -40,6 +43,9 @@ Rectangle {
         Accessible.description: Accessible.name
         Accessible.editable: true
         Accessible.passwordEdit: echoMode === TextInput.Password
+
+        onTextEdited: skyTextInput.textEdited()
+        onEditingFinished: skyTextInput.editingFinished()
 
         Text {
             anchors.fill: parent
