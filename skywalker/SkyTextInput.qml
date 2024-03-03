@@ -47,15 +47,14 @@ Rectangle {
         onTextEdited: skyTextInput.textEdited()
         onEditingFinished: skyTextInput.editingFinished()
 
-        Text {
-            anchors.fill: parent
-            padding: parent.padding
-            leftPadding: parent.leftPadding
-            font.pointSize: parent.font.pointSize
-            color: guiSettings.placeholderTextColor
-            text: placeholderText
-            visible: parent.displayText.length === 0
-            Accessible.ignored: true
+        // Cover long text that may scroll underneath the icon
+        Rectangle {
+            radius: 10
+            x: 1
+            y: 2
+            width: icon.width - 1
+            height: parent.height - 4
+            color: skyTextInput.color
         }
 
         SvgImage {
@@ -67,6 +66,18 @@ Rectangle {
             color: parent.color
             svg: svgIcon
             visible: !svgIcon.isNull()
+            Accessible.ignored: true
+        }
+
+
+        Text {
+            anchors.fill: parent
+            padding: parent.padding
+            leftPadding: parent.leftPadding
+            font.pointSize: parent.font.pointSize
+            color: guiSettings.placeholderTextColor
+            text: placeholderText
+            visible: parent.displayText.length === 0
             Accessible.ignored: true
         }
     }

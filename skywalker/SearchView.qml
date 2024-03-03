@@ -63,8 +63,10 @@ Page {
 
     Row {
         id: searchModeBar
+        width: parent.width
 
         SvgButton {
+            id: searchModeToggle
             anchors.verticalCenter: searchModeBar.verticalCenter
             width: height
             height: 35
@@ -87,7 +89,9 @@ Page {
 
         AccessibleText {
             id: searchModeText
+            width: parent.width - searchModeToggle.width
             anchors.verticalCenter: searchModeBar.verticalCenter
+            elide: Text.ElideRight
             color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
             text: page.isPostSearch ? qsTr(`Posts from ${page.getSearchPostScopeText()}`) : qsTr("Users")
 

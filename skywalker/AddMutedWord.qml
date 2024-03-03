@@ -19,7 +19,7 @@ Dialog {
         width: parent.width
         svgIcon: svgOutline.mutedWords
         initialText: editWord
-        placeholderText: qsTr("Word/phrase to mute")
+        placeholderText: qsTr("Word/phrase/hashtag to mute")
         enabled: true
     }
 
