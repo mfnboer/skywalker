@@ -93,7 +93,7 @@ ListView {
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) {
                         const author = model.getReplyRestrictionAuthor()
-                        restrictionList.push(qsTr(`users followed by <a href="${author.did}" style="color: ${guiSettings.linkColor};">@${author.handle}</a>`))
+                        restrictionList.push(qsTr(`users followed by <a href="${author.did}" style="color: ${guiSettings.linkColor}; text-decoration: none">@${author.handle}</a>`))
                     }
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST) {
@@ -103,7 +103,7 @@ ListView {
                         for (let i = 0; i < lists.length; ++i) {
                             const l = lists[i]
                             const listName = unicodeFonts.toCleanedHtml(l.name)
-                            listNames.push(`<a href="${l.uri}" style="color: ${guiSettings.linkColor};">${listName}</a>`)
+                            listNames.push(`<a href="${l.uri}" style="color: ${guiSettings.linkColor}; text-decoration: none">${listName}</a>`)
                         }
 
                         const names = guiSettings.toWordSequence(listNames)

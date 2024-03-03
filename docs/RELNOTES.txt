@@ -1,3 +1,8 @@
+1.5
+===
+* Hashtag completion
+* Removed underlines from links/hashtags/mentions
+
 1.4
 ===
 * Hashtags
