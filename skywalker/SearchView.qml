@@ -333,6 +333,8 @@ Page {
         initialSearch = searchText
 
         if (searchText) {
+            isPostSearch = true
+            postSearchUser = ""
             header.setSearchText(searchText)
             searchUtils.search(searchText)
         }

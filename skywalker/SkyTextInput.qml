@@ -13,7 +13,6 @@ Rectangle {
     property alias text: textField.text
     property alias displayText: textField.displayText
 
-    signal textEdited
     signal editingFinished
 
     id: skyTextInput
@@ -44,7 +43,6 @@ Rectangle {
         Accessible.editable: true
         Accessible.passwordEdit: echoMode === TextInput.Password
 
-        onTextEdited: skyTextInput.textEdited()
         onEditingFinished: skyTextInput.editingFinished()
 
         // Cover long text that may scroll underneath the icon

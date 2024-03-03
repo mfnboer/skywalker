@@ -1,6 +1,7 @@
 1.5
 ===
-* Hashtag completion
+* Hashtag completion (shows list of hashthags while you type)
+* Hashtag can contain non-ASCII characters.
 * Improved search. You can easily scope your search by user,
   i.e. search posts from a user.
 * Removed underlines from links/hashtags/mentions

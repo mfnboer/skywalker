@@ -10,11 +10,11 @@ Dialog {
 
     id: searchPostScope
     width: parent.width
-    contentHeight: scopeGrid.height + hastagTypeaheadView.height
+    contentHeight: scopeGrid.height + (authorTypeaheadView.visible ? authorTypeaheadView.height : 0)
+    topMargin: guiSettings.headerHeight
     title: qsTr("Posts from:")
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    anchors.centerIn: parent
 
     Accessible.role: Accessible.Dialog
     Accessible.name: title
@@ -65,21 +65,23 @@ Dialog {
             placeholderText: qsTr("Enter user handle")
             enabled: otherButton.checked
 
-            onTextEdited: {
-                searchPostScope.isTyping = true
-                authorTypeaheadSearchTimer.start()
+            onDisplayTextChanged: {
+                if (displayText != initialText) {
+                    searchPostScope.isTyping = true
+                    authorTypeaheadSearchTimer.start()
+                }
             }
 
             onEditingFinished: {
                 searchPostScope.isTyping = false
                 authorTypeaheadSearchTimer.stop()
-                userName = displayText
+                otherUserHandle = displayText
             }
         }
     }
 
     SimpleAuthorListView {
-        id: hastagTypeaheadView
+        id: authorTypeaheadView
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: scopeGrid.bottom
@@ -107,6 +109,10 @@ Dialog {
     SearchUtils {
         id: searchUtils
         skywalker: root.getSkywalker()
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 
     function getUserName() {
