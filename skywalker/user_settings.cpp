@@ -213,11 +213,6 @@ bool UserSettings::getBookmarksNoticeSeen() const
     return mSettings.value("bookmarksNoticeSeen", false).toBool();
 }
 
-void UserSettings::saveMutedWords(const QString& did, const QStringList& mutedWords)
-{
-    mSettings.setValue(key(did, "mutedWords"), mutedWords);
-}
-
 QStringList UserSettings::getMutedWords(const QString& did) const
 {
     return mSettings.value(key(did, "mutedWords")).toStringList();

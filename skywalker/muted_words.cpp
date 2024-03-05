@@ -80,9 +80,9 @@ bool MutedWords::preAdd(const Entry& entry)
     return true;
 }
 
-void MutedWords::addEntry(const QString& word)
+void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, const QStringList& unkwownTargets)
 {
-    Entry newEntry(cleanRawWord(word), SearchUtils::getNormalizedWords(word));
+    Entry newEntry(cleanRawWord(word), SearchUtils::getNormalizedWords(word), bskyJson, unkwownTargets);
 
     if (!preAdd(newEntry))
         return;
@@ -110,7 +110,7 @@ void MutedWords::addEntry(const QString& word)
 
 void MutedWords::removeEntry(const QString& word)
 {
-    const Entry searchEntry{ word, {} };
+    const Entry searchEntry{ word, {}, {}, {} };
     const auto it = mEntries.find(searchEntry);
 
     if (it == mEntries.end())
@@ -135,7 +135,7 @@ void MutedWords::removeEntry(const QString& word)
 
 bool MutedWords::containsEntry(const QString& word)
 {
-    const Entry searchEntry{ word, {} };
+    const Entry searchEntry{ word, {}, {}, {} };
     return mEntries.count(searchEntry);
 }
 
@@ -266,6 +266,7 @@ void MutedWords::load(const ATProto::UserPreferences& userPrefs)
     {
         bool matchContent = false;
         bool matchTag = false;
+        QStringList unknownTargets;
 
         for (const auto& target : mutedWord.mTargets)
         {
@@ -278,14 +279,15 @@ void MutedWords::load(const ATProto::UserPreferences& userPrefs)
                 matchTag = true;
                 break;
             case ATProto::AppBskyActor::MutedWordTarget::UNKNOWN:
+                unknownTargets.push_back(target.mRawTarget);
                 break;
             }
         }
 
         if  (matchTag && !matchContent)
-            addEntry(QString("#%1").arg(mutedWord.mValue));
+            addEntry(QString("#%1").arg(mutedWord.mValue), mutedWord.mJson, unknownTargets);
         else
-            addEntry(mutedWord.mValue);
+            addEntry(mutedWord.mValue, mutedWord.mJson, unknownTargets);
 
     }
 
@@ -293,30 +295,18 @@ void MutedWords::load(const ATProto::UserPreferences& userPrefs)
     mDirty = false;
 }
 
-void MutedWords::legacySave(UserSettings* userSettings)
+static ATProto::AppBskyActor::MutedWord::Target makeTarget(
+    const ATProto::AppBskyActor::MutedWordTarget& targetType, const QString& rawType = {})
 {
-    Q_ASSERT(false); // should not be used.
-    Q_ASSERT(userSettings);
+    ATProto::AppBskyActor::MutedWord::Target target;
+    target.mTarget = targetType;
 
-    if (!mDirty)
-        return;
+    if (rawType.isEmpty())
+        target.mRawTarget = ATProto::AppBskyActor::mutedWordTargetToString(targetType);
+    else
+        target.mRawTarget = rawType;
 
-    const QString did = userSettings->getActiveUserDid();
-
-    if (did.isEmpty())
-    {
-        qDebug() << "No active user";
-        return;
-    }
-
-    QStringList mutedWords;
-
-    for (const auto& entry : mEntries)
-        mutedWords.append(entry.mRaw);
-
-    userSettings->saveMutedWords(did, mutedWords);
-    qDebug() << "Muted words saved:" << mutedWords.size();
-    mDirty = false;
+    return target;
 }
 
 void MutedWords::save(ATProto::UserPreferences& userPrefs)
@@ -327,8 +317,6 @@ void MutedWords::save(ATProto::UserPreferences& userPrefs)
     ATProto::UserPreferences::MutedWordsPref& mutedWordsPrefs = userPrefs.getMutedWordsPref();
     mutedWordsPrefs.mItems.clear();
 
-    // TODO: if any MutedWord properties get added in the future, then these get lost
-    // as long as this function is not updated. We could load/save the raw JSON object.
     for (const auto& entry : mEntries)
     {
         ATProto::AppBskyActor::MutedWord mutedWord;
@@ -336,20 +324,24 @@ void MutedWords::save(ATProto::UserPreferences& userPrefs)
         if (entry.mRaw.startsWith('#'))
         {
             mutedWord.mValue = entry.mRaw.sliced(1);
-            ATProto::AppBskyActor::MutedWord::Target tagTarget;
-            tagTarget.mTarget = ATProto::AppBskyActor::MutedWordTarget::TAG;
-            mutedWord.mTargets.push_back(tagTarget);
+            mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::TAG));
         }
         else
         {
             mutedWord.mValue = entry.mRaw;
-            ATProto::AppBskyActor::MutedWord::Target tagTarget;
-            tagTarget.mTarget = ATProto::AppBskyActor::MutedWordTarget::TAG;
-            mutedWord.mTargets.push_back(tagTarget);
-            ATProto::AppBskyActor::MutedWord::Target contentTarget;
-            contentTarget.mTarget = ATProto::AppBskyActor::MutedWordTarget::CONTENT;
-            mutedWord.mTargets.push_back(contentTarget);
+            mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::TAG));
+            mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::CONTENT));
         }
+
+        // Forward compatibility: save unknown targets
+        for (const auto& unknownTarget : entry.mUnknownTargets)
+        {
+            const auto target = makeTarget(ATProto::AppBskyActor::MutedWordTarget::UNKNOWN, unknownTarget);
+            mutedWord.mTargets.push_back(target);
+        }
+
+        // Forward compatibility: save full Bsky json.
+        mutedWord.mJson = entry.mBskyJson;
 
         mutedWordsPrefs.mItems.push_back(std::move(mutedWord));
     }

@@ -33,13 +33,12 @@ public:
     QStringList getEntries() const;
     void clear();
 
-    Q_INVOKABLE void addEntry(const QString& word);
+    Q_INVOKABLE void addEntry(const QString& word, const QJsonObject& bskyJson = {}, const QStringList& unkwownTargets = {});
     Q_INVOKABLE void removeEntry(const QString& word);
     bool containsEntry(const QString& word);
     void load(const ATProto::UserPreferences& userPrefs);
     bool legacyLoad(const UserSettings* userSettings);
     void save(ATProto::UserPreferences& userPrefs);
-    void legacySave(UserSettings* userSettings);
     bool isDirty() const { return mDirty; }
 
     bool match(const NormalizedWordIndex& post) const override;
@@ -53,8 +52,17 @@ private:
         QString mRaw;
         std::vector<QString> mNormalizedWords;
 
-        Entry(const QString& raw, const std::vector<QString>& normalizedWords) :
-            mRaw(raw), mNormalizedWords(normalizedWords) {}
+        // Bsky properties saved for forward compatibility, i.e. these will be saved unaltered.
+        QJsonObject mBskyJson;
+        QStringList mUnknownTargets;
+
+        Entry(const QString& raw, const std::vector<QString>& normalizedWords,
+              const QJsonObject& bskyJson, const QStringList& unknownTargets) :
+            mRaw(raw),
+            mNormalizedWords(normalizedWords),
+            mBskyJson(bskyJson),
+            mUnknownTargets(unknownTargets)
+        {}
 
         bool operator<(const Entry& rhs) const { return mRaw.localeAwareCompare(rhs.mRaw) < 0; }
 

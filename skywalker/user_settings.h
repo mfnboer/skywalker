@@ -64,9 +64,7 @@ public:
     void setBookmarksNoticeSeen(bool seen);
     bool getBookmarksNoticeSeen() const;
 
-    void saveMutedWords(const QString& did, const QStringList& mutedWords);
     QStringList getMutedWords(const QString& did) const;
-
     void removeMutedWords(const QString& did);
 
     void setDisplayMode(QEnums::DisplayMode displayMode);
