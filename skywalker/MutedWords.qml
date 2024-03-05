@@ -128,25 +128,7 @@ ListView {
         dialog.show()
     }
 
-    Component.onCompleted: {
-        let userSettings = skywalker.getUserSettings()
-
-        if (!skywalker.mutedWords.noticeSeen(userSettings)) {
-            guiSettings.notice(view, qsTr(
-                "Posts that contain muted words will be removed from your timeline.<p>" +
-                "Bluesky does not support muted words. This is a feature from Skywalker. " +
-                "The muted words are locally stored on this device, and cannot be accessed from " +
-                "other devices or apps.<p>" +
-                "When you uninstall the app, your muted words may be lost. " +
-                "There is no guarantee that muted words will be kept with upgrades."
-                ),
-                () => skywalker.mutedWords.setNoticeSeen(userSettings, true));
-        }
-    }
-
     Component.onDestruction: {
-        console.debug("Save muted words");
-        let userSettings = skywalker.getUserSettings()
-        skywalker.mutedWords.save(userSettings)
+        skywalker.saveMutedWords()
     }
 }

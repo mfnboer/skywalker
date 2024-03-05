@@ -67,8 +67,7 @@ public:
     void saveMutedWords(const QString& did, const QStringList& mutedWords);
     QStringList getMutedWords(const QString& did) const;
 
-    void setMutedWordsNoticeSeen(bool seen);
-    bool getMutedWordsNoticeSeen() const;
+    void removeMutedWords(const QString& did);
 
     void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
@@ -89,6 +88,7 @@ public:
 
 private:
     QString key(const QString& did, const QString& subkey) const;
+    void cleanup();
 
     QSettings mSettings;
     PasswordEncryption mEncryption;

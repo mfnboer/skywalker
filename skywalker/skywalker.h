@@ -130,6 +130,8 @@ public:
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();
+    Q_INVOKABLE void loadMutedWords();
+    Q_INVOKABLE void saveMutedWords(std::function<void()> okCb = {});
     Q_INVOKABLE void loadHashtags();
     void saveHashtags();
 
@@ -246,7 +248,7 @@ private:
     QDateTime getSyncTimestamp() const;
     void shareImage(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
-    void saveUserPreferences(const ATProto::UserPreferences& prefs);
+    void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void disableDebugLogging();
     void restoreDebugLogging();

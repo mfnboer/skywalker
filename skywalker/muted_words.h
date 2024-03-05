@@ -3,6 +3,7 @@
 #pragma once
 #include "user_settings.h"
 #include "normalized_word_index.h"
+#include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <QString>
 #include <unordered_map>
@@ -34,10 +35,12 @@ public:
 
     Q_INVOKABLE void addEntry(const QString& word);
     Q_INVOKABLE void removeEntry(const QString& word);
-    Q_INVOKABLE void load(const UserSettings* userSettings);
-    Q_INVOKABLE void save(UserSettings* userSettings);
-    Q_INVOKABLE bool noticeSeen(const UserSettings* userSettings) const;
-    Q_INVOKABLE void setNoticeSeen(UserSettings* userSettings, bool seen) const;
+    bool containsEntry(const QString& word);
+    void load(const ATProto::UserPreferences& userPrefs);
+    bool legacyLoad(const UserSettings* userSettings);
+    void save(ATProto::UserPreferences& userPrefs);
+    void legacySave(UserSettings* userSettings);
+    bool isDirty() const { return mDirty; }
 
     bool match(const NormalizedWordIndex& post) const override;
 
@@ -55,13 +58,15 @@ private:
 
         bool operator<(const Entry& rhs) const { return mRaw.localeAwareCompare(rhs.mRaw) < 0; }
 
-        bool isHashtag() const { return mNormalizedWords.size() == 1 && mRaw.startsWith('#'); }
+        size_t wordCount() const { return mNormalizedWords.size(); }
+        bool isHashtag() const { return wordCount() == 1 && mRaw.startsWith('#'); }
     };
 
     using WordIndexType = std::unordered_map<QString, std::set<const Entry*>>;
 
     void addWordToIndex(const Entry* entry, WordIndexType& wordIndex);
     void removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
+    bool preAdd(const Entry& entry);
 
     std::set<Entry> mEntries;
 

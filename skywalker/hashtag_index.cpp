@@ -27,6 +27,7 @@ void HashtagIndex::clear()
 {
     mCache.clear();
     mIndex.clear();
+    setDirty(false);
 }
 
 void HashtagIndex::insert(const QString& hashtag)
@@ -41,6 +42,7 @@ void HashtagIndex::insert(const QString& hashtag)
     // removed from the index. The index not be removed as there is already an entry in the
     // cache. addToIndex will re-insert in that case.
     addToIndex(hashtag, normalized);
+    setDirty(true);
 }
 
 void HashtagIndex::insert(const QStringList& hashtags)

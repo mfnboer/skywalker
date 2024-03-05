@@ -14,6 +14,7 @@ UserSettings::UserSettings(QObject* parent) :
     QObject(parent)
 {
     mEncryption.init(KEY_ALIAS_PASSWORD);
+    cleanup();
 }
 
 QString UserSettings::key(const QString& did, const QString& subkey) const
@@ -222,14 +223,11 @@ QStringList UserSettings::getMutedWords(const QString& did) const
     return mSettings.value(key(did, "mutedWords")).toStringList();
 }
 
-void UserSettings::setMutedWordsNoticeSeen(bool seen)
+void UserSettings::removeMutedWords(const QString& did)
 {
-    mSettings.setValue("mutedWordsNoticeSeen", seen);
-}
-
-bool UserSettings::getMutedWordsNoticeSeen() const
-{
-    return mSettings.value("mutedWordsNoticeSeen", false).toBool();
+    qDebug() << "Remove locally stored muted words";
+    mSettings.remove(key(did, "mutedWords"));
+    mSettings.remove("mutedWordsNoticeSeen");
 }
 
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)
@@ -293,6 +291,12 @@ void UserSettings::setSeenHashtags(const QStringList& hashtags)
 QStringList UserSettings::getSeenHashtags() const
 {
     return mSettings.value("seenHashtags").toStringList();
+}
+
+void UserSettings::cleanup()
+{
+    // Version 1.5 erroneously saved user hashtags on app level
+    mSettings.remove("userHashtags");
 }
 
 }

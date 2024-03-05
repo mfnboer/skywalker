@@ -20,6 +20,8 @@ public:
     void insert(const QStringList& hashtags);
     QStringList find(const QString& hashtag, int limit, const QStringList& suppress = {}) const;
     QStringList getAllHashtags() const { return mCache.keys(); }
+    bool isDirty() const { return mDirty; }
+    void setDirty(bool dirty) { mDirty = dirty; }
 
 private:
     class Entry : public QObject
@@ -49,6 +51,8 @@ private:
 
     // hashtag -> Entry
     QCache<QString, Entry> mCache;
+
+    bool mDirty = false;
 };
 
 }

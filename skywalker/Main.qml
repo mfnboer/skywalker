@@ -145,7 +145,7 @@ ApplicationWindow {
             const lastSignIn = userSettings.getLastSignInTimestamp(did)
             inviteCodeStore.load(lastSignIn)
             skywalker.bookmarks.load(userSettings)
-            skywalker.mutedWords.load(userSettings)
+            skywalker.loadMutedWords()
             skywalker.loadHashtags()
 
             setStartupStatus(qsTr("Rewinding timeline"))

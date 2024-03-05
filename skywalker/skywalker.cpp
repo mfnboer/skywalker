@@ -295,32 +295,80 @@ void Skywalker::saveFavoriteFeeds()
     saveUserPreferences(prefs);
 }
 
+void Skywalker::loadMutedWords()
+{
+    qDebug() << "Load muted words";
+    mMutedWords.load(mUserPreferences);
+
+    if (mMutedWords.legacyLoad(&mUserSettings))
+    {
+        qDebug() << "Migrate locally stored muted words to bsky";
+        saveMutedWords([this, did=mUserDid]{ mUserSettings.removeMutedWords(did); });
+    }
+    else
+    {
+        // There were not muted words stored locally, but the user setting keys may
+        // be stored. Remove those.
+        mUserSettings.removeMutedWords(mUserDid);
+    }
+}
+
+void Skywalker::saveMutedWords(std::function<void()> okCb)
+{
+    if (!mMutedWords.isDirty())
+        return;
+
+    qDebug() << "Save muted words";
+    auto prefs = mUserPreferences;
+    mMutedWords.save(prefs);
+    saveUserPreferences(prefs, okCb);
+}
+
 void Skywalker::loadHashtags()
 {
     qDebug() << "Load hashtags";
+
+    mUserHashtags.clear();
     mUserHashtags.insert(mUserSettings.getUserHashtags(mUserDid));
+    mUserHashtags.setDirty(false);
+
+    mSeenHashtags.clear();
     mSeenHashtags.insert(mUserSettings.getSeenHashtags());
+    mSeenHashtags.setDirty(false);
 }
 
 void Skywalker::saveHashtags()
 {
     qDebug() << "Save hashtags";
-    mUserSettings.setUserHashtags(mUserDid, mUserHashtags.getAllHashtags());
-    mUserSettings.setSeenHashtags(mSeenHashtags.getAllHashtags());
+
+    if (mUserHashtags.isDirty())
+    {
+        mUserSettings.setUserHashtags(mUserDid, mUserHashtags.getAllHashtags());
+        mUserHashtags.setDirty(false);
+    }
+
+    if (mSeenHashtags.isDirty())
+    {
+        mUserSettings.setSeenHashtags(mSeenHashtags.getAllHashtags());
+        mSeenHashtags.setDirty(false);
+    }
 }
 
-void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs)
+void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Save user preferences";
 
     mBsky->putPreferences(prefs,
-        [this, prefs]{
+        [this, prefs, okCb]{
             qDebug() << "saveUserPreferences ok";
             mUserPreferences = prefs;
+
+            if (okCb)
+                okCb();
         },
         [this](const QString& error, const QString& msg){
-            qDebug() << "saveUserPreferences failed:" << error << " - " << msg;
+            qWarning() << "saveUserPreferences failed:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }

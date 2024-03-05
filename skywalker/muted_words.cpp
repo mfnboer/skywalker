@@ -54,10 +54,40 @@ static QString cleanRawWord(const QString& word)
     return cleanedWord;
 }
 
+bool MutedWords::preAdd(const Entry& entry)
+{
+    if (entry.wordCount() != 1)
+        return true;
+
+    if (entry.mRaw.startsWith('#'))
+    {
+        if (containsEntry(entry.mRaw.sliced(1)))
+        {
+            qDebug() << "Full content already muted for:" << entry.mRaw;
+            return false;
+        }
+    }
+    else
+    {
+        const QString hashtag = QString("#%1").arg(entry.mRaw);
+        if (containsEntry(hashtag))
+        {
+            qDebug() << "Hashtag already muted for:" << entry.mRaw;
+            removeEntry(hashtag);
+        }
+    }
+
+    return true;
+}
+
 void MutedWords::addEntry(const QString& word)
 {
-    const auto& [it, inserted] = mEntries.emplace(cleanRawWord(word),
-                                                  SearchUtils::getNormalizedWords(word));
+    Entry newEntry(cleanRawWord(word), SearchUtils::getNormalizedWords(word));
+
+    if (!preAdd(newEntry))
+        return;
+
+    const auto& [it, inserted] = mEntries.emplace(std::move(newEntry));
 
     if (!inserted)
     {
@@ -101,6 +131,12 @@ void MutedWords::removeEntry(const QString& word)
     mEntries.erase(it);
     mDirty = true;
     emit entriesChanged();
+}
+
+bool MutedWords::containsEntry(const QString& word)
+{
+    const Entry searchEntry{ word, {} };
+    return mEntries.count(searchEntry);
 }
 
 void MutedWords::addWordToIndex(const Entry* entry, WordIndexType& wordIndex)
@@ -192,7 +228,7 @@ bool MutedWords::match(const NormalizedWordIndex& post) const
     return false;
 }
 
-void MutedWords::load(const UserSettings* userSettings)
+bool MutedWords::legacyLoad(const UserSettings* userSettings)
 {
     Q_ASSERT(userSettings);
     const QString did = userSettings->getActiveUserDid();
@@ -200,21 +236,66 @@ void MutedWords::load(const UserSettings* userSettings)
     if (did.isEmpty())
     {
         qDebug() << "No active user";
-        return;
+        return false;
     }
 
-    clear();
+    // Do not clear existing muted words, but load them on top.
+    // Legacy load is only called once during migration to bsky settings.
     const QStringList& mutedWords = userSettings->getMutedWords(did);
+
+    if (mutedWords.isEmpty())
+    {
+        qDebug() << "No muted words to load from local app settings.";
+        return false;
+    }
 
     for (const auto& word : mutedWords)
         addEntry(word);
+
+    qDebug() << "Muted words loaded from local app settings:" << mEntries.size();
+    mDirty = true;
+    return true;
+}
+
+void MutedWords::load(const ATProto::UserPreferences& userPrefs)
+{
+    clear();
+    const auto& mutedWords = userPrefs.getMutedWordsPref();
+
+    for (const auto& mutedWord : mutedWords.mItems)
+    {
+        bool matchContent = false;
+        bool matchTag = false;
+
+        for (const auto& target : mutedWord.mTargets)
+        {
+            switch (target.mTarget)
+            {
+            case ATProto::AppBskyActor::MutedWordTarget::CONTENT:
+                matchContent = true;
+                break;
+            case ATProto::AppBskyActor::MutedWordTarget::TAG:
+                matchTag = true;
+                break;
+            case ATProto::AppBskyActor::MutedWordTarget::UNKNOWN:
+                break;
+            }
+        }
+
+        if  (matchTag && !matchContent)
+            addEntry(QString("#%1").arg(mutedWord.mValue));
+        else
+            addEntry(mutedWord.mValue);
+
+    }
 
     qDebug() << "Muted words loaded:" << mEntries.size();
     mDirty = false;
 }
 
-void MutedWords::save(UserSettings* userSettings)
+void MutedWords::legacySave(UserSettings* userSettings)
 {
+    Q_ASSERT(false); // should not be used.
     Q_ASSERT(userSettings);
 
     if (!mDirty)
@@ -238,16 +319,40 @@ void MutedWords::save(UserSettings* userSettings)
     mDirty = false;
 }
 
-bool MutedWords::noticeSeen(const UserSettings* userSettings) const
+void MutedWords::save(ATProto::UserPreferences& userPrefs)
 {
-    Q_ASSERT(userSettings);
-    return userSettings->getMutedWordsNoticeSeen();
-}
+    if (!mDirty)
+        return;
 
-void MutedWords::setNoticeSeen(UserSettings* userSettings, bool seen) const
-{
-    Q_ASSERT(userSettings);
-    userSettings->setMutedWordsNoticeSeen(seen);
+    ATProto::UserPreferences::MutedWordsPref& mutedWordsPrefs = userPrefs.getMutedWordsPref();
+    mutedWordsPrefs.mItems.clear();
+
+    // TODO: if any MutedWord properties get added in the future, then these get lost
+    // as long as this function is not updated. We could load/save the raw JSON object.
+    for (const auto& entry : mEntries)
+    {
+        ATProto::AppBskyActor::MutedWord mutedWord;
+
+        if (entry.mRaw.startsWith('#'))
+        {
+            mutedWord.mValue = entry.mRaw.sliced(1);
+            ATProto::AppBskyActor::MutedWord::Target tagTarget;
+            tagTarget.mTarget = ATProto::AppBskyActor::MutedWordTarget::TAG;
+            mutedWord.mTargets.push_back(tagTarget);
+        }
+        else
+        {
+            mutedWord.mValue = entry.mRaw;
+            ATProto::AppBskyActor::MutedWord::Target tagTarget;
+            tagTarget.mTarget = ATProto::AppBskyActor::MutedWordTarget::TAG;
+            mutedWord.mTargets.push_back(tagTarget);
+            ATProto::AppBskyActor::MutedWord::Target contentTarget;
+            contentTarget.mTarget = ATProto::AppBskyActor::MutedWordTarget::CONTENT;
+            mutedWord.mTargets.push_back(contentTarget);
+        }
+
+        mutedWordsPrefs.mItems.push_back(std::move(mutedWord));
+    }
 }
 
 }
