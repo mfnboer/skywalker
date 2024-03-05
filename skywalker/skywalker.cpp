@@ -58,6 +58,8 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& text){ emit sharedTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
+    connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
+            [this]{ saveHashtags(); });
 }
 
 Skywalker::~Skywalker()
@@ -2342,6 +2344,7 @@ void Skywalker::signOut()
 
     qDebug() << "Logout:" << mUserDid;
     mSignOutInProgress = true;
+    saveHashtags();
 
     stopRefreshTimers();
     mPostThreadModels.clear();
@@ -2364,7 +2367,6 @@ void Skywalker::signOut()
     mBookmarksModel = nullptr;
     mBookmarks.clear();
     mMutedWords.clear();
-    saveHashtags();
     mUserHashtags.clear();
     mSeenHashtags.clear();
     mFavoriteFeeds.clear();

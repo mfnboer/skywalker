@@ -1,3 +1,7 @@
+next
+====
+* Fix: hashtag cache was not always saved
+
 1.5
 ===
 * Hashtag completion (shows list of hashthags while you type)

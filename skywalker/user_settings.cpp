@@ -275,6 +275,7 @@ QString UserSettings::getMutedRepostsListUri(const QString& did) const
 
 void UserSettings::setUserHashtags(const QString& did, const QStringList& hashtags)
 {
+    qDebug() << "Save user hashtags:" << did;
     mSettings.setValue(key(did, "userHashtags"), hashtags);
 }
 
@@ -285,6 +286,7 @@ QStringList UserSettings::getUserHashtags(const QString& did) const
 
 void UserSettings::setSeenHashtags(const QStringList& hashtags)
 {
+    qDebug() << "Save seen hashtags";
     mSettings.setValue("seenHashtags", hashtags);
 }
 

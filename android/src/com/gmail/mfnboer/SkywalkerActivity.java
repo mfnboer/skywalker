@@ -24,6 +24,7 @@ public class SkywalkerActivity extends QtActivity {
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
+    public static native void emitPause();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,13 @@ public class SkywalkerActivity extends QtActivity {
 
         // App is starting up and not ready to receive intents.
         mIsIntentPending = true;
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(LOGTAG, "onPause");
+        emitPause();
+        super.onPause();
     }
 
     @Override

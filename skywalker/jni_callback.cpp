@@ -52,6 +52,15 @@ void _handleSharedImageReceived(JNIEnv* env, jobject, jstring jsFileName, jstrin
     if (instance)
         instance->handleSharedImageReceived(fileName, text);
 }
+
+void _handlePause(JNIEnv*)
+{
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handlePause();
+}
+
 #endif
 
 }
@@ -92,9 +101,10 @@ JNICallbackListener::JNICallbackListener() : QObject()
 
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
-        { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) }
+        { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
+        { "emitPause", "()V", reinterpret_cast<void *>(_handlePause) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 2);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 3);
 #endif
 }
 
@@ -116,6 +126,10 @@ void JNICallbackListener::handleSharedTextReceived(const QString sharedText)
 void JNICallbackListener::handleSharedImageReceived(const QString fileName, const QString text)
 {
     emit sharedImageReceived(fileName, text);
+}
+
+void JNICallbackListener::handlePause() {
+    emit appPause();
 }
 
 }
