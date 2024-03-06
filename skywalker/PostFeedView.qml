@@ -46,7 +46,7 @@ ListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
-        viewWidth: postFeedView.width
+        width: postFeedView.width
     }
 
     FlickableRefresher {

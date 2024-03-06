@@ -160,7 +160,7 @@ Page {
             Accessible.role: Accessible.List
 
             delegate: PostFeedViewDelegate {
-                viewWidth: postsView.width
+                width: postsView.width
             }
 
             FlickableRefresher {

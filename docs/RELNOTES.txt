@@ -2,6 +2,7 @@ next
 ====
 * Muted words are stored in your Bluesky moderation settings.
   At startup your existing muted words will be migrated to Bluesky.
+* Fix layout issues when going to landscape mode and back.
 * Fix: hashtag cache was not always saved
 
 1.5

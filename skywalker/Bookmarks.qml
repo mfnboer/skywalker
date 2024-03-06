@@ -24,7 +24,7 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     delegate: PostFeedViewDelegate {
-        viewWidth: bookmarksView.width
+        width: bookmarksView.width
     }
 
     FlickableRefresher {

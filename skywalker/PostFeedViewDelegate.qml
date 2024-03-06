@@ -4,8 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    property int margin: 8
-    required property int viewWidth
+    readonly property int margin: 8
 
     required property basicprofile author
     required property string postUri
@@ -48,7 +47,6 @@ Rectangle {
     required property bool endOfFeed
 
     id: postEntry
-    width: grid.width
     height: grid.height
     color: {
         if (postThreadType & QEnums.THREAD_ENTRY)
@@ -66,14 +64,14 @@ Rectangle {
     GridLayout {
         id: grid
         columns: 2
-        width: viewWidth
+        width: parent.width
         rowSpacing: 0
 
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         RowLayout {
             id: topLeftSpace
-            width: avatar.width
+            width: guiSettings.threadColumnWidth
             height: postEntry.margin * (postIsReply && !postParentInThread ? 2 : 1)
             spacing: 0
 
@@ -83,7 +81,7 @@ Rectangle {
                 Rectangle {
                     required property int index
 
-                    width: avatar.width / guiSettings.threadBarWidth
+                    width: guiSettings.threadColumnWidth / guiSettings.threadBarWidth
                     Layout.preferredHeight: topLeftSpace.height
                     color: {
                         switch (postType) {
@@ -113,15 +111,14 @@ Rectangle {
             }
         }
         Rectangle {
-            width: parent.width - avatar.width - postEntry.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: topLeftSpace.height
-            Layout.fillWidth: true
             color: "transparent"
         }
 
         // Repost information
         Rectangle {
-            width: avatar.width
+            width: guiSettings.threadColumnWidth
             height: repostedByText.height
             color: "transparent"
             visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
@@ -136,8 +133,7 @@ Rectangle {
         }
         SkyCleanedText {
             id: repostedByText
-            width: parent.width - avatar.width - postEntry.margin * 2
-            Layout.fillWidth: true
+            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             elide: Text.ElideRight
             plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
             color: Material.color(Material.Grey)
@@ -229,10 +225,10 @@ Rectangle {
         }
         Column {
             id: postColumn
-            // Changfrom width to Layout.preferredWidth seems to solve the issue
+            // Change from width to Layout.preferredWidth seems to solve the issue
             // where posts sometimes are too wide (like landscape mode) but makes
             // things very slow :-(
-            width: parent.width - avatar.width - postEntry.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             visible: !postIsPlaceHolder && !postLocallyDeleted
 
             PostHeader {
@@ -371,7 +367,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             textFormat: Text.StyledText
@@ -391,7 +386,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
@@ -403,7 +397,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
@@ -415,7 +408,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
@@ -425,7 +417,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             maximumLineCount: 2
@@ -440,7 +431,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
@@ -451,7 +441,7 @@ Rectangle {
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Rectangle {
-            width: avatar.width
+            width: guiSettings.threadColumnWidth
             height: postEntry.margin
             color: {
                 switch (postType) {
@@ -477,9 +467,8 @@ Rectangle {
             opacity: avatar.opacity
         }
         Rectangle {
-            width: parent.width - avatar.width - postEntry.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             height: postEntry.margin
-            Layout.fillWidth: true
             color: "transparent"
         }
 
@@ -488,7 +477,6 @@ Rectangle {
             width: parent.width
             Layout.columnSpan: 2
             Layout.preferredHeight: 1
-            Layout.fillWidth: true
             color: guiSettings.separatorColor
             visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType) ||
                 (postThreadType & QEnums.THREAD_LEAF)
@@ -498,7 +486,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             elide: Text.ElideRight

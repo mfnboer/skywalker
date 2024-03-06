@@ -39,7 +39,7 @@ ListView {
     }
 
     delegate: PostFeedViewDelegate {
-        viewWidth: enclosingView.width
+        width: enclosingView.width
     }
 
     FlickableRefresher {

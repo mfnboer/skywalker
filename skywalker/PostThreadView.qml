@@ -142,7 +142,7 @@ ListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
-        viewWidth: view.width
+        width: view.width
     }
 
     Timer {
