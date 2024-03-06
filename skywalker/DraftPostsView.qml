@@ -25,7 +25,8 @@ ListView {
 
     delegate: DraftPostViewDelegate {
         required property int index
-        viewWidth: view.width
+
+        width: view.width
         onSelected: view.selected(index)
         onDeleted: view.deleted(index)
     }

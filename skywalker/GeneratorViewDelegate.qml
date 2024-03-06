@@ -5,7 +5,6 @@ import skywalker
 
 Rectangle {
     property int margin: 10
-    required property int viewWidth
     required property generatorview feed
     required property int feedLikeCount
     required property string feedLikeUri
@@ -16,7 +15,6 @@ Rectangle {
     property int maxTextLines: 1000
 
     id: generatorView
-    width: grid.width
     height: grid.height
     color: "transparent"
 
@@ -24,7 +22,7 @@ Rectangle {
         id: grid
         rowSpacing: 0
         columns: 3
-        width: viewWidth
+        width: parent.width
 
         Rectangle {
             Layout.columnSpan: 3

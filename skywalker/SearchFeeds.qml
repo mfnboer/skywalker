@@ -77,7 +77,7 @@ Page {
             Accessible.role: Accessible.List
 
             delegate: GeneratorViewDelegate {
-                viewWidth: page.width
+                width: page.width
             }
 
             FlickableRefresher {
@@ -113,7 +113,7 @@ Page {
             Accessible.role: Accessible.List
 
             delegate: GeneratorViewDelegate {
-                viewWidth: page.width
+                width: page.width
 
             }
 

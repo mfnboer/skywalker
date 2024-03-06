@@ -5,7 +5,6 @@ import skywalker
 
 
 Rectangle {
-    required property int viewWidth
     required property profile author
     required property string followingUri
     required property string blockingUri
@@ -21,7 +20,6 @@ Rectangle {
     signal deleteItem(string listItemUri)
 
     id: authorRect
-    width: grid.width
     height: grid.height
     color: guiSettings.backgroundColor
 
@@ -32,7 +30,7 @@ Rectangle {
     GridLayout {
         id: grid
         columns: 3
-        width: viewWidth
+        width: parent.width
         rowSpacing: 10
         columnSpacing: 10
 
@@ -40,7 +38,7 @@ Rectangle {
         Rectangle {
             id: avatar
             Layout.rowSpan: 2
-            width: guiSettings.threadBarWidth * 5
+            width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 

@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    required property int viewWidth
     required property listview list
     required property profile listCreator
     required property string listBlockedUri
@@ -17,7 +16,6 @@ Rectangle {
     property int maxTextLines: 1000
 
     id: view
-    width: grid.width
     height: grid.height
     color: guiSettings.backgroundColor
 
@@ -31,7 +29,7 @@ Rectangle {
     GridLayout {
         id: grid
         columns: 3
-        width: viewWidth
+        width: parent.width
         rowSpacing: 0
 
         Rectangle {

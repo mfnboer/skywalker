@@ -195,7 +195,7 @@ Page {
             Accessible.role: Accessible.List
 
             delegate: AuthorViewDelegate {
-                viewWidth: postsView.width
+                width: postsView.width
                 onFollow: (profile) => { graphUtils.follow(profile) }
                 onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
             }

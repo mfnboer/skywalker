@@ -40,7 +40,7 @@ ListView {
     delegate: AuthorViewDelegate {
         required property int index
 
-        viewWidth: authorListView.width
+        width: authorListView.width
         showFollow: authorListView.showFollow
         allowDeleteItem: authorListView.allowDeleteItem
 

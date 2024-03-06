@@ -56,7 +56,7 @@ ListView {
     delegate: ListViewDelegate {
         required property int index
 
-        viewWidth: view.width
+        width: view.width
         ownLists: view.ownLists
 
         onUpdateList: (list) => view.editList(list, index)

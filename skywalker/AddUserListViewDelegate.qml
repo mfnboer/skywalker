@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    required property int viewWidth
     required property listview list
     required property profile listCreator
     required property int memberCheck // QEnums.TripleBool
@@ -15,7 +14,6 @@ Rectangle {
     signal removeFromList(string listUri, string listItemUri)
 
     id: view
-    width: grid.width
     height: grid.height
     color: guiSettings.backgroundColor
 
@@ -25,7 +23,7 @@ Rectangle {
     GridLayout {
         id: grid
         columns: 3
-        width: viewWidth
+        width: parent.width
         rowSpacing: 0
 
         Rectangle {

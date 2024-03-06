@@ -6,7 +6,6 @@ import skywalker
 Rectangle {
     property int margin: 8
     required property int index
-    required property int viewWidth
     required property basicprofile notificationAuthor
     required property list<basicprofile> notificationOtherAuthors
     required property int notificationReason // QEnums::NotificationReason
@@ -57,7 +56,6 @@ Rectangle {
     required property bool endOfList
 
     id: notification
-    width: grid.width
     height: grid.height
     color: notificationIsRead ? "transparent" : guiSettings.postHighLightColor
 
@@ -68,14 +66,13 @@ Rectangle {
     GridLayout {
         id: grid
         columns: 2
-        width: viewWidth
+        width: parent.width
         rowSpacing: 5
 
         // Author and content
         Rectangle {
             id: avatar
-            width: guiSettings.threadBarWidth * 5
-            height: avatarImg.height + 5
+            width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -143,7 +140,7 @@ Rectangle {
 
         Column {
             id: postColumn
-            width: parent.width - avatar.width - notification.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             visible: showPost()
             topPadding: 5
 
@@ -229,7 +226,7 @@ Rectangle {
             }
         }
         Column {
-            width: parent.width - avatar.width - notification.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             topPadding: 5
             visible: isAggregatableReason()
 
@@ -299,7 +296,6 @@ Rectangle {
             PostBody {
                 topPadding: 5
                 width: parent.width
-                Layout.fillWidth: true
                 postAuthor: skywalker.getUser()
                 postText: {
                     if (notificationReasonPostLocallyDeleted)
@@ -324,7 +320,7 @@ Rectangle {
             }
         }
         Column {
-            width: parent.width - avatar.width - notification.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             topPadding: 5
             visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
 
@@ -368,9 +364,8 @@ Rectangle {
         // Separator
         Rectangle {
             width: parent.width
+            height: 1
             Layout.columnSpan: 2
-            Layout.preferredHeight: 1
-            Layout.fillWidth: true
             color: guiSettings.separatorColor
         }
 
@@ -378,7 +373,6 @@ Rectangle {
         Text {
             width: parent.width
             Layout.columnSpan: 2
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             elide: Text.ElideRight

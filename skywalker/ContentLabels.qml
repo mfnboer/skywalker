@@ -9,10 +9,11 @@ ScrollView {
 
     id: labelView
     width: Math.min(parent.width, labelRow.width)
-    height: labelRow.height
+    height: visible ? labelRow.height : 0
     anchors.right: parent.right
     contentWidth: labelRow.width
     contentHeight: height
+    visible: nonSystemLabels.length > 0
 
     // To make the MouseArea below work
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -22,7 +23,6 @@ ScrollView {
         id: labelRow
         topPadding: 5
         spacing: 5
-        visible: nonSystemLabels.length > 0
 
         Repeater {
             model: nonSystemLabels

@@ -5,7 +5,6 @@ import skywalker
 
 Rectangle {
     property int margin: 8
-    required property int viewWidth
 
     required property basicprofile author
     required property string postText
@@ -27,7 +26,6 @@ Rectangle {
     signal deleted
 
     id: draftPostView
-    width: grid.width
     height: grid.height
     color: "transparent"
 
@@ -38,7 +36,7 @@ Rectangle {
     GridLayout {
         id: grid
         columns: 2
-        width: viewWidth
+        width: parent.width
         rowSpacing: 5
 
         // Author and content

@@ -76,7 +76,7 @@ Page {
             headerPositioning: ListView.OverlayHeader
 
             delegate: ListViewDelegate {
-                viewWidth: page.width
+                width: page.width
                 ownLists: false
             }
 

@@ -9,7 +9,7 @@ Row {
 
     SvgImage {
         id: replyImg
-        width: 18 //replyToText.height
+        width: parent.visible ? replyToText.height : 0
         height: width
         color: Material.color(Material.Grey)
         svg: svgOutline.reply

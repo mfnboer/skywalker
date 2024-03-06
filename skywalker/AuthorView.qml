@@ -505,7 +505,7 @@ Page {
                 onCountChanged: hasFeeds = count
 
                 delegate: GeneratorViewDelegate {
-                    viewWidth: authorFeedView.width
+                    width: authorFeedView.width
                 }
 
                 FlickableRefresher {
@@ -555,7 +555,7 @@ Page {
                 onCountChanged: hasLists = count
 
                 delegate: ListViewDelegate {
-                    viewWidth: authorFeedView.width
+                    width: authorFeedView.width
                     ownLists: false
                     allowEdit: false
 

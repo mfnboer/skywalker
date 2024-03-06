@@ -25,7 +25,7 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     delegate: AddUserListViewDelegate {
-        viewWidth: view.width
+        width: view.width
 
         onAddToList: (listUri) => graphUtils.addListUser(listUri, author)
         onRemoveFromList: (listUri, listItemUri) => graphUtils.removeListUser(listUri, listItemUri)
