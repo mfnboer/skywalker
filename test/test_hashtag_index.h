@@ -71,6 +71,13 @@ private slots:
         QCOMPARE(index.find(hashtag, 5), found);
     }
 
+    void suppressTags()
+    {
+        HashtagIndex index(10);
+        index.insert({ "foo", "bar", "foobar" });
+        QCOMPARE(index.find("foo", 10, { "foo", "barf" }), { "foobar"} );
+    }
+
     void clear()
     {
         HashtagIndex index(10);
