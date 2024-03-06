@@ -12,8 +12,6 @@ ListView {
     id: timelineView
     spacing: 0
     model: skywalker.timelineModel
-    reuseItems: true
-    cacheBuffer: 1024
     clip: true
     flickDeceleration: guiSettings.flickDeceleration
     ScrollIndicator.vertical: ScrollIndicator {}

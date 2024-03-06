@@ -119,7 +119,7 @@ Rectangle {
         // Repost information
         Rectangle {
             width: guiSettings.threadColumnWidth
-            height: repostedByText.height
+            Layout.fillHeight: true
             color: "transparent"
             visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
 
