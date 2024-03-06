@@ -1,5 +1,5 @@
-next
-====
+1.6
+===
 * Muted words are stored in your Bluesky moderation settings.
   At startup your existing muted words will be migrated to Bluesky.
 * Fix layout issues when going to landscape mode and back.
