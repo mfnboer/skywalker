@@ -40,7 +40,7 @@ static QString cleanRawWord(const QString& word)
     const auto& words = SearchUtils::getWords(word);
     QString cleanedWord;
 
-    if (word.startsWith('#') && words.size() == 1)
+    if (UnicodeFonts::isHashtag(word) && words.size() == 1)
         cleanedWord += '#';
 
     for (int i = 0; i < (int)words.size(); ++i)
@@ -59,7 +59,7 @@ bool MutedWords::preAdd(const Entry& entry)
     if (entry.wordCount() != 1)
         return true;
 
-    if (entry.mRaw.startsWith('#'))
+    if (UnicodeFonts::isHashtag(entry.mRaw))
     {
         if (containsEntry(entry.mRaw.sliced(1)))
         {
@@ -321,7 +321,7 @@ void MutedWords::save(ATProto::UserPreferences& userPrefs)
     {
         ATProto::AppBskyActor::MutedWord mutedWord;
 
-        if (entry.mRaw.startsWith('#'))
+        if (UnicodeFonts::isHashtag(entry.mRaw))
         {
             mutedWord.mValue = entry.mRaw.sliced(1);
             mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::TAG));

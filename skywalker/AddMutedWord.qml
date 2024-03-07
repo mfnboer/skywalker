@@ -26,10 +26,9 @@ Dialog {
         enabled: true
 
         onDisplayTextChanged: {
-            console.debug("DISPLAY:", displayText)
             page.isTyping = true
 
-            if (displayText.length > 1 && displayText.startsWith('#')) {
+            if (displayText.length > 1 && unicodeFonts.isHashtag(displayText)) {
                 page.isHashtag = true
                 hashtagTypeaheadSearchTimer.start()
             }
@@ -74,6 +73,10 @@ Dialog {
     SearchUtils {
         id: searchUtils
         skywalker: root.getSkywalker()
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

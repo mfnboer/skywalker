@@ -245,6 +245,11 @@ bool UnicodeFonts::isKeycapEmoji(const QString& grapheme)
     return match.hasMatch();
 }
 
+bool UnicodeFonts::isHashtag(const QString& text)
+{
+    return ATProto::RichTextMaster::isHashtag(text);
+}
+
 void UnicodeFonts::setEmojiFixDocument(QQuickTextDocument* doc, int maxLength, const QString& lengthExceededColor)
 {
     mEmojiFixer.setMaxLength(maxLength, lengthExceededColor);

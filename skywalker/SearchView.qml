@@ -27,7 +27,7 @@ Page {
             page.isTyping = true
 
             if (text.length > 0) {
-                if (text.startsWith('#')) {
+                if (unicodeFonts.isHashtag(text)) {
                     page.isHashtagSearch = true
                     hashtagTypeaheadSearchTimer.start()
                 }
@@ -278,6 +278,10 @@ Page {
 
         onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

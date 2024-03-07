@@ -611,7 +611,7 @@ ApplicationWindow {
         } else if (link.startsWith("did:")) {
             console.debug("DID-MENTION:", link)
             skywalker.getDetailedProfile(link)
-        } else if (link.startsWith("#")) {
+        } else if (unicodeFonts.isHashtag(link)) {
             console.debug("#-TAG:", link)
             viewSearchView(link)
         } else {

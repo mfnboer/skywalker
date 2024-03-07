@@ -3,6 +3,7 @@
 #pragma once
 #include "user_settings.h"
 #include "normalized_word_index.h"
+#include "unicode_fonts.h"
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <QString>
@@ -67,7 +68,7 @@ private:
         bool operator<(const Entry& rhs) const { return mRaw.localeAwareCompare(rhs.mRaw) < 0; }
 
         size_t wordCount() const { return mNormalizedWords.size(); }
-        bool isHashtag() const { return wordCount() == 1 && mRaw.startsWith('#'); }
+        bool isHashtag() const { return wordCount() == 1 && UnicodeFonts::isHashtag(mRaw); }
     };
 
     using WordIndexType = std::unordered_map<QString, std::set<const Entry*>>;

@@ -97,6 +97,11 @@ private slots:
             << std::vector<QString>{"#blue", "#walker"}
             << "Hello blue #sky #walker"
             << true;
+
+        QTest::newRow("keycap is not a hashtag")
+            << std::vector<QString>{"#sky"}
+            << "The #️⃣sky is blue."
+            << false;
     }
 
     void matchPost()
