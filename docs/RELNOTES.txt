@@ -1,6 +1,8 @@
 next
 ====
+* Fix: user scoped search lost scope when scrolling to next page
 * Fix: #️⃣  is not a hashtag start
+
 1.6
 ===
 * Muted words are stored in your Bluesky moderation settings.

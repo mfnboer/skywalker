@@ -123,7 +123,6 @@ Rectangle {
 
         // End of feed indication
         Text {
-            width: parent.width
             Layout.columnSpan: 2
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter

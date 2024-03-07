@@ -166,7 +166,7 @@ Page {
             FlickableRefresher {
                 inProgress: searchUtils.searchPostsInProgress
                 verticalOvershoot: postsView.verticalOvershoot
-                bottomOvershootFun: () => searchUtils.getNextPageSearchPosts(header.getDisplayText())
+                bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts()
                 topText: ""
             }
 
@@ -250,19 +250,29 @@ Page {
             page.isTyping = false
 
             if (query.length > 0) {
-                scopedSearchPost(query)
+                scopedSearchPosts(query)
                 searchUtils.searchActors(query)
             }
         }
 
-        function scopedSearchPost(query) {
+        function scopedSearchPosts(query) {
             if (query.length === 0)
                 return
 
+            const searchTerm = getPostSearchTerm(query)
+            searchPosts(searchTerm)
+        }
+
+        function scopedNextPageSearchPosts() {
+            const searchTerm = getPostSearchTerm(header.getDisplayText())
+            getNextPageSearchPosts(searchTerm)
+        }
+
+        function getPostSearchTerm(query) {
             if (postSearchUser)
-                searchUtils.searchPosts(`from:${postSearchUser} ${query}`)
+                return `from:${postSearchUser} ${query}`
             else
-                searchUtils.searchPosts(query)
+                return query
         }
 
         Component.onDestruction: {
@@ -307,7 +317,7 @@ Page {
         scopePage.onRejected.connect(() => scopePage.destroy())
         scopePage.onAccepted.connect(() => {
                 postSearchUser = scopePage.getUserName()
-                searchUtils.scopedSearchPost(page.header.getDisplayText())
+                searchUtils.scopedSearchPosts(page.header.getDisplayText())
                 scopePage.destroy()
         })
         scopePage.open()
