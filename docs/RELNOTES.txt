@@ -2,6 +2,7 @@ next
 ====
 * Fix: user scoped search lost scope when scrolling to next page
 * Fix: #️⃣  is not a hashtag start
+* Fix: photo access permission on Android 14
 
 1.6
 ===

@@ -44,12 +44,14 @@ bool checkReadMediaPermission()
 #if defined(Q_OS_ANDROID)
     static const QString READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
     static const QString READ_MEDIA_IMAGES = "android.permission.READ_MEDIA_IMAGES";
-    static const QString READ_MEDIA_VISUAL_USER_SELECTED = "android.permission.READ_MEDIA_VISUAL_USER_SELECTED";
+
+    // Seems to break on Android 14. Retry when using the photo picker again.
+    // static const QString READ_MEDIA_VISUAL_USER_SELECTED = "android.permission.READ_MEDIA_VISUAL_USER_SELECTED";
 
     const auto osVersion = QOperatingSystemVersion::current();
 
     if (osVersion > QOperatingSystemVersion::Android13)
-        return checkPermission(READ_MEDIA_IMAGES) && checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
+        return checkPermission(READ_MEDIA_IMAGES); // && checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
 
     if (osVersion >= QOperatingSystemVersion::Android13)
         return checkPermission(READ_MEDIA_IMAGES);
