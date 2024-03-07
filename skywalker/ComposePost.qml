@@ -8,6 +8,7 @@ Page {
     required property var skywalker
     property string initialText
     property string initialImage
+    property int fullPageHeight
 
     property int maxImages: 4
     property list<string> images: initialImage ? [initialImage] : []
@@ -64,6 +65,7 @@ Page {
     id: page
     width: parent.width
     height: parent.height
+    contentHeight: flick.height
     topPadding: 10
     bottomPadding: 10
 
@@ -1414,14 +1416,17 @@ Page {
     Connections {
         target: Qt.inputMethod
 
-        // Resize the footer when the Android virtual keyboard is shown
+        // Resize the page when the Android virtual keyboard is shown
         function onKeyboardRectangleChanged() {
             if (Qt.inputMethod.keyboardRectangle.y > 0) {
+                // Sometimes the page height gets changed automatically but most times not...
+                // Setting to to keyboard-y seems reliable.
                 const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-                textFooter.height = textFooter.getFooterHeight() + (parent.height - keyboardY)
+                parent.height = keyboardY
             }
             else {
-                textFooter.height = textFooter.getFooterHeight()
+                console.debug("HIDE KEYBOARD, PARENT:", parent.height, "CONTENT:", contentHeight)
+                parent.height = fullPageHeight
                 fontSelector.virtualKeyboardClosed()
             }
         }
@@ -1437,6 +1442,10 @@ Page {
     }
 
     Component.onCompleted: {
+        // Save the full page height now. Later when the Android keyboard pops up,
+        // the page height sometimes changes by itself, but not always...
+        fullPageHeight = parent.height
+
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.
         focusTimer.start()

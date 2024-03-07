@@ -14,6 +14,7 @@ Page {
     property int imageType: QEnums.PHOTO_TYPE_AVATAR
     property string createdAvatarSource
     property string createdBannerSource
+    property int fullPageHeight
     readonly property int avatarSize: 1000
     readonly property int bannerWidth: 3000
     readonly property int bannerHeight: 1000
@@ -23,6 +24,8 @@ Page {
 
     id: editProfilePage
     width: parent.width
+    height: parent.height
+    contentHeight: flick.height
 
     Accessible.role: Accessible.Pane
 
@@ -95,17 +98,16 @@ Page {
         function onKeyboardRectangleChanged() {
             if (Qt.inputMethod.keyboardRectangle.y > 0) {
                 const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-                pageFooter.height = pageFooter.getFooterHeight() + (parent.height - keyboardY)
+                parent.height = keyboardY
             }
             else {
-                pageFooter.height = pageFooter.getFooterHeight()
+                parent.height = fullPageHeight
             }
         }
     }
 
     Flickable {
         id: flick
-        width: parent.width
         anchors.fill: parent
         clip: true
         contentWidth: pageColumn.width
@@ -497,6 +499,10 @@ Page {
     }
 
     Component.onCompleted: {
+        // Save the full page height now. Later when the Android keyboard pops up,
+        // the page height sometimes changes by itself, but not always...
+        fullPageHeight = parent.height
+
         nameField.forceActiveFocus()
     }
 }

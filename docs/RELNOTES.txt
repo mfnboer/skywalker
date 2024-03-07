@@ -1,5 +1,6 @@
 next
 ====
+* Fix: sometimes the keyboard pushed the compose window off screen
 * Fix: user scoped search lost scope when scrolling to next page
 * Fix: #️⃣  is not a hashtag start
 * Fix: photo access permission on Android 14
