@@ -259,6 +259,7 @@ bool MutedWords::legacyLoad(const UserSettings* userSettings)
 
 void MutedWords::load(const ATProto::UserPreferences& userPrefs)
 {
+    qDebug() << "Load muted words";
     clear();
     const auto& mutedWords = userPrefs.getMutedWordsPref();
 

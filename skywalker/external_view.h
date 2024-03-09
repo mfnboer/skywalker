@@ -33,4 +33,4 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::ExternalView)
+Q_DECLARE_METATYPE(::Skywalker::ExternalView)

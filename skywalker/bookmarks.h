@@ -1,15 +1,18 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "presence.h"
 #include "user_settings.h"
+#include "wrapped_skywalker.h"
 #include <QDebug>
 #include <QObject>
 #include <QString>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace Skywalker {
 
-class Bookmarks : public QObject
+class Bookmarks : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(int maxSize MEMBER MAX_BOOKMARKS CONSTANT FINAL)
@@ -32,22 +35,34 @@ public:
 
     std::vector<QString> getPage(int startIndex, int size) const;
 
-    Q_INVOKABLE void load(const UserSettings* userSettings);
-    void save(UserSettings* userSettings);
-
-    Q_INVOKABLE bool noticeSeen(const UserSettings* userSettings) const;
-    Q_INVOKABLE void setNoticeSeen(UserSettings* userSettings, bool seen) const;
+    void load();
 
 signals:
     void sizeChanged();
+    void bookmarksLoaded();
+    void bookmarksLoadFailed(QString error);
 
 private:
-    void clearPrivate();
+    struct BookmarkRecord {
+        QString mUri;
+
+        QJsonObject toJson() const;
+
+        using Ptr = std::unique_ptr<BookmarkRecord>;
+        static Ptr fromJson(const QJsonObject& json);
+    };
+
+    QStringList loadLegacy();
+    void removeLegacyBookmarks();
     bool addBookmarkPrivate(const QString& postUri);
+    void writeRecord(const BookmarkRecord& bookmark);
+    void deleteRecord(const QString& postUri);
+    void listRecords(const std::function<void()>& doneCb, std::optional<QString> cursor = {}, int maxPages = 10);
+    void createRecords(const QStringList& postUris, const std::function<void()>& doneCb);
 
     std::vector<QString> mBookmarkedPostUris;
     std::unordered_set<QString> mPostUriIndex;
-    bool mDirty = false;
+    std::unordered_map<QString, QString> mPostUriRecordUriMap;
 };
 
 }

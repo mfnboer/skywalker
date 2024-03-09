@@ -144,7 +144,7 @@ ApplicationWindow {
             let userSettings = skywalker.getUserSettings()
             const lastSignIn = userSettings.getLastSignInTimestamp(did)
             inviteCodeStore.load(lastSignIn)
-            skywalker.bookmarks.load(userSettings)
+            skywalker.loadBookmarks()
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
 

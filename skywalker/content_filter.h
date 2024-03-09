@@ -83,4 +83,4 @@ public:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::ContentGroup)
+Q_DECLARE_METATYPE(::Skywalker::ContentGroup)

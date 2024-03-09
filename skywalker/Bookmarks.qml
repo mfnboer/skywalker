@@ -52,21 +52,6 @@ ListView {
         id: guiSettings
     }
 
-    Component.onCompleted: {
-        let userSettings = skywalker.getUserSettings()
-
-        if (!skywalker.bookmarks.noticeSeen(userSettings)) {
-            guiSettings.notice(bookmarksView, qsTr(
-                "Bluesky does not support bookmarks. This is a feature from Skywalker. " +
-                "The bookmarks are locally stored on this device, and cannot be accessed from " +
-                "other devices or apps. <p>" +
-                "When you uninstall the app, your bookmarks may be lost. " +
-                "There is no guarantee that bookmarks will be kept with upgrades."
-                ),
-                () => skywalker.bookmarks.setNoticeSeen(userSettings, true));
-        }
-    }
-
     Component.onDestruction: {
         skywalker.deleteBookmarksModel()
     }

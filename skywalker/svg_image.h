@@ -32,4 +32,4 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::SvgImage)
+Q_DECLARE_METATYPE(::Skywalker::SvgImage)

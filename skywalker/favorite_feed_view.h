@@ -36,4 +36,4 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::FavoriteFeedView)
+Q_DECLARE_METATYPE(::Skywalker::FavoriteFeedView)

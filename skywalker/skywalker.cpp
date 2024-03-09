@@ -39,6 +39,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
     mContentFilter(mUserPreferences),
+    mBookmarks(this),
     mMutedWords(this),
     mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                    mBookmarks, mMutedWords, mSeenHashtags, mUserPreferences, this),
@@ -48,7 +49,7 @@ Skywalker::Skywalker(QObject* parent) :
     mFavoriteFeeds(this),
     mUserSettings(this)
 {
-    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(&mUserSettings); });
+    mBookmarks.setSkywalker(this);
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     AuthorCache::instance().addProfileStore(&mUserFollows);
@@ -295,9 +296,13 @@ void Skywalker::saveFavoriteFeeds()
     saveUserPreferences(prefs);
 }
 
+void Skywalker::loadBookmarks()
+{
+    mBookmarks.load();
+}
+
 void Skywalker::loadMutedWords()
 {
-    qDebug() << "Load muted words";
     mMutedWords.load(mUserPreferences);
 
     if (mMutedWords.legacyLoad(&mUserSettings))
@@ -307,7 +312,7 @@ void Skywalker::loadMutedWords()
     }
     else
     {
-        // There were not muted words stored locally, but the user setting keys may
+        // There were no muted words stored locally, but the user setting keys may
         // be stored. Remove those.
         mUserSettings.removeMutedWords(mUserDid);
     }

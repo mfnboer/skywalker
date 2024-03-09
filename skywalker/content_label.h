@@ -34,4 +34,4 @@ using ContentLabelList = QList<ContentLabel>;
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::ContentLabel)
+Q_DECLARE_METATYPE(::Skywalker::ContentLabel)

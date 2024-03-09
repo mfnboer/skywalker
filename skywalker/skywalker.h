@@ -130,6 +130,7 @@ public:
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();
+    Q_INVOKABLE void loadBookmarks();
     Q_INVOKABLE void loadMutedWords();
     Q_INVOKABLE void saveMutedWords(std::function<void()> okCb = {});
     Q_INVOKABLE void loadHashtags();

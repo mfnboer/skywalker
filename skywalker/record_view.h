@@ -94,4 +94,4 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::RecordView)
+Q_DECLARE_METATYPE(::Skywalker::RecordView)

@@ -31,4 +31,4 @@ using TenorCategoryList = QList<TenorCategory>;
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::TenorCategory)
+Q_DECLARE_METATYPE(::Skywalker::TenorCategory)

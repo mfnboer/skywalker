@@ -32,4 +32,4 @@ using ReportReasonList = QList<ReportReason>;
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::ReportReason)
+Q_DECLARE_METATYPE(::Skywalker::ReportReason)

@@ -42,4 +42,4 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::ImageView)
+Q_DECLARE_METATYPE(::Skywalker::ImageView)

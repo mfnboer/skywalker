@@ -67,5 +67,5 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::GeneratorViewerState)
-Q_DECLARE_METATYPE(Skywalker::GeneratorView)
+Q_DECLARE_METATYPE(::Skywalker::GeneratorViewerState)
+Q_DECLARE_METATYPE(::Skywalker::GeneratorView)

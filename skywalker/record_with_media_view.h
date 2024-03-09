@@ -31,4 +31,4 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::RecordWithMediaView)
+Q_DECLARE_METATYPE(::Skywalker::RecordWithMediaView)

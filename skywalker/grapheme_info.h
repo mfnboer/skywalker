@@ -28,4 +28,4 @@ private:
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::GraphemeInfo)
+Q_DECLARE_METATYPE(::Skywalker::GraphemeInfo)

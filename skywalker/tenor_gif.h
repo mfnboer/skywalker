@@ -64,4 +64,4 @@ using TenorGifList = QList<TenorGif>;
 
 }
 
-Q_DECLARE_METATYPE(Skywalker::TenorGif)
+Q_DECLARE_METATYPE(::Skywalker::TenorGif)

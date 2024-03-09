@@ -58,12 +58,11 @@ public:
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
 
-    void saveBookmarks(const QString& did, const QStringList& postUris);
+    // Legacy
     QStringList getBookmarks(const QString& did) const;
+    void removeBookmarks(const QString& did);
 
-    void setBookmarksNoticeSeen(bool seen);
-    bool getBookmarksNoticeSeen() const;
-
+    // Legacy
     QStringList getMutedWords(const QString& did) const;
     void removeMutedWords(const QString& did);
 

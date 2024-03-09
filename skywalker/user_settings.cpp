@@ -193,24 +193,16 @@ QDateTime UserSettings::getLastSignInTimestamp(const QString& did) const
     return mSettings.value(key(did, "lastSignInTimestamp")).toDateTime();
 }
 
-void UserSettings::saveBookmarks(const QString& did, const QStringList& postUris)
-{
-    mSettings.setValue(key(did, "bookmarks"), postUris);
-}
-
 QStringList UserSettings::getBookmarks(const QString& did) const
 {
     return mSettings.value(key(did, "bookmarks")).toStringList();
 }
 
-void UserSettings::setBookmarksNoticeSeen(bool seen)
+void UserSettings::removeBookmarks(const QString& did)
 {
-    mSettings.setValue("bookmarksNoticeSeen", seen);
-}
-
-bool UserSettings::getBookmarksNoticeSeen() const
-{
-    return mSettings.value("bookmarksNoticeSeen", false).toBool();
+    qDebug() << "Remove locally stored muted bookmarks";
+    mSettings.remove(key(did, "bookmarks"));
+    mSettings.remove("bookmarksNoticeSeen");
 }
 
 QStringList UserSettings::getMutedWords(const QString& did) const
