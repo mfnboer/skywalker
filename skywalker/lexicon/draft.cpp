@@ -3,6 +3,7 @@
 #include "draft.h"
 #include "lexicon.h"
 #include <atproto/lib/xjson.h>
+#include <unordered_map>
 
 namespace Skywalker::Draft {
 
