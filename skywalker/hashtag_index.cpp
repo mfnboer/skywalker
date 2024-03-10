@@ -67,12 +67,7 @@ QStringList HashtagIndex::find(const QString& hashtag, int limit, const QStringL
     QStringList result;
     result.reserve(limit);
     std::unordered_set<QString> alreadyFound;
-
-    for (const auto& tag : suppress)
-    {
-        const auto normalizedTag = SearchUtils::normalizeText(tag);
-        alreadyFound.insert(normalizedTag);
-    }
+    alreadyFound.insert(suppress.begin(), suppress.end());
 
     if (mCache.contains(hashtag))
         addToResult(hashtag, result, alreadyFound);

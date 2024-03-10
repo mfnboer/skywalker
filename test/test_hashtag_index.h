@@ -74,8 +74,8 @@ private slots:
     void suppressTags()
     {
         HashtagIndex index(10);
-        index.insert({ "foo", "bar", "foobar" });
-        QCOMPARE(index.find("foo", 10, { "foo", "barf" }), { "foobar"} );
+        index.insert({ "Foo", "bar", "foobar" });
+        QCOMPARE(index.find("foo", 10, { "Foo", "barf" }), { "foobar"} );
     }
 
     void clear()
