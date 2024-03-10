@@ -303,6 +303,11 @@ qt_add_qml_module(libskywalker
         QML_FILES HashtagTypeaheadView.qml
         QML_FILES HashtagListView.qml
         QML_FILES SearchPostScope.qml
+        SOURCES lexicon/bookmark.h
+        SOURCES lexicon/bookmark.cpp
+        SOURCES lexicon/lexicon.h
+        SOURCES lexicon/draft.h
+        SOURCES lexicon/draft.cpp
 )
 
 if (NOT ANDROID)

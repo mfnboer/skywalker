@@ -2,8 +2,8 @@
 // License: GPLv3
 #pragma once
 #include "presence.h"
-#include "user_settings.h"
 #include "wrapped_skywalker.h"
+#include "lexicon/bookmark.h"
 #include <QDebug>
 #include <QObject>
 #include <QString>
@@ -43,19 +43,10 @@ signals:
     void bookmarksLoadFailed(QString error);
 
 private:
-    struct BookmarkRecord {
-        QString mUri;
-
-        QJsonObject toJson() const;
-
-        using Ptr = std::unique_ptr<BookmarkRecord>;
-        static Ptr fromJson(const QJsonObject& json);
-    };
-
     QStringList loadLegacy();
     void removeLegacyBookmarks();
     bool addBookmarkPrivate(const QString& postUri);
-    void writeRecord(const BookmarkRecord& bookmark);
+    void writeRecord(const Bookmark::Bookmark& bookmark);
     void deleteRecord(const QString& postUri);
     void listRecords(const std::function<void()>& doneCb, std::optional<QString> cursor = {}, int maxPages = 10);
     void createRecords(const QStringList& postUris, const std::function<void()>& doneCb);

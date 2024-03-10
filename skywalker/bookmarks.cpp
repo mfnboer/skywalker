@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "bookmarks.h"
-#include "definitions.h"
+#include "lexicon/lexicon.h"
 #include "skywalker.h"
 #include <atproto/lib/at_uri.h>
 
@@ -32,8 +32,8 @@ bool Bookmarks::addBookmark(const QString& postUri)
 
     if (isFull())
         return false;
-
-    BookmarkRecord bookmark;
+    
+    Bookmark::Bookmark bookmark;
     bookmark.mUri = postUri;
 
     writeRecord(bookmark);
@@ -98,9 +98,9 @@ void Bookmarks::load()
         }
         else
         {
-            qDebug() << "Migrate legacy bookmarks to:" << COLLECTION_BOOKMARK;
+            qDebug() << "Migrate legacy bookmarks to:" << Lexicon::COLLECTION_BOOKMARK;
             createRecords(uris, [this]{
-                qDebug() << "Bookmarks migrated to:" << COLLECTION_BOOKMARK;
+                qDebug() << "Bookmarks migrated to:" << Lexicon::COLLECTION_BOOKMARK;
                 removeLegacyBookmarks();
 
                 // Reload all from repo to create the post-uri -> record-uri mapping
@@ -151,7 +151,7 @@ QStringList Bookmarks::loadLegacy()
     return newUris;
 }
 
-void Bookmarks::writeRecord(const BookmarkRecord& bookmark)
+void Bookmarks::writeRecord(const Bookmark::Bookmark& bookmark)
 {
     if (!bskyClient())
         return;
@@ -159,7 +159,7 @@ void Bookmarks::writeRecord(const BookmarkRecord& bookmark)
     const QString& repo = mSkywalker->getUserDid();
     const auto json = bookmark.toJson();
 
-    bskyClient()->createRecord(repo, COLLECTION_BOOKMARK, {}, json, false,
+    bskyClient()->createRecord(repo, Lexicon::COLLECTION_BOOKMARK, {}, json, false,
         [this, bookmark, presence=getPresence()](auto ref) {
             if (!presence)
                 return;
@@ -224,7 +224,7 @@ void Bookmarks::listRecords(const std::function<void()>& doneCb, std::optional<Q
 
     const QString& repo = mSkywalker->getUserDid();
 
-    bskyClient()->listRecords(repo, COLLECTION_BOOKMARK, 100, cursor,
+    bskyClient()->listRecords(repo, Lexicon::COLLECTION_BOOKMARK, 100, cursor,
         [this, doneCb, maxPages, presence=getPresence()](auto output) {
             if (!presence)
                 return;
@@ -234,7 +234,7 @@ void Bookmarks::listRecords(const std::function<void()>& doneCb, std::optional<Q
                 const auto& record = *it;
 
                 try {
-                    auto bookmark = BookmarkRecord::fromJson(record->mValue);
+                    auto bookmark = Bookmark::Bookmark::fromJson(record->mValue);
                     addBookmarkPrivate(bookmark->mUri);
                     mPostUriRecordUriMap[bookmark->mUri] = record->mUri;
                 }
@@ -271,10 +271,10 @@ void Bookmarks::createRecords(const QStringList& postUris, const std::function<v
 
     for (const auto& uri : postUris)
     {
-        BookmarkRecord record;
+        Bookmark::Bookmark record;
         record.mUri = uri;
         auto create = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesCreate>();
-        create->mCollection = COLLECTION_BOOKMARK;
+        create->mCollection = Lexicon::COLLECTION_BOOKMARK;
         create->mValue = record.toJson();
         writes.push_back(std::move(create));
     }
@@ -296,22 +296,6 @@ void Bookmarks::createRecords(const QStringList& postUris, const std::function<v
             qDebug() << "Failed to create records:" << error << "-" << msg;
             emit bookmarksLoadFailed(msg);
         });
-}
-
-QJsonObject Bookmarks::BookmarkRecord::toJson() const
-{
-    QJsonObject json;
-    json.insert("$type", COLLECTION_BOOKMARK);
-    json.insert("uri", mUri);
-    return json;
-}
-
-Bookmarks::BookmarkRecord::Ptr Bookmarks::BookmarkRecord::fromJson(const QJsonObject& json)
-{
-    const ATProto::XJsonObject xjson(json);
-    auto bookmark = std::make_unique<BookmarkRecord>();
-    bookmark->mUri = xjson.getRequiredString("uri");
-    return bookmark;
 }
 
 }

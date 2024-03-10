@@ -2,11 +2,11 @@
 // License: GPLv3
 #include "draft_posts.h"
 #include "atproto_image_provider.h"
-#include "definitions.h"
 #include "content_filter.h"
 #include "gif_utils.h"
 #include "photo_picker.h"
 #include "skywalker.h"
+#include "lexicon/lexicon.h"
 #include <atproto/lib/xjson.h>
 
 namespace Skywalker {
@@ -53,7 +53,7 @@ void DraftPosts::saveDraftPost(const QString& text,
     ATProto::AppBskyFeed::PostReplyRef::Ptr replyRef = replyToUri.isEmpty() ? nullptr :
             ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-    auto draft = std::make_shared<Draft>();
+    auto draft = std::make_shared<Draft::Draft>();
     draft->mPost = ATProto::PostMaster::createPostWithoutFacets(text, std::move(replyRef));
     ATProto::PostMaster::addLabelsToPost(*draft->mPost, labels);
 
@@ -271,7 +271,7 @@ void DraftPosts::removeDraftPostsModel()
 QString DraftPosts::getDraftUri(const QString& ref) const
 {
     const QString userDid = mSkywalker->getUserDid();
-    ATProto::ATUri atUri(userDid, COLLECTION_DRAFT_POST, ref);
+    ATProto::ATUri atUri(userDid, Lexicon::COLLECTION_DRAFT_POST, ref);
     return atUri.toString();
 }
 
@@ -303,20 +303,20 @@ ATProto::AppBskyActor::ProfileView::Ptr DraftPosts::createProfileView(const Prof
     return view;
 }
 
-DraftPosts::ReplyToPost::Ptr DraftPosts::createReplyToPost(const QString& replyToUri, const BasicProfile& author,
-                                                           const QString& text, const QDateTime& dateTime) const
+Draft::ReplyToPost::Ptr DraftPosts::createReplyToPost(const QString& replyToUri, const BasicProfile& author,
+                                               const QString& text, const QDateTime& dateTime) const
 {
     if (replyToUri.isEmpty())
         return nullptr;
 
-    auto replyToPost = std::make_unique<ReplyToPost>();
+    auto replyToPost = std::make_unique<Draft::ReplyToPost>();
     replyToPost->mAuthor = createProfileViewBasic(author);
     replyToPost->mText = text;
     replyToPost->mDateTime = dateTime;
     return replyToPost;
 }
 
-DraftPosts::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const BasicProfile& quoteAuthor,
+Draft::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const BasicProfile& quoteAuthor,
                                    const QString& quoteText, const QDateTime& quoteDateTime,
                                    const GeneratorView& quoteFeed, const ListView& quoteList) const
 {
@@ -331,21 +331,21 @@ DraftPosts::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const Ba
         return nullptr;
     }
 
-    auto quote = std::make_unique<Quote>();
+    auto quote = std::make_unique<Draft::Quote>();
 
     if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_POST)
     {
-        quote->mRecordType = Quote::RecordType::QUOTE_POST;
+        quote->mRecordType = Draft::Quote::RecordType::QUOTE_POST;
         quote->mRecord = createQuotePost(quoteAuthor, quoteText, quoteDateTime);
     }
     else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_GENERATOR)
     {
-        quote->mRecordType = Quote::RecordType::QUOTE_FEED;
+        quote->mRecordType = Draft::Quote::RecordType::QUOTE_FEED;
         quote->mRecord = createQuoteFeed(quoteFeed);
     }
     else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_GRAPH_LIST)
     {
-        quote->mRecordType = Quote::RecordType::QUOTE_LIST;
+        quote->mRecordType = Draft::Quote::RecordType::QUOTE_LIST;
         quote->mRecord = createQuoteList(quoteList);
     }
     else
@@ -357,10 +357,10 @@ DraftPosts::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const Ba
     return quote;
 }
 
-DraftPosts::QuotePost::Ptr DraftPosts::createQuotePost(const BasicProfile& author,
-                                       const QString& text, const QDateTime& dateTime) const
+Draft::QuotePost::Ptr DraftPosts::createQuotePost(const BasicProfile& author,
+                                           const QString& text, const QDateTime& dateTime) const
 {
-    auto quotePost = std::make_unique<QuotePost>();
+    auto quotePost = std::make_unique<Draft::QuotePost>();
     quotePost->mAuthor = createProfileViewBasic(author);
     quotePost->mText = text;
     quotePost->mDateTime = dateTime;
@@ -394,122 +394,7 @@ ATProto::AppBskyGraph::ListView::Ptr DraftPosts::createQuoteList(const ListView&
     return view;
 }
 
-QJsonObject DraftPosts::ReplyToPost::toJson() const
-{
-    QJsonObject json;
-    Q_ASSERT(mAuthor);
-
-    if (mAuthor)
-        json.insert("author", mAuthor->toJson());
-
-    json.insert("text", mText);
-    json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
-    return json;
-}
-
-DraftPosts::ReplyToPost::Ptr DraftPosts::ReplyToPost::fromJson(const QJsonObject& json)
-{
-    const ATProto::XJsonObject xjson(json);
-    auto replyToPost = std::make_unique<ReplyToPost>();
-    replyToPost->mAuthor = xjson.getRequiredObject<ATProto::AppBskyActor::ProfileViewBasic>("author");
-    replyToPost->mText = xjson.getRequiredString("text");
-    replyToPost->mDateTime = xjson.getRequiredDateTime("date");
-    return replyToPost;
-}
-
-QJsonObject DraftPosts::QuotePost::toJson() const
-{
-    QJsonObject json;
-    json.insert("$type", DRAFT_DEFS_QUOTE_POST);
-    Q_ASSERT(mAuthor);
-
-    if (mAuthor)
-        json.insert("author", mAuthor->toJson());
-
-    json.insert("text", mText);
-    json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
-    return json;
-}
-
-DraftPosts::QuotePost::Ptr DraftPosts::QuotePost::fromJson(const QJsonObject& json)
-{
-    const ATProto::XJsonObject xjson(json);
-    auto quotePost = std::make_unique<QuotePost>();
-    quotePost->mAuthor = xjson.getRequiredObject<ATProto::AppBskyActor::ProfileViewBasic>("author");
-    quotePost->mText = xjson.getRequiredString("text");
-    quotePost->mDateTime = xjson.getRequiredDateTime("date");
-    return quotePost;
-}
-
-DraftPosts::Quote::RecordType DraftPosts::Quote::stringToRecordType(const QString& str)
-{
-    static const std::unordered_map<QString, RecordType> recordMapping = {
-        { DRAFT_DEFS_QUOTE_POST, RecordType::QUOTE_POST },
-        { "app.bsky.feed.defs#generatorView", RecordType::QUOTE_FEED },
-        { "app.bsky.graph.defs#listView", RecordType::QUOTE_LIST }
-    };
-
-    const auto it = recordMapping.find(str);
-    if (it != recordMapping.end())
-        return it->second;
-
-    qWarning() << "Unknown record type:" << str;
-    return RecordType::UNKNOWN;
-}
-
-QJsonObject DraftPosts::Quote::toJson() const
-{
-    QJsonObject json;
-
-    switch (mRecordType)
-    {
-    case RecordType::QUOTE_POST:
-        json.insert("record", std::get<QuotePost::Ptr>(mRecord)->toJson());
-        break;
-    case RecordType::QUOTE_FEED:
-        json.insert("record", std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord)->toJson());
-        break;
-    case RecordType::QUOTE_LIST:
-        json.insert("record", std::get<ATProto::AppBskyGraph::ListView::Ptr>(mRecord)->toJson());
-        break;
-    case RecordType::UNKNOWN:
-        qWarning() << "Unknown record type:" << (int)mRecordType;
-        Q_ASSERT(false);
-        break;
-    }
-
-    return json;
-}
-
-DraftPosts::Quote::Ptr DraftPosts::Quote::fromJson(const QJsonObject& json)
-{
-    const ATProto::XJsonObject xjson(json);
-    auto quote = std::make_unique<Quote>();
-    const auto recordJson = xjson.getRequiredJsonObject("record");
-    const ATProto::XJsonObject recordXJson(recordJson);
-    const QString rawRecordType = recordXJson.getRequiredString("$type");
-    quote->mRecordType = stringToRecordType(rawRecordType);
-
-    switch (quote->mRecordType)
-    {
-    case RecordType::QUOTE_POST:
-        quote->mRecord = xjson.getRequiredObject<QuotePost>("record");
-        break;
-    case RecordType::QUOTE_FEED:
-        quote->mRecord = xjson.getRequiredObject<ATProto::AppBskyFeed::GeneratorView>("record");
-        break;
-    case RecordType::QUOTE_LIST:
-        quote->mRecord = xjson.getRequiredObject<ATProto::AppBskyGraph::ListView>("record");
-        break;
-    case RecordType::UNKNOWN:
-        qWarning() << "Unknown record type:" << rawRecordType;
-        throw ATProto::InvalidJsonException("Unknown record type");
-    }
-
-    return quote;
-}
-
-ATProto::AppBskyFeed::FeedViewPost::Ptr DraftPosts::convertDraftToFeedViewPost(Draft& draft, const QString& recordUri)
+ATProto::AppBskyFeed::FeedViewPost::Ptr DraftPosts::convertDraftToFeedViewPost(Draft::Draft& draft, const QString& recordUri)
 {
     auto feedView = std::make_unique<ATProto::AppBskyFeed::FeedViewPost>();
     feedView->mReply = createReplyRef(draft);
@@ -517,7 +402,7 @@ ATProto::AppBskyFeed::FeedViewPost::Ptr DraftPosts::convertDraftToFeedViewPost(D
     return feedView;
 }
 
-ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft& draft, const QString& recordUri)
+ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft::Draft& draft, const QString& recordUri)
 {
     auto postView = std::make_unique<ATProto::AppBskyFeed::PostView>();
     postView->mUri = recordUri;
@@ -532,7 +417,7 @@ ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft& dr
     return postView;
 }
 
-ATProto::AppBskyFeed::ThreadgateView::Ptr DraftPosts::createThreadgateView(Draft& draft) const
+ATProto::AppBskyFeed::ThreadgateView::Ptr DraftPosts::createThreadgateView(Draft::Draft& draft) const
 {
     if (!draft.mThreadgate)
         return nullptr;
@@ -551,7 +436,7 @@ ATProto::AppBskyFeed::ThreadgateView::Ptr DraftPosts::createThreadgateView(Draft
     return view;
 }
 
-ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createReplyToPost(const Draft& draft) const
+ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createReplyToPost(const Draft::Draft& draft) const
 {
     if (!draft.mReplyToPost)
         return nullptr;
@@ -562,7 +447,7 @@ ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createReplyToPost(const Draf
     return post;
 }
 
-ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertReplyToPostView(Draft& draft) const
+ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertReplyToPostView(Draft::Draft& draft) const
 {
     if (!draft.mReplyToPost)
         return nullptr;
@@ -586,7 +471,7 @@ ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertReplyToPostView(Draft& dr
     return view;
 }
 
-ATProto::AppBskyFeed::ReplyRef::Ptr DraftPosts::createReplyRef(Draft& draft) const
+ATProto::AppBskyFeed::ReplyRef::Ptr DraftPosts::createReplyRef(Draft::Draft& draft) const
 {
     if (!draft.mReplyToPost)
         return nullptr;
@@ -639,7 +524,7 @@ ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProt
 }
 
 ATProto::AppBskyEmbed::EmbedView::Ptr DraftPosts::createEmbedView(
-    const ATProto::AppBskyEmbed::Embed* embed, Quote::Ptr quote)
+    const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::Ptr quote)
 {
     if (!embed)
         return nullptr;
@@ -718,7 +603,7 @@ ATProto::AppBskyEmbed::ExternalView::Ptr DraftPosts::createExternalView(
 }
 
 ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
-    const ATProto::AppBskyEmbed::Record* record, Quote::Ptr quote) const
+    const ATProto::AppBskyEmbed::Record* record, Draft::Quote::Ptr quote) const
 {
     if (!record || !quote)
         return nullptr;
@@ -727,9 +612,9 @@ ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
 
     switch (quote->mRecordType)
     {
-    case Quote::RecordType::QUOTE_POST:
+    case Draft::Quote::RecordType::QUOTE_POST:
     {
-        auto& quotePost = std::get<QuotePost::Ptr>(quote->mRecord);
+        auto& quotePost = std::get<Draft::QuotePost::Ptr>(quote->mRecord);
         auto post = std::make_unique<ATProto::AppBskyFeed::Record::Post>();
         post->mText = quotePost->mText;
         post->mCreatedAt = quotePost->mDateTime;
@@ -746,11 +631,11 @@ ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
         view->mRecord = std::move(viewRecord);
         break;
     }
-    case Quote::RecordType::QUOTE_FEED:
+    case Draft::Quote::RecordType::QUOTE_FEED:
         view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW;
         view->mRecord = std::move(std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(quote->mRecord));
         break;
-    case Quote::RecordType::QUOTE_LIST:
+    case Draft::Quote::RecordType::QUOTE_LIST:
         view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW;
         view->mRecord = std::move(std::get<ATProto::AppBskyGraph::ListView::Ptr>(quote->mRecord));
         break;
@@ -763,7 +648,7 @@ ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
 }
 
 ATProto::AppBskyEmbed::RecordWithMediaView::Ptr DraftPosts::createRecordWithMediaView(
-    const ATProto::AppBskyEmbed::RecordWithMedia* record, Quote::Ptr quote)
+    const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::Ptr quote)
 {
     if (!record || !quote)
         return nullptr;
@@ -789,29 +674,7 @@ ATProto::AppBskyEmbed::RecordWithMediaView::Ptr DraftPosts::createRecordWithMedi
     return view;
 }
 
-QJsonObject DraftPosts::Draft::toJson() const
-{
-    QJsonObject json;
-    json.insert("$type", COLLECTION_DRAFT_POST);
-    json.insert("post", mPost->toJson());
-    ATProto::XJsonObject::insertOptionalJsonObject<ReplyToPost>(json, "replyToPost", mReplyToPost);
-    ATProto::XJsonObject::insertOptionalJsonObject<Quote>(json, "quote", mQuote);
-    ATProto::XJsonObject::insertOptionalJsonObject<ATProto::AppBskyFeed::Threadgate>(json, "threadgate", mThreadgate);
-    return json;
-}
-
-DraftPosts::Draft::Ptr DraftPosts::Draft::fromJson(const QJsonObject& json)
-{
-    const ATProto::XJsonObject xjson(json);
-    auto draft = std::make_unique<Draft>();
-    draft->mPost = xjson.getRequiredObject<ATProto::AppBskyFeed::Record::Post>("post");
-    draft->mReplyToPost = xjson.getOptionalObject<ReplyToPost>("replyToPost");
-    draft->mQuote = xjson.getOptionalObject<Quote>("quote");
-    draft->mThreadgate = xjson.getOptionalObject<ATProto::AppBskyFeed::Threadgate>("threadgate");
-    return draft;
-}
-
-bool DraftPosts::writeRecord(const Draft& draft)
+bool DraftPosts::writeRecord(const Draft::Draft& draft)
 {
     if (!bskyClient())
         return false;
@@ -819,7 +682,7 @@ bool DraftPosts::writeRecord(const Draft& draft)
     const QString& repo = mSkywalker->getUserDid();
     const auto json = draft.toJson();
 
-    bskyClient()->createRecord(repo, COLLECTION_DRAFT_POST, {}, json, false,
+    bskyClient()->createRecord(repo, Lexicon::COLLECTION_DRAFT_POST, {}, json, false,
         [this, presence=getPresence()](auto /* strongRef */) {
             if (!presence)
                 return;
@@ -847,7 +710,7 @@ void DraftPosts::listRecords()
 
     const QString& repo = mSkywalker->getUserDid();
 
-    bskyClient()->listRecords(repo, COLLECTION_DRAFT_POST, 100, {},
+    bskyClient()->listRecords(repo, Lexicon::COLLECTION_DRAFT_POST, 100, {},
         [this, presence=getPresence()](auto output) {
             if (!presence)
                 return;
@@ -857,7 +720,7 @@ void DraftPosts::listRecords()
             for (const auto& record : output->mRecords)
             {
                 try {
-                    auto draft = Draft::fromJson(record->mValue);
+                    auto draft = Draft::Draft::fromJson(record->mValue);
                     auto post = convertDraftToFeedViewPost(*draft, record->mUri);
                     feed.push_back(std::move(post));
                 }
