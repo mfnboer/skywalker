@@ -3,6 +3,7 @@ next
 * Bookmarks are stored in the cloud (your PDS)
 * Fix: sometimes the keyboard pushed the compose window off screen
 * Fix: user scoped search lost scope when scrolling to next page
+* Fix: hashtag must have non-digit character
 * Fix: #️⃣  is not a hashtag start
 * Fix: photo access permission on Android 14
 
