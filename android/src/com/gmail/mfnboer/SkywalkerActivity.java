@@ -4,6 +4,7 @@
 package com.gmail.mfnboer;
 
 import com.gmail.mfnboer.FileUtils;
+import com.gmail.mfnboer.NewMessageChecker;
 
 import org.qtproject.qt.android.QtNative;
 import org.qtproject.qt.android.bindings.QtActivity;
@@ -53,7 +54,15 @@ public class SkywalkerActivity extends QtActivity {
     public void onPause() {
         Log.d(LOGTAG, "onPause");
         emitPause();
+        NewMessageChecker.startChecker();
         super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(LOGTAG, "onResume");
+        NewMessageChecker.stopChecker();
+        super.onResume();
     }
 
     @Override

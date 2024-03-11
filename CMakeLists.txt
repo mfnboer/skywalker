@@ -57,6 +57,13 @@ qt_add_qml_module(appskywalker
         android/src/com/gmail/mfnboer/PasswordStorageHelper.java
         android/src/com/gmail/mfnboer/SkywalkerActivity.java
         RESOURCES android/src/com/gmail/mfnboer/FontUtils.java
+        RESOURCES android/src/com/gmail/mfnboer/NewMessageChecker.java
+        RESOURCES android/src/com/gmail/mfnboer/NewMessageNotifier.java
+
+
+
+
+
 )
 
 if (ANDROID)
@@ -77,6 +84,7 @@ endif()
 set_target_properties(appskywalker PROPERTIES
     QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
     QT_ANDROID_TARGET_SDK_VERSION 33
+    QT_ANDROID_SDK_BUILD_TOOLS_REVISION 34
     QT_ANDROID_VERSION_NAME ${APP_VERSION}
     QT_ANDROID_VERSION_CODE ${VERSION_CODE})
 
