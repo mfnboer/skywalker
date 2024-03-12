@@ -59,11 +59,6 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/FontUtils.java
         RESOURCES android/src/com/gmail/mfnboer/NewMessageChecker.java
         RESOURCES android/src/com/gmail/mfnboer/NewMessageNotifier.java
-
-
-
-
-
 )
 
 if (ANDROID)

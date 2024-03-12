@@ -6,6 +6,7 @@
 #include <QStandardPaths>
 
 #ifdef Q_OS_ANDROID
+#include "android_utils.h"
 #include <QJniObject>
 #include <QOperatingSystemVersion>
 #include <QtCore/private/qandroidextras_p.h>
@@ -14,26 +15,6 @@
 namespace {
 
 constexpr char const* APP_DATA_SUB_DIR = "skywalker";
-
-#if defined(Q_OS_ANDROID)
-bool checkPermission(const QString& permission)
-{
-    auto checkResult = QtAndroidPrivate::checkPermission(permission);
-    if (checkResult.result() != QtAndroidPrivate::Authorized)
-    {
-        qDebug() << "Permission check failed:" << permission;
-        auto requestResult = QtAndroidPrivate::requestPermission(permission);
-
-        if (requestResult.result() != QtAndroidPrivate::Authorized)
-        {
-            qWarning() << "No permission:" << permission;
-            return false;
-        }
-    }
-
-    return true;
-}
-#endif
 
 }
 
@@ -51,12 +32,12 @@ bool checkReadMediaPermission()
     const auto osVersion = QOperatingSystemVersion::current();
 
     if (osVersion > QOperatingSystemVersion::Android13)
-        return checkPermission(READ_MEDIA_IMAGES); // && checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
+        return AndroidUtils::checkPermission(READ_MEDIA_IMAGES); // && checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
 
     if (osVersion >= QOperatingSystemVersion::Android13)
-        return checkPermission(READ_MEDIA_IMAGES);
+        return AndroidUtils::checkPermission(READ_MEDIA_IMAGES);
 
-    return checkPermission(READ_EXTERNAL_STORAGE);
+    return AndroidUtils::checkPermission(READ_EXTERNAL_STORAGE);
 #else
     return true;
 #endif
@@ -70,7 +51,7 @@ bool checkWriteMediaPermission()
     const auto osVersion = QOperatingSystemVersion::current();
 
     if (osVersion < QOperatingSystemVersion::Android11)
-        return checkPermission(WRITE_EXTERNAL_STORAGE);
+        return AndroidUtils::checkPermission(WRITE_EXTERNAL_STORAGE);
 #endif
     return true;
 }

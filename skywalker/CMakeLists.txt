@@ -55,6 +55,7 @@ qt_add_qml_module(libskywalker
         profile_store.cpp
         photo_picker.h
         photo_picker.cpp
+        jni_callback.h
         jni_callback.cpp
         post_utils.h
         post_utils.cpp
@@ -308,6 +309,12 @@ qt_add_qml_module(libskywalker
         SOURCES lexicon/lexicon.h
         SOURCES lexicon/draft.h
         SOURCES lexicon/draft.cpp
+        SOURCES android_utils.h
+        SOURCES android_utils.cpp
+        SOURCES pull_notifications.h
+        SOURCES pull_notifications.cpp
+        SOURCES jni_utils.h
+        SOURCES jni_utils.cpp
 )
 
 if (NOT ANDROID)

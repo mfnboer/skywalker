@@ -280,6 +280,16 @@ QStringList UserSettings::getSeenHashtags() const
     return mSettings.value("seenHashtags").toStringList();
 }
 
+void UserSettings::setPullNotifications(const QString& did, bool enabled)
+{
+    mSettings.setValue(key(did, "pullNotifications"), enabled);
+}
+
+bool UserSettings::getPullNotifications(const QString& did) const
+{
+    return mSettings.value(key(did, "pullNotifications"), false).toBool();
+}
+
 void UserSettings::cleanup()
 {
     // Version 1.5 erroneously saved user hashtags on app level

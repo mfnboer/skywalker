@@ -59,8 +59,15 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& text){ emit sharedTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
+
     connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
-            [this]{ saveHashtags(); });
+            [this]{
+                saveHashtags();
+                mPullNotifications.startNewMessageChecker();
+            });
+
+    connect(&jniCallbackListener, &JNICallbackListener::checkNewMessages, this,
+            [this]{ mPullNotifications.checkNewMessages(); });
 }
 
 Skywalker::~Skywalker()

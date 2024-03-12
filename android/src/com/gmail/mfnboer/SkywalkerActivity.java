@@ -54,7 +54,6 @@ public class SkywalkerActivity extends QtActivity {
     public void onPause() {
         Log.d(LOGTAG, "onPause");
         emitPause();
-        NewMessageChecker.startChecker();
         super.onPause();
     }
 

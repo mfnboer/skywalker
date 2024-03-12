@@ -21,10 +21,16 @@ public class NewMessageNotifier {
     private static final int IMPORTANCE = NotificationManager.IMPORTANCE_DEFAULT;
     private static final String DESCRIPTION = "Notifications of replies and mentions";
     private static int sNextNotificationId = 1;
+    private static Context mContext;
+
+    public static void setContext(Context context) {
+        mContext = context;
+    }
 
     public static void createNotificationChannel() {
         // API 26+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d(LOGTAG, "Create notification channel: " + CHANNEL_ID + " name: " + CHANNEL_NAME);
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
             channel.setDescription(DESCRIPTION);
             Context context = QtNative.getContext();
@@ -34,15 +40,16 @@ public class NewMessageNotifier {
     }
 
     public static void createNotification(String title, String msg) {
-        Context context = QtNative.getContext();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+        Log.d(LOGTAG, "Create notification: " + sNextNotificationId + " title: " + title + " msg: " + msg);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_dialog_alert)
                 .setContentTitle(title)
                 .setContentText(msg)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
 
-        NotificationManagerCompat.from(context).notify(sNextNotificationId, builder.build());
+        NotificationManagerCompat.from(mContext).notify(sNextNotificationId, builder.build());
         ++sNextNotificationId;
     }
 }

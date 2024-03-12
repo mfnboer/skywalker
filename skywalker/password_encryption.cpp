@@ -4,6 +4,7 @@
 #include <QtGlobal>
 
 #ifdef Q_OS_ANDROID
+#include "jni_utils.h"
 #include <QJniObject>
 #endif
 
@@ -13,12 +14,20 @@ namespace Skywalker
 bool PasswordEncryption::init(const QString& keyAlias)
 {
 #ifdef Q_OS_ANDROID
+    QJniEnvironment env;
     QJniObject keyAliasJni = QJniObject::fromString(keyAlias);
-
-    auto initialized = QJniObject::callStaticMethod<jboolean>(
+    auto [javaClass, methodId] = JniUtils::getClassAndMethod(
+        env,
         "com/gmail/mfnboer/PasswordStorageHelper",
         "initializeKeyStore",
-        "(Ljava/lang/String;)Z",
+        "(Ljava/lang/String;)Z");
+
+    if (!javaClass || !methodId)
+        return false;
+
+    auto initialized = QJniObject::callStaticMethod<jboolean>(
+        javaClass,
+        methodId,
         keyAliasJni.object<jstring>());
 
     mKeyAliasIntialized[keyAlias] = bool(initialized);
