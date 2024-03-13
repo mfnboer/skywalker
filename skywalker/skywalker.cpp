@@ -6,6 +6,7 @@
 #include "file_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
+#include "pull_notifications.h"
 #include "shared_image_provider.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
@@ -63,11 +64,9 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
             [this]{
                 saveHashtags();
-                mPullNotifications.startNewMessageChecker();
+                PullNotifications pullNotifications(mUserSettings);
+                pullNotifications.startNewMessageChecker();
             });
-
-    connect(&jniCallbackListener, &JNICallbackListener::checkNewMessages, this,
-            [this]{ mPullNotifications.checkNewMessages(); });
 }
 
 Skywalker::~Skywalker()

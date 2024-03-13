@@ -61,14 +61,6 @@ void _handlePause(JNIEnv*)
         instance->handlePause();
 }
 
-// void _handleCheckNewMessages(JNIEnv*)
-// {
-//     auto& instance = *gTheInstance;
-
-//     if (instance)
-//         instance->handleCheckNewMessages();
-// }
-
 #endif
 
 }
@@ -113,11 +105,6 @@ JNICallbackListener::JNICallbackListener() : QObject()
         { "emitPause", "()V", reinterpret_cast<void *>(_handlePause) }
     };
     jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 3);
-
-    // const JNINativeMethod newMessageCheckerCallbacks[] = {
-    //     { "emitCheckNewMessages", "()V", reinterpret_cast<void *>(_handleCheckNewMessages) }
-    // };
-    // jni.registerNativeMethods("com/gmail/mfnboer/NewMessageChecker", newMessageCheckerCallbacks, 1);
 #endif
 }
 
@@ -143,10 +130,6 @@ void JNICallbackListener::handleSharedImageReceived(const QString fileName, cons
 
 void JNICallbackListener::handlePause() {
     emit appPause();
-}
-
-void JNICallbackListener::handleCheckNewMessages() {
-    emit checkNewMessages();
 }
 
 }

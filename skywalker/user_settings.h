@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE static void setLinkColor(const QString& color) { sLinkColor = color; }
 
     explicit UserSettings(QObject* parent = nullptr);
+    explicit UserSettings(const QString& fileName, QObject* parent = nullptr);
 
     Q_INVOKABLE QList<BasicProfile> getUserList() const;
 

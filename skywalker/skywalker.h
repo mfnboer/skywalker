@@ -19,7 +19,6 @@
 #include "post_feed_model.h"
 #include "post_thread_model.h"
 #include "profile_store.h"
-#include "pull_notifications.h"
 #include "search_post_feed_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
@@ -306,7 +305,6 @@ private:
     HashtagIndex mSeenHashtags;
     FavoriteFeeds mFavoriteFeeds;
     UserSettings mUserSettings;
-    PullNotifications mPullNotifications;
     bool mDebugLogging = false;
 };
 

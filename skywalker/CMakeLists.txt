@@ -315,6 +315,8 @@ qt_add_qml_module(libskywalker
         SOURCES pull_notifications.cpp
         SOURCES jni_utils.h
         SOURCES jni_utils.cpp
+        SOURCES offline_message_checker.h
+        SOURCES offline_message_checker.cpp
 )
 
 if (NOT ANDROID)

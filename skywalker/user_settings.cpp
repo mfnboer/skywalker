@@ -13,6 +13,16 @@ QString UserSettings::sLinkColor("blue");
 UserSettings::UserSettings(QObject* parent) :
     QObject(parent)
 {
+    qDebug() << "Settings:" << mSettings.fileName();
+    mEncryption.init(KEY_ALIAS_PASSWORD);
+    cleanup();
+}
+
+UserSettings::UserSettings(const QString& fileName, QObject* parent) :
+    QObject(parent),
+    mSettings(fileName, QSettings::defaultFormat())
+{
+    qDebug() << "Settings:" << mSettings.fileName();
     mEncryption.init(KEY_ALIAS_PASSWORD);
     cleanup();
 }

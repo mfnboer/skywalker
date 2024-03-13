@@ -4,6 +4,7 @@
 package com.gmail.mfnboer;
 
 import org.qtproject.qt.android.QtNative;
+import org.qtproject.qt.android.QtActivityDelegate;
 
 import com.gmail.mfnboer.NewMessageNotifier;
 import androidx.annotation.NonNull;
@@ -17,9 +18,12 @@ import android.content.Context;
 import android.util.Log;
 import java.lang.System;
 import java.util.concurrent.TimeUnit;
+import android.content.pm.ApplicationInfo;
+import android.app.Activity;
 
 public class NewMessageChecker extends Worker {
     private static final String LOGTAG = "NewMessageChecker";
+    private static final String SETTINGS_FILE_NAME = "/settings/Skywalker/Skywalker.conf";
 
     static {
         try {
@@ -36,22 +40,39 @@ public class NewMessageChecker extends Worker {
         }
     }
 
-    //public static native void emitCheckNewMessages();
-    public static native void checkNewMessages();
+    public static native void checkNewMessages(String settingsFileName, String libDir);
+
+    private static Activity mActivity;
+    private Context mContext;
 
     public NewMessageChecker(
         @NonNull Context context,
         @NonNull WorkerParameters params) {
         super(context, params);
-        NewMessageNotifier.setContext(context);
+        mContext = context;
     }
 
     @Override
     public Result doWork() {
         Log.d(LOGTAG, "Check for new messages");
-        //emitCheckNewMessages();
-        checkNewMessages();
+        Log.d(LOGTAG, "data dir: " + mContext.getDataDir().getPath());
+        ApplicationInfo appInfo = mContext.getApplicationInfo();
+        Log.d(LOGTAG, "native lib dir: " + appInfo.nativeLibraryDir);
+        Log.d(LOGTAG, "source dir:" + appInfo.sourceDir);
+        NewMessageNotifier.setContext(mContext);
+
+        // TODO: Are these calls needed?
+        QtNative.setClassLoader(mContext.getClassLoader());
+        QtActivityDelegate delegate = new QtActivityDelegate();
+        QtNative.setActivity(mActivity, delegate);
+
+        checkNewMessages(getSettingsFileName(), appInfo.nativeLibraryDir);
         return Result.success();
+    }
+
+    private String getSettingsFileName() {
+        String appDir = mContext.getFilesDir().getPath();
+        return appDir + SETTINGS_FILE_NAME;
     }
 
     public static void startChecker() {
@@ -64,6 +85,7 @@ public class NewMessageChecker extends Worker {
                 .setInitialDelay(20, TimeUnit.SECONDS)
                 .setConstraints(constraints).build();
 
+        mActivity = QtNative.activity();
         Context context = QtNative.getContext();
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "checkNewMessages",

@@ -20,7 +20,6 @@ public:
     void handleSharedTextReceived(const QString sharedText);
     void handleSharedImageReceived(const QString fileName, const QString text);
     void handlePause();
-    void handleCheckNewMessages();
 
 signals:
     void photoPicked(int fd);
@@ -28,7 +27,6 @@ signals:
     void sharedTextReceived(const QString sharedText);
     void sharedImageReceived(const QString fileName, const QString text);
     void appPause();
-    void checkNewMessages();
 private:
     JNICallbackListener();
 };
