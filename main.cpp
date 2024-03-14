@@ -7,9 +7,21 @@
 #include <QQmlApplicationEngine>
 #include <QFont>
 
+#ifdef Q_OS_ANDROID
+#include <QJniObject>
+#endif
+
 int main(int argc, char *argv[])
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
+
+#ifdef Q_OS_ANDROID
+    QJniEnvironment jniEnv;
+    jclass javaClass = jniEnv.findClass("org/qtproject/qt/android/QtNative");
+    qDebug() << "Java class:" << javaClass;
+#endif
+
+    qDebug() << "App instance:" << QCoreApplication::instance();
 
     QGuiApplication app(argc, argv);
     app.setOrganizationName("Skywalker");

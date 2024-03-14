@@ -37,49 +37,50 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
         return;
     }
 
+    // This makes networking work???
+    // Somehow Qt fails to find this class if we don't do this lookup.
+    jclass javaClass = jniEnv.findClass("org/qtproject/qt/android/network/QtNetwork");
+
+    if (!javaClass)
+    {
+        qWarning() << "Class loading failed";
+        return;
+    }
+
     std::unique_ptr<QCoreApplication> app;
+    std::unique_ptr<QEventLoop> eventLoop;
+    std::unique_ptr<Skywalker::OffLineMessageChecker> checker;
 
     if (!QCoreApplication::instance())
     {
         qDebug() << "Start core app";
         QCoreApplication::addLibraryPath(libDir);
         int argc = 1;
-        const char* argv[] = {"com.gmail.mfnboer.skywalker", NULL};
+        const char* argv[] = {"Skywalker", NULL};
         app = std::make_unique<QCoreApplication>(argc, (char**)argv);
         qDebug() << "LIBS:" << app->libraryPaths();
+
+        // Pass explicit file name as Qt does not know the app data path when running in
+        // a background task.
+        checker = std::make_unique<Skywalker::OffLineMessageChecker>(settingsFileName, app.get());
     }
     else
     {
         qDebug() << "App still running";
+        eventLoop = std::make_unique<QEventLoop>();
+        checker = std::make_unique<Skywalker::OffLineMessageChecker>(settingsFileName, eventLoop.get());
     }
 
-    // This makes networking work???
-    // Somehow Qt fails to find this class if we don't do this lookup.
-    jclass javaClass = jniEnv.findClass("org/qtproject/qt/android/network/QtNetwork");
-    qDebug() << "QtNework class:" << javaClass;
+    checker->run();
 
-    auto* checker = new Skywalker::OffLineMessageChecker(settingsFileName, app.get());
-
-    if (app)
-    {
-        QObject guard;
-        QTimer::singleShot(0, &guard, [checker]{
-            // Pass explicit file name as Qt does not know the app data path when running in
-            // a background task.
-            checker->run();
-        });
-
-        app->exec();
-        delete checker;
-    }
-    else
-    {
-        checker->run();
-        delete checker;
+    if (app) {
+        app = nullptr;
+        QCoreApplication::setApplicationName("");
     }
 
     (*env).ReleaseStringUTFChars(jSettingsFileName, settingsFileName);
     (*env).ReleaseStringUTFChars(jLibDir, libDir);
+    QJniEnvironment::checkAndClearExceptions(env);
     qDebug() << "CHECK NEW MESSAGES END";
 }
 #endif
@@ -89,20 +90,40 @@ namespace Skywalker {
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp) :
     mBackgroundApp(backgroundApp),
     mUserSettings(settingsFileName)
-{}
+{
+}
+
+OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop) :
+    mEventLoop(eventLoop),
+    mUserSettings(settingsFileName)
+{
+}
+
+void OffLineMessageChecker::startEventLoop()
+{
+    qDebug() << "Starting event loop";
+
+    if (mBackgroundApp)
+        mBackgroundApp->exec();
+    else if (mEventLoop)
+        mEventLoop->exec();
+}
 
 void OffLineMessageChecker::exit()
 {
+    qDebug() << "Exit";
+
     if (mBackgroundApp)
         mBackgroundApp->exit();
+    else if (mEventLoop)
+        mEventLoop->exit();
 }
 
 void OffLineMessageChecker::run()
 {
-    if (mBackgroundApp)
-        resumeSession();
-    else
-        checkNewMessages();
+    QObject guard;
+    QTimer::singleShot(0, &guard, [this]{ resumeSession(); });
+    startEventLoop();
 }
 
 void OffLineMessageChecker::checkNewMessages()
@@ -175,6 +196,7 @@ void OffLineMessageChecker::resumeSession()
     if (!getSession(host, session))
     {
         qWarning() << "No saved session";
+        exit();
         return;
     }
 
@@ -196,11 +218,6 @@ void OffLineMessageChecker::resumeSession()
             else
                 exit();
         });
-
-    qDebug() << "Starting event loop";
-
-    if (mBackgroundApp)
-        mBackgroundApp->exec();
 }
 
 void OffLineMessageChecker::refreshSession()

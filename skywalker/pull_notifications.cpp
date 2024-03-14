@@ -31,6 +31,7 @@ void PullNotifications::startNewMessageChecker()
 #endif
 }
 
+// TODO: remove? notifications can be enabled/disabled via Android permissions
 bool PullNotifications::isEnabled() const
 {
 #if defined(Q_OS_ANDROID)

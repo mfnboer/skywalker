@@ -60,8 +60,8 @@ public class SkywalkerActivity extends QtActivity {
     @Override
     public void onResume() {
         Log.d(LOGTAG, "onResume");
-        NewMessageChecker.stopChecker();
         super.onResume();
+        NewMessageChecker.stopChecker();
     }
 
     @Override

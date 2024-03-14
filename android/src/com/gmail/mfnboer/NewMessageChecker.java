@@ -42,7 +42,6 @@ public class NewMessageChecker extends Worker {
 
     public static native void checkNewMessages(String settingsFileName, String libDir);
 
-    private static Activity mActivity;
     private Context mContext;
 
     public NewMessageChecker(
@@ -56,16 +55,12 @@ public class NewMessageChecker extends Worker {
     public Result doWork() {
         Log.d(LOGTAG, "Check for new messages");
         Log.d(LOGTAG, "data dir: " + mContext.getDataDir().getPath());
+
         ApplicationInfo appInfo = mContext.getApplicationInfo();
         Log.d(LOGTAG, "native lib dir: " + appInfo.nativeLibraryDir);
         Log.d(LOGTAG, "source dir:" + appInfo.sourceDir);
+
         NewMessageNotifier.setContext(mContext);
-
-        // TODO: Are these calls needed?
-        QtNative.setClassLoader(mContext.getClassLoader());
-        QtActivityDelegate delegate = new QtActivityDelegate();
-        QtNative.setActivity(mActivity, delegate);
-
         checkNewMessages(getSettingsFileName(), appInfo.nativeLibraryDir);
         return Result.success();
     }
@@ -85,7 +80,6 @@ public class NewMessageChecker extends Worker {
                 .setInitialDelay(20, TimeUnit.SECONDS)
                 .setConstraints(constraints).build();
 
-        mActivity = QtNative.activity();
         Context context = QtNative.getContext();
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "checkNewMessages",

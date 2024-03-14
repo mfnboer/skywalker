@@ -20,12 +20,14 @@ class OffLineMessageChecker
 {
 public:
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
+    explicit OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop);
 
     void run();
 
 private:
     static void createNotification(const QString& title, const QString& msg);
 
+    void startEventLoop();
     void exit();
     void resumeSession();
     void checkNewMessages();
@@ -35,6 +37,7 @@ private:
     void login();
 
     QCoreApplication* mBackgroundApp = nullptr;
+    QEventLoop* mEventLoop = nullptr;
     UserSettings mUserSettings;
     std::unique_ptr<ATProto::Client> mBsky;
     QString mUserDid;
