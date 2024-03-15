@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "offline_message_checker.h"
+#include "notification.h"
 
 #ifdef Q_OS_ANDROID
 #include "jni_utils.h"
@@ -10,17 +11,17 @@
 #endif
 
 #if defined(Q_OS_ANDROID)
-JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jstring jSettingsFileName, jstring jLibDir)
+JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jint unread, jstring jSettingsFileName, jstring jLibDir)
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
-    qDebug() << "CHECK NEW MESSAGES START";
+    qDebug() << "CHECK NEW MESSAGES START, UNREAD:" << unread;
 
     const char* settingsFileName = (*env).GetStringUTFChars(jSettingsFileName, nullptr);
 
     if (!settingsFileName)
     {
         qWarning() << "Settings file name missing";
-        return;
+        return 0;
     }
 
     const char* libDir = (*env).GetStringUTFChars(jLibDir, nullptr);
@@ -28,7 +29,7 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
     if (!libDir)
     {
         qWarning() << "Library directory missing";
-        return;
+        return 0;
     }
 
     // This makes networking work???
@@ -39,7 +40,7 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
     if (!javaClass)
     {
         qWarning() << "Class loading failed";
-        return;
+        return 0;
     }
 
     std::unique_ptr<QCoreApplication> app;
@@ -66,11 +67,14 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
         checker = std::make_unique<Skywalker::OffLineMessageChecker>(settingsFileName, eventLoop.get());
     }
 
+    checker->setPrevUnreadCount(unread);
     checker->run();
 
     (*env).ReleaseStringUTFChars(jSettingsFileName, settingsFileName);
     (*env).ReleaseStringUTFChars(jLibDir, libDir);
-    qDebug() << "CHECK NEW MESSAGES END";
+    qDebug() << "CHECK NEW MESSAGES END, UNREAD:" << checker->getPrevUnreadCount();
+
+    return checker->getPrevUnreadCount();
 }
 #endif
 
@@ -126,6 +130,8 @@ void OffLineMessageChecker::checkNewMessages()
 
 void OffLineMessageChecker::createNotification(const QString& title, const QString& msg)
 {
+    qDebug() << "Create notification:" << title << msg;
+
 #if defined(Q_OS_ANDROID)
     QJniEnvironment env;
     QJniObject jTitle = QJniObject::fromString(title);
@@ -226,7 +232,7 @@ void OffLineMessageChecker::refreshSession()
         [this]{
             qDebug() << "Session refreshed";
             saveSession(*mBsky->getSession());
-            checkNewMessages();
+            checkUnreadNotificationCount();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Session could not be refreshed:" << error << " - " << msg;
@@ -251,16 +257,117 @@ void OffLineMessageChecker::login()
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->createSession(mUserDid, password,
-        [this, host, password]{
+        [this]{
             qDebug() << "Login" << mUserDid << "succeeded";
             const auto* session = mBsky->getSession();
             saveSession(*session);
-            checkNewMessages();
+            checkUnreadNotificationCount();
         },
-        [this, host](const QString& error, const QString& msg){
-            qDebug() << "Login" << mUserDid << "failed:" << error << " - " << msg;
+        [this](const QString& error, const QString& msg){
+            qWarning() << "Login" << mUserDid << "failed:" << error << " - " << msg;
             exit();
         });
+}
+
+void OffLineMessageChecker::checkUnreadNotificationCount()
+{
+    qDebug() << "Check unread notification count";
+
+    mBsky->getUnreadNotificationCount({},
+        [this](int unread){
+            qDebug() << "Unread notification count:" << unread;
+
+            if (unread < mPrevUnreadCount)
+            {
+                qDebug() << "Unread notification count has been reset by another client";
+                mPrevUnreadCount = 0;
+            }
+
+            if (unread == mPrevUnreadCount)
+            {
+                qDebug() << "No new messages";
+                exit();
+                return;
+            }
+
+            getNotifications(unread);
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << "Failed to get unread notification count:" << error << " - " << msg;
+            exit();
+        });
+}
+
+void OffLineMessageChecker::getNotifications(int unread)
+{
+    qDebug() << "Get notifications, unread:" << unread << "prev:" << mPrevUnreadCount;
+
+    if (unread <= mPrevUnreadCount)
+    {
+        qWarning() << "No new messages!!";
+        mPrevUnreadCount = unread;
+        exit();
+        return;
+    }
+
+    // TODO: maximize? cannot get more than 100
+    const int msgCount = unread - mPrevUnreadCount;
+
+    mBsky->listNotifications(msgCount, {}, {},
+        [this, unread](auto notifications){
+            createNotifications(notifications->mNotifications);
+            mPrevUnreadCount = unread;
+            exit();
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getNotifications FAILED:" << error << " - " << msg;
+            exit();
+        },
+        false);
+}
+
+void OffLineMessageChecker::createNotifications(const ATProto::AppBskyNotification::NotificationList& notifications)
+{
+    qDebug() << "Create notifications:" << notifications.size();
+
+    for (const auto& notification : notifications)
+        createNotification(notification.get());
+}
+
+void OffLineMessageChecker::createNotification(const ATProto::AppBskyNotification::Notification* protoNotification)
+{
+    const Notification notification(protoNotification);
+    const PostRecord postRecord = notification.getPostRecord();
+    const QString postText = !postRecord.isNull() ? postRecord.getText() : "";
+    QString msg;
+
+    switch (notification.getReason())
+    {
+    case ATProto::AppBskyNotification::NotificationReason::LIKE:
+        msg = QObject::tr("Likes your post\n") + postText; // TODO: post is not in record
+        break;
+    case ATProto::AppBskyNotification::NotificationReason::REPOST:
+        msg = QObject::tr("Reposted your post\n") + postText; // TODO: post is not in record
+        break;
+    case ATProto::AppBskyNotification::NotificationReason::FOLLOW:
+        msg = QObject::tr("Follows you");
+        break;
+    case ATProto::AppBskyNotification::NotificationReason::MENTION:
+        msg = postText;
+        break;
+    case ATProto::AppBskyNotification::NotificationReason::REPLY:
+        msg = postText;
+        break;
+    case ATProto::AppBskyNotification::NotificationReason::QUOTE:
+        msg = postText;
+        break;
+    case ATProto::AppBskyNotification::NotificationReason::INVITE_CODE_USED:
+    case ATProto::AppBskyNotification::NotificationReason::UNKNOWN:
+        return;
+    }
+
+    // TODO: truncate message? Number of lines?
+    createNotification(notification.getAuthor().getName(), msg);
 }
 
 }

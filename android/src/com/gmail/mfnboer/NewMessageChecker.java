@@ -40,9 +40,10 @@ public class NewMessageChecker extends Worker {
         }
     }
 
-    public static native void checkNewMessages(String settingsFileName, String libDir);
+    public static native int checkNewMessages(int unread, String settingsFileName, String libDir);
 
     private Context mContext;
+    private int mUnread = 0;
 
     public NewMessageChecker(
         @NonNull Context context,
@@ -61,7 +62,7 @@ public class NewMessageChecker extends Worker {
         Log.d(LOGTAG, "source dir:" + appInfo.sourceDir);
 
         NewMessageNotifier.setContext(mContext);
-        checkNewMessages(getSettingsFileName(), appInfo.nativeLibraryDir);
+        mUnread = checkNewMessages(mUnread, getSettingsFileName(), appInfo.nativeLibraryDir);
         return Result.success();
     }
 

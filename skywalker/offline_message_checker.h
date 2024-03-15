@@ -8,7 +8,7 @@
 extern "C" {
 // Will be called from the Android WorkManager through System.loadLibrary
 // QT JNI registrations cannot be used. Those are destroyed when the app exits.
-JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv*, jobject, jstring jSettingsFileName, jstring jLibDir);
+JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv*, jobject, jint unread, jstring jSettingsFileName, jstring jLibDir);
 }
 #endif
 
@@ -19,10 +19,14 @@ namespace Skywalker {
 class OffLineMessageChecker
 {
 public:
+    using Ptr = std::unique_ptr<OffLineMessageChecker>;
+
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
     explicit OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop);
 
     void run();
+    int getPrevUnreadCount() const { return mPrevUnreadCount; }
+    void setPrevUnreadCount(int count) { mPrevUnreadCount = count; }
 
 private:
     static void createNotification(const QString& title, const QString& msg);
@@ -35,12 +39,17 @@ private:
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();
     void login();
+    void checkUnreadNotificationCount();
+    void getNotifications(int unread);
+    void createNotifications(const ATProto::AppBskyNotification::NotificationList& notifications);
+    void createNotification(const ATProto::AppBskyNotification::Notification* protoNotification);
 
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;
     UserSettings mUserSettings;
     std::unique_ptr<ATProto::Client> mBsky;
     QString mUserDid;
+    int mPrevUnreadCount = 0;
 };
 
 }
