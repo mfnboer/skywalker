@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.gmail.mfnboer.skywalker"
     android:installLocation="auto"
     android:versionCode="-- %%INSERT_VERSION_CODE%% --"
@@ -12,7 +13,7 @@
         android:normalScreens="true"
         android:smallScreens="true" />
     <application
-        android:name="org.qtproject.qt.android.bindings.QtApplication"
+        android:name="com.gmail.mfnboer.SkywalkerApplication"
         android:hardwareAccelerated="true"
         android:label="Skywalker"
         android:requestLegacyExternalStorage="true"
@@ -53,6 +54,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+
         <!-- Prompt Google Play services to install the backported photo picker module -->
         <service android:name="com.google.android.gms.metadata.ModuleDependencies" android:enabled="false" android:exported="false">
             <intent-filter>
@@ -60,6 +62,16 @@
             </intent-filter>
             <meta-data android:name="photopicker_activity:0:required" android:value="" />
         </service>
+
+	<service
+	    android:name="androidx.work.multiprocess.RemoteWorkManagerService"
+    	    tools:replace="android:process"
+    	    android:process=":work_manager"/>
+
+        <service
+            android:name="androidx.work.impl.background.systemjob.SystemJobService"
+            tools:replace="android:process"
+            android:process=":work_manager"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -70,6 +82,25 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/qtprovider_paths"/>
         </provider>
+
+	<provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge" >
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+	<!--
+	<provider
+            android:name="androidx.work.impl.WorkManagerInitializer"
+            android:authorities="${applicationId}.workmanager-init"
+            tools:node="remove" />
+
+        -->
     </application>
     <uses-sdk android:minSdkVersion="28"/>
 

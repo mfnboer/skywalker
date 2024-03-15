@@ -40,7 +40,7 @@ bool PullNotifications::isEnabled() const
     if (!mUserSettings.getPullNotifications(did))
     {
         qDebug() << "Pull notifications not enabled";
-        return false; // TODO
+        return true; // TODO
     }
 
     return true;

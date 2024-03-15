@@ -4,22 +4,22 @@
 package com.gmail.mfnboer;
 
 import org.qtproject.qt.android.QtNative;
-import org.qtproject.qt.android.QtActivityDelegate;
 
 import com.gmail.mfnboer.NewMessageNotifier;
 import androidx.annotation.NonNull;
+import androidx.work.Configuration;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import androidx.work.WorkManager;
 import androidx.work.PeriodicWorkRequest;
+import androidx.work.multiprocess.RemoteWorkManager;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.util.Log;
 import java.lang.System;
 import java.util.concurrent.TimeUnit;
-import android.content.pm.ApplicationInfo;
-import android.app.Activity;
 
 public class NewMessageChecker extends Worker {
     private static final String LOGTAG = "NewMessageChecker";
@@ -70,6 +70,10 @@ public class NewMessageChecker extends Worker {
         return appDir + SETTINGS_FILE_NAME;
     }
 
+    public static RemoteWorkManager getRemoteWorkManager(Context context) {
+        return RemoteWorkManager.getInstance(context);
+    }
+
     public static void startChecker() {
         Log.d(LOGTAG, "Start checker, min interval: " + PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS);
 
@@ -81,9 +85,9 @@ public class NewMessageChecker extends Worker {
                 .setConstraints(constraints).build();
 
         Context context = QtNative.getContext();
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+        getRemoteWorkManager(context).enqueueUniquePeriodicWork(
             "checkNewMessages",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.REPLACE,
             request);
     }
 
@@ -91,6 +95,6 @@ public class NewMessageChecker extends Worker {
         Log.d(LOGTAG, "Stop checker");
 
         Context context = QtNative.getContext();
-        WorkManager.getInstance(context).cancelUniqueWork("checkNewMessages");
+        getRemoteWorkManager(context).cancelUniqueWork("checkNewMessages");
     }
 }

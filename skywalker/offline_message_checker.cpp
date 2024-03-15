@@ -13,12 +13,6 @@
 JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jstring jSettingsFileName, jstring jLibDir)
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
-    QJniEnvironment::checkAndClearExceptions(env);
-    QJniEnvironment jniEnv;
-
-    bool equalEnv = jniEnv.jniEnv() == env;
-    qDebug() << "JNI CHECK:" << equalEnv << jniEnv.jniEnv() << env;
-
     qDebug() << "CHECK NEW MESSAGES START";
 
     const char* settingsFileName = (*env).GetStringUTFChars(jSettingsFileName, nullptr);
@@ -39,6 +33,7 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
 
     // This makes networking work???
     // Somehow Qt fails to find this class if we don't do this lookup.
+    QJniEnvironment jniEnv;
     jclass javaClass = jniEnv.findClass("org/qtproject/qt/android/network/QtNetwork");
 
     if (!javaClass)
@@ -73,14 +68,8 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
 
     checker->run();
 
-    if (app) {
-        app = nullptr;
-        QCoreApplication::setApplicationName("");
-    }
-
     (*env).ReleaseStringUTFChars(jSettingsFileName, settingsFileName);
     (*env).ReleaseStringUTFChars(jLibDir, libDir);
-    QJniEnvironment::checkAndClearExceptions(env);
     qDebug() << "CHECK NEW MESSAGES END";
 }
 #endif
