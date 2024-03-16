@@ -10,6 +10,7 @@ import androidx.core.app.NotificationManagerCompat;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.util.Log;
 import android.R;
@@ -39,15 +40,23 @@ public class NewMessageNotifier {
         }
     }
 
-    public static void createNotification(String title, String msg) {
+    public static void createNotification(String title, String msg, long when, byte[] avatar) {
         Log.d(LOGTAG, "Create notification: " + sNextNotificationId + " title: " + title + " msg: " + msg);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_dialog_alert)
                 .setContentTitle(title)
-                .setContentText(msg)
+                .setWhen(when)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
+
+        if (msg.length() > 0)
+            builder.setContentText(msg);
+
+        if (avatar.length > 0) {
+            Icon avatarIcon = Icon.createWithData(avatar, 0, avatar.length);
+            builder.setLargeIcon(avatarIcon);
+        }
 
         NotificationManagerCompat.from(mContext).notify(sNextNotificationId, builder.build());
         ++sNextNotificationId;

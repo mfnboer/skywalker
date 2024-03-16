@@ -84,6 +84,11 @@ public:
     void setSeenHashtags(const QStringList& hashtags);
     QStringList getSeenHashtags() const;
 
+    void setOfflineUnread(const QString& did, int unread);
+    int getOfflineUnread(const QString& did) const;
+
+    void sync() { mSettings.sync(); }
+
 private:
     QString key(const QString& did, const QString& subkey) const;
     void cleanup();

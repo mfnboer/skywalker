@@ -65,6 +65,8 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
             [this]{
                 saveHashtags();
+                mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
+                mUserSettings.sync();
                 OffLineMessageChecker::start();
             });
 }

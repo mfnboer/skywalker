@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "offline_message_checker.h"
 #include "notification.h"
+#include "photo_picker.h"
 
 #ifdef Q_OS_ANDROID
 #include "android_utils.h"
@@ -12,17 +13,17 @@
 #endif
 
 #if defined(Q_OS_ANDROID)
-JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jint unread, jstring jSettingsFileName, jstring jLibDir)
+JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jstring jSettingsFileName, jstring jLibDir)
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
-    qDebug() << "CHECK NEW MESSAGES START, UNREAD:" << unread;
+    qDebug() << "CHECK NEW MESSAGES START";
 
     const char* settingsFileName = (*env).GetStringUTFChars(jSettingsFileName, nullptr);
 
     if (!settingsFileName)
     {
         qWarning() << "Settings file name missing";
-        return 0;
+        return;
     }
 
     const char* libDir = (*env).GetStringUTFChars(jLibDir, nullptr);
@@ -30,7 +31,7 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
     if (!libDir)
     {
         qWarning() << "Library directory missing";
-        return 0;
+        return;
     }
 
     // This makes networking work???
@@ -41,7 +42,7 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
     if (!javaClass)
     {
         qWarning() << "Class loading failed";
-        return 0;
+        return;
     }
 
     std::unique_ptr<QCoreApplication> app;
@@ -68,14 +69,11 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
         checker = std::make_unique<Skywalker::OffLineMessageChecker>(settingsFileName, eventLoop.get());
     }
 
-    checker->setPrevUnreadCount(unread);
     checker->check();
 
     (*env).ReleaseStringUTFChars(jSettingsFileName, settingsFileName);
     (*env).ReleaseStringUTFChars(jLibDir, libDir);
-    qDebug() << "CHECK NEW MESSAGES END, UNREAD:" << checker->getPrevUnreadCount();
-
-    return checker->getPrevUnreadCount();
+    qDebug() << "CHECK NEW MESSAGES END";
 }
 #endif
 
@@ -120,29 +118,35 @@ void OffLineMessageChecker::check()
     startEventLoop();
 }
 
-void OffLineMessageChecker::checkNewMessages()
+void OffLineMessageChecker::createNotification(const BasicProfile& author, const QString& msg, const QDateTime& when)
 {
-#if defined(Q_OS_ANDROID)
-    qDebug() << "Check messages for:" << mUserDid;
-    createNotification("Michel Bestaat", "Test post");
-    exit();
-#endif
-}
-
-void OffLineMessageChecker::createNotification(const QString& title, const QString& msg)
-{
-    qDebug() << "Create notification:" << title << msg;
+    qDebug() << "Create notification:" << msg;
 
 #if defined(Q_OS_ANDROID)
     QJniEnvironment env;
-    QJniObject jTitle = QJniObject::fromString(title);
+    QJniObject jTitle = QJniObject::fromString(author.getName());
     QJniObject jMsg = QJniObject::fromString(msg);
+    jlong jWhen = when.toMSecsSinceEpoch();
+
+    jbyteArray jAvatar = nullptr;
+    const auto avatarUrl = author.getAvatarUrl();
+
+    if (!avatarUrl.isEmpty() && mAvatars.count(avatarUrl))
+    {
+        const QByteArray& jpg = mAvatars[avatarUrl];
+        jAvatar = env->NewByteArray(jpg.size());
+        env->SetByteArrayRegion(jAvatar, 0, jpg.size(), (jbyte*)jpg.data());
+    }
+    else
+    {
+        jAvatar = env->NewByteArray(0);
+    }
 
     auto [javaClass, methodId] = JniUtils::getClassAndMethod(
         env,
         "com/gmail/mfnboer/NewMessageNotifier",
         "createNotification",
-        "(Ljava/lang/String;Ljava/lang/String;)V");
+        "(Ljava/lang/String;Ljava/lang/String;J[B)V");
 
     if (!javaClass || !methodId)
         return;
@@ -151,7 +155,9 @@ void OffLineMessageChecker::createNotification(const QString& title, const QStri
         javaClass,
         methodId,
         jTitle.object<jstring>(),
-        jMsg.object<jstring>());
+        jMsg.object<jstring>(),
+        jWhen,
+        jAvatar);
 #else
     Q_UNUSED(title);
     Q_UNUSED(msg);
@@ -272,26 +278,30 @@ void OffLineMessageChecker::login()
 
 void OffLineMessageChecker::checkUnreadNotificationCount()
 {
-    qDebug() << "Check unread notification count";
+    const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
+    qDebug() << "Check unread notification count, last unread:" << prevUnread;
 
     mBsky->getUnreadNotificationCount({},
-        [this](int unread){
+        [this, prevUnread](int unread){
             qDebug() << "Unread notification count:" << unread;
+            int newCount = unread - prevUnread;
 
-            if (unread < mPrevUnreadCount)
+            if (newCount < 0)
             {
                 qDebug() << "Unread notification count has been reset by another client";
-                mPrevUnreadCount = 0;
+                newCount = unread;
+                mUserSettings.setOfflineUnread(mUserDid, 0);
+                mUserSettings.sync();
             }
 
-            if (unread == mPrevUnreadCount)
+            if (newCount == 0)
             {
                 qDebug() << "No new messages";
                 exit();
                 return;
             }
 
-            getNotifications(unread);
+            getNotifications(newCount);
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Failed to get unread notification count:" << error << " - " << msg;
@@ -299,26 +309,18 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
         });
 }
 
-void OffLineMessageChecker::getNotifications(int unread)
+void OffLineMessageChecker::getNotifications(int toRead)
 {
-    qDebug() << "Get notifications, unread:" << unread << "prev:" << mPrevUnreadCount;
+    qDebug() << "Get notifications:" << toRead;
+    const int limit = std::min(toRead, 100); // 100 is max that can be retreived in 1 request
 
-    if (unread <= mPrevUnreadCount)
-    {
-        qWarning() << "No new messages!!";
-        mPrevUnreadCount = unread;
-        exit();
-        return;
-    }
-
-    // TODO: maximize? cannot get more than 100
-    const int msgCount = unread - mPrevUnreadCount;
-
-    mBsky->listNotifications(msgCount, {}, {},
-        [this, unread](auto notifications){
-            createNotifications(notifications->mNotifications);
-            mPrevUnreadCount = unread;
-            exit();
+    mBsky->listNotifications(limit, {}, {},
+        [this, toRead](auto notifications){
+            mNotificationsList = std::move(notifications);
+            getAvatars();
+            const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
+            mUserSettings.setOfflineUnread(mUserDid, prevUnread + toRead);
+            mUserSettings.sync();
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
@@ -327,12 +329,61 @@ void OffLineMessageChecker::getNotifications(int unread)
         false);
 }
 
-void OffLineMessageChecker::createNotifications(const ATProto::AppBskyNotification::NotificationList& notifications)
+void OffLineMessageChecker::getAvatars()
 {
-    qDebug() << "Create notifications:" << notifications.size();
+    std::set<QString> avatarUrls;
 
-    for (const auto& notification : notifications)
+    for (const auto& notification : mNotificationsList->mNotifications)
+    {
+        if (notification->mAuthor->mAvatar)
+            avatarUrls.insert(*notification->mAuthor->mAvatar);
+    }
+
+    const QStringList urls(avatarUrls.begin(), avatarUrls.end());
+    getAvatars(urls);
+}
+
+void OffLineMessageChecker::getAvatars(const QStringList& urls)
+{
+    if (urls.isEmpty())
+    {
+        createNotifications();
+        return;
+    }
+
+    const QString url = urls.front();
+    const auto remainingUrls = urls.mid(1);
+    qDebug() << "Get avatar:" << url;
+
+    const bool validUrl = mImageReader.getImage(url,
+        [this, url, remainingUrls](QImage image){
+            QByteArray jpgBlob;
+            PhotoPicker::createBlob(jpgBlob, image);
+
+            if (!jpgBlob.isNull())
+                mAvatars[url] = jpgBlob;
+            else
+                qWarning() << "Could not convert avatar to JPG:" << url;
+
+            getAvatars(remainingUrls);
+        },
+        [this, remainingUrls](const QString& error){
+            qWarning() << "Failed to get avatar:" << error;
+            getAvatars(remainingUrls);
+        });
+
+    if (!validUrl)
+        getAvatars(remainingUrls);
+}
+
+void OffLineMessageChecker::createNotifications()
+{
+    qDebug() << "Create notifications:" << mNotificationsList->mNotifications.size();
+
+    for (const auto& notification : mNotificationsList->mNotifications)
         createNotification(notification.get());
+
+    exit();
 }
 
 void OffLineMessageChecker::createNotification(const ATProto::AppBskyNotification::Notification* protoNotification)
@@ -341,6 +392,8 @@ void OffLineMessageChecker::createNotification(const ATProto::AppBskyNotificatio
     const PostRecord postRecord = notification.getPostRecord();
     const QString postText = !postRecord.isNull() ? postRecord.getText() : "";
     QString msg;
+
+    // TODO: postText can be empty if there is only an image.
 
     switch (notification.getReason())
     {
@@ -367,8 +420,12 @@ void OffLineMessageChecker::createNotification(const ATProto::AppBskyNotificatio
         return;
     }
 
-    // TODO: truncate message? Number of lines?
-    createNotification(notification.getAuthor().getName(), msg);
+    QDateTime when = notification.getTimestamp();
+
+    if (when.isNull())
+        when = QDateTime::currentDateTimeUtc();
+
+    createNotification(notification.getAuthor(), msg, when);
 }
 
 bool OffLineMessageChecker::checkNoticationPermission()

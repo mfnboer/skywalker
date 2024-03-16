@@ -14,7 +14,7 @@ public:
     using ErrorCb = std::function<void(const QString& error)>;
 
     ImageReader();
-    void getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb);
+    bool getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb);
 
 private:
     void replyFinished(QNetworkReply* reply, const ImageCb& imageCb, const ErrorCb& errorCb);

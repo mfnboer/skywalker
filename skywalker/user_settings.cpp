@@ -290,6 +290,16 @@ QStringList UserSettings::getSeenHashtags() const
     return mSettings.value("seenHashtags").toStringList();
 }
 
+void UserSettings::setOfflineUnread(const QString& did, int unread)
+{
+    mSettings.setValue(key(did, "offlineUnread"), unread);
+}
+
+int UserSettings::getOfflineUnread(const QString& did) const
+{
+    return mSettings.value(key(did, "offlineUnread"), 0).toInt();
+}
+
 void UserSettings::cleanup()
 {
     // Version 1.5 erroneously saved user hashtags on app level
