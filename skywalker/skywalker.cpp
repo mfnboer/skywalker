@@ -5,8 +5,8 @@
 #include "definitions.h"
 #include "file_utils.h"
 #include "jni_callback.h"
+#include "offline_message_checker.h"
 #include "photo_picker.h"
-#include "pull_notifications.h"
 #include "shared_image_provider.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
@@ -54,6 +54,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     AuthorCache::instance().addProfileStore(&mUserFollows);
+    OffLineMessageChecker::createNotificationChannel();
 
     auto& jniCallbackListener = JNICallbackListener::getInstance();
     connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
@@ -64,8 +65,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
             [this]{
                 saveHashtags();
-                PullNotifications pullNotifications(mUserSettings);
-                pullNotifications.startNewMessageChecker();
+                OffLineMessageChecker::start();
             });
 }
 
@@ -538,6 +538,7 @@ void Skywalker::finishTimelineSync(int index)
     // Inform the GUI about the timeline sync.
     // This will show the timeline to the user.
     emit timelineSyncOK(index);
+    OffLineMessageChecker::checkNoticationPermission();
 
     // Now we can handle pending intent (content share).
     // If there is any, then this will open the post composition page. This should
@@ -548,6 +549,7 @@ void Skywalker::finishTimelineSync(int index)
 void Skywalker::finishTimelineSyncFailed()
 {
     emit timelineSyncFailed();
+    OffLineMessageChecker::checkNoticationPermission();
     JNICallbackListener::handlePendingIntent();
 }
 

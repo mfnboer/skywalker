@@ -84,9 +84,6 @@ public:
     void setSeenHashtags(const QStringList& hashtags);
     QStringList getSeenHashtags() const;
 
-    void setPullNotifications(const QString& did, bool enabled);
-    bool getPullNotifications(const QString& did) const;
-
 private:
     QString key(const QString& did, const QString& subkey) const;
     void cleanup();

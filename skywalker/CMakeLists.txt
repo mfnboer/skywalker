@@ -311,8 +311,6 @@ qt_add_qml_module(libskywalker
         SOURCES lexicon/draft.cpp
         SOURCES android_utils.h
         SOURCES android_utils.cpp
-        SOURCES pull_notifications.h
-        SOURCES pull_notifications.cpp
         SOURCES jni_utils.h
         SOURCES jni_utils.cpp
         SOURCES offline_message_checker.h

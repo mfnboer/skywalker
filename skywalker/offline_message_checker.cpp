@@ -4,6 +4,7 @@
 #include "notification.h"
 
 #ifdef Q_OS_ANDROID
+#include "android_utils.h"
 #include "jni_utils.h"
 #include <QJniObject>
 #include <QtCore/private/qandroidextras_p.h>
@@ -68,7 +69,7 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
     }
 
     checker->setPrevUnreadCount(unread);
-    checker->run();
+    checker->check();
 
     (*env).ReleaseStringUTFChars(jSettingsFileName, settingsFileName);
     (*env).ReleaseStringUTFChars(jLibDir, libDir);
@@ -112,7 +113,7 @@ void OffLineMessageChecker::exit()
         mEventLoop->exit();
 }
 
-void OffLineMessageChecker::run()
+void OffLineMessageChecker::check()
 {
     QObject guard;
     QTimer::singleShot(0, &guard, [this]{ resumeSession(); });
@@ -344,7 +345,7 @@ void OffLineMessageChecker::createNotification(const ATProto::AppBskyNotificatio
     switch (notification.getReason())
     {
     case ATProto::AppBskyNotification::NotificationReason::LIKE:
-        msg = QObject::tr("Likes your post\n") + postText; // TODO: post is not in record
+        msg = QObject::tr("Liked your post\n") + postText; // TODO: post is not in record
         break;
     case ATProto::AppBskyNotification::NotificationReason::REPOST:
         msg = QObject::tr("Reposted your post\n") + postText; // TODO: post is not in record
@@ -368,6 +369,40 @@ void OffLineMessageChecker::createNotification(const ATProto::AppBskyNotificatio
 
     // TODO: truncate message? Number of lines?
     createNotification(notification.getAuthor().getName(), msg);
+}
+
+bool OffLineMessageChecker::checkNoticationPermission()
+{
+#if defined(Q_OS_ANDROID)
+    static constexpr char const* POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
+
+    if (!AndroidUtils::checkPermission(POST_NOTIFICATIONS))
+    {
+        qDebug() << "No permission:" << POST_NOTIFICATIONS;
+        return false;
+    }
+
+    return true;
+#else
+    return false;
+#endif
+}
+
+void OffLineMessageChecker::start()
+{
+#if defined(Q_OS_ANDROID)
+    if (!checkNoticationPermission())
+        return;
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/NewMessageChecker", "startChecker");
+#endif
+}
+
+void OffLineMessageChecker::createNotificationChannel()
+{
+#if defined(Q_OS_ANDROID)
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/NewMessageNotifier", "createNotificationChannel");
+#endif
 }
 
 }

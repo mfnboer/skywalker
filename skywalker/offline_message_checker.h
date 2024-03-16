@@ -19,12 +19,15 @@ namespace Skywalker {
 class OffLineMessageChecker
 {
 public:
-    using Ptr = std::unique_ptr<OffLineMessageChecker>;
+    // Start background process that periodically checks for new messages.
+    static void start();
+    static void createNotificationChannel();
+    static bool checkNoticationPermission();
 
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
     explicit OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop);
 
-    void run();
+    void check();
     int getPrevUnreadCount() const { return mPrevUnreadCount; }
     void setPrevUnreadCount(int count) { mPrevUnreadCount = count; }
 
