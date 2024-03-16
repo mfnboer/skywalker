@@ -1,7 +1,11 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "bookmarks.h"
+#include "content_filter.h"
 #include "image_reader.h"
+#include "muted_words.h"
+#include "notification_list_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
 
@@ -40,12 +44,13 @@ private:
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();
     void login();
+    void getUserPreferences();
     void checkUnreadNotificationCount();
     void getNotifications(int toRead);
     void getAvatars();
     void getAvatars(const QStringList& urls);
     void createNotifications();
-    void createNotification(const ATProto::AppBskyNotification::Notification* protoNotification);
+    void createNotification(const Notification& notification);
 
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;
@@ -53,7 +58,11 @@ private:
     std::unique_ptr<ATProto::Client> mBsky;
     QString mUserDid;
     ImageReader mImageReader;
-    ATProto::AppBskyNotification::ListNotificationsOutput::Ptr mNotificationsList;
+    ATProto::UserPreferences mUserPreferences;
+    ContentFilter mContentFilter;
+    Bookmarks mBookmarks; // Not loaded. Needed for notificaion model
+    MutedWords mMutedWords;
+    NotificationListModel mNotificationListModel;
     std::unordered_map<QString, QByteArray> mAvatars; // URL -> jpg
 };
 

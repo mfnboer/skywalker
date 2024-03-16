@@ -18,6 +18,8 @@ class NotificationListModel : public QAbstractListModel, public LocalPostModelCh
 {
     Q_OBJECT
 public:
+    using NotificationList = std::deque<Notification>;
+
     enum class Role {
         NotificationAuthor = Qt::UserRole + 1,
         NotificationOtherAuthors,
@@ -76,8 +78,9 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void clear();
-    void addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
-                          ATProto::Client& bsky, bool clearFirst = false);
+    bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
+                          ATProto::Client& bsky, bool clearFirst = false,
+                          const std::function<void()>& doneCb = nullptr);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
@@ -85,6 +88,8 @@ public:
     Q_INVOKABLE void addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore);
     Q_INVOKABLE void dismissInviteCodeUsageNotification(int index);
     int getInviteCodeUsageNotificationCount() const { return (int)mInviteCodeUsedNotifications.size(); }
+    const NotificationList& getNotifications() const { return mList; }
+    const PostCache& getReasonPostCache() const { return mReasonPostCache; }
 
 protected:
     virtual void postIndexTimestampChanged() override;
@@ -98,8 +103,6 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    using NotificationList = std::deque<Notification>;
-
     NotificationList createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
     void filterNotificationList(NotificationList& list) const;
     void addNotificationList(const NotificationList& list, bool clearFirst);

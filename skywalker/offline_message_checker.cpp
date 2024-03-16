@@ -81,13 +81,17 @@ namespace Skywalker {
 
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp) :
     mBackgroundApp(backgroundApp),
-    mUserSettings(settingsFileName)
+    mUserSettings(settingsFileName),
+    mContentFilter(mUserPreferences),
+    mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
 }
 
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop) :
     mEventLoop(eventLoop),
-    mUserSettings(settingsFileName)
+    mUserSettings(settingsFileName),
+    mContentFilter(mUserPreferences),
+    mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
 }
 
@@ -239,7 +243,7 @@ void OffLineMessageChecker::refreshSession()
         [this]{
             qDebug() << "Session refreshed";
             saveSession(*mBsky->getSession());
-            checkUnreadNotificationCount();
+            getUserPreferences();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Session could not be refreshed:" << error << " - " << msg;
@@ -268,11 +272,27 @@ void OffLineMessageChecker::login()
             qDebug() << "Login" << mUserDid << "succeeded";
             const auto* session = mBsky->getSession();
             saveSession(*session);
-            checkUnreadNotificationCount();
+            getUserPreferences();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Login" << mUserDid << "failed:" << error << " - " << msg;
             exit();
+        });
+}
+
+void OffLineMessageChecker::getUserPreferences()
+{
+    qDebug() << "Get user preferences";
+
+    mBsky->getPreferences(
+        [this](auto prefs){
+            mUserPreferences = prefs;
+            mMutedWords.load(mUserPreferences);
+            checkUnreadNotificationCount();
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
+            exit(); // TODO: schedule retry?
         });
 }
 
@@ -316,11 +336,15 @@ void OffLineMessageChecker::getNotifications(int toRead)
 
     mBsky->listNotifications(limit, {}, {},
         [this, toRead](auto notifications){
-            mNotificationsList = std::move(notifications);
-            getAvatars();
+            const bool added = mNotificationListModel.addNotifications(std::move(notifications), *mBsky, false,
+                [this]{ getAvatars(); });
+
             const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
             mUserSettings.setOfflineUnread(mUserDid, prevUnread + toRead);
             mUserSettings.sync();
+
+            if (!added)
+                exit();
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
@@ -332,11 +356,14 @@ void OffLineMessageChecker::getNotifications(int toRead)
 void OffLineMessageChecker::getAvatars()
 {
     std::set<QString> avatarUrls;
+    const auto& notifications = mNotificationListModel.getNotifications();
 
-    for (const auto& notification : mNotificationsList->mNotifications)
+    for (const auto& notification : notifications)
     {
-        if (notification->mAuthor->mAvatar)
-            avatarUrls.insert(*notification->mAuthor->mAvatar);
+        const QString url = notification.getAuthor().getAvatarUrl();
+
+        if (!url.isEmpty())
+            avatarUrls.insert(url);
     }
 
     const QStringList urls(avatarUrls.begin(), avatarUrls.end());
@@ -378,33 +405,50 @@ void OffLineMessageChecker::getAvatars(const QStringList& urls)
 
 void OffLineMessageChecker::createNotifications()
 {
-    qDebug() << "Create notifications:" << mNotificationsList->mNotifications.size();
+    const auto& notifications = mNotificationListModel.getNotifications();
+    qDebug() << "Create notifications:" << notifications.size();
 
-    for (const auto& notification : mNotificationsList->mNotifications)
-        createNotification(notification.get());
+    for (const auto& notification : notifications)
+        createNotification(notification);
 
     exit();
 }
 
-void OffLineMessageChecker::createNotification(const ATProto::AppBskyNotification::Notification* protoNotification)
+void OffLineMessageChecker::createNotification(const Notification& notification)
 {
-    const Notification notification(protoNotification);
+    const PostCache& reasonPostCache = mNotificationListModel.getReasonPostCache();
     const PostRecord postRecord = notification.getPostRecord();
     const QString postText = !postRecord.isNull() ? postRecord.getText() : "";
     QString msg;
 
-    // TODO: postText can be empty if there is only an image.
+    // NOTE: postText can be empty if there is only an image.
 
     switch (notification.getReason())
     {
     case ATProto::AppBskyNotification::NotificationReason::LIKE:
-        msg = QObject::tr("Liked your post\n") + postText; // TODO: post is not in record
+    {
+        msg = QObject::tr("Liked your post.");
+        const Post post = notification.getReasonPost(reasonPostCache);
+        const auto reasonPostText = post.getText();
+
+        if (!reasonPostText.isEmpty())
+            msg.append("\n" + reasonPostText);
+
         break;
+    }
     case ATProto::AppBskyNotification::NotificationReason::REPOST:
-        msg = QObject::tr("Reposted your post\n") + postText; // TODO: post is not in record
+    {
+        msg = QObject::tr("Reposted your post.");
+        const Post post = notification.getReasonPost(reasonPostCache);
+        const auto reasonPostText = post.getText();
+
+        if (!reasonPostText.isEmpty())
+            msg.append("\n" + reasonPostText);
+
         break;
+    }
     case ATProto::AppBskyNotification::NotificationReason::FOLLOW:
-        msg = QObject::tr("Follows you");
+        msg = QObject::tr("Follows you.");
         break;
     case ATProto::AppBskyNotification::NotificationReason::MENTION:
         msg = postText;
