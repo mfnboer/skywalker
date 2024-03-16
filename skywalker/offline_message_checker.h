@@ -35,7 +35,15 @@ public:
     void check();
 
 private:
-    void createNotification(const BasicProfile& author, const QString& msg, const QDateTime& when);
+    // Values must be equal to the values in NewMessageNotifier.java
+    enum class IconType
+    {
+        CHAT = 0,
+        FOLLOW = 1,
+        LIKE = 2,
+        MENTION = 3,
+        REPOST = 4
+    };
 
     void startEventLoop();
     void exit();
@@ -51,6 +59,7 @@ private:
     void getAvatars(const QStringList& urls);
     void createNotifications();
     void createNotification(const Notification& notification);
+    void createNotification(const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType);
 
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;

@@ -122,7 +122,7 @@ void OffLineMessageChecker::check()
     startEventLoop();
 }
 
-void OffLineMessageChecker::createNotification(const BasicProfile& author, const QString& msg, const QDateTime& when)
+void OffLineMessageChecker::createNotification(const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)
 {
     qDebug() << "Create notification:" << msg;
 
@@ -131,6 +131,7 @@ void OffLineMessageChecker::createNotification(const BasicProfile& author, const
     QJniObject jTitle = QJniObject::fromString(author.getName());
     QJniObject jMsg = QJniObject::fromString(msg);
     jlong jWhen = when.toMSecsSinceEpoch();
+    jint jIconType = (int)iconType;
 
     jbyteArray jAvatar = nullptr;
     const auto avatarUrl = author.getAvatarUrl();
@@ -150,7 +151,7 @@ void OffLineMessageChecker::createNotification(const BasicProfile& author, const
         env,
         "com/gmail/mfnboer/NewMessageNotifier",
         "createNotification",
-        "(Ljava/lang/String;Ljava/lang/String;J[B)V");
+        "(Ljava/lang/String;Ljava/lang/String;JI[B)V");
 
     if (!javaClass || !methodId)
         return;
@@ -161,6 +162,7 @@ void OffLineMessageChecker::createNotification(const BasicProfile& author, const
         jTitle.object<jstring>(),
         jMsg.object<jstring>(),
         jWhen,
+        jIconType,
         jAvatar);
 #else
     Q_UNUSED(title);
@@ -420,6 +422,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     const PostRecord postRecord = notification.getPostRecord();
     const QString postText = !postRecord.isNull() ? postRecord.getText() : "";
     QString msg;
+    IconType iconType = IconType::CHAT;
 
     // NOTE: postText can be empty if there is only an image.
 
@@ -427,6 +430,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     {
     case ATProto::AppBskyNotification::NotificationReason::LIKE:
     {
+        iconType = IconType::LIKE;
         msg = QObject::tr("Liked your post.");
         const Post post = notification.getReasonPost(reasonPostCache);
         const auto reasonPostText = post.getText();
@@ -438,6 +442,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     }
     case ATProto::AppBskyNotification::NotificationReason::REPOST:
     {
+        iconType = IconType::REPOST;
         msg = QObject::tr("Reposted your post.");
         const Post post = notification.getReasonPost(reasonPostCache);
         const auto reasonPostText = post.getText();
@@ -448,9 +453,11 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         break;
     }
     case ATProto::AppBskyNotification::NotificationReason::FOLLOW:
+        iconType = IconType::FOLLOW;
         msg = QObject::tr("Follows you.");
         break;
     case ATProto::AppBskyNotification::NotificationReason::MENTION:
+        iconType = IconType::MENTION;
         msg = postText;
         break;
     case ATProto::AppBskyNotification::NotificationReason::REPLY:
@@ -469,7 +476,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     if (when.isNull())
         when = QDateTime::currentDateTimeUtc();
 
-    createNotification(notification.getAuthor(), msg, when);
+    createNotification(notification.getAuthor(), msg, when, iconType);
 }
 
 bool OffLineMessageChecker::checkNoticationPermission()
