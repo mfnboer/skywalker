@@ -12,7 +12,9 @@ import androidx.core.app.NotificationManagerCompat;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.text.Html;
@@ -69,11 +71,15 @@ public class NewMessageNotifier {
     public static void createNotification(String channelId, String title, String msg, long when, int iconType, byte[] avatar) {
         Log.d(LOGTAG, "Create notification: " + channelId + " id: " + sNextNotificationId + " title: " + title + " msg: " + msg);
 
+        Intent intent = mContext.getPackageManager().getLaunchIntentForPackage("com.gmail.mfnboer.skywalker");
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, channelId)
                 .setSmallIcon(iconTypeToResource(iconType))
                 .setContentTitle(title)
                 .setWhen(when)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
         if (msg.length() > 0) {

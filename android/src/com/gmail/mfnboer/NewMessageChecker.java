@@ -88,7 +88,7 @@ public class NewMessageChecker extends Worker {
 
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
             NewMessageChecker.class, 15, TimeUnit.MINUTES)
-                .setInitialDelay(20, TimeUnit.SECONDS)
+                .setInitialDelay(5, TimeUnit.MINUTES)
                 .setConstraints(constraints).build();
 
         Context context = QtNative.getContext();
