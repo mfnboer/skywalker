@@ -19,14 +19,24 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
 
 namespace Skywalker {
 
+struct NotificationChannel
+{
+    QString mId;
+    QString mName;
+    QString mDescription;
+};
+
 // Checks if there are new messages and raises app notifications.
 // This is run from the Android WorkManager in a background thread when the app is not running!
 class OffLineMessageChecker
 {
 public:
+    static const std::vector<NotificationChannel> NOTIFCATION_CHANNELS;
+
     // Start background process that periodically checks for new messages.
     static void start();
-    static void createNotificationChannel();
+
+    static void createNotificationChannels();
     static bool checkNoticationPermission();
 
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
@@ -59,7 +69,7 @@ private:
     void getAvatars(const QStringList& urls);
     void createNotifications();
     void createNotification(const Notification& notification);
-    void createNotification(const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType);
+    void createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType);
 
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;

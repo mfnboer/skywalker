@@ -6,21 +6,21 @@ package com.gmail.mfnboer;
 import org.qtproject.qt.android.QtNative;
 
 import com.gmail.mfnboer.skywalker.R;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 
 public class NewMessageNotifier {
     private static final String LOGTAG = "NewMessageNotifier";
-    private static final String CHANNEL_ID = "NotificationsChannel";
-    private static final String CHANNEL_NAME = "Notifications";
-    private static final int IMPORTANCE = NotificationManager.IMPORTANCE_DEFAULT;
-    private static final String DESCRIPTION = "Notifications of replies and mentions";
 
     // Values must be the same as OffLineMessageChecker::IconType
     private static final int IC_CHAT = 0;
@@ -54,30 +54,33 @@ public class NewMessageNotifier {
         mContext = context;
     }
 
-    public static void createNotificationChannel() {
+    public static void createNotificationChannel(String id, String name, String description) {
         // API 26+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.d(LOGTAG, "Create notification channel: " + CHANNEL_ID + " name: " + CHANNEL_NAME);
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
-            channel.setDescription(DESCRIPTION);
+            Log.d(LOGTAG, "Create notification channel: " + id + " name: " + name);
+            NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(description);
             Context context = QtNative.getContext();
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
     }
 
-    public static void createNotification(String title, String msg, long when, int iconType, byte[] avatar) {
-        Log.d(LOGTAG, "Create notification: " + sNextNotificationId + " title: " + title + " msg: " + msg);
+    public static void createNotification(String channelId, String title, String msg, long when, int iconType, byte[] avatar) {
+        Log.d(LOGTAG, "Create notification: " + channelId + " id: " + sNextNotificationId + " title: " + title + " msg: " + msg);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, channelId)
                 .setSmallIcon(iconTypeToResource(iconType))
                 .setContentTitle(title)
                 .setWhen(when)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
 
-        if (msg.length() > 0)
-            builder.setContentText(msg);
+        if (msg.length() > 0) {
+            Spanned formattedMsg = Html.fromHtml(msg, Html.FROM_HTML_MODE_COMPACT);
+            builder.setContentText(formattedMsg);
+            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(formattedMsg));
+        }
 
         if (avatar.length > 0) {
             Icon avatarIcon = Icon.createWithData(avatar, 0, avatar.length);

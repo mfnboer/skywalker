@@ -6,18 +6,22 @@ package com.gmail.mfnboer;
 import org.qtproject.qt.android.QtNative;
 
 import com.gmail.mfnboer.NewMessageNotifier;
+
 import androidx.annotation.NonNull;
 import androidx.work.Configuration;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import androidx.work.WorkManager;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.multiprocess.RemoteWorkManager;
+
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
+
 import java.lang.System;
 import java.util.concurrent.TimeUnit;
 
@@ -77,7 +81,10 @@ public class NewMessageChecker extends Worker {
     public static void startChecker() {
         Log.d(LOGTAG, "Start checker, min interval: " + PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS);
 
-        Constraints constraints = new Constraints.Builder().setRequiresBatteryNotLow(true).build();
+        Constraints constraints = new Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build();
 
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
             NewMessageChecker.class, 15, TimeUnit.MINUTES)

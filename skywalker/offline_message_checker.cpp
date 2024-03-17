@@ -77,7 +77,37 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
 }
 #endif
 
+namespace {
+constexpr char const* CHANNEL_POST = "CHANNEL_POST";
+constexpr char const* CHANNEL_LIKE = "CHANNEL_LIKE";
+constexpr char const* CHANNEL_REPOST = "CHANNEL_REPOST";
+constexpr char const* CHANNEL_FOLLOW = "CHANNEL_FOLLOW";
+}
+
 namespace Skywalker {
+
+const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNELS = {
+    {
+        CHANNEL_POST,
+        QObject::tr("Posts"),
+        QObject::tr("Replies to your posts, mentions and quoted posts")
+    },
+    {
+        CHANNEL_LIKE,
+        QObject::tr("Likes"),
+        QObject::tr("Likes on your posts")
+    },
+    {
+        CHANNEL_REPOST,
+        QObject::tr("Reposts"),
+        QObject::tr("Reposts of your posts")
+    },
+    {
+        CHANNEL_FOLLOW,
+        QObject::tr("Follows"),
+        QObject::tr("New followers")
+    }
+};
 
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp) :
     mBackgroundApp(backgroundApp),
@@ -122,12 +152,13 @@ void OffLineMessageChecker::check()
     startEventLoop();
 }
 
-void OffLineMessageChecker::createNotification(const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)
+void OffLineMessageChecker::createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)
 {
     qDebug() << "Create notification:" << msg;
 
 #if defined(Q_OS_ANDROID)
     QJniEnvironment env;
+    QJniObject jChannelId = QJniObject::fromString(channelId);
     QJniObject jTitle = QJniObject::fromString(author.getName());
     QJniObject jMsg = QJniObject::fromString(msg);
     jlong jWhen = when.toMSecsSinceEpoch();
@@ -151,7 +182,7 @@ void OffLineMessageChecker::createNotification(const BasicProfile& author, const
         env,
         "com/gmail/mfnboer/NewMessageNotifier",
         "createNotification",
-        "(Ljava/lang/String;Ljava/lang/String;JI[B)V");
+        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JI[B)V");
 
     if (!javaClass || !methodId)
         return;
@@ -159,6 +190,7 @@ void OffLineMessageChecker::createNotification(const BasicProfile& author, const
     QJniObject::callStaticMethod<void>(
         javaClass,
         methodId,
+        jChannelId.object<jstring>(),
         jTitle.object<jstring>(),
         jMsg.object<jstring>(),
         jWhen,
@@ -420,8 +452,9 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
 {
     const PostCache& reasonPostCache = mNotificationListModel.getReasonPostCache();
     const PostRecord postRecord = notification.getPostRecord();
-    const QString postText = !postRecord.isNull() ? postRecord.getText() : "";
+    const QString postText = !postRecord.isNull() ? postRecord.getFormattedText() : "";
     QString msg;
+    QString channelId = CHANNEL_POST;
     IconType iconType = IconType::CHAT;
 
     // NOTE: postText can be empty if there is only an image.
@@ -430,31 +463,34 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     {
     case ATProto::AppBskyNotification::NotificationReason::LIKE:
     {
+        channelId = CHANNEL_LIKE;
         iconType = IconType::LIKE;
-        msg = QObject::tr("Liked your post.");
+        msg = QObject::tr("<b>Liked your post</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
-        const auto reasonPostText = post.getText();
+        const auto reasonPostText = post.getFormattedText();
 
         if (!reasonPostText.isEmpty())
-            msg.append("\n" + reasonPostText);
+            msg.append("<br>" + reasonPostText);
 
         break;
     }
     case ATProto::AppBskyNotification::NotificationReason::REPOST:
     {
+        channelId = CHANNEL_REPOST;
         iconType = IconType::REPOST;
-        msg = QObject::tr("Reposted your post.");
+        msg = QObject::tr("<b>Reposted your post</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
-        const auto reasonPostText = post.getText();
+        const auto reasonPostText = post.getFormattedText();
 
         if (!reasonPostText.isEmpty())
-            msg.append("\n" + reasonPostText);
+            msg.append("<br>" + reasonPostText);
 
         break;
     }
     case ATProto::AppBskyNotification::NotificationReason::FOLLOW:
+        channelId = CHANNEL_FOLLOW;
         iconType = IconType::FOLLOW;
-        msg = QObject::tr("Follows you.");
+        msg = QObject::tr("<b>Follows you</b>");
         break;
     case ATProto::AppBskyNotification::NotificationReason::MENTION:
         iconType = IconType::MENTION;
@@ -476,7 +512,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     if (when.isNull())
         when = QDateTime::currentDateTimeUtc();
 
-    createNotification(notification.getAuthor(), msg, when, iconType);
+    createNotification(channelId, notification.getAuthor(), msg, when, iconType);
 }
 
 bool OffLineMessageChecker::checkNoticationPermission()
@@ -506,10 +542,25 @@ void OffLineMessageChecker::start()
 #endif
 }
 
-void OffLineMessageChecker::createNotificationChannel()
+void OffLineMessageChecker::createNotificationChannels()
 {
 #if defined(Q_OS_ANDROID)
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/NewMessageNotifier", "createNotificationChannel");
+    QJniEnvironment env;
+
+    for (const auto& channel : NOTIFCATION_CHANNELS)
+    {
+        QJniObject jId = QJniObject::fromString(channel.mId);
+        QJniObject jName = QJniObject::fromString(channel.mName);
+        QJniObject jDescription = QJniObject::fromString(channel.mDescription);
+
+        QJniObject::callStaticMethod<void>(
+            "com/gmail/mfnboer/NewMessageNotifier",
+            "createNotificationChannel",
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+            jId.object<jstring>(),
+            jName.object<jstring>(),
+            jDescription.object<jstring>());
+    }
 #endif
 }
 

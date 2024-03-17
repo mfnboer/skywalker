@@ -54,7 +54,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     AuthorCache::instance().addProfileStore(&mUserFollows);
-    OffLineMessageChecker::createNotificationChannel();
+    OffLineMessageChecker::createNotificationChannels();
 
     auto& jniCallbackListener = JNICallbackListener::getInstance();
     connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
