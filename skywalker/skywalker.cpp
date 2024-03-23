@@ -61,11 +61,14 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& text){ emit sharedTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
+    connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
+            [this]{ emit showNotifications(); });
 
     connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
             [this]{
                 saveHashtags();
                 mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
+                mUserSettings.resetNextNotificationId();
                 mUserSettings.sync();
                 OffLineMessageChecker::start();
             });

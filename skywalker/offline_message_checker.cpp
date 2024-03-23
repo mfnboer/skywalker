@@ -12,8 +12,17 @@
 #include <QTimer>
 #endif
 
+namespace {
+constexpr char const* CHANNEL_POST = "CHANNEL_POST";
+constexpr char const* CHANNEL_LIKE = "CHANNEL_LIKE";
+constexpr char const* CHANNEL_REPOST = "CHANNEL_REPOST";
+constexpr char const* CHANNEL_FOLLOW = "CHANNEL_FOLLOW";
+
+constexpr int EXIT_OK = 0;
+}
+
 #if defined(Q_OS_ANDROID)
-JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jstring jSettingsFileName, jstring jLibDir)
+JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jstring jSettingsFileName, jstring jLibDir)
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
     qDebug() << "CHECK NEW MESSAGES START";
@@ -23,7 +32,7 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
     if (!settingsFileName)
     {
         qWarning() << "Settings file name missing";
-        return;
+        return EXIT_OK;
     }
 
     const char* libDir = (*env).GetStringUTFChars(jLibDir, nullptr);
@@ -31,7 +40,7 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
     if (!libDir)
     {
         qWarning() << "Library directory missing";
-        return;
+        return EXIT_OK;
     }
 
     // This makes networking work???
@@ -42,7 +51,7 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
     if (!javaClass)
     {
         qWarning() << "Class loading failed";
-        return;
+        return EXIT_OK;
     }
 
     std::unique_ptr<QCoreApplication> app;
@@ -69,20 +78,15 @@ JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages
         checker = std::make_unique<Skywalker::OffLineMessageChecker>(settingsFileName, eventLoop.get());
     }
 
-    checker->check();
+    int exitCode = checker->check();
 
     (*env).ReleaseStringUTFChars(jSettingsFileName, settingsFileName);
     (*env).ReleaseStringUTFChars(jLibDir, libDir);
-    qDebug() << "CHECK NEW MESSAGES END";
+    qDebug() << "CHECK NEW MESSAGES END:" << exitCode;
+
+    return exitCode;
 }
 #endif
-
-namespace {
-constexpr char const* CHANNEL_POST = "CHANNEL_POST";
-constexpr char const* CHANNEL_LIKE = "CHANNEL_LIKE";
-constexpr char const* CHANNEL_REPOST = "CHANNEL_REPOST";
-constexpr char const* CHANNEL_FOLLOW = "CHANNEL_FOLLOW";
-}
 
 namespace Skywalker {
 
@@ -115,6 +119,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
     mContentFilter(mUserPreferences),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
+    mNotificationListModel.enableRetrieveNotificationPosts(false);
 }
 
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop) :
@@ -123,33 +128,36 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QE
     mContentFilter(mUserPreferences),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
+    mNotificationListModel.enableRetrieveNotificationPosts(false);
 }
 
-void OffLineMessageChecker::startEventLoop()
+int OffLineMessageChecker::startEventLoop()
 {
     qDebug() << "Starting event loop";
 
     if (mBackgroundApp)
-        mBackgroundApp->exec();
+        return mBackgroundApp->exec();
     else if (mEventLoop)
-        mEventLoop->exec();
+        return mEventLoop->exec();
+
+    return EXIT_OK;
 }
 
-void OffLineMessageChecker::exit()
+void OffLineMessageChecker::exit(int exitCode)
 {
     qDebug() << "Exit";
 
     if (mBackgroundApp)
-        mBackgroundApp->exit();
+        mBackgroundApp->exit(exitCode);
     else if (mEventLoop)
-        mEventLoop->exit();
+        mEventLoop->exit(exitCode);
 }
 
-void OffLineMessageChecker::check()
+int OffLineMessageChecker::check()
 {
     QObject guard;
     QTimer::singleShot(0, &guard, [this]{ resumeSession(); });
-    startEventLoop();
+    return startEventLoop();
 }
 
 void OffLineMessageChecker::createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)
@@ -159,6 +167,7 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
 #if defined(Q_OS_ANDROID)
     QJniEnvironment env;
     QJniObject jChannelId = QJniObject::fromString(channelId);
+    jint jNotificationId = mUserSettings.getNextNotificationId();
     QJniObject jTitle = QJniObject::fromString(author.getName());
     QJniObject jMsg = QJniObject::fromString(msg);
     jlong jWhen = when.toMSecsSinceEpoch();
@@ -182,7 +191,7 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
         env,
         "com/gmail/mfnboer/NewMessageNotifier",
         "createNotification",
-        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JI[B)V");
+        "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;JI[B)V");
 
     if (!javaClass || !methodId)
         return;
@@ -191,14 +200,18 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
         javaClass,
         methodId,
         jChannelId.object<jstring>(),
+        jNotificationId,
         jTitle.object<jstring>(),
         jMsg.object<jstring>(),
         jWhen,
         jIconType,
         jAvatar);
 #else
-    Q_UNUSED(title);
+    Q_UNUSED(channelId);
+    Q_UNUSED(author);
     Q_UNUSED(msg);
+    Q_UNUSED(when);
+    Q_UNUSED(iconType);
 #endif
 }
 
@@ -236,7 +249,7 @@ void OffLineMessageChecker::resumeSession()
     if (!getSession(host, session))
     {
         qWarning() << "No saved session";
-        exit();
+        exit(EXIT_OK);
         return;
     }
 
@@ -256,7 +269,7 @@ void OffLineMessageChecker::resumeSession()
             if (error == "ExpiredToken")
                 login();
             else
-                exit();
+                exit(EXIT_OK);
         });
 }
 
@@ -269,7 +282,7 @@ void OffLineMessageChecker::refreshSession()
     if (!session)
     {
         qWarning() << "No session to refresh.";
-        exit();
+        exit(EXIT_OK);
         return;
     }
 
@@ -281,7 +294,7 @@ void OffLineMessageChecker::refreshSession()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Session could not be refreshed:" << error << " - " << msg;
-            exit();
+            exit(EXIT_OK);
         });
 }
 
@@ -293,7 +306,7 @@ void OffLineMessageChecker::login()
     if (host.isEmpty() || password.isEmpty())
     {
         qWarning() << "Missing host or password to login";
-        exit();
+        exit(EXIT_OK);
         return;
     }
 
@@ -310,7 +323,7 @@ void OffLineMessageChecker::login()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Login" << mUserDid << "failed:" << error << " - " << msg;
-            exit();
+            exit(EXIT_OK);
         });
 }
 
@@ -326,7 +339,7 @@ void OffLineMessageChecker::getUserPreferences()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
-            exit(); // TODO: schedule retry?
+            exit(EXIT_OK);
         });
 }
 
@@ -351,7 +364,7 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
             if (newCount == 0)
             {
                 qDebug() << "No new messages";
-                exit();
+                exit(EXIT_OK);
                 return;
             }
 
@@ -359,7 +372,7 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Failed to get unread notification count:" << error << " - " << msg;
-            exit();
+            exit(EXIT_OK);
         });
 }
 
@@ -378,11 +391,11 @@ void OffLineMessageChecker::getNotifications(int toRead)
             mUserSettings.sync();
 
             if (!added)
-                exit();
+                exit(EXIT_OK);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
-            exit();
+            exit(EXIT_OK);
         },
         false);
 }
@@ -445,19 +458,18 @@ void OffLineMessageChecker::createNotifications()
     for (const auto& notification : notifications)
         createNotification(notification);
 
-    exit();
+    exit(EXIT_OK);
 }
 
 void OffLineMessageChecker::createNotification(const Notification& notification)
 {
     const PostCache& reasonPostCache = mNotificationListModel.getReasonPostCache();
     const PostRecord postRecord = notification.getPostRecord();
-    const QString postText = !postRecord.isNull() ? postRecord.getFormattedText() : "";
-    QString msg;
-    QString channelId = CHANNEL_POST;
-    IconType iconType = IconType::CHAT;
 
     // NOTE: postText can be empty if there is only an image.
+    QString msg = !postRecord.isNull() ? postRecord.getFormattedText() : "";
+    QString channelId = CHANNEL_POST;
+    IconType iconType = IconType::CHAT;
 
     switch (notification.getReason())
     {
@@ -494,13 +506,10 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         break;
     case ATProto::AppBskyNotification::NotificationReason::MENTION:
         iconType = IconType::MENTION;
-        msg = postText;
         break;
     case ATProto::AppBskyNotification::NotificationReason::REPLY:
-        msg = postText;
         break;
     case ATProto::AppBskyNotification::NotificationReason::QUOTE:
-        msg = postText;
         break;
     case ATProto::AppBskyNotification::NotificationReason::INVITE_CODE_USED:
     case ATProto::AppBskyNotification::NotificationReason::UNKNOWN:

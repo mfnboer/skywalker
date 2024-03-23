@@ -13,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
@@ -31,7 +32,6 @@ public class NewMessageNotifier {
     private static final int IC_MENTION = 3;
     private static final int IC_REPOST = 4;
 
-    private static int sNextNotificationId = 1;
     private static Context mContext;
 
     private static int iconTypeToResource(int iconType) {
@@ -68,10 +68,10 @@ public class NewMessageNotifier {
         }
     }
 
-    public static void createNotification(String channelId, String title, String msg, long when, int iconType, byte[] avatar) {
-        Log.d(LOGTAG, "Create notification: " + channelId + " id: " + sNextNotificationId + " title: " + title + " msg: " + msg);
-
-        Intent intent = mContext.getPackageManager().getLaunchIntentForPackage("com.gmail.mfnboer.skywalker");
+    public static void createNotification(String channelId, int notificationId, String title, String msg, long when, int iconType, byte[] avatar) {
+        Log.d(LOGTAG, "Create notification: " + channelId + " id: " + notificationId + " title: " + title + " msg: " + msg);
+        Intent intent = new Intent(com.gmail.mfnboer.SkywalkerActivity.INTENT_ACTION_SHOW_NOTIFICATIONS);
+        intent.setComponent(new ComponentName("com.gmail.mfnboer.skywalker", "com.gmail.mfnboer.SkywalkerActivity"));
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, channelId)
@@ -93,7 +93,12 @@ public class NewMessageNotifier {
             builder.setLargeIcon(avatarIcon);
         }
 
-        NotificationManagerCompat.from(mContext).notify(sNextNotificationId, builder.build());
-        ++sNextNotificationId;
+        NotificationManagerCompat.from(mContext).notify(notificationId, builder.build());
+    }
+
+    public static void clearNotifications() {
+        Log.d(LOGTAG, "Clear notifications");
+        Context context = QtNative.getContext();
+        NotificationManagerCompat.from(context).cancelAll();
     }
 }

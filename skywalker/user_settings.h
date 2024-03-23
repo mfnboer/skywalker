@@ -87,6 +87,9 @@ public:
     void setOfflineUnread(const QString& did, int unread);
     int getOfflineUnread(const QString& did) const;
 
+    void resetNextNotificationId();
+    int getNextNotificationId();
+
     void sync() { mSettings.sync(); }
 
 private:

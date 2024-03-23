@@ -13,7 +13,7 @@
 extern "C" {
 // Will be called from the Android WorkManager through System.loadLibrary
 // QT JNI registrations cannot be used. Those are destroyed when the app exits.
-JNIEXPORT void JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv*, jobject, jstring jSettingsFileName, jstring jLibDir);
+JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv*, jobject, jstring jSettingsFileName, jstring jLibDir);
 }
 #endif
 
@@ -42,7 +42,7 @@ public:
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
     explicit OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop);
 
-    void check();
+    int check();
 
 private:
     // Values must be equal to the values in NewMessageNotifier.java
@@ -55,8 +55,8 @@ private:
         REPOST = 4
     };
 
-    void startEventLoop();
-    void exit();
+    int startEventLoop();
+    void exit(int exitCode);
     void resumeSession();
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSession(const ATProto::ComATProtoServer::Session& session);

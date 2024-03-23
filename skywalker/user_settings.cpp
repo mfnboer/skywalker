@@ -300,6 +300,19 @@ int UserSettings::getOfflineUnread(const QString& did) const
     return mSettings.value(key(did, "offlineUnread"), 0).toInt();
 }
 
+void UserSettings::resetNextNotificationId()
+{
+    mSettings.setValue("nextNotificationId", 1);
+}
+
+int UserSettings::getNextNotificationId()
+{
+    int id = mSettings.value("nextNotificationId", 1).toInt();
+    int nextId = id + 1;
+    mSettings.setValue("nextNotificationId", nextId);
+    return id;
+}
+
 void UserSettings::cleanup()
 {
     // Version 1.5 erroneously saved user hashtags on app level

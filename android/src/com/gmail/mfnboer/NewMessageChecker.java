@@ -8,6 +8,7 @@ import org.qtproject.qt.android.QtNative;
 import com.gmail.mfnboer.NewMessageNotifier;
 
 import androidx.annotation.NonNull;
+import androidx.work.BackoffPolicy;
 import androidx.work.Configuration;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -44,7 +45,7 @@ public class NewMessageChecker extends Worker {
         }
     }
 
-    public static native void checkNewMessages(String settingsFileName, String libDir);
+    public static native int checkNewMessages(String settingsFileName, String libDir);
 
     private Context mContext;
 
@@ -57,7 +58,8 @@ public class NewMessageChecker extends Worker {
 
     @Override
     public Result doWork() {
-        Log.d(LOGTAG, "Check for new messages");
+        int runAttemptCount = getRunAttemptCount();
+        Log.d(LOGTAG, "Check for new messages, attempt: " + runAttemptCount);
         Log.d(LOGTAG, "data dir: " + mContext.getDataDir().getPath());
 
         ApplicationInfo appInfo = mContext.getApplicationInfo();
@@ -66,6 +68,11 @@ public class NewMessageChecker extends Worker {
 
         NewMessageNotifier.setContext(mContext);
         checkNewMessages(getSettingsFileName(), appInfo.nativeLibraryDir);
+
+        // Abuse retry mechanism to check for new messages every ~7.5 mins.
+        if (runAttemptCount == 0)
+            return Result.retry();
+
         return Result.success();
     }
 
@@ -86,10 +93,13 @@ public class NewMessageChecker extends Worker {
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build();
 
+        // repeat: 15 mins, flex: 5 mins
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
             NewMessageChecker.class, 15, TimeUnit.MINUTES)
-                .setInitialDelay(5, TimeUnit.MINUTES)
-                .setConstraints(constraints).build();
+                .setInitialDelay(1, TimeUnit.MINUTES)
+                .setBackoffCriteria(BackoffPolicy.LINEAR, 450, TimeUnit.SECONDS)
+                .setConstraints(constraints)
+                .build();
 
         Context context = QtNative.getContext();
         getRemoteWorkManager(context).enqueueUniquePeriodicWork(

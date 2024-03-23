@@ -219,14 +219,15 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
         case Notification::Reason::REPLY:
         case Notification::Reason::MENTION:
         case Notification::Reason::QUOTE:
-        {
-            const auto& uri = notification.getUri();
+            if (mRetrieveNotificationPosts)
+            {
+                const auto& uri = notification.getUri();
 
-            if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
-                uris.insert(uri);
+                if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
+                    uris.insert(uri);
+            }
 
             break;
-        }
         default:
             break;
         }

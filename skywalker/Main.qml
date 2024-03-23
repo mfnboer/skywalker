@@ -227,6 +227,8 @@ ApplicationWindow {
                 composePost(text, source)
         }
 
+        onShowNotifications: viewNotifications()
+
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
             skywalker.getUserProfileAndFollows()

@@ -90,6 +90,7 @@ public:
     int getInviteCodeUsageNotificationCount() const { return (int)mInviteCodeUsedNotifications.size(); }
     const NotificationList& getNotifications() const { return mList; }
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
+    void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }
 
 protected:
     virtual void postIndexTimestampChanged() override;
@@ -129,6 +130,7 @@ private:
     // This cache must be emptied when the notifications are refreshed, because
     // the counts (like, reposts, replies) will change over time and are displayed.
     PostCache mPostCache;
+    bool mRetrieveNotificationPosts = true;
 
     // Posts in this cache can be kept for a long time
     PostCache mReasonPostCache;

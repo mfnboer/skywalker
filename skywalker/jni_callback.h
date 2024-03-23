@@ -19,6 +19,7 @@ public:
     void handlePhotoPickCanceled();
     void handleSharedTextReceived(const QString sharedText);
     void handleSharedImageReceived(const QString fileName, const QString text);
+    void handleSHowNotifications();
     void handlePause();
 
 signals:
@@ -26,6 +27,7 @@ signals:
     void photoPickCanceled();
     void sharedTextReceived(const QString sharedText);
     void sharedImageReceived(const QString fileName, const QString text);
+    void showNotifications();
     void appPause();
 private:
     JNICallbackListener();
