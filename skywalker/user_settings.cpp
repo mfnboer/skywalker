@@ -300,6 +300,16 @@ int UserSettings::getOfflineUnread(const QString& did) const
     return mSettings.value(key(did, "offlineUnread"), 0).toInt();
 }
 
+void UserSettings::setOfflineMessageCheckTimestamp(QDateTime timestamp)
+{
+    mSettings.setValue("offlineMessageCheckTimestamp", timestamp);
+}
+
+QDateTime UserSettings::getOfflineMessageCheckTimestamp() const
+{
+    return mSettings.value("offlineMessageCheckTimestamp").toDateTime();
+}
+
 void UserSettings::resetNextNotificationId()
 {
     mSettings.setValue("nextNotificationId", 1);

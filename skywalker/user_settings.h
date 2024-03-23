@@ -87,6 +87,9 @@ public:
     void setOfflineUnread(const QString& did, int unread);
     int getOfflineUnread(const QString& did) const;
 
+    void setOfflineMessageCheckTimestamp(QDateTime timestamp);
+    QDateTime getOfflineMessageCheckTimestamp() const;
+
     void resetNextNotificationId();
     int getNextNotificationId();
 

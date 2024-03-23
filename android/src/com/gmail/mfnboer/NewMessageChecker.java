@@ -58,6 +58,11 @@ public class NewMessageChecker extends Worker {
 
     @Override
     public Result doWork() {
+        if (isStopped()) {
+            Log.d(LOGTAG, "Worker is stopped");
+            return Result.success();
+        }
+
         int runAttemptCount = getRunAttemptCount();
         Log.d(LOGTAG, "Check for new messages, attempt: " + runAttemptCount);
         Log.d(LOGTAG, "data dir: " + mContext.getDataDir().getPath());
@@ -67,10 +72,9 @@ public class NewMessageChecker extends Worker {
         Log.d(LOGTAG, "source dir:" + appInfo.sourceDir);
 
         NewMessageNotifier.setContext(mContext);
-        checkNewMessages(getSettingsFileName(), appInfo.nativeLibraryDir);
+        int exitCode = checkNewMessages(getSettingsFileName(), appInfo.nativeLibraryDir);
 
-        // Abuse retry mechanism to check for new messages every ~7.5 mins.
-        if (runAttemptCount == 0)
+        if (exitCode == -1)
             return Result.retry();
 
         return Result.success();
@@ -86,7 +90,13 @@ public class NewMessageChecker extends Worker {
     }
 
     public static void startChecker() {
-        Log.d(LOGTAG, "Start checker, min interval: " + PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS);
+        startChecker(1);
+        startChecker(2);
+    }
+
+    public static void startChecker(int id) {
+        String taskName = getTaskName(id);
+        Log.d(LOGTAG, "Start checker: " + taskName);
 
         Constraints constraints = new Constraints.Builder()
             .setRequiresBatteryNotLow(true)
@@ -102,16 +112,38 @@ public class NewMessageChecker extends Worker {
                 .build();
 
         Context context = QtNative.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context. Cannot start message checker");
+            return;
+        }
+
         getRemoteWorkManager(context).enqueueUniquePeriodicWork(
-            "checkNewMessages",
+            taskName,
             ExistingPeriodicWorkPolicy.REPLACE,
             request);
     }
 
     public static void stopChecker() {
-        Log.d(LOGTAG, "Stop checker");
+        stopChecker(1);
+        stopChecker(2);
+    }
+
+    public static void stopChecker(int id) {
+        String taskName = getTaskName(id);
+        Log.d(LOGTAG, "Stop checker: " + taskName);
 
         Context context = QtNative.getContext();
-        getRemoteWorkManager(context).cancelUniqueWork("checkNewMessages");
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context. Cannot stop message checker");
+            return;
+        }
+
+        getRemoteWorkManager(context).cancelUniqueWork(taskName);
+    }
+
+    public static String getTaskName(int id) {
+        return "checkNewMessages_" + id;
     }
 }

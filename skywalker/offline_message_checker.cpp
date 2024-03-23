@@ -12,6 +12,8 @@
 #include <QTimer>
 #endif
 
+using namespace std::chrono_literals;
+
 namespace {
 constexpr char const* CHANNEL_POST = "CHANNEL_POST";
 constexpr char const* CHANNEL_LIKE = "CHANNEL_LIKE";
@@ -19,11 +21,15 @@ constexpr char const* CHANNEL_REPOST = "CHANNEL_REPOST";
 constexpr char const* CHANNEL_FOLLOW = "CHANNEL_FOLLOW";
 
 constexpr int EXIT_OK = 0;
+constexpr int EXIT_RETRY = -1;
 }
 
 #if defined(Q_OS_ANDROID)
 JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jstring jSettingsFileName, jstring jLibDir)
 {
+    static QMutex mutex;
+    QMutexLocker locker(&mutex);
+
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
     qDebug() << "CHECK NEW MESSAGES START";
 
@@ -155,9 +161,25 @@ void OffLineMessageChecker::exit(int exitCode)
 
 int OffLineMessageChecker::check()
 {
+    const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
+    qDebug() << "Previous check:" << timestamp;
+
+    if (!timestamp.isNull())
+    {
+        const auto now = QDateTime::currentDateTime();
+
+        if (now - timestamp < 2min)
+        {
+            qDebug() << "Retry later";
+            return EXIT_RETRY;
+        }
+    }
+
     QObject guard;
     QTimer::singleShot(0, &guard, [this]{ resumeSession(); });
-    return startEventLoop();
+    startEventLoop();
+    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+    return EXIT_OK;
 }
 
 void OffLineMessageChecker::createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)

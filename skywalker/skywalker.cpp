@@ -68,6 +68,7 @@ Skywalker::Skywalker(QObject* parent) :
             [this]{
                 saveHashtags();
                 mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
+                mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
                 mUserSettings.resetNextNotificationId();
                 mUserSettings.sync();
                 OffLineMessageChecker::start();
