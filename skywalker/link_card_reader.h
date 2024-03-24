@@ -17,7 +17,7 @@ class LinkCardReader : public QObject
 public:
     explicit LinkCardReader(QObject* parent = nullptr);
 
-    Q_INVOKABLE void getLinkCard(const QString& link);
+    Q_INVOKABLE void getLinkCard(const QString& link, bool retry = false);
     Q_INVOKABLE LinkCard* makeLinkCard(const QString& link, const QString& title,
                                   const QString& description, const QString& thumb);
 
@@ -35,6 +35,7 @@ private:
     QCache<QUrl, LinkCard> mCardCache;
     QNetworkReply* mInProgress = nullptr;
     QUrl mPrevDestination;
+    bool mRetry = false;
 };
 
 }

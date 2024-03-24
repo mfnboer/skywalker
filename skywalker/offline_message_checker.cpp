@@ -576,6 +576,8 @@ void OffLineMessageChecker::start(bool wifiOnly)
         "startChecker",
         "(Z)V",
         jWifiOnly);
+#else
+    Q_UNUSED(wifiOnly);
 #endif
 }
 

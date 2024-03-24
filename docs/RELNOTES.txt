@@ -1,6 +1,7 @@
 next
 ====
 * Pull notifications (checks every ~8 mins when app is closed)
+* Link card improvements
 
 1.7
 ===
