@@ -563,13 +563,19 @@ bool OffLineMessageChecker::checkNoticationPermission()
 #endif
 }
 
-void OffLineMessageChecker::start()
+void OffLineMessageChecker::start(bool wifiOnly)
 {
 #if defined(Q_OS_ANDROID)
     if (!checkNoticationPermission())
         return;
 
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/NewMessageChecker", "startChecker");
+    jboolean jWifiOnly = wifiOnly;
+
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/NewMessageChecker",
+        "startChecker",
+        "(Z)V",
+        jWifiOnly);
 #endif
 }
 

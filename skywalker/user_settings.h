@@ -93,6 +93,9 @@ public:
     void resetNextNotificationId();
     int getNextNotificationId();
 
+    void setNotificationsWifiOnly(bool enable);
+    bool getNotificationsWifiOnly() const;
+
     void sync() { mSettings.sync(); }
 
 private:

@@ -323,6 +323,16 @@ int UserSettings::getNextNotificationId()
     return id;
 }
 
+void UserSettings::setNotificationsWifiOnly(bool enable)
+{
+    mSettings.setValue("notificationsWifiOnly", enable);
+}
+
+bool UserSettings::getNotificationsWifiOnly() const
+{
+    return mSettings.value("notificationsWifiOnly", false).toBool();
+}
+
 void UserSettings::cleanup()
 {
     // Version 1.5 erroneously saved user hashtags on app level

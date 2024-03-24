@@ -71,7 +71,7 @@ Skywalker::Skywalker(QObject* parent) :
                 mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
                 mUserSettings.resetNextNotificationId();
                 mUserSettings.sync();
-                OffLineMessageChecker::start();
+                OffLineMessageChecker::start(mUserSettings.getNotificationsWifiOnly());
             });
 }
 
@@ -2203,6 +2203,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
     mEditUserPreferences->setRequireAltText(mUserSettings.getRequireAltText(session->mDid));
+    mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
     mEditUserPreferences->setLocalSettingsModified(false);
 
     if (session->getPDS())
@@ -2239,6 +2240,9 @@ void Skywalker::saveUserPreferences()
 
         qDebug() << "Require ALT-text:" << mEditUserPreferences->getRequireAltText();
         mUserSettings.setRequireAltText(mUserDid, mEditUserPreferences->getRequireAltText());
+
+        qDebug() << "Notifications wifi only:" << mEditUserPreferences->getNotificationsWifiOnly();
+        mUserSettings.setNotificationsWifiOnly(mEditUserPreferences->getNotificationsWifiOnly());
     }
 
     const bool loggedOutVisibility = mEditUserPreferences->getLoggedOutVisiblity();

@@ -109,4 +109,14 @@ void EditUserPreferences::setRequireAltText(bool require)
     }
 }
 
+void EditUserPreferences::setNotificationsWifiOnly(bool wifiOnly)
+{
+    if (wifiOnly != mNotificationsWifiOnly)
+    {
+        mNotificationsWifiOnly = wifiOnly;
+        setLocalSettingsModified(true);
+        emit notificationsWifiOnlyChanged();
+    }
+}
+
 }

@@ -49,7 +49,7 @@ Page {
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
-        contentHeight: appearanceColumn.y + appearanceColumn.height
+        contentHeight: notificationsColumn.y + notificationsColumn.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
@@ -273,6 +273,33 @@ Page {
                 text: qsTr("GIF auto play")
                 checked: userPrefs.gifAutoPlay
                 onCheckedChanged: userPrefs.gifAutoPlay = checked
+            }
+        }
+
+        ColumnLayout {
+            id: notificationsColumn
+            anchors.top: appearanceColumn.bottom
+            width: parent.width
+
+            AccessibleText {
+                topPadding: 20
+                font.pointSize: guiSettings.scaledFont(9/8)
+                font.bold: true
+                color: guiSettings.textColor
+                text: qsTr("Pull notifications")
+            }
+
+            AccessibleText {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                color: guiSettings.textColor
+                text: qsTr("Notifications can be enabled/disabled in the app settings of your phone.")
+            }
+
+            AccessibleSwitch {
+                text: qsTr("WiFi only")
+                checked: userPrefs.notificationsWifiOnly
+                onCheckedChanged: userPrefs.notificationsWifiOnly = checked
             }
         }
     }

@@ -63,8 +63,7 @@ public class NewMessageChecker extends Worker {
             return Result.success();
         }
 
-        int runAttemptCount = getRunAttemptCount();
-        Log.d(LOGTAG, "Check for new messages, attempt: " + runAttemptCount);
+        Log.d(LOGTAG, "Check for new messages");
         Log.d(LOGTAG, "data dir: " + mContext.getDataDir().getPath());
 
         ApplicationInfo appInfo = mContext.getApplicationInfo();
@@ -89,18 +88,18 @@ public class NewMessageChecker extends Worker {
         return RemoteWorkManager.getInstance(context);
     }
 
-    public static void startChecker() {
-        startChecker(1);
-        startChecker(2);
+    public static void startChecker(boolean wifiOnly) {
+        startChecker(1, wifiOnly);
+        startChecker(2, wifiOnly);
     }
 
-    public static void startChecker(int id) {
+    public static void startChecker(int id, boolean wifiOnly) {
         String taskName = getTaskName(id);
-        Log.d(LOGTAG, "Start checker: " + taskName);
+        Log.d(LOGTAG, "Start checker: " + taskName + " wifiOnly: " + wifiOnly);
 
         Constraints constraints = new Constraints.Builder()
             .setRequiresBatteryNotLow(true)
-            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiredNetworkType(wifiOnly ? NetworkType.UNMETERED : NetworkType.CONNECTED)
             .build();
 
         // repeat: 15 mins, flex: 5 mins

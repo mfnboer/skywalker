@@ -34,7 +34,7 @@ public:
     static const std::vector<NotificationChannel> NOTIFCATION_CHANNELS;
 
     // Start background process that periodically checks for new messages.
-    static void start();
+    static void start(bool wifiOnly);
 
     static void createNotificationChannels();
     static bool checkNoticationPermission();

@@ -1,3 +1,7 @@
+next
+====
+* Pull notifications (checks every ~8 mins when app is closed)
+
 1.7
 ===
 * Bookmarks are stored in the cloud (migrated at startup)

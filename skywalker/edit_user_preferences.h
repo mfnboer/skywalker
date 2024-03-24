@@ -23,6 +23,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(QEnums::DisplayMode displayMode READ getDisplayMode WRITE setDisplayMode NOTIFY displayModeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool requireAltText READ getRequireAltText WRITE setRequireAltText NOTIFY requireAltTextChanged FINAL)
+    Q_PROPERTY(bool notificationsWifiOnly READ getNotificationsWifiOnly WRITE setNotificationsWifiOnly NOTIFY notificationsWifiOnlyChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -68,6 +69,9 @@ public:
     bool getRequireAltText() const { return mRequireAltText; }
     void setRequireAltText(bool require);
 
+    bool getNotificationsWifiOnly() const { return mNotificationsWifiOnly; }
+    void setNotificationsWifiOnly(bool wifiOnly);
+
     bool isLocalSettingsModified() const { return mLocalSettingsModified; }
     void setLocalSettingsModified(bool modified) { mLocalSettingsModified = modified; }
 
@@ -80,6 +84,7 @@ signals:
     void displayModeChanged();
     void gifAutoPlayChanged();
     void requireAltTextChanged();
+    void notificationsWifiOnlyChanged();
 
 private:
     QString mEmail;
@@ -99,6 +104,7 @@ private:
     QEnums::DisplayMode mDisplayMode = QEnums::DISPLAY_MODE_SYSTEM;
     bool mGifAutoPlay = true;
     bool mRequireAltText = false;
+    bool mNotificationsWifiOnly = false;
     bool mLocalSettingsModified = false;
 };
 
