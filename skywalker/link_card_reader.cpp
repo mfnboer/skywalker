@@ -219,9 +219,12 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
             qDebug() << "Cookies stored, retry";
             getLinkCard(url.toString(), true);
         }
+        else
+        {
+            mCardCache.insert(url, card.release());
+            qDebug() << url << "has no link card.";
+        }
 
-        mCardCache.insert(url, card.release());
-        qDebug() << url << "has no link card.";
         return;
     }
 
@@ -255,7 +258,6 @@ void LinkCardReader::requestSslFailed(QNetworkReply* reply)
 
 void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
 {
-    qDebug() << reply->rawHeaderPairs();
     qDebug() << "Prev url:" << mPrevDestination << "redirect url:" << redirectUrl;
 
     // Allow: https -> https, http -> http, http -> https
