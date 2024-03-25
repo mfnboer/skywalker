@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.1'
+        classpath 'com.android.tools.build:gradle:8.2.0'
     }
 }
 
@@ -18,9 +18,14 @@ apply plugin: 'com.android.application'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    implementation 'androidx.core:core:1.12.0'
     implementation 'androidx.activity:activity:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-	
+    implementation 'androidx.work:work-runtime:2.9.0'
+    implementation 'androidx.work:work-multiprocess:2.9.0'
+    implementation 'androidx.annotation:annotation:1.7.1'
+
+
     constraints {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {
             because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
@@ -45,7 +50,8 @@ android {
      * Changing them manually might break the compilation!
      *******************************************************/
 
-    compileSdkVersion androidCompileSdkVersion
+    //compileSdkVersion androidCompileSdkVersion
+    compileSdkVersion 34
     buildToolsVersion androidBuildToolsVersion
     ndkVersion androidNdkVersion
 
@@ -85,6 +91,8 @@ android {
 
     defaultConfig {
         resConfig "en"
+        applicationId "com.gmail.mfnboer.skywalker"
+        namespace "com.gmail.mfnboer.skywalker"
         minSdkVersion qtMinSdkVersion
         targetSdkVersion qtTargetSdkVersion
         ndk.abiFilters = qtTargetAbiList.split(",")

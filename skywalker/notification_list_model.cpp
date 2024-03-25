@@ -58,8 +58,9 @@ void NotificationListModel::addInviteCodeUsageNotificationRows()
 }
 
 
-void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
-                                             ATProto::Client& bsky, bool clearFirst)
+bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
+                                             ATProto::Client& bsky, bool clearFirst,
+                                             const std::function<void()>& doneCb)
 {
     qDebug() << "Add notifications:" << notifications->mNotifications.size();
 
@@ -90,17 +91,22 @@ void NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
             emit dataChanged(index, index, { int(Role::EndOfList) });
         }
 
-        return;
+        return false;
     }
 
     auto notificationList = createNotificationList(notifications->mNotifications);
     mRawNotifications.push_back(std::move(notifications));
 
-    getPosts(bsky, notificationList, [this, notificationList, clearFirst]{
+    getPosts(bsky, notificationList, [this, notificationList, clearFirst, doneCb]{
         auto list = std::move(notificationList);
         filterNotificationList(list);
         addNotificationList(list, clearFirst);
+
+        if (doneCb)
+            doneCb();
     });
+
+    return true;
 }
 
 void NotificationListModel::filterNotificationList(NotificationList& list) const
@@ -213,14 +219,15 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
         case Notification::Reason::REPLY:
         case Notification::Reason::MENTION:
         case Notification::Reason::QUOTE:
-        {
-            const auto& uri = notification.getUri();
+            if (mRetrieveNotificationPosts)
+            {
+                const auto& uri = notification.getUri();
 
-            if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
-                uris.insert(uri);
+                if (ATProto::ATUri(uri).isValid() && !mPostCache.contains(uri))
+                    uris.insert(uri);
+            }
 
             break;
-        }
         default:
             break;
         }

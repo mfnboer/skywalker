@@ -12,7 +12,7 @@ ImageReader::ImageReader() :
     mNetwork.setTransferTimeout(15000);
 }
 
-void ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb)
+bool ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb)
 {
     qDebug() << "Get image:" << urlString;
 
@@ -20,7 +20,7 @@ void ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, con
     if (!url.isValid())
     {
         qWarning() << "Invalid link:" << urlString;
-        return;
+        return false;
     }
 
     QNetworkRequest request(url);
@@ -28,6 +28,8 @@ void ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, con
 
     connect(reply, &QNetworkReply::finished, this, [this, reply, imageCb, errorCb]{
             replyFinished(reply, imageCb, errorCb); });
+
+    return true;
 }
 
 void ImageReader::replyFinished(QNetworkReply* reply, const ImageCb& imageCb, const ErrorCb& errorCb)

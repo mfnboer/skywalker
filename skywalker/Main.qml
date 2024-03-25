@@ -164,7 +164,7 @@ ApplicationWindow {
         onTimelineSyncOK: (index) => {
             closeStartupStatus()
             getTimelineView().setInSync(index)
-            timelineUpdateTimer.start()
+            skywalker.startTimelineAutoUpdate()
         }
 
         onTimelineSyncFailed: {
@@ -227,6 +227,8 @@ ApplicationWindow {
                 composePost(text, source)
         }
 
+        onShowNotifications: viewNotifications()
+
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
             skywalker.getUserProfileAndFollows()
@@ -254,19 +256,6 @@ ApplicationWindow {
         }
         StackView {
             id: feedsStack
-        }
-    }
-
-    Timer {
-        id: timelineUpdateTimer
-        // There is a trade off: short timeout is fast updating timeline, long timeout
-        // allows for better reply thread construction as we receive more posts per update.
-        interval: 91000
-        running: false
-        repeat: true
-        onTriggered: {
-            skywalker.getTimelinePrepend(2)
-            skywalker.updatePostIndexTimestamps()
         }
     }
 
@@ -774,7 +763,7 @@ ApplicationWindow {
     }
 
     function signOutCurrentUser() {
-        timelineUpdateTimer.stop()
+        skywalker.stopTimelineAutoUpdate()
         getTimelineView().stopSync()
         unwindStack()
         destroySearchView()

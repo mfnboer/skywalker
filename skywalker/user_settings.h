@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE static void setLinkColor(const QString& color) { sLinkColor = color; }
 
     explicit UserSettings(QObject* parent = nullptr);
+    explicit UserSettings(const QString& fileName, QObject* parent = nullptr);
 
     Q_INVOKABLE QList<BasicProfile> getUserList() const;
 
@@ -82,6 +83,20 @@ public:
 
     void setSeenHashtags(const QStringList& hashtags);
     QStringList getSeenHashtags() const;
+
+    void setOfflineUnread(const QString& did, int unread);
+    int getOfflineUnread(const QString& did) const;
+
+    void setOfflineMessageCheckTimestamp(QDateTime timestamp);
+    QDateTime getOfflineMessageCheckTimestamp() const;
+
+    void resetNextNotificationId();
+    int getNextNotificationId();
+
+    void setNotificationsWifiOnly(bool enable);
+    bool getNotificationsWifiOnly() const;
+
+    void sync() { mSettings.sync(); }
 
 private:
     QString key(const QString& did, const QString& subkey) const;

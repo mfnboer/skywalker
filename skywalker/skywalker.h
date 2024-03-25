@@ -62,8 +62,10 @@ public:
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
     Q_INVOKABLE void syncTimeline(int maxPages = 20);
+    Q_INVOKABLE void startTimelineAutoUpdate();
+    Q_INVOKABLE void stopTimelineAutoUpdate();
     Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getTimelinePrepend(int autoGapFill = 0);
+                void getTimelinePrepend(int autoGapFill = 0);
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false);
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
@@ -74,7 +76,6 @@ public:
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
-    Q_INVOKABLE void updatePostIndexTimestamps();
     Q_INVOKABLE void getNotifications(int limit, bool updateSeen = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage();
     Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
@@ -219,6 +220,7 @@ signals:
     void inviteCodes(InviteCodeList);
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString text); // Shared from another app
+    void showNotifications(); // Action received from clicking an app notification
     void bskyClientDeleted();
 
 private:
@@ -237,6 +239,7 @@ private:
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();
+    void updatePostIndexTimestamps();
     void startRefreshTimers();
     void stopRefreshTimers();
     void refreshSession();
@@ -253,6 +256,8 @@ private:
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void disableDebugLogging();
     void restoreDebugLogging();
+    void pauseApp();
+    void resumeApp();
 
     std::unique_ptr<ATProto::Client> mBsky;
 
@@ -287,6 +292,8 @@ private:
 
     QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
+    QTimer mTimelineUpdateTimer;
+    bool mTimelineUpdatePaused = false;
 
     // NOTE: update makeLocalModelChange() when you add models
     ItemStore<PostThreadModel::Ptr> mPostThreadModels;

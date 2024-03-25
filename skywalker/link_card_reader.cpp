@@ -3,8 +3,45 @@
 #include "link_card_reader.h"
 #include "unicode_fonts.h"
 #include <QRegularExpression>
+#include <QNetworkCookie>
+#include <QNetworkCookieJar>
 
 namespace Skywalker {
+
+// Store cookies for this session only. No permanent storage!
+class CookieJar : public QNetworkCookieJar
+{
+public:
+    QList<QNetworkCookie> cookiesForUrl(const QUrl& url) const override
+    {
+        qDebug() << "Get cookies for:" << url;
+        return QNetworkCookieJar::cookiesForUrl(url);
+    }
+
+    bool setCookiesFromUrl(const QList<QNetworkCookie>& cookieList, const QUrl& url) override
+    {
+        qDebug() << "Set cookies from:" << url;
+
+        for (const auto& cookie : cookieList)
+            qDebug() << "Cookie:" << cookie.name() << "=" << cookie.value() << "domain:" << cookie.domain() << "path:" << cookie.path();
+
+        bool retval = QNetworkCookieJar::setCookiesFromUrl(cookieList, url);
+        qDebug() << "Cookies accepted:" << retval;
+        return retval;
+    }
+
+    bool setCookiesFromReply(const QNetworkReply& reply)
+    {
+        const QVariant setCookie = reply.header(QNetworkRequest::SetCookieHeader);
+        if (setCookie.isValid())
+        {
+            const auto cookies = setCookie.value<QList<QNetworkCookie>>();
+            return setCookiesFromUrl(cookies, reply.url());
+        }
+
+        return false;
+    }
+};
 
 LinkCardReader::LinkCardReader(QObject* parent):
     QObject(parent),
@@ -12,6 +49,7 @@ LinkCardReader::LinkCardReader(QObject* parent):
 {
     mNetwork.setAutoDeleteReplies(true);
     mNetwork.setTransferTimeout(15000);
+    mNetwork.setCookieJar(new CookieJar);
 }
 
 LinkCard* LinkCardReader::makeLinkCard(const QString& link, const QString& title,
@@ -28,7 +66,7 @@ LinkCard* LinkCardReader::makeLinkCard(const QString& link, const QString& title
     return mCardCache[url];
 }
 
-void LinkCardReader::getLinkCard(const QString& link)
+void LinkCardReader::getLinkCard(const QString& link, bool retry)
 {
     qDebug() << "Get link card:" << link;
 
@@ -66,11 +104,13 @@ void LinkCardReader::getLinkCard(const QString& link)
 
     // Without this YouTube Shorts does not load
     request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, true);
+
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
 
     QNetworkReply* reply = mNetwork.get(request);
     mInProgress = reply;
     mPrevDestination = url;
+    mRetry = retry;
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]{ extractLinkCard(reply); });
     connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ requestFailed(reply, errCode); });
@@ -171,8 +211,20 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     if (card->isEmpty())
     {
-        mCardCache.insert(url, card.release());
-        qDebug() << url << "has no link card.";
+        auto* cookieJar = static_cast<CookieJar*>(mNetwork.cookieJar());
+        Q_ASSERT(cookieJar);
+
+        if (!mRetry && cookieJar->setCookiesFromReply(*reply))
+        {
+            qDebug() << "Cookies stored, retry";
+            getLinkCard(url.toString(), true);
+        }
+        else
+        {
+            mCardCache.insert(url, card.release());
+            qDebug() << url << "has no link card.";
+        }
+
         return;
     }
 
@@ -216,6 +268,10 @@ void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
     {
         emit reply->redirectAllowed();
     }
+
+    auto* cookieJar = static_cast<CookieJar*>(mNetwork.cookieJar());
+    Q_ASSERT(cookieJar);
+    cookieJar->setCookiesFromReply(*reply);
 
     mPrevDestination = redirectUrl;
 }

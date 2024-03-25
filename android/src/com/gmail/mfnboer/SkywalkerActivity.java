@@ -4,6 +4,8 @@
 package com.gmail.mfnboer;
 
 import com.gmail.mfnboer.FileUtils;
+import com.gmail.mfnboer.NewMessageChecker;
+import com.gmail.mfnboer.NewMessageNotifier;
 
 import org.qtproject.qt.android.QtNative;
 import org.qtproject.qt.android.bindings.QtActivity;
@@ -19,12 +21,16 @@ import android.util.Log;
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
     private static final int MAX_TEXT_LEN = 512;
-    private boolean mIsIntentPending = false;
-    private boolean mIsReady = false;
+    public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
+    public static native void emitShowNotifications();
     public static native void emitPause();
+    public static native void emitResume();
+
+    private boolean mIsIntentPending = false;
+    private boolean mIsReady = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,11 +45,7 @@ public class SkywalkerActivity extends QtActivity {
         if (action == null)
             return;
 
-        String type = intent.getType();
-        if (type == null)
-            return;
-
-        Log.d(LOGTAG, "action: " + action + ", type: " + type);
+        Log.d(LOGTAG, "Intent action: " + action + " type:" + intent.getType());
 
         // App is starting up and not ready to receive intents.
         mIsIntentPending = true;
@@ -57,6 +59,20 @@ public class SkywalkerActivity extends QtActivity {
     }
 
     @Override
+    public void onResume() {
+        Log.d(LOGTAG, "onResume");
+        super.onResume();
+        NewMessageChecker.stopChecker();
+        NewMessageNotifier.clearNotifications();
+
+        // If not ready, then this is a fresh startup of the app
+        if (mIsReady) {
+            Log.d(LOGTAG, "Resume from sleep");
+            emitResume();
+        }
+    }
+
+    @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         Log.d(LOGTAG, "onNewIntent");
@@ -64,7 +80,7 @@ public class SkywalkerActivity extends QtActivity {
         if (intent == null)
             return;
 
-        Log.d(LOGTAG, "action: " + intent.getAction() + ", type: " + intent.getType());
+        Log.d(LOGTAG, "Intent action: " + intent.getAction() + ", type: " + intent.getType());
         setIntent(intent);
 
         if (mIsReady)
@@ -86,11 +102,23 @@ public class SkywalkerActivity extends QtActivity {
     private void handleIntent() {
         Log.d(LOGTAG, "handleIntent");
         Intent intent = getIntent();
+        String action = intent.getAction();
 
-        if (!intent.getAction().equals(Intent.ACTION_SEND)) {
+        if (action.equals(Intent.ACTION_SEND))
+            handleActionSend(intent);
+        else if (action.equals(INTENT_ACTION_SHOW_NOTIFICATIONS))
+            handleActionShowNotifications(intent);
+        else
             Log.d(LOGTAG, "Unsupported intent action: " + intent.getAction());
-            return;
-        }
+    }
+
+    private void handleActionShowNotifications(Intent intent) {
+        Log.d(LOGTAG, "Handle SHOW_NOTIFICATIONS");
+        emitShowNotifications();
+    }
+
+    private void handleActionSend(Intent intent) {
+        Log.d(LOGTAG, "Handle ACTION_SEND");
 
         if (intent.getType().equals("text/plain")) {
             handleSharedText(intent);

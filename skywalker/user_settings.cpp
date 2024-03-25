@@ -13,6 +13,16 @@ QString UserSettings::sLinkColor("blue");
 UserSettings::UserSettings(QObject* parent) :
     QObject(parent)
 {
+    qDebug() << "Settings:" << mSettings.fileName();
+    mEncryption.init(KEY_ALIAS_PASSWORD);
+    cleanup();
+}
+
+UserSettings::UserSettings(const QString& fileName, QObject* parent) :
+    QObject(parent),
+    mSettings(fileName, QSettings::defaultFormat())
+{
+    qDebug() << "Settings:" << mSettings.fileName();
     mEncryption.init(KEY_ALIAS_PASSWORD);
     cleanup();
 }
@@ -278,6 +288,49 @@ void UserSettings::setSeenHashtags(const QStringList& hashtags)
 QStringList UserSettings::getSeenHashtags() const
 {
     return mSettings.value("seenHashtags").toStringList();
+}
+
+void UserSettings::setOfflineUnread(const QString& did, int unread)
+{
+    mSettings.setValue(key(did, "offlineUnread"), unread);
+}
+
+int UserSettings::getOfflineUnread(const QString& did) const
+{
+    return mSettings.value(key(did, "offlineUnread"), 0).toInt();
+}
+
+void UserSettings::setOfflineMessageCheckTimestamp(QDateTime timestamp)
+{
+    mSettings.setValue("offlineMessageCheckTimestamp", timestamp);
+}
+
+QDateTime UserSettings::getOfflineMessageCheckTimestamp() const
+{
+    return mSettings.value("offlineMessageCheckTimestamp").toDateTime();
+}
+
+void UserSettings::resetNextNotificationId()
+{
+    mSettings.setValue("nextNotificationId", 1);
+}
+
+int UserSettings::getNextNotificationId()
+{
+    int id = mSettings.value("nextNotificationId", 1).toInt();
+    int nextId = id + 1;
+    mSettings.setValue("nextNotificationId", nextId);
+    return id;
+}
+
+void UserSettings::setNotificationsWifiOnly(bool enable)
+{
+    mSettings.setValue("notificationsWifiOnly", enable);
+}
+
+bool UserSettings::getNotificationsWifiOnly() const
+{
+    return mSettings.value("notificationsWifiOnly", false).toBool();
 }
 
 void UserSettings::cleanup()
