@@ -459,6 +459,12 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         });
 }
 
+void Skywalker::dataMigration()
+{
+    migrateDraftPosts();
+    //emit dataMigrationDone();
+}
+
 void Skywalker::syncTimeline(int maxPages)
 {
     const auto timestamp = getSyncTimestamp();
@@ -2455,6 +2461,28 @@ void Skywalker::resumeApp()
     startRefreshTimers();
     startTimelineAutoUpdate();
     refreshSession();
+}
+
+void Skywalker::migrateDraftPosts()
+{
+    mDraftPostsMigration = std::make_unique<DraftPostsMigration>(this, this);
+
+    connect(mDraftPostsMigration.get(), &DraftPostsMigration::migrationOk, this,
+            [this]{
+                qDebug() << "Draft posts succesfully migrated";
+                mDraftPostsMigration = nullptr;
+                emit dataMigrationDone();
+            });
+
+    connect(mDraftPostsMigration.get(), &DraftPostsMigration::migrationFailed, this,
+            [this]{
+                qWarning() << "Draft posts migration failed";
+                mDraftPostsMigration = nullptr;
+                showStatusMessage("Could not move draft posts to local storage", QEnums::STATUS_LEVEL_ERROR);
+                emit dataMigrationDone();
+            });
+
+    mDraftPostsMigration->migrateFromRepoToFile();
 }
 
 void Skywalker::signOut()

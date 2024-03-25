@@ -39,6 +39,17 @@ QString ATProtoImageProvider::idToSource(const QString& id) const
     return source;
 }
 
+QString ATProtoImageProvider::sourceToId(const QString& source) const
+{
+    const QString prefix = QString("image://") + DRAFT_IMAGE + "/";
+    if (!source.startsWith(prefix))
+    {
+        qWarning() << "Invalid source:" << source;
+        return {};
+    }
+
+    return source.mid(prefix.size());
+}
 
 void ATProtoImageProvider::addImage(const QString& id, const QImage& img)
 {
@@ -59,6 +70,24 @@ void ATProtoImageProvider::clear()
 {
     QMutexLocker locker(&mMutex);
     mImages.clear();
+}
+
+void ATProtoImageProvider::asyncAddImage(const QString& source, const std::function<void()>& cb)
+{
+    qDebug() << "Async add image:" << source;
+    const QString id = sourceToId(source);
+
+    if (id.isEmpty())
+    {
+        cb();
+        return;
+    }
+
+    auto* response = requestImageResponse(id, {});
+    connect(response, &QQuickImageResponse::finished, this, [cb, response]{
+        cb();
+        response->deleteLater();
+    });
 }
 
 QQuickImageResponse* ATProtoImageProvider::requestImageResponse(const QString& id, const QSize& requestedSize)

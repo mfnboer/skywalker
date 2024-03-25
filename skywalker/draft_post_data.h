@@ -16,6 +16,7 @@ class DraftPostData : public QObject
     Q_OBJECT
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged FINAL)
     Q_PROPERTY(QList<ImageView> images READ images WRITE setImages NOTIFY imagesChanged FINAL)
+    Q_PROPERTY(QDateTime indexedAt READ indexedAt WRITE setIndexedAt NOTIFY indexedAtChanged FINAL)
     Q_PROPERTY(QString replyToUri READ replyToUri WRITE setReplyToUri NOTIFY replyToUriChanged FINAL)
     Q_PROPERTY(QString replyToCid READ replyToCid WRITE setReplyToCid NOTIFY replyToCidChanged FINAL)
     Q_PROPERTY(QString replyRootUri READ replyRootUri WRITE setReplyRootUri NOTIFY replyRootUriChanged FINAL)
@@ -47,6 +48,8 @@ public:
     void setText(const QString &newText);
     QList<ImageView> images() const;
     void setImages(const QList<ImageView> &newImages);
+    QDateTime indexedAt() const;
+    void setIndexedAt(const QDateTime &newIndexedAt);
     QString replyToUri() const;
     void setReplyToUri(const QString &newReplyToUri);
     QString replyToCid() const;
@@ -95,6 +98,7 @@ public:
 signals:
     void textChanged();
     void imagesChanged();
+    void indexedAtChanged();
     void replyToUriChanged();
     void replyToCidChanged();
     void replyRootUriChanged();
@@ -121,6 +125,7 @@ signals:
 private:
     QString mText;
     QList<ImageView> mImages;
+    QDateTime mIndexedAt;
     QString mReplyToUri;
     QString mReplyToCid;
     QString mReplyRootUri;
@@ -168,6 +173,19 @@ inline void DraftPostData::setImages(const QList<ImageView> &newImages)
 {
     mImages = newImages;
     emit imagesChanged();
+}
+
+inline QDateTime DraftPostData::indexedAt() const
+{
+    return mIndexedAt;
+}
+
+inline void DraftPostData::setIndexedAt(const QDateTime &newIndexedAt)
+{
+    if (mIndexedAt == newIndexedAt)
+        return;
+    mIndexedAt = newIndexedAt;
+    emit indexedAtChanged();
 }
 
 inline QString DraftPostData::replyToUri() const

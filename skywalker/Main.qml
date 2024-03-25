@@ -140,6 +140,11 @@ ApplicationWindow {
         }
 
         onGetUserPreferencesOK: () => {
+            setStartupStatus(qsTr("Migrating data"))
+            skywalker.dataMigration();
+        }
+
+        onDataMigrationDone: () => {
             const did = skywalker.getUserDid()
             let userSettings = skywalker.getUserSettings()
             const lastSignIn = userSettings.getLastSignInTimestamp(did)

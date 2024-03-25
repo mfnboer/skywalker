@@ -55,7 +55,7 @@ bool DraftPosts::canSaveDraft() const
     return mDraftPostsModel->rowCount() < MAX_DRAFTS;
 }
 
-void DraftPosts::saveDraftPost(const QString& text,
+bool DraftPosts::saveDraftPost(const QString& text,
                                const QStringList& imageFileNames, const QStringList& altTexts,
                                const QString& replyToUri, const QString& replyToCid,
                                const QString& replyRootUri, const QString& replyRootCid,
@@ -67,7 +67,8 @@ void DraftPosts::saveDraftPost(const QString& text,
                                const GeneratorView& quoteFeed, const ListView& quoteList,
                                const TenorGif gif, const QStringList& labels,
                                bool restrictReplies, bool allowMention, bool allowFollowing,
-                               const QStringList& allowLists)
+                               const QStringList& allowLists,
+                               QDateTime timestamp)
 {
     Q_ASSERT(imageFileNames.size() == altTexts.size());
     qDebug() << "Save draft post:" << text;
@@ -82,7 +83,7 @@ void DraftPosts::saveDraftPost(const QString& text,
         if (draftsPath.isEmpty())
         {
             emit saveDraftPostFailed(tr("Cannot create app data path"));
-            return;
+            return false;
         }
 
         if (!imageFileNames.isEmpty())
@@ -92,25 +93,26 @@ void DraftPosts::saveDraftPost(const QString& text,
             if (picDraftsPath.isEmpty())
             {
                 emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
-                return;
+                return false;
             }
         }
     }
 
-    const QString dateTime = FileUtils::createDateTimeName();
+    const QString dateTime = FileUtils::createDateTimeName(timestamp);
 
     ATProto::AppBskyFeed::PostReplyRef::Ptr replyRef = replyToUri.isEmpty() ? nullptr :
             ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
     auto draft = std::make_shared<Draft::Draft>();
     draft->mPost = ATProto::PostMaster::createPostWithoutFacets(text, std::move(replyRef));
+    draft->mPost->mCreatedAt = timestamp;
     ATProto::PostMaster::addLabelsToPost(*draft->mPost, labels);
 
     if (!quoteUri.isEmpty())
         ATProto::PostMaster::addQuoteToPost(*draft->mPost, quoteUri, quoteCid);
 
     if (mStorageType == STORAGE_FILE && !addImagesToPost(*draft->mPost, imageFileNames, altTexts, picDraftsPath, dateTime))
-        return;
+        return false;
 
     if (!gif.isNull())
         addGifToPost(*draft->mPost, gif);
@@ -129,7 +131,10 @@ void DraftPosts::saveDraftPost(const QString& text,
     {
     case STORAGE_FILE:
         if (!save(*draft, draftsPath, dateTime))
+        {
             dropImages(picDraftsPath, dateTime, imageFileNames.size());
+            return false;
+        }
 
         break;
     case STORAGE_REPO:
@@ -142,6 +147,8 @@ void DraftPosts::saveDraftPost(const QString& text,
             });
         break;
     };
+
+    return true;
 }
 
 void DraftPosts::loadDraftPosts()
@@ -281,6 +288,7 @@ DraftPostData* DraftPosts::getDraftPostData(int index)
     auto* data = new DraftPostData(this);
     data->setText(post.getText());
     setImages(data, post.getImages());
+    data->setIndexedAt(post.getIndexedAt());
     data->setReplyToUri(post.getReplyToUri());
     data->setReplyToCid(post.getReplyToCid());
     data->setReplyRootUri(post.getReplyRootUri());
@@ -375,7 +383,7 @@ QString DraftPosts::getDraftsPath() const
 
 QString DraftPosts::getPictureDraftsPath() const
 {
-    const QString draftsPath = FileUtils::getAppDataPath(DRAFT_PICTURES_DIR);
+    const QString draftsPath = FileUtils::getPicturesPath(DRAFT_PICTURES_DIR);
 
     if (draftsPath.isEmpty())
     {
@@ -923,7 +931,7 @@ bool DraftPosts::save(const Draft::Draft& draft, const QString& draftsPath, cons
     {
         qWarning() << "File already exists:" << fileName;
         emit saveDraftPostFailed(tr("File already exists: %1").arg(fileName));
-        return false;
+        return true; // HACK: if a draft gets migrates twice, it was written already.
     }
 
     if (!file.open(QIODevice::WriteOnly))

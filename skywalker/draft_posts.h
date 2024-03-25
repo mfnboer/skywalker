@@ -37,7 +37,7 @@ public:
 
     Q_INVOKABLE bool canSaveDraft() const;
 
-    Q_INVOKABLE void saveDraftPost(const QString& text,
+    Q_INVOKABLE bool saveDraftPost(const QString& text,
                                    const QStringList& imageFileNames, const QStringList& altTexts,
                                    const QString& replyToUri, const QString& replyToCid,
                                    const QString& replyRootUri, const QString& replyRootCid,
@@ -49,7 +49,8 @@ public:
                                    const GeneratorView& quoteFeed, const ListView& quoteList,
                                    const TenorGif gif, const QStringList& labels,
                                    bool restrictReplies, bool allowMention, bool allowFollowing,
-                                   const QStringList& allowLists);
+                                   const QStringList& allowLists,
+                                   QDateTime timestamp = QDateTime::currentDateTime());
 
     Q_INVOKABLE void loadDraftPosts();
     Q_INVOKABLE DraftPostsModel* getDraftPostsModel();

@@ -1,7 +1,6 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "file_utils.h"
-#include <QDateTime>
 #include <QDir>
 #include <QStandardPaths>
 
@@ -161,9 +160,9 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
-QString createDateTimeName()
+QString createDateTimeName(QDateTime timestamp)
 {
-    return QDateTime::currentDateTime().toString("yyyyMMddhhmmss");
+    return timestamp.toString("yyyyMMddhhmmss");
 }
 
 }

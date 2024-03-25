@@ -20,9 +20,12 @@ public:
 
     QString createImageSource(const QString& host, const QString& did, const QString& cid) const;
     QString idToSource(const QString& id) const;
+    QString sourceToId(const QString& source) const;
     void addImage(const QString& id, const QImage& img);
     QImage getImage(const QString& source);
     void clear();
+
+    void asyncAddImage(const QString& source, const std::function<void()>& cb);
 
     // id = <host>/<did>/<cid>
     QQuickImageResponse *requestImageResponse(const QString& id, const QSize& requestedSize) override;
