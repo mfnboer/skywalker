@@ -21,15 +21,16 @@ import android.util.Log;
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
     private static final int MAX_TEXT_LEN = 512;
-    private boolean mIsIntentPending = false;
-    private boolean mIsReady = false;
-
     public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
     public static native void emitShowNotifications();
     public static native void emitPause();
+    public static native void emitResume();
+
+    private boolean mIsIntentPending = false;
+    private boolean mIsReady = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,6 +64,12 @@ public class SkywalkerActivity extends QtActivity {
         super.onResume();
         NewMessageChecker.stopChecker();
         NewMessageNotifier.clearNotifications();
+
+        // If not ready, then this is a fresh startup of the app
+        if (mIsReady) {
+            Log.d(LOGTAG, "Resume from sleep");
+            emitResume();
+        }
     }
 
     @Override

@@ -69,6 +69,14 @@ void _handlePause(JNIEnv*)
         instance->handlePause();
 }
 
+void _handleResume(JNIEnv*)
+{
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleResume();
+}
+
 #endif
 
 }
@@ -111,9 +119,10 @@ JNICallbackListener::JNICallbackListener() : QObject()
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
         { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
-        { "emitPause", "()V", reinterpret_cast<void *>(_handlePause) }
+        { "emitPause", "()V", reinterpret_cast<void *>(_handlePause) },
+        { "emitResume", "()V", reinterpret_cast<void *>(_handleResume) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 4);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 5);
 #endif
 }
 
@@ -144,6 +153,10 @@ void JNICallbackListener::handleSHowNotifications()
 
 void JNICallbackListener::handlePause() {
     emit appPause();
+}
+
+void JNICallbackListener::handleResume() {
+    emit appResume();
 }
 
 }

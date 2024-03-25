@@ -23,6 +23,10 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
+// There is a trade off: short timeout is fast updating timeline, long timeout
+// allows for better reply thread construction as we receive more posts per update.
+static constexpr auto TIMELINE_UPDATE_INTERVAL = 91s;
+
 static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 29s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
@@ -53,6 +57,13 @@ Skywalker::Skywalker(QObject* parent) :
     mBookmarks.setSkywalker(this);
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
+
+    connect(&mTimelineUpdateTimer, &QTimer::timeout, this,
+            [this]{
+                getTimelinePrepend(2);
+                updatePostIndexTimestamps();
+            });
+
     AuthorCache::instance().addProfileStore(&mUserFollows);
     OffLineMessageChecker::createNotificationChannels();
 
@@ -63,16 +74,10 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
     connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
             [this]{ emit showNotifications(); });
-
     connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
-            [this]{
-                saveHashtags();
-                mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
-                mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
-                mUserSettings.resetNextNotificationId();
-                mUserSettings.sync();
-                OffLineMessageChecker::start(mUserSettings.getNotificationsWifiOnly());
-            });
+            [this]{ pauseApp(); });
+    connect(&jniCallbackListener, &JNICallbackListener::appResume, this,
+            [this]{ resumeApp(); });
 }
 
 Skywalker::~Skywalker()
@@ -141,6 +146,18 @@ void Skywalker::resumeSession()
             else
                 emit resumeSessionFailed(msg);
         });
+}
+
+void Skywalker::startTimelineAutoUpdate()
+{
+    qDebug() << "Start timeline auto update";
+    mTimelineUpdateTimer.start(TIMELINE_UPDATE_INTERVAL);
+}
+
+void Skywalker::stopTimelineAutoUpdate()
+{
+    qDebug() << "Stop timeline auto update";
+    mTimelineUpdateTimer.stop();
 }
 
 void Skywalker::startRefreshTimers()
@@ -2404,6 +2421,42 @@ void Skywalker::clearPassword()
         mUserSettings.clearCredentials(mUserDid);
 }
 
+void Skywalker::pauseApp()
+{
+    qDebug() << "Pause app";
+
+    saveHashtags();
+    mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
+    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
+    mUserSettings.resetNextNotificationId();
+    mUserSettings.sync();
+    OffLineMessageChecker::start(mUserSettings.getNotificationsWifiOnly());
+
+    if (mTimelineUpdateTimer.isActive())
+    {
+        qDebug() << "Pause timeline auto update";
+        stopTimelineAutoUpdate();
+        stopRefreshTimers();
+        mTimelineUpdatePaused = true;
+    }
+}
+
+void Skywalker::resumeApp()
+{
+    qDebug() << "Resume app";
+
+    if (!mTimelineUpdatePaused)
+    {
+        qDebug() << "Timeline update was not paused.";
+        return;
+    }
+
+    mTimelineUpdatePaused = false;
+    startRefreshTimers();
+    startTimelineAutoUpdate();
+    refreshSession();
+}
+
 void Skywalker::signOut()
 {
     Q_ASSERT(mPostThreadModels.empty());
@@ -2417,7 +2470,9 @@ void Skywalker::signOut()
     mSignOutInProgress = true;
     saveHashtags();
 
+    stopTimelineAutoUpdate();
     stopRefreshTimers();
+    mTimelineUpdatePaused = false;
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();
     mSearchPostFeedModels.clear();
