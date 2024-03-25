@@ -18,7 +18,7 @@
         android:label="Skywalker"
         android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
-        android:fullBackupOnly="false"
+        android:fullBackupOnly="true"
         android:icon="@drawable/icon">
         <activity
             android:name="com.gmail.mfnboer.SkywalkerActivity"
