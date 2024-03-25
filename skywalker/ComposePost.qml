@@ -1032,6 +1032,7 @@ Page {
     DraftPosts {
         id: draftPosts
         skywalker: page.skywalker
+        storageType: DraftPosts.STORAGE_REPO
 
         onSaveDraftPostOk: {
             statusPopup.show(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)

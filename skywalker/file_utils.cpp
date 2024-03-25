@@ -87,6 +87,38 @@ QString getAppDataPath(const QString& subDir)
 #endif
 }
 
+QString getPicturesPath(const QString& subDir)
+{
+    Q_ASSERT(!subDir.isEmpty());
+#if defined(Q_OS_ANDROID)
+    auto jsSubDir = QJniObject::fromString(subDir);
+    auto pathObj = QJniObject::callStaticMethod<jstring>(
+        "com/gmail/mfnboer/FileUtils",
+        "getPicturesPath",
+        "(Ljava/lang/String;)Ljava/lang/String;",
+        jsSubDir.object<jstring>());
+
+    if (!pathObj.isValid())
+    {
+        qWarning() << "Failed to create pictures path:" << subDir;
+        return {};
+    }
+
+    const QString picPath = pathObj.toString();
+    qDebug() << "Pictures path:" << picPath;
+#else
+    auto path = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+    QString picPath = path + "/" + subDir;
+
+    if (!QDir().mkpath(picPath))
+    {
+        qWarning() << "Failed to create pictures path:" << picPath;
+        return {};
+    }
+#endif
+    return picPath;
+}
+
 int openContentUri(const QString& contentUri)
 {
 #if defined(Q_OS_ANDROID)
