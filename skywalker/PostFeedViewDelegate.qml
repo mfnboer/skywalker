@@ -133,7 +133,7 @@ Rectangle {
         }
         SkyCleanedText {
             id: repostedByText
-            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            Layout.fillWidth: true
             elide: Text.ElideRight
             plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
             color: Material.color(Material.Grey)
