@@ -25,8 +25,11 @@ private:
     void loadImagesFromRepo();
     void loadImagesFromRepo(const QStringList& images);
     void migrateToFile();
+    void deleteRecords(const QStringList& recordUris, const std::function<void()>& okCb,
+                       const std::function<void()>& failCb);
     std::tuple<QStringList, QStringList> getImages(const DraftPostData& data) const;
 
+    Skywalker* mSKywalker;
     DraftPosts mRepoDrafts;
     DraftPosts mFileDrafts;
 };

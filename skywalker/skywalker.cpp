@@ -2465,12 +2465,21 @@ void Skywalker::resumeApp()
 
 void Skywalker::migrateDraftPosts()
 {
+    if (mUserSettings.isDraftRepoToFileMigrationDone(mUserDid))
+    {
+        qDebug() << "Draft posts already migrated.";
+        emit dataMigrationDone();
+        return;
+    }
+
+    emit dataMigrationStatus(tr("Migrating drafts"));
     mDraftPostsMigration = std::make_unique<DraftPostsMigration>(this, this);
 
     connect(mDraftPostsMigration.get(), &DraftPostsMigration::migrationOk, this,
             [this]{
                 qDebug() << "Draft posts succesfully migrated";
                 mDraftPostsMigration = nullptr;
+                mUserSettings.setDraftRepoToFileMigrationDone(mUserDid);
                 emit dataMigrationDone();
             });
 
@@ -2478,7 +2487,8 @@ void Skywalker::migrateDraftPosts()
             [this]{
                 qWarning() << "Draft posts migration failed";
                 mDraftPostsMigration = nullptr;
-                showStatusMessage("Could not move draft posts to local storage", QEnums::STATUS_LEVEL_ERROR);
+                mUserSettings.addDraftRepoToFileMigration(mUserDid);
+                showStatusMessage("Could not move (all) draft posts to local storage", QEnums::STATUS_LEVEL_ERROR);
                 emit dataMigrationDone();
             });
 

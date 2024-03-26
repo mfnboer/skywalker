@@ -139,10 +139,9 @@ ApplicationWindow {
             signIn()
         }
 
-        onGetUserPreferencesOK: () => {
-            setStartupStatus(qsTr("Migrating data"))
-            skywalker.dataMigration();
-        }
+        onGetUserPreferencesOK: () => skywalker.dataMigration();
+
+        onDataMigrationStatus: (status) => setStartupStatus(status)
 
         onDataMigrationDone: () => {
             const did = skywalker.getUserDid()

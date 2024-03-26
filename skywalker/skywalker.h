@@ -202,6 +202,7 @@ signals:
     void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
     void getUserPreferencesFailed();
+    void dataMigrationStatus(QString status);
     void dataMigrationDone();
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();

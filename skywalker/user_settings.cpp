@@ -7,6 +7,7 @@
 namespace Skywalker {
 
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
+static constexpr int MAX_ATTEMPTS_DRAFT_MIGRATION = 10;
 
 QString UserSettings::sLinkColor("blue");
 
@@ -331,6 +332,23 @@ void UserSettings::setNotificationsWifiOnly(bool enable)
 bool UserSettings::getNotificationsWifiOnly() const
 {
     return mSettings.value("notificationsWifiOnly", false).toBool();
+}
+
+void UserSettings::addDraftRepoToFileMigration(const QString& did)
+{
+    const int attempts = mSettings.value(key(did, "draftRepoToFileMigration"), 0).toInt();
+    mSettings.setValue(key(did, "draftRepoToFileMigration"), attempts + 1);
+}
+
+void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
+{
+    mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);
+}
+
+bool UserSettings::isDraftRepoToFileMigrationDone(const QString& did) const
+{
+    const int attempts = mSettings.value(key(did, "draftRepoToFileMigration"), 0).toInt();
+    return attempts >= MAX_ATTEMPTS_DRAFT_MIGRATION;
 }
 
 void UserSettings::cleanup()

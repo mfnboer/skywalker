@@ -8,6 +8,7 @@ namespace Skywalker {
 
 DraftPostsMigration::DraftPostsMigration(Skywalker* skywalker, QObject* parent) :
     QObject(parent),
+    mSKywalker(skywalker),
     mRepoDrafts(this),
     mFileDrafts(this)
 {
@@ -77,7 +78,8 @@ void DraftPostsMigration::migrateToFile()
     }
 
     auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
-    std::vector<int> savedPosts;
+    QStringList savedPostUris;
+    bool allDraftsMigrated = true;
 
     for (int i = model->rowCount() - 1; i >= 0; --i)
     {
@@ -104,15 +106,78 @@ void DraftPostsMigration::migrateToFile()
             imgProvider->removeImage(imgSource);
 
         if (saved)
-            savedPosts.push_back(i);
+        {
+            savedPostUris.push_back(data->recordUri());
+        }
+        else
+        {
+            qWarning() << "Could not save draft:" << data->recordUri();
+            allDraftsMigrated = false;
+        }
     }
 
-    // TODO: delete repo records
+    deleteRecords(savedPostUris,
+        [this, allDraftsMigrated]{
+            if (allDraftsMigrated)
+                emit migrationOk();
+            else
+                emit migrationFailed();
+        },
+        [this]{
+            emit migrationFailed();
+        });
+}
 
-    if (savedPosts.size() == (size_t)model->rowCount())
-        emit migrationOk();
-    else
-        emit migrationFailed();
+void DraftPostsMigration::deleteRecords(const QStringList& recordUris,
+                                        const std::function<void()>& okCb,
+                                        const std::function<void()>& failCb)
+{
+    if (recordUris.isEmpty())
+    {
+        okCb();
+        return;
+    }
+
+    bool allUrisValid = true;
+    ATProto::ComATProtoRepo::ApplyWritesList writes;
+
+    for (const auto& uri : recordUris)
+    {
+        ATProto::ATUri atUri(uri);
+
+        if (!atUri.isValid())
+        {
+            qWarning() << "Invalid record uri:" << uri;
+            allUrisValid = false;
+            continue;
+        }
+
+        qDebug() << "Delete record:" << uri;
+        auto deleteRecord = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesDelete>();
+        deleteRecord->mCollection = atUri.getCollection();
+        deleteRecord->mRKey = atUri.getRkey();
+        writes.push_back(std::move(deleteRecord));
+    }
+
+    if (writes.empty())
+    {
+        failCb();
+        return;
+    }
+
+    const QString repo = mSKywalker->getUserDid();
+
+    mSKywalker->getBskyClient()->applyWrites(repo, writes, false,
+        [okCb, failCb, allUrisValid]{
+            if (allUrisValid)
+                okCb();
+            else
+                failCb();
+        },
+        [failCb](const QString& error, const QString& msg) {
+            qWarning() << "Failed to delete records:" << error << "-" << msg;
+            failCb();
+        });
 }
 
 std::tuple<QStringList, QStringList> DraftPostsMigration::getImages(const DraftPostData& data) const
