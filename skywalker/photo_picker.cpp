@@ -78,6 +78,12 @@ QImage loadImage(const QString& imgName)
     {
         const QString fileName = imgName.sliced(7);
 
+        if (!FileUtils::checkReadMediaPermission())
+        {
+            qWarning() << "No permission toe read:" << fileName;
+            return {};
+        }
+
         QImageReader reader(fileName);
         reader.setAutoTransform(true);
         QImage img = reader.read();

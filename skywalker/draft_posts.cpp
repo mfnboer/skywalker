@@ -909,6 +909,10 @@ Draft::Draft::Ptr DraftPosts::loadDraft(const QString& fileName, const QString& 
         return nullptr;
     }
 
+    // If the user does not give permission, then we can still continue loading
+    // the draft, only attached images will not be shown.
+    FileUtils::checkReadMediaPermission();
+
     try {
         auto draft = Draft::Draft::fromJson(doc.object());
         return draft;
@@ -996,6 +1000,12 @@ ATProto::Blob::Ptr DraftPosts::saveImage(const QString& imgName, const QString& 
     const QString imgFileName = createDraftImageFileName(baseName, seq);
     const QString fileName = createAbsPath(draftsPath, imgFileName);
     qDebug() << "Draft image file name:" << fileName;
+
+    if (!FileUtils::checkWriteMediaPermission())
+    {
+        qWarning() << "No permission to write media:" << fileName;
+        return nullptr;
+    }
 
     if (!img.save(fileName))
     {
