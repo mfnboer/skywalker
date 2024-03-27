@@ -19,7 +19,7 @@ ApplicationWindow {
 
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
-        settings.setPostButtonRelativeX(relativeX)
+        settings.setPostButtonRelativeX(postButtonRelativeX)
     }
 
     onClosing: (event) => {
