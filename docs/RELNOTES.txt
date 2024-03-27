@@ -5,6 +5,7 @@ next
   At startup existing drafts will be migrated to your device.
   Drafts will be backed up to Google Drive (if enabled).
 * You can drag the post button to the left.
+* Add hashtag to post when posting from hashtag search.
 * Link card improvements
 
 1.7

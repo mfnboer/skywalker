@@ -40,6 +40,7 @@ Page {
                 hashtagTypeaheadSearchTimer.stop()
                 searchUtils.authorTypeaheadList = []
                 searchUtils.hashtagTypeaheadList = []
+                page.isHashtagSearch = false
             }
         }
 
@@ -321,6 +322,10 @@ Page {
                 scopePage.destroy()
         })
         scopePage.open()
+    }
+
+    function getSearchText() {
+        return page.header.getDisplayText()
     }
 
     function getSearchPostScopeText() {

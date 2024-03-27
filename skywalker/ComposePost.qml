@@ -1085,7 +1085,9 @@ Page {
         id: focusTimer
         interval: 200
         onTriggered: {
-            postText.cursorPosition = initialText.length
+            if (!initialText.startsWith("\n#")) // hashtag post
+                postText.cursorPosition = initialText.length
+
             flick.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
             postText.forceActiveFocus()
         }

@@ -205,6 +205,8 @@ Rectangle {
 
     PostButton {
         y: -height - 10
+        svg: isHashtagSearch() ? svgOutline.hashtag : svgOutline.chat
+        overrideOnClicked: () => post()
 
         Accessible.role: Accessible.Button
         Accessible.name: qsTr("post")
@@ -213,6 +215,20 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function isHashtagSearch() {
+        if (!searchActive)
+            return false
+
+        return parent.isHashtagSearch
+    }
+
+    function post() {
+        if (isHashtagSearch())
+            root.composePost("\n" + parent.getSearchText())
+        else
+            root.composePost()
     }
 
     function getHomeSpeech() {

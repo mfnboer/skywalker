@@ -762,9 +762,9 @@ Page {
         authorBanner = source
     }
 
-    function mentionPost(text = "", imgSource = "") {
+    function mentionPost() {
         const mentionText = (isUser(author) || author.hasInvalidHandle()) ? "" : `@${author.handle} `
-        root.composePost(mentionText + text, imgSource)
+        root.composePost(mentionText)
     }
 
     function feedOkHandler(modelId) {
