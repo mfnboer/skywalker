@@ -130,6 +130,10 @@ Page {
                 contentY = -headerItem.getFeedMenuBarHeight() + 10
                 interactive = false
             }
+            else if (!interactive) {
+                // When a post thread is opened, Qt changes contentY??
+                contentY = -headerItem.getFeedMenuBarHeight() + 10
+            }
         }
 
         header: Column {
