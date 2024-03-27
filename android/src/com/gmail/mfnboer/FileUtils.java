@@ -66,6 +66,21 @@ public class FileUtils {
         return path.getAbsolutePath();
     }
 
+    public static String getPicturesPath(String subDir) {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File subPath = new File(path, subDir);
+
+        try {
+            subPath.mkdirs();
+        } catch (SecurityException e) {
+            Log.w(LOGTAG, "Could not create path: " + subPath + " details: " + e.getMessage());
+            return null;
+        }
+
+        Log.d(LOGTAG, subPath.getAbsolutePath());
+        return subPath.getAbsolutePath();
+    }
+
     public static String getAppDataPath(String subDir) {
         Context context = QtNative.getContext();
         File path = context.getFilesDir();

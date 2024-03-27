@@ -1,6 +1,9 @@
 next
 ====
 * Pull notifications (checks every ~8 mins when app is closed)
+* Store draft posts locally on your device.
+  At startup existing drafts will be migrated to your device.
+  Drafts will be backed up to Google Drive (if enabled).
 * Link card improvements
 
 1.7

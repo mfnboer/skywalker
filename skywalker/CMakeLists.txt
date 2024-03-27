@@ -315,6 +315,8 @@ qt_add_qml_module(libskywalker
         SOURCES jni_utils.cpp
         SOURCES offline_message_checker.h
         SOURCES offline_message_checker.cpp
+        SOURCES draft_posts_migration.h
+        SOURCES draft_posts_migration.cpp
 )
 
 if (NOT ANDROID)

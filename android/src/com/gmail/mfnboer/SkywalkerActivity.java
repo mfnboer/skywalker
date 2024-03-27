@@ -14,9 +14,12 @@ import java.lang.String;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
 
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
@@ -36,6 +39,11 @@ public class SkywalkerActivity extends QtActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOGTAG, "onCreate");
+
+        Window window = this.getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.setStatusBarColor(Color.BLACK);
 
         Intent intent = getIntent();
         if (intent == null)

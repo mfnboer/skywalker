@@ -6,6 +6,7 @@
 #include "bookmarks.h"
 #include "bookmarks_model.h"
 #include "content_group_list_model.h"
+#include "draft_posts_migration.h"
 #include "draft_posts_model.h"
 #include "edit_user_preferences.h"
 #include "favorite_feeds.h"
@@ -61,6 +62,7 @@ public:
     Q_INVOKABLE void resumeSession();
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
+    Q_INVOKABLE void dataMigration();
     Q_INVOKABLE void syncTimeline(int maxPages = 20);
     Q_INVOKABLE void startTimelineAutoUpdate();
     Q_INVOKABLE void stopTimelineAutoUpdate();
@@ -200,6 +202,8 @@ signals:
     void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
     void getUserPreferencesFailed();
+    void dataMigrationStatus(QString status);
+    void dataMigrationDone();
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
     void getFeedInProgressChanged();
@@ -258,6 +262,7 @@ private:
     void restoreDebugLogging();
     void pauseApp();
     void resumeApp();
+    void migrateDraftPosts();
 
     std::unique_ptr<ATProto::Client> mBsky;
 
@@ -312,6 +317,7 @@ private:
     HashtagIndex mSeenHashtags;
     FavoriteFeeds mFavoriteFeeds;
     UserSettings mUserSettings;
+    std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     bool mDebugLogging = false;
 };
 

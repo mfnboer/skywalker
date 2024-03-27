@@ -3,6 +3,7 @@
 #include "draft_posts.h"
 #include "atproto_image_provider.h"
 #include "content_filter.h"
+#include "file_utils.h"
 #include "gif_utils.h"
 #include "photo_picker.h"
 #include "skywalker.h"
@@ -10,6 +11,18 @@
 #include <atproto/lib/xjson.h>
 
 namespace Skywalker {
+
+namespace {
+
+constexpr char const* DRAFT_POSTS_DIR = "sw-draft-posts";
+constexpr char const* DRAFT_PICTURES_DIR = "SkywalkerDrafts";
+
+QString createAbsPath(const QString& draftsPath, const QString& fileName)
+{
+    return QString("%1/%2").arg(draftsPath, fileName);
+}
+
+}
 
 DraftPosts::DraftPosts(QObject* parent) :
     WrappedSkywalker(parent),
@@ -23,6 +36,15 @@ DraftPosts::~DraftPosts()
     imgProvider->clear();
 }
 
+void DraftPosts::setStorageType(StorageType storageType)
+{
+    if (storageType != mStorageType)
+    {
+        mStorageType = storageType;
+        emit storageTypeChanged();
+    }
+}
+
 bool DraftPosts::hasDrafts() const
 {
     return mDraftPostsModel && mDraftPostsModel->rowCount() > 0;
@@ -33,7 +55,7 @@ bool DraftPosts::canSaveDraft() const
     return mDraftPostsModel->rowCount() < MAX_DRAFTS;
 }
 
-void DraftPosts::saveDraftPost(const QString& text,
+bool DraftPosts::saveDraftPost(const QString& text,
                                const QStringList& imageFileNames, const QStringList& altTexts,
                                const QString& replyToUri, const QString& replyToCid,
                                const QString& replyRootUri, const QString& replyRootCid,
@@ -45,45 +67,101 @@ void DraftPosts::saveDraftPost(const QString& text,
                                const GeneratorView& quoteFeed, const ListView& quoteList,
                                const TenorGif gif, const QStringList& labels,
                                bool restrictReplies, bool allowMention, bool allowFollowing,
-                               const QStringList& allowLists)
+                               const QStringList& allowLists,
+                               QDateTime timestamp)
 {
     Q_ASSERT(imageFileNames.size() == altTexts.size());
     qDebug() << "Save draft post:" << text;
+
+    QString draftsPath;
+    QString picDraftsPath;
+
+    if (mStorageType == STORAGE_FILE)
+    {
+        draftsPath = getDraftsPath();
+
+        if (draftsPath.isEmpty())
+        {
+            emit saveDraftPostFailed(tr("Cannot create app data path"));
+            return false;
+        }
+
+        if (!imageFileNames.isEmpty())
+        {
+            picDraftsPath = getPictureDraftsPath();
+
+            if (picDraftsPath.isEmpty())
+            {
+                emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
+                return false;
+            }
+        }
+    }
+
+    const QString dateTime = FileUtils::createDateTimeName(timestamp);
 
     ATProto::AppBskyFeed::PostReplyRef::Ptr replyRef = replyToUri.isEmpty() ? nullptr :
             ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
     auto draft = std::make_shared<Draft::Draft>();
     draft->mPost = ATProto::PostMaster::createPostWithoutFacets(text, std::move(replyRef));
+    draft->mPost->mCreatedAt = timestamp;
     ATProto::PostMaster::addLabelsToPost(*draft->mPost, labels);
 
     if (!quoteUri.isEmpty())
         ATProto::PostMaster::addQuoteToPost(*draft->mPost, quoteUri, quoteCid);
+
+    if (mStorageType == STORAGE_FILE && !addImagesToPost(*draft->mPost, imageFileNames, altTexts, picDraftsPath, dateTime))
+        return false;
 
     if (!gif.isNull())
         addGifToPost(*draft->mPost, gif);
 
     if (restrictReplies)
     {
+        const QString fileName = mStorageType == STORAGE_FILE ? createDraftPostFileName(dateTime) : "draft";
         draft->mThreadgate = ATProto::PostMaster::createThreadgate(
-            getDraftUri("draft"), allowMention, allowFollowing, allowLists);
+            getDraftUri(fileName), allowMention, allowFollowing, allowLists);
     }
 
     draft->mReplyToPost = createReplyToPost(replyToUri, replyToAuthor, replyToText, replyToDateTime);
     draft->mQuote = createQuote(quoteUri, quoteAuthor, quoteText, quoteDateTime, quoteFeed, quoteList);
 
-    addImagesToPost(*draft->mPost, imageFileNames, altTexts,
-        [this, presence=getPresence(), draft]{
-            if (!presence)
-                return;
+    switch(mStorageType)
+    {
+    case STORAGE_FILE:
+        if (!save(*draft, draftsPath, dateTime))
+        {
+            dropImages(picDraftsPath, dateTime, imageFileNames.size());
+            return false;
+        }
 
-            writeRecord(*draft);
-        });
+        break;
+    case STORAGE_REPO:
+        addImagesToPost(*draft->mPost, imageFileNames, altTexts,
+            [this, presence=getPresence(), draft]{
+                if (!presence)
+                    return;
+
+                writeRecord(*draft);
+            });
+        break;
+    };
+
+    return true;
 }
 
 void DraftPosts::loadDraftPosts()
 {
-    listRecords();
+    switch(mStorageType)
+    {
+    case STORAGE_FILE:
+        loadDraftFeed();
+        break;
+    case STORAGE_REPO:
+        listRecords();
+        break;
+    }
 }
 
 DraftPostsModel* DraftPosts::getDraftPostsModel()
@@ -210,6 +288,7 @@ DraftPostData* DraftPosts::getDraftPostData(int index)
     auto* data = new DraftPostData(this);
     data->setText(post.getText());
     setImages(data, post.getImages());
+    data->setIndexedAt(post.getIndexedAt());
     data->setReplyToUri(post.getReplyToUri());
     data->setReplyToCid(post.getReplyToCid());
     data->setReplyRootUri(post.getReplyRootUri());
@@ -257,9 +336,21 @@ void DraftPosts::removeDraftPost(int index)
     }
 
     const Post& post = mDraftPostsModel->getPost(index);
+
+    // NOTE: with file storage, the record-uri is the file name;
     const QString& recordUri = post.getUri();
     qDebug() << "Remove draft post:" << index << "uri:" << recordUri;
-    deleteRecord(recordUri);
+
+    switch(mStorageType)
+    {
+    case STORAGE_FILE:
+        dropDraftPost(recordUri);
+        break;
+    case STORAGE_REPO:
+        deleteRecord(recordUri);
+        break;
+    }
+
     mDraftPostsModel->deleteDraft(index);
 }
 
@@ -273,6 +364,58 @@ QString DraftPosts::getDraftUri(const QString& ref) const
     const QString userDid = mSkywalker->getUserDid();
     ATProto::ATUri atUri(userDid, Lexicon::COLLECTION_DRAFT_POST, ref);
     return atUri.toString();
+}
+
+QString DraftPosts::getDraftsPath() const
+{
+    const auto did = mSkywalker->getUserDid();
+    const auto subDir = QString("%1/%2").arg(did, DRAFT_POSTS_DIR);
+    const QString draftsPath = FileUtils::getAppDataPath(subDir);
+
+    if (draftsPath.isEmpty())
+    {
+        qWarning() << "Failed to get path:" << subDir;
+        return {};
+    }
+
+    return draftsPath;
+}
+
+QString DraftPosts::getPictureDraftsPath() const
+{
+    const QString draftsPath = FileUtils::getPicturesPath(DRAFT_PICTURES_DIR);
+
+    if (draftsPath.isEmpty())
+    {
+        qWarning() << "Failed to get path:" << DRAFT_PICTURES_DIR;
+        return {};
+    }
+
+    return draftsPath;
+}
+
+QString DraftPosts::createDraftPostFileName(const QString& baseName) const
+{
+    return QString("SWP_%1.json").arg(baseName);
+}
+
+QString DraftPosts::createDraftImageFileName(const QString& baseName, int seq) const
+{
+    return QString("SWI%1_%2.jpg").arg(seq).arg(baseName);
+}
+
+QString DraftPosts::getBaseNameFromPostFileName(const QString& fileName) const
+{
+    auto parts = fileName.split('_');
+    if (parts.size() != 2)
+        return {};
+
+    parts = parts[1].split('.');
+    if (parts.size() != 2)
+        return {};
+
+    qDebug() << "Base name from:" << fileName << "=" << parts[0];
+    return parts[0];
 }
 
 ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(const BasicProfile& author)
@@ -562,6 +705,16 @@ ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(const ATProt
     if (!images || images->mImages.empty())
         return nullptr;
 
+    QString draftsPath;
+
+    if (mStorageType == STORAGE_FILE)
+    {
+        draftsPath = getPictureDraftsPath();
+
+        if (draftsPath.isEmpty())
+            return nullptr;
+    }
+
     auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
     const QString host = bskyClient()->getHost();
     const QString did = mSkywalker->getUserDid();
@@ -569,8 +722,23 @@ ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(const ATProt
 
     for (const auto& image : images->mImages)
     {
-        const QString& cid = image->mImage->mRefLink;
-        const QString imgSource = imgProvider->createImageSource(host, did, cid);
+        QString imgSource;
+
+        switch (mStorageType)
+        {
+        case STORAGE_FILE:
+        {
+            const QString path = createAbsPath(draftsPath, image->mImage->mRefLink);
+            imgSource = "file://" + path;
+            break;
+        }
+        case STORAGE_REPO:
+        {
+            const QString& cid = image->mImage->mRefLink;
+            imgSource = imgProvider->createImageSource(host, did, cid);
+            break;
+        }
+        }
 
         auto imgView = std::make_unique<ATProto::AppBskyEmbed::ImagesViewImage>();
         imgView->mThumb = imgSource;
@@ -674,8 +842,241 @@ ATProto::AppBskyEmbed::RecordWithMediaView::Ptr DraftPosts::createRecordWithMedi
     return view;
 }
 
+void DraftPosts::loadDraftFeed()
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString draftsPath = getDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return;
+
+    if (!mDraftPostsModel)
+        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+
+    auto fileList = getDraftPostFiles(draftsPath);
+    ATProto::AppBskyFeed::PostFeed postFeed;
+
+    for (const auto& file : fileList)
+    {
+        auto draft = loadDraft(file, draftsPath);
+
+        if (draft)
+        {
+            auto feedViewPost = convertDraftToFeedViewPost(*draft, getDraftUri(file));
+            postFeed.push_back(std::move(feedViewPost));
+        }
+        else
+        {
+            dropDraftPostFiles(draftsPath, file);
+            const QString picDraftsPath = getPictureDraftsPath();
+
+            if (!picDraftsPath.isEmpty())
+                dropDraftPostFiles(picDraftsPath, file);
+        }
+    }
+
+    mDraftPostsModel->setFeed(std::move(postFeed));
+    emit draftsChanged();
+    emit loadDraftPostsOk();
+}
+
+QStringList DraftPosts::getDraftPostFiles(const QString& draftsPath) const
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    QDir dir(draftsPath);
+    return dir.entryList({"SWP_*.json"}, QDir::Files, QDir::Time);
+}
+
+Draft::Draft::Ptr DraftPosts::loadDraft(const QString& fileName, const QString& draftsPath) const
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    QDir dir(draftsPath);
+    const QString absFileName = dir.absoluteFilePath(fileName);
+    QFile file(absFileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qWarning() << "Cannot open file:" << absFileName;
+        return nullptr;
+    }
+
+    const QByteArray data = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+
+    if (doc.isNull())
+    {
+        qWarning() << "Not valid JSON:" << absFileName;
+        return nullptr;
+    }
+
+    // If the user does not give permission, then we can still continue loading
+    // the draft, only attached images will not be shown.
+    FileUtils::checkReadMediaPermission();
+
+    try {
+        auto draft = Draft::Draft::fromJson(doc.object());
+        return draft;
+    } catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "File format error:" << e.msg();
+        qInfo() << doc.object();
+        return nullptr;
+    }
+}
+
+bool DraftPosts::save(const Draft::Draft& draft, const QString& draftsPath, const QString& baseName)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString postFileName = createDraftPostFileName(baseName);
+    const QString fileName = createAbsPath(draftsPath, postFileName);
+    qDebug() << "Draft post name:" << fileName;
+    QFile file(fileName);
+
+    if (file.exists())
+    {
+        qWarning() << "File already exists:" << fileName;
+        emit saveDraftPostFailed(tr("File already exists: %1").arg(fileName));
+        return true; // HACK: if a draft gets migrates twice, it was written already.
+    }
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qWarning() << "Cannot create file:" << fileName;
+        emit saveDraftPostFailed(tr("Cannot create file: %1").arg(fileName));
+        return false;
+    }
+
+    const auto jsonDraft = QJsonDocument(draft.toJson());
+    const QByteArray data = jsonDraft.toJson(QJsonDocument::Compact);
+
+    if (file.write(data) == -1)
+    {
+        qWarning() << "Failed to write:" << fileName;
+        emit saveDraftPostFailed(tr("Failed to write: %1").arg(fileName));
+        return false;
+    }
+
+    file.close();
+    emit saveDraftPostOk();
+    return true;
+}
+
+bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
+                                 const QStringList& imageFileNames, const QStringList& altTexts,
+                                 const QString& draftsPath, const QString& baseName)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    for (int i = 0; i < imageFileNames.size(); ++i)
+    {
+        const QString& imgName = imageFileNames[i];
+        auto blob = saveImage(imgName, draftsPath, baseName, i);
+
+        if (!blob)
+        {
+            dropImages(draftsPath, baseName, i);
+            return false;
+        }
+
+        const QString& altText = altTexts[i];
+        ATProto::PostMaster::addImageToPost(post, std::move(blob), altText);
+    }
+
+    return true;
+}
+
+ATProto::Blob::Ptr DraftPosts::saveImage(const QString& imgName, const QString& draftsPath,
+                                         const QString& baseName, int seq)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    qDebug() << "Save image:" << seq << imgName << "path:" << draftsPath << "base:" << baseName;
+    QImage img = PhotoPicker::loadImage(imgName);
+
+    if (img.isNull())
+    {
+        qWarning() << "Could not load image:" << seq << imgName;
+        emit saveDraftPostFailed(tr("Could not load image #%1: %2").arg(seq + 1).arg(imgName));
+        return nullptr;
+    }
+
+    const QString imgFileName = createDraftImageFileName(baseName, seq);
+    const QString fileName = createAbsPath(draftsPath, imgFileName);
+    qDebug() << "Draft image file name:" << fileName;
+
+    if (!FileUtils::checkWriteMediaPermission())
+    {
+        qWarning() << "No permission to write media:" << fileName;
+        return nullptr;
+    }
+
+    if (!img.save(fileName))
+    {
+        qWarning() << "Failed to save image:" << fileName;
+        emit saveDraftPostFailed(tr("Failed to save image #%1: %2").arg(seq + 1).arg(fileName));
+        return nullptr;
+    }
+
+    auto blob = std::make_unique<ATProto::Blob>();
+    blob->mRefLink = imgFileName;
+    blob->mMimeType = "image/jpeg";
+    blob->mSize = img.sizeInBytes();
+    return blob;
+}
+
+void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count) const
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    for (int j = 0; j < count; ++j)
+        dropImage(draftsPath, baseName, j);
+}
+
+void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, int seq) const
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString imgFileName = createDraftImageFileName(baseName, seq);
+    const QString fileName = createAbsPath(draftsPath, imgFileName);
+    qDebug() << "Drop draft image:" << fileName;
+    QFile::remove(fileName);
+}
+
+void DraftPosts::dropDraftPostFiles(const QString& draftsPath, const QString& fileName)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString baseName = getBaseNameFromPostFileName(fileName);
+
+    if (baseName.isEmpty())
+    {
+        qWarning() << "Invalid file name:" << fileName;
+        return;
+    }
+
+    QDir dir(draftsPath);
+    const QString filePattern = QString("*%1*").arg(baseName);
+    const auto files = dir.entryList({filePattern});
+
+    for (const auto& file : files)
+    {
+        if (dir.remove(file))
+            qDebug() << "Removed draft file:" << file << "in dir:" << draftsPath;
+        else
+            qWarning() << "Failed to remove draft file:" << file << "in dir:" << draftsPath;
+    }
+}
+
+void DraftPosts::dropDraftPost(const QString& fileName)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString draftsPath = getDraftsPath();
+    if (!draftsPath.isEmpty())
+        dropDraftPostFiles(draftsPath, fileName);
+
+    const QString picsPath = getPictureDraftsPath();
+    if (!picsPath.isEmpty())
+        dropDraftPostFiles(picsPath, fileName);
+}
+
 bool DraftPosts::writeRecord(const Draft::Draft& draft)
 {
+    Q_ASSERT(mStorageType == STORAGE_REPO);
+
     if (!bskyClient())
         return false;
 
@@ -702,6 +1103,8 @@ bool DraftPosts::writeRecord(const Draft::Draft& draft)
 
 void DraftPosts::listRecords()
 {
+    Q_ASSERT(mStorageType == STORAGE_REPO);
+
     if (!bskyClient())
         return;
 
@@ -748,6 +1151,7 @@ void DraftPosts::listRecords()
 
 void DraftPosts::deleteRecord(const QString& recordUri)
 {
+    Q_ASSERT(mStorageType == STORAGE_REPO);
     ATProto::ATUri atUri(recordUri);
 
     if (!atUri.isValid())
@@ -770,6 +1174,7 @@ void DraftPosts::deleteRecord(const QString& recordUri)
 
 bool DraftPosts::uploadImage(const QString& imageName, const UploadImageSuccessCb& successCb, const ErrorCb& errorCb)
 {
+    Q_ASSERT(mStorageType == STORAGE_REPO);
     Q_ASSERT(successCb);
     Q_ASSERT(errorCb);
 
@@ -800,12 +1205,6 @@ bool DraftPosts::uploadImage(const QString& imageName, const UploadImageSuccessC
     return true;
 }
 
-QString DraftPosts::getImgSource(const QString& cid) const
-{
-    auto it = mCidImgSourceMap.find(cid);
-    return it != mCidImgSourceMap.end() ? it->second : "";
-}
-
 void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
 {
     // Pack all gif properties into the URI.
@@ -825,6 +1224,8 @@ void DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
                      const QStringList& imageFileNames, const QStringList& altTexts,
                      const std::function<void()>& continueCb, int imgSeq)
 {
+    Q_ASSERT(mStorageType == STORAGE_REPO);
+
     if (imageFileNames.isEmpty())
     {
         continueCb();

@@ -96,6 +96,10 @@ public:
     void setNotificationsWifiOnly(bool enable);
     bool getNotificationsWifiOnly() const;
 
+    void addDraftRepoToFileMigration(const QString& did);
+    void setDraftRepoToFileMigrationDone(const QString& did);
+    bool isDraftRepoToFileMigrationDone(const QString& did) const;
+
     void sync() { mSettings.sync(); }
 
 private:
