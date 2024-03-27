@@ -102,7 +102,6 @@ Page {
         width: parent.width
 
         PostButton {
-            x: parent.width - width - 10
             y: -height - 10
             svg: (isUser(author) || author.hasInvalidHandle()) ? svgOutline.chat : svgOutline.atSign
             overrideOnClicked: () => mentionPost()

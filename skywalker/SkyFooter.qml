@@ -204,7 +204,6 @@ Rectangle {
     }
 
     PostButton {
-        x: parent.width - width - 10
         y: -height - 10
 
         Accessible.role: Accessible.Button

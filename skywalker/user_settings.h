@@ -70,6 +70,9 @@ public:
     void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
 
+    Q_INVOKABLE void setPostButtonRelativeX(double x);
+    Q_INVOKABLE double getPostButtonRelativeX() const;
+
     void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
 

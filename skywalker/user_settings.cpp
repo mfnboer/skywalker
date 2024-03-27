@@ -243,6 +243,16 @@ QEnums::DisplayMode UserSettings::getDisplayMode() const
     return QEnums::DisplayMode(mode);
 }
 
+void UserSettings::setPostButtonRelativeX(double x)
+{
+    mSettings.setValue("postButtonRelativeX", x);
+}
+
+double UserSettings::getPostButtonRelativeX() const
+{
+    return mSettings.value("postButtonRelativeX", 1.0).toDouble();
+}
+
 void UserSettings::setGifAutoPlay(bool autoPlay)
 {
     mSettings.setValue("gifAutoPlay", autoPlay);

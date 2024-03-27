@@ -6,6 +6,7 @@ import QtQuick.Window
 import skywalker
 
 ApplicationWindow {
+    property double postButtonRelativeX: 1.0
     property var feedViews: new Map()
 
     id: root
@@ -15,6 +16,11 @@ ApplicationWindow {
     title: "Skywalker"
 
     Accessible.role: Accessible.Application
+
+    onPostButtonRelativeXChanged: {
+        let settings = root.getSkywalker().getUserSettings()
+        settings.setPostButtonRelativeX(relativeX)
+    }
 
     onClosing: (event) => {
         if (Qt.platform.os !== "android") {
@@ -1240,5 +1246,9 @@ ApplicationWindow {
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         skywalker.resumeSession()
+
+        // NOTE: the user is not yet logged in, but global app settings are available.
+        let settings = root.getSkywalker().getUserSettings()
+        postButtonRelativeX = settings.getPostButtonRelativeX()
     }
 }
