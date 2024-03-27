@@ -85,6 +85,8 @@ Rectangle {
                     Layout.preferredHeight: topLeftSpace.height
                     color: {
                         switch (postType) {
+                        case QEnums.POST_ROOT:
+                            return guiSettings.threadStartColor
                         case QEnums.POST_REPLY:
                         case QEnums.POST_LAST_REPLY:
                             return !postParentInThread && index % 2 === 0 ? "transparent" : guiSettings.threadMidColor
@@ -95,7 +97,7 @@ Rectangle {
                                        (postThreadType & QEnums.THREAD_ENTRY)){
                                 return guiSettings.threadEntryColor
                             } else if (postThreadType & QEnums.THREAD_TOP) {
-                                return "transparent"
+                                return guiSettings.threadStartColor
                             } else if (postThreadType & QEnums.THREAD_PARENT) {
                                 return guiSettings.threadStartColor
                             }
