@@ -61,22 +61,6 @@ void _handleShowNotifications(JNIEnv*)
         instance->showNotifications();
 }
 
-void _handlePause(JNIEnv*)
-{
-    auto& instance = *gTheInstance;
-
-    if (instance)
-        instance->handlePause();
-}
-
-void _handleResume(JNIEnv*)
-{
-    auto& instance = *gTheInstance;
-
-    if (instance)
-        instance->handleResume();
-}
-
 #endif
 
 }
@@ -118,11 +102,9 @@ JNICallbackListener::JNICallbackListener() : QObject()
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
-        { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
-        { "emitPause", "()V", reinterpret_cast<void *>(_handlePause) },
-        { "emitResume", "()V", reinterpret_cast<void *>(_handleResume) }
+        { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 5);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 3);
 #endif
 }
 
@@ -149,14 +131,6 @@ void JNICallbackListener::handleSharedImageReceived(const QString fileName, cons
 void JNICallbackListener::handleSHowNotifications()
 {
     emit showNotifications();
-}
-
-void JNICallbackListener::handlePause() {
-    emit appPause();
-}
-
-void JNICallbackListener::handleResume() {
-    emit appResume();
 }
 
 }

@@ -29,8 +29,6 @@ public class SkywalkerActivity extends QtActivity {
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
     public static native void emitShowNotifications();
-    public static native void emitPause();
-    public static native void emitResume();
 
     private boolean mIsIntentPending = false;
     private boolean mIsReady = false;
@@ -60,24 +58,11 @@ public class SkywalkerActivity extends QtActivity {
     }
 
     @Override
-    public void onPause() {
-        Log.d(LOGTAG, "onPause");
-        emitPause();
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        Log.d(LOGTAG, "onResume");
-        super.onResume();
+    public void onStart() {
+        Log.d(LOGTAG, "onStart");
+        super.onStart();
         NewMessageChecker.stopChecker();
         NewMessageNotifier.clearNotifications();
-
-        // If not ready, then this is a fresh startup of the app
-        if (mIsReady) {
-            Log.d(LOGTAG, "Resume from sleep");
-            emitResume();
-        }
     }
 
     @Override

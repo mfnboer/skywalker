@@ -260,6 +260,7 @@ private:
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void disableDebugLogging();
     void restoreDebugLogging();
+    void handleAppStateChange(Qt::ApplicationState state);
     void pauseApp();
     void resumeApp();
     void migrateDraftPosts();

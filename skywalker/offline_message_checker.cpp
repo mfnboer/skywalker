@@ -551,6 +551,14 @@ bool OffLineMessageChecker::checkNoticationPermission()
 #if defined(Q_OS_ANDROID)
     static constexpr char const* POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
+    const auto osVersion = QOperatingSystemVersion::current();
+
+    if (osVersion < QOperatingSystemVersion::Android13)
+    {
+        qDebug() << "Android version:" << osVersion;
+        return true;
+    }
+
     if (!AndroidUtils::checkPermission(POST_NOTIFICATIONS))
     {
         qDebug() << "No permission:" << POST_NOTIFICATIONS;

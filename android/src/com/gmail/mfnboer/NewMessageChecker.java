@@ -19,6 +19,7 @@ import androidx.work.WorkManager;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.multiprocess.RemoteWorkManager;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
@@ -97,25 +98,31 @@ public class NewMessageChecker extends Worker {
         String taskName = getTaskName(id);
         Log.d(LOGTAG, "Start checker: " + taskName + " wifiOnly: " + wifiOnly);
 
-        Constraints constraints = new Constraints.Builder()
-            .setRequiresBatteryNotLow(true)
-            .setRequiredNetworkType(wifiOnly ? NetworkType.UNMETERED : NetworkType.CONNECTED)
-            .build();
-
-        // repeat: 15 mins, flex: 5 mins
-        PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
-            NewMessageChecker.class, 15, TimeUnit.MINUTES)
-                .setInitialDelay(1, TimeUnit.MINUTES)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 450, TimeUnit.SECONDS)
-                .setConstraints(constraints)
-                .build();
-
         Context context = QtNative.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context. Cannot start message checker");
             return;
         }
+
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+
+        if (!notificationManager.areNotificationsEnabled()) {
+            Log.d(LOGTAG, "Notifications are not enabled.");
+            return;
+        }
+
+        Constraints constraints = new Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .setRequiredNetworkType(wifiOnly ? NetworkType.UNMETERED : NetworkType.CONNECTED)
+            .build();
+
+        PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
+            NewMessageChecker.class, 15, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.MINUTES)
+                .setBackoffCriteria(BackoffPolicy.LINEAR, 450, TimeUnit.SECONDS)
+                .setConstraints(constraints)
+                .build();
 
         getRemoteWorkManager(context).enqueueUniquePeriodicWork(
             taskName,

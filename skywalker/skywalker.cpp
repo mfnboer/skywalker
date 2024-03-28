@@ -74,10 +74,19 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
     connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
             [this]{ emit showNotifications(); });
-    connect(&jniCallbackListener, &JNICallbackListener::appPause, this,
-            [this]{ pauseApp(); });
-    connect(&jniCallbackListener, &JNICallbackListener::appResume, this,
-            [this]{ resumeApp(); });
+
+    auto* app = (QGuiApplication*)QGuiApplication::instance();
+    Q_ASSERT(app);
+
+    if (app)
+    {
+        connect(app, &QGuiApplication::applicationStateChanged, this,
+                [this](Qt::ApplicationState state){ handleAppStateChange(state); });
+    }
+    else
+    {
+        qWarning() << "Failed to get app instance!";
+    }
 }
 
 Skywalker::~Skywalker()
@@ -2425,6 +2434,23 @@ void Skywalker::clearPassword()
 {
     if (!mUserDid.isEmpty())
         mUserSettings.clearCredentials(mUserDid);
+}
+
+void Skywalker::handleAppStateChange(Qt::ApplicationState state)
+{
+    qDebug() << "App state:" << state;
+
+    switch (state)
+    {
+    case Qt::ApplicationSuspended:
+        pauseApp();
+        break;
+    case Qt::ApplicationActive:
+        resumeApp();
+        break;
+    default:
+        break;
+    };
 }
 
 void Skywalker::pauseApp()
