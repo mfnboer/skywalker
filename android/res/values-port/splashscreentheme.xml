@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <style name="splashScreenTheme">
-        <item name="android:windowBackground">@drawable/splashscreen_port</item>
+    <color name="splash">#0387c7</color>
+    <style name="splashScreenTheme" parent="Theme.SplashScreen.IconBackground">
+        <item name="android:windowSplashScreenBackground">@color/splash</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/splash</item>
     </style>
 </resources>

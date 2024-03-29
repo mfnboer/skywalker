@@ -27,17 +27,14 @@
             android:launchMode="singleTask"
             android:screenOrientation="unspecified"
             android:exported="true"
-	    android:theme="@style/splashScreenTheme">
+            android:theme="@style/splashScreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-	    <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
+            <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
             <meta-data android:name="android.app.arguments" android:value="-- %%INSERT_APP_ARGUMENTS%% --"/>
             <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
-            <meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/splashscreen"/>
-            <meta-data android:name="android.app.splash_screen_drawable_portrait" android:resource="@drawable/splashscreen_port"/>
-            <meta-data android:name="android.app.splash_screen_drawable_landscape" android:resource="@drawable/splashscreen_land"/>
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -45,7 +42,7 @@
                 <data android:mimeType="image/*"/>
             </intent-filter>
         </activity>
-	<activity
+        <activity
 	    android:name="com.gmail.mfnboer.QPhotoPicker"
 	    android:theme="@style/Theme.AppCompat.Light"
 	    android:exported="false">
@@ -63,8 +60,8 @@
             <meta-data android:name="photopicker_activity:0:required" android:value="" />
         </service>
 
-	<service
-	    android:name="androidx.work.multiprocess.RemoteWorkManagerService"
+        <service
+            android:name="androidx.work.multiprocess.RemoteWorkManagerService"
     	    tools:replace="android:process"
     	    android:process=":work_manager"/>
 
@@ -83,7 +80,7 @@
                 android:resource="@xml/qtprovider_paths"/>
         </provider>
 
-	<provider
+        <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
@@ -94,13 +91,6 @@
                 tools:node="remove" />
         </provider>
 
-	<!--
-	<provider
-            android:name="androidx.work.impl.WorkManagerInitializer"
-            android:authorities="${applicationId}.workmanager-init"
-            tools:node="remove" />
-
-        -->
     </application>
     <uses-sdk android:minSdkVersion="28"/>
 
