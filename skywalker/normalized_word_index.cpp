@@ -10,7 +10,12 @@ const std::unordered_set<QString>& NormalizedWordIndex::getUniqueHashtags() cons
     if (mHashtags.empty())
     {
         const auto& hashtagList = getHashtags();
-        const_cast<NormalizedWordIndex*>(this)->mHashtags.insert(hashtagList.begin(), hashtagList.end());
+
+        for (const auto& tag : hashtagList)
+        {
+            const auto normalizedTag = SearchUtils::normalizeText(tag);
+            const_cast<NormalizedWordIndex*>(this)->mHashtags.insert(normalizedTag);
+        }
     }
 
     return mHashtags;

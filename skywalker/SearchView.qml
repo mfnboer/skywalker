@@ -90,7 +90,7 @@ Page {
 
         AccessibleText {
             id: searchModeText
-            width: parent.width - searchModeToggle.width
+            width: parent.width - searchModeToggle.width - (blockHashtagButton.visible ? blockHashtagButton.width : 0)
             anchors.verticalCenter: searchModeBar.verticalCenter
             elide: Text.ElideRight
             color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
@@ -101,6 +101,21 @@ Page {
                 onClicked: page.changeSearchPostScope()
                 enabled: page.isPostSearch
             }
+        }
+
+        SvgButton {
+            id: blockHashtagButton
+            anchors.verticalCenter: searchModeBar.verticalCenter
+            width: height
+            height: 35
+            imageMargin: 5
+            svg: svgOutline.mute
+            visible: isHashtagSearch
+            onClicked: muteWord(page.getSearchText())
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr(`Mute hashtag ${page.getSearchText()}`)
+            Accessible.onPressAction: clicked()
         }
     }
 
@@ -225,7 +240,7 @@ Page {
         id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            const text = page.header.getDisplayText()
+            const text = page.getSearchText()
 
             if (text.length > 0)
                 searchUtils.searchAuthorsTypeahead(text)
@@ -236,7 +251,7 @@ Page {
         id: hashtagTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            const text = page.header.getDisplayText()
+            const text = page.getSearchText()
 
             if (text.length > 1)
                 searchUtils.searchHashtagsTypeahead(text.slice(1)) // strip #-symbol
@@ -318,7 +333,7 @@ Page {
         scopePage.onRejected.connect(() => scopePage.destroy())
         scopePage.onAccepted.connect(() => {
                 postSearchUser = scopePage.getUserName()
-                searchUtils.scopedSearchPosts(page.header.getDisplayText())
+                searchUtils.scopedSearchPosts(page.getSearchText())
                 scopePage.destroy()
         })
         scopePage.open()
@@ -333,6 +348,17 @@ Page {
             return postSearchUser
 
         return postSearchUser ? `@${postSearchUser}` : "everyone"
+    }
+
+    function muteWord(word) {
+        guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr(`Mute <font color="${guiSettings.linkColor}">${word}</font> ?`),
+                    () => {
+                        skywalker.mutedWords.addEntry(word)
+                        skywalker.saveMutedWords()
+                        skywalker.showStatusMessage(qsTr(`Muted ${word}`))
+                    })
     }
 
     function forceDestroy() {

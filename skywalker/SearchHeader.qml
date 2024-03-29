@@ -8,6 +8,7 @@ Rectangle {
     property int minSearchTextLength: 1
     property string placeHolderText: qsTr("Search")
     property bool showSearchButton: true
+    property string prevDisplayText
 
     signal back
     signal searchTextChanged(string text)
@@ -55,7 +56,12 @@ Rectangle {
                 maximumLength: 2048
                 focus: true
 
-                onDisplayTextChanged: headerRect.searchTextChanged(displayText)
+                onDisplayTextChanged: {
+                    if (displayText !== prevDisplayText) {
+                        prevDisplayText = displayText
+                        headerRect.searchTextChanged(displayText)
+                    }
+                }
 
                 // Does not work with Android
                 Keys.onReleased: (event) => { headerRect.keyRelease(event) }

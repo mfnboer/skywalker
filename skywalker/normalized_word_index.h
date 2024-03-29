@@ -21,7 +21,7 @@ public:
     const std::unordered_map<QString, std::vector<int>>& getUniqueNormalizedWords() const;
 
 private:
-    std::unordered_set<QString> mHashtags;
+    std::unordered_set<QString> mHashtags; // normalized
     std::vector<QString> mNormalizedWords;
 
     // normalized word -> indices into mNormalizedWords

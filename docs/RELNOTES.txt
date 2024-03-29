@@ -3,6 +3,8 @@ next
 * Bookmarks stored locally on your device (privacy).
   At startup existing bookmarks will be migrated to your device.
 * Search button on author page to search posts from author.
+* Block hashtag button on hashtag search page.
+* Bug fix: muting hashtags with capitals did not work.
 
 1.8.1
 =====
