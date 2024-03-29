@@ -347,13 +347,13 @@ Page {
         page.header.unfocus()
     }
 
-    function show(searchText = "") {
+    function show(searchText = "", searchScope = "") {
         page.header.forceFocus()
         initialSearch = searchText
 
-        if (searchText) {
+        if (searchText || searchScope) {
             isPostSearch = true
-            postSearchUser = ""
+            postSearchUser = searchScope
             header.setSearchText(searchText)
             searchUtils.search(searchText)
         }
@@ -361,6 +361,6 @@ Page {
 
     Component.onCompleted: {
         if (initialSearch)
-            searchUtils.search(searchText)
+            searchUtils.search(initialSearch)
     }
 }

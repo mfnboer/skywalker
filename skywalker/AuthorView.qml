@@ -238,6 +238,16 @@ Page {
                         }
                     }
                 }
+
+                SvgButton {
+                    svg: svgOutline.search
+                    onClicked: root.viewSearchView("", author.handle)
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr(`search posts from ${author.name}`)
+                    Accessible.onPressAction: clicked()
+                }
+
                 SkyButton {
                     text: qsTr("Follow")
                     visible: !following && !isUser(author) && contentVisible()

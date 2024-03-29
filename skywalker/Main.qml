@@ -909,14 +909,14 @@ ApplicationWindow {
         }
     }
 
-    function viewSearchView(searchText = "") {
+    function viewSearchView(searchText = "", searchScope = "") {
         unwindStack()
         stackLayout.currentIndex = stackLayout.searchIndex
 
         if (searchStack.depth === 0)
             createSearchView()
 
-        currentStackItem().show(searchText)
+        currentStackItem().show(searchText, searchScope)
     }
 
     function createFeedsView() {
