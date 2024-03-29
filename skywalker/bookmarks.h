@@ -19,7 +19,7 @@ class Bookmarks : public WrappedSkywalker, public Presence
     Q_PROPERTY(int size READ size NOTIFY sizeChanged FINAL)
 
 public:
-    static constexpr size_t MAX_BOOKMARKS = 200;
+    static constexpr qsizetype MAX_BOOKMARKS = 200;
 
     explicit Bookmarks(QObject* parent = nullptr);
 
@@ -31,29 +31,32 @@ public:
     Q_INVOKABLE bool isBookmarked(const QString& postUri) const { return mPostUriIndex.count(postUri); }
 
     void clear();
-    const std::vector<QString>& getBookmarks() const { return mBookmarkedPostUris; }
-
     std::vector<QString> getPage(int startIndex, int size) const;
 
     void load();
+    void save();
 
 signals:
     void sizeChanged();
     void bookmarksLoaded();
-    void bookmarksLoadFailed(QString error);
 
 private:
-    QStringList loadLegacy();
-    void removeLegacyBookmarks();
+    void loadFromBsky(std::function<void()> doneCb);
+    void loadFromSettings();
     bool addBookmarkPrivate(const QString& postUri);
+
+    // Functions to store bookmarks in the PDS.
+    // As PDS records are public, we store bookmarks in user settings for now.
     void writeRecord(const Bookmark::Bookmark& bookmark);
     void deleteRecord(const QString& postUri);
+    void deleteRecords();
     void listRecords(const std::function<void()>& doneCb, std::optional<QString> cursor = {}, int maxPages = 10);
     void createRecords(const QStringList& postUris, const std::function<void()>& doneCb);
 
-    std::vector<QString> mBookmarkedPostUris;
+    QStringList mBookmarkedPostUris;
     std::unordered_set<QString> mPostUriIndex;
     std::unordered_map<QString, QString> mPostUriRecordUriMap;
+    bool mDirty = false;
 };
 
 }

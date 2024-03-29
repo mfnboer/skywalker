@@ -55,6 +55,8 @@ Skywalker::Skywalker(QObject* parent) :
     mUserSettings(this)
 {
     mBookmarks.setSkywalker(this);
+    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
+
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
 

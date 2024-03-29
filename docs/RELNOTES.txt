@@ -1,3 +1,8 @@
+next
+====
+* Bookmarks stored locally on your device (privacy).
+  At startup existing bookmarks will be migrated to your device.
+
 1.8.1
 =====
 * Fix app freeze bug on startup.

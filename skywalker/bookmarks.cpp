@@ -19,6 +19,7 @@ void Bookmarks::clear()
     mBookmarkedPostUris.clear();
     mPostUriIndex.clear();
     mPostUriRecordUriMap.clear();
+    mDirty = false;
     emit sizeChanged();
 }
 
@@ -32,11 +33,13 @@ bool Bookmarks::addBookmark(const QString& postUri)
 
     if (isFull())
         return false;
-    
-    Bookmark::Bookmark bookmark;
-    bookmark.mUri = postUri;
 
-    writeRecord(bookmark);
+    if (addBookmarkPrivate(postUri))
+    {
+        mDirty = true;
+        emit sizeChanged();
+    }
+    
     return true;
 }
 
@@ -57,13 +60,21 @@ bool Bookmarks::addBookmarkPrivate(const QString& postUri)
 
 void Bookmarks::removeBookmark(const QString& postUri)
 {
-    if (!mPostUriRecordUriMap.count(postUri))
+    if (!mPostUriIndex.count(postUri))
     {
         qDebug() << "Post was not bookmarked:" << postUri;
         return;
     }
 
-    deleteRecord(postUri);
+    mPostUriIndex.erase(postUri);
+    QStringList::ConstIterator it = std::find(mBookmarkedPostUris.begin(), mBookmarkedPostUris.end(), postUri);
+
+    if (it != mBookmarkedPostUris.end())
+        mBookmarkedPostUris.erase(it);
+
+    qDebug() << "Removed bookmark:" << postUri;
+    mDirty = true;
+    emit sizeChanged();
 }
 
 std::vector<QString> Bookmarks::getPage(int startIndex, int size) const
@@ -87,68 +98,70 @@ void Bookmarks::load()
     qDebug() << "Load bookmarks";
     clear();
 
-    listRecords([this]{
-        const QStringList uris = loadLegacy();
-
-        if (uris.isEmpty())
-        {
-            qDebug() << "Bookmarks loaded.";
-            removeLegacyBookmarks();
-            emit bookmarksLoaded();
-        }
-        else
-        {
-            qDebug() << "Migrate legacy bookmarks to:" << Lexicon::COLLECTION_BOOKMARK;
-            createRecords(uris, [this]{
-                qDebug() << "Bookmarks migrated to:" << Lexicon::COLLECTION_BOOKMARK;
-                removeLegacyBookmarks();
-
-                // Reload all from repo to create the post-uri -> record-uri mapping
-                load();
-            });
-        }
+    // Bookmarks are loaded (and deleted) from bsky and saved locally.
+    loadFromBsky([this]{
+        mDirty = !mBookmarkedPostUris.empty();
+        loadFromSettings();
+        emit sizeChanged();
     });
 }
 
-void Bookmarks::removeLegacyBookmarks()
+void Bookmarks::save()
 {
-    qDebug() << "Remove legacy bookmarks";
+    qDebug() << "Save bookmarks to settings";
+
+    if (!mDirty)
+    {
+        qDebug() << "Bookmarks not dirty";
+        return;
+    }
+
     auto* userSettings = mSkywalker->getUserSettings();
     const QString did = userSettings->getActiveUserDid();
-    userSettings->removeBookmarks(did);
+
+    if (did.isEmpty())
+    {
+        qWarning() << "No active user";
+        return;
+    }
+
+    userSettings->setBookmarks(did, mBookmarkedPostUris);
+    mDirty = false;
 }
 
-QStringList Bookmarks::loadLegacy()
+void Bookmarks::loadFromBsky(std::function<void()> doneCb)
 {
+    qDebug() << "Load bookmarks from bsky";
+
+    listRecords([this, doneCb, presence=getPresence()]{
+        if (!presence)
+            return;
+
+        qDebug() << "Bookmarks loaded from bsky:" << size();
+
+        if (size() > 0)
+            deleteRecords();
+
+        doneCb();
+    });
+}
+
+void Bookmarks::loadFromSettings()
+{
+    qDebug() << "Load bookmarks from settings";
     const auto* userSettings = mSkywalker->getUserSettings();
     const QString did = userSettings->getActiveUserDid();
 
     if (did.isEmpty())
     {
-        qDebug() << "No active user";
-        return {};
+        qWarning() << "No active user";
+        return;
     }
 
     const QStringList& uris = userSettings->getBookmarks(did);
-    QStringList newUris;
 
     for (const auto& uri : uris)
-    {
-        if (addBookmarkPrivate(uri))
-            newUris.push_back(uri);
-    }
-
-    if (!newUris.isEmpty())
-    {
-        qDebug() << "Legacy bookmarks loaded:" << size();
-        emit sizeChanged();
-    }
-    else
-    {
-        qDebug() << "No legacy bookmarks";
-    }
-
-    return newUris;
+        addBookmarkPrivate(uri);
 }
 
 void Bookmarks::writeRecord(const Bookmark::Bookmark& bookmark)
@@ -198,7 +211,7 @@ void Bookmarks::deleteRecord(const QString& postUri)
 
             mPostUriRecordUriMap.erase(postUri);
             mPostUriIndex.erase(postUri);
-            auto it = std::find(mBookmarkedPostUris.begin(), mBookmarkedPostUris.end(), postUri);
+            QStringList::ConstIterator it = std::find(mBookmarkedPostUris.begin(), mBookmarkedPostUris.end(), postUri);
 
             if (it != mBookmarkedPostUris.end())
                 mBookmarkedPostUris.erase(it);
@@ -215,12 +228,51 @@ void Bookmarks::deleteRecord(const QString& postUri)
         });
 }
 
+void Bookmarks::deleteRecords()
+{
+    qDebug() << "Delete records";
+
+    if (!bskyClient())
+        return;
+
+    ATProto::ComATProtoRepo::ApplyWritesList writes;
+
+    for (const auto& [_, recordUri] : mPostUriRecordUriMap)
+    {
+        const ATProto::ATUri atUri(recordUri);
+
+        if (!atUri.isValid())
+        {
+            qWarning() << "Invalid record URI:" << recordUri;
+            continue;
+        }
+
+        auto deleteRecord = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesDelete>();
+        deleteRecord->mCollection = Lexicon::COLLECTION_BOOKMARK;
+        deleteRecord->mRKey = atUri.getRkey();
+        writes.push_back(std::move(deleteRecord));
+    }
+
+    const QString& repo = mSkywalker->getUserDid();
+
+    bskyClient()->applyWrites(repo, writes, false,
+        []{
+            qDebug() << "Deleted records";
+        },
+        [](const QString& error, const QString& msg) {
+            qWarning() << "Failed to delete records:" << error << "-" << msg;
+        });
+}
+
 void Bookmarks::listRecords(const std::function<void()>& doneCb, std::optional<QString> cursor, int maxPages)
 {
     qDebug() << "Load bookmarks page, cursor:" << (cursor ? *cursor : "") << "max pages:" << maxPages;
 
     if (!bskyClient())
+    {
+        doneCb();
         return;
+    }
 
     const QString& repo = mSkywalker->getUserDid();
 
@@ -235,6 +287,7 @@ void Bookmarks::listRecords(const std::function<void()>& doneCb, std::optional<Q
 
                 try {
                     auto bookmark = Bookmark::Bookmark::fromJson(record->mValue);
+
                     addBookmarkPrivate(bookmark->mUri);
                     mPostUriRecordUriMap[bookmark->mUri] = record->mUri;
                 }
@@ -252,16 +305,12 @@ void Bookmarks::listRecords(const std::function<void()>& doneCb, std::optional<Q
             else
             {
                 qDebug() << "Bookmarks loaded:" << size();
-                emit sizeChanged();
                 doneCb();
             }
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg) {
-            if (!presence)
-                return;
-
+        [doneCb](const QString& error, const QString& msg) {
             qDebug() << "Failed to list records:" << error << "-" << msg;
-            emit bookmarksLoadFailed(msg);
+            doneCb();
         });
 }
 
@@ -289,12 +338,8 @@ void Bookmarks::createRecords(const QStringList& postUris, const std::function<v
             if (doneCb)
                 doneCb();
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg) {
-            if (!presence)
-                return;
-
+        [](const QString& error, const QString& msg) {
             qDebug() << "Failed to create records:" << error << "-" << msg;
-            emit bookmarksLoadFailed(msg);
         });
 }
 

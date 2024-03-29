@@ -59,9 +59,8 @@ public:
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
 
-    // Legacy
+    void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
-    void removeBookmarks(const QString& did);
 
     // Legacy
     QStringList getMutedWords(const QString& did) const;
