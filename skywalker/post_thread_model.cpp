@@ -148,6 +148,7 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
         const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(reply.mPost));
         if (!post->mReplies.empty())
         {
+            mPostFeedModel.sortReplies(post.get());
             Q_ASSERT(post->mReplies[0]);
             addReplyThread(*post->mReplies[0], false, false);
         }
@@ -160,6 +161,71 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
     {
         mFeed.back().addThreadType(QEnums::THREAD_LEAF);
     }
+}
+
+// Sort replies in this order:
+// 1. Reply from author
+// 2. Your replies
+// 3. Replies from following
+// 4. Replies from other
+// In each group, new before old.
+void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const
+{
+    std::sort(viewPost->mReplies.begin(), viewPost->mReplies.end(),
+        [this, viewPost](const ATProto::AppBskyFeed::ThreadElement::Ptr& lhs, const ATProto::AppBskyFeed::ThreadElement::Ptr& rhs) {
+            // THREAD_VIEW_POST before others
+            if (lhs->mType != rhs->mType)
+            {
+                if (lhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+                    return true;
+
+                if (rhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+                    return false;
+
+                return lhs->mType < rhs->mType;
+            }
+
+            if (lhs->mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+                return false;
+
+            Q_ASSERT(lhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
+            Q_ASSERT(rhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
+
+            const auto& lhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(lhs->mPost)->mPost;
+            const auto& rhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(rhs->mPost)->mPost;
+            const auto& lhsDid = lhsPost->mAuthor->mDid;
+            const auto& rhsDid = rhsPost->mAuthor->mDid;
+
+            if (lhsDid != rhsDid)
+            {
+                // Author before others
+                if (lhsDid == viewPost->mPost->mAuthor->mDid)
+                    return true;
+
+                if (rhsDid == viewPost->mPost->mAuthor->mDid)
+                    return false;
+
+                // User before others
+                if (lhsDid == mUserDid)
+                    return true;
+
+                if (rhsDid == mUserDid)
+                    return false;
+
+                const bool lhsFollowing = mFollowing.contains(lhsDid);
+                const bool rhsFollowing = mFollowing.contains(rhsDid);
+
+                // Following before non-following
+                if (lhsFollowing != rhsFollowing)
+                    return lhsFollowing;
+
+                // New before old
+                return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
+            }
+
+            // New before old
+            return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
+        });
 }
 
 PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread)
@@ -224,6 +290,8 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
         page->mEntryPostIndex = page->mFeed.size() - 1;
 
         bool firstReply = true;
+        sortReplies(viewPost);
+
         for (const auto& reply : viewPost->mReplies)
         {
             Q_ASSERT(reply);

@@ -33,12 +33,12 @@ private:
     {
         using Ptr = std::unique_ptr<Page>;
 
-        explicit Page(AbstractPostFeedModel& postFeedModel) : mPostFeedModel(postFeedModel) {}
+        explicit Page(PostThreadModel& postFeedModel) : mPostFeedModel(postFeedModel) {}
 
         std::deque<Post> mFeed;
         ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
         int mEntryPostIndex = 0;
-        AbstractPostFeedModel& mPostFeedModel;
+        PostThreadModel& mPostFeedModel;
 
         Post& addPost(const Post& post);
         Post& prependPost(const Post& post);
@@ -46,6 +46,7 @@ private:
     };
 
     void clear();
+    void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
