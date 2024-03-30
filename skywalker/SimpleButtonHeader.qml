@@ -4,6 +4,7 @@ import QtQuick
 Rectangle {
     required property string title
     required property svgimage buttonSvg
+    property bool enabled: true
 
     signal buttonClicked
 
@@ -34,6 +35,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         svg: headerItem.buttonSvg
+        enabled: headerItem.enabled
         onClicked: buttonClicked()
 
         Accessible.role: Accessible.Button
