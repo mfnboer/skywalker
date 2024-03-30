@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "link_card.h"
+#include "gif_utils.h"
 #include <QCache>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -36,6 +37,7 @@ private:
     QNetworkReply* mInProgress = nullptr;
     QUrl mPrevDestination;
     bool mRetry = false;
+    GifUtils mGifUtils;
 };
 
 }

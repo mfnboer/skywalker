@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "link_card_reader.h"
+#include "definitions.h"
 #include "unicode_fonts.h"
 #include <QRegularExpression>
 #include <QNetworkCookie>
@@ -45,7 +46,8 @@ public:
 
 LinkCardReader::LinkCardReader(QObject* parent):
     QObject(parent),
-    mCardCache(100)
+    mCardCache(100),
+    mGifUtils(this)
 {
     mNetwork.setAutoDeleteReplies(true);
     mNetwork.setTransferTimeout(15000);
@@ -98,6 +100,26 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
             qDebug() << "Card is empty";
 
         return;
+    }
+
+    if (mGifUtils.isGiphyLink(url.toString()))
+    {
+        qDebug() << "Giphy URL:" << url;
+        const QString gifUrl = mGifUtils.getGifUrl(url.toString());
+
+        if (!gifUrl.isNull())
+        {
+            qDebug() << "Create Giphy link card";
+
+            auto* card = makeLinkCard(
+                gifUrl,
+                QString(tr("Giphy GIF posted from Skywalker %1").arg(SKYWALKER_HANDLE)),
+                QString(tr("This GIF has been posted from Skywalker for Android. Get Skywalker from Google Play.<br>Bluesky: %1")).arg(SKYWALKER_HANDLE),
+                gifUrl);
+
+            emit linkCard(card);
+            return;
+        }
     }
 
     QNetworkRequest request(url);
