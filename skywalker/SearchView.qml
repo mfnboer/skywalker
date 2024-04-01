@@ -357,7 +357,7 @@ Page {
                     () => {
                         skywalker.mutedWords.addEntry(word)
                         skywalker.saveMutedWords()
-                        skywalker.showStatusMessage(qsTr(`Muted ${word}`))
+                        skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
                     })
     }
 
