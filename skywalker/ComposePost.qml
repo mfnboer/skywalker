@@ -482,6 +482,7 @@ Page {
             initialText: page.initialText
             maxLength: 300
             fontSelectorCombo: fontSelector
+            parentPostUtils: postUtils
             focus: true
         }
 
@@ -802,13 +803,13 @@ Page {
         onEditMentionChanged: {
             console.debug(editMention)
             editMentionCursorY = postText.cursorRectangle.y
-            authorTypeaheadSearchTimer.start()
+            postText.startAuthorTypeaheadSearchTimer()
         }
 
         onEditTagChanged: {
             console.debug(editTag)
             editTagCursorY = postText.cursorRectangle.y
-            hashtagTypeaheadSearchTimer.start()
+            postText.startHashtagTypeaheadSearchTimer()
         }
 
         onFirstWebLinkChanged: {
@@ -915,35 +916,6 @@ Page {
 
     UnicodeFonts {
         id: unicodeFonts
-    }
-
-    Timer {
-        id: authorTypeaheadSearchTimer
-        interval: 500
-        onTriggered: {
-            if (postUtils.editMention.length > 0)
-                searchUtils.searchAuthorsTypeahead(postUtils.editMention, 10)
-        }
-    }
-
-    Timer {
-        id: hashtagTypeaheadSearchTimer
-        interval: 500
-        onTriggered: {
-            if (postUtils.editTag.length > 0)
-                searchUtils.searchHashtagsTypeahead(postUtils.editTag, 10)
-        }
-    }
-
-    SearchUtils {
-        id: searchUtils
-        skywalker: page.skywalker
-
-        Component.onDestruction: {
-            // The destuctor of SearchUtils is called too late by the QML engine
-            // Remove models now before the Skywalker object is destroyed.
-            searchUtils.removeModels()
-        }
     }
 
     Tenor {

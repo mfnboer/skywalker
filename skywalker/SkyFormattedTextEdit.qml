@@ -12,6 +12,7 @@ TextEdit {
     property int maxLength: -1
     property bool enableLinkShortening: true
     property var fontSelectorCombo
+    property var parentPostUtils
     property bool textChangeInProgress: false
 
     id: editText
@@ -34,15 +35,15 @@ TextEdit {
     Accessible.multiLine: true
 
     onCursorRectangleChanged: {
-        let editMentionY = postUtils.editMentionCursorY
-        let editTagY = postUtils.editTagCursorY
+        let editMentionY = getPostUtils().editMentionCursorY
+        let editTagY = getPostUtils().editTagCursorY
         let cursorY = cursorRectangle.y
 
-        if (postUtils.editMention.length > 0 && editMentionY != cursorY)
-            postUtils.editMention = ""
+        if (getPostUtils().editMention.length > 0 && editMentionY != cursorY)
+            getPostUtils().editMention = ""
 
-        if (postUtils.editTag.length > 0 && editTagY != cursorY)
-            postUtils.editTag = ""
+        if (getPostUtils().editTag.length > 0 && editTagY != cursorY)
+            getPostUtils().editTag = ""
 
         parentFlick.ensureVisible(cursorRectangle)
     }
@@ -71,7 +72,7 @@ TextEdit {
     }
 
     onMaxLengthChanged: {
-        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+        getPostUtils().setHighlightDocument(editText.textDocument, guiSettings.linkColor,
                                        editText.maxLength, guiSettings.textLengthExceededColor)
     }
 
@@ -98,7 +99,7 @@ TextEdit {
         if (!fontSelectorCombo)
             return
 
-        const modifiedTillCursor = postUtils.applyFontToLastTypedChars(
+        const modifiedTillCursor = getPostUtils().applyFontToLastTypedChars(
                                      editText.text, editText.preeditText,
                                      editText.cursorPosition, numChars,
                                      fontSelectorCombo.currentIndex)
@@ -112,19 +113,19 @@ TextEdit {
     }
 
     function highlightFacets() {
-        postUtils.extractMentionsAndLinks(editText.text,
+        getPostUtils().extractMentionsAndLinks(editText.text,
                 editText.preeditText, cursorPosition)
     }
 
     function updateGraphemeLength() {
         const prevGraphemeLength = graphemeLength
-        const linkShorteningReduction = enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0;
+        const linkShorteningReduction = enableLinkShortening ? getPostUtils().getLinkShorteningReduction() : 0;
 
         graphemeLength = unicodeFonts.graphemeLength(editText.text) +
                 unicodeFonts.graphemeLength(preeditText) -
                 linkShorteningReduction
 
-        postUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
+        getPostUtils().setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
 
         return graphemeLength - prevGraphemeLength
     }
@@ -145,8 +146,8 @@ TextEdit {
         id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (postUtils.editMention.length > 0)
-                searchUtils.searchAuthorsTypeahead(postUtils.editMention, 10)
+            if (getPostUtils().editMention.length > 0)
+                searchUtils.searchAuthorsTypeahead(getPostUtils().editMention, 10)
         }
     }
 
@@ -154,8 +155,8 @@ TextEdit {
         id: hashtagTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (postUtils.editTag.length > 0)
-                searchUtils.searchHashtagsTypeahead(postUtils.editTag, 10)
+            if (getPostUtils().editTag.length > 0)
+                searchUtils.searchHashtagsTypeahead(getPostUtils().editTag, 10)
         }
     }
 
@@ -198,13 +199,28 @@ TextEdit {
         id: guiSettings
     }
 
+    function getPostUtils() {
+        if (parentPostUtils)
+            return parentPostUtils
+
+        return postUtils
+    }
+
+    function startAuthorTypeaheadSearchTimer() {
+        authorTypeaheadSearchTimer.start()
+    }
+
+    function startHashtagTypeaheadSearchTimer() {
+        hashtagTypeaheadSearchTimer.start()
+    }
+
     function createAuthorTypeaheadView() {
         let component = Qt.createComponent("AuthorTypeaheadView.qml")
         let page = component.createObject(parentPage, {
                 parentPage: parentPage,
                 editText: editText,
                 searchUtils: searchUtils,
-                postUtils: postUtils
+                postUtils: getPostUtils()
             })
     }
 
@@ -214,14 +230,14 @@ TextEdit {
                 parentPage: parentPage,
                 editText: editText,
                 searchUtils: searchUtils,
-                postUtils: postUtils
+                postUtils: getPostUtils()
             })
     }
 
     Component.onCompleted: {
         createAuthorTypeaheadView()
         createHashtagTypeaheadView()
-        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+        getPostUtils().setHighlightDocument(editText.textDocument, guiSettings.linkColor,
                                        editText.maxLength, guiSettings.textLengthExceededColor)
     }
 }
