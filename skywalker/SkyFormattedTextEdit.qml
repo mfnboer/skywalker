@@ -11,6 +11,8 @@ TextEdit {
     property int graphemeLength: 0
     property int maxLength: -1
     property bool enableLinkShortening: true
+    property var fontSelectorCombo
+    property bool textChangeInProgress: false
 
     id: editText
     width: parentPage.width
@@ -46,15 +48,67 @@ TextEdit {
     }
 
     onTextChanged: {
+        if (textChangeInProgress)
+            return
+
+        textChangeInProgress = true
         highlightFacets()
-        updateGraphemeLength()
+
+        const added = updateGraphemeLength()
+        if (added > 0)
+            updateTextTimer.set(added)
+
+        textChangeInProgress = false
     }
 
-    onPreeditTextChanged: updateGraphemeLength()
+    onPreeditTextChanged: {
+        if (textChangeInProgress)
+            return
+
+        const added = updateGraphemeLength()
+        if (added > 0)
+            updateTextTimer.set(added)
+    }
 
     onMaxLengthChanged: {
         postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
                                        editText.maxLength, guiSettings.textLengthExceededColor)
+    }
+
+    // Text can only be changed outside onPreeditTextChanged.
+    // This timer makes the call to applyFont async.
+    Timer {
+        property int numChars: 1
+
+        id: updateTextTimer
+        interval: 0
+        onTriggered: {
+            editText.textChangeInProgress = true
+            editText.applyFont(numChars)
+            editText.textChangeInProgress = false
+        }
+
+        function set(num) {
+            numChars = num
+            start()
+        }
+    }
+
+    function applyFont(numChars) {
+        if (!fontSelectorCombo)
+            return
+
+        const modifiedTillCursor = postUtils.applyFontToLastTypedChars(
+                                     editText.text, editText.preeditText,
+                                     editText.cursorPosition, numChars,
+                                     fontSelectorCombo.currentIndex)
+
+        if (modifiedTillCursor) {
+            const fullText = modifiedTillCursor + editText.text.slice(editText.cursorPosition)
+            editText.clear()
+            editText.text = fullText
+            editText.cursorPosition = modifiedTillCursor.length
+        }
     }
 
     function highlightFacets() {
@@ -63,9 +117,16 @@ TextEdit {
     }
 
     function updateGraphemeLength() {
+        const prevGraphemeLength = graphemeLength
+        const linkShorteningReduction = enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0;
+
         graphemeLength = unicodeFonts.graphemeLength(editText.text) +
                 unicodeFonts.graphemeLength(preeditText) -
-                (enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0)
+                linkShorteningReduction
+
+        postUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
+
+        return graphemeLength - prevGraphemeLength
     }
 
     Text {

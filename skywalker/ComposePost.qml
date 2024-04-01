@@ -470,151 +470,19 @@ Page {
             visible: replyToPostUri
         }
 
+        // START POST ITEM
         // Post text
-        TextEdit {
-            readonly property int maxLength: 300
-            property int graphemeLength: 0
-            property bool textChangeInProgress: false
-
+        SkyFormattedTextEdit {
             id: postText
             y: replyToColumn.visible ? replyToColumn.height + 5 : 0
             width: page.width
-            leftPadding: 10
-            rightPadding: 10
-            textFormat: TextEdit.PlainText
-            wrapMode: TextEdit.Wrap
-            font.pointSize: guiSettings.scaledFont(9/8)
-            color: guiSettings.textColor
-            selectionColor: guiSettings.selectionColor
-            clip: true
+            parentPage: page
+            parentFlick: flick
+            placeholderText: qsTr("Say something nice")
+            initialText: page.initialText
+            maxLength: 300
+            fontSelectorCombo: fontSelector
             focus: true
-            text: initialText
-
-            Accessible.role: Accessible.EditableText
-            Accessible.name: text ? text : qsTr("Say something nice")
-            Accessible.description: Accessible.name
-            Accessible.editable: true
-            Accessible.multiLine: true
-
-            onCursorRectangleChanged: {
-                let editMentionY = postUtils.editMentionCursorY
-                let editTagY = postUtils.editTagCursorY
-                let cursorY = cursorRectangle.y
-
-                if (postUtils.editMention.length > 0 && editMentionY != cursorY)
-                    postUtils.editMention = ""
-
-                if (postUtils.editTag.length > 0 && editTagY != cursorY)
-                    postUtils.editTag = ""
-
-                flick.ensureVisible(cursorRectangle)
-            }
-
-            onTextChanged: {
-                if (textChangeInProgress)
-                    return
-
-                textChangeInProgress = true
-                highlightFacets()
-
-                const added = updateGraphemeLength()
-                if (added > 0)
-                    updateTextTimer.set(added)
-
-                textChangeInProgress = false
-            }
-
-            onPreeditTextChanged: {
-                if (textChangeInProgress)
-                    return
-
-                const added = updateGraphemeLength()
-                if (added > 0)
-                    updateTextTimer.set(added)
-            }
-
-            // Text can only be changed outside onPreeditTextChanged.
-            // This timer makes the call to applyFont async.
-            Timer {
-                property int numChars: 1
-
-                id: updateTextTimer
-                interval: 0
-                onTriggered: {
-                    postText.textChangeInProgress = true
-                    postText.applyFont(numChars)
-                    postText.textChangeInProgress = false
-                }
-
-                function set(num) {
-                    numChars = num
-                    start()
-                }
-            }
-
-            function applyFont(numChars) {
-                const modifiedTillCursor = postUtils.applyFontToLastTypedChars(
-                                             postText.text, postText.preeditText,
-                                             postText.cursorPosition, numChars,
-                                             fontSelector.currentIndex)
-
-                if (modifiedTillCursor) {
-                    const fullText = modifiedTillCursor + postText.text.slice(postText.cursorPosition)
-                    postText.clear()
-                    postText.text = fullText
-                    postText.cursorPosition = modifiedTillCursor.length
-                }
-            }
-
-            function highlightFacets() {
-                postUtils.extractMentionsAndLinks(postText.text,
-                        postText.preeditText, cursorPosition)
-            }
-
-            function updateGraphemeLength() {
-                const prevGraphemeLength = graphemeLength
-                const linkShorteningReduction = postUtils.getLinkShorteningReduction();
-
-                graphemeLength = unicodeFonts.graphemeLength(postText.text) +
-                        unicodeFonts.graphemeLength(preeditText) -
-                        linkShorteningReduction
-
-                postUtils.setHighLightMaxLength(postText.maxLength + linkShorteningReduction)
-
-                return graphemeLength - prevGraphemeLength
-            }
-
-            Text {
-                id: placeHolderText
-                anchors.fill: parent
-                leftPadding: postText.leftPadding
-                rightPadding: postText.rightPadding
-                font.pointSize: postText.font.pointSize
-                color: guiSettings.placeholderTextColor
-                text: qsTr("Say something nice")
-                visible: postText.graphemeLength === 0
-            }
-        }
-
-        // Typeahead matches on parital mention
-        AuthorTypeaheadView {
-            y: postText.y + postText.cursorRectangle.y + postText.cursorRectangle.height + 5
-            parentPage: page
-            editText: postText
-            searchUtils: searchUtils
-            postUtils: postUtils
-
-            Accessible.name: qsTr("you can select a user from the list below")
-        }
-
-        HashtagTypeaheadView {
-            y: postText.y + postText.cursorRectangle.y + postText.cursorRectangle.height + 5
-            parentPage: page
-            editText: postText
-            searchUtils: searchUtils
-            postUtils: postUtils
-
-            Accessible.name: qsTr("you can select a hashtag from the list below")
         }
 
         // Image attachments
@@ -838,6 +706,7 @@ Page {
             list: page.quoteList
             visible: !page.quoteList.isNull()
         }
+        // END POST ITEM
 
         function ensureVisible(cursor) {
             let cursorY = cursor.y + postText.y
