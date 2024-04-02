@@ -206,6 +206,15 @@ TextEdit {
         return postUtils
     }
 
+    function getTextParts() {
+        const textBefore = editText.text.slice(0, editText.cursorPosition)
+        const textBetween = editText.preeditText
+        const textAfter = editText.text.slice(editText.cursorPosition)
+        const fullText = textBefore + textBetween + textAfter
+
+        return {textBefore, textBetween, textAfter, fullText}
+    }
+
     function startAuthorTypeaheadSearchTimer() {
         authorTypeaheadSearchTimer.start()
     }

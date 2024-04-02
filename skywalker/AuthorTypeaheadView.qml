@@ -11,7 +11,7 @@ SimpleAuthorListView {
     required property var postUtils
 
     id: typeaheadView
-    y: editText.mapToItem(parentPage, editText.x, editText.y).y + editText.cursorRectangle.y + editText.cursorRectangle.height + 5
+    y: getParentY(editText) + editText.cursorRectangle.y + editText.cursorRectangle.height + 5
     z: 10
     width: parentPage.width
     height: parentPage.footer.y - y - 5
@@ -24,10 +24,7 @@ SimpleAuthorListView {
     }
 
     onAuthorClicked: (profile) => {
-        const textBefore = editText.text.slice(0, editText.cursorPosition)
-        const textBetween = editText.preeditText
-        const textAfter = editText.text.slice(editText.cursorPosition)
-        const fullText = textBefore + textBetween + textAfter
+        const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
         const mentionStartIndex = postUtils.getEditMentionIndex()
         const mentionEndIndex = mentionStartIndex + postUtils.editMention.length
         editText.clear() // also clears the preedit buffer
@@ -37,5 +34,9 @@ SimpleAuthorListView {
         const newText = fullText.slice(0, mentionStartIndex) + profile.handle + ' ' + fullText.slice(mentionEndIndex)
         editText.text = newText
         editText.cursorPosition = mentionStartIndex + profile.handle.length + 1
+    }
+
+    function getParentY(item) {
+        return item.mapToItem(parentPage, 0, 0).y
     }
 }

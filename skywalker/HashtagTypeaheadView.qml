@@ -10,7 +10,7 @@ HashtagListView {
     required property var postUtils
 
     id: searchList
-    y: editText.mapToItem(parentPage, editText.x, editText.y).y + editText.cursorRectangle.y + editText.cursorRectangle.height + 5
+    y: getParentY(editText) + editText.cursorRectangle.y + editText.cursorRectangle.height + 5
     z: 10
     width: parentPage.width
     height: parentPage.footer.y - y - 5
@@ -22,12 +22,8 @@ HashtagListView {
             searchUtils.hashtagTypeaheadList = []
     }
 
-    // TODO: almost same as onAuthorClicking in AuthorTypeaheadView
     onHashtagClicked: (hashtag) => {
-        const textBefore = editText.text.slice(0, editText.cursorPosition)
-        const textBetween = editText.preeditText
-        const textAfter = editText.text.slice(editText.cursorPosition)
-        const fullText = textBefore + textBetween + textAfter
+        const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
         const hashtagStartIndex = postUtils.getEditTagIndex()
         const hashtagEndIndex = hashtagStartIndex + postUtils.editTag.length
         editText.clear() // also clears the preedit buffer
@@ -37,5 +33,9 @@ HashtagListView {
         const newText = fullText.slice(0, hashtagStartIndex) + hashtag + ' ' + fullText.slice(hashtagEndIndex)
         editText.text = newText
         editText.cursorPosition = hashtagStartIndex + hashtag.length + 1
+    }
+
+    function getParentY(item) {
+        return item.mapToItem(parentPage, 0, 0).y
     }
 }
