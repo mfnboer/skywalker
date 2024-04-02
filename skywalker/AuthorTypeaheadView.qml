@@ -24,6 +24,7 @@ SimpleAuthorListView {
     }
 
     onAuthorClicked: (profile) => {
+        console.debug("AUTHOR CLICKED")
         const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
         const mentionStartIndex = postUtils.getEditMentionIndex()
         const mentionEndIndex = mentionStartIndex + postUtils.editMention.length

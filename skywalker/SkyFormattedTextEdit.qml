@@ -12,8 +12,11 @@ TextEdit {
     property int maxLength: -1
     property bool enableLinkShortening: true
     property var fontSelectorCombo
-    property var parentPostUtils
     property bool textChangeInProgress: false
+    property string firstWebLink
+    property string firstPostLink
+    property string firstFeedLink
+    property string firstListLink
 
     id: editText
     width: parentPage.width
@@ -35,15 +38,15 @@ TextEdit {
     Accessible.multiLine: true
 
     onCursorRectangleChanged: {
-        let editMentionY = getPostUtils().editMentionCursorY
-        let editTagY = getPostUtils().editTagCursorY
+        let editMentionY = postUtils.editMentionCursorY
+        let editTagY = postUtils.editTagCursorY
         let cursorY = cursorRectangle.y
 
-        if (getPostUtils().editMention.length > 0 && editMentionY != cursorY)
-            getPostUtils().editMention = ""
+        if (postUtils.editMention.length > 0 && editMentionY != cursorY)
+            postUtils.editMention = ""
 
-        if (getPostUtils().editTag.length > 0 && editTagY != cursorY)
-            getPostUtils().editTag = ""
+        if (postUtils.editTag.length > 0 && editTagY != cursorY)
+            postUtils.editTag = ""
 
         parentFlick.ensureVisible(cursorRectangle)
     }
@@ -72,7 +75,7 @@ TextEdit {
     }
 
     onMaxLengthChanged: {
-        getPostUtils().setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
                                        editText.maxLength, guiSettings.textLengthExceededColor)
     }
 
@@ -99,7 +102,7 @@ TextEdit {
         if (!fontSelectorCombo)
             return
 
-        const modifiedTillCursor = getPostUtils().applyFontToLastTypedChars(
+        const modifiedTillCursor = postUtils.applyFontToLastTypedChars(
                                      editText.text, editText.preeditText,
                                      editText.cursorPosition, numChars,
                                      fontSelectorCombo.currentIndex)
@@ -113,19 +116,19 @@ TextEdit {
     }
 
     function highlightFacets() {
-        getPostUtils().extractMentionsAndLinks(editText.text,
+        postUtils.extractMentionsAndLinks(editText.text,
                 editText.preeditText, cursorPosition)
     }
 
     function updateGraphemeLength() {
         const prevGraphemeLength = graphemeLength
-        const linkShorteningReduction = enableLinkShortening ? getPostUtils().getLinkShorteningReduction() : 0;
+        const linkShorteningReduction = enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0;
 
         graphemeLength = unicodeFonts.graphemeLength(editText.text) +
                 unicodeFonts.graphemeLength(preeditText) -
                 linkShorteningReduction
 
-        getPostUtils().setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
+        postUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
 
         return graphemeLength - prevGraphemeLength
     }
@@ -146,8 +149,8 @@ TextEdit {
         id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (getPostUtils().editMention.length > 0)
-                searchUtils.searchAuthorsTypeahead(getPostUtils().editMention, 10)
+            if (postUtils.editMention.length > 0)
+                searchUtils.searchAuthorsTypeahead(postUtils.editMention, 10)
         }
     }
 
@@ -155,8 +158,8 @@ TextEdit {
         id: hashtagTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (getPostUtils().editTag.length > 0)
-                searchUtils.searchHashtagsTypeahead(getPostUtils().editTag, 10)
+            if (postUtils.editTag.length > 0)
+                searchUtils.searchHashtagsTypeahead(postUtils.editTag, 10)
         }
     }
 
@@ -189,6 +192,11 @@ TextEdit {
             editTagCursorY = editText.cursorRectangle.y
             hashtagTypeaheadSearchTimer.start()
         }
+
+        onFirstWebLinkChanged: editText.firstWebLink = firstWebLink
+        onFirstPostLinkChanged: editText.firstPostLink = firstPostLink
+        onFirstFeedLinkChanged: editText.firstFeedLink = firstFeedLink
+        onFirstListLinkChanged: editText.firstListLink = firstListLink
     }
 
     UnicodeFonts {
@@ -197,13 +205,6 @@ TextEdit {
 
     GuiSettings {
         id: guiSettings
-    }
-
-    function getPostUtils() {
-        if (parentPostUtils)
-            return parentPostUtils
-
-        return postUtils
     }
 
     function getTextParts() {
@@ -215,21 +216,13 @@ TextEdit {
         return {textBefore, textBetween, textAfter, fullText}
     }
 
-    function startAuthorTypeaheadSearchTimer() {
-        authorTypeaheadSearchTimer.start()
-    }
-
-    function startHashtagTypeaheadSearchTimer() {
-        hashtagTypeaheadSearchTimer.start()
-    }
-
     function createAuthorTypeaheadView() {
         let component = Qt.createComponent("AuthorTypeaheadView.qml")
         let page = component.createObject(parentPage, {
                 parentPage: parentPage,
                 editText: editText,
                 searchUtils: searchUtils,
-                postUtils: getPostUtils()
+                postUtils: postUtils
             })
     }
 
@@ -239,14 +232,14 @@ TextEdit {
                 parentPage: parentPage,
                 editText: editText,
                 searchUtils: searchUtils,
-                postUtils: getPostUtils()
+                postUtils: postUtils
             })
     }
 
     Component.onCompleted: {
         createAuthorTypeaheadView()
         createHashtagTypeaheadView()
-        getPostUtils().setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
                                        editText.maxLength, guiSettings.textLengthExceededColor)
     }
 }
