@@ -4,7 +4,6 @@ import skywalker
 
 SvgTransparentButton {
     property var tenorSearchView: null
-    property bool enabled: true
 
     signal selectedGif(tenorgif gif)
 

@@ -213,25 +213,46 @@ Page {
 
                 Item {
                     required property int index
-                    property list<string> images: threadPosts.postList[index].images
-                    property list<string> altTexts: threadPosts.postList[index].altTexts
-                    property basicprofile quoteAuthor: threadPosts.postList[index].quoteAuthor
-                    property string quoteUri: threadPosts.postList[index].quoteUri
-                    property string quoteCid: threadPosts.postList[index].quoteCid
-                    property string quoteText: threadPosts.postList[index].quoteText
-                    property date quoteDateTime: threadPosts.postList[index].quoteDateTime
-                    property generatorview quoteFeed: threadPosts.postList[index].quoteFeed
-                    property listview quoteList: threadPosts.postList[index].quoteList
+                    property string text
+                    property list<string> images
+                    property list<string> altTexts
+                    property basicprofile quoteAuthor
+                    property string quoteUri
+                    property string quoteCid
+                    property string quoteText
+                    property date quoteDateTime
+                    property generatorview quoteFeed
+                    property listview quoteList
 
-                    onImagesChanged: threadPosts.postList[index].images = images
-                    onAltTextsChanged: threadPosts.postList[index].altTexts = altTexts
-                    //onQuoteAuthorChanged: threadPosts.postList[index].quoteAuthor = quoteAuthor
-                    onQuoteUriChanged: threadPosts.postList[index].quoteUri = quoteUri
-                    onQuoteCidChanged: threadPosts.postList[index].quoteCid = quoteCid
-                    onQuoteTextChanged: threadPosts.postList[index].quoteText = quoteText
-                    onQuoteDateTimeChanged: threadPosts.postList[index].quoteDateTime = quoteDateTime
-                    //onQuoteFeedChanged: threadPosts.postList[index].quoteFeed = quoteFeed
-                    //onQuoteListChanged: threadPosts.postList[index].quoteList = quoteList
+                    function copyToPostList() {
+                        threadPosts.postList[index].text = text
+                        threadPosts.postList[index].images = images
+                        threadPosts.postList[index].altTexts = altTexts
+                        threadPosts.postList[index].quoteAuthor = quoteAuthor
+                        threadPosts.postList[index].quoteUri = quoteUri
+                        threadPosts.postList[index].quoteCid = quoteCid
+                        threadPosts.postList[index].quoteText = quoteText
+                        threadPosts.postList[index].quoteDateTime = quoteDateTime
+                        threadPosts.postList[index].quoteFeed = quoteFeed
+                        threadPosts.postList[index].quoteList = quoteList
+                        threadPosts.postList[index].gif = gifAttachment.gif
+                        threadPosts.postList[index].card = linkCard.card
+                    }
+
+                    function copyFromPostList() {
+                        images = threadPosts.postList[index].images
+                        altTexts = threadPosts.postList[index].altTexts
+                        quoteAuthor = threadPosts.postList[index].quoteAuthor
+                        quoteUri = threadPosts.postList[index].quoteUri
+                        quoteCid = threadPosts.postList[index].quoteCid
+                        quoteText = threadPosts.postList[index].quoteText
+                        quoteDateTime = threadPosts.postList[index].quoteDateTime
+                        quoteFeed = threadPosts.postList[index].quoteFeed
+                        quoteList = threadPosts.postList[index].quoteList
+                        gifAttachment.gif = threadPosts.postList[index].gif
+                        linkCard.card = threadPosts.postList[index].card
+                        text = threadPosts.postList[index].text
+                    }
 
                     function getPostText() { return postText }
                     function getImageScroller() { return imageScroller }
@@ -319,11 +340,11 @@ Page {
                         parentPage: page
                         parentFlick: flick
                         placeholderText: qsTr("Say something nice")
-                        initialText: threadPosts.postList[index].text
+                        initialText: postItem.text
                         maxLength: 300
                         fontSelectorCombo: fontSelector
 
-                        onTextChanged: threadPosts.postList[index].text = text
+                        onTextChanged: postItem.text = text
 
                         onFocusChanged: {
                             if (focus)
@@ -334,10 +355,13 @@ Page {
                             if (gifAttachment.visible)
                                 return
 
+                            if (linkCard.card && linkCard.card.link === firstWebLink)
+                                return
+
                             linkCard.hide()
 
                             if (firstWebLink) {
-                                linkCardTimer.startForLink(firstWebLink)
+                                linkCardTimer.startForLink(index, firstWebLink)
                             } else {
                                 linkCardTimer.stop()
                             }
@@ -459,6 +483,7 @@ Page {
                         width: page.width - 20
                         height: card ? columnHeight : 0
                         anchors.top: gifAttachment.bottom
+                        anchors.topMargin: card ? 10 : 0
                         uri: card ? card.link : ""
                         title: card ? card.title : ""
                         description: card ? card.description : ""
@@ -556,12 +581,29 @@ Page {
                     return component.createObject(page)
                 }
 
+                function copyPostItemsToPostList() {
+                    for (let i = 0; i < count; ++i) {
+                        let item = itemAt(i)
+                        item.copyToPostList()
+                    }
+                }
+
+                function copyPostListToPostItems() {
+                    for (let i = 0; i < count; ++i) {
+                        let item = itemAt(i)
+                        item.copyFromPostList()
+                    }
+                }
+
                 function removePost(index) {
                     console.debug("REMOVE POST:", index)
+
                     if (count === 1) {
                         console.warn("Cannot remove last post")
                         return
                     }
+
+                    copyPostItemsToPostList()
 
                     if (currentPostIndex === count - 1)
                         currentPostIndex -= 1
@@ -570,24 +612,27 @@ Page {
                     postList.splice(index, 1)
                     model = postList.length
 
+                    copyPostListToPostItems()
                     moveFocusToCurrent()
                 }
 
                 function addPost(index) {
                     console.debug("ADD POST:", index)
+
                     if (count >= maxThreadPosts) {
                         console.warn("Maximum posts reached:", count)
                         return
                     }
 
+                    copyPostItemsToPostList()
+                    model = 0
                     postList.splice(index + 1, 0, newComposePostItem())
                     model = postList.length
-                    console.debug("SPLICED")
+                    copyPostListToPostItems()
 
                     if (currentPostIndex === index)
                         currentPostIndex += 1
 
-                    console.debug("CURRENT SET")
                     moveFocusToCurrent()
                 }
 
@@ -731,7 +776,7 @@ Page {
             y: height + 5 + restrictionRow.height + footerSeparator.height
             accessibleName: qsTr("add picture")
             svg: svgOutline.addImage
-            enabled: mustEnable()
+            enabled: page.canAddImage()
 
             onClicked: {
                 if (Qt.platform.os === "android") {
@@ -740,33 +785,15 @@ Page {
                     fileDialog.open()
                 }
             }
-
-            function mustEnable() {
-                const postItem = threadPosts.itemAt(currentPostIndex)
-
-                if (!postItem)
-                    return false
-
-                return postItem.images.length < maxImages && !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && !pickingImage
-            }
         }
 
         AddGifButton {
             id: addGif
             x: addImage.x + addImage.width + 10
             y: height + 5 + restrictionRow.height + footerSeparator.height
-            enabled: mustEnable()
+            enabled: page.canAddGif()
 
             onSelectedGif: (gif) => currentPostItem().getGifAttachment().show(gif)
-
-            function mustEnable() {
-                const postItem = threadPosts.itemAt(currentPostIndex)
-
-                if (!postItem)
-                    return false
-
-                return !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && postItem.images.length === 0
-            }
         }
 
         FontComboBox {
@@ -835,18 +862,24 @@ Page {
         onLinkCard: (card) => {
                         console.debug("Got card:", card.link, card.title, card.thumb)
                         console.debug(card.description)
-                        currentPostItem().getLinkCard().show(card)
+
+                        let postItem = threadPosts.itemAt(linkCardTimer.postIndex)
+
+                        if (postItem)
+                            postItem.getLinkCard().show(card)
                     }
     }
 
     Timer {
+        property int postIndex
         property string webLink
 
         id: linkCardTimer
         interval: 1000
         onTriggered: linkCardReader.getLinkCard(webLink)
 
-        function startForLink(webLink) {
+        function startForLink(postIndex, webLink) {
+            linkCardTimer.postIndex = postIndex
             linkCardTimer.webLink = webLink
             start()
         }
@@ -1268,6 +1301,24 @@ Page {
                 postItem.images.length > 0
     }
 
+    function canAddImage() {
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return false
+
+        return postItem.images.length < maxImages && !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && !pickingImage
+    }
+
+    function canAddGif() {
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return false
+
+        return !postItem.getGifAttachment().gif && !postItem.getLinkCard().visible && postItem.images.length === 0
+    }
+
     function hasContentWarning() {
         return hasImageContent() && (cwSuggestive || cwNudity || cwPorn || cwGore)
     }
@@ -1355,6 +1406,7 @@ Page {
         //                                postItem.getPostText().maxLength,
         //                                guiSettings.textLengthExceededColor)
 
+        threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
     }
 }

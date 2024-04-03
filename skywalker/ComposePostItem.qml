@@ -12,4 +12,6 @@ Item {
     property date quoteDateTime: new Date()
     property generatorview quoteFeed
     property listview quoteList
+    property var gif: null
+    property var card: null
 }
