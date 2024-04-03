@@ -318,6 +318,7 @@ qt_add_qml_module(libskywalker
         SOURCES draft_posts_migration.h
         SOURCES draft_posts_migration.cpp
         QML_FILES FontComboBox.qml
+        QML_FILES AddGifButton.qml
 )
 
 if (NOT ANDROID)

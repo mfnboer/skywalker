@@ -434,6 +434,7 @@ Page {
                         x: 10
                         width: Math.min(gif ? gif.smallSize.width : 1, page.width - 20)
                         anchors.top: imageScroller.bottom
+                        anchors.topMargin: gif ? 10 : 0
                         fillMode: Image.PreserveAspectFit
                         source: gif ? gif.smallUrl : ""
                         visible: gif
@@ -737,54 +738,18 @@ Page {
             }
         }
 
-        SvgImage {
-            property var tenorSearchView: null
-
+        AddGifButton {
             id: addGif
             x: addImage.x + addImage.width + 10
             y: height + 5 + restrictionRow.height + footerSeparator.height
             width: 34
             height: 34
-            color: addGif.mustEnable() ? guiSettings.buttonColor : guiSettings.disabledColor
-            opacity: 1
-            svg: svgOutline.addGif
+            enabled: mustEnable()
 
-            Rectangle {
-                y: -parent.height
-                width: parent.width
-                height: parent.height
-                color: "transparent"
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("add GIF")
-                Accessible.onPressAction: if (parent.mustEnable()) parent.selectGif()
-            }
+            onSelectedGif: (gif) => currentPostItem().getGifAttachment().show(gif)
 
             function mustEnable() {
                 return !currentPostItem().getGifAttachment().visible && !currentPostItem().getLinkCard().visible && currentPostItem().images.length === 0
-            }
-
-            function selectGif() {
-                if (!tenorSearchView)
-                {
-                    let component = Qt.createComponent("TenorSearch.qml")
-                    tenorSearchView = component.createObject(root)
-                    tenorSearchView.onClosed.connect(() => { root.currentStack().pop() })
-                    tenorSearchView.onSelected.connect((gif) => {
-                            currentPostItem().getGifAttachment().show(gif)
-                            root.currentStack().pop()
-                    })
-                }
-
-                root.pushStack(tenorSearchView)
-            }
-
-            MouseArea {
-                y: -parent.height
-                width: parent.width
-                height: parent.height
-                enabled: addGif.mustEnable()
-                onClicked: addGif.selectGif()
             }
         }
 
