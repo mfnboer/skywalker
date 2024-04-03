@@ -10,6 +10,7 @@ Page {
     property string initialImage
     property int fullPageHeight
 
+    property int maxThreadPosts: 99
     property int maxImages: 4
     property bool pickingImage: false
 
@@ -187,12 +188,12 @@ Page {
             y: replyToColumn.visible ? replyToColumn.height + 5 : 0
             width: parent.width
 
-            onHeightChanged: console.debug("THREAD COLUMN HEIGHT:", height)
-
             Repeater {
+                property list<string> postList: [page.initialText ? page.initialText : ""]
+
                 id: threadPosts
                 width: parent.width
-                model: 3
+                model: postList.length
 
                 Item {
                     required property int index
@@ -244,6 +245,13 @@ Page {
                         return quoteColumn.y
                     }
 
+                    function hasContent() {
+                        return postText.graphemeLength > 0 ||
+                                images.length > 0 ||
+                                linkCard.card ||
+                                gifAttachment.gif
+                    }
+
                     id: postItem
                     width: parent.width
                     height: calcHeight()
@@ -281,9 +289,11 @@ Page {
                         parentPage: page
                         parentFlick: flick
                         placeholderText: qsTr("Say something nice")
-                        initialText: page.initialText
+                        initialText: threadPosts.postList[index]
                         maxLength: 300
                         fontSelectorCombo: fontSelector
+
+                        onTextChanged: threadPosts.postList[index] = text
 
                         onFocusChanged: {
                             if (focus)
@@ -341,6 +351,18 @@ Page {
                             if (firstListLink)
                                 postUtils.getQuoteList(firstListLink)
                         }
+                    }
+
+                    SvgButton {
+                        y: postText.y - 5
+                        x: parent.width - width - 10
+                        z: 10
+                        width: 34
+                        height: width
+                        svg: svgOutline.remove
+                        visible: !postItem.hasContent() && threadPosts.count > 1 && (index > 0 || !replyToPostUri)
+
+                        onClicked: threadPosts.removePost(index)
                     }
 
                     // Image attachments
@@ -498,6 +520,42 @@ Page {
                         visible: !postItem.quoteList.isNull()
                     }
                 }
+
+                function removePost(index) {
+                    console.debug("REMOVE POST:", index)
+                    if (count === 1) {
+                        console.warn("Cannot remove last post")
+                        return
+                    }
+
+                    if (currentPostIndex === count - 1)
+                        currentPostIndex -= 1
+
+                    postList.splice(index, 1)
+
+                    moveFocusToCurrent()
+                }
+
+                function addPost(index) {
+                    console.debug("ADD POST:", index)
+                    if (count >= maxThreadPosts) {
+                        console.warn("Maximum posts reached:", count)
+                        return
+                    }
+
+                    postList.splice(index + 1, 0, "")
+
+                    if (currentPostIndex === index)
+                        currentPostIndex += 1
+
+                    moveFocusToCurrent()
+                }
+
+                function moveFocusToCurrent() {
+                    let postText = currentPostItem().getPostText()
+                    postText.cursorPosition = postText.text.length
+                    postText.forceActiveFocus()
+                }
             }
         }
     }
@@ -627,10 +685,12 @@ Page {
             textField: currentPostItem().getPostText()
         }
 
-        AddImageButton {
+        SvgTransparentButton {
             id: addImage
             x: 10
             y: height + 5 + restrictionRow.height + footerSeparator.height
+            accessibleName: qsTr("add picture")
+            svg: svgOutline.addImage
             enabled: mustEnable()
 
             onClicked: {
@@ -642,7 +702,12 @@ Page {
             }
 
             function mustEnable() {
-                return currentPostItem().images.length < maxImages && currentPostItem().getImageScroller().visible && !pickingImage
+                const postItem = threadPosts.itemAt(currentPostIndex)
+
+                if (!postItem)
+                    return false
+
+                return postItem.images.length < maxImages && postItem.getImageScroller().visible && !pickingImage
             }
         }
 
@@ -655,7 +720,12 @@ Page {
             onSelectedGif: (gif) => currentPostItem().getGifAttachment().show(gif)
 
             function mustEnable() {
-                return !currentPostItem().getGifAttachment().visible && !currentPostItem().getLinkCard().visible && currentPostItem().images.length === 0
+                const postItem = threadPosts.itemAt(currentPostIndex)
+
+                if (!postItem)
+                    return false
+
+                return !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && postItem.images.length === 0
             }
         }
 
@@ -667,43 +737,42 @@ Page {
             popup.onClosed: currentPostItem().getPostText().forceActiveFocus()
         }
 
-        SvgImage {
+        SvgTransparentButton {
             id: contentWarningIcon
             anchors.left: fontSelector.right
             anchors.leftMargin: 15
             y: height + 5 + restrictionRow.height + footerSeparator.height
-            width: 34
-            height: 34
-            color: guiSettings.linkColor
+            accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
             visible: hasImageContent()
 
-            Rectangle {
-                y: -parent.height
-                width: parent.width
-                height: parent.height
-                color: "transparent"
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("add content warning")
-                Accessible.onPressAction: if (hasImageContent()) page.addContentWarning()
-            }
-
-            MouseArea {
-                y: -parent.height
-                width: parent.width
-                height: parent.height
-                enabled: hasImageContent()
-                onClicked: page.addContentWarning()
-            }
+            onClicked: page.addContentWarning()
         }
 
-        TextLengthCounter {
-            y: 10 + restrictionRow.height + footerSeparator.height
+        SvgButton {
+            id: addPost
+            y: 5 + restrictionRow.height + footerSeparator.height
+            width: 34
+            height: 34
             anchors.rightMargin: 10
             anchors.right: parent.right
-            textField: currentPostItem().getPostText()
+            svg: svgOutline.add
+            enabled: hasContent() && threadPosts.count < maxThreadPosts
+
+            onClicked: threadPosts.addPost(currentPostIndex)
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("add post")
+            Accessible.onPressAction: clicked()
         }
+
+        // TODO: remove?
+        // TextLengthCounter {
+        //     y: 10 + restrictionRow.height + footerSeparator.height
+        //     anchors.rightMargin: 10
+        //     anchors.right: parent.right
+        //     textField: currentPostItem().getPostText()
+        // }
     }
 
     StatusPopup {

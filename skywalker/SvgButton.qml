@@ -8,7 +8,7 @@ RoundButton {
     property string iconColor: guiSettings.buttonTextColor
     property int imageMargin: 10
 
-    Material.background: guiSettings.buttonColor
+    Material.background: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
     opacity: 1
 
     SvgImage {

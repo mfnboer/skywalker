@@ -1,18 +1,17 @@
 import QtQuick
 import QtQuick.Controls
-import skywalker
 
 SvgImage {
+    required property string accessibleName
     property bool enabled: true
 
     signal clicked
 
-    id: addImageButton
+    id: button
     width: 34
     height: 34
-    color: addImageButton.mustEnable() ? guiSettings.buttonColor : guiSettings.disabledColor
+    color: button.enabled ? guiSettings.buttonColor : guiSettings.disabledColor
     opacity: 1
-    svg: svgOutline.addImage
 
     Rectangle {
         y: -parent.height
@@ -21,15 +20,19 @@ SvgImage {
         color: "transparent"
 
         Accessible.role: Accessible.Button
-        Accessible.name: qsTr("add picture")
-        Accessible.onPressAction: if (addImageButton.enabled) addImageButton.clicked()
+        Accessible.name: accessibleName
+        Accessible.onPressAction: if (button.enabled) button.clicked()
     }
 
     MouseArea {
         y: -parent.height
         width: parent.width
         height: parent.height
-        enabled: addImageButton.enabled
-        onClicked: addImageButton.clicked()
+        enabled: button.enabled
+        onClicked: button.clicked()
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

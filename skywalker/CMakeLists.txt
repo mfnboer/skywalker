@@ -320,7 +320,7 @@ qt_add_qml_module(libskywalker
         QML_FILES FontComboBox.qml
         QML_FILES AddGifButton.qml
         QML_FILES ImageScroller.qml
-        QML_FILES AddImageButton.qml
+        QML_FILES SvgTransparentButton.qml
 )
 
 if (NOT ANDROID)
