@@ -102,7 +102,7 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
 
-            enabled: currentPostItem().getPostText().graphemeLength <= currentPostItem().getPostText().maxLength && page.hasContent() && checkAltText()
+            enabled: postsAreValid() && hasContent() && checkAltText()
             onClicked: sendPost()
 
             Accessible.role: Accessible.Button
@@ -160,7 +160,12 @@ Page {
         boundsBehavior: Flickable.StopAtBounds
 
         onHeightChanged: {
-            let postText = currentPostItem().getPostText()
+            let postItem = currentPostItem()
+
+            if (!postItem)
+                return
+
+            let postText = postItem.getPostText()
             postText.ensureVisible(postText.cursorRectangle)
         }
 
@@ -189,23 +194,44 @@ Page {
             width: parent.width
 
             Repeater {
-                property list<string> postList: [page.initialText ? page.initialText : ""]
+                property list<ComposePostItem> postList: [
+                    ComposePostItem {
+                        text: initialText ? initialText : ""
+                        images: initialImage ? [initialImage] : []
+                        altTexts: initialImage ? [""] : []
+                        quoteAuthor: page.quoteAuthor
+                        quoteUri: page.quoteUri
+                        quoteCid: page.quoteCid
+                        quoteText: page.quoteText
+                        quoteDateTime: page.quoteDateTime
+                    }
+                ]
 
                 id: threadPosts
                 width: parent.width
-                model: postList.length
+                model: 1
 
                 Item {
                     required property int index
-                    property list<string> images: initialImage ? [initialImage] : []
-                    property list<string> altTexts: initialImage ? [""] : []
-                    property basicprofile quoteAuthor: index === 0 ? page.quoteAuthor : page.nullAuthor
-                    property string quoteUri: index === 0 ? page.quoteUri : ""
-                    property string quoteCid: index === 0 ? page.quoteCid : ""
-                    property string quoteText: index === 0 ? page.quoteText : ""
-                    property date quoteDateTime: index === 0 ? page.quoteDateTime : new Date()
-                    property generatorview quoteFeed
-                    property listview quoteList
+                    property list<string> images: threadPosts.postList[index].images
+                    property list<string> altTexts: threadPosts.postList[index].altTexts
+                    property basicprofile quoteAuthor: threadPosts.postList[index].quoteAuthor
+                    property string quoteUri: threadPosts.postList[index].quoteUri
+                    property string quoteCid: threadPosts.postList[index].quoteCid
+                    property string quoteText: threadPosts.postList[index].quoteText
+                    property date quoteDateTime: threadPosts.postList[index].quoteDateTime
+                    property generatorview quoteFeed: threadPosts.postList[index].quoteFeed
+                    property listview quoteList: threadPosts.postList[index].quoteList
+
+                    onImagesChanged: threadPosts.postList[index].images = images
+                    onAltTextsChanged: threadPosts.postList[index].altTexts = altTexts
+                    //onQuoteAuthorChanged: threadPosts.postList[index].quoteAuthor = quoteAuthor
+                    onQuoteUriChanged: threadPosts.postList[index].quoteUri = quoteUri
+                    onQuoteCidChanged: threadPosts.postList[index].quoteCid = quoteCid
+                    onQuoteTextChanged: threadPosts.postList[index].quoteText = quoteText
+                    onQuoteDateTimeChanged: threadPosts.postList[index].quoteDateTime = quoteDateTime
+                    //onQuoteFeedChanged: threadPosts.postList[index].quoteFeed = quoteFeed
+                    //onQuoteListChanged: threadPosts.postList[index].quoteList = quoteList
 
                     function getPostText() { return postText }
                     function getImageScroller() { return imageScroller }
@@ -252,6 +278,10 @@ Page {
                                 gifAttachment.gif
                     }
 
+                    function isValid() {
+                        return postText.graphemeLength <= postText.maxLength
+                    }
+
                     id: postItem
                     width: parent.width
                     height: calcHeight()
@@ -289,11 +319,11 @@ Page {
                         parentPage: page
                         parentFlick: flick
                         placeholderText: qsTr("Say something nice")
-                        initialText: threadPosts.postList[index]
+                        initialText: threadPosts.postList[index].text
                         maxLength: 300
                         fontSelectorCombo: fontSelector
 
-                        onTextChanged: threadPosts.postList[index] = text
+                        onTextChanged: threadPosts.postList[index].text = text
 
                         onFocusChanged: {
                             if (focus)
@@ -521,6 +551,11 @@ Page {
                     }
                 }
 
+                function newComposePostItem() {
+                    let component = Qt.createComponent("ComposePostItem.qml")
+                    return component.createObject(page)
+                }
+
                 function removePost(index) {
                     console.debug("REMOVE POST:", index)
                     if (count === 1) {
@@ -531,7 +566,9 @@ Page {
                     if (currentPostIndex === count - 1)
                         currentPostIndex -= 1
 
+                    model = 0
                     postList.splice(index, 1)
+                    model = postList.length
 
                     moveFocusToCurrent()
                 }
@@ -543,11 +580,14 @@ Page {
                         return
                     }
 
-                    postList.splice(index + 1, 0, "")
+                    postList.splice(index + 1, 0, newComposePostItem())
+                    model = postList.length
+                    console.debug("SPLICED")
 
                     if (currentPostIndex === index)
                         currentPostIndex += 1
 
+                    console.debug("CURRENT SET")
                     moveFocusToCurrent()
                 }
 
@@ -682,7 +722,7 @@ Page {
 
         TextLengthBar {
             anchors.top: restrictionRow.bottom
-            textField: currentPostItem().getPostText()
+            textField: currentPostItem() ? currentPostItem().getPostText() : null
         }
 
         SvgTransparentButton {
@@ -707,7 +747,7 @@ Page {
                 if (!postItem)
                     return false
 
-                return postItem.images.length < maxImages && postItem.getImageScroller().visible && !pickingImage
+                return postItem.images.length < maxImages && !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && !pickingImage
             }
         }
 
@@ -957,7 +997,7 @@ Page {
             return true
 
         for (let postIndex = 0; postIndex < threadPosts.count; ++postIndex) {
-            const postItem = currentPostItem()
+            const postItem = threadPosts.itemAt(postIndex)
             const imgScroller = postItem.getImagesScroller()
 
             for (let i = 0; i < postItem.images.length; ++i) {
@@ -972,19 +1012,35 @@ Page {
     // "file://" or "image://" source
     function photoPicked(source) {
         console.debug("IMAGE:", source)
-        currentPostItem().altTexts.push("")
-        currentPostItem().images.push(source)
-        let scrollBar = currentPostItem().getImageScroller().ScrollBar.horizontal
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return
+
+        postItem.altTexts.push("")
+        postItem.images.push(source)
+        let scrollBar = postItem.getImageScroller().ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
     }
 
     function addSharedText(text) {
-        if (text)
-            currentPostItem().postText.append(text)
+        if (text) {
+            let postItem = currentPostItem()
+
+            if (!postItem)
+                return
+
+            postItem.postText.append(text)
+        }
     }
 
     function addSharedPhoto(source, text) {
-        if (currentPostItem().images.length >= page.maxImages) {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return
+
+        if (postItem.images.length >= page.maxImages) {
             statusPopup.show(qsTr(`Post already has ${page.maxImages} images attached.`), QEnums.STATUS_LEVEL_INFO, 30)
             postUtils.dropPhoto(source)
             return
@@ -999,11 +1055,26 @@ Page {
         page.closed()
     }
 
+    function postsAreValid() {
+        for (let i = 0; i < threadPosts.count; ++ i) {
+            const postItem = threadPosts.itemAt(i)
+
+            if (!postItem.isValid())
+                return false
+        }
+
+        return true
+    }
+
     function hasContent() {
-        return currentPostItem().getPostText().graphemeLength > 0 ||
-                currentPostItem().images.length > 0 ||
-                currentPostItem().getLinkCard().card ||
-                currentPostItem().getGifAttachment().gif
+        for (let i = 0; i < threadPosts.count; ++ i) {
+            const postItem = threadPosts.itemAt(i)
+
+            if (!postItem.hasContent())
+                return false
+        }
+
+        return threadPosts.count > 0
     }
 
     function cancel() {
@@ -1029,6 +1100,10 @@ Page {
 
     function saveDraftPost() {
         const postItem = currentPostItem()
+
+        if (!postItem)
+            return
+
         const postText = postItem.getPostText()
         const qUri = postItem.getQuoteUri()
         const qCid = postItem.getQuoteCid()
@@ -1066,16 +1141,21 @@ Page {
     }
 
     function setDraftPost(draftData) {
-        currentPostItem().getLinkCard.hide()
-        currentPostItem().getGifAttachment.hide()
-        currentPostItem().images = []
-        currentPostItem().altTexts = []
+        let postItem = currentPostItem()
 
-        currentPostItem().getPostText().text = draftData.text
+        if (!postItem)
+            return
+
+        postItem.getLinkCard.hide()
+        postItem.getGifAttachment.hide()
+        postItem.images = []
+        postItem.altTexts = []
+
+        postItem.getPostText().text = draftData.text
 
         for (let i = 0; i < draftData.images.length; ++i) {
-            currentPostItem().images.push(draftData.images[i].fullSizeUrl)
-            currentPostItem().altTexts.push(draftData.images[i].alt)
+            postItem.images.push(draftData.images[i].fullSizeUrl)
+            postItem.altTexts.push(draftData.images[i].alt)
         }
 
         replyToAuthor = draftData.replyToAuthor
@@ -1098,9 +1178,9 @@ Page {
         quoteList = draftData.quoteList
 
         if (draftData.gif.isNull())
-            currentPostItem().getGifAttachment().hide()
+            postItem.getGifAttachment().hide()
         else
-            currentPostItem().getGifAttachment().show(draftData.gif)
+            postItem.getGifAttachment().show(draftData.gif)
 
         setContentWarnings(draftData.labels)
         restrictReply = draftData.restrictReplies
@@ -1178,9 +1258,14 @@ Page {
     }
 
     function hasImageContent() {
-        return currentPostItem().getGifAttachment().gif ||
-                (currentPostItem().getLinkCard().card && currentPostItem().getLinkCard().card.thumb) ||
-                currentPostItem().images.length > 0
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return false
+
+        return postItem.getGifAttachment().gif ||
+                (postItem.getLinkCard().card && postItem.getLinkCard().card.thumb) ||
+                postItem.images.length > 0
     }
 
     function hasContentWarning() {
@@ -1243,7 +1328,10 @@ Page {
     }
 
     Component.onDestruction: {
-        currentPostItem().images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
+        for (let i = 0; i < threadPosts.count; ++i) {
+            let postItem = threadPosts.itemAt(i)
+            postItem.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
+        }
 
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)
@@ -1259,10 +1347,13 @@ Page {
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.
         focusTimer.start()
-        postUtils.setHighlightDocument(currentPostItem().getPostText().textDocument,
-                                       guiSettings.linkColor,
-                                       currentPostItem().getPostText().maxLength,
-                                       guiSettings.textLengthExceededColor)
+
+        // TODO: remove?
+        // postItem = threadPosts.itemAt(0)
+        // postUtils.setHighlightDocument(postItem.getPostText().textDocument,
+        //                                guiSettings.linkColor,
+        //                                postItem.getPostText().maxLength,
+        //                                guiSettings.textLengthExceededColor)
 
         draftPosts.loadDraftPosts()
     }

@@ -321,6 +321,7 @@ qt_add_qml_module(libskywalker
         QML_FILES AddGifButton.qml
         QML_FILES ImageScroller.qml
         QML_FILES SvgTransparentButton.qml
+        QML_FILES ComposePostItem.qml
 )
 
 if (NOT ANDROID)
