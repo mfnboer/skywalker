@@ -48,7 +48,7 @@ TextEdit {
         if (postUtils.editTag.length > 0 && editTagY != cursorY)
             postUtils.editTag = ""
 
-        parentFlick.ensureVisible(cursorRectangle)
+        ensureVisible(cursorRectangle)
     }
 
     onTextChanged: {
@@ -131,6 +131,16 @@ TextEdit {
         postUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
 
         return graphemeLength - prevGraphemeLength
+    }
+
+    function ensureVisible(cursor) {
+        const editTextY = editText.mapToItem(flick, 0, 0).y
+        let cursorY = cursor.y + editTextY
+
+        if (cursorY < 0)
+            parentFlick.contentY += cursorY;
+        else if (parentFlick.height < cursorY + cursor.height)
+            parentFlick.contentY += cursorY + cursor.height - parentFlick.height
     }
 
     Text {

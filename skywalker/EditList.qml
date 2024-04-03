@@ -112,16 +112,7 @@ Page {
         contentHeight: pageColumn.y + descriptionRect.y + descriptionField.y + descriptionField.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: ensureVisible(descriptionField.cursorRectangle)
-
-        function ensureVisible(cursor) {
-            let cursorY = cursor.y + pageColumn.y + descriptionRect.y + descriptionField.y
-
-            if (contentY >= cursorY)
-                contentY = cursorY;
-            else if (contentY + height <= cursorY + cursor.height)
-                contentY = cursorY + cursor.height - height;
-        }
+        onHeightChanged: descriptionField.ensureVisible(descriptionField.cursorRectangle)
 
         ColumnLayout {
             id: pageColumn

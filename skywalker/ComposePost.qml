@@ -159,7 +159,8 @@ Page {
         boundsBehavior: Flickable.StopAtBounds
 
         onHeightChanged: {
-            ensureVisible(currentPostItem().getPostText().cursorRectangle)
+            let postText = currentPostItem().getPostText()
+            postText.ensureVisible(postText.cursorRectangle)
         }
 
         // Reply-to
@@ -566,17 +567,6 @@ Page {
                     }
                 }
             }
-        }
-
-        function ensureVisible(cursor) {
-            const postText = currentPostItem().getPostText()
-            const postTextY = postText.mapToItem(flick, 0, 0).y
-            let cursorY = cursor.y + postTextY
-
-            if (cursorY < 0)
-                contentY += cursorY;
-            else if (flick.height < cursorY + cursor.height)
-                contentY += cursorY + cursor.height - flick.height
         }
     }
 
@@ -1021,11 +1011,13 @@ Page {
         id: focusTimer
         interval: 200
         onTriggered: {
-            if (!initialText.startsWith("\n#")) // hashtag post
-                currentPostItem().getPostText().cursorPosition = initialText.length
+            let postText = currentPostItem().getPostText()
 
-            flick.ensureVisible(Qt.rect(0, 0, currentPostItem().getPostText().width, currentPostItem().getPostText().height))
-            currentPostItem().getPostText().forceActiveFocus()
+            if (!initialText.startsWith("\n#")) // hashtag post
+                postText.cursorPosition = initialText.length
+
+            postText.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
+            postText.forceActiveFocus()
         }
     }
 
