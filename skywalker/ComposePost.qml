@@ -344,85 +344,16 @@ Page {
                     }
 
                     // Image attachments
-                    ScrollView {
-                        property int imgWidth: 240
+                    ImageScroller {
+                        property alias images: postItem.images
+                        property alias altTexts: postItem.altTexts
 
                         id: imageScroller
-                        height: visible && postItem.images.length > 0 ? 180 : 0
                         width: page.width
-                        bottomPadding: 0
-                        anchors.topMargin: postItem.images.length > 0 ? 10 : 0
-                        horizontalPadding: 10
                         anchors.top: postText.bottom
-                        contentWidth: imageRow.width
-                        contentHeight: height
+                        requireAltText: page.requireAltText
+                        postUtils: page.getPostUtils()
                         visible: !linkCard.visible && !gifAttachment.visible
-
-                        Row {
-                            id: imageRow
-                            width: postItem.images.length * imageScroller.imgWidth + (postItem.images.length - 1) * spacing
-                            spacing: 10
-
-                            Repeater {
-                                model: postItem.images
-
-                                Image {
-                                    required property string modelData
-                                    required property int index
-
-                                    width: imageScroller.imgWidth
-                                    height: imageScroller.height
-                                    fillMode: Image.PreserveAspectCrop
-                                    autoTransform: true
-                                    source: modelData
-
-                                    Accessible.role: Accessible.StaticText
-                                    Accessible.name: qsTr(`picture ${(index + 1)}: `) + (hasAltText(postItem.index, index) ? postItem.altTexts[index] : "no alt text")
-
-                                    onStatusChanged: {
-                                        if (status === Image.Error){
-                                            statusPopup.show(qsTr("Cannot load image"), QEnums.STATUS_LEVEL_ERROR);
-                                            page.removeImage(postItem.index, index)
-                                        }
-                                    }
-
-                                    SkyButton {
-                                        flat: hasAltText(postItem.index, index)
-                                        text: hasAltText(postItem.index, index) ? qsTr("ALT") : qsTr("+ALT", "add alternative text button")
-                                        onClicked: editAltText(postItem.index, index)
-
-                                        Accessible.role: Accessible.Button
-                                        Accessible.name: hasAltText(postItem.index, index) ? qsTr(`edit alt text for picture ${(index + 1)}`) : qsTr(`add alt text to picture ${(index + 1)}`)
-                                        Accessible.onPressAction: clicked()
-                                    }
-
-                                    SvgButton {
-                                        x: parent.width - width
-                                        height: width
-                                        svg: svgOutline.close
-                                        onClicked: page.removeImage(postItem.index, index)
-
-                                        Accessible.role: Accessible.Button
-                                        Accessible.name: qsTr(`remove picture ${(index + 1)}`)
-                                        Accessible.onPressAction: clicked()
-                                    }
-
-                                    SkyLabel {
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.bottom: parent.bottom
-                                        backgroundColor: guiSettings.errorColor
-                                        horizontalAlignment: Text.AlignHCenter
-                                        color: "white"
-                                        text: "ALT text missing"
-                                        visible: requireAltText && !hasAltText(postItem.index, index)
-
-                                        Accessible.role: Accessible.StaticText
-                                        Accessible.name: qsTr(`picture ${(index + 1)}: `) + text
-                                    }
-                                }
-                            }
-                        }
                     }
 
                     // GIF attachment
@@ -696,32 +627,13 @@ Page {
             textField: currentPostItem().getPostText()
         }
 
-        SvgImage {
+        AddImageButton {
             id: addImage
             x: 10
             y: height + 5 + restrictionRow.height + footerSeparator.height
-            width: 34
-            height: 34
-            color: addImage.mustEnable() ? guiSettings.buttonColor : guiSettings.disabledColor
-            opacity: 1
-            svg: svgOutline.addImage
+            enabled: mustEnable()
 
-            Rectangle {
-                y: -parent.height
-                width: parent.width
-                height: parent.height
-                color: "transparent"
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("add picture")
-                Accessible.onPressAction: if (parent.mustEnable()) parent.selectImage()
-            }
-
-            function mustEnable() {
-                return currentPostItem().images.length < maxImages && currentPostItem().getImageScroller().visible && !pickingImage
-            }
-
-            function selectImage() {
+            onClicked: {
                 if (Qt.platform.os === "android") {
                     pickingImage = postUtils.pickPhoto()
                 } else {
@@ -729,12 +641,8 @@ Page {
                 }
             }
 
-            MouseArea {
-                y: -parent.height
-                width: parent.width
-                height: parent.height
-                enabled: addImage.mustEnable()
-                onClicked: addImage.selectImage()
+            function mustEnable() {
+                return currentPostItem().images.length < maxImages && currentPostItem().getImageScroller().visible && !pickingImage
             }
         }
 
@@ -742,8 +650,6 @@ Page {
             id: addGif
             x: addImage.x + addImage.width + 10
             y: height + 5 + restrictionRow.height + footerSeparator.height
-            width: 34
-            height: 34
             enabled: mustEnable()
 
             onSelectedGif: (gif) => currentPostItem().getGifAttachment().show(gif)
@@ -757,7 +663,6 @@ Page {
             id: fontSelector
             x: addGif.x + addGif.width + 15
             y: 5 + restrictionRow.height + footerSeparator.height
-            height: 34
 
             popup.onClosed: currentPostItem().getPostText().forceActiveFocus()
         }
@@ -955,6 +860,10 @@ Page {
         id: guiSettings
     }
 
+    function getPostUtils() {
+        return postUtils
+    }
+
     function currentPostItem() {
         // Checking threadPosts.count here makes this function re-evaluate when count changes
         if (threadPosts.count === 0)
@@ -974,22 +883,16 @@ Page {
         statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
-    function hasAltText(postIndex, index) {
-        const postItem = threadPosts.itemAt(postIndex)
-
-        if (index >= postItem.altTexts.length)
-            return false
-
-        return postItem.altTexts[index].length > 0
-    }
-
     function checkAltText() {
         if (!requireAltText)
             return true
 
         for (let postIndex = 0; postIndex < threadPosts.count; ++postIndex) {
-            for (let i = 0; i < currentPostItem().images.length; ++i) {
-                if (!hasAltText(postIndex, i))
+            const postItem = currentPostItem()
+            const imgScroller = postItem.getImagesScroller()
+
+            for (let i = 0; i < postItem.images.length; ++i) {
+                if (!imgScroller.hasAltText(i))
                     return false
             }
         }
@@ -1020,13 +923,6 @@ Page {
 
         photoPicked(source)
         addSharedText(text)
-    }
-
-    function removeImage(postIndex, index) {
-        let postItem = threadPosts.itemAt(postIndex)
-        postUtils.dropPhoto(postItem.images[index])
-        postItem.altTexts.splice(index, 1)
-        postItem.images.splice(index, 1)
     }
 
     function postDone() {
@@ -1144,19 +1040,6 @@ Page {
         allowListUrisFromDraft = draftData.allowLists
         allowListIndexes = [0, 1, 2]
         allowLists = [false, false, false]
-    }
-
-    function editAltText(postIndex, index) {
-        let postItem = threadPosts.itemAt(postIndex)
-        let component = Qt.createComponent("AltTextEditor.qml")
-        let altPage = component.createObject(page, {
-                imgSource: postItem.images[index],
-                text: postItem.altTexts[index] })
-        altPage.onAltTextChanged.connect((text) => {
-                postItem.altTexts[index] = text
-                root.popStack()
-        })
-        root.pushStack(altPage)
     }
 
     function addReplyRestrictions() {

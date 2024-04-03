@@ -9,6 +9,8 @@ SvgImage {
     signal selectedGif(tenorgif gif)
 
     id: addGifButton
+    width: 34
+    height: 34
     color: addGifButton.enabled ? guiSettings.buttonColor : guiSettings.disabledColor
     opacity: 1
     svg: svgOutline.addGif
