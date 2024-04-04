@@ -11,7 +11,7 @@ Page {
     property int fullPageHeight
 
     property int maxThreadPosts: 99
-    property int maxImages: 4
+    property int maxImages: 4 // per post
     property bool pickingImage: false
 
     // Reply restrictions (on post thread)
@@ -23,7 +23,7 @@ Page {
     property list<string> allowListUrisFromDraft: []
     property int restrictionsListModelId: -1
 
-    // Reply-to
+    // Reply-to (first post)
     property basicprofile replyToAuthor
     property string replyToPostUri: ""
     property string replyToPostCid: ""
@@ -43,11 +43,11 @@ Page {
     property basicprofile nullAuthor
     property generatorview nullFeed
     property listview nullList
+    property tenorgif nullGif
 
     readonly property string userDid: skywalker.getUserDid()
     readonly property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
 
-    property tenorgif attachedGif
     property int currentPostIndex: 0
 
     signal closed
@@ -106,40 +106,10 @@ Page {
             function sendPost() {
                 postButton.enabled = false
 
-                const postItem = currentPostItem()
-                const qUri = postItem.getQuoteUri()
-                const qCid = postItem.getQuoteCid()
-                const labels = getContentLabels()
+                if (threadPosts.count === 1)
+                    sendSinglePost()
 
-                if (postItem.getLinkCard().card) {
-                    postUtils.post(postItem.getPostText().text,
-                                   postItem.getLinkCard().card,
-                                   replyToPostUri, replyToPostCid,
-                                   replyRootPostUri, replyRootPostCid,
-                                   qUri, qCid, labels)
-                } else if (postItem.getGifAttachment().gif) {
-                    tenor.registerShare(attachedGif)
-
-                    let gifCard = linkCardReader.makeLinkCard(
-                            attachedGif.url,
-                            `${attachedGif.description} (via Tenor)\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
-                            qsTr("This GIF has been posted from Skywalker for Android. " +
-                                 "Get Skywalker from Google Play.") +
-                                 (`<br>Bluesky: ${guiSettings.skywalkerHandle}`),
-                            attachedGif.imageUrl)
-
-                    postUtils.post(postItem.getPostText().text, gifCard,
-                                   replyToPostUri, replyToPostCid,
-                                   replyRootPostUri, replyRootPostCid,
-                                   qUri, qCid, labels)
-                } else {
-                    postUtils.post(postItem.getPostText().text, postItem.images, postItem.altTexts,
-                                   replyToPostUri, replyToPostCid,
-                                   replyRootPostUri, replyRootPostCid,
-                                   qUri, qCid, labels);
-                }
-
-                postUtils.cacheTags(postItem.getPostText().text)
+                // TODO: thread
             }
         }
     }
@@ -251,8 +221,13 @@ Page {
                         quoteDateTime = threadPosts.postList[index].quoteDateTime
                         quoteFeed = threadPosts.postList[index].quoteFeed
                         quoteList = threadPosts.postList[index].quoteList
-                        gifAttachment.gif = threadPosts.postList[index].gif
                         linkCard.card = threadPosts.postList[index].card
+
+                        if (!threadPosts.postList[index].gif.isNull())
+                            gifAttachment.show(threadPosts.postList[index].gif)
+                        else
+                            gifAttachment.hide()
+
                         cwSuggestive = threadPosts.postList[index].cwSuggestive
                         cwNudity = threadPosts.postList[index].cwNudity
                         cwPorn = threadPosts.postList[index].cwPorn
@@ -267,26 +242,6 @@ Page {
                     function getImageScroller() { return imageScroller }
                     function getGifAttachment() { return gifAttachment }
                     function getLinkCard() { return linkCard }
-
-                    function getQuoteUri() {
-                        if (quoteUri)
-                            return quoteUri
-
-                        if (quoteFeed.uri)
-                            return quoteFeed.uri
-
-                        return quoteList.uri
-                    }
-
-                    function getQuoteCid() {
-                        if (quoteCid)
-                            return quoteCid
-
-                        if (quoteFeed.cid)
-                            return quoteFeed.cid
-
-                        return quoteList.cid
-                    }
 
                     function calcHeight() {
                         if (quoteColumn.visible)
@@ -305,7 +260,7 @@ Page {
                         return postText.graphemeLength > 0 ||
                                 images.length > 0 ||
                                 linkCard.card ||
-                                gifAttachment.gif
+                                !gifAttachment.gif.isNull()
                     }
 
                     function isValid() {
@@ -377,7 +332,7 @@ Page {
                         }
 
                         onFirstPostLinkChanged: {
-                            if (page.openedAsQuotePost)
+                            if (page.openedAsQuotePost && index === 0)
                                 return
 
                             quoteList = page.nullList
@@ -389,7 +344,7 @@ Page {
                         }
 
                         onFirstFeedLinkChanged: {
-                            if (page.openedAsQuotePost)
+                            if (page.openedAsQuotePost && index === 0)
                                 return
 
                             quoteList = page.nullList
@@ -403,7 +358,7 @@ Page {
                         }
 
                         onFirstListLinkChanged: {
-                            if (page.openedAsQuotePost)
+                            if (page.openedAsQuotePost && index === 0)
                                 return
 
                             page.quoteList = page.nullList
@@ -443,8 +398,7 @@ Page {
 
                     // GIF attachment
                     AnimatedImage {
-                        property var gif: null
-                        property tenorgif nullGif
+                        property tenorgif gif
 
                         id: gifAttachment
                         x: 10
@@ -452,8 +406,8 @@ Page {
                         anchors.top: imageScroller.bottom
                         anchors.topMargin: gif ? 10 : 0
                         fillMode: Image.PreserveAspectFit
-                        source: gif ? gif.smallUrl : ""
-                        visible: gif
+                        source: !gif.isNull() ? gif.smallUrl : ""
+                        visible: !gif.isNull()
 
                         onGifChanged: threadPosts.postList[index].gif = gif
 
@@ -461,16 +415,12 @@ Page {
                         Accessible.name: qsTr("GIF image")
 
                         function show(gif) {
-                            // For some reasong the gif property of the AnimatedImage gets destroyed
-                            // after setting it from a draft after the AnimatedImage gets displayed.
-                            // The copy in attached gif can be used for sending/saving.
-                            attachedGif = gif
                             gifAttachment.gif = gif
                             linkCard.hide()
                         }
 
                         function hide() {
-                            gifAttachment.gif = null
+                            gifAttachment.gif = nullGif
                         }
 
                         SvgButton {
@@ -618,6 +568,10 @@ Page {
 
                     copyPostItemsToPostList()
 
+                    if (index === 0 && openedAsQuotePost) {
+                        openedAsQuotePost = false
+                    }
+
                     if (currentPostIndex === count - 1)
                         currentPostIndex -= 1
 
@@ -663,7 +617,7 @@ Page {
         anchors.centerIn: parent
         font.pointSize: guiSettings.scaledFont(9/8)
         text: qsTr("<a href=\"drafts\">Drafts</a>")
-        visible: !hasContent() && !replyToPostUri && !quoteUri && draftPosts.hasDrafts // TODO
+        visible: threadPosts.count === 1 && !hasContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
@@ -1144,30 +1098,63 @@ Page {
         }
     }
 
-    function saveDraftPost() {
-        const postItem = currentPostItem()
-
-        if (!postItem)
-            return
-
-        const postText = postItem.getPostText()
+    function sendSinglePost() {
+        threadPosts.copyPostItemsToPostList()
+        const postItem = threadPosts.postList[0]
         const qUri = postItem.getQuoteUri()
         const qCid = postItem.getQuoteCid()
-        const labels = getContentLabels()
-        const gif = gifAttachment.gif ? attachedGif : gifAttachment.nullGif
+        const labels = postItem.getContentLabels()
 
-        draftPosts.saveDraftPost(postText.text, postItem.images, postItem.altTexts,
+        if (postItem.card) {
+            postUtils.post(postItem.text,
+                           postItem.card,
+                           replyToPostUri, replyToPostCid,
+                           replyRootPostUri, replyRootPostCid,
+                           qUri, qCid, labels)
+        } else if (!postItem.gif.isNull()) {
+            tenor.registerShare(postItem.gif)
+
+            let gifCard = linkCardReader.makeLinkCard(
+                    postItem.gif.url,
+                    `${postItem.gif.description} (via Tenor)\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
+                    qsTr("This GIF has been posted from Skywalker for Android. " +
+                         "Get Skywalker from Google Play.") +
+                         (`<br>Bluesky: ${guiSettings.skywalkerHandle}`),
+                    postItem.gif.imageUrl)
+
+            postUtils.post(postItem.text, gifCard,
+                           replyToPostUri, replyToPostCid,
+                           replyRootPostUri, replyRootPostCid,
+                           qUri, qCid, labels)
+        } else {
+            postUtils.post(postItem.text, postItem.images, postItem.altTexts,
+                           replyToPostUri, replyToPostCid,
+                           replyRootPostUri, replyRootPostCid,
+                           qUri, qCid, labels);
+        }
+
+        postUtils.cacheTags(postItem.text)
+    }
+
+    function saveDraftPost() {
+        threadPosts.copyPostItemsToPostList()
+        const postItem = threadPosts.postList[0]
+        const qUri = postItem.getQuoteUri()
+        const qCid = postItem.getQuoteCid()
+        const labels = postItem.getContentLabels()
+
+        draftPosts.saveDraftPost(postItem.text, postItem.images, postItem.altTexts,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
                                  replyToPostDateTime,
-                                 qUri, qCid, quoteAuthor, unicodeFonts.toPlainText(quoteText),
-                                 quoteDateTime, postItem.quoteFeed, postItem.quoteList,
-                                 gif, labels,
+                                 qUri, qCid, postItem.quoteAuthor, unicodeFonts.toPlainText(postItem.quoteText),
+                                 postItem.quoteDateTime, postItem.quoteFeed, postItem.quoteList,
+                                 postItem.gif, labels,
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
 
-        postUtils.cacheTags(postText.text)
+        postUtils.cacheTags(postItem.text)
     }
 
     function showDraftPosts() {
@@ -1187,17 +1174,8 @@ Page {
     }
 
     function setDraftPost(draftData) {
-        let postItem = currentPostItem()
-
-        if (!postItem)
-            return
-
-        postItem.getLinkCard.hide()
-        postItem.getGifAttachment.hide()
-        postItem.images = []
-        postItem.altTexts = []
-
-        postItem.getPostText().text = draftData.text
+        let postItem = threadPosts.newComposePostItem()
+        postItem.text = draftData.text
 
         for (let i = 0; i < draftData.images.length; ++i) {
             postItem.images.push(draftData.images[i].fullSizeUrl)
@@ -1213,28 +1191,26 @@ Page {
         replyToPostDateTime = draftData.replyToDateTime
 
         openedAsQuotePost = draftData.openAsQuotePost
-        quoteUri = draftData.quoteUri
-        quoteCid = draftData.quoteCid
-        quoteAuthor = draftData.quoteAuthor
-        quoteText = draftData.quoteText
-        quoteDateTime = draftData.quoteDateTime
+        postItem.quoteUri = draftData.quoteUri
+        postItem.quoteCid = draftData.quoteCid
+        postItem.quoteAuthor = draftData.quoteAuthor
+        postItem.quoteText = draftData.quoteText
+        postItem.quoteDateTime = draftData.quoteDateTime
+        postItem.quoteFeed = draftData.quoteFeed
+        postItem.quoteList = draftData.quoteList
 
-        // TODO
-        quoteFeed = draftData.quoteFeed
-        quoteList = draftData.quoteList
+        postItem.gif = draftData.gif
 
-        if (draftData.gif.isNull())
-            postItem.getGifAttachment().hide()
-        else
-            postItem.getGifAttachment().show(draftData.gif)
-
-        setContentWarnings(draftData.labels)
+        postItem.setContentWarnings(draftData.labels)
         restrictReply = draftData.restrictReplies
         allowReplyMentioned = draftData.allowMention
         allowReplyFollowing = draftData.allowFollowing
         allowListUrisFromDraft = draftData.allowLists
         allowListIndexes = [0, 1, 2]
         allowLists = [false, false, false]
+
+        threadPosts.postList[0] = postItem
+        threadPosts.copyPostListToPostItems()
     }
 
     function addReplyRestrictions() {
@@ -1314,7 +1290,7 @@ Page {
         if (!postItem)
             return false
 
-        return postItem.getGifAttachment().gif ||
+        return !postItem.getGifAttachment().gif.isNull() ||
                 (postItem.getLinkCard().card && postItem.getLinkCard().card.thumb) ||
                 postItem.images.length > 0
     }
@@ -1325,10 +1301,8 @@ Page {
         if (!postItem)
             return false
 
-        //return postItem.images.length < maxImages && !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && !pickingImage
-
         return postItem.images.length < maxImages &&
-                !threadPosts.postList[currentPostIndex].gif &&
+                threadPosts.postList[currentPostIndex].gif.isNull() &&
                 !threadPosts.postList[currentPostIndex].card &&
                 !pickingImage
     }
@@ -1339,9 +1313,7 @@ Page {
         if (!postItem)
             return false
 
-        //return !postItem.getGifAttachment().gif && !postItem.getLinkCard().visible && postItem.images.length === 0
-
-        return !threadPosts.postList[currentPostIndex].gif &&
+        return threadPosts.postList[currentPostIndex].gif.isNull() &&
                 !threadPosts.postList[currentPostIndex].card &&
                 postItem.images.length === 0
     }
@@ -1353,52 +1325,6 @@ Page {
             return false
 
         return hasImageContent() && (postItem.cwSuggestive || postItem.cwNudity || postItem.cwPorn || postItem.cwGore)
-    }
-
-    function getContentLabels() {
-        let labels = []
-
-        const postItem = currentPostItem()
-
-        if (!postItem)
-            return labels
-
-        if (!hasImageContent())
-            return labels
-
-        if (postItem.cwSuggestive)
-            labels.push("sexual")
-        if (postItem.cwNudity)
-            labels.push("nudity")
-        if (postItem.cwPorn)
-            labels.push("porn")
-        if (postItem.cwGore)
-            labels.push("gore")
-
-        return labels
-    }
-
-    function setContentWarnings(labels) {
-        const postItem = currentPostItem()
-
-        if (!postItem)
-            return labels
-
-        postItem.cwSuggestive = false
-        postItem.cwNudity = false
-        postItem.cwPorn = false
-        postItem.cwGore = false
-
-        labels.forEach((label) => {
-            if (label === "sexual")
-                postItem.cwSuggestive = true
-            else if (label === "nudity")
-                postItem.cwNudity = true
-            else if (label === "porn")
-                postItem.cwPorn = true
-            else if (label === "gore")
-                postItem.cwGore = true
-        })
     }
 
     Connections {
