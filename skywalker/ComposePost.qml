@@ -270,40 +270,22 @@ Page {
                     id: postItem
                     width: parent.width
                     height: calcHeight()
+                    opacity: index === currentPostIndex ? 1.0 : 0.6
 
-                    Rectangle {
-                        id: postSeparatorFrontSpace
-                        width: parent.width
-                        height: index > 0 ? 10 : 0
-                        color: "transparent"
-                        visible: index > 0
-                    }
-
-                    Rectangle {
-                        id: postSeparatorLine
-                        anchors.top: postSeparatorFrontSpace.bottom
-                        width: parent.width
-                        height: index > 0 ? 1 : 0
-                        color: guiSettings.separatorColor
-                        visible: index > 0
-                    }
-
-                    Rectangle {
-                        id: postSeparatorSpace
-                        anchors.top: postSeparatorLine.bottom
-                        width: parent.width
-                        height: index > 0 ? 10 : 0
-                        color: "transparent"
+                    SeparatorLine {
+                        id: separatorLine
                         visible: index > 0
                     }
 
                     SkyFormattedTextEdit {
                         id: postText
-                        anchors.top: postSeparatorSpace.bottom
+                        anchors.top: separatorLine.bottom
                         width: parent.width
+                        topPadding: 0
+                        bottomPadding: 5
                         parentPage: page
                         parentFlick: flick
-                        placeholderText: qsTr("Say something nice")
+                        placeholderText: index === 0 ? qsTr("Say something nice") : qsTr(`Add post ${(index + 1)}`)
                         initialText: postItem.text
                         maxLength: 300
                         fontSelectorCombo: fontSelector
@@ -372,7 +354,7 @@ Page {
                     }
 
                     SvgButton {
-                        y: postText.y - 5
+                        y: postText.y - 6
                         x: parent.width - width - 10
                         z: 10
                         width: 34
@@ -404,7 +386,7 @@ Page {
                         x: 10
                         width: Math.min(gif ? gif.smallSize.width : 1, page.width - 20)
                         anchors.top: imageScroller.bottom
-                        anchors.topMargin: gif ? 10 : 0
+                        anchors.topMargin: !gif.isNull() ? 10 : 0
                         fillMode: Image.PreserveAspectFit
                         source: !gif.isNull() ? gif.smallUrl : ""
                         visible: !gif.isNull()
@@ -493,7 +475,7 @@ Page {
                         id: quoteColumn
                         width: parent.width - 20
                         anchors.top: linkCard.bottom
-                        anchors.topMargin: 5
+                        anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
                         author: postItem.quoteAuthor
                         postText: postItem.quoteText
@@ -514,7 +496,7 @@ Page {
                         id: quoteFeedColumn
                         width: parent.width - 20
                         anchors.top: linkCard.bottom
-                        anchors.topMargin: 5
+                        anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
                         feed: postItem.quoteFeed
                         visible: !postItem.quoteFeed.isNull()
@@ -532,7 +514,7 @@ Page {
                         id: quoteListColumn
                         width: parent.width - 20
                         anchors.top: linkCard.bottom
-                        anchors.topMargin: 5
+                        anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
                         list: postItem.quoteList
                         visible: !postItem.quoteList.isNull()
@@ -616,7 +598,8 @@ Page {
         id: draftsLink
         anchors.centerIn: parent
         font.pointSize: guiSettings.scaledFont(9/8)
-        text: qsTr("<a href=\"drafts\">Drafts</a>")
+        textFormat: Text.RichText
+        text: qsTr(`<a href=\"drafts\" style=\"color: ${guiSettings.linkColor}\">Drafts</a>`)
         visible: threadPosts.count === 1 && !hasContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
         onLinkActivated: showDraftPosts()
 
@@ -799,14 +782,6 @@ Page {
             Accessible.name: qsTr("add post")
             Accessible.onPressAction: clicked()
         }
-
-        // TODO: remove?
-        // TextLengthCounter {
-        //     y: 10 + restrictionRow.height + footerSeparator.height
-        //     anchors.rightMargin: 10
-        //     anchors.right: parent.right
-        //     textField: currentPostItem().getPostText()
-        // }
     }
 
     StatusPopup {
