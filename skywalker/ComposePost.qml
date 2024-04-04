@@ -446,6 +446,8 @@ Page {
                         source: gif ? gif.smallUrl : ""
                         visible: gif
 
+                        onGifChanged: threadPosts.postList[index].gif = gif
+
                         Accessible.role: Accessible.StaticText
                         Accessible.name: qsTr("GIF image")
 
@@ -489,6 +491,8 @@ Page {
                         description: card ? card.description : ""
                         thumbUrl: card ? card.thumb : ""
                         visible: card
+
+                        onCardChanged: threadPosts.postList[index].card = card
 
                         Accessible.role: Accessible.StaticText
                         Accessible.name: getSpeech()
@@ -639,7 +643,7 @@ Page {
                 function moveFocusToCurrent() {
                     let postText = currentPostItem().getPostText()
                     postText.cursorPosition = postText.text.length
-                    postText.forceActiveFocus()
+                    focusTimer.start()
                 }
             }
         }
@@ -1307,7 +1311,12 @@ Page {
         if (!postItem)
             return false
 
-        return postItem.images.length < maxImages && !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && !pickingImage
+        //return postItem.images.length < maxImages && !postItem.getGifAttachment().visible && !postItem.getLinkCard().visible && !pickingImage
+
+        return postItem.images.length < maxImages &&
+                !threadPosts.postList[currentPostIndex].gif &&
+                !threadPosts.postList[currentPostIndex].card &&
+                !pickingImage
     }
 
     function canAddGif() {
@@ -1316,7 +1325,11 @@ Page {
         if (!postItem)
             return false
 
-        return !postItem.getGifAttachment().gif && !postItem.getLinkCard().visible && postItem.images.length === 0
+        //return !postItem.getGifAttachment().gif && !postItem.getLinkCard().visible && postItem.images.length === 0
+
+        return !threadPosts.postList[currentPostIndex].gif &&
+                !threadPosts.postList[currentPostIndex].card &&
+                postItem.images.length === 0
     }
 
     function hasContentWarning() {

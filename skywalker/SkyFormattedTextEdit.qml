@@ -51,6 +51,11 @@ TextEdit {
         ensureVisible(cursorRectangle)
     }
 
+    onFocusChanged: {
+        if (focus)
+            ensureVisible(cursorRectangle)
+    }
+
     onTextChanged: {
         if (textChangeInProgress)
             return

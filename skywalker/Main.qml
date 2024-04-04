@@ -15,8 +15,6 @@ ApplicationWindow {
     visible: true
     title: "Skywalker"
 
-    Accessible.role: Accessible.Application
-
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
         settings.setPostButtonRelativeX(postButtonRelativeX)

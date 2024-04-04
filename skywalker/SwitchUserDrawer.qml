@@ -9,7 +9,6 @@ Drawer {
     signal selectedUser(basicprofile user)
 
     id: drawer
-    Accessible.role: Accessible.Pane
 
     SimpleAuthorListView {
         anchors.fill: parent
