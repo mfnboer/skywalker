@@ -14,7 +14,7 @@ Page {
     property int maxImages: 4
     property bool pickingImage: false
 
-    // Reply restrictions
+    // Reply restrictions (on post thread)
     property bool restrictReply: false
     property bool allowReplyMentioned: false
     property bool allowReplyFollowing: false
@@ -22,12 +22,6 @@ Page {
     property list<bool> allowLists: [false, false, false]
     property list<string> allowListUrisFromDraft: []
     property int restrictionsListModelId: -1
-
-    // Content warnings // TODO
-    property bool cwSuggestive: false
-    property bool cwNudity: false
-    property bool cwPorn: false
-    property bool cwGore: false
 
     // Reply-to
     property basicprofile replyToAuthor
@@ -223,6 +217,10 @@ Page {
                     property date quoteDateTime
                     property generatorview quoteFeed
                     property listview quoteList
+                    property bool cwSuggestive: false
+                    property bool cwNudity: false
+                    property bool cwPorn: false
+                    property bool cwGore: false
 
                     function copyToPostList() {
                         threadPosts.postList[index].text = text
@@ -237,6 +235,10 @@ Page {
                         threadPosts.postList[index].quoteList = quoteList
                         threadPosts.postList[index].gif = gifAttachment.gif
                         threadPosts.postList[index].card = linkCard.card
+                        threadPosts.postList[index].cwSuggestive = cwSuggestive
+                        threadPosts.postList[index].cwNudity = cwNudity
+                        threadPosts.postList[index].cwPorn = cwPorn
+                        threadPosts.postList[index].cwGore = cwGore
                     }
 
                     function copyFromPostList() {
@@ -251,6 +253,13 @@ Page {
                         quoteList = threadPosts.postList[index].quoteList
                         gifAttachment.gif = threadPosts.postList[index].gif
                         linkCard.card = threadPosts.postList[index].card
+                        cwSuggestive = threadPosts.postList[index].cwSuggestive
+                        cwNudity = threadPosts.postList[index].cwNudity
+                        cwPorn = threadPosts.postList[index].cwPorn
+                        cwGore = threadPosts.postList[index].cwGore
+
+                        // Set text last as it will trigger link extractions which
+                        // will check if a link card is already in place.
                         text = threadPosts.postList[index].text
                     }
 
@@ -1276,18 +1285,23 @@ Page {
     }
 
     function addContentWarning() {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return
+
         let component = Qt.createComponent("AddContentWarning.qml")
         let cwPage = component.createObject(page, {
-                suggestive: cwSuggestive,
-                nudity: cwNudity,
-                porn: cwPorn,
-                gore: cwGore
+                suggestive: postItem.cwSuggestive,
+                nudity: postItem.cwNudity,
+                porn: postItem.cwPorn,
+                gore: postItem.cwGore
         })
         cwPage.onAccepted.connect(() => {
-                cwSuggestive = cwPage.suggestive
-                cwNudity = cwPage.nudity
-                cwPorn = cwPage.porn
-                cwGore = cwPage.gore
+                postItem.cwSuggestive = cwPage.suggestive
+                postItem.cwNudity = cwPage.nudity
+                postItem.cwPorn = cwPage.porn
+                postItem.cwGore = cwPage.gore
                 cwPage.destroy()
         })
         cwPage.onRejected.connect(() => cwPage.destroy())
@@ -1333,42 +1347,57 @@ Page {
     }
 
     function hasContentWarning() {
-        return hasImageContent() && (cwSuggestive || cwNudity || cwPorn || cwGore)
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return false
+
+        return hasImageContent() && (postItem.cwSuggestive || postItem.cwNudity || postItem.cwPorn || postItem.cwGore)
     }
 
     function getContentLabels() {
         let labels = []
 
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return labels
+
         if (!hasImageContent())
             return labels
 
-        if (cwSuggestive)
+        if (postItem.cwSuggestive)
             labels.push("sexual")
-        if (cwNudity)
+        if (postItem.cwNudity)
             labels.push("nudity")
-        if (cwPorn)
+        if (postItem.cwPorn)
             labels.push("porn")
-        if (cwGore)
+        if (postItem.cwGore)
             labels.push("gore")
 
         return labels
     }
 
     function setContentWarnings(labels) {
-        cwSuggestive = false
-        cwNudity = false
-        cwPorn = false
-        cwGore = false
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return labels
+
+        postItem.cwSuggestive = false
+        postItem.cwNudity = false
+        postItem.cwPorn = false
+        postItem.cwGore = false
 
         labels.forEach((label) => {
             if (label === "sexual")
-                cwSuggestive = true
+                postItem.cwSuggestive = true
             else if (label === "nudity")
-                cwNudity = true
+                postItem.cwNudity = true
             else if (label === "porn")
-                cwPorn = true
+                postItem.cwPorn = true
             else if (label === "gore")
-                cwGore = true
+                postItem.cwGore = true
         })
     }
 
@@ -1411,13 +1440,6 @@ Page {
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.
         focusTimer.start()
-
-        // TODO: remove?
-        // postItem = threadPosts.itemAt(0)
-        // postUtils.setHighlightDocument(postItem.getPostText().textDocument,
-        //                                guiSettings.linkColor,
-        //                                postItem.getPostText().maxLength,
-        //                                guiSettings.textLengthExceededColor)
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()

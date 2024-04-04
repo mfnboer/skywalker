@@ -17,9 +17,6 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
 
-    Accessible.role: Accessible.Dialog
-    Accessible.name: title
-
     Flickable {
         anchors.fill: parent
         clip: true

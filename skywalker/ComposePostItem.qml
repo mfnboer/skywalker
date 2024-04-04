@@ -14,4 +14,10 @@ Item {
     property listview quoteList
     property var gif: null
     property var card: null
+
+    // Content warnings
+    property bool cwSuggestive: false
+    property bool cwNudity: false
+    property bool cwPorn: false
+    property bool cwGore: false
 }
