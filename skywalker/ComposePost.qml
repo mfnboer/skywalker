@@ -51,6 +51,16 @@ Page {
 
     property int currentPostIndex: 0
 
+    // Current post of a thread being sent
+    property int sendingThreadPost: -1
+    property string threadRootUri
+    property string threadRootCid
+
+    // Can be different from threadRoot if the thread is a reply to an existing post
+    property string threadFirstPostUri
+    property string threadFirstPostCid
+    property bool threadGateCreated: false
+
     signal closed
 
     id: page
@@ -106,11 +116,17 @@ Page {
 
             function sendPost() {
                 postButton.enabled = false
+                threadPosts.copyPostItemsToPostList()
 
-                if (threadPosts.count === 1)
-                    sendSinglePost()
-
-                // TODO: thread
+                if (threadPosts.count === 1) {
+                    sendSinglePost(threadPosts.postList[0],
+                                   replyToPostUri, replyToPostCid,
+                                   replyRootPostUri, replyRootPostCid)
+                }
+                else {
+                    sendThreadPosts(0, replyToPostUri, replyToPostCid,
+                                    replyRootPostUri, replyRootPostCid)
+                }
             }
         }
     }
@@ -859,7 +875,9 @@ Page {
         skywalker: page.skywalker
 
         onPostOk: (uri, cid) => {
-            if (page.restrictReply)
+            if (page.sendingThreadPost > -1)
+                sendNextThreadPost(uri, cid)
+            else if (page.restrictReply)
                 postUtils.addThreadgate(uri, page.allowReplyMentioned, page.allowReplyFollowing, page.getReplyRestrictionListUris())
             else
                 postDone()
@@ -867,7 +885,15 @@ Page {
 
         onPostFailed: (error) => page.postFailed(error)
 
-        onThreadgateOk: postDone()
+        onThreadgateOk: {
+            threadGateCreated = true
+
+            if (page.sendingThreadPost > -1)
+                sendNextThreadPost(threadFirstPostUri, threadFirstPostCid)
+            else
+                postDone()
+        }
+
         onThreadgateFailed: (error) => page.postFailed(error)
 
         onPostProgress: (msg) => page.postProgress(msg)
@@ -991,7 +1017,11 @@ Page {
 
     function postProgress(msg) {
         busyIndicator.running = true
-        statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
+
+        if (sendingThreadPost < 0)
+            statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
+        else
+            statusPopup.show(qsTr(`Post ${(sendingThreadPost + 1)}: ${msg}`), QEnums.STATUS_LEVEL_INFO)
     }
 
     function checkAltText() {
@@ -1100,9 +1130,7 @@ Page {
         }
     }
 
-    function sendSinglePost() {
-        threadPosts.copyPostItemsToPostList()
-        const postItem = threadPosts.postList[0]
+    function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid) {
         const qUri = postItem.getQuoteUri()
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
@@ -1110,8 +1138,8 @@ Page {
         if (postItem.card) {
             postUtils.post(postItem.text,
                            postItem.card,
-                           replyToPostUri, replyToPostCid,
-                           replyRootPostUri, replyRootPostCid,
+                           parentUri, parentCid,
+                           rootUri, rootCid,
                            qUri, qCid, labels)
         } else if (!postItem.gif.isNull()) {
             tenor.registerShare(postItem.gif)
@@ -1125,17 +1153,54 @@ Page {
                     postItem.gif.imageUrl)
 
             postUtils.post(postItem.text, gifCard,
-                           replyToPostUri, replyToPostCid,
-                           replyRootPostUri, replyRootPostCid,
+                           parentUri, parentCid,
+                           rootUri, rootCid,
                            qUri, qCid, labels)
         } else {
             postUtils.post(postItem.text, postItem.images, postItem.altTexts,
-                           replyToPostUri, replyToPostCid,
-                           replyRootPostUri, replyRootPostCid,
+                           parentUri, parentCid,
+                           rootUri, rootCid,
                            qUri, qCid, labels);
         }
 
         postUtils.cacheTags(postItem.text)
+    }
+
+    function sendThreadPosts(postIndex, parentUri, parentCid, rootUri, rootCid) {
+        if (postIndex >= threadPosts.postList.length) {
+            console.debug("Done posting thread")
+            postDone()
+            return
+        }
+
+        console.debug(`Send thread post ${postIndex}`)
+        sendingThreadPost = postIndex
+        let postItem = threadPosts.postList[postIndex]
+        sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid)
+    }
+
+    function sendNextThreadPost(prevUri, prevCid) {
+        if (sendingThreadPost === 0) {
+            threadFirstPostUri = prevUri
+            threadFirstPostCid = prevCid
+
+            if (restrictReply && !threadGateCreated) {
+                postUtils.addThreadgate(prevUri, allowReplyMentioned, allowReplyFollowing,
+                                        getReplyRestrictionListUris())
+                return
+            }
+
+            if (replyRootPostUri) {
+                threadRootUri = replyRootPostUri
+                threadRootCid = replyRootPostCid
+            }
+            else {
+                threadRootUri = prevUri
+                threadRootCid = prevCid
+            }
+        }
+
+        sendThreadPosts(sendingThreadPost + 1, prevUri, prevCid, threadRootUri, threadRootCid)
     }
 
     function saveDraftPost() {
