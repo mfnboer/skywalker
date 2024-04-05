@@ -776,11 +776,13 @@ Page {
             svg: svgOutline.add
             enabled: hasContent() && threadPosts.count < maxThreadPosts
 
-            onClicked: threadPosts.addPost(currentPostIndex)
+            // Pressed instead of clicked. Pressing this button closes the virtual keyboard
+            // on Android, causing the release for a click to be lost.
+            onPressed: threadPosts.addPost(currentPostIndex)
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("add post")
-            Accessible.onPressAction: clicked()
+            Accessible.onPressAction: pressed()
         }
     }
 
@@ -1316,7 +1318,6 @@ Page {
             else {
                 console.debug("HIDE KEYBOARD, PARENT:", parent.height, "CONTENT:", contentHeight)
                 parent.height = fullPageHeight
-                fontSelector.virtualKeyboardClosed()
             }
         }
     }

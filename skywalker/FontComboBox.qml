@@ -39,6 +39,15 @@ ComboBox {
         }
     }
 
+    Connections {
+        target: Qt.inputMethod
+
+        function onKeyboardRectangleChanged() {
+            if (Qt.inputMethod.keyboardRectangle.y <= 0)
+                fontComboBox.virtualKeyboardClosed()
+        }
+    }
+
     Component.onCompleted: {
         fontComboBox.contentItem.color = guiSettings.buttonColor
         fontComboBox.indicator.color = guiSettings.buttonColor
