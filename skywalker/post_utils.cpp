@@ -521,6 +521,40 @@ void PostUtils::deletePost(const QString& postUri, const QString& cid)
         });
 }
 
+void PostUtils::batchDeletePosts(const QStringList& postUris)
+{
+    if (!bskyClient())
+        return;
+
+    ATProto::ComATProtoRepo::ApplyWritesList writes;
+
+    for (const auto& uri : postUris)
+    {
+        const ATProto::ATUri atUri(uri);
+
+        if (!atUri.isValid())
+        {
+            qWarning() << "Invalid post URI:" << uri;
+            continue;
+        }
+
+        auto deleteRecord = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesDelete>();
+        deleteRecord->mCollection = atUri.getCollection();
+        deleteRecord->mRKey = atUri.getRkey();
+        writes.push_back(std::move(deleteRecord));
+    }
+
+    const QString& repo = mSkywalker->getUserDid();
+
+    bskyClient()->applyWrites(repo, writes, false,
+        []{
+            qDebug() << "Deleted posts";
+        },
+        [](const QString& error, const QString& msg) {
+            qWarning() << "Failed to delete posts:" << error << "-" << msg;
+        });
+}
+
 bool PostUtils::pickPhoto()
 {
     const bool permission = PhotoPicker::pickPhoto();

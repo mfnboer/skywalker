@@ -60,6 +60,7 @@ Page {
     property string threadFirstPostUri
     property string threadFirstPostCid
     property bool threadGateCreated: false
+    property list<string> postedUris: []
 
     signal closed
 
@@ -101,13 +102,15 @@ Page {
         }
 
         SkyButton {
+            property bool isPosting: false
+
             id: postButton
             anchors.rightMargin: 10
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
 
-            enabled: postsAreValid() && hasContent() && checkAltText()
+            enabled: !isPosting && postsAreValid() && hasContent() && checkAltText()
             onClicked: sendPost()
 
             Accessible.role: Accessible.Button
@@ -115,7 +118,7 @@ Page {
             Accessible.onPressAction: if (enabled) clicked()
 
             function sendPost() {
-                postButton.enabled = false
+                postButton.isPosting = true
                 threadPosts.copyPostItemsToPostList()
 
                 if (threadPosts.count === 1) {
@@ -875,6 +878,8 @@ Page {
         skywalker: page.skywalker
 
         onPostOk: (uri, cid) => {
+            postedUris.push(uri)
+
             if (page.sendingThreadPost > -1)
                 sendNextThreadPost(uri, cid)
             else if (page.restrictReply)
@@ -1012,7 +1017,20 @@ Page {
     function postFailed(error) {
         busyIndicator.running = false
         statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        postButton.enabled = true
+
+        // Delete posts already posted (in a thread, or on failed thread gate creation)
+        postUtils.batchDeletePosts(postedUris)
+
+        // Clear all state so user can try to post again
+        sendingThreadPost = -1
+        threadRootUri = ""
+        threadRootCid = ""
+        threadFirstPostUri = ""
+        threadFirstPostCid = ""
+        threadGateCreated = false
+        postedUris = []
+
+        postButton.isPosting = false
     }
 
     function postProgress(msg) {
@@ -1030,10 +1048,9 @@ Page {
 
         for (let postIndex = 0; postIndex < threadPosts.count; ++postIndex) {
             const postItem = threadPosts.itemAt(postIndex)
-            const imgScroller = postItem.getImagesScroller()
 
             for (let i = 0; i < postItem.images.length; ++i) {
-                if (!imgScroller.hasAltText(i))
+                if (i >= postItem.altTexts.length || postItem.altTexts[i].length === 0)
                     return false
             }
         }
