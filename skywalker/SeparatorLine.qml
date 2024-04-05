@@ -7,7 +7,7 @@ Item {
     Rectangle {
         id: spaceBefore
         width: parent.width
-        height: parent.visible ? 5 : 0
+        height: parent.visible ? 10 : 0
         color: "transparent"
         visible: parent.visible
     }

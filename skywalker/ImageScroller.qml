@@ -10,7 +10,6 @@ ScrollView {
     id: imageScroller
     height: visible && images.length > 0 ? 180 : 0
     anchors.topMargin: images.length > 0 ? 10 : 0
-    bottomPadding: 0
     horizontalPadding: 10
     contentWidth: imageRow.width
     contentHeight: height

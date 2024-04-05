@@ -9,6 +9,7 @@ Page {
     property string initialText
     property string initialImage
     property int fullPageHeight
+    property int margin: 15
 
     property int maxThreadPosts: 99
     property int maxImages: 4 // per post
@@ -56,7 +57,7 @@ Page {
     width: parent.width
     height: parent.height
     contentHeight: flick.height
-    topPadding: 10
+    topPadding: 0
     bottomPadding: 10
 
     header: Rectangle {
@@ -143,7 +144,8 @@ Page {
         }
         QuotePost {
             id: replyToColumn
-            width: parent.width - 20
+            y: 10
+            width: parent.width - 2 * page.margin
             anchors.horizontalCenter: parent.horizontalCenter
             author: replyToAuthor
             postText: replyToPostText
@@ -154,7 +156,7 @@ Page {
 
         Column {
             id: threadColumn
-            y: replyToColumn.visible ? replyToColumn.height + 5 : 0
+            y: replyToColumn.y + (replyToColumn.visible ? replyToColumn.height + 5 : 0)
             width: parent.width
 
             Repeater {
@@ -281,8 +283,10 @@ Page {
                         id: postText
                         anchors.top: separatorLine.bottom
                         width: parent.width
+                        leftPadding: page.margin
+                        rightPadding: page.margin
                         topPadding: 0
-                        bottomPadding: 5
+                        bottomPadding: 0
                         parentPage: page
                         parentFlick: flick
                         placeholderText: index === 0 ? qsTr("Say something nice") : qsTr(`Add post ${(index + 1)}`)
@@ -373,6 +377,7 @@ Page {
                         id: imageScroller
                         width: page.width
                         anchors.top: postText.bottom
+                        horizontalPadding: page.margin
                         requireAltText: page.requireAltText
                         postUtils: page.getPostUtils()
                         visible: !linkCard.visible && !gifAttachment.visible
@@ -383,8 +388,8 @@ Page {
                         property tenorgif gif
 
                         id: gifAttachment
-                        x: 10
-                        width: Math.min(gif ? gif.smallSize.width : 1, page.width - 20)
+                        x: page.margin
+                        width: Math.min(gif ? gif.smallSize.width : 1, page.width - 2 * page.margin)
                         anchors.top: imageScroller.bottom
                         anchors.topMargin: !gif.isNull() ? 10 : 0
                         fillMode: Image.PreserveAspectFit
@@ -422,8 +427,8 @@ Page {
                         property var card: null
 
                         id: linkCard
-                        x: 10
-                        width: page.width - 20
+                        x: page.margin
+                        width: page.width - 2 * page.margin
                         height: card ? columnHeight : 0
                         anchors.top: gifAttachment.bottom
                         anchors.topMargin: card ? 10 : 0
@@ -473,7 +478,7 @@ Page {
                     }
                     QuotePost {
                         id: quoteColumn
-                        width: parent.width - 20
+                        width: parent.width - 2 * page.margin
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -494,7 +499,7 @@ Page {
                     }
                     QuoteFeed {
                         id: quoteFeedColumn
-                        width: parent.width - 20
+                        width: parent.width - 2 * page.margin
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -512,7 +517,7 @@ Page {
                     }
                     QuoteList {
                         id: quoteListColumn
-                        width: parent.width - 20
+                        width: parent.width - 2 * page.margin
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -589,6 +594,26 @@ Page {
                     let postText = currentPostItem().getPostText()
                     postText.cursorPosition = postText.text.length
                     focusTimer.start()
+                }
+            }
+        }
+
+        Rectangle {
+            anchors.left: threadColumn.left
+            anchors.top: parent.top
+            anchors.bottom: threadColumn.bottom
+            width: page.margin - 5
+            opacity: 0.9
+            visible: threadPosts.count > 1
+
+            gradient: Gradient {
+                GradientStop {
+                    position: 0.0
+                    color: guiSettings.threadStartColor
+                }
+                GradientStop {
+                    position: 1.0
+                    color: guiSettings.threadMidColor
                 }
             }
         }
