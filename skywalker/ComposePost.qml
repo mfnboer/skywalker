@@ -110,7 +110,7 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
 
-            enabled: !isPosting && postsAreValid() && hasContent() && checkAltText()
+            enabled: !isPosting && postsAreValid() && hasFullContent() && checkAltText()
             onClicked: sendPost()
 
             Accessible.role: Accessible.Button
@@ -644,7 +644,7 @@ Page {
         font.pointSize: guiSettings.scaledFont(9/8)
         textFormat: Text.RichText
         text: qsTr(`<a href=\"drafts\" style=\"color: ${guiSettings.linkColor}\">Drafts</a>`)
-        visible: threadPosts.count === 1 && !hasContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
+        visible: threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
@@ -818,7 +818,7 @@ Page {
             anchors.rightMargin: 10
             anchors.right: parent.right
             svg: svgOutline.add
-            enabled: hasContent() && threadPosts.count < maxThreadPosts
+            enabled: hasFullContent() && threadPosts.count < maxThreadPosts
 
             // Pressed instead of clicked. Pressing this button closes the virtual keyboard
             // on Android, causing the release for a click to be lost.
@@ -1115,7 +1115,7 @@ Page {
         return true
     }
 
-    function hasContent() {
+    function hasFullContent() {
         for (let i = 0; i < threadPosts.count; ++ i) {
             const postItem = threadPosts.itemAt(i)
 
@@ -1126,8 +1126,19 @@ Page {
         return threadPosts.count > 0
     }
 
+    function hasPartialContent() {
+        for (let i = 0; i < threadPosts.count; ++ i) {
+            const postItem = threadPosts.itemAt(i)
+
+            if (postItem.hasContent())
+                return true
+        }
+
+        return false
+    }
+
     function cancel() {
-        if (!hasContent()) {
+        if (!hasPartialContent()) {
             page.closed()
             return
         }
