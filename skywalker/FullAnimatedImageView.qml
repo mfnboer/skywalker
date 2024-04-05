@@ -39,6 +39,7 @@ Page {
         Material.background: "black"
         opacity: 0.7
         svg: svgOutline.arrowBack
+        accessibleName: qsTr("go back")
         onClicked: page.closed()
     }
 }

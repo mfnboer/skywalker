@@ -44,11 +44,8 @@ Popup {
         iconColor: statusText.color
         Material.background: "transparent"
         svg: svgOutline.close
+        accessibleName: qsTr("close status message")
         onClicked: statusPopup.close()
-
-        Accessible.role: Accessible.Button
-        Accessible.name: qsTr("close status message")
-        Accessible.onPressAction: clicked()
     }
 
     MouseArea {

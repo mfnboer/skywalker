@@ -81,11 +81,8 @@ Page {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.cancel
+            accessibleName: qsTr("cancel posting")
             onClicked: page.cancel()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("cancel posting")
-            Accessible.onPressAction: clicked()
         }
 
         Avatar {
@@ -383,6 +380,7 @@ Page {
                         width: 34
                         height: width
                         svg: svgOutline.remove
+                        accessibleName: qsTr("remove post")
                         visible: !postItem.hasContent() && threadPosts.count > 1 && (index > 0 || !replyToPostUri)
 
                         onClicked: threadPosts.removePost(index)
@@ -433,11 +431,8 @@ Page {
                             x: parent.width - width
                             height: width
                             svg: svgOutline.close
+                            accessibleName: qsTr("remove GIF image")
                             onClicked: gifAttachment.hide()
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: qsTr("remove GIF image")
-                            Accessible.onPressAction: clicked()
                         }
                     }
 
@@ -483,6 +478,7 @@ Page {
                             x: parent.width - width
                             height: width
                             svg: svgOutline.close
+                            accessibleName: qsTr("remove link card")
                             onClicked: linkCard.hide()
                         }
                     }
@@ -792,7 +788,7 @@ Page {
 
         FontComboBox {
             id: fontSelector
-            x: addGif.x + addGif.width + 15
+            x: addGif.x + addGif.width + 10
             y: 5 + restrictionRow.height + footerSeparator.height
 
             popup.onClosed: currentPostItem().getPostText().forceActiveFocus()
@@ -801,7 +797,7 @@ Page {
         SvgTransparentButton {
             id: contentWarningIcon
             anchors.left: fontSelector.right
-            anchors.leftMargin: 15
+            anchors.leftMargin: 10
             y: height + 5 + restrictionRow.height + footerSeparator.height
             accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
@@ -816,17 +812,47 @@ Page {
             width: 34
             height: 34
             anchors.rightMargin: 10
-            anchors.right: parent.right
+            anchors.right: moreOptions.left
             svg: svgOutline.add
+            accessibleName: qsTr("add post")
             enabled: hasFullContent() && threadPosts.count < maxThreadPosts
 
             // Pressed instead of clicked. Pressing this button closes the virtual keyboard
             // on Android, causing the release for a click to be lost.
             onPressed: threadPosts.addPost(currentPostIndex)
 
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("add post")
-            Accessible.onPressAction: pressed()
+            Accessible.onPressAction: if (addPost.enabled) addPost.pressed()
+        }
+
+        SvgButton {
+            id: moreOptions
+            y: 5 + restrictionRow.height + footerSeparator.height
+            width: 34
+            height: 34
+            anchors.rightMargin: 10
+            anchors.right: parent.right
+            svg: svgOutline.moreVert
+            accessibleName: qsTr("more options")
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>Options</b>")
+                    Accessible.name: qsTr("close more options menu")
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Auto number")
+                    checkable: true
+                    checked: skywalker.getUserSettings().getThreadAutoNumber()
+                    onToggled: skywalker.getUserSettings().setThreadAutoNumber(checked)
+                }
+            }
         }
     }
 

@@ -33,6 +33,7 @@ Page {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.cancel
+            accessibleName: qsTr("cancel")
             onClicked: page.closed()
         }
 

@@ -9,12 +9,10 @@ SvgButton {
     iconColor: guiSettings.headerTextColor
     Material.background: "transparent"
     svg: svgOutline.expandMore
+    accessibleName: qsTr("select other feed")
     onClicked: feedsMenu.open()
 
     Accessible.role: Accessible.ButtonDropDown
-    Accessible.name: qsTr("select other feed")
-    Accessible.description: qsTr("Pressing this button will drop down a list of your favorite feeds")
-    Accessible.onPressAction: clicked()
 
     Menu {
         id: feedsMenu

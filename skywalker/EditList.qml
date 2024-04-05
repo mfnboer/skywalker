@@ -32,6 +32,7 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
+            accessibleName: qsTr("save list")
             enabled: nameField.text.length > 0 && !nameField.maxGraphemeLengthExceeded() && changesMade()
 
             onClicked: {
@@ -42,10 +43,6 @@ Page {
                 else
                     updateList()
             }
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("save list")
-            Accessible.onPressAction: if (enabled) clicked()
         }
     }
 
@@ -154,16 +151,13 @@ Page {
                     width: 40
                     height: width
                     svg: svgOutline.close
+                    accessibleName: qsTr("delete list avatar")
                     visible: avatar.avatarUrl
 
                     onClicked: {
                         avatar.setUrl("")
                         dropCreatedAvatar()
                     }
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("delete list avatar")
-                    Accessible.onPressAction: clicked()
                 }
 
                 function setUrl(url) {

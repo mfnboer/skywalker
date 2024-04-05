@@ -12,6 +12,7 @@ AccessibleMenuItem {
         width: height
         height: parent.height - 10
         svg: svgOutline.close
+        accessibleName: qsTr("close")
         onClicked: parent.triggered()
     }
 }

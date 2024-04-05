@@ -56,11 +56,8 @@ ScrollView {
                     x: parent.width - width
                     height: width
                     svg: svgOutline.close
+                    accessibleName: qsTr(`remove picture ${(index + 1)}`)
                     onClicked: imageScroller.removeImage(index)
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr(`remove picture ${(index + 1)}`)
-                    Accessible.onPressAction: clicked()
                 }
 
                 SkyLabel {

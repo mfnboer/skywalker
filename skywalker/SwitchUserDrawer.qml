@@ -35,11 +35,8 @@ Drawer {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: svgOutline.close
+                accessibleName: qsTr("cancel switch user")
                 onClicked: drawer.close()
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("cancel switch user")
-                Accessible.onPressAction: clicked()
             }
         }
         headerPositioning: ListView.OverlayHeader

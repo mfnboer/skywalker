@@ -39,16 +39,13 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
+            accessibleName: qsTr("save profile")
             enabled: changesMade() && !nameField.maxGraphemeLengthExceeded()
 
             onClicked: {
                 updateProfileButton.enabled = false
                 updateProfile()
             }
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("save profile")
-            Accessible.onPressAction: if (enabled) clicked()
         }
     }
 
@@ -158,16 +155,13 @@ Page {
                         width: 40
                         height: width
                         svg: svgOutline.close
+                        accessibleName: qsTr("delete banner")
                         visible: banner.source.toString() !== ""
 
                         onClicked: {
                             banner.setUrl("")
                             dropCreatedBanner()
                         }
-
-                        Accessible.role: Accessible.Button
-                        Accessible.name: qsTr("delete banner")
-                        Accessible.onPressAction: clicked()
                     }
 
                     function setUrl(url) {
@@ -210,16 +204,13 @@ Page {
                                 width: 40
                                 height: width
                                 svg: svgOutline.close
+                                accessibleName: qsTr("delete avatar")
                                 visible: avatar.avatarUrl
 
                                 onClicked: {
                                     avatar.setUrl("")
                                     dropCreatedAvatar()
                                 }
-
-                                Accessible.role: Accessible.Button
-                                Accessible.name: qsTr("delete avatar")
-                                Accessible.onPressAction: clicked()
                             }
 
                             function setUrl(url) {

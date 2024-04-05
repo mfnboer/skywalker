@@ -31,11 +31,8 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
+            accessibleName: qsTr("save avatar")
             onClicked: selected(img.getSelectRect())
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("save avatar")
-            Accessible.onPressAction: clicked()
         }
     }
 

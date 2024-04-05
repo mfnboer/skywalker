@@ -130,6 +130,7 @@ Page {
             SvgButton {
                 id: moreButton
                 svg: svgOutline.moreVert
+                accessibleName: qsTr("more options")
 
                 onClicked: {
                     switch (list.purpose) {
@@ -145,21 +146,14 @@ Page {
                         break
                     }
                 }
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("more options")
-                Accessible.onPressAction: clicked()
             }
 
             SvgButton {
                 id: addUser
                 svg: svgOutline.addUser
+                accessibleName: qsTr("add user to list")
                 visible: isOwnList()
                 onClicked: page.addUser()
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("add user to list")
-                Accessible.onPressAction: clicked()
             }
         }
 
@@ -202,6 +196,7 @@ Page {
         modal: true
 
         CloseMenuItem {
+            text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
         }
         AccessibleMenuItem {
@@ -256,6 +251,7 @@ Page {
         modal: true
 
         CloseMenuItem {
+            text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
         }
         AccessibleMenuItem {
@@ -314,6 +310,7 @@ Page {
         modal: true
 
         CloseMenuItem {
+            text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
         }
         AccessibleMenuItem {

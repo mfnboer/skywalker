@@ -74,11 +74,8 @@ Page {
             radius: 3
             imageMargin: 5
             svg: page.isPostSearch ? svgOutline.chat : svgOutline.user
+            accessibleName: getSpeech()
             onClicked: page.isPostSearch = !page.isPostSearch
-
-            Accessible.role: Accessible.Button
-            Accessible.name: getSpeech()
-            Accessible.onPressAction: clicked()
 
             function getSpeech() {
                 if (page.isPostSearch)
@@ -110,12 +107,9 @@ Page {
             height: 35
             imageMargin: 5
             svg: svgOutline.mute
+            accessibleName: qsTr(`Mute hashtag ${page.getSearchText()}`)
             visible: isHashtagSearch
             onClicked: muteWord(page.getSearchText())
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr(`Mute hashtag ${page.getSearchText()}`)
-            Accessible.onPressAction: clicked()
         }
     }
 

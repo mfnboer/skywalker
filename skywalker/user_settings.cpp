@@ -277,6 +277,16 @@ QString UserSettings::getMutedRepostsListUri(const QString& did) const
     return uri.toString();
 }
 
+void UserSettings::setThreadAutoNumber(bool autoNumber)
+{
+    mSettings.setValue("threadAutoNumber", autoNumber);
+}
+
+Q_INVOKABLE bool UserSettings::getThreadAutoNumber() const
+{
+    return mSettings.value("threadAutoNumber", false).toBool();
+}
+
 void UserSettings::setUserHashtags(const QString& did, const QStringList& hashtags)
 {
     qDebug() << "Save user hashtags:" << did;

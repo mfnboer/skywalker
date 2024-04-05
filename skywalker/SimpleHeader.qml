@@ -29,12 +29,8 @@ Rectangle {
             iconColor: backIsCancel ? guiSettings.buttonTextColor : guiSettings.headerTextColor
             Material.background: backIsCancel ? guiSettings.buttonColor : "transparent"
             svg: backIsCancel ? svgOutline.cancel : svgOutline.arrowBack
+            accessibleName: backIsCancel ? qsTr("cancel") : qsTr("go back")
             onClicked: headerRect.back()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: backIsCancel ? qsTr("cancel") : qsTr("go back")
-            Accessible.description: backIsCancel ? "" : qsTr("Go back to the previous page.")
-            Accessible.onPressAction: clicked()
         }
         Text {
             id: headerTexts

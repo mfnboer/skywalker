@@ -78,6 +78,9 @@ public:
     void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
 
+    Q_INVOKABLE void setThreadAutoNumber(bool autoNumber);
+    Q_INVOKABLE bool getThreadAutoNumber() const;
+
     Q_INVOKABLE QString getMutedRepostsListUri(const QString& did) const;
 
     void setUserHashtags(const QString& did, const QStringList& hashtags);

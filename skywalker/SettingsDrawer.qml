@@ -118,6 +118,7 @@ Drawer {
                 onAboutToHide: enableSettingsPopupShield(false)
 
                 CloseMenuItem {
+                    text: qsTr("<b>Moderation</b>")
                     Accessible.name: qsTr("close moderation menu")
                 }
                 AccessibleMenuItem {
@@ -200,11 +201,8 @@ Drawer {
         anchors.right: userColumn.right
         anchors.top: userColumn.top
         svg: svgOutline.close
+        accessibleName: qsTr("close menu")
         onClicked: drawer.close()
-
-        Accessible.role: Accessible.Button
-        Accessible.name: qsTr("close menu")
-        Accessible.onPressAction: clicked()
     }
 
     Rectangle {

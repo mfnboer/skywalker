@@ -466,11 +466,8 @@ ApplicationWindow {
                     id: closeButton
                     anchors.right: parent.right
                     svg: svgOutline.close
+                    accessibleName: qsTr("cancel repost")
                     onClicked: repostDrawer.close()
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("cancel repost")
-                    Accessible.onPressAction: clicked()
                 }
 
                 Button {

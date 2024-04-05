@@ -34,11 +34,8 @@ Rectangle {
                     iconColor: guiSettings.headerTextColor
                     Material.background: "transparent"
                     svg: svgOutline.arrowBack
+                    accessibleName: qsTr("go back")
                     onClicked: header.closed()
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("go back")
-                    Accessible.onPressAction: clicked()
                 }
                 Text {
                     id: headerTexts

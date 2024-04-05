@@ -140,12 +140,9 @@ Rectangle {
             }
             SvgButton {
                 svg: svgOutline.delete
+                accessibleName: qsTr(`press to delete ${author.name}`)
                 visible: listItemUri && allowDeleteItem
                 onClicked: confirmDelete()
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`press to delete ${author.name}`)
-                Accessible.onPressAction: clicked()
             }
         }
 

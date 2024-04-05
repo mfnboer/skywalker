@@ -58,6 +58,7 @@ ListView {
             SvgButton {
                 id: copyButton
                 svg: svgOutline.copy
+                accessibleName: qsTr("copy invite code")
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 visible: modelData.available && !modelData.disabled

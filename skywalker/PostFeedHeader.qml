@@ -32,13 +32,10 @@ Rectangle {
             iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
             svg: svgOutline.arrowBack
+            accessibleName: qsTr("go back")
             visible: !showAsHome
 
             onClicked: header.closed()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("go back")
-            Accessible.description: Accessible.name
         }
         FeedAvatar {
             Layout.leftMargin: 10
