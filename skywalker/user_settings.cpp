@@ -284,7 +284,7 @@ void UserSettings::setThreadAutoNumber(bool autoNumber)
 
 Q_INVOKABLE bool UserSettings::getThreadAutoNumber() const
 {
-    return mSettings.value("threadAutoNumber", false).toBool();
+    return mSettings.value("threadAutoNumber", true).toBool();
 }
 
 void UserSettings::setUserHashtags(const QString& did, const QStringList& hashtags)

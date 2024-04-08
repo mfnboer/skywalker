@@ -99,16 +99,6 @@ void EditUserPreferences::setGifAutoPlay(bool autoPlay)
     }
 }
 
-void EditUserPreferences::setRequireAltText(bool require)
-{
-    if (require != mRequireAltText)
-    {
-        mRequireAltText = require;
-        setLocalSettingsModified(true);
-        emit requireAltTextChanged();
-    }
-}
-
 void EditUserPreferences::setNotificationsWifiOnly(bool wifiOnly)
 {
     if (wifiOnly != mNotificationsWifiOnly)

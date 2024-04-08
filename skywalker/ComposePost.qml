@@ -47,7 +47,7 @@ Page {
     property tenorgif nullGif
 
     readonly property string userDid: skywalker.getUserDid()
-    readonly property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
+    property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
 
     property int currentPostIndex: 0
 
@@ -102,8 +102,7 @@ Page {
             property bool isPosting: false
 
             id: postButton
-            anchors.rightMargin: 10
-            anchors.right: parent.right
+            anchors.right: moreOptions.left
             anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
 
@@ -126,6 +125,44 @@ Page {
                 else {
                     sendThreadPosts(0, replyToPostUri, replyToPostCid,
                                     replyRootPostUri, replyRootPostCid)
+                }
+            }
+        }
+
+        SvgButton {
+            id: moreOptions
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            svg: svgOutline.moreVert
+            accessibleName: qsTr("more options")
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>Options</b>")
+                    Accessible.name: qsTr("close more options menu")
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Require ALT text")
+                    checkable: true
+                    checked: skywalker.getUserSettings().getRequireAltText(userDid)
+
+                    onToggled:{
+                        requireAltText = checked
+                        skywalker.getUserSettings().setRequireAltText(userDid, checked)
+                    }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Auto number")
+                    checkable: true
+                    checked: skywalker.getUserSettings().getThreadAutoNumber()
+                    onToggled: skywalker.getUserSettings().setThreadAutoNumber(checked)
                 }
             }
         }
@@ -779,7 +816,7 @@ Page {
 
         AddGifButton {
             id: addGif
-            x: addImage.x + addImage.width + 10
+            x: addImage.x + addImage.width + 3
             y: height + 5 + restrictionRow.height + footerSeparator.height
             enabled: page.canAddGif()
 
@@ -788,7 +825,7 @@ Page {
 
         FontComboBox {
             id: fontSelector
-            x: addGif.x + addGif.width + 10
+            x: addGif.x + addGif.width + 8
             y: 5 + restrictionRow.height + footerSeparator.height
 
             popup.onClosed: currentPostItem().getPostText().forceActiveFocus()
@@ -797,7 +834,7 @@ Page {
         SvgTransparentButton {
             id: contentWarningIcon
             anchors.left: fontSelector.right
-            anchors.leftMargin: 10
+            anchors.leftMargin: 8
             y: height + 5 + restrictionRow.height + footerSeparator.height
             accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
@@ -812,7 +849,7 @@ Page {
             width: 34
             height: 34
             anchors.rightMargin: 10
-            anchors.right: moreOptions.left
+            anchors.right: parent.right
             svg: svgOutline.add
             accessibleName: qsTr("add post")
             enabled: hasFullContent() && threadPosts.count < maxThreadPosts
@@ -822,37 +859,6 @@ Page {
             onPressed: threadPosts.addPost(currentPostIndex)
 
             Accessible.onPressAction: if (addPost.enabled) addPost.pressed()
-        }
-
-        SvgButton {
-            id: moreOptions
-            y: 5 + restrictionRow.height + footerSeparator.height
-            width: 34
-            height: 34
-            anchors.rightMargin: 10
-            anchors.right: parent.right
-            svg: svgOutline.moreVert
-            accessibleName: qsTr("more options")
-            onClicked: moreMenu.open()
-
-            Menu {
-                id: moreMenu
-                modal: true
-
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
-
-                CloseMenuItem {
-                    text: qsTr("<b>Options</b>")
-                    Accessible.name: qsTr("close more options menu")
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Auto number")
-                    checkable: true
-                    checked: skywalker.getUserSettings().getThreadAutoNumber()
-                    onToggled: skywalker.getUserSettings().setThreadAutoNumber(checked)
-                }
-            }
         }
     }
 

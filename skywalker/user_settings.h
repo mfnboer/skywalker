@@ -75,7 +75,7 @@ public:
     void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
 
-    void setRequireAltText(const QString& did, bool require);
+    Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
 
     Q_INVOKABLE void setThreadAutoNumber(bool autoNumber);

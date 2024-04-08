@@ -195,28 +195,8 @@ Page {
         }
 
         ColumnLayout {
-            id: postCompositionColumn
-            anchors.top: homeFeedColumn.bottom
-            width: parent.width
-
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
-                text: qsTr("Post composition")
-            }
-
-            AccessibleSwitch {
-                text: qsTr("Require ALT text on images")
-                checked: userPrefs.requireAltText
-                onCheckedChanged: userPrefs.requireAltText = checked
-            }
-        }
-
-        ColumnLayout {
             id: appearanceColumn
-            anchors.top: postCompositionColumn.bottom
+            anchors.top: homeFeedColumn.bottom
             width: parent.width
 
             AccessibleText {

@@ -2236,7 +2236,6 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
-    mEditUserPreferences->setRequireAltText(mUserSettings.getRequireAltText(session->mDid));
     mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
     mEditUserPreferences->setLocalSettingsModified(false);
 
@@ -2271,9 +2270,6 @@ void Skywalker::saveUserPreferences()
 
         qDebug() << "GIF auto play:" << mEditUserPreferences->getGifAutoPlay();
         mUserSettings.setGifAutoPlay(mEditUserPreferences->getGifAutoPlay());
-
-        qDebug() << "Require ALT-text:" << mEditUserPreferences->getRequireAltText();
-        mUserSettings.setRequireAltText(mUserDid, mEditUserPreferences->getRequireAltText());
 
         qDebug() << "Notifications wifi only:" << mEditUserPreferences->getNotificationsWifiOnly();
         mUserSettings.setNotificationsWifiOnly(mEditUserPreferences->getNotificationsWifiOnly());
