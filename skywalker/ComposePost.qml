@@ -49,7 +49,7 @@ Page {
     readonly property string userDid: skywalker.getUserDid()
     property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
     property bool threadAutoNumber: skywalker.getUserSettings().getThreadAutoNumber()
-    property bool threadAutoSplit: true
+    property bool threadAutoSplit: skywalker.getUserSettings().getThreadAutoSplit()
 
     property int currentPostIndex: 0
 
@@ -168,6 +168,16 @@ Page {
                     onToggled: {
                         threadAutoNumber = checked
                         skywalker.getUserSettings().setThreadAutoNumber(checked)
+                    }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Auto split")
+                    checkable: true
+                    checked: skywalker.getUserSettings().getThreadAutoSplit()
+
+                    onToggled: {
+                        threadAutoSplit = checked
+                        skywalker.getUserSettings().setThreadAutoSplit(checked)
                     }
                 }
             }

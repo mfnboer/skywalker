@@ -282,9 +282,19 @@ void UserSettings::setThreadAutoNumber(bool autoNumber)
     mSettings.setValue("threadAutoNumber", autoNumber);
 }
 
-Q_INVOKABLE bool UserSettings::getThreadAutoNumber() const
+bool UserSettings::getThreadAutoNumber() const
 {
     return mSettings.value("threadAutoNumber", true).toBool();
+}
+
+void UserSettings::setThreadAutoSplit(bool autoSplit)
+{
+    mSettings.setValue("threadAutoSplit", autoSplit);
+}
+
+bool UserSettings::getThreadAutoSplit() const
+{
+    return mSettings.value("threadAutoSplit", false).toBool();
 }
 
 void UserSettings::setUserHashtags(const QString& did, const QStringList& hashtags)
