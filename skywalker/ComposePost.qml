@@ -304,6 +304,12 @@ Page {
                     function getGifAttachment() { return gifAttachment }
                     function getLinkCard() { return linkCard }
 
+                    function hasAttachment() {
+                        return imageScroller.images.length > 0 ||
+                                !gifAttachment.gif.isNull() ||
+                                linkCard.card
+                    }
+
                     function calcHeight() {
                         if (quoteColumn.visible)
                             return quoteColumn.y + quoteColumn.height
@@ -318,10 +324,7 @@ Page {
                     }
 
                     function hasContent() {
-                        return postText.graphemeLength > 0 ||
-                                images.length > 0 ||
-                                linkCard.card ||
-                                !gifAttachment.gif.isNull()
+                        return postText.graphemeLength > 0 || hasAttachment()
                     }
 
                     function isValid() {
@@ -373,10 +376,11 @@ Page {
 
                                     splitting = false
 
-                                    if (index === threadPosts.count - 1) {
+                                    if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
                                         threadPosts.addPost(index, parts[1], moveCursor)
                                     }
                                     else {
+                                        // Prepend excess text to next post
                                         let nextPostText = threadPosts.itemAt(index + 1).getPostText()
                                         const joinStr = (/\s/.test(parts[1].slice(-1)) || /\s/.test(nextPostText.text.charAt(0))) ? "" : " "
                                         const newText = parts[1] + joinStr + nextPostText.text
