@@ -48,6 +48,7 @@ Page {
 
     readonly property string userDid: skywalker.getUserDid()
     property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
+    property bool threadAutoNumber: skywalker.getUserSettings().getThreadAutoNumber()
 
     property int currentPostIndex: 0
 
@@ -120,7 +121,7 @@ Page {
                 if (threadPosts.count === 1) {
                     sendSinglePost(threadPosts.postList[0],
                                    replyToPostUri, replyToPostCid,
-                                   replyRootPostUri, replyRootPostCid)
+                                   replyRootPostUri, replyRootPostCid, 0, 1)
                 }
                 else {
                     sendThreadPosts(0, replyToPostUri, replyToPostCid,
@@ -162,7 +163,11 @@ Page {
                     text: qsTr("Auto number")
                     checkable: true
                     checked: skywalker.getUserSettings().getThreadAutoNumber()
-                    onToggled: skywalker.getUserSettings().setThreadAutoNumber(checked)
+
+                    onToggled: {
+                        threadAutoNumber = checked
+                        skywalker.getUserSettings().setThreadAutoNumber(checked)
+                    }
                 }
             }
         }
@@ -344,7 +349,7 @@ Page {
                         parentFlick: flick
                         placeholderText: index === 0 ? qsTr("Say something nice") : qsTr(`Add post ${(index + 1)}`)
                         initialText: postItem.text
-                        maxLength: 300
+                        maxLength: 300 - postCountText.size()
                         fontSelectorCombo: fontSelector
 
                         onTextChanged: postItem.text = text
@@ -423,6 +428,21 @@ Page {
                         onClicked: threadPosts.removePost(index)
                     }
 
+                    AccessibleText {
+                        id: postCountText
+                        width: page.width
+                        leftPadding: page.margin
+                        rightPadding: page.margin
+                        anchors.top: postText.bottom
+                        text: getPostCountText(index, threadPosts.count)
+                        visible: threadPosts.count > 1 && threadAutoNumber
+
+                        function size() {
+                            // +1 for newline
+                            return visible ? text.length + 1 : 0
+                        }
+                    }
+
                     // Image attachments
                     ImageScroller {
                         property alias images: postItem.images
@@ -430,7 +450,7 @@ Page {
 
                         id: imageScroller
                         width: page.width
-                        anchors.top: postText.bottom
+                        anchors.top: postCountText.visible ? postCountText.bottom : postText.bottom
                         horizontalPadding: page.margin
                         requireAltText: page.requireAltText
                         postUtils: page.getPostUtils()
@@ -1190,13 +1210,22 @@ Page {
         }
     }
 
-    function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid) {
+    function getPostCountText(postIndex, postCount) {
+        return `${(postIndex + 1)}/${postCount}`
+    }
+
+    function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {
         const qUri = postItem.getQuoteUri()
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
 
+        let postText = postItem.text
+
+        if (threadAutoNumber && postCount > 1)
+            postText += `\n${getPostCountText(postIndex, postCount)}`
+
         if (postItem.card) {
-            postUtils.post(postItem.text,
+            postUtils.post(postText,
                            postItem.card,
                            parentUri, parentCid,
                            rootUri, rootCid,
@@ -1212,12 +1241,12 @@ Page {
                          (`<br>Bluesky: ${guiSettings.skywalkerHandle}`),
                     postItem.gif.imageUrl)
 
-            postUtils.post(postItem.text, gifCard,
+            postUtils.post(postText, gifCard,
                            parentUri, parentCid,
                            rootUri, rootCid,
                            qUri, qCid, labels)
         } else {
-            postUtils.post(postItem.text, postItem.images, postItem.altTexts,
+            postUtils.post(postText, postItem.images, postItem.altTexts,
                            parentUri, parentCid,
                            rootUri, rootCid,
                            qUri, qCid, labels);
@@ -1236,7 +1265,7 @@ Page {
         console.debug(`Send thread post ${postIndex}`)
         sendingThreadPost = postIndex
         let postItem = threadPosts.postList[postIndex]
-        sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid)
+        sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, threadPosts.count)
     }
 
     function sendNextThreadPost(prevUri, prevCid) {

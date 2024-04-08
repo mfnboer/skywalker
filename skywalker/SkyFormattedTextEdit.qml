@@ -127,7 +127,7 @@ TextEdit {
 
     function updateGraphemeLength() {
         const prevGraphemeLength = graphemeLength
-        const linkShorteningReduction = enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0;
+        const linkShorteningReduction = enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0
 
         graphemeLength = unicodeFonts.graphemeLength(editText.text) +
                 unicodeFonts.graphemeLength(preeditText) -
