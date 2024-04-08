@@ -49,6 +49,7 @@ Page {
     readonly property string userDid: skywalker.getUserDid()
     property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
     property bool threadAutoNumber: skywalker.getUserSettings().getThreadAutoNumber()
+    property bool threadAutoSplit: true
 
     property int currentPostIndex: 0
 
@@ -338,6 +339,8 @@ Page {
                     }
 
                     SkyFormattedTextEdit {
+                        property bool splitting: false
+
                         id: postText
                         anchors.top: separatorLine.bottom
                         width: parent.width
@@ -352,7 +355,41 @@ Page {
                         maxLength: 300 - postCountText.size()
                         fontSelectorCombo: fontSelector
 
-                        onTextChanged: postItem.text = text
+                        onTextChanged: {
+                            postItem.text = text
+
+                            if (threadAutoSplit && graphemeLength > maxLength && !splitting) {
+                                const parts = unicodeFonts.splitText(text, maxLength, 2)
+
+                                if (parts.length > 1) {
+                                    const moveCursor = cursorPosition > parts[0].length && index === currentPostIndex
+                                    const oldCursorPosition = cursorPosition
+
+                                    splitting = true
+                                    text = parts[0]
+
+                                    if (!moveCursor && index === currentPostIndex)
+                                        cursorPosition = oldCursorPosition
+
+                                    splitting = false
+
+                                    if (index === threadPosts.count - 1) {
+                                        threadPosts.addPost(index, parts[1], moveCursor)
+                                    }
+                                    else {
+                                        let nextPostText = threadPosts.itemAt(index + 1).getPostText()
+                                        const joinStr = (/\s/.test(parts[1].slice(-1)) || /\s/.test(nextPostText.text.charAt(0))) ? "" : " "
+                                        const newText = parts[1] + joinStr + nextPostText.text
+                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].length - 1 : -1
+
+                                        setPostTextTimer.startSetText(newText, index + 1, newCursorPosition)
+
+                                        if (moveCursor)
+                                            currentPostIndex = index + 1
+                                    }
+                                }
+                            }
+                        }
 
                         onFocusChanged: {
                             if (focus)
@@ -642,7 +679,7 @@ Page {
                     moveFocusToCurrent()
                 }
 
-                function addPost(index) {
+                function addPost(index, text = "", focus = true) {
                     console.debug("ADD POST:", index)
 
                     if (count >= maxThreadPosts) {
@@ -650,16 +687,24 @@ Page {
                         return
                     }
 
+                    const oldCursorPosition = threadPosts.itemAt(currentPostIndex).getPostText().cursorPosition
+
                     copyPostItemsToPostList()
                     model = 0
                     postList.splice(index + 1, 0, newComposePostItem())
                     model = postList.length
                     copyPostListToPostItems()
 
-                    if (currentPostIndex === index)
+                    if (currentPostIndex === index && focus) {
                         currentPostIndex += 1
+                        focusTimer.start()
+                    }
+                    else {
+                        setCursorTimer.startSetCursor(currentPostIndex, oldCursorPosition)
+                    }
 
-                    moveFocusToCurrent()
+                    setPostTextTimer.startSetText(text, index + 1)
+                    console.debug("ADDED POST:", index)
                 }
 
                 function moveFocusToCurrent() {
@@ -1037,13 +1082,56 @@ Page {
     }
 
     Timer {
+        property string text
+        property int index
+        property int cursorPosition
+
+        id: setPostTextTimer
+        interval: 0
+        onTriggered: {
+            let postText = threadPosts.itemAt(index).getPostText()
+
+            if (cursorPosition > -1)
+                setCursorTimer.startSetCursor(index, cursorPosition)
+
+            postText.text = text
+        }
+
+        function startSetText(text, index, cursorPosition = -1) {
+            setPostTextTimer.text = text
+            setPostTextTimer.index = index
+            setPostTextTimer.cursorPosition = cursorPosition
+            start()
+        }
+    }
+
+    Timer {
+        property int index
+        property int cursorPosition
+
+        id: setCursorTimer
+        interval: 0
+        onTriggered: {
+            let postText = threadPosts.itemAt(index).getPostText()
+            postText.cursorPosition = cursorPosition
+            postText.forceActiveFocus()
+        }
+
+        function startSetCursor(index, cursorPosition) {
+            setCursorTimer.index = index
+            setCursorTimer.cursorPosition = cursorPosition
+            start()
+        }
+    }
+
+    Timer {
         id: focusTimer
         interval: 200
         onTriggered: {
             let postText = currentPostItem().getPostText()
 
-            if (!initialText.startsWith("\n#")) // hashtag post
-                postText.cursorPosition = initialText.length
+            if (!postText.text.startsWith("\n#")) // hashtag post
+                postText.cursorPosition = postText.text.length
 
             postText.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
             postText.forceActiveFocus()

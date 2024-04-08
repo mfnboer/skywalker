@@ -354,4 +354,76 @@ bool UnicodeFonts::hasCombinedEmojis(const QString& text)
     return false;
 }
 
+static QString rstripSpace(const QString& text)
+{
+    if (text.endsWith(' '))
+        return text.sliced(0, text.length() - 1);
+
+    return text;
+}
+
+QStringList UnicodeFonts::splitText(const QString& text, int maxLength, int maxParts)
+{
+    if (text.size() <= maxLength)
+        return {text};
+
+    QStringList parts;
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Line, text);
+    int startPartPos = 0;
+    int startLinePos = 0;
+    int endLinePos = 0;
+
+    while (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem) && startLinePos != -1)
+        startLinePos = boundaryFinder.toNextBoundary();
+
+    qDebug() << "start:" << startLinePos;
+
+    while (startLinePos != -1 && parts.size() < maxParts - 1)
+    {
+        const int nextEndLinePos = boundaryFinder.toNextBoundary();
+        qDebug() << "next end:" << nextEndLinePos;
+
+        if (nextEndLinePos == -1)
+            break;
+
+        const int partLength = nextEndLinePos - startPartPos;
+        const QString part = rstripSpace(text.sliced(startPartPos, partLength));
+
+        if (part.size() == maxLength)
+        {
+            qDebug() << QString("Part: [%1]").arg(part);
+            parts.push_back(part);
+            startPartPos = nextEndLinePos;
+        }
+        else if (part.size() > maxLength)
+        {
+            const QString prevPart = rstripSpace(text.sliced(startPartPos, endLinePos - startPartPos));
+
+            if (!prevPart.isEmpty())
+            {
+                parts.push_back(prevPart);
+                qDebug() << QString("Prev part: [%1]").arg(prevPart);
+            }
+            else
+            {
+                qDebug() << "Empty part";
+            }
+
+            startPartPos = endLinePos;
+        }
+
+        endLinePos = nextEndLinePos;
+        startLinePos = endLinePos;
+    }
+
+    if (startPartPos < text.size())
+    {
+        const QString part = text.sliced(startPartPos);
+        qDebug() << QString("Last part: [%1]").arg(part);
+        parts.push_back(part);
+    }
+
+    return parts;
+}
+
 }
