@@ -115,11 +115,6 @@ Page {
             const handle = autoCompleteHandle(userField.text, hostField.editText)
             loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did)
         }
-
-        Accessible.role: Accessible.Button
-        Accessible.name: text
-        Accessible.description: qsTr("Press OK to sign in")
-        Accessible.onPressAction: if (enabled) clicked()
     }
 
     GuiSettings {

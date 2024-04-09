@@ -46,10 +46,7 @@ ScrollView {
                     flat: imageScroller.hasAltText(index)
                     text: imageScroller.hasAltText(index) ? qsTr("ALT") : qsTr("+ALT", "add alternative text button")
                     onClicked: imageScroller.editAltText(index)
-
-                    Accessible.role: Accessible.Button
                     Accessible.name: imageScroller.hasAltText(index) ? qsTr(`edit alt text for picture ${(index + 1)}`) : qsTr(`add alt text to picture ${(index + 1)}`)
-                    Accessible.onPressAction: clicked()
                 }
 
                 SvgButton {

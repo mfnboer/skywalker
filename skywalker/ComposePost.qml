@@ -107,13 +107,9 @@ Page {
             anchors.right: moreOptions.left
             anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
-
             enabled: !isPosting && postsAreValid() && hasFullContent() && checkAltText()
             onClicked: sendPost()
-
-            Accessible.role: Accessible.Button
             Accessible.name: replyToPostUri ? qsTr("send reply") : qsTr("send post")
-            Accessible.onPressAction: if (enabled) clicked()
 
             function sendPost() {
                 postButton.isPosting = true

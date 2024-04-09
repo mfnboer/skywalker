@@ -65,11 +65,6 @@ Page {
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Sign In")
             onClicked: signIn()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: text
-            Accessible.description: Accessible.name
-            Accessible.onPressAction: clicked()
         }
         Rectangle {
             id: whitespace

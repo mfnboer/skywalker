@@ -241,20 +241,14 @@ Page {
                     text: qsTr("Follow")
                     visible: !following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.follow(author)
-
-                    Accessible.role: Accessible.Button
                     Accessible.name: qsTr(`press to follow ${author.name}`)
-                    Accessible.onPressAction: clicked()
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
                     visible: following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.unfollow(author.did, following)
-
-                    Accessible.role: Accessible.Button
                     Accessible.name: qsTr(`press to unfollow ${author.name}`)
-                    Accessible.onPressAction: clicked()
                 }
             }
 
