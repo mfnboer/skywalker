@@ -37,21 +37,22 @@ public:
 
     Q_INVOKABLE bool canSaveDraft() const;
 
-    Q_INVOKABLE bool saveDraftPost(const QString& text,
-                                   const QStringList& imageFileNames, const QStringList& altTexts,
-                                   const QString& replyToUri, const QString& replyToCid,
-                                   const QString& replyRootUri, const QString& replyRootCid,
-                                   const BasicProfile& replyToAuthor, const QString& replyToText,
-                                   const QDateTime& replyToDateTime,
-                                   const QString& quoteUri, const QString& quoteCid,
-                                   const BasicProfile& quoteAuthor, const QString& quoteText,
-                                   const QDateTime& quoteDateTime,
-                                   const GeneratorView& quoteFeed, const ListView& quoteList,
-                                   const TenorGif gif, const QStringList& labels,
-                                   bool restrictReplies, bool allowMention, bool allowFollowing,
-                                   const QStringList& allowLists,
-                                   QDateTime timestamp = QDateTime::currentDateTime());
+    Q_INVOKABLE DraftPostData* createDraft(const QString& text,
+                                           const QStringList& imageFileNames, const QStringList& altTexts,
+                                           const QString& replyToUri, const QString& replyToCid,
+                                           const QString& replyRootUri, const QString& replyRootCid,
+                                           const BasicProfile& replyToAuthor, const QString& replyToText,
+                                           const QDateTime& replyToDateTime,
+                                           const QString& quoteUri, const QString& quoteCid,
+                                           const BasicProfile& quoteAuthor, const QString& quoteText,
+                                           const QDateTime& quoteDateTime,
+                                           const GeneratorView& quoteFeed, const ListView& quoteList,
+                                           const TenorGif gif, const QStringList& labels,
+                                           bool restrictReplies, bool allowMention, bool allowFollowing,
+                                           const QStringList& allowLists,
+                                           QDateTime timestamp = QDateTime::currentDateTime());
 
+    Q_INVOKABLE bool saveDraftPost(const DraftPostData* draftPost);
     Q_INVOKABLE void loadDraftPosts();
     Q_INVOKABLE DraftPostsModel* getDraftPostsModel();
     Q_INVOKABLE DraftPostData* getDraftPostData(int index);
@@ -120,7 +121,7 @@ private:
     Draft::Draft::Ptr loadDraft(const QString& fileName, const QString& draftsPath) const;
     bool save(const Draft::Draft& draft, const QString& draftsPath, const QString& baseName);
     bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
-                         const QStringList& imageFileNames, const QStringList& altTexts,
+                         const QList<ImageView>& images,
                          const QString& draftsPath, const QString& baseName);
     ATProto::Blob::Ptr saveImage(const QString& imgName, const QString& draftsPath,
                                  const QString& baseName, int seq);
@@ -135,7 +136,7 @@ private:
     void deleteRecord(const QString& recordUri);
     bool uploadImage(const QString& imageName, const UploadImageSuccessCb& successCb, const ErrorCb& errorCb);
     void addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
-                         const QStringList& imageFileNames, const QStringList& altTexts,
+                         const QList<ImageView>& images,
                          const std::function<void()>& continueCb, int imgSeq = 1);
 
     DraftPostsModel::Ptr mDraftPostsModel;

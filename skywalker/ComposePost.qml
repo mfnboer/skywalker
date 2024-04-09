@@ -1461,7 +1461,7 @@ Page {
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
 
-        draftPosts.saveDraftPost(postItem.text, postItem.images, postItem.altTexts,
+        const draft = draftPosts.createDraft(postItem.text, postItem.images, postItem.altTexts,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
@@ -1472,6 +1472,7 @@ Page {
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
 
+        draftPosts.saveDraftPost(draft)
         postUtils.cacheTags(postItem.text)
     }
 

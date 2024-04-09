@@ -6,7 +6,6 @@ namespace Skywalker::Lexicon {
 
 constexpr char const* COLLECTION_BOOKMARK = "eu.thereforeiam.skywalker.bookmark";
 constexpr char const* COLLECTION_DRAFT_POST = "eu.thereforeiam.skywalker.draft.post";
-constexpr char const* COLLECTION_DRAFT_THREAD = "eu.thereforeiam.skywalker.draft.thread";
 constexpr char const* DRAFT_DEFS_QUOTE_POST = "eu.thereforeiam.skywalker.draft.defs#quotePost";
 
 }

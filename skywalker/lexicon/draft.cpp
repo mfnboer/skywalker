@@ -130,6 +130,7 @@ QJsonObject Draft::toJson() const
     ATProto::XJsonObject::insertOptionalJsonObject<ReplyToPost>(json, "replyToPost", mReplyToPost);
     ATProto::XJsonObject::insertOptionalJsonObject<Quote>(json, "quote", mQuote);
     ATProto::XJsonObject::insertOptionalJsonObject<ATProto::AppBskyFeed::Threadgate>(json, "threadgate", mThreadgate);
+    json.insert("threadPosts", ATProto::XJsonObject::toJsonArray<ATProto::AppBskyFeed::Record::Post>(mThreadPosts));
     return json;
 }
 
@@ -141,6 +142,7 @@ Draft::Ptr Draft::fromJson(const QJsonObject& json)
     draft->mReplyToPost = xjson.getOptionalObject<ReplyToPost>("replyToPost");
     draft->mQuote = xjson.getOptionalObject<Quote>("quote");
     draft->mThreadgate = xjson.getOptionalObject<ATProto::AppBskyFeed::Threadgate>("threadgate");
+    draft->mThreadPosts = xjson.getOptionalVector<ATProto::AppBskyFeed::Record::Post>("threadPosts");
     return draft;
 }
 
