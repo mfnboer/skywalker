@@ -176,6 +176,11 @@ Page {
                         skywalker.getUserSettings().setThreadAutoSplit(checked)
                     }
                 }
+                AccessibleMenuItem {
+                    text: qsTr("Merge posts")
+                    enabled: threadPosts.count > 1
+                    onTriggered: threadPosts.mergePosts()
+                }
             }
         }
     }
@@ -388,8 +393,7 @@ Page {
                                     else {
                                         // Prepend excess text to next post
                                         let nextPostText = threadPosts.itemAt(index + 1).getPostText()
-                                        const joinStr = (/\s/.test(parts[1].slice(-1)) || /\s/.test(nextPostText.text.charAt(0))) ? "" : " "
-                                        const newText = parts[1] + joinStr + nextPostText.text
+                                        const newText = joinPosts(parts[1], nextPostText.text)
                                         const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].length - 1 : -1
 
                                         setPostTextTimer.startSetText(newText, index + 1, newCursorPosition)
@@ -687,6 +691,7 @@ Page {
 
                     copyPostListToPostItems()
                     moveFocusToCurrent()
+                    console.debug("REMOVED POST:", index)
                 }
 
                 function addPost(index, text = "", focus = true) {
@@ -713,8 +718,61 @@ Page {
                         setCursorTimer.startSetCursor(currentPostIndex, oldCursorPosition)
                     }
 
-                    setPostTextTimer.startSetText(text, index + 1)
+                    if (text)
+                        setPostTextTimer.startSetText(text, index + 1)
+
                     console.debug("ADDED POST:", index)
+                }
+
+                function mergePosts() {
+                    for (let i = 0; i < count; ++i) {
+                        let item = itemAt(i)
+
+                        if (item.hasAttachment())
+                            continue
+
+                        let postText = item.getPostText()
+                        if (postText.text.length === postText.maxLength)
+                            continue
+
+                        i = mergePostsAt(i)
+                    }
+                }
+
+                function mergePostsAt(index) {
+                    if (index === count - 1)
+                        return index
+
+                    let text = itemAt(index).getPostText().text
+                    let endIndex = index + 1
+
+                    while (endIndex < count) {
+                        let nextPost = itemAt(endIndex)
+
+                        if (nextPost.hasAttachment())
+                            break
+
+                        text = joinPosts(text, nextPost.getPostText().text)
+                        ++endIndex
+                    }
+
+                    if (endIndex === index + 1)
+                        return index
+
+                    const maxLength = itemAt(endIndex - 1).getPostText().maxLength
+
+                    for (let i = index + 1; i < endIndex; ++i)
+                        threadPosts.removePost(index + 1)
+
+                    const parts = unicodeFonts.splitText(text, maxLength)
+                    threadPosts.itemAt(index).getPostText().text = parts[0]
+
+                    for (let j = 1; j < parts.length; ++j) {
+                        threadPosts.addPost(index + j - 1, "", false)
+                        threadPosts.itemAt(index + j).getPostText().text = parts[j]
+                    }
+
+                    return index + parts.length - 1
                 }
 
                 function moveFocusToCurrent() {
@@ -1285,6 +1343,12 @@ Page {
         }
 
         return false
+    }
+
+    function joinPosts(text1, text2) {
+        const joinStr = (/\s/.test(text1.slice(-1)) || /\s/.test(text2.charAt(0))) ? "" : " "
+        const newText = text1 + joinStr + text2
+        return newText
     }
 
     function cancel() {
