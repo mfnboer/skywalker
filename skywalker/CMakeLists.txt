@@ -323,6 +323,7 @@ qt_add_qml_module(libskywalker
         QML_FILES SvgTransparentButton.qml
         QML_FILES ComposePostItem.qml
         QML_FILES SeparatorLine.qml
+        QML_FILES VirtualKeyboardPageResizer.qml
 )
 
 if (NOT ANDROID)

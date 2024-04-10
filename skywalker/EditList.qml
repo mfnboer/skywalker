@@ -7,7 +7,6 @@ Page {
     required property var skywalker
     required property int purpose // QEnums::ListPurpose
     property listview list
-    property int fullPageHeight
     property bool pickingImage: false
     property string createdAvatarSource
     readonly property int avatarSize: 1000
@@ -85,19 +84,8 @@ Page {
         }
     }
 
-    Connections {
-        target: Qt.inputMethod
-
-        // Resize the footer when the Android virtual keyboard is shown
-        function onKeyboardRectangleChanged() {
-            if (Qt.inputMethod.keyboardRectangle.y > 0) {
-                const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-                parent.height = keyboardY
-            }
-            else {
-                parent.height = fullPageHeight
-            }
-        }
+    VirtualKeyboardPageResizer {
+        id: virtualKeyboardPageResizer
     }
 
     Flickable {
@@ -365,7 +353,7 @@ Page {
     Component.onCompleted: {
         // Save the full page height now. Later when the Android keyboard pops up,
         // the page height sometimes changes by itself, but not always...
-        fullPageHeight = parent.height
+        virtualKeyboardPageResizer.fullPageHeight = parent.height
 
         nameField.forceActiveFocus()
     }

@@ -8,7 +8,6 @@ Page {
     required property var skywalker
     property string initialText
     property string initialImage
-    property int fullPageHeight
     property int margin: 15
 
     readonly property int maxPostLength: 300
@@ -499,6 +498,9 @@ Page {
                         }
 
                         function maxSize() {
+                            if (!threadAutoNumber)
+                                return 0
+
                             const countText = getPostCountText(page.maxThreadPosts, page.maxThreadPosts)
                             return countText.length + 1
                         }
@@ -1696,22 +1698,8 @@ Page {
         return hasImageContent() && (postItem.cwSuggestive || postItem.cwNudity || postItem.cwPorn || postItem.cwGore)
     }
 
-    Connections {
-        target: Qt.inputMethod
-
-        // Resize the page when the Android virtual keyboard is shown
-        function onKeyboardRectangleChanged() {
-            if (Qt.inputMethod.keyboardRectangle.y > 0) {
-                // Sometimes the page height gets changed automatically but most times not...
-                // Setting to to keyboard-y seems reliable.
-                const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-                parent.height = keyboardY
-            }
-            else {
-                console.debug("HIDE KEYBOARD, PARENT:", parent.height, "CONTENT:", contentHeight)
-                parent.height = fullPageHeight
-            }
-        }
+    VirtualKeyboardPageResizer {
+        id: virtualKeyboardPageResizer
     }
 
     Component.onDestruction: {
@@ -1729,7 +1717,7 @@ Page {
     Component.onCompleted: {
         // Save the full page height now. Later when the Android keyboard pops up,
         // the page height sometimes changes by itself, but not always...
-        fullPageHeight = parent.height
+        virtualKeyboardPageResizer.fullPageHeight = parent.height
 
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.

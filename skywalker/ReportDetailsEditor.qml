@@ -61,7 +61,19 @@ Page {
         }
     }
 
+    VirtualKeyboardPageResizer {
+        id: virtualKeyboardPageResizer
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onCompleted: {
+        // Save the full page height now. Later when the Android keyboard pops up,
+        // the page height sometimes changes by itself, but not always...
+        virtualKeyboardPageResizer.fullPageHeight = parent.height
+
+        detailsText.forceActiveFocus()
     }
 }
