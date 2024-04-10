@@ -83,7 +83,9 @@ void DraftPostsMigration::migrateToFile()
 
     for (int i = model->rowCount() - 1; i >= 0; --i)
     {
-        const DraftPostData* data = mRepoDrafts.getDraftPostData(i);
+        const QList<DraftPostData*> dataList = mRepoDrafts.getDraftPostData(i);
+        Q_ASSERT(dataList.size() == 1);
+        const auto* data = dataList[0];
         const bool saved = mFileDrafts.saveDraftPost(data);
 
         for (const auto& imgSource : data->images())

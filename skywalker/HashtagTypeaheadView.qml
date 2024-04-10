@@ -6,8 +6,8 @@ import skywalker
 HashtagListView {
     required property var parentPage
     required property var editText
-    required property var searchUtils
-    required property var postUtils
+    required property SearchUtils searchUtils
+    required property PostUtils postUtils
 
     id: searchList
     y: getParentY(editText) + editText.cursorRectangle.y + editText.cursorRectangle.height + 5
@@ -18,7 +18,7 @@ HashtagListView {
     visible: postUtils.editTag.length > 0
 
     onVisibleChanged: {
-        if (!visible)
+        if (!visible && searchUtils)
             searchUtils.hashtagTypeaheadList = []
     }
 

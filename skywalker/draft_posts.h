@@ -52,10 +52,10 @@ public:
                                            const QStringList& allowLists,
                                            QDateTime timestamp = QDateTime::currentDateTime());
 
-    Q_INVOKABLE bool saveDraftPost(const DraftPostData* draftPost);
+    Q_INVOKABLE bool saveDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread = {});
     Q_INVOKABLE void loadDraftPosts();
     Q_INVOKABLE DraftPostsModel* getDraftPostsModel();
-    Q_INVOKABLE DraftPostData* getDraftPostData(int index);
+    Q_INVOKABLE QList<DraftPostData*> getDraftPostData(int index);
     Q_INVOKABLE void removeDraftPost(int index);
     Q_INVOKABLE void removeDraftPostsModel();
 
@@ -87,6 +87,7 @@ private:
     static ATProto::AppBskyActor::ProfileViewBasic::Ptr createProfileViewBasic(const BasicProfile& author);
     static ATProto::AppBskyActor::ProfileView::Ptr createProfileView(const Profile& author);
 
+    ATProto::AppBskyFeed::Record::Post::Ptr createPost(const DraftPostData* draftPost, const QString& picBaseName);
     Draft::ReplyToPost::Ptr createReplyToPost(const QString& replyToUri, const BasicProfile& author,
                                        const QString& text, const QDateTime& dateTime) const;
 
@@ -98,7 +99,7 @@ private:
     ATProto::AppBskyFeed::GeneratorView::Ptr createQuoteFeed(const GeneratorView& feed) const;
     ATProto::AppBskyGraph::ListView::Ptr createQuoteList(const ListView& list) const;
 
-    ATProto::AppBskyFeed::FeedViewPost::Ptr convertDraftToFeedViewPost(Draft::Draft& draft, const QString& recordUri);
+    ATProto::AppBskyFeed::PostFeed convertDraftToFeedViewPost(Draft::Draft& draft, const QString& recordUri);
     ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft::Draft& draft, const QString& recordUri);
     ATProto::AppBskyFeed::ThreadgateView::Ptr createThreadgateView(Draft::Draft& draft) const;
     ATProto::AppBskyFeed::Record::Post::Ptr createReplyToPost(const Draft::Draft& draft) const;

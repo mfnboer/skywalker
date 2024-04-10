@@ -11,8 +11,9 @@ Page {
     property int fullPageHeight
     property int margin: 15
 
-    property int maxThreadPosts: 99
-    property int maxImages: 4 // per post
+    readonly property int maxPostLength: 300
+    readonly property int maxThreadPosts: 99
+    readonly property int maxImages: 4 // per post
     property bool pickingImage: false
 
     // Reply restrictions (on post thread)
@@ -366,14 +367,18 @@ Page {
                         parentFlick: flick
                         placeholderText: index === 0 ? qsTr("Say something nice") : qsTr(`Add post ${(index + 1)}`)
                         initialText: postItem.text
-                        maxLength: 300 - postCountText.size()
+                        maxLength: page.maxPostLength - postCountText.size()
                         fontSelectorCombo: fontSelector
 
                         onTextChanged: {
                             postItem.text = text
 
                             if (threadAutoSplit && graphemeLength > maxLength && !splitting) {
-                                const parts = unicodeFonts.splitText(text, maxLength, 2)
+                                console.debug("SPLIT:", index)
+
+                                // Avoid to re-split when the post count text becomes visible or longer
+                                const maxPartLength = page.maxPostLength - postCountText.maxSize()
+                                const parts = unicodeFonts.splitText(text, maxPartLength, 2)
 
                                 if (parts.length > 1) {
                                     const moveCursor = cursorPosition > parts[0].length && index === currentPostIndex
@@ -491,6 +496,11 @@ Page {
                         function size() {
                             // +1 for newline
                             return visible ? text.length + 1 : 0
+                        }
+
+                        function maxSize() {
+                            const countText = getPostCountText(page.maxThreadPosts, page.maxThreadPosts)
+                            return countText.length + 1
                         }
                     }
 
@@ -1373,7 +1383,7 @@ Page {
     }
 
     function getPostCountText(postIndex, postCount) {
-        return `${(postIndex + 1)}/${postCount}`
+        return `🧵${(postIndex + 1)}/${postCount}`
     }
 
     function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {
@@ -1445,6 +1455,10 @@ Page {
                 threadRootUri = replyRootPostUri
                 threadRootCid = replyRootPostCid
             }
+            else if (replyToPostUri) {
+                threadRootUri = replyToPostUri
+                threadRootCid = replyToPostCid
+            }
             else {
                 threadRootUri = prevUri
                 threadRootCid = prevCid
@@ -1472,7 +1486,30 @@ Page {
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
 
-        draftPosts.saveDraftPost(draft)
+        let draftItemList = []
+
+        for (let i = 1; i < threadPosts.postList.length; ++i) {
+            const threadItem = threadPosts.postList[i]
+            const qUriItem = threadItem.getQuoteUri()
+            const qCidItem = threadItem.getQuoteCid()
+            const labelsItem = threadItem.getContentLabels()
+
+            const draftItem = draftPosts.createDraft(threadItem.text, threadItem.images, threadItem.altTexts,
+                                     "", "",
+                                     "", "",
+                                     nullAuthor, "",
+                                     new Date(),
+                                     qUriItem, qCidItem, threadItem.quoteAuthor, unicodeFonts.toPlainText(threadItem.quoteText),
+                                     threadItem.quoteDateTime, threadItem.quoteFeed, threadItem.quoteList,
+                                     threadItem.gif, labelsItem,
+                                     false, false, false,
+                                     [])
+
+            draftItemList.push(draftItem)
+            postUtils.cacheTags(threadItem.text)
+        }
+
+        draftPosts.saveDraftPost(draft, draftItemList)
         postUtils.cacheTags(postItem.text)
     }
 
@@ -1481,10 +1518,9 @@ Page {
         let draftsPage = component.createObject(page, { model: draftPosts.getDraftPostsModel() })
         draftsPage.onClosed.connect(() => root.popStack())
         draftsPage.onSelected.connect((index) => {
-            const draftData = draftPosts.getDraftPostData(index)
-            setDraftPost(draftData)
+            const draftDataList = draftPosts.getDraftPostData(index)
+            setDraftPost(draftDataList)
             draftPosts.removeDraftPost(index)
-            draftData.destroy()
             root.popStack()
         })
         draftsPage.onDeleted.connect((index) => draftPosts.removeDraftPost(index))
@@ -1492,43 +1528,57 @@ Page {
         root.pushStack(draftsPage)
     }
 
-    function setDraftPost(draftData) {
-        let postItem = threadPosts.newComposePostItem()
-        postItem.text = draftData.text
+    function setDraftPost(draftDataList) {
+        for (let j = 0; j < draftDataList.length; ++j) {
+            const draftData = draftDataList[j]
+            let postItem = threadPosts.newComposePostItem()
+            postItem.text = draftData.text
 
-        for (let i = 0; i < draftData.images.length; ++i) {
-            postItem.images.push(draftData.images[i].fullSizeUrl)
-            postItem.altTexts.push(draftData.images[i].alt)
+            for (let i = 0; i < draftData.images.length; ++i) {
+                postItem.images.push(draftData.images[i].fullSizeUrl)
+                postItem.altTexts.push(draftData.images[i].alt)
+            }
+
+            if (j === 0) {
+                replyToAuthor = draftData.replyToAuthor
+                replyToPostUri = draftData.replyToUri
+                replyToPostCid = draftData.replyToCid
+                replyRootPostUri = draftData.replyRootUri
+                replyRootPostCid = draftData.replyRootCid
+                replyToPostText = draftData.replyToText
+                replyToPostDateTime = draftData.replyToDateTime
+
+                openedAsQuotePost = draftData.openAsQuotePost
+
+                restrictReply = draftData.restrictReplies
+                allowReplyMentioned = draftData.allowMention
+                allowReplyFollowing = draftData.allowFollowing
+                allowListUrisFromDraft = draftData.allowLists
+                allowListIndexes = [0, 1, 2]
+                allowLists = [false, false, false]
+            }
+
+            postItem.quoteUri = draftData.quoteUri
+            postItem.quoteCid = draftData.quoteCid
+            postItem.quoteAuthor = draftData.quoteAuthor
+            postItem.quoteText = draftData.quoteText
+            postItem.quoteDateTime = draftData.quoteDateTime
+            postItem.quoteFeed = draftData.quoteFeed
+            postItem.quoteList = draftData.quoteList
+
+            postItem.gif = draftData.gif
+
+            postItem.setContentWarnings(draftData.labels)
+
+            console.debug("ADD DRAFT:", j)
+            if (j > 0)
+                threadPosts.postList.push(postItem)
+            else
+                threadPosts.postList[0] = postItem
+            console.debug("ADDED DRAFT:", j)
         }
 
-        replyToAuthor = draftData.replyToAuthor
-        replyToPostUri = draftData.replyToUri
-        replyToPostCid = draftData.replyToCid
-        replyRootPostUri = draftData.replyRootUri
-        replyRootPostCid = draftData.replyRootCid
-        replyToPostText = draftData.replyToText
-        replyToPostDateTime = draftData.replyToDateTime
-
-        openedAsQuotePost = draftData.openAsQuotePost
-        postItem.quoteUri = draftData.quoteUri
-        postItem.quoteCid = draftData.quoteCid
-        postItem.quoteAuthor = draftData.quoteAuthor
-        postItem.quoteText = draftData.quoteText
-        postItem.quoteDateTime = draftData.quoteDateTime
-        postItem.quoteFeed = draftData.quoteFeed
-        postItem.quoteList = draftData.quoteList
-
-        postItem.gif = draftData.gif
-
-        postItem.setContentWarnings(draftData.labels)
-        restrictReply = draftData.restrictReplies
-        allowReplyMentioned = draftData.allowMention
-        allowReplyFollowing = draftData.allowFollowing
-        allowListUrisFromDraft = draftData.allowLists
-        allowListIndexes = [0, 1, 2]
-        allowLists = [false, false, false]
-
-        threadPosts.postList[0] = postItem
+        threadPosts.model = draftDataList.length
         threadPosts.copyPostListToPostItems()
     }
 

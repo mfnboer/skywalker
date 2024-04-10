@@ -32,7 +32,7 @@ void DraftPostsModel::clear()
     }
 }
 
-void DraftPostsModel::setFeed(ATProto::AppBskyFeed::PostFeed feed)
+void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed)
 {
     qDebug() << "Set feed:" << feed.size();
 
@@ -48,7 +48,7 @@ void DraftPostsModel::setFeed(ATProto::AppBskyFeed::PostFeed feed)
 
     for (int i = 0; i < (int)mRawFeed.size(); ++i)
     {
-        Post post(mRawFeed[i].get(), i);
+        Post post(mRawFeed[i][0].get(), i);
         mFeed.push_back(post);
     }
 
@@ -77,6 +77,55 @@ void DraftPostsModel::deleteDraft(int index)
         mFeed.back().setEndOfFeed(true);
         changeData({ int(Role::EndOfFeed) });
     }
+}
+
+std::vector<Post> DraftPostsModel::getThread(int index) const
+{
+    if (index < 0 || index >= (int)mRawFeed.size())
+        return {};
+
+    std::vector<Post> thread;
+
+    for (int i = 0; i < (int)mRawFeed[index].size(); ++i)
+    {
+        const auto& feedViewPost = mRawFeed[index][i];
+        Post post(feedViewPost.get(), i);
+        thread.push_back(post);
+    }
+
+    return thread;
+}
+
+QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
+{
+    if (index.row() < 0 || index.row() >= (int)mFeed.size())
+        return {};
+
+    QVariant result = AbstractPostFeedModel::data(index, role);
+    const int threadLength = mRawFeed[index.row()].size();
+
+    if (threadLength <= 1)
+        return result;
+
+    switch (Role(role))
+    {
+    case Role::PostText:
+    {
+        auto text = result.toString();
+        text += QString("<br>🧵1/%1").arg(threadLength);
+        return text;
+    }
+    case Role::PostPlainText:
+    {
+        auto text = result.toString();
+        text += QString("\n🧵1/%1").arg(threadLength);
+        return text;
+    }
+    default:
+        break;
+    }
+
+    return result;
 }
 
 }
