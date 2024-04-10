@@ -3,6 +3,8 @@ import QtQuick.Controls
 
 Page {
     property alias text: detailsText.text
+    property var skywalker: root.getSkywalker()
+    readonly property int margin: 10
 
     signal detailsChanged(string text)
 
@@ -18,10 +20,48 @@ Page {
         onButtonClicked: detailsChanged(page.text)
     }
 
-    SkyTextEdit {
-        id: detailsText
-        placeholderText: qsTr("Enter a reason or any other details here")
-        placeholderPointSize: guiSettings.scaledFont(7/8)
-        maxLength: 2000
+    footer: Rectangle {
+        id: pageFooter
+        width: page.width
+        height: guiSettings.footerHeight
+        z: guiSettings.footerZLevel
+        color: guiSettings.footerColor
+
+        TextLengthBar {
+            textField: detailsText
+        }
+
+        TextLengthCounter {
+            y: 10
+            anchors.rightMargin: page.margin
+            anchors.right: parent.right
+            textField: detailsText
+        }
+    }
+
+    Flickable {
+        id: flick
+        anchors.fill: parent
+        clip: true
+        contentWidth: parent.width
+        contentHeight: detailsText.y + detailsText.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
+        onHeightChanged: detailsText.ensureVisible(detailsText.cursorRectangle)
+
+        SkyFormattedTextEdit {
+            id: detailsText
+            width: parent.width
+            leftPadding: page.margin
+            rightPadding: page.margin
+            parentPage: page
+            parentFlick: flick
+            placeholderText: qsTr("Reason or any other details")
+            maxLength: 2000
+        }
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

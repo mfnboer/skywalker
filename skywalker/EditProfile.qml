@@ -52,14 +52,10 @@ Page {
     footer: Rectangle {
         id: pageFooter
         width: editProfilePage.width
-        height: getFooterHeight()
+        height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus
-
-        function getFooterHeight() {
-            return guiSettings.footerHeight
-        }
 
         TextLengthBar {
             textField: nameField

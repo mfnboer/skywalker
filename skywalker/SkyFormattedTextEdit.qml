@@ -222,6 +222,10 @@ TextEdit {
         id: guiSettings
     }
 
+    function maxGraphemeLengthExceeded() {
+        return maxLength > -1 && graphemeLength > maxLength
+    }
+
     function getTextParts() {
         const textBefore = editText.text.slice(0, editText.cursorPosition)
         const textBetween = editText.preeditText
