@@ -12,6 +12,7 @@ Page {
 
     readonly property int maxPostLength: 300
     readonly property int maxThreadPosts: 99
+    readonly property int minPostSplitLineLength: 30
     readonly property int maxImages: 4 // per post
     property bool pickingImage: false
 
@@ -377,14 +378,14 @@ Page {
 
                                 // Avoid to re-split when the post count text becomes visible or longer
                                 const maxPartLength = page.maxPostLength - postCountText.maxSize()
-                                const parts = unicodeFonts.splitText(text, maxPartLength, 2)
+                                const parts = unicodeFonts.splitText(text, maxPartLength, minPostSplitLineLength, 2)
 
                                 if (parts.length > 1) {
                                     const moveCursor = cursorPosition > parts[0].length && index === currentPostIndex
                                     const oldCursorPosition = cursorPosition
 
                                     splitting = true
-                                    text = parts[0]
+                                    text = parts[0].trim()
 
                                     if (!moveCursor && index === currentPostIndex)
                                         cursorPosition = oldCursorPosition
@@ -398,7 +399,7 @@ Page {
                                         // Prepend excess text to next post
                                         let nextPostText = threadPosts.itemAt(index + 1).getPostText()
                                         const newText = joinPosts(parts[1], nextPostText.text)
-                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].length - 1 : -1
+                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].length : -1
 
                                         setPostTextTimer.startSetText(newText, index + 1, newCursorPosition)
 
@@ -776,12 +777,12 @@ Page {
                     for (let i = index + 1; i < endIndex; ++i)
                         threadPosts.removePost(index + 1)
 
-                    const parts = unicodeFonts.splitText(text, maxLength)
-                    threadPosts.itemAt(index).getPostText().text = parts[0]
+                    const parts = unicodeFonts.splitText(text, maxLength, page.minPostSplitLineLengths)
+                    threadPosts.itemAt(index).getPostText().text = parts[0].trim()
 
                     for (let j = 1; j < parts.length; ++j) {
                         threadPosts.addPost(index + j - 1, "", false)
-                        threadPosts.itemAt(index + j).getPostText().text = parts[j]
+                        threadPosts.itemAt(index + j).getPostText().text = parts[j].trim()
                     }
 
                     return index + parts.length - 1

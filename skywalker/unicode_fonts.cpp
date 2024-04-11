@@ -354,15 +354,18 @@ bool UnicodeFonts::hasCombinedEmojis(const QString& text)
     return false;
 }
 
-static QString rstripSpace(const QString& text)
+void moveShortLineToNextPart(QString& part, int maxLength, int minSplitLineLength)
 {
-    if (text.endsWith(' '))
-        return text.sliced(0, text.length() - 1);
+    if (part.back() == '\n')
+        return;
 
-    return text;
+    const int lastNewLine = part.lastIndexOf('\n');
+
+    if (part.size() > maxLength - minSplitLineLength && lastNewLine >= part.size() - minSplitLineLength)
+        part = part.sliced(0, lastNewLine + 1);
 }
 
-QStringList UnicodeFonts::splitText(const QString& text, int maxLength, int maxParts)
+QStringList UnicodeFonts::splitText(const QString& text, int maxLength, int minSplitLineLength, int maxParts)
 {
     if (text.size() <= maxLength)
         return {text};
@@ -387,29 +390,31 @@ QStringList UnicodeFonts::splitText(const QString& text, int maxLength, int maxP
             break;
 
         const int partLength = nextEndLinePos - startPartPos;
-        const QString part = rstripSpace(text.sliced(startPartPos, partLength));
+        QString part = text.sliced(startPartPos, partLength);
 
         if (part.size() == maxLength)
         {
+            moveShortLineToNextPart(part, maxLength, minSplitLineLength);
             qDebug() << QString("Part: [%1]").arg(part);
             parts.push_back(part);
-            startPartPos = nextEndLinePos;
+            startPartPos += part.size();
         }
         else if (part.size() > maxLength)
         {
-            const QString prevPart = rstripSpace(text.sliced(startPartPos, endLinePos - startPartPos));
+            QString prevPart = text.sliced(startPartPos, endLinePos - startPartPos);
 
             if (!prevPart.isEmpty())
             {
-                parts.push_back(prevPart);
+                moveShortLineToNextPart(prevPart, maxLength, minSplitLineLength);
                 qDebug() << QString("Prev part: [%1]").arg(prevPart);
+                parts.push_back(prevPart);
+                startPartPos += prevPart.size();
             }
             else
             {
                 qDebug() << "Empty part";
+                startPartPos = endLinePos;
             }
-
-            startPartPos = endLinePos;
         }
 
         endLinePos = nextEndLinePos;
