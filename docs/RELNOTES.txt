@@ -1,5 +1,5 @@
-next
-====
+2.0
+===
 * Post thread composer
   - Auto number posts in thread (optional)
   - Auto split large text in multiple posts (optional)
