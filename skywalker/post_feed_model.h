@@ -27,6 +27,7 @@ public:
                            const MutedWords& mutedWords,
                            HashtagIndex& hashtags,
                            const ATProto::UserPreferences& userPrefs,
+                           const UserSettings& userSettings,
                            QObject* parent = nullptr);
 
     const QString& getFeedName() const { return mFeedName; }
@@ -92,6 +93,7 @@ private:
     };
 
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
+    bool mustShowQuotePost(const Post& post) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
@@ -110,6 +112,7 @@ private:
     int topNPostIndex(const Post& post, bool checkTimestamp) const;
 
     const ATProto::UserPreferences& mUserPreferences;
+    const UserSettings& mUserSettings;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.

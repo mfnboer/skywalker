@@ -192,6 +192,12 @@ Page {
                 checked: !userPrefs.hideQuotePosts
                 onCheckedChanged: userPrefs.hideQuotePosts = !checked
             }
+
+            AccessibleSwitch {
+                text: qsTr("Show quotes with blocked post")
+                checked: userPrefs.showQuotesWithBlockedPost
+                onCheckedChanged: userPrefs.showQuotesWithBlockedPost = checked
+            }
         }
 
         ColumnLayout {

@@ -20,6 +20,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool hideRepliesByUnfollowed READ getHideRepliesByUnfollowed WRITE setHideRepliesByUnfollowed NOTIFY hideRepliesByUnfollowedChanged FINAL)
     Q_PROPERTY(bool hideReposts READ getHideReposts WRITE setHideReposts NOTIFY hideRepostsChanged FINAL)
     Q_PROPERTY(bool hideQuotePosts READ getHideQuotePosts WRITE setHideQuotePosts NOTIFY hideQuotePostsChanged FINAL)
+    Q_PROPERTY(bool showQuotesWithBlockedPost READ getShowQuotesWithBlockedPost WRITE setShowQuotesWithBlockedPost NOTIFY showQuotesWithBlockedPostChanged FINAL)
     Q_PROPERTY(QEnums::DisplayMode displayMode READ getDisplayMode WRITE setDisplayMode NOTIFY displayModeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool notificationsWifiOnly READ getNotificationsWifiOnly WRITE setNotificationsWifiOnly NOTIFY notificationsWifiOnlyChanged FINAL)
@@ -59,6 +60,9 @@ public:
 
     bool isModified() const { return mModified; }
 
+    bool getShowQuotesWithBlockedPost() const { return mShowQuotesWithBlockedPost; }
+    void setShowQuotesWithBlockedPost(bool show);
+
     QEnums::DisplayMode getDisplayMode() const { return mDisplayMode; }
     void setDisplayMode(QEnums::DisplayMode displayMode);
 
@@ -77,6 +81,7 @@ signals:
     void hideRepliesByUnfollowedChanged();
     void hideRepostsChanged();
     void hideQuotePostsChanged();
+    void showQuotesWithBlockedPostChanged();
     void displayModeChanged();
     void gifAutoPlayChanged();
     void notificationsWifiOnlyChanged();
@@ -96,6 +101,7 @@ private:
     bool mModified = false;
 
     // Local app settings
+    bool mShowQuotesWithBlockedPost = true;
     QEnums::DisplayMode mDisplayMode = QEnums::DISPLAY_MODE_SYSTEM;
     bool mGifAutoPlay = true;
     bool mNotificationsWifiOnly = false;

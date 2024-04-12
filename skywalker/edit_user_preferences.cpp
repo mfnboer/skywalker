@@ -79,6 +79,16 @@ void EditUserPreferences::setHideQuotePosts(bool hide)
     }
 }
 
+void EditUserPreferences::setShowQuotesWithBlockedPost(bool show)
+{
+    if (show != mShowQuotesWithBlockedPost)
+    {
+        mShowQuotesWithBlockedPost = show;
+        setLocalSettingsModified(true);
+        emit showQuotesWithBlockedPostChanged();
+    }
+}
+
 void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
 {
     if (displayMode != mDisplayMode)

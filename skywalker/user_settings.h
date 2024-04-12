@@ -104,6 +104,12 @@ public:
     void setNotificationsWifiOnly(bool enable);
     bool getNotificationsWifiOnly() const;
 
+    bool getShowQuotesWithBlockedPost(const QString& did) const;
+    void setShowQuotesWithBlockedPost(const QString& did, bool show);
+
+    bool getRewindToLastSeenPost(const QString& did) const;
+    void setRewindToLastSeenPost(const QString& did, bool rewind);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;
