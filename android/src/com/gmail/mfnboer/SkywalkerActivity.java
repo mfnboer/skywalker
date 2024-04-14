@@ -23,7 +23,7 @@ import android.view.WindowManager;
 
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
-    private static final int MAX_TEXT_LEN = 512;
+    private static final int MAX_TEXT_LEN = 32768;
     public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
 
     public static native void emitSharedTextReceived(String text);

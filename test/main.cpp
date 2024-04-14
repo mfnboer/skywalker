@@ -4,6 +4,7 @@
 #include "test_muted_words.h"
 #include "test_post_feed_model.h"
 #include "test_search_utils.h"
+#include "test_unicode_fonts.h"
 #include <QtTest/QTest>
 
 int main(int argc, char *argv[])
@@ -19,6 +20,9 @@ int main(int argc, char *argv[])
 
     TestSearchUtils testSearchUtils;
     QTest::qExec(&testSearchUtils, argc, argv);
+
+    TestUnicodeFonts testUnicodeFonts;
+    QTest::qExec(&testUnicodeFonts, argc, argv);
 
     return 0;
 }

@@ -131,6 +131,7 @@ Page {
         Material.background: "black"
         opacity: 0.7
         svg: svgOutline.arrowBack
+        accessibleName: qsTr("more options")
         onClicked: page.closed()
     }
 
@@ -141,6 +142,7 @@ Page {
         Material.background: "black"
         opacity: 0.7
         svg: svgOutline.moreVert
+        accessibleName: qsTr("more options")
         onClicked: moreMenu.open()
 
         Menu {

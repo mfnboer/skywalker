@@ -42,12 +42,9 @@ ListView {
             SvgButton {
                 id: addButton
                 svg: svgOutline.add
+                accessibleName: qsTr("create new list")
                 visible: ownLists
                 onClicked: newList()
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("create new list")
-                Accessible.onPressAction: clicked()
             }
         }
     }

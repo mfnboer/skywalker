@@ -277,6 +277,26 @@ QString UserSettings::getMutedRepostsListUri(const QString& did) const
     return uri.toString();
 }
 
+void UserSettings::setThreadAutoNumber(bool autoNumber)
+{
+    mSettings.setValue("threadAutoNumber", autoNumber);
+}
+
+bool UserSettings::getThreadAutoNumber() const
+{
+    return mSettings.value("threadAutoNumber", true).toBool();
+}
+
+void UserSettings::setThreadAutoSplit(bool autoSplit)
+{
+    mSettings.setValue("threadAutoSplit", autoSplit);
+}
+
+bool UserSettings::getThreadAutoSplit() const
+{
+    return mSettings.value("threadAutoSplit", false).toBool();
+}
+
 void UserSettings::setUserHashtags(const QString& did, const QStringList& hashtags)
 {
     qDebug() << "Save user hashtags:" << did;
@@ -340,6 +360,26 @@ void UserSettings::setNotificationsWifiOnly(bool enable)
 bool UserSettings::getNotificationsWifiOnly() const
 {
     return mSettings.value("notificationsWifiOnly", false).toBool();
+}
+
+bool UserSettings::getShowQuotesWithBlockedPost(const QString& did) const
+{
+    return mSettings.value(key(did, "showQuotesWithBlockedPost"), true).toBool();
+}
+
+void UserSettings::setShowQuotesWithBlockedPost(const QString& did, bool show)
+{
+    mSettings.setValue(key(did, "showQuotesWithBlockedPost"), show);
+}
+
+bool UserSettings::getRewindToLastSeenPost(const QString& did) const
+{
+    return mSettings.value(key(did, "rewindToLastSeenPost"), true).toBool();
+}
+
+void UserSettings::setRewindToLastSeenPost(const QString& did, bool rewind)
+{
+    mSettings.setValue(key(did, "rewindToLastSeenPost"), rewind);
 }
 
 void UserSettings::addDraftRepoToFileMigration(const QString& did)

@@ -7,7 +7,6 @@ Page {
     required property var skywalker
     required property int purpose // QEnums::ListPurpose
     property listview list
-    property int fullPageHeight
     property bool pickingImage: false
     property string createdAvatarSource
     readonly property int avatarSize: 1000
@@ -32,6 +31,7 @@ Page {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: svgOutline.check
+            accessibleName: qsTr("save list")
             enabled: nameField.text.length > 0 && !nameField.maxGraphemeLengthExceeded() && changesMade()
 
             onClicked: {
@@ -42,10 +42,6 @@ Page {
                 else
                     updateList()
             }
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("save list")
-            Accessible.onPressAction: if (enabled) clicked()
         }
     }
 
@@ -88,19 +84,8 @@ Page {
         }
     }
 
-    Connections {
-        target: Qt.inputMethod
-
-        // Resize the footer when the Android virtual keyboard is shown
-        function onKeyboardRectangleChanged() {
-            if (Qt.inputMethod.keyboardRectangle.y > 0) {
-                const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-                parent.height = keyboardY
-            }
-            else {
-                parent.height = fullPageHeight
-            }
-        }
+    VirtualKeyboardPageResizer {
+        id: virtualKeyboardPageResizer
     }
 
     Flickable {
@@ -112,16 +97,7 @@ Page {
         contentHeight: pageColumn.y + descriptionRect.y + descriptionField.y + descriptionField.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: ensureVisible(descriptionField.cursorRectangle)
-
-        function ensureVisible(cursor) {
-            let cursorY = cursor.y + pageColumn.y + descriptionRect.y + descriptionField.y
-
-            if (contentY >= cursorY)
-                contentY = cursorY;
-            else if (contentY + height <= cursorY + cursor.height)
-                contentY = cursorY + cursor.height - height;
-        }
+        onHeightChanged: descriptionField.ensureVisible(descriptionField.cursorRectangle)
 
         ColumnLayout {
             id: pageColumn
@@ -163,16 +139,13 @@ Page {
                     width: 40
                     height: width
                     svg: svgOutline.close
+                    accessibleName: qsTr("delete list avatar")
                     visible: avatar.avatarUrl
 
                     onClicked: {
                         avatar.setUrl("")
                         dropCreatedAvatar()
                     }
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("delete list avatar")
-                    Accessible.onPressAction: clicked()
                 }
 
                 function setUrl(url) {
@@ -380,7 +353,7 @@ Page {
     Component.onCompleted: {
         // Save the full page height now. Later when the Android keyboard pops up,
         // the page height sometimes changes by itself, but not always...
-        fullPageHeight = parent.height
+        virtualKeyboardPageResizer.fullPageHeight = parent.height
 
         nameField.forceActiveFocus()
     }

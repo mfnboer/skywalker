@@ -47,7 +47,7 @@ Skywalker::Skywalker(QObject* parent) :
     mBookmarks(this),
     mMutedWords(this),
     mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
-                   mBookmarks, mMutedWords, mSeenHashtags, mUserPreferences, this),
+                   mBookmarks, mMutedWords, mSeenHashtags, mUserPreferences, mUserSettings, this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
@@ -1615,7 +1615,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
             mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks, mMutedWords,
-            mSeenHashtags, mUserPreferences, this);
+            mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setGeneratorView(generatorView);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
@@ -1626,7 +1626,7 @@ int Skywalker::createPostFeedModel(const ListView& listView)
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
                                                  mUserDid, mUserFollows, mMutedReposts,
                                                  mContentFilter, mBookmarks, mMutedWords,
-                                                 mSeenHashtags, mUserPreferences, this);
+                                                 mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setListView(listView);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
@@ -2234,9 +2234,9 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
+    mEditUserPreferences->setShowQuotesWithBlockedPost(mUserSettings.getShowQuotesWithBlockedPost(mUserDid));
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
-    mEditUserPreferences->setRequireAltText(mUserSettings.getRequireAltText(session->mDid));
     mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
     mEditUserPreferences->setLocalSettingsModified(false);
 
@@ -2266,14 +2266,14 @@ void Skywalker::saveUserPreferences()
 
     if (mEditUserPreferences->isLocalSettingsModified())
     {
+        qDebug() << "Show quotes with blocked posts:" << mEditUserPreferences->getShowQuotesWithBlockedPost();
+        mUserSettings.setShowQuotesWithBlockedPost(mUserDid, mEditUserPreferences->getShowQuotesWithBlockedPost());
+
         qDebug() << "Display mode:" << mEditUserPreferences->getDisplayMode();
         mUserSettings.setDisplayMode(mEditUserPreferences->getDisplayMode());
 
         qDebug() << "GIF auto play:" << mEditUserPreferences->getGifAutoPlay();
         mUserSettings.setGifAutoPlay(mEditUserPreferences->getGifAutoPlay());
-
-        qDebug() << "Require ALT-text:" << mEditUserPreferences->getRequireAltText();
-        mUserSettings.setRequireAltText(mUserDid, mEditUserPreferences->getRequireAltText());
 
         qDebug() << "Notifications wifi only:" << mEditUserPreferences->getNotificationsWifiOnly();
         mUserSettings.setNotificationsWifiOnly(mEditUserPreferences->getNotificationsWifiOnly());

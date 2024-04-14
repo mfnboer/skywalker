@@ -123,29 +123,20 @@ Rectangle {
                 text: qsTr("Follow")
                 visible: !followingUri && !isUser(author) && showAuthor && showFollow
                 onClicked: follow(author)
-
-                Accessible.role: Accessible.Button
                 Accessible.name: qsTr(`press to follow ${author.name}`)
-                Accessible.onPressAction: clicked()
             }
             SkyButton {
                 flat: true
                 text: qsTr("Following")
                 visible: followingUri && !isUser(author) && showAuthor && showFollow
                 onClicked: unfollow(author.did, followingUri)
-
-                Accessible.role: Accessible.Button
                 Accessible.name: qsTr(`press to unfollow ${author.name}`)
-                Accessible.onPressAction: clicked()
             }
             SvgButton {
                 svg: svgOutline.delete
+                accessibleName: qsTr(`press to delete ${author.name}`)
                 visible: listItemUri && allowDeleteItem
                 onClicked: confirmDelete()
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`press to delete ${author.name}`)
-                Accessible.onPressAction: clicked()
             }
         }
 

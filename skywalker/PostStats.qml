@@ -92,6 +92,7 @@ Column {
                 onAboutToHide: root.enablePopupShield(false)
 
                 CloseMenuItem {
+                    text: qsTr("<b>Post</b>")
                     Accessible.name: qsTr("close more options menu")
                 }
                 AccessibleMenuItem {

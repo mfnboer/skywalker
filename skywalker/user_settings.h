@@ -75,8 +75,14 @@ public:
     void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
 
-    void setRequireAltText(const QString& did, bool require);
+    Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
+
+    Q_INVOKABLE void setThreadAutoNumber(bool autoNumber);
+    Q_INVOKABLE bool getThreadAutoNumber() const;
+
+    Q_INVOKABLE void setThreadAutoSplit(bool autoSplit);
+    Q_INVOKABLE bool getThreadAutoSplit() const;
 
     Q_INVOKABLE QString getMutedRepostsListUri(const QString& did) const;
 
@@ -97,6 +103,12 @@ public:
 
     void setNotificationsWifiOnly(bool enable);
     bool getNotificationsWifiOnly() const;
+
+    bool getShowQuotesWithBlockedPost(const QString& did) const;
+    void setShowQuotesWithBlockedPost(const QString& did, bool show);
+
+    bool getRewindToLastSeenPost(const QString& did) const;
+    void setRewindToLastSeenPost(const QString& did, bool rewind);
 
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);

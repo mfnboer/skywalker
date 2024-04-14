@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
+    Q_INVOKABLE void batchDeletePosts(const QStringList& postUris);
     Q_INVOKABLE bool pickPhoto();
     Q_INVOKABLE void savePhoto(const QString& sourceUrl);
     Q_INVOKABLE void dropPhoto(const QString& source);

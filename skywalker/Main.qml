@@ -15,8 +15,6 @@ ApplicationWindow {
     visible: true
     title: "Skywalker"
 
-    Accessible.role: Accessible.Application
-
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
         settings.setPostButtonRelativeX(postButtonRelativeX)
@@ -468,11 +466,8 @@ ApplicationWindow {
                     id: closeButton
                     anchors.right: parent.right
                     svg: svgOutline.close
+                    accessibleName: qsTr("cancel repost")
                     onClicked: repostDrawer.close()
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("cancel repost")
-                    Accessible.onPressAction: clicked()
                 }
 
                 Button {

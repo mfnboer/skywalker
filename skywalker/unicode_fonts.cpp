@@ -354,4 +354,81 @@ bool UnicodeFonts::hasCombinedEmojis(const QString& text)
     return false;
 }
 
+void moveShortLineToNextPart(QString& part, int maxLength, int minSplitLineLength)
+{
+    if (part.back() == '\n')
+        return;
+
+    const int lastNewLine = part.lastIndexOf('\n');
+
+    if (part.size() > maxLength - minSplitLineLength && lastNewLine >= part.size() - minSplitLineLength)
+        part = part.sliced(0, lastNewLine + 1);
+}
+
+QStringList UnicodeFonts::splitText(const QString& text, int maxLength, int minSplitLineLength, int maxParts)
+{
+    if (text.size() <= maxLength)
+        return {text};
+
+    QStringList parts;
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Line, text);
+    int startPartPos = 0;
+    int startLinePos = 0;
+    int endLinePos = 0;
+
+    while (!(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem) && startLinePos != -1)
+        startLinePos = boundaryFinder.toNextBoundary();
+
+    qDebug() << "start:" << startLinePos;
+
+    while (startLinePos != -1 && parts.size() < maxParts - 1)
+    {
+        const int nextEndLinePos = boundaryFinder.toNextBoundary();
+        qDebug() << "next end:" << nextEndLinePos;
+
+        if (nextEndLinePos == -1)
+            break;
+
+        const int partLength = nextEndLinePos - startPartPos;
+        QString part = text.sliced(startPartPos, partLength);
+
+        if (part.size() == maxLength)
+        {
+            moveShortLineToNextPart(part, maxLength, minSplitLineLength);
+            qDebug() << QString("Part: [%1]").arg(part);
+            parts.push_back(part);
+            startPartPos += part.size();
+        }
+        else if (part.size() > maxLength)
+        {
+            QString prevPart = text.sliced(startPartPos, endLinePos - startPartPos);
+
+            if (!prevPart.isEmpty())
+            {
+                moveShortLineToNextPart(prevPart, maxLength, minSplitLineLength);
+                qDebug() << QString("Prev part: [%1]").arg(prevPart);
+                parts.push_back(prevPart);
+                startPartPos += prevPart.size();
+            }
+            else
+            {
+                qDebug() << "Empty part";
+                startPartPos = endLinePos;
+            }
+        }
+
+        endLinePos = nextEndLinePos;
+        startLinePos = endLinePos;
+    }
+
+    if (startPartPos < text.size())
+    {
+        const QString part = text.sliced(startPartPos);
+        qDebug() << QString("Last part: [%1]").arg(part);
+        parts.push_back(part);
+    }
+
+    return parts;
+}
+
 }

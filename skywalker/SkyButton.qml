@@ -5,6 +5,7 @@ RoundButton {
     id: button
 
     Material.background: flat ? guiSettings.labelColor : guiSettings.buttonColor
+
     contentItem: Text {
         leftPadding: 10
         rightPadding: 10
@@ -12,6 +13,10 @@ RoundButton {
         color: flat ? guiSettings.textColor : guiSettings.buttonTextColor
         text: button.text
     }
+
+    Accessible.role: Accessible.Button
+    Accessible.name: button.text
+    Accessible.onPressAction: if (enabled) clicked()
 
     GuiSettings {
         id: guiSettings

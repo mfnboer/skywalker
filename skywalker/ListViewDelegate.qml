@@ -134,11 +134,8 @@ Rectangle {
                 width: 40
                 height: width
                 svg: svgOutline.group
+                accessibleName: qsTr(`show members of list ${list.name}`)
                 onClicked: root.viewListByUri(list.uri, false)
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`show members of list ${list.name}`)
-                Accessible.onPressAction: skywalker.getDetailedProfile(listCreator.did)
             }
 
             SvgButton {
@@ -147,6 +144,8 @@ Rectangle {
                 width: 40
                 height: width
                 svg: svgOutline.moreVert
+                accessibleName: qsTr("more options")
+
                 onClicked: {
                     switch (list.purpose) {
                     case QEnums.LIST_PURPOSE_CURATE:
@@ -164,10 +163,6 @@ Rectangle {
                         break
                     }
                 }
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("more options")
-                Accessible.onPressAction: clicked()
             }
         }
 
@@ -222,6 +217,7 @@ Rectangle {
         modal: true
 
         CloseMenuItem {
+            text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
         }
         AccessibleMenuItem {
@@ -287,6 +283,7 @@ Rectangle {
         modal: true
 
         CloseMenuItem {
+            text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
         }
         AccessibleMenuItem {
@@ -347,6 +344,7 @@ Rectangle {
         modal: true
 
         CloseMenuItem {
+            text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
         }
         AccessibleMenuItem {
@@ -411,6 +409,7 @@ Rectangle {
         modal: true
 
         CloseMenuItem {
+            text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
         }
         AccessibleMenuItem {

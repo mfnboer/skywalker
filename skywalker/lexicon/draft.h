@@ -62,6 +62,7 @@ struct Draft
     ReplyToPost::Ptr mReplyToPost;
     Quote::Ptr mQuote;
     ATProto::AppBskyFeed::Threadgate::Ptr mThreadgate;
+    std::vector<ATProto::AppBskyFeed::Record::Post::Ptr> mThreadPosts;
 
     QJsonObject toJson() const;
 

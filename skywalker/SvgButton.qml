@@ -3,13 +3,18 @@ import QtQuick.Controls
 import skywalker
 
 RoundButton {
-    id: button
+    required property string accessibleName
     required property svgimage svg
     property string iconColor: guiSettings.buttonTextColor
     property int imageMargin: 10
 
-    Material.background: guiSettings.buttonColor
+    id: button
+    Material.background: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
     opacity: 1
+
+    Accessible.role: Accessible.Button
+    Accessible.name: accessibleName
+    Accessible.onPressAction: if (button.enabled) button.clicked()
 
     SvgImage {
         width: button.width - 2 * button.imageMargin

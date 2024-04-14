@@ -14,9 +14,11 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              const MutedWords& mutedWords,
                              HashtagIndex& hashtags,
                              const ATProto::UserPreferences& userPrefs,
+                             const UserSettings& userSettings,
                              QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent),
     mUserPreferences(userPrefs),
+    mUserSettings(userSettings),
     mFeedName(feedName)
 {}
 
@@ -509,6 +511,43 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
     return true;
 }
 
+bool PostFeedModel::mustShowQuotePost(const Post& post) const
+{
+    Q_ASSERT(post.isQuotePost());
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
+
+    if (feedViewPref.mHideQuotePosts)
+        return false;
+
+    if (!mUserSettings.getShowQuotesWithBlockedPost(mUserDid))
+    {
+        const RecordView* record;
+        const auto recordView = post.getRecordView();
+
+        if (recordView)
+        {
+            record = recordView.get();
+        }
+        else
+        {
+            const auto recordWithMediaView = post.getRecordWithMediaView();
+
+            if (!recordWithMediaView)
+            {
+                qWarning() << "Cannot get record from quote post";
+                return true;
+            }
+
+            record = &recordWithMediaView->getRecord();
+        }
+
+        if (record->getBlocked())
+            return false;
+    }
+
+    return true;
+}
+
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
@@ -536,7 +575,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             if (feedViewPref.mHideReposts && post.isRepost())
                 continue;
 
-            if (feedViewPref.mHideQuotePosts && post.isQuotePost())
+            if (post.isQuotePost() && !mustShowQuotePost(post))
                 continue;
 
             if (mustHideContent(post))

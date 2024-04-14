@@ -133,11 +133,8 @@ Rectangle {
                 iconColor: flat ? guiSettings.textColor : guiSettings.buttonTextColor
                 Material.background: flat ? guiSettings.labelColor : guiSettings.buttonColor
                 svg: feedSaved ? svgOutline.remove : svgOutline.add
+                accessibleName: feedSaved ? qsTr("remove from saved feeds") : qsTr("save feed")
                 onClicked: addClicked(feed, !feedSaved)
-
-                Accessible.role: Accessible.Button
-                Accessible.name: feedSaved ? qsTr("remove from saved feeds") : qsTr("save feed")
-                Accessible.onPressAction: clicked()
             }
         }
 
@@ -196,6 +193,7 @@ Rectangle {
                     modal: true
 
                     CloseMenuItem {
+                        text: qsTr("<b>Feed</b>")
                         Accessible.name: qsTr("close more options menu")
                     }
                     AccessibleMenuItem {

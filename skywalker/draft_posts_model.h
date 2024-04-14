@@ -20,12 +20,15 @@ public:
 
     Q_INVOKABLE int getMaxDrafts() const;
     Q_INVOKABLE void clear();
-    void setFeed(ATProto::AppBskyFeed::PostFeed feed);
+    void setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed);
     void deleteDraft(int index);
+    std::vector<Post> getThread(int index) const;
+
+    QVariant data(const QModelIndex& index, int role) const;
 
 private:
     // This must be kept alive as long as there are posts in the feed dependend on it
-    ATProto::AppBskyFeed::PostFeed mRawFeed;
+    std::vector<ATProto::AppBskyFeed::PostFeed> mRawFeed;
 };
 
 }

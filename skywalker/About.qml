@@ -74,10 +74,6 @@ Page {
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("OK")
             onClicked: closed()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: text
-            Accessible.onPressAction: clicked()
         }
         Rectangle {
             id: whitespace

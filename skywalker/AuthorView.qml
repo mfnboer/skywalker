@@ -63,11 +63,8 @@ Page {
             Material.background: guiSettings.headerColor
             opacity: 0.5
             svg: svgOutline.arrowBack
+            accessibleName: qsTr("go back")
             onClicked: page.closed()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("go back")
-            Accessible.onPressAction: clicked()
         }
 
         Rectangle {
@@ -148,21 +145,15 @@ Page {
                 SvgButton {
                     svg: svgOutline.edit
                     onClicked: editAuthor(author)
+                    accessibleName: qsTr("edit your profile")
                     visible: isUser(author)
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("edit your profile")
-                    Accessible.onPressAction: clicked()
                 }
 
                 SvgButton {
                     id: moreButton
                     svg: svgOutline.moreVert
+                    accessibleName: qsTr("more options")
                     onClicked: moreMenu.open()
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("more options")
-                    Accessible.onPressAction: clicked()
 
                     Menu {
                         id: moreMenu
@@ -172,6 +163,7 @@ Page {
                         onAboutToHide: root.enablePopupShield(false)
 
                         CloseMenuItem {
+                            text: qsTr("<b>Account</b>")
                             Accessible.name: qsTr("close more options menu")
                         }
                         AccessibleMenuItem {
@@ -241,31 +233,22 @@ Page {
 
                 SvgButton {
                     svg: svgOutline.search
+                    accessibleName: qsTr(`search posts from ${author.name}`)
                     onClicked: root.viewSearchView("", author.handle)
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr(`search posts from ${author.name}`)
-                    Accessible.onPressAction: clicked()
                 }
 
                 SkyButton {
                     text: qsTr("Follow")
                     visible: !following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.follow(author)
-
-                    Accessible.role: Accessible.Button
                     Accessible.name: qsTr(`press to follow ${author.name}`)
-                    Accessible.onPressAction: clicked()
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
                     visible: following && !isUser(author) && contentVisible()
                     onClicked: graphUtils.unfollow(author.did, following)
-
-                    Accessible.role: Accessible.Button
                     Accessible.name: qsTr(`press to unfollow ${author.name}`)
-                    Accessible.onPressAction: clicked()
                 }
             }
 

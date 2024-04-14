@@ -8,13 +8,18 @@ ProgressBar {
     anchors.left: parent.left
     anchors.right: parent.right
     from: 0
-    to: Math.max(textField.maxLength, textField.graphemeLength)
-    value: textField.graphemeLength
+    to: textField ? Math.max(textField.maxLength, textField.graphemeLength) : 1
+    value: textField ? textField.graphemeLength : 0
 
-    contentItem: Rectangle {
-        width: textLengthBar.visualPosition * parent.width
-        height: parent.height
-        color: textField.graphemeLength <= textField.maxLength ? guiSettings.buttonColor : guiSettings.errorColor
+    contentItem: Item {
+        implicitWidth: parent.width
+        implicitHeight: 4
+
+        Rectangle {
+            width: textLengthBar.visualPosition * parent.width
+            height: parent.height
+            color: (textField && textField.graphemeLength <= textField.maxLength) ? guiSettings.buttonColor : guiSettings.errorColor
+        }
     }
 
     GuiSettings {

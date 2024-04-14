@@ -24,7 +24,8 @@ qt_add_executable(test_skywalker
     test_muted_words.h
     test_post_feed_model.h
     test_search_utils.h
-    main.cpp)
+    main.cpp
+    test_unicode_fonts.h)
 
 set(LINK_LIBS
     PRIVATE libskywalker

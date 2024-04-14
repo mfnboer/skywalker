@@ -28,9 +28,6 @@ Drawer {
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
     padding: 20
 
-    Accessible.role: Accessible.Pane
-    Accessible.name: qsTr("Skywalker menu")
-
     Column {
         id: userColumn
         anchors.top: parent.top
@@ -121,6 +118,7 @@ Drawer {
                 onAboutToHide: enableSettingsPopupShield(false)
 
                 CloseMenuItem {
+                    text: qsTr("<b>Moderation</b>")
                     Accessible.name: qsTr("close moderation menu")
                 }
                 AccessibleMenuItem {
@@ -203,11 +201,8 @@ Drawer {
         anchors.right: userColumn.right
         anchors.top: userColumn.top
         svg: svgOutline.close
+        accessibleName: qsTr("close menu")
         onClicked: drawer.close()
-
-        Accessible.role: Accessible.Button
-        Accessible.name: qsTr("close menu")
-        Accessible.onPressAction: clicked()
     }
 
     Rectangle {

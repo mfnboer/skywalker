@@ -3,7 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 AccessibleMenuItem {
-    onTriggered: parent.close()
+    onTriggered: menu.close()
 
     SvgButton {
         y: 5
@@ -12,6 +12,7 @@ AccessibleMenuItem {
         width: height
         height: parent.height - 10
         svg: svgOutline.close
+        accessibleName: qsTr("close")
         onClicked: parent.triggered()
     }
 }

@@ -87,13 +87,9 @@ Rectangle {
         SvgButton {
             Layout.alignment: Qt.AlignTop
             svg: memberCheck === QEnums.TRIPLE_BOOL_YES ? svgOutline.remove : svgOutline.add
+            accessibleName: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("add") : qsTr("remove")
             visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
-
             onClicked: updateList()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("add") : qsTr("remove")
-            Accessible.onPressAction: clicked()
         }
 
         Rectangle {

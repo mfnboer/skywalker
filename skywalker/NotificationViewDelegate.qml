@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    property int margin: 8
+    property int margin: 10
     required property int index
     required property basicprofile notificationAuthor
     required property list<basicprofile> notificationOtherAuthors
@@ -280,6 +280,7 @@ Rectangle {
                     text: authorsAndReasonText()
                 }
                 Text {
+                    Layout.fillHeight: true
                     text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: Material.color(Material.Grey)

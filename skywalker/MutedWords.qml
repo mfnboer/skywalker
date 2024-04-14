@@ -26,11 +26,8 @@ ListView {
             anchors.right: parent.right
             svg: svgOutline.add
             onClicked: addWord()
+            accessibleName: qsTr(`add word to mute`)
             visible: view.count < skywalker.mutedWords.maxSize
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr(`add word to mute`)
-            Accessible.onPressAction: clicked()
         }
     }
     headerPositioning: ListView.OverlayHeader
@@ -56,21 +53,15 @@ ListView {
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 svg: svgOutline.edit
+                accessibleName: qsTr(`edit ${entryText.text}`)
                 onClicked: editWord(entryText.text)
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`edit ${entryText.text}`)
-                Accessible.onPressAction: clicked()
             }
             SvgButton {
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 svg: svgOutline.delete
+                accessibleName: qsTr(`delete ${entryText.text}`)
                 onClicked: skywalker.mutedWords.removeEntry(entryText.text)
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`delete ${entryText.text}`)
-                Accessible.onPressAction: clicked()
             }
         }
 

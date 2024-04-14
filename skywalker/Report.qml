@@ -33,6 +33,7 @@ Page {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.cancel
+            accessibleName: qsTr("cancel")
             onClicked: page.closed()
         }
 
@@ -141,11 +142,18 @@ Page {
         }
         headerPositioning: ListView.OverlayHeader
 
-        footer: SkyButton {
+        footer: Rectangle {
             z: guiSettings.headerZLevel
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: details ? qsTr("Modify details") : qsTr("Add details")
-            onClicked: page.editDetails()
+            width: parent.width
+            height: guiSettings.footerHeight
+            color: "transparent"
+
+            SkyButton {
+                id: detailsButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: details ? qsTr("Modify details") : qsTr("Add details")
+                onClicked: page.editDetails()
+            }
         }
         footerPositioning: ListView.OverlayFooter
 

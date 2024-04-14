@@ -112,18 +112,15 @@ Page {
         SvgButton {
             id: moreButton
             svg: svgOutline.moreVert
-
+            accessibleName: qsTr("more options")
             onClicked: moreMenu.open()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("more options")
-            Accessible.onPressAction: clicked()
 
             Menu {
                 id: moreMenu
                 modal: true
 
                 CloseMenuItem {
+                    text: qsTr("<b>Feed</b>")
                     Accessible.name: qsTr("close more options menu")
                 }
                 AccessibleMenuItem {

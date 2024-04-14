@@ -35,12 +35,9 @@ Rectangle {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         svg: headerItem.buttonSvg
+        accessibleName: qsTr("Ok")
         enabled: headerItem.enabled
         onClicked: buttonClicked()
-
-        Accessible.role: Accessible.Button
-        Accessible.name: qsTr("Ok")
-        Accessible.onPressAction: clicked()
     }
 
     GuiSettings {

@@ -30,11 +30,8 @@ Rectangle {
             iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
             svg: svgOutline.arrowBack
+            accessibleName: qsTr("go back")
             onClicked: headerRect.back()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("go back")
-            Accessible.onPressAction: clicked()
         }
 
         Rectangle {
@@ -79,12 +76,9 @@ Rectangle {
                     width: height
                     height: parent.height + 10
                     svg: svgOutline.close
+                    accessibleName: qsTr("clear search text")
                     visible: searchText.displayText.length > 0
                     onClicked: searchText.clear()
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr("clear search text")
-                    Accessible.onPressAction: clicked()
                 }
             }
 
@@ -109,13 +103,10 @@ Rectangle {
             iconColor: enabled ? guiSettings.headerTextColor : guiSettings.disabledColor
             Material.background: enabled ? guiSettings.buttonColor : guiSettings.headerColor
             svg: svgOutline.search
+            accessibleName: qsTr("start search for posts and users")
             onClicked: headerRect.search(searchText.displayText)
             enabled: searchText.displayText.length >= headerRect.minSearchTextLength
             visible: headerRect.showSearchButton
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("start search for posts and users")
-            Accessible.onPressAction: if (enabled) clicked()
         }
     }
 

@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    readonly property int margin: 8
+    readonly property int margin: 10
 
     required property basicprofile author
     required property string postUri

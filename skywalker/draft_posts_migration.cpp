@@ -83,27 +83,13 @@ void DraftPostsMigration::migrateToFile()
 
     for (int i = model->rowCount() - 1; i >= 0; --i)
     {
-        const DraftPostData* data = mRepoDrafts.getDraftPostData(i);
-        const auto [imageFileNames, altTexts] = getImages(*data);
+        const QList<DraftPostData*> dataList = mRepoDrafts.getDraftPostData(i);
+        Q_ASSERT(dataList.size() == 1);
+        const auto* data = dataList[0];
+        const bool saved = mFileDrafts.saveDraftPost(data);
 
-        const bool saved = mFileDrafts.saveDraftPost(
-            data->text(),
-            imageFileNames, altTexts,
-            data->replyToUri(), data->replyToCid(),
-            data->replyRootUri(), data->replyRootCid(),
-            data->replyToAuthor(), data->replyToText(),
-            data->replyToDateTime(),
-            data->quoteUri(), data->quoteCid(),
-            data->quoteAuthor(), data->quoteText(),
-            data->quoteDateTime(),
-            data->quoteFeed(), data->quoteList(),
-            data->gif(), data->labels(),
-            data->restrictReplies(), data->allowMention(), data->allowFollowing(),
-            data->allowLists(),
-            data->indexedAt());
-
-        for (const auto& imgSource : imageFileNames)
-            imgProvider->removeImage(imgSource);
+        for (const auto& imgSource : data->images())
+            imgProvider->removeImage(imgSource.getFullSizeUrl());
 
         if (saved)
         {
@@ -178,20 +164,6 @@ void DraftPostsMigration::deleteRecords(const QStringList& recordUris,
             qWarning() << "Failed to delete records:" << error << "-" << msg;
             failCb();
         });
-}
-
-std::tuple<QStringList, QStringList> DraftPostsMigration::getImages(const DraftPostData& data) const
-{
-    QStringList imageFileNames;
-    QStringList altTexts;
-
-    for (const auto& imageView : data.images())
-    {
-        imageFileNames.push_back(imageView.getFullSizeUrl());
-        altTexts.push_back(imageView.getAlt());
-    }
-
-    return { imageFileNames, altTexts };
 }
 
 }

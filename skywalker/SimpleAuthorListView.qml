@@ -78,12 +78,9 @@ ListView {
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 svg: svgOutline.delete
+                accessibleName: qsTr(`delete ${author.name}`)
                 onClicked: deleteClicked(author)
                 visible: allowDelete && author.did
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`delete ${author.name}`)
-                Accessible.onPressAction: clicked()
             }
             Rectangle {
                 visible: !deleteButton.visible

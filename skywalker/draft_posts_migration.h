@@ -2,7 +2,6 @@
 // License: GPLv3
 #pragma once
 #include "draft_posts.h"
-#include <tuple>
 
 namespace Skywalker {
 
@@ -27,7 +26,6 @@ private:
     void migrateToFile();
     void deleteRecords(const QStringList& recordUris, const std::function<void()>& okCb,
                        const std::function<void()>& failCb);
-    std::tuple<QStringList, QStringList> getImages(const DraftPostData& data) const;
 
     Skywalker* mSKywalker;
     DraftPosts mRepoDrafts;

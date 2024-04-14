@@ -1,0 +1,83 @@
+import QtQuick
+import skywalker
+
+Item {
+    property string text: ""
+    property list<string> images: []
+    property list<string> altTexts: []
+    property basicprofile quoteAuthor
+    property string quoteUri: ""
+    property string quoteCid: ""
+    property string quoteText: ""
+    property date quoteDateTime: new Date()
+    property generatorview quoteFeed
+    property listview quoteList
+    property tenorgif gif
+    property var card: null
+
+    // Content warnings
+    property bool cwSuggestive: false
+    property bool cwNudity: false
+    property bool cwPorn: false
+    property bool cwGore: false
+
+    function getQuoteUri() {
+        if (quoteUri)
+            return quoteUri
+
+        if (quoteFeed.uri)
+            return quoteFeed.uri
+
+        return quoteList.uri
+    }
+
+    function getQuoteCid() {
+        if (quoteCid)
+            return quoteCid
+
+        if (quoteFeed.cid)
+            return quoteFeed.cid
+
+        return quoteList.cid
+    }
+
+    function hasImageContent() {
+        return gif || (card && card.thumb) || images.length > 0
+    }
+
+    function getContentLabels() {
+        let labels = []
+
+        if (!hasImageContent())
+            return labels
+
+        if (cwSuggestive)
+            labels.push("sexual")
+        if (cwNudity)
+            labels.push("nudity")
+        if (cwPorn)
+            labels.push("porn")
+        if (cwGore)
+            labels.push("gore")
+
+        return labels
+    }
+
+    function setContentWarnings(labels) {
+        cwSuggestive = false
+        cwNudity = false
+        cwPorn = false
+        cwGore = false
+
+        labels.forEach((label) => {
+            if (label === "sexual")
+                cwSuggestive = true
+            else if (label === "nudity")
+                cwNudity = true
+            else if (label === "porn")
+                cwPorn = true
+            else if (label === "gore")
+                cwGore = true
+        })
+    }
+}

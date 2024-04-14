@@ -1,3 +1,15 @@
+next
+====
+* Setting to show/hide quotes with blocked post.
+
+2.0
+===
+* Post thread composer
+  - Auto number posts in thread (optional)
+  - Auto split large text in multiple posts (optional)
+  - Merge multiple small posts into one (optional)
+* Bug fixes
+
 1.9
 ===
 * Bookmarks stored locally on your device (privacy).

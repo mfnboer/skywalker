@@ -317,6 +317,13 @@ qt_add_qml_module(libskywalker
         SOURCES offline_message_checker.cpp
         SOURCES draft_posts_migration.h
         SOURCES draft_posts_migration.cpp
+        QML_FILES FontComboBox.qml
+        QML_FILES AddGifButton.qml
+        QML_FILES ImageScroller.qml
+        QML_FILES SvgTransparentButton.qml
+        QML_FILES ComposePostItem.qml
+        QML_FILES SeparatorLine.qml
+        QML_FILES VirtualKeyboardPageResizer.qml
 )
 
 if (NOT ANDROID)

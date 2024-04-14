@@ -9,7 +9,6 @@ Drawer {
     signal selectedUser(basicprofile user)
 
     id: drawer
-    Accessible.role: Accessible.Pane
 
     SimpleAuthorListView {
         anchors.fill: parent
@@ -36,11 +35,8 @@ Drawer {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: svgOutline.close
+                accessibleName: qsTr("cancel switch user")
                 onClicked: drawer.close()
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("cancel switch user")
-                Accessible.onPressAction: clicked()
             }
         }
         headerPositioning: ListView.OverlayHeader

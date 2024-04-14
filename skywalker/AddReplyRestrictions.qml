@@ -21,9 +21,6 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
 
-    Accessible.role: Accessible.Dialog
-    Accessible.name: title
-
     onAllowListsChanged: {
         allowLists.forEach((allow) => {
                             if (allow)
