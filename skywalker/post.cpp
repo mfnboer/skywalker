@@ -279,10 +279,6 @@ ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyToRef() const
             ref->mUri = postView->mUri;
             return ref;
         }
-        else
-        {
-            return nullptr;
-        }
     }
 
     if (!mPost)
@@ -362,10 +358,6 @@ ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyRootRef() const
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
             return ref;
-        }
-        else
-        {
-            return nullptr;
         }
     }
 
