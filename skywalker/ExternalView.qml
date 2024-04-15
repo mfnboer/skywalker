@@ -10,7 +10,7 @@ Item {
 
     id: view
     width: parent.width
-    height: filter.imageVisible() ? (gifUtils.isGif(postExternal.uri) ? gifImage.height + tenorAttribution.height : card.columnHeight)
+    height: filter.imageVisible() ? (gifUtils.isGif(postExternal.uri) ? Math.max(gifImage.height + tenorAttribution.height, gifLoadingIndicator.height) : card.columnHeight)
                                   : filter.height
 
     Accessible.role: Accessible.Link
@@ -33,6 +33,11 @@ Item {
         url: gifUtils.getGifUrl(postExternal.uri)
         title: url ? postExternal.title : ""
         visible: url && filter.imageVisible()
+    }
+    BusyIndicator {
+        id: gifLoadingIndicator
+        anchors.centerIn: parent
+        running: gifImage.status === Image.Loading
     }
     Image {
         id: tenorAttribution

@@ -33,6 +33,11 @@ Page {
         fillMode: Image.PreserveAspectFit
         source: imageUrl
     }
+    BusyIndicator {
+        id: gifLoadingIndicator
+        anchors.centerIn: parent
+        running: img.status === Image.Loading
+    }
 
     SvgButton {
         iconColor: "white"
