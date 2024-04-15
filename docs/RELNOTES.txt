@@ -1,5 +1,5 @@
-next
-====
+2.0.1
+=====
 * Setting to show/hide quotes with blocked post.
 * Setting to enable/disable timeline rewind at startup.
 * Bug fix for zombie replies.
