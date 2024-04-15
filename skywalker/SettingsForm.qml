@@ -198,6 +198,12 @@ Page {
                 checked: userPrefs.showQuotesWithBlockedPost
                 onCheckedChanged: userPrefs.showQuotesWithBlockedPost = checked
             }
+
+            AccessibleSwitch {
+                text: qsTr("Rewind to last seen post at startup")
+                checked: userPrefs.rewindToLastSeenPost
+                onCheckedChanged: userPrefs.rewindToLastSeenPost = checked
+            }
         }
 
         ColumnLayout {

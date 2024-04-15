@@ -480,9 +480,9 @@ void Skywalker::syncTimeline(int maxPages)
 {
     const auto timestamp = getSyncTimestamp();
 
-    if (!timestamp.isValid())
+    if (!timestamp.isValid() || !mUserSettings.getRewindToLastSeenPost(mUserDid))
     {
-        qInfo() << "No timestamp saved";
+        qDebug() << "Do not rewind timeline";
         getTimeline(TIMELINE_ADD_PAGE_SIZE);
         finishTimelineSync(-1);
         return;
@@ -2235,6 +2235,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     mEditUserPreferences->setShowQuotesWithBlockedPost(mUserSettings.getShowQuotesWithBlockedPost(mUserDid));
+    mEditUserPreferences->setRewindToLastSeenPost(mUserSettings.getRewindToLastSeenPost(mUserDid));
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
     mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
@@ -2268,6 +2269,9 @@ void Skywalker::saveUserPreferences()
     {
         qDebug() << "Show quotes with blocked posts:" << mEditUserPreferences->getShowQuotesWithBlockedPost();
         mUserSettings.setShowQuotesWithBlockedPost(mUserDid, mEditUserPreferences->getShowQuotesWithBlockedPost());
+
+        qDebug() << "Rewind to last seen post:" << mEditUserPreferences->getRewindToLastSeenPost();
+        mUserSettings.setRewindToLastSeenPost(mUserDid, mEditUserPreferences->getRewindToLastSeenPost());
 
         qDebug() << "Display mode:" << mEditUserPreferences->getDisplayMode();
         mUserSettings.setDisplayMode(mEditUserPreferences->getDisplayMode());

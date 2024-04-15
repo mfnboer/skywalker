@@ -89,6 +89,16 @@ void EditUserPreferences::setShowQuotesWithBlockedPost(bool show)
     }
 }
 
+void EditUserPreferences::setRewindToLastSeenPost(bool rewind)
+{
+    if (rewind != mRewindToLastSeenPost)
+    {
+        mRewindToLastSeenPost = rewind;
+        setLocalSettingsModified(true);
+        emit rewindToLastSeenPostChanged();
+    }
+}
+
 void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
 {
     if (displayMode != mDisplayMode)

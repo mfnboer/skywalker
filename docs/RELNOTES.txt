@@ -1,6 +1,7 @@
 next
 ====
 * Setting to show/hide quotes with blocked post.
+* Setting to enable/disable timeline rewind at startup.
 
 2.0
 ===

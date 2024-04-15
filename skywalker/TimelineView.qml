@@ -113,7 +113,7 @@ ListView {
     }
 
     function moveToPost(index) {
-        positionViewAtIndex(index, ListView.Beginning)
+        positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
         updateUnreadPosts(index)
     }
 
