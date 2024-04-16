@@ -4,13 +4,14 @@
 #include "presence.h"
 #include "tenor_category.h"
 #include "tenor_gif_overview_model.h"
+#include "wrapped_skywalker.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QtQmlIntegration>
 
 namespace Skywalker {
 
-class Tenor : public QObject, public Presence
+class Tenor : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(TenorOverviewModel* overviewModel READ getOverviewModel CONSTANT FINAL)
@@ -22,10 +23,12 @@ class Tenor : public QObject, public Presence
 public:
     explicit Tenor(QObject* parent = nullptr);
 
+    Q_INVOKABLE void searchRecentGifs();
     Q_INVOKABLE void searchGifs(const QString& query, const QString& pos = "");
     Q_INVOKABLE void getNextPage();
     Q_INVOKABLE void getCategories();
     Q_INVOKABLE void registerShare(const TenorGif& gif);
+    Q_INVOKABLE void addRecentGif(const TenorGif& gif);
 
     int getWidth() const { return mWidth; }
     void setWidth(int width);
@@ -49,7 +52,9 @@ private:
     void getCategories(const QString& type, TenorCategoryList& categoryList, const std::function<void()>& getNext = {});
     void searchGifsFinished(QNetworkReply* reply, const QString& query);
     bool categoriesFinished(QNetworkReply* reply, TenorCategoryList& categoryList);
+    void addRecentCategory(TenorCategoryList& categoryList);
     void allCategoriesRetrieved();
+    TenorGifList getRecentGifs();
 
     struct MediaFormat
     {

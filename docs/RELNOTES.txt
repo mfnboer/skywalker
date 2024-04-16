@@ -1,3 +1,7 @@
+next
+====
+* Remember recently used GIFs.
+
 2.0.1
 =====
 * Setting to show/hide quotes with blocked post.

@@ -1,6 +1,8 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <QDataStream>
+#include <QJsonObject>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -21,6 +23,10 @@ class TenorGif
 
 public:
     TenorGif() = default;
+    ~TenorGif() = default;
+    TenorGif(const TenorGif&) = default;
+    TenorGif& operator=(const TenorGif&) = default;
+
     TenorGif(
             const QString& id,
             const QString& description,
@@ -48,6 +54,9 @@ public:
     QSize getOverviewSize() const { return mOverviewSize; }
     void setOverviewSize(QSize size) { mOverviewSize = size; }
 
+    QJsonObject toJson() const;
+    static TenorGif fromJson(const QJsonObject& json);
+
 private:
     QString mId;
     QString mDescription;
@@ -59,6 +68,9 @@ private:
     QSize mImageSize;
     QSize mOverviewSize;
 };
+
+QDataStream& operator<<(QDataStream& out, const TenorGif& gif);
+QDataStream& operator>>(QDataStream& in, TenorGif& gif);
 
 using TenorGifList = QList<TenorGif>;
 

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "tenor.h"
+#include "skywalker.h"
 #include <atproto/lib/xjson.h>
 
 namespace Skywalker {
@@ -8,13 +9,14 @@ namespace Skywalker {
 namespace {
 
 constexpr char const* TENOR_BASE_URL = "https://tenor.googleapis.com/v2/";
+constexpr int MAX_RECENT_GIFS = 25;
 
 }
 
 QNetworkAccessManager Tenor::sNetwork;
 
 Tenor::Tenor(QObject* parent) :
-    QObject(parent),
+    WrappedSkywalker(parent),
     Presence(),
     mApiKey(TENOR_API_KEY),
     mClientKey("com.gmail.mfnboer.skywalker"),
@@ -72,6 +74,22 @@ QUrl Tenor::buildUrl(const QString& endpoint, const Params& params) const
 
     url.setQuery(query);
     return url;
+}
+
+void Tenor::searchRecentGifs()
+{
+    if (mSearchInProgress)
+    {
+        qWarning() << "Search already in progress";
+        return;
+    }
+
+    mNextPos.clear();
+    mOverviewModel.clear();
+    mQuery.clear();
+
+    const TenorGifList gifs = getRecentGifs();
+    mOverviewModel.addGifs(gifs);
 }
 
 void Tenor::searchGifs(const QString& query, const QString& pos)
@@ -197,7 +215,7 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
 
 void Tenor::registerShare(const TenorGif& gif)
 {
-    // ID will be empty if the gif was save as part of a draft post
+    // ID will be empty if the gif was saved as part of a draft post
     if (gif.getId().isEmpty())
         return;
 
@@ -228,6 +246,30 @@ void Tenor::registerShare(const TenorGif& gif)
     connect(reply, &QNetworkReply::sslErrors, this, [reply]{
         qWarning() << "Register Share SSL error:" <<  reply->request().url();
     });
+}
+
+void Tenor::addRecentGif(const TenorGif& gif)
+{
+    const QString did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    TenorGifList gifs = settings->getRecentGifs(did);
+
+    for (auto it = gifs.cbegin(); it != gifs.cend(); ++it)
+    {
+        const auto& recentGif = *it;
+
+        if (gif.getId() == recentGif.getId())
+        {
+            gifs.erase(it);
+            break;
+        }
+    }
+
+    while (gifs.size() >= MAX_RECENT_GIFS)
+        gifs.pop_back();
+
+    gifs.push_front(gif);
+    settings->setRecentGifs(did, gifs);
 }
 
 void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
@@ -363,9 +405,23 @@ bool Tenor::categoriesFinished(QNetworkReply* reply, TenorCategoryList& category
     return true;
 }
 
+void Tenor::addRecentCategory(TenorCategoryList& categoryList)
+{
+    const TenorGifList gifs = getRecentGifs();
+
+    if (!gifs.empty())
+    {
+        const TenorGif& firstGif = gifs.front();
+        TenorCategory recent(firstGif.getSmallUrl(), tr("recently used"), true);
+        categoryList.push_back(recent);
+    }
+}
+
 void Tenor::allCategoriesRetrieved()
 {
     TenorCategoryList categoryList;
+    addRecentCategory(categoryList);
+
     int i = 0;
     int j = 0;
 
@@ -379,6 +435,14 @@ void Tenor::allCategoriesRetrieved()
     }
 
     emit categories(categoryList);
+}
+
+TenorGifList Tenor::getRecentGifs()
+{
+    const QString did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    TenorGifList gifs = settings->getRecentGifs(did);
+    return gifs;
 }
 
 }

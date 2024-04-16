@@ -1160,6 +1160,7 @@ Page {
 
     Tenor {
         id: tenor
+        skywalker: page.skywalker
     }
 
     Timer {

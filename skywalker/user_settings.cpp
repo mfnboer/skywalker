@@ -382,6 +382,30 @@ void UserSettings::setRewindToLastSeenPost(const QString& did, bool rewind)
     mSettings.setValue(key(did, "rewindToLastSeenPost"), rewind);
 }
 
+TenorGifList UserSettings::getRecentGifs(const QString& did) const
+{
+    const QVariantList list = mSettings.value(key(did, "recentGifs")).toList();
+    TenorGifList gifList;
+
+    for (const auto& v : list)
+        gifList.push_back(qvariant_cast<TenorGif>(v));
+
+    return gifList;
+}
+
+void UserSettings::setRecentGifs(const QString& did, const TenorGifList& gifs)
+{
+    QVariantList list;
+
+    for (const auto& gif : gifs) {
+        QVariant v;
+        v.setValue(gif);
+        list.push_back(v);
+    }
+
+    mSettings.setValue(key(did, "recentGifs"), list);
+}
+
 void UserSettings::addDraftRepoToFileMigration(const QString& did)
 {
     const int attempts = mSettings.value(key(did, "draftRepoToFileMigration"), 0).toInt();

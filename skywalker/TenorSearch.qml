@@ -78,7 +78,7 @@ Page {
 
                     Accessible.role: Accessible.Button
                     Accessible.name: qsTr(`GIF category: ${category.searchTerm}`)
-                    Accessible.onPressAction: searchTenor(category.searchTerm)
+                    Accessible.onPressAction: searchCategory(category)
 
                     Label {
                         id: imgLabel
@@ -104,7 +104,7 @@ Page {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: searchTenor(category.searchTerm)
+                        onClicked: searchCategory(category)
                     }
                 }
             }
@@ -145,7 +145,10 @@ Page {
 
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: selected(gif)
+                            onClicked: {
+                                tenor.addRecentGif(gif)
+                                selected(gif)
+                            }
                         }
                     }
                 }
@@ -176,6 +179,7 @@ Page {
         id: tenor
         width: parent.width
         spacing: 4
+        skywalker: root.getSkywalker()
 
         onCategories: (categoryList) => categoriesView.model = categoryList
         onSearchGifsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
@@ -193,6 +197,16 @@ Page {
     function searchTenor(text) {
         tenor.searchGifs(text)
         viewStack.showGifs()
+    }
+
+    function searchCategory(category) {
+        if (category.isRecentCategory) {
+            tenor.searchRecentGifs()
+            viewStack.showGifs()
+        }
+        else {
+            searchTenor(category.searchTerm)
+        }
     }
 
     Component.onDestruction: {

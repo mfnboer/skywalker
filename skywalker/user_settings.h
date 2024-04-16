@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "password_encryption.h"
 #include "profile.h"
+#include "tenor_gif.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QSettings>
@@ -109,6 +110,9 @@ public:
 
     bool getRewindToLastSeenPost(const QString& did) const;
     void setRewindToLastSeenPost(const QString& did, bool rewind);
+
+    TenorGifList getRecentGifs(const QString& did) const;
+    void setRecentGifs(const QString& did, const TenorGifList& gifs);
 
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
