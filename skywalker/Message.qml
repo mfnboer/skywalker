@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtTextToSpeech
 
 Dialog {
     id: msgDialog

@@ -86,7 +86,6 @@ Page {
             svg: svgOutline.cancel
             accessibleName: qsTr("cancel posting")
             onClicked: page.cancel()
-            focusPolicy: Qt.NoFocus
         }
 
         Avatar {
