@@ -95,7 +95,7 @@ Page {
             avatarUrl: skywalker.avatarUrl
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
-            // TODO QT6.7 focusPolicy: Qt.NoFocus
+            focusPolicy: Qt.NoFocus
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("your avatar")
@@ -937,7 +937,7 @@ Page {
             MouseArea {
                 anchors.fill: parent
                 onClicked: page.addReplyRestrictions()
-                // TODO QT6.7 focusPolicy: Qt.NoFocus
+                focusPolicy: Qt.NoFocus
             }
         }
 
@@ -953,7 +953,7 @@ Page {
             accessibleName: qsTr("add picture")
             svg: svgOutline.addImage
             enabled: page.canAddImage()
-            // TODO QT6.7 focusPolicy: Qt.NoFocus
+            focusPolicy: Qt.NoFocus
 
             onClicked: {
                 if (Qt.platform.os === "android") {
@@ -969,7 +969,7 @@ Page {
             x: addImage.x + addImage.width + 3
             y: height + 5 + restrictionRow.height + footerSeparator.height
             enabled: page.canAddGif()
-            // TODO QT6.7 focusPolicy: Qt.NoFocus
+            focusPolicy: Qt.NoFocus
 
             onSelectedGif: (gif) => currentPostItem().getGifAttachment().show(gif)
         }
@@ -989,7 +989,7 @@ Page {
             accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
             visible: hasImageContent()
-            // TODO QT6.7 focusPolicy: Qt.NoFocus
+            focusPolicy: Qt.NoFocus
 
             onClicked: page.addContentWarning()
         }
