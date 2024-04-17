@@ -1,6 +1,7 @@
 next
 ====
 * Remember recently used GIFs.
+* Improve keyboard visibility when composing post.
 * Show DID in settings.
 
 2.0.1

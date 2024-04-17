@@ -146,7 +146,10 @@ public:
 
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
+
+    // TODO: refactor to separate App Utils class
     Q_INVOKABLE bool sendAppToBackground();
+
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void clearPassword();
     Q_INVOKABLE void signOut();

@@ -86,6 +86,7 @@ Page {
             svg: svgOutline.cancel
             accessibleName: qsTr("cancel posting")
             onClicked: page.cancel()
+            focusPolicy: Qt.NoFocus
         }
 
         Avatar {
@@ -95,6 +96,7 @@ Page {
             avatarUrl: skywalker.avatarUrl
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
+            // TODO QT6.7 focusPolicy: Qt.NoFocus
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("your avatar")
@@ -135,6 +137,7 @@ Page {
             svg: svgOutline.moreVert
             accessibleName: qsTr("more options")
             onClicked: moreMenu.open()
+            focusPolicy: Qt.NoFocus
 
             Menu {
                 id: moreMenu
@@ -935,6 +938,7 @@ Page {
             MouseArea {
                 anchors.fill: parent
                 onClicked: page.addReplyRestrictions()
+                // TODO QT6.7 focusPolicy: Qt.NoFocus
             }
         }
 
@@ -950,6 +954,7 @@ Page {
             accessibleName: qsTr("add picture")
             svg: svgOutline.addImage
             enabled: page.canAddImage()
+            // TODO QT6.7 focusPolicy: Qt.NoFocus
 
             onClicked: {
                 if (Qt.platform.os === "android") {
@@ -965,6 +970,7 @@ Page {
             x: addImage.x + addImage.width + 3
             y: height + 5 + restrictionRow.height + footerSeparator.height
             enabled: page.canAddGif()
+            // TODO QT6.7 focusPolicy: Qt.NoFocus
 
             onSelectedGif: (gif) => currentPostItem().getGifAttachment().show(gif)
         }
@@ -973,8 +979,7 @@ Page {
             id: fontSelector
             x: addGif.x + addGif.width + 8
             y: 5 + restrictionRow.height + footerSeparator.height
-
-            popup.onClosed: currentPostItem().getPostText().forceActiveFocus()
+            focusPolicy: Qt.NoFocus
         }
 
         SvgTransparentButton {
@@ -985,6 +990,7 @@ Page {
             accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
             visible: hasImageContent()
+            // TODO QT6.7 focusPolicy: Qt.NoFocus
 
             onClicked: page.addContentWarning()
         }
@@ -999,12 +1005,11 @@ Page {
             svg: svgOutline.add
             accessibleName: qsTr("add post")
             enabled: hasFullContent() && threadPosts.count < maxThreadPosts
-
-            // Pressed instead of clicked. Pressing this button closes the virtual keyboard
-            // on Android, causing the release for a click to be lost.
-            onPressed: threadPosts.addPost(currentPostIndex)
-
-            Accessible.onPressAction: if (addPost.enabled) addPost.pressed()
+            focusPolicy: Qt.NoFocus
+            onClicked: {
+                Qt.inputMethod.commit()
+                threadPosts.addPost(currentPostIndex)
+            }
         }
     }
 
