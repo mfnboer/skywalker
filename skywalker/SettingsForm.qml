@@ -108,13 +108,38 @@ Page {
 
             AccessibleText {
                 color: guiSettings.textColor
-                text: qsTr("PDS:")
+                text: "PDS:"
             }
             AccessibleText {
                 Layout.fillWidth: true
                 color: guiSettings.textColor
                 elide: Text.ElideRight
                 text: userPrefs.pds
+            }
+
+            AccessibleText {
+                id: didLabel
+                color: guiSettings.textColor
+                text: "DID:"
+            }
+            RowLayout {
+                Layout.fillWidth: true
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    color: guiSettings.textColor
+                    elide: Text.ElideRight
+                    text: userPrefs.did
+                }
+                SvgButton {
+                    width: height
+                    height: didLabel.height
+                    svg: svgOutline.copy
+                    accessibleName: qsTr("copy") + " D I D"
+                    iconColor: guiSettings.textColor
+                    Material.background: "transparent"
+                    onClicked: root.getSkywalker().copyToClipboard(userPrefs.did)
+                }
             }
 
             AccessibleText {

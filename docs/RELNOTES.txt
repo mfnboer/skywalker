@@ -1,6 +1,7 @@
 next
 ====
 * Remember recently used GIFs.
+* Show DID in settings.
 
 2.0.1
 =====

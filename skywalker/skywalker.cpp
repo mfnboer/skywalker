@@ -2173,6 +2173,13 @@ void Skywalker::copyPostTextToClipboard(const QString& text)
     emit statusMessage(tr("Post text copied to clipboard"));
 }
 
+void Skywalker::copyToClipboard(const QString& text)
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(text);
+    emit statusMessage(tr("Copied to clipboard"));
+}
+
 QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels) const
 {
     const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(contentLabels);
@@ -2232,6 +2239,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences = std::make_unique<EditUserPreferences>(this);
     mEditUserPreferences->setEmail(session->mEmail.value_or(""));
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
+    mEditUserPreferences->setDID(mUserDid);
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     mEditUserPreferences->setShowQuotesWithBlockedPost(mUserSettings.getShowQuotesWithBlockedPost(mUserDid));

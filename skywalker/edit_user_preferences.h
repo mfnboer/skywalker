@@ -14,6 +14,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(QString email READ getEmail CONSTANT FINAL)
     Q_PROPERTY(bool emailConfirmed READ getEmailConfirmed CONSTANT FINAL)
     Q_PROPERTY(QString birthDate READ getBirthDate CONSTANT FINAL)
+    Q_PROPERTY(QString did READ getDID CONSTANT FINAL)
     Q_PROPERTY(QString pds READ getPDS CONSTANT FINAL)
     Q_PROPERTY(bool loggedOutVisibility READ getLoggedOutVisiblity WRITE setLoggedOutVisibility NOTIFY loggedOutVisibilityChanged FINAL)
     Q_PROPERTY(bool hideReplies READ getHideReplies WRITE setHideReplies NOTIFY hideRepliesChanged FINAL)
@@ -40,6 +41,9 @@ public:
     void setEmailConfirmed(bool confirmed) { mEmailConfirmed = confirmed; }
 
     const QString getBirthDate() const;
+
+    const QString& getDID() const { return mDID; }
+    void setDID(const QString& did) { mDID = did; }
 
     const QString& getPDS() const { return mPDS; }
     void setPDS(const QString& pds) { mPDS = pds; }
@@ -95,6 +99,7 @@ private:
     QString mEmail;
     bool mEmailConfirmed = false;
     std::optional<QDateTime> mBirthDate;
+    QString mDID;
     QString mPDS;
     bool mLoggedOutVisibility = true;
 
