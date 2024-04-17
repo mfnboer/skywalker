@@ -1717,6 +1717,24 @@ void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId
         });
 }
 
+void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int modelId)
+{
+    setGetAuthorListInProgress(true);
+    mBsky->getSuggestions(limit, makeOptionalCursor(cursor),
+        [this, modelId](auto output){
+            setGetAuthorListInProgress(false);
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->addAuthors(std::move(output->mActors), output->mCursor.value_or(""));
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getSuggestionsAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
@@ -1835,6 +1853,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
         break;
     case AuthorListModel::Type::AUTHOR_LIST_LIST_MEMBERS:
         getListMembersAuthorList(atId, limit, cursor, id);
+        break;
+    case AuthorListModel::Type::AUTHOR_LIST_SUGGESTIONS:
+        getSuggestionsAuthorList(limit, cursor, id);
         break;
     }
 }
