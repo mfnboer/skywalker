@@ -5,7 +5,7 @@
 
 namespace Skywalker {
 
-void jsonInsert(QJsonObject& json, const QString& key, const QSize sz)
+void jsonInsert(QJsonObject& json, const QString& key, const QSize& sz)
 {
     json.insert(key, QJsonObject{ {"width", sz.width() }, {"height", sz.height() } });
 }
@@ -42,18 +42,24 @@ TenorGif TenorGif::fromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject& xjson(json);
 
-    TenorGif gif{
-        xjson.getRequiredString("id"),
-        xjson.getRequiredString("description"),
-        xjson.getRequiredString("searchTerm"),
-        xjson.getRequiredString("url"),
-        xjson.getRequiredString("smallUrl"),
-        getRequiredSize(json, "smallSize"),
-        xjson.getRequiredString("imageUrl"),
-        getRequiredSize(json, "imageSize")
-    };
+    try {
+        TenorGif gif{
+            xjson.getRequiredString("id"),
+            xjson.getRequiredString("description"),
+            xjson.getRequiredString("searchTerm"),
+            xjson.getRequiredString("url"),
+            xjson.getRequiredString("smallUrl"),
+            getRequiredSize(json, "smallSize"),
+            xjson.getRequiredString("imageUrl"),
+            getRequiredSize(json, "imageSize")
+        };
 
-    return gif;
+        return gif;
+    } catch (ATProto::InvalidJsonException& e) {
+        qWarning() << e.msg();
+    }
+
+    return {};
 }
 
 QDataStream& operator<<(QDataStream& out, const TenorGif& gif)

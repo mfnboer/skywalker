@@ -4,6 +4,10 @@
 #include "definitions.h"
 #include <atproto/lib/at_uri.h>
 
+// NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
+// This will break OffLineMessageChecker. This runs in an Android background process.
+// For some reason these types are not available in such a process.
+
 namespace Skywalker {
 
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
@@ -384,23 +388,31 @@ void UserSettings::setRewindToLastSeenPost(const QString& did, bool rewind)
 
 TenorGifList UserSettings::getRecentGifs(const QString& did) const
 {
-    const QVariantList list = mSettings.value(key(did, "recentGifs")).toList();
+    const QStringList list = mSettings.value(key(did, "recentGifs")).toStringList();
     TenorGifList gifList;
 
-    for (const auto& v : list)
-        gifList.push_back(qvariant_cast<TenorGif>(v));
+    for (const auto& s : list)
+    {
+        if (s.isEmpty())
+            continue;
+
+        const auto json = QJsonDocument::fromJson(s.toUtf8());
+        const auto gif = TenorGif::fromJson(json.object());
+
+        if (!gif.isNull())
+            gifList.push_back(gif);
+    }
 
     return gifList;
 }
 
 void UserSettings::setRecentGifs(const QString& did, const TenorGifList& gifs)
 {
-    QVariantList list;
+    QStringList list;
 
     for (const auto& gif : gifs) {
-        QVariant v;
-        v.setValue(gif);
-        list.push_back(v);
+        const QJsonDocument jsonDoc(gif.toJson());
+        list.push_back(jsonDoc.toJson(QJsonDocument::Compact));
     }
 
     mSettings.setValue(key(did, "recentGifs"), list);
