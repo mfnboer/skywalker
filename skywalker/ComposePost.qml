@@ -95,7 +95,6 @@ Page {
             avatarUrl: skywalker.avatarUrl
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
-            focusPolicy: Qt.NoFocus
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("your avatar")
@@ -136,7 +135,6 @@ Page {
             svg: svgOutline.moreVert
             accessibleName: qsTr("more options")
             onClicked: moreMenu.open()
-            focusPolicy: Qt.NoFocus
 
             Menu {
                 id: moreMenu
@@ -937,7 +935,6 @@ Page {
             MouseArea {
                 anchors.fill: parent
                 onClicked: page.addReplyRestrictions()
-                focusPolicy: Qt.NoFocus
             }
         }
 
@@ -953,7 +950,6 @@ Page {
             accessibleName: qsTr("add picture")
             svg: svgOutline.addImage
             enabled: page.canAddImage()
-            focusPolicy: Qt.NoFocus
 
             onClicked: {
                 if (Qt.platform.os === "android") {
@@ -969,7 +965,6 @@ Page {
             x: addImage.x + addImage.width + 3
             y: height + 5 + restrictionRow.height + footerSeparator.height
             enabled: page.canAddGif()
-            focusPolicy: Qt.NoFocus
 
             onSelectedGif: (gif) => currentPostItem().getGifAttachment().show(gif)
         }
@@ -989,8 +984,6 @@ Page {
             accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? svgOutline.hideVisibility : svgOutline.visibility
             visible: hasImageContent()
-            focusPolicy: Qt.NoFocus
-
             onClicked: page.addContentWarning()
         }
 
