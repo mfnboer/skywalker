@@ -150,17 +150,16 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
 
 void Tenor::getNextPage()
 {
-    Q_ASSERT(!mQuery.isEmpty());
-
-    if (mQuery.isEmpty())
-    {
-        qWarning() << "No previous query available";
-        return;
-    }
-
     if (mNextPos.isEmpty())
     {
         qDebug() << "End of feed";
+        return;
+    }
+
+    Q_ASSERT(!mQuery.isEmpty());
+    if (mQuery.isEmpty())
+    {
+        qWarning() << "No previous query available";
         return;
     }
 
