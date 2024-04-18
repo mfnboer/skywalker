@@ -973,6 +973,7 @@ Page {
             id: fontSelector
             x: addGif.x + addGif.width + 8
             y: 5 + restrictionRow.height + footerSeparator.height
+            popup.height: Math.min(page.height - 20, popup.contentHeight)
             focusPolicy: Qt.NoFocus
         }
 
