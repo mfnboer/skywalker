@@ -114,6 +114,9 @@ public:
     TenorGifList getRecentGifs(const QString& did) const;
     void setRecentGifs(const QString& did, const TenorGifList& gifs);
 
+    QStringList getLastSearches(const QString& did) const;
+    void setLastSearches(const QString& did, const QStringList& lastSearches);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;

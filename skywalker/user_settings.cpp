@@ -418,6 +418,16 @@ void UserSettings::setRecentGifs(const QString& did, const TenorGifList& gifs)
     mSettings.setValue(key(did, "recentGifs"), list);
 }
 
+QStringList UserSettings::getLastSearches(const QString& did) const
+{
+    return mSettings.value(key(did, "lastSearches")).toStringList();
+}
+
+void UserSettings::setLastSearches(const QString& did, const QStringList& lastSearches)
+{
+    mSettings.setValue(key(did, "lastSearches"), lastSearches);
+}
+
 void UserSettings::addDraftRepoToFileMigration(const QString& did)
 {
     const int attempts = mSettings.value(key(did, "draftRepoToFileMigration"), 0).toInt();

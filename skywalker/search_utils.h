@@ -46,6 +46,9 @@ public:
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
     Q_INVOKABLE void clearAllSearchResults();
+    Q_INVOKABLE QStringList getLastSearches() const;
+    Q_INVOKABLE void addLastSearch(const QString& search);
+
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);

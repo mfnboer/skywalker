@@ -6,6 +6,8 @@
 
 namespace Skywalker {
 
+static constexpr int MAX_LAST_SEARCHES = 25;
+
 static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
 {
     static const int MIN_COMBINE_SIZE = 3;
@@ -604,6 +606,36 @@ void SearchUtils::clearAllSearchResults()
         auto* model = mSkywalker->getFeedListModel(mSearchFeedsModelId);
         model->clear();
     }
+}
+
+QStringList SearchUtils::getLastSearches() const
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    return mSkywalker->getUserSettings()->getLastSearches(did);
+}
+
+void SearchUtils::addLastSearch(const QString& search)
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList lastSearches = settings->getLastSearches(did);
+
+    for (auto it = lastSearches.cbegin(); it != lastSearches.cend(); ++it)
+    {
+        if (*it == search)
+        {
+            lastSearches.erase(it);
+            break;
+        }
+    }
+
+    while (lastSearches.size() >= MAX_LAST_SEARCHES)
+        lastSearches.pop_back();
+
+    lastSearches.push_front(search);
+    settings->setLastSearches(did, lastSearches);
 }
 
 }

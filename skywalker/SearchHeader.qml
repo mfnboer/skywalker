@@ -122,6 +122,10 @@ Rectangle {
         return searchText.displayText
     }
 
+    function hasFocus() {
+        return searchText.activeFocus
+    }
+
     function forceFocus() {
         searchText.forceActiveFocus()
     }

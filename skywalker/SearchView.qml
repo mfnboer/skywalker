@@ -21,6 +21,7 @@ Page {
     Accessible.role: Accessible.Pane
 
     header: SearchHeader {
+        minSearchTextLength: 0
         placeHolderText: isPostSearch ? qsTr("Search posts") : qsTr("Search users")
         onBack: page.closed()
 
@@ -157,12 +158,18 @@ Page {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: parent.bottom
         width: parent.width
-        currentIndex: currentText ? (page.isPostSearch ? 0 : 1) : 2
+        currentIndex: currentText ? (page.isPostSearch ? postsView.index : usersView.index) :
+                                    (page.header.hasFocus() ? recentSearchesView.index : suggestedUsersView.index)
         visible: !page.isTyping || !currentText
 
-        onCurrentIndexChanged: console.debug("CURRENT INDEX:", currentIndex)
+        onCurrentIndexChanged: {
+            if (currentIndex === recentSearchesView.index)
+                recentSearchesView.model = searchUtils.getLastSearches()
+        }
 
         ListView {
+            readonly property int index: 0
+
             id: postsView
             width: parent.width
             height: parent.height
@@ -198,6 +205,8 @@ Page {
         }
 
         ListView {
+            readonly property int index: 1
+
             id: usersView
             width: parent.width
             height: parent.height
@@ -235,6 +244,8 @@ Page {
         }
 
         ListView {
+            readonly property int index: 2
+
             id: suggestedUsersView
             width: parent.width
             height: parent.height
@@ -281,6 +292,71 @@ Page {
                 running: searchUtils.searchSuggestedActorsInProgress
             }
         }
+
+        ListView {
+            readonly property int index: 3
+
+            id: recentSearchesView
+            width: parent.width
+            height: parent.height
+            spacing: 0
+            clip: true
+            flickDeceleration: guiSettings.flickDeceleration
+            ScrollIndicator.vertical: ScrollIndicator {}
+
+            Accessible.role: Accessible.List
+
+            header: AccessibleText {
+                width: parent.width
+                topPadding: 10
+                bottomPadding: 10
+                horizontalAlignment: Text.AlignHCenter
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(9/8)
+                text: qsTr("Recent searches")
+                visible: recentSearchesView.count > 0
+            }
+
+            delegate: Rectangle {
+                required property string modelData
+
+                width: parent.width
+                height: Math.max(recentSearchIcon.height, recentSearchText.height)
+                color: "transparent"
+
+                SvgImage {
+                    id: recentSearchIcon
+                    width: 40
+                    height: width
+                    color: guiSettings.textColor
+                    svg: svgOutline.search
+                }
+
+                AccessibleText {
+                    id: recentSearchText
+                    anchors.left: recentSearchIcon.right
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: 10
+                    elide: Text.ElideRight
+                    text: modelData
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        header.setSearchText(recentSearchText.text)
+                        searchUtils.search(recentSearchText.text)
+                    }
+                }
+            }
+
+            EmptyListIndication {
+                svg: svgOutline.search
+                text: qsTr("No recent searches")
+                list: recentSearchesView
+            }
+        }
     }
 
     Timer {
@@ -313,6 +389,7 @@ Page {
             page.isTyping = false
 
             if (query.length > 0) {
+                searchUtils.addLastSearch(query)
                 scopedSearchPosts(query)
                 searchUtils.searchActors(query)
             }
@@ -421,7 +498,11 @@ Page {
     }
 
     function show(searchText = "", searchScope = "") {
-        page.header.forceFocus()
+        if (searchText)
+            page.header.forceFocus()
+        else
+            page.header.unfocus()
+
         initialSearch = searchText
 
         if (searchText || searchScope) {
