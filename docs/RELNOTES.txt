@@ -1,10 +1,11 @@
-next
-====
+2.1
+===
 * Remember recently used GIFs.
 * Show suggestions on search page.
 * Show recent searches on search page.
 * Improve keyboard visibility when composing post.
 * Show DID in settings.
+* Bug fixes
 
 2.0.1
 =====
