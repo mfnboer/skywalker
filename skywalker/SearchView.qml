@@ -11,6 +11,7 @@ Page {
     property bool isPostSearch: true
     property string postSearchUser // empty, "me", handle
     property string initialSearch
+    property string currentText
 
     signal closed
 
@@ -25,6 +26,7 @@ Page {
 
         onSearchTextChanged: (text) => {
             page.isTyping = true
+            currentText = text
 
             if (text.length > 0) {
                 if (unicodeFonts.isHashtag(text)) {
@@ -41,6 +43,7 @@ Page {
                 searchUtils.authorTypeaheadList = []
                 searchUtils.hashtagTypeaheadList = []
                 page.isHashtagSearch = false
+                searchUtils.getSuggestedActors()
             }
         }
 
@@ -154,8 +157,10 @@ Page {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: parent.bottom
         width: parent.width
-        currentIndex: page.isPostSearch ? 0 : 1
-        visible: !page.isTyping
+        currentIndex: currentText ? (page.isPostSearch ? 0 : 1) : 2
+        visible: !page.isTyping || !currentText
+
+        onCurrentIndexChanged: console.debug("CURRENT INDEX:", currentIndex)
 
         ListView {
             id: postsView
@@ -226,6 +231,54 @@ Page {
             BusyIndicator {
                 anchors.centerIn: parent
                 running: searchUtils.searchActorsInProgress
+            }
+        }
+
+        ListView {
+            id: suggestedUsersView
+            width: parent.width
+            height: parent.height
+            spacing: 0
+            clip: true
+            model: searchUtils.getSearchSuggestedUsersModel()
+            flickDeceleration: guiSettings.flickDeceleration
+            ScrollIndicator.vertical: ScrollIndicator {}
+
+            Accessible.role: Accessible.List
+
+            header: AccessibleText {
+                width: parent.width
+                topPadding: 10
+                bottomPadding: 10
+                horizontalAlignment: Text.AlignHCenter
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(9/8)
+                text: qsTr("Suggestions")
+                visible: suggestedUsersView.count > 0
+            }
+
+            delegate: AuthorViewDelegate {
+                width: postsView.width
+                onFollow: (profile) => { graphUtils.follow(profile) }
+                onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
+            }
+
+            FlickableRefresher {
+                inProgress: searchUtils.searchSuggestedActorsInProgress
+                verticalOvershoot: suggestedUsersView.verticalOvershoot
+                bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
+                topText: ""
+            }
+
+            EmptyListIndication {
+                svg: svgOutline.noUsers
+                text: qsTr("No suggestions")
+                list: suggestedUsersView
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: searchUtils.searchSuggestedActorsInProgress
             }
         }
     }
@@ -382,5 +435,7 @@ Page {
     Component.onCompleted: {
         if (initialSearch)
             searchUtils.search(initialSearch)
+        else
+            searchUtils.getSuggestedActors()
     }
 }

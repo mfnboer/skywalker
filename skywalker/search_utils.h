@@ -18,6 +18,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QStringList hashtagTypeaheadList READ getHashtagTypeaheadList WRITE setHashtagTypeaheadList NOTIFY hashtagTypeaheadListChanged FINAL)
     Q_PROPERTY(bool searchPostsInProgress READ getSearchPostsInProgress WRITE setSearchPostsInProgress NOTIFY searchPostsInProgressChanged FINAL)
     Q_PROPERTY(bool searchActorsInProgress READ getSearchActorsInProgress WRITE setSearchActorsInProgress NOTIFY searchActorsInProgressChanged FINAL)
+    Q_PROPERTY(bool searchSuggestedActorsInProgress READ getSearchSuggestedActorsInProgress WRITE setSearchSuggestedActorsInProgress NOTIFY searchSuggestedActorsInProgressChanged FINAL)
     Q_PROPERTY(bool searchFeedsInProgress READ getSearchFeedsInProgress WRITE setSearchFeedsInProgress NOTIFY searchFeedsInProgressChanged FINAL)
     QML_ELEMENT
 
@@ -36,10 +37,13 @@ public:
     Q_INVOKABLE void getNextPageSearchPosts(const QString& text, int maxPages = 10, int minEntries = 10);
     Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchActors(const QString& text);
+    Q_INVOKABLE void getSuggestedActors(const QString& cursor = {});
+    Q_INVOKABLE void getNextPageSuggestedActors();
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel();
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
+    Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
     Q_INVOKABLE void clearAllSearchResults();
 
@@ -51,6 +55,8 @@ public:
     void setSearchPostsInProgress(bool inProgress);
     bool getSearchActorsInProgress() const { return mSearchActorsInProgress; }
     void setSearchActorsInProgress(bool inProgress);
+    bool getSearchSuggestedActorsInProgress() const { return mSearchSuggestedActorsInProgress; }
+    void setSearchSuggestedActorsInProgress(bool inProgress);
     bool getSearchFeedsInProgress() const { return mSearchFeedsInProgress; }
     void setSearchFeedsInProgress(bool inProgress);
 
@@ -59,6 +65,7 @@ signals:
     void hashtagTypeaheadListChanged();
     void searchPostsInProgressChanged();
     void searchActorsInProgressChanged();
+    void searchSuggestedActorsInProgressChanged();
     void searchFeedsInProgressChanged();
 
 private:
@@ -70,9 +77,11 @@ private:
     QStringList mHashtagTypeaheadList;
     int mSearchPostFeedModelId = -1;
     int mSearchUsersModelId = -1;
+    int mSearchSuggestedUsersModelId = -1;
     int mSearchFeedsModelId = -1;
     bool mSearchPostsInProgress = false;
     bool mSearchActorsInProgress = false;
+    bool mSearchSuggestedActorsInProgress = false;
     bool mSearchFeedsInProgress = false;
 };
 

@@ -124,6 +124,11 @@ void SearchUtils::removeModels()
         mSearchUsersModelId = -1;
     }
 
+    if (mSearchSuggestedUsersModelId >= 0) {
+        mSkywalker->removeAuthorListModel(mSearchSuggestedUsersModelId);
+        mSearchSuggestedUsersModelId = -1;
+    }
+
     if (mSearchFeedsModelId >= 0) {
         mSkywalker->removeFeedListModel(mSearchFeedsModelId);
         mSearchFeedsModelId = -1;
@@ -160,6 +165,15 @@ void SearchUtils::setSearchActorsInProgress(bool inProgress)
     {
         mSearchActorsInProgress = inProgress;
         emit searchActorsInProgressChanged();
+    }
+}
+
+void SearchUtils::setSearchSuggestedActorsInProgress(bool inProgress)
+{
+    if (inProgress != mSearchSuggestedActorsInProgress)
+    {
+        mSearchSuggestedActorsInProgress = inProgress;
+        emit searchSuggestedActorsInProgressChanged();
     }
 }
 
@@ -401,6 +415,62 @@ void SearchUtils::getNextPageSearchActors(const QString& text)
     searchActors(text, cursor);
 }
 
+void SearchUtils::getSuggestedActors(const QString& cursor)
+{
+    qDebug() << "Get suggested actors, cursor:" << cursor;
+
+    if (mSearchSuggestedActorsInProgress)
+    {
+        qDebug() << "Search suggested actors still in progress";
+        return;
+    }
+
+    setSearchSuggestedActorsInProgress(true);
+    bskyClient()->getSuggestions({}, mSkywalker->makeOptionalCursor(cursor),
+        [this, presence=getPresence(), cursor](auto output){
+            if (!presence)
+                return;
+
+            setSearchSuggestedActorsInProgress(false);
+            auto* model = getSearchSuggestedUsersModel();
+
+            if (cursor.isEmpty())
+                model->clear();
+
+            model->addAuthors(std::move(output->mActors), output->mCursor.value_or(""));
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            setSearchSuggestedActorsInProgress(false);
+            qDebug() << "getSuggestedActors failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void SearchUtils::getNextPageSuggestedActors()
+{
+    qDebug() << "Get next page suggested actors";
+
+    if (mSearchSuggestedActorsInProgress)
+    {
+        qDebug() << "Search suggested actors still in progress";
+        return;
+    }
+
+    auto* model = getSearchSuggestedUsersModel();
+    const auto& cursor = model->getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    getSuggestedActors(cursor);
+}
+
 void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
 {
     qDebug() << "Search feeds:" << text << "cursor:" << cursor;
@@ -480,6 +550,19 @@ AuthorListModel* SearchUtils::getSearchUsersModel()
     return mSkywalker->getAuthorListModel(mSearchUsersModelId);
 }
 
+AuthorListModel* SearchUtils::getSearchSuggestedUsersModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (mSearchSuggestedUsersModelId < 0)
+    {
+        mSearchSuggestedUsersModelId = mSkywalker->createAuthorListModel(
+            AuthorListModel::Type::AUTHOR_LIST_SUGGESTIONS, "");
+    }
+
+    return mSkywalker->getAuthorListModel(mSearchSuggestedUsersModelId);
+}
+
 FeedListModel* SearchUtils::getSearchFeedsModel()
 {
     Q_ASSERT(mSkywalker);
@@ -505,6 +588,13 @@ void SearchUtils::clearAllSearchResults()
     {
         Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getAuthorListModel(mSearchUsersModelId);
+        model->clear();
+    }
+
+    if (mSearchSuggestedUsersModelId >= 0)
+    {
+        Q_ASSERT(mSkywalker);
+        auto* model = mSkywalker->getAuthorListModel(mSearchSuggestedUsersModelId);
         model->clear();
     }
 
