@@ -96,6 +96,12 @@ public class FileUtils {
 
     public static String getAppDataPath(String subDir) {
         Context context = QtNative.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context to get app data path: " + subDir);
+            return null;
+        }
+
         File path = context.getFilesDir();
         File subPath = new File(path, subDir);
 
