@@ -23,6 +23,12 @@ public class FileUtils {
 
     public static String resolveContentUriToFile(String uriString) {
         Context context = QtNative.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context to resolve content URI: " + uriString);
+            return null;
+        }
+
         Uri uri = Uri.parse(uriString);
         String[] projection = {MediaStore.Images.Media.DATA};
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
@@ -39,6 +45,13 @@ public class FileUtils {
 
     public static int openContentUri(Uri contentUri) {
         Context context = QtNative.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context to open content: " + contentUri);
+            return -1;
+        }
+
+
         ContentResolver resolver = context.getContentResolver();
         ParcelFileDescriptor fileDescriptor;
 

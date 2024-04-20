@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 2.1
 ===
 * Remember recently used GIFs.
