@@ -977,9 +977,19 @@ Page {
             focusPolicy: Qt.NoFocus
         }
 
+        LanguageComboBox {
+            id: languageSelector
+            anchors.left: fontSelector.right
+            anchors.leftMargin: 8
+            y: 5 + restrictionRow.height + footerSeparator.height
+            popup.x: Math.max(-x, Math.min(0, page.width - popup.width - x))
+            popup.height: Math.min(page.height - 20, popup.contentHeight)
+            focusPolicy: Qt.NoFocus
+        }
+
         SvgTransparentButton {
             id: contentWarningIcon
-            anchors.left: fontSelector.right
+            anchors.left: languageSelector.right
             anchors.leftMargin: 8
             y: height + 5 + restrictionRow.height + footerSeparator.height
             accessibleName: qsTr("add content warning")
@@ -1702,6 +1712,14 @@ Page {
         id: virtualKeyboardPageResizer
     }
 
+    Connections {
+        target: Qt.inputMethod
+
+        function onLocaleChanged() {
+            console.debug("INPUT LANGUAGE:", Qt.inputMethod.locale.name, Qt.inputMethod.locale.nativeLanguageName)
+        }
+    }
+
     Component.onDestruction: {
         for (let i = 0; i < threadPosts.count; ++i) {
             let postItem = threadPosts.itemAt(i)
@@ -1725,5 +1743,8 @@ Page {
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
+
+        console.debug("INPUT LANGUAGE:", Qt.inputMethod.locale.name, Qt.inputMethod.locale.nativeLanguageName)
+        languageSelector.setLanguage(Qt.inputMethod.locale.name.split("_")[0])
     }
 }

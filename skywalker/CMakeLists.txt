@@ -325,6 +325,9 @@ qt_add_qml_module(libskywalker
         QML_FILES SeparatorLine.qml
         QML_FILES VirtualKeyboardPageResizer.qml
         SOURCES tenor_gif.cpp
+        QML_FILES LanguageComboBox.qml
+        SOURCES language_utils.h
+        SOURCES language_utils.cpp
 )
 
 if (NOT ANDROID)
