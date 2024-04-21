@@ -11,6 +11,7 @@ Rectangle {
     required property string postCid
     required property string postText
     required property string postPlainText
+    required property string postLanguage
     required property date postIndexedDateTime
     required property basicprofile postRepostedByAuthor
     required property list<imageview> postImages
@@ -335,7 +336,7 @@ Rectangle {
 
                 onReply: {
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                                      author, postReplyRootUri, postReplyRootCid)
+                                      author, postReplyRootUri, postReplyRootCid, postLanguage)
                 }
 
                 onRepost: {

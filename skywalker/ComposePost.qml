@@ -33,6 +33,7 @@ Page {
     property string replyRootPostCid: ""
     property string replyToPostText
     property date replyToPostDateTime
+    property string replyToLanguage
 
     // Quote post (for first post only)
     property bool openedAsQuotePost: false
@@ -241,7 +242,7 @@ Page {
                         quoteCid: page.quoteCid
                         quoteText: page.quoteText
                         quoteDateTime: page.quoteDateTime
-                        language: languageUtils.defaultPostLanguage
+                        language: replyToLanguage ? replyToLanguage : languageUtils.defaultPostLanguage
                     }
                 ]
 
@@ -719,11 +720,15 @@ Page {
                         return
                     }
 
-                    const oldCursorPosition = threadPosts.itemAt(currentPostIndex).getPostText().cursorPosition
+                    const postItem = threadPosts.itemAt(currentPostIndex);
+                    const oldCursorPosition = postItem.getPostText().cursorPosition
+                    const lang = postItem.language
 
                     copyPostItemsToPostList()
                     model = 0
-                    postList.splice(index + 1, 0, newComposePostItem())
+                    let newItem = newComposePostItem()
+                    newItem.language = lang
+                    postList.splice(index + 1, 0, newItem)
                     model = postList.length
                     copyPostListToPostItems()
 
@@ -983,7 +988,8 @@ Page {
 
         LanguageComboBox {
             id: languageSelector
-            model: languageUtils.languages
+            allLanguages: languageUtils.languages
+            usedLanguages: languageUtils.usedLanguages
             anchors.left: fontSelector.right
             anchors.leftMargin: 8
             y: 5 + restrictionRow.height + footerSeparator.height
@@ -1465,6 +1471,7 @@ Page {
         }
 
         postUtils.cacheTags(postItem.text)
+        languageUtils.addUsedPostLanguage(postItem.language)
     }
 
     function sendThreadPosts(postIndex, parentUri, parentCid, rootUri, rootCid) {
@@ -1547,10 +1554,12 @@ Page {
 
             draftItemList.push(draftItem)
             postUtils.cacheTags(threadItem.text)
+            languageUtils.addUsedPostLanguage(threadItem.language)
         }
 
         draftPosts.saveDraftPost(draft, draftItemList)
         postUtils.cacheTags(postItem.text)
+        languageUtils.addUsedPostLanguage(postItem.language)
     }
 
     function showDraftPosts() {

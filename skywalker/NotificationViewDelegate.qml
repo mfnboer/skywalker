@@ -29,6 +29,7 @@ Rectangle {
     required property string notificationCid
     required property string notificationPostText
     required property string notificationPostPlainText
+    required property string notificationPostLanguage
     required property date notificationPostTimestamp
     required property list<imageview> notificationPostImages
     required property var notificationPostExternal // externalview (var allows NULL)
@@ -196,7 +197,8 @@ Rectangle {
                 onReply: {
                     root.composeReply(notificationPostUri, notificationCid, notificationPostText,
                                       notificationPostTimestamp, notificationAuthor,
-                                      notificationPostReplyRootUri, notificationPostReplyRootCid)
+                                      notificationPostReplyRootUri, notificationPostReplyRootCid,
+                                      notificationPostLanguage)
                 }
 
                 onRepost: {

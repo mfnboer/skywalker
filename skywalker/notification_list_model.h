@@ -44,6 +44,7 @@ public:
         NotificationCid,
         NotificationPostText,
         NotificationPostPlainText,
+        NotificationPostLanguage,
         NotificationPostTimestamp,
         NotificationPostImages,
         NotificationPostExternal,

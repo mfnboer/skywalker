@@ -10,6 +10,7 @@
 namespace Skywalker {
 
 static constexpr char const* DEFAULT_LANGUAGE = "en";
+static constexpr int MAX_USED_LANGUAGES = 5;
 
 Language::Language(const QString& code, const QString& nativeName) :
     mShortCode(LanguageUtils::languageCodeToShortCode(code)),
@@ -18,10 +19,20 @@ Language::Language(const QString& code, const QString& nativeName) :
 }
 
 QList<Language> LanguageUtils::sLanguages;
+std::unordered_map<QString, QString> LanguageUtils::sLanguageShortCodeToNameMap;
 
 QString LanguageUtils::languageCodeToShortCode(const QString& languageCode)
 {
     return languageCode.split('_').front();
+}
+
+QString LanguageUtils::getInputLanguage()
+{
+    if (!qGuiApp)
+        return {};
+
+    auto* inputMethod = qGuiApp->inputMethod();
+    return languageCodeToShortCode(inputMethod->locale().name());
 }
 
 LanguageUtils::LanguageUtils(QObject* parent) :
@@ -40,11 +51,7 @@ QString LanguageUtils::getDefaultPostLanguage() const
     if (!lang.isEmpty())
         return lang;
 
-    if (!qGuiApp)
-        return DEFAULT_LANGUAGE;
-
-    auto* inputMethod = qGuiApp->inputMethod();
-    lang = languageCodeToShortCode(inputMethod->locale().name());
+    lang = getInputLanguage();
 
     if (lang.isEmpty())
         return DEFAULT_LANGUAGE;
@@ -84,6 +91,70 @@ bool LanguageUtils::isDefaultPostLanguageSet() const
     return !lang.isEmpty();
 }
 
+QList<Language> LanguageUtils::getUsedPostLanguages() const
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    const auto* settings = mSkywalker->getUserSettings();
+    const QString defaultLang = settings->getDefaultPostLanguage(did);
+    const QStringList langs = settings->getUsedPostLanguages(did);
+    QList<Language> usedLangs;
+    std::unordered_set<QString> usedShortCodes;
+
+    for (const QString& shortCode : langs)
+    {
+        usedLangs.push_back(getLanguage(shortCode));
+        usedShortCodes.insert(shortCode);
+    }
+
+    const QString inputLang = getInputLanguage();
+
+    if (!inputLang.isEmpty() && !usedShortCodes.contains(inputLang))
+    {
+        usedLangs.push_front(getLanguage(inputLang));
+        usedShortCodes.insert(inputLang);
+    }
+
+    if (!defaultLang.isEmpty() && !usedShortCodes.contains(defaultLang))
+    {
+        usedLangs.push_front(getLanguage(defaultLang));
+        usedShortCodes.insert(defaultLang);
+    }
+
+    if (!usedShortCodes.contains(DEFAULT_LANGUAGE))
+        usedLangs.push_back(getLanguage(DEFAULT_LANGUAGE));
+
+    return usedLangs;
+}
+
+void LanguageUtils::addUsedPostLanguage(const QString& language)
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList langs = settings->getUsedPostLanguages(did);
+
+    if (!langs.isEmpty() && langs.front() == language)
+        return;
+
+    langs.removeOne(language);
+
+    while (langs.size() >= MAX_USED_LANGUAGES)
+        langs.pop_back();
+
+    langs.push_front(language);
+    settings->setUsedPostLanguages(did, langs);
+    emit usedPostLanguagesChanged();
+}
+
+Language LanguageUtils::getLanguage(const QString& shortCode) const
+{
+
+    const QString& name = sLanguageShortCodeToNameMap.contains(shortCode) ?
+        sLanguageShortCodeToNameMap.at(shortCode) : shortCode;
+    return Language(shortCode, name);
+}
+
 void LanguageUtils::initLanguages()
 {
     if (!sLanguages.empty())
@@ -97,6 +168,7 @@ void LanguageUtils::initLanguages()
     qDebug() << "CODE:" << langEn.getShortCode() << "NAME:" << langEn.getNativeName();
     codes.insert(langEn.getShortCode());
     sLanguages.push_back(langEn);
+    sLanguageShortCodeToNameMap[langEn.getShortCode()] = langEn.getNativeName();
 
     for (int i = 2; i <= QLocale::Language::LastLanguage; ++i)
     {
@@ -110,11 +182,13 @@ void LanguageUtils::initLanguages()
 
         qDebug() << i << "CODE:" << lang.getShortCode() << "NAME:" << lang.getNativeName();
         sLanguages.push_back(lang);
-        std::sort(sLanguages.begin(), sLanguages.end(),
-                  [](const Language& lhs, const Language& rhs){
-                      return lhs.getNativeName().toLower().localeAwareCompare(rhs.getNativeName().toLower()) < 0;
-                  });
+        sLanguageShortCodeToNameMap[lang.getShortCode()] = lang.getNativeName();
     }
+
+    std::sort(sLanguages.begin(), sLanguages.end(),
+              [](const Language& lhs, const Language& rhs){
+                  return lhs.getNativeName().toLower().localeAwareCompare(rhs.getNativeName().toLower()) < 0;
+              });
 }
 
 }

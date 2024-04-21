@@ -789,7 +789,7 @@ ApplicationWindow {
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, initialText = "", imageSource = "")
     {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -802,7 +802,8 @@ ApplicationWindow {
                 replyRootPostCid: replyRootCid,
                 replyToPostText: replyToText,
                 replyToPostDateTime: replyToDateTime,
-                replyToAuthor: replyToAuthor
+                replyToAuthor: replyToAuthor,
+                replyToLanguage: replyToLanguage
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)

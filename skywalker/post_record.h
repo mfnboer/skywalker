@@ -20,6 +20,8 @@ public:
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
     BasicProfile getReplyToAuthor() const;
+    std::vector<QString> getLanguages() const;
+    bool hasLanguage() const;
     bool isReply() const;
     bool hasEmbeddedContent() const;
 

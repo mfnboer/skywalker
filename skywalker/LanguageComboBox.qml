@@ -3,11 +3,13 @@ import QtQuick.Controls
 import skywalker
 
 ComboBox {
-    required model
+    property list<language> allLanguages
+    property list<language> usedLanguages
     property bool reversedColors: false
 
     id: languageComboBox
     height: 34
+    model: usedLanguages.concat(allLanguages)
     valueRole: "shortCode"
     textRole: "shortCode"
     popup.width: 220
@@ -36,13 +38,19 @@ ComboBox {
 
         id: delegate
         width: popup.width
+        highlighted: languageComboBox.highlightedIndex === index
 
         contentItem: Text {
-            width: parent.width
+            width: delegate.width
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             color: delegate.index === languageComboBox.currentIndex ? guiSettings.buttonColor : guiSettings.textColor
             text: `${delegate.modelData.nativeName} (${delegate.modelData.shortCode})`
+        }
+
+        background: Rectangle {
+            implicitWidth: delegate.width
+            color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length ? guiSettings.postHighLightColor : "transparent")
         }
     }
 

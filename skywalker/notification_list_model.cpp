@@ -424,6 +424,11 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getPostRecord().getFormattedText();
     case Role::NotificationPostPlainText:
         return notification.getPostRecord().getText();
+    case Role::NotificationPostLanguage:
+    {
+        const auto& postRecord = notification.getPostRecord();
+        return postRecord.hasLanguage() ? postRecord.getLanguages().front() : "";
+    }
     case Role::NotificationPostTimestamp:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
@@ -558,6 +563,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationCid), "notificationCid" },
         { int(Role::NotificationPostText), "notificationPostText" },
         { int(Role::NotificationPostPlainText), "notificationPostPlainText" },
+        { int(Role::NotificationPostLanguage), "notificationPostLanguage" },
         { int(Role::NotificationPostTimestamp), "notificationPostTimestamp" },
         { int(Role::NotificationPostImages), "notificationPostImages" },
         { int(Role::NotificationPostExternal), "notificationPostExternal" },

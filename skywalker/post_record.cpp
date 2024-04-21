@@ -82,6 +82,22 @@ BasicProfile PostRecord::getReplyToAuthor() const
     return *author;
 }
 
+std::vector<QString> PostRecord::getLanguages() const
+{
+    if (!mRecord)
+        return {};
+
+    return mRecord->mLanguages;
+}
+
+bool PostRecord::hasLanguage() const
+{
+    if (!mRecord)
+        return false;
+
+    return !mRecord->mLanguages.empty();
+}
+
 bool PostRecord::isReply() const
 {
     return getReplyRootRef() != nullptr;
