@@ -29,7 +29,7 @@ ComboBox {
 
     delegate: ItemDelegate {
         required property int index
-        required property Language modelData
+        required property language modelData
 
         id: delegate
         width: popup.width

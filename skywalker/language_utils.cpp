@@ -6,19 +6,13 @@
 
 namespace Skywalker {
 
-Language::Language(QObject* parent) :
-    QObject(parent)
-{
-}
-
-Language::Language(const QString& code, const QString& nativeName, QObject* parent) :
-    QObject(parent),
-    mCode(code),
+Language::Language(const QString& code, const QString& nativeName) :
     mShortCode(code.split('_').front()),
     mNativeName(nativeName)
 {
-    mCode.replace('_', '-');
 }
+
+QList<Language> LanguageUtils::sLanguages;
 
 LanguageUtils::LanguageUtils(QObject* parent) :
     QObject(parent)
@@ -28,32 +22,34 @@ LanguageUtils::LanguageUtils(QObject* parent) :
 
 void LanguageUtils::initLanguages()
 {
+    if (!sLanguages.empty())
+        return;
+
     std::unordered_set<QString> codes;
-    mLanguages.reserve(QLocale::Language::LastLanguage);
+    sLanguages.reserve(QLocale::Language::LastLanguage);
 
     // Add English separate as Qt has many languages marked as en_US making it American.
-    Language* langEn = new Language("en_UK", "English", this);
-    qDebug() << "CODE:" << langEn->getShortCode() << "NAME:" << langEn->getNativeName();
-    codes.insert(langEn->getShortCode());
-    mLanguages.push_back(langEn);
+    Language langEn("en_UK", "English");
+    qDebug() << "CODE:" << langEn.getShortCode() << "NAME:" << langEn.getNativeName();
+    codes.insert(langEn.getShortCode());
+    sLanguages.push_back(langEn);
 
     for (int i = 2; i <= QLocale::Language::LastLanguage; ++i)
     {
         const QLocale locale((QLocale::Language)i);
-        Language* lang = new Language(locale.name(), locale.nativeLanguageName(), this);
+        Language lang(locale.name(), locale.nativeLanguageName());
 
-        if (codes.contains(lang->getShortCode()))
-        {
-            delete lang;
+        if (codes.contains(lang.getShortCode()))
             continue;
-        }
 
-        codes.insert(lang->getShortCode());
+        codes.insert(lang.getShortCode());
 
-        qDebug() << i << "CODE:" << lang->getShortCode() << "NAME:" << lang->getNativeName();
-        mLanguages.push_back(lang);
-        std::sort(mLanguages.begin(), mLanguages.end(),
-                  [](const Language* lhs, const Language* rhs){ return lhs->getNativeName().localeAwareCompare(rhs->getNativeName()) < 0; });
+        qDebug() << i << "CODE:" << lang.getShortCode() << "NAME:" << lang.getNativeName();
+        sLanguages.push_back(lang);
+        std::sort(sLanguages.begin(), sLanguages.end(),
+                  [](const Language& lhs, const Language& rhs){
+                      return lhs.getNativeName().toLower().localeAwareCompare(rhs.getNativeName().toLower()) < 0;
+                  });
     }
 }
 

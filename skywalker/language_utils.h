@@ -6,24 +6,21 @@
 
 namespace Skywalker {
 
-class Language : public QObject
+class Language
 {
-    Q_OBJECT
-    Q_PROPERTY(QString code MEMBER mCode CONSTANT FINAL)
+    Q_GADGET
     Q_PROPERTY(QString shortCode MEMBER mShortCode CONSTANT FINAL)
     Q_PROPERTY(QString nativeName MEMBER mNativeName CONSTANT FINAL)
-    QML_ELEMENT
+    QML_VALUE_TYPE(language)
 
 public:
-    explicit Language(QObject* parent = nullptr);
-    Language(const QString& code, const QString& nativeName, QObject* parent = nullptr);
+    Language() = default;
+    Language(const QString& code, const QString& nativeName);
 
-    const QString& getCode() const { return mCode; }
     const QString& getShortCode() const { return mShortCode; }
     const QString& getNativeName() const { return mNativeName; }
 
 private:
-    QString mCode;
     QString mShortCode;
     QString mNativeName;
 };
@@ -31,16 +28,16 @@ private:
 class LanguageUtils : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<Language*> languages MEMBER mLanguages CONSTANT FINAL)
+    Q_PROPERTY(QList<Language> languages MEMBER sLanguages CONSTANT FINAL)
     QML_ELEMENT
 
 public:
     explicit LanguageUtils(QObject* parent = nullptr);
 
 private:
-    void initLanguages();
+    static void initLanguages();
 
-    QList<Language*> mLanguages;
+    static QList<Language> sLanguages;
 };
 
 }
