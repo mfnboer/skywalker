@@ -3,9 +3,11 @@ import QtQuick.Controls
 import skywalker
 
 ComboBox {
+    required model
+    property bool reversedColors: false
+
     id: languageComboBox
     height: 34
-    model: languageUtils.languages
     valueRole: "shortCode"
     textRole: "shortCode"
     popup.width: 220
@@ -15,7 +17,7 @@ ComboBox {
         implicitHeight: 34
         border.color: guiSettings.buttonColor
         border.width: 2
-        color: "transparent"
+        color: reversedColors ? guiSettings.buttonColor : "transparent"
     }
 
     indicator: Item {}
@@ -24,6 +26,7 @@ ComboBox {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
+        color: reversedColors ? "white" : guiSettings.buttonColor
         text: languageComboBox.displayText
     }
 
@@ -43,10 +46,6 @@ ComboBox {
         }
     }
 
-    LanguageUtils {
-        id: languageUtils
-    }
-
     GuiSettings {
         id: guiSettings
     }
@@ -57,11 +56,9 @@ ComboBox {
         if (index === -1)
             index = find("en")
 
-        if (index > -1)
+        if (index > -1) {
             currentIndex = index
-    }
-
-    Component.onCompleted: {
-        languageComboBox.contentItem.color = guiSettings.buttonColor
+            activated(index)
+        }
     }
 }

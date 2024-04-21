@@ -34,12 +34,12 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
-                          const QStringList& labels);
+                          const QStringList& labels, const QString& language);
     Q_INVOKABLE void post(const QString& text, const LinkCard* card,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
-                          const QStringList& labels);
+                          const QStringList& labels, const QString& language);
     Q_INVOKABLE void addThreadgate(const QString& uri, bool allowMention, bool allowFollowing, const QStringList& allowLists);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);

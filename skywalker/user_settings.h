@@ -117,6 +117,12 @@ public:
     QStringList getLastSearches(const QString& did) const;
     void setLastSearches(const QString& did, const QStringList& lastSearches);
 
+    QString getDefaultPostLanguage(const QString& did) const;
+    void setDefaultPostLanguage(const QString& did, const QString& language);
+
+    QStringList getUsedPostLanguages(const QString& did) const;
+    void setUsedPostLanguages(const QString& did, const QStringList& languages);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;

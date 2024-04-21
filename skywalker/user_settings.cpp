@@ -434,6 +434,26 @@ void UserSettings::addDraftRepoToFileMigration(const QString& did)
     mSettings.setValue(key(did, "draftRepoToFileMigration"), attempts + 1);
 }
 
+QString UserSettings::getDefaultPostLanguage(const QString& did) const
+{
+    return mSettings.value(key(did, "defaultPostLanguage")).toString();
+}
+
+void UserSettings::setDefaultPostLanguage(const QString& did, const QString& language)
+{
+    mSettings.setValue(key(did, "defaultPostLanguage"), language);
+}
+
+QStringList UserSettings::getUsedPostLanguages(const QString& did) const
+{
+    return mSettings.value(key(did, "usedPostLanguages")).toStringList();
+}
+
+void UserSettings::setUsedPostLanguages(const QString& did, const QStringList& languages)
+{
+    mSettings.setValue(key(did, "usedPostLanguages"), languages);
+}
+
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
 {
     mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);

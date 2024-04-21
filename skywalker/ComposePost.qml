@@ -241,6 +241,7 @@ Page {
                         quoteCid: page.quoteCid
                         quoteText: page.quoteText
                         quoteDateTime: page.quoteDateTime
+                        language: languageUtils.defaultPostLanguage
                     }
                 ]
 
@@ -264,6 +265,7 @@ Page {
                     property bool cwNudity: false
                     property bool cwPorn: false
                     property bool cwGore: false
+                    property string language
 
                     function copyToPostList() {
                         threadPosts.postList[index].text = text
@@ -282,6 +284,7 @@ Page {
                         threadPosts.postList[index].cwNudity = cwNudity
                         threadPosts.postList[index].cwPorn = cwPorn
                         threadPosts.postList[index].cwGore = cwGore
+                        threadPosts.postList[index].language = language
                     }
 
                     function copyFromPostList() {
@@ -305,6 +308,7 @@ Page {
                         cwNudity = threadPosts.postList[index].cwNudity
                         cwPorn = threadPosts.postList[index].cwPorn
                         cwGore = threadPosts.postList[index].cwGore
+                        language = threadPosts.postList[index].language
 
                         // Set text last as it will trigger link extractions which
                         // will check if a link card is already in place.
@@ -979,12 +983,31 @@ Page {
 
         LanguageComboBox {
             id: languageSelector
+            model: languageUtils.languages
             anchors.left: fontSelector.right
             anchors.leftMargin: 8
             y: 5 + restrictionRow.height + footerSeparator.height
             popup.x: Math.max(-x, Math.min(0, page.width - popup.width - x))
             popup.height: Math.min(page.height - 20, popup.contentHeight)
+            currentIndex: find(currentPostLanguage())
+            reversedColors: languageUtils.isDefaultPostLanguageSet && currentValue === languageUtils.defaultPostLanguage
             focusPolicy: Qt.NoFocus
+
+            onActivated: (index) => {
+                currentPostItem().language = valueAt(index)
+                console.debug("ACTIVATED LANG:", valueAt(index))
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: languageSelector.popup.open()
+                onPressAndHold: {
+                    if (languageUtils.isDefaultPostLanguageSet && languageSelector.currentValue === languageUtils.defaultPostLanguage)
+                        languageUtils.defaultPostLanguage = ""
+                    else
+                        languageUtils.defaultPostLanguage = languageSelector.currentValue
+                }
+            }
         }
 
         SvgTransparentButton {
@@ -1164,6 +1187,11 @@ Page {
 
     UnicodeFonts {
         id: unicodeFonts
+    }
+
+    LanguageUtils {
+        id: languageUtils
+        skywalker: page.skywalker
     }
 
     Tenor {
@@ -1413,7 +1441,7 @@ Page {
                            postItem.card,
                            parentUri, parentCid,
                            rootUri, rootCid,
-                           qUri, qCid, labels)
+                           qUri, qCid, labels, postItem.language)
         } else if (!postItem.gif.isNull()) {
             tenor.registerShare(postItem.gif)
 
@@ -1428,12 +1456,12 @@ Page {
             postUtils.post(postText, gifCard,
                            parentUri, parentCid,
                            rootUri, rootCid,
-                           qUri, qCid, labels)
+                           qUri, qCid, labels, postItem.language)
         } else {
             postUtils.post(postText, postItem.images, postItem.altTexts,
                            parentUri, parentCid,
                            rootUri, rootCid,
-                           qUri, qCid, labels);
+                           qUri, qCid, labels, postItem.language);
         }
 
         postUtils.cacheTags(postItem.text)
@@ -1494,7 +1522,7 @@ Page {
                                  replyToPostDateTime,
                                  qUri, qCid, postItem.quoteAuthor, unicodeFonts.toPlainText(postItem.quoteText),
                                  postItem.quoteDateTime, postItem.quoteFeed, postItem.quoteList,
-                                 postItem.gif, labels,
+                                 postItem.gif, labels, postItem.language,
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
 
@@ -1513,7 +1541,7 @@ Page {
                                      new Date(),
                                      qUriItem, qCidItem, threadItem.quoteAuthor, unicodeFonts.toPlainText(threadItem.quoteText),
                                      threadItem.quoteDateTime, threadItem.quoteFeed, threadItem.quoteList,
-                                     threadItem.gif, labelsItem,
+                                     threadItem.gif, labelsItem, threadItem.language,
                                      false, false, false,
                                      [])
 
@@ -1581,6 +1609,7 @@ Page {
             postItem.gif = draftData.gif
 
             postItem.setContentWarnings(draftData.labels)
+            postItem.language = draftData.language
 
             console.debug("ADD DRAFT:", j)
             if (j > 0)
@@ -1699,6 +1728,15 @@ Page {
                 postItem.images.length === 0
     }
 
+    function currentPostLanguage() {
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return languageUtils.defaultPostLanguage
+
+        return postItem.language ? postItem.language : languageUtils.defaultPostLanguage
+    }
+
     function hasContentWarning() {
         const postItem = currentPostItem()
 
@@ -1710,14 +1748,6 @@ Page {
 
     VirtualKeyboardPageResizer {
         id: virtualKeyboardPageResizer
-    }
-
-    Connections {
-        target: Qt.inputMethod
-
-        function onLocaleChanged() {
-            console.debug("INPUT LANGUAGE:", Qt.inputMethod.locale.name, Qt.inputMethod.locale.nativeLanguageName)
-        }
     }
 
     Component.onDestruction: {
@@ -1743,8 +1773,5 @@ Page {
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
-
-        console.debug("INPUT LANGUAGE:", Qt.inputMethod.locale.name, Qt.inputMethod.locale.nativeLanguageName)
-        languageSelector.setLanguage(Qt.inputMethod.locale.name.split("_")[0])
     }
 }

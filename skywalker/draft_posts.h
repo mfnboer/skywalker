@@ -48,6 +48,7 @@ public:
                                            const QDateTime& quoteDateTime,
                                            const GeneratorView& quoteFeed, const ListView& quoteList,
                                            const TenorGif gif, const QStringList& labels,
+                                           const QString& language,
                                            bool restrictReplies, bool allowMention, bool allowFollowing,
                                            const QStringList& allowLists,
                                            QDateTime timestamp = QDateTime::currentDateTime());

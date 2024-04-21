@@ -199,7 +199,7 @@ private:
     {
         ATProto::Client client(nullptr);
         ATProto::PostMaster pm(client);
-        pm.createPost(text, nullptr, [this](auto&& postRecord){
+        pm.createPost(text, "", nullptr, [this](auto&& postRecord){
             const auto json = postRecord->toJson();
             mPostView.mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
             mPostView.mRecord = ATProto::AppBskyFeed::Record::Post::fromJson(json);

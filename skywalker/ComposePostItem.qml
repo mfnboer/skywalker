@@ -14,6 +14,7 @@ Item {
     property listview quoteList
     property tenorgif gif
     property var card: null
+    property string language: ""
 
     // Content warnings
     property bool cwSuggestive: false

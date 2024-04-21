@@ -94,6 +94,8 @@ public:
     const QString& getUnsupportedType() const { return mUnsupportedType; }
 
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    const std::vector<QString>& getLanguages() const;
+    bool hasLanguage() const;
     std::vector<QString> getHashtags() const override;
 
     bool isBookmarkNotFound() const { return mBookmarkNotFound; }

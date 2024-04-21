@@ -34,6 +34,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(ListView quoteList READ quoteList WRITE setQuoteList NOTIFY quoteListChanged FINAL)
     Q_PROPERTY(TenorGif gif READ gif WRITE setGif NOTIFY gifChanged FINAL)
     Q_PROPERTY(QStringList labels READ labels WRITE setLabels NOTIFY labelsChanged FINAL)
+    Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged FINAL)
     Q_PROPERTY(bool restrictReplies READ restrictReplies WRITE setRestrictReplies NOTIFY restrictRepliesChanged FINAL)
     Q_PROPERTY(bool allowMention READ allowMention WRITE setAllowMention NOTIFY allowMentionChanged FINAL)
     Q_PROPERTY(bool allowFollowing READ allowFollowing WRITE setAllowFollowing NOTIFY allowFollowingChanged FINAL)
@@ -84,6 +85,8 @@ public:
     void setGif(const TenorGif &newGif);
     QStringList labels() const;
     void setLabels(const QStringList &newLabels);
+    QString language() const;
+    void setLanguage(const QString& language);
     bool restrictReplies() const;
     void setRestrictReplies(bool newRestrictReplies);
     bool allowMention() const;
@@ -115,6 +118,7 @@ signals:
     void quoteListChanged();
     void gifChanged();
     void labelsChanged();
+    void languageChanged();
     void restrictRepliesChanged();
     void allowMentionChanged();
     void allowFollowingChanged();
@@ -143,6 +147,7 @@ private:
     ListView mQuoteList;
     TenorGif mGif;
     QStringList mLabels;
+    QString mLanguage;
     bool mRestrictReplies = false;
     bool mAllowMention = false;
     bool mAllowFollowing = false;
@@ -392,6 +397,19 @@ inline void DraftPostData::setLabels(const QStringList &newLabels)
         return;
     mLabels = newLabels;
     emit labelsChanged();
+}
+
+inline QString DraftPostData::language() const
+{
+    return mLanguage;
+}
+
+inline void DraftPostData::setLanguage(const QString& language)
+{
+    if (language == mLanguage)
+        return;
+    mLanguage = language;
+    emit languageChanged();
 }
 
 inline bool DraftPostData::restrictReplies() const

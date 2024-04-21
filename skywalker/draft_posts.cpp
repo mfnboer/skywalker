@@ -66,6 +66,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const QDateTime& quoteDateTime,
                                        const GeneratorView& quoteFeed, const ListView& quoteList,
                                        const TenorGif gif, const QStringList& labels,
+                                       const QString& language,
                                        bool restrictReplies, bool allowMention, bool allowFollowing,
                                        const QStringList& allowLists,
                                        QDateTime timestamp)
@@ -100,6 +101,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
     draft->setQuoteList(quoteList);
     draft->setGif(gif);
     draft->setLabels(labels);
+    draft->setLanguage(language);
     draft->setRestrictReplies(restrictReplies);
     draft->setAllowMention(allowMention);
     draft->setAllowFollowing(allowFollowing);
@@ -229,7 +231,9 @@ ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createPost(const DraftPostDa
             ATProto::PostMaster::createReplyRef(draftPost->replyToUri(), draftPost->replyToCid(),
                                                 draftPost->replyRootUri(), draftPost->replyRootCid());
 
-    auto post = ATProto::PostMaster::createPostWithoutFacets(draftPost->text(), std::move(replyRef));
+    auto post = ATProto::PostMaster::createPostWithoutFacets(draftPost->text(),
+            draftPost->language(), std::move(replyRef));
+
     post->mCreatedAt = draftPost->indexedAt();
     ATProto::PostMaster::addLabelsToPost(*post, draftPost->labels());
 
@@ -416,6 +420,9 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
         const auto externalView = post.getExternalView();
         if (externalView)
             setGif(data, externalView.get());
+
+        if (post.hasLanguage())
+            data->setLanguage(post.getLanguages().front());
 
         setLabels(data, post);
         setReplyRestrictions(data, post);

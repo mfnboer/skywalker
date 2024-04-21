@@ -63,7 +63,7 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
-                     const QStringList& labels)
+                     const QStringList& labels, const QString& language)
 {
     qDebug() << "Posting:" << text;
 
@@ -74,7 +74,7 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
 
     if (replyToUri.isEmpty())
     {
-        postMaster()->createPost(text, nullptr,
+        postMaster()->createPost(text, language, nullptr,
             [this, presence=getPresence(), imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
                 if (presence)
                     continuePost(imageFileNames, altTexts, post, quoteUri, quoteCid, labels);
@@ -83,14 +83,14 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels]
+        [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels, language]
         {
             if (!presence)
                 return;
 
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            postMaster()->createPost(text, std::move(replyRef),
+            postMaster()->createPost(text, language, std::move(replyRef),
                 [this, presence, imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
                     if (presence)
                         continuePost(imageFileNames, altTexts , post, quoteUri, quoteCid, labels);
@@ -109,7 +109,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
-                     const QStringList& labels)
+                     const QStringList& labels, const QString& language)
 {
     Q_ASSERT(card);
     qDebug() << "Posting:" << text;
@@ -121,7 +121,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
 
     if (replyToUri.isEmpty())
     {
-        postMaster()->createPost(text, nullptr,
+        postMaster()->createPost(text, language, nullptr,
             [this, presence=getPresence(), card, quoteUri, quoteCid, labels](auto post){
                 if (presence)
                     continuePost(card, post, quoteUri, quoteCid, labels);
@@ -130,14 +130,14 @@ void PostUtils::post(const QString& text, const LinkCard* card,
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels]
+        [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels, language]
         {
             if (!presence)
                 return;
 
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
 
-            postMaster()->createPost(text, std::move(replyRef),
+            postMaster()->createPost(text, language, std::move(replyRef),
                 [this, presence, card, quoteUri, quoteCid, labels](auto post){
                     if (presence)
                         continuePost(card, post, quoteUri, quoteCid, labels);

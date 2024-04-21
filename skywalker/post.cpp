@@ -538,6 +538,25 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
     return mPost ? mPost->mLabels : NO_LABELS;
 }
 
+const std::vector<QString>& Post::getLanguages() const
+{
+    static const std::vector<QString> NO_LANGUAGES;
+
+    if (!mPost)
+        return NO_LANGUAGES;
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return NO_LANGUAGES;
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    return record->mLanguages;
+}
+
+bool Post::hasLanguage() const
+{
+    return !getLanguages().empty();
+}
+
 std::vector<QString> Post::getHashtags() const
 {
     if (!mPost)
