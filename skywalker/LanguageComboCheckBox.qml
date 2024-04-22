@@ -28,6 +28,7 @@ ComboBox {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
+        elide: Text.ElideRight
         color: guiSettings.buttonColor
         text: checkedLangCodes.length > 0 ? checkedLangCodes.join(", ") : qsTr("all languages")
     }

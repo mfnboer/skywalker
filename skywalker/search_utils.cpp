@@ -419,6 +419,7 @@ void SearchUtils::getNextPageSearchActors(const QString& text)
 
 void SearchUtils::getSuggestedActors(const QString& cursor)
 {
+    Q_ASSERT(mSkywalker);
     qDebug() << "Get suggested actors, cursor:" << cursor;
 
     if (mSearchSuggestedActorsInProgress)
@@ -427,8 +428,11 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
         return;
     }
 
+    const QString& did = mSkywalker->getUserDid();
+    const QStringList langs = mSkywalker->getUserSettings()->getContentLanguages(did);
+
     setSearchSuggestedActorsInProgress(true);
-    bskyClient()->getSuggestions({}, mSkywalker->makeOptionalCursor(cursor),
+    bskyClient()->getSuggestions({}, mSkywalker->makeOptionalCursor(cursor), langs,
         [this, presence=getPresence(), cursor](auto output){
             if (!presence)
                 return;

@@ -790,9 +790,10 @@ void Skywalker::getFeed(int modelId, int limit, int maxPages, int minEntries, co
     }
 
     const QString& feedUri = model->getGeneratorView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetFeedInProgress(true);
 
-    mBsky->getFeed(feedUri, limit, makeOptionalCursor(cursor),
+    mBsky->getFeed(feedUri, limit, makeOptionalCursor(cursor), langs,
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             setGetFeedInProgress(false);
             int addedPosts = 0;
@@ -880,9 +881,10 @@ void Skywalker::getListFeed(int modelId, int limit, int maxPages, int minEntries
     }
 
     const QString& listUri = model->getListView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetFeedInProgress(true);
 
-    mBsky->getListFeed(listUri, limit, makeOptionalCursor(cursor),
+    mBsky->getListFeed(listUri, limit, makeOptionalCursor(cursor), langs,
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             setGetFeedInProgress(false);
             int addedPosts = 0;
@@ -1721,8 +1723,9 @@ void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId
 
 void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int modelId)
 {
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetAuthorListInProgress(true);
-    mBsky->getSuggestions(limit, makeOptionalCursor(cursor),
+    mBsky->getSuggestions(limit, makeOptionalCursor(cursor), langs,
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
