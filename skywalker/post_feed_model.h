@@ -38,6 +38,8 @@ public:
     Q_INVOKABLE const ListView getListView() const { return mListView; }
     void setListView(const ListView& view) { mListView = view; }
 
+    void enableLanguageFilter(bool enabled) { mLanguageFilterEnabled = enabled; }
+
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
@@ -92,6 +94,8 @@ private:
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
     };
 
+    virtual bool mustHideContent(const Post& post) const override;
+    bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     bool mustShowQuotePost(const Post& post) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
@@ -113,6 +117,7 @@ private:
 
     const ATProto::UserPreferences& mUserPreferences;
     const UserSettings& mUserSettings;
+    bool mLanguageFilterEnabled = false;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.

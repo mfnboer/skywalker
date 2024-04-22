@@ -328,6 +328,7 @@ qt_add_qml_module(libskywalker
         QML_FILES LanguageComboBox.qml
         SOURCES language_utils.h
         SOURCES language_utils.cpp
+        QML_FILES LanguageComboCheckBox.qml
 )
 
 if (NOT ANDROID)

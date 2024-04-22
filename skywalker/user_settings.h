@@ -123,6 +123,13 @@ public:
     QStringList getUsedPostLanguages(const QString& did) const;
     void setUsedPostLanguages(const QString& did, const QStringList& languages);
 
+    // Returns a sorted list
+    QStringList getContentLanguages(const QString& did) const;
+    void setContentLanguages(const QString& did, const QStringList& languages);
+
+    bool getShowUnknownContentLanguage(const QString& did) const;
+    void setShowUnknownContentLanguage(const QString& did, bool show);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;

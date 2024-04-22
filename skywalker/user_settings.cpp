@@ -454,6 +454,28 @@ void UserSettings::setUsedPostLanguages(const QString& did, const QStringList& l
     mSettings.setValue(key(did, "usedPostLanguages"), languages);
 }
 
+QStringList UserSettings::getContentLanguages(const QString& did) const
+{
+    return mSettings.value(key(did, "contentLanguages")).toStringList();
+}
+
+void UserSettings::setContentLanguages(const QString& did, const QStringList& languages)
+{
+    QStringList sortedLangs = languages;
+    std::sort(sortedLangs.begin(), sortedLangs.end());
+    mSettings.setValue(key(did, "contentLanguages"), sortedLangs);
+}
+
+bool UserSettings::getShowUnknownContentLanguage(const QString& did) const
+{
+    return mSettings.value(key(did, "showUnknownContentLanguage"), true).toBool();
+}
+
+void UserSettings::setShowUnknownContentLanguage(const QString& did, bool show)
+{
+    mSettings.setValue(key(did, "showUnknownContentLanguage"), show);
+}
+
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
 {
     mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);

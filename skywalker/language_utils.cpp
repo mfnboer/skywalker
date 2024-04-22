@@ -72,9 +72,16 @@ void LanguageUtils::setDefaultPostLanguage(const QString& language)
     settings->setDefaultPostLanguage(did, language);
 
     if (language.isEmpty())
-        mSkywalker->showStatusMessage(tr("Default post language cleared"), QEnums::STATUS_LEVEL_INFO);
+    {
+        mSkywalker->showStatusMessage(tr("Default post language cleared"),
+                                      QEnums::STATUS_LEVEL_INFO);
+    }
     else
-        mSkywalker->showStatusMessage(tr("Default post language set to %1").arg(language), QEnums::STATUS_LEVEL_INFO);
+    {
+        const Language l = getLanguage(language);
+        mSkywalker->showStatusMessage(tr("Default post language set to %1").arg(l.getNativeName()),
+                                      QEnums::STATUS_LEVEL_INFO);
+    }
 
     emit defaultPostLanguageChanged();
 
@@ -98,6 +105,7 @@ QList<Language> LanguageUtils::getUsedPostLanguages() const
     const auto* settings = mSkywalker->getUserSettings();
     const QString defaultLang = settings->getDefaultPostLanguage(did);
     const QStringList langs = settings->getUsedPostLanguages(did);
+    const QStringList contentLangs = settings->getContentLanguages(did);
     QList<Language> usedLangs;
     std::unordered_set<QString> usedShortCodes;
 
@@ -119,6 +127,15 @@ QList<Language> LanguageUtils::getUsedPostLanguages() const
     {
         usedLangs.push_front(getLanguage(defaultLang));
         usedShortCodes.insert(defaultLang);
+    }
+
+    for (const auto& l : contentLangs)
+    {
+        if (!usedShortCodes.contains(l))
+        {
+            usedLangs.push_back(getLanguage(l));
+            usedShortCodes.insert(l);
+        }
     }
 
     if (!usedShortCodes.contains(DEFAULT_LANGUAGE))

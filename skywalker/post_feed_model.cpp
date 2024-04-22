@@ -470,6 +470,45 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     return true;
 }
 
+bool PostFeedModel::mustHideContent(const Post& post) const
+{
+    if (AbstractPostFeedModel::mustHideContent(post))
+        return true;
+
+    return !passLanguageFilter(post);
+}
+
+bool PostFeedModel::passLanguageFilter(const Post& post) const
+{
+    if (!mLanguageFilterEnabled)
+        return true;
+
+    const std::vector<QString>& postLangs = post.getLanguages();
+
+    if (postLangs.empty())
+    {
+        if (mUserSettings.getShowUnknownContentLanguage(mUserDid))
+            return true;
+
+        qDebug() << "Unknown language:" << post.getText();
+        return false;
+    }
+
+    const QStringList sortedContentLangs = mUserSettings.getContentLanguages(mUserDid);
+
+    if (sortedContentLangs.empty())
+        return true;
+
+    for (const QString& lang : postLangs)
+    {
+        if (std::binary_search(sortedContentLangs.cbegin(), sortedContentLangs.cend(), lang))
+            return true;
+    }
+
+    qDebug() << "No matching language:" << postLangs << "text:" << post.getText();
+    return false;
+}
+
 bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);

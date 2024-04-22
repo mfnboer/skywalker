@@ -132,8 +132,9 @@ Page {
                     text: userPrefs.did
                 }
                 SvgButton {
-                    width: height
-                    height: didLabel.height
+                    imageMargin: 0
+                    implicitWidth: height
+                    implicitHeight: didLabel.height
                     svg: svgOutline.copy
                     accessibleName: qsTr("copy") + " D I D"
                     iconColor: guiSettings.textColor
@@ -232,8 +233,42 @@ Page {
         }
 
         ColumnLayout {
-            id: appearanceColumn
+            id: languageColumn
             anchors.top: homeFeedColumn.bottom
+            width: parent.width
+
+            AccessibleText {
+                topPadding: 20
+                font.pointSize: guiSettings.scaledFont(9/8)
+                font.bold: true
+                color: guiSettings.textColor
+                text: qsTr("Language preferences")
+            }
+            AccessibleText {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                color: guiSettings.textColor
+                text: qsTr("Which languages do you want to see in feeds (other than home). If no languages are selected than all posts will be shown. Note that the language indication posts may be wrong or missing.")
+            }
+
+            LanguageComboCheckBox {
+                Layout.fillWidth: true
+                allLanguages: languageUtils.languages
+                usedLanguages: languageUtils.usedLanguages
+                checkedLangCodes: userPrefs.contentLanguages
+                onCheckedLangCodesChanged: userPrefs.contentLanguages = checkedLangCodes
+            }
+
+            AccessibleSwitch {
+                text: qsTr("Show posts without language indication")
+                checked: userPrefs.showUnknownContentLanguage
+                onCheckedChanged: userPrefs.showUnknownContentLanguage = checked
+            }
+        }
+
+        ColumnLayout {
+            id: appearanceColumn
+            anchors.top: languageColumn.bottom
             width: parent.width
 
             AccessibleText {
@@ -316,6 +351,11 @@ Page {
                 onCheckedChanged: userPrefs.notificationsWifiOnly = checked
             }
         }
+    }
+
+    LanguageUtils {
+        id: languageUtils
+        skywalker: root.getSkywalker()
     }
 
     GuiSettings {

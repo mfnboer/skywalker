@@ -99,6 +99,26 @@ void EditUserPreferences::setRewindToLastSeenPost(bool rewind)
     }
 }
 
+void EditUserPreferences::setContentLanguages(const QStringList& contentLanguages)
+{
+    if (contentLanguages != mContentLanguages)
+    {
+        mContentLanguages = contentLanguages;
+        setLocalSettingsModified(true);
+        emit contentLanguagesChanged();
+    }
+}
+
+void EditUserPreferences::setShowUnknownContentLanguage(bool show)
+{
+    if (show != mShowUnknownContentLanguage)
+    {
+        mShowUnknownContentLanguage = show;
+        setLocalSettingsModified(true);
+        emit showUnknownContentLanguageChanged();
+    }
+}
+
 void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
 {
     if (displayMode != mDisplayMode)

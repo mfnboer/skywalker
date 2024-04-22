@@ -93,7 +93,7 @@ protected:
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
     bool isEndOfFeed() const { return mEndOfFeed; }
     void setEndOfFeed(bool endOfFeed) { mEndOfFeed = endOfFeed; }
-    bool mustHideContent(const Post& post) const;
+    virtual bool mustHideContent(const Post& post) const;
 
     // LocalPostModelChanges
     virtual void postIndexTimestampChanged() override;

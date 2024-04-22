@@ -1617,6 +1617,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
             mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks, mMutedWords,
             mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setGeneratorView(generatorView);
+    model->enableLanguageFilter(true);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
 }
@@ -1628,6 +1629,7 @@ int Skywalker::createPostFeedModel(const ListView& listView)
                                                  mContentFilter, mBookmarks, mMutedWords,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setListView(listView);
+    model->enableLanguageFilter(true);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
 }
@@ -2265,6 +2267,8 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setUserPreferences(mUserPreferences);
     mEditUserPreferences->setShowQuotesWithBlockedPost(mUserSettings.getShowQuotesWithBlockedPost(mUserDid));
     mEditUserPreferences->setRewindToLastSeenPost(mUserSettings.getRewindToLastSeenPost(mUserDid));
+    mEditUserPreferences->setContentLanguages(mUserSettings.getContentLanguages(mUserDid));
+    mEditUserPreferences->setShowUnknownContentLanguage(mUserSettings.getShowUnknownContentLanguage(mUserDid));
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
     mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
@@ -2301,6 +2305,12 @@ void Skywalker::saveUserPreferences()
 
         qDebug() << "Rewind to last seen post:" << mEditUserPreferences->getRewindToLastSeenPost();
         mUserSettings.setRewindToLastSeenPost(mUserDid, mEditUserPreferences->getRewindToLastSeenPost());
+
+        qDebug() << "Content languages:" << mEditUserPreferences->getContentLanguages();
+        mUserSettings.setContentLanguages(mUserDid, mEditUserPreferences->getContentLanguages());
+
+        qDebug() << "Show unknown content language:" << mEditUserPreferences->getShowUnknownContentLanguage();
+        mUserSettings.setShowUnknownContentLanguage(mUserDid, mEditUserPreferences->getShowUnknownContentLanguage());
 
         qDebug() << "Display mode:" << mEditUserPreferences->getDisplayMode();
         mUserSettings.setDisplayMode(mEditUserPreferences->getDisplayMode());
