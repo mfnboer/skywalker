@@ -74,7 +74,6 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 skywalker: header.skywalker
-                //Layout.fillWidth: true
                 Layout.alignment: Qt.AlignLeft
                 visible: showAsHome
             }
