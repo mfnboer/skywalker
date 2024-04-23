@@ -14,6 +14,7 @@ Rectangle {
     property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
     property bool showFollow: true
+    readonly property int margin: 10
 
     signal follow(basicprofile profile)
     signal unfollow(string did, string uri)
@@ -118,6 +119,7 @@ Rectangle {
 
         Row {
             Layout.fillHeight: true
+            Layout.rightMargin: authorRect.margin
 
             SkyButton {
                 text: qsTr("Follow")
@@ -144,6 +146,7 @@ Rectangle {
             rightPadding: 10
             Layout.columnSpan: 2
             Layout.fillWidth: true
+            Layout.rightMargin: authorRect.margin
             wrapMode: Text.Wrap
             textFormat: Text.RichText
             color: guiSettings.textColor

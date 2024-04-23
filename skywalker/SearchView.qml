@@ -12,6 +12,7 @@ Page {
     property string postSearchUser // empty, "me", handle
     property string initialSearch
     property string currentText
+    readonly property int margin: 10
 
     signal closed
 
@@ -69,6 +70,8 @@ Page {
     Row {
         id: searchModeBar
         width: parent.width
+        leftPadding: page.margin
+        rightPadding: page.margin
 
         SvgButton {
             id: searchModeToggle
@@ -91,7 +94,7 @@ Page {
 
         AccessibleText {
             id: searchModeText
-            width: parent.width - searchModeToggle.width - (blockHashtagButton.visible ? blockHashtagButton.width : 0)
+            width: parent.width - searchModeToggle.width - 2 * page.margin - (blockHashtagButton.visible ? blockHashtagButton.width : 0)
             anchors.verticalCenter: searchModeBar.verticalCenter
             elide: Text.ElideRight
             color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
@@ -326,6 +329,7 @@ Page {
 
                 SvgImage {
                     id: recentSearchIcon
+                    x: page.margin
                     width: 40
                     height: width
                     color: guiSettings.textColor
@@ -338,6 +342,7 @@ Page {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.leftMargin: 10
+                    anchors.rightMargin: page.margin
                     elide: Text.ElideRight
                     text: modelData
                 }

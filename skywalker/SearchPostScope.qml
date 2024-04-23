@@ -16,9 +16,6 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
 
-    Accessible.role: Accessible.Dialog
-    Accessible.name: title
-
     GridLayout {
         id: scopeGrid
         width: parent.width
