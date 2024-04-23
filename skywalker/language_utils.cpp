@@ -39,6 +39,15 @@ LanguageUtils::LanguageUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {
     initLanguages();
+
+    if (qGuiApp)
+    {
+        auto* inputMethod = qGuiApp->inputMethod();
+        connect(inputMethod, &QInputMethod::localeChanged, this, [this]{
+            qDebug() << "Input language changed:", getInputLanguage();
+            emit defaultPostLanguageChanged();
+        });
+    }
 }
 
 QString LanguageUtils::getDefaultPostLanguage() const
