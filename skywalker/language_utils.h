@@ -47,6 +47,8 @@ public:
     bool isDefaultPostLanguageSet() const;
     QList<Language> getUsedPostLanguages() const;
     Q_INVOKABLE void addUsedPostLanguage(const QString& language);
+    Q_INVOKABLE bool getDefaultLanguageNoticeSeen() const;
+    Q_INVOKABLE void setDefaultLanguageNoticeSeen(bool seen);
 
 signals:
     void defaultPostLanguageChanged();

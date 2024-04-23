@@ -476,6 +476,16 @@ void UserSettings::setShowUnknownContentLanguage(const QString& did, bool show)
     mSettings.setValue(key(did, "showUnknownContentLanguage"), show);
 }
 
+bool UserSettings::getDefaultLanguageNoticeSeen() const
+{
+    return mSettings.value("defaultLanguageNoticeSeen", false).toBool();
+}
+
+void UserSettings::setDefautlLanguageNoticeSeen(bool seen)
+{
+    mSettings.setValue("defaultLanguageNoticeSeen", seen);
+}
+
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
 {
     mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);

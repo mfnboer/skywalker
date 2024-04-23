@@ -1002,6 +1002,12 @@ Page {
             onActivated: (index) => {
                 currentPostItem().language = valueAt(index)
                 console.debug("ACTIVATED LANG:", valueAt(index))
+
+                if (!languageUtils.getDefaultLanguageNoticeSeen()) {
+                    guiSettings.notice(page,
+                        qsTr("To set this language as default for your posts, you can press and hold the language button for a second."))
+                    languageUtils.setDefaultLanguageNoticeSeen(true)
+                }
             }
 
             MouseArea {

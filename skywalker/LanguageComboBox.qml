@@ -57,16 +57,4 @@ ComboBox {
     GuiSettings {
         id: guiSettings
     }
-
-    function setLanguage(shortCode) {
-        let index = find(shortCode)
-
-        if (index === -1)
-            index = find("en")
-
-        if (index > -1) {
-            currentIndex = index
-            activated(index)
-        }
-    }
 }

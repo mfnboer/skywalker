@@ -130,6 +130,9 @@ public:
     bool getShowUnknownContentLanguage(const QString& did) const;
     void setShowUnknownContentLanguage(const QString& did, bool show);
 
+    bool getDefaultLanguageNoticeSeen() const;
+    void setDefautlLanguageNoticeSeen(bool seen);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;

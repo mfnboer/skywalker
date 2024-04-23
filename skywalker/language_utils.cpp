@@ -164,6 +164,20 @@ void LanguageUtils::addUsedPostLanguage(const QString& language)
     emit usedPostLanguagesChanged();
 }
 
+bool LanguageUtils::getDefaultLanguageNoticeSeen() const
+{
+    Q_ASSERT(mSkywalker);
+    const auto* settings = mSkywalker->getUserSettings();
+    return settings->getDefaultLanguageNoticeSeen();
+}
+
+void LanguageUtils::setDefaultLanguageNoticeSeen(bool seen)
+{
+    Q_ASSERT(mSkywalker);
+    auto* settings = mSkywalker->getUserSettings();
+    settings->setDefautlLanguageNoticeSeen(seen);
+}
+
 Language LanguageUtils::getLanguage(const QString& shortCode) const
 {
 
