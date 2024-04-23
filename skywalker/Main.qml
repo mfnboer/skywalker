@@ -151,7 +151,7 @@ ApplicationWindow {
             const did = skywalker.getUserDid()
             let userSettings = skywalker.getUserSettings()
             const lastSignIn = userSettings.getLastSignInTimestamp(did)
-            inviteCodeStore.load(lastSignIn)
+            // inviteCodeStore.load(lastSignIn)
             skywalker.loadBookmarks()
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
@@ -298,16 +298,16 @@ ApplicationWindow {
             close()
         }
 
-        onInviteCodes: {
-            let component = Qt.createComponent("InviteCodesView.qml")
-            const codes = inviteCodeStore.getCodes()
-            const failedToLoad = inviteCodeStore.failedToLoad()
-            let page = component.createObject(root, { codes: codes, failedToLoad: failedToLoad })
-            page.onClosed.connect(() => { popStack() })
-            page.onAuthorClicked.connect((did) => { skywalker.getDetailedProfile(did) })
-            pushStack(page)
-            close()
-        }
+        // onInviteCodes: {
+        //     let component = Qt.createComponent("InviteCodesView.qml")
+        //     const codes = inviteCodeStore.getCodes()
+        //     const failedToLoad = inviteCodeStore.failedToLoad()
+        //     let page = component.createObject(root, { codes: codes, failedToLoad: failedToLoad })
+        //     page.onClosed.connect(() => { popStack() })
+        //     page.onAuthorClicked.connect((did) => { skywalker.getDetailedProfile(did) })
+        //     pushStack(page)
+        //     close()
+        // }
 
         onBookmarks: {
             let component = Qt.createComponent("Bookmarks.qml")
@@ -394,7 +394,6 @@ ApplicationWindow {
 
         function show() {
             user = skywalker.getUser()
-            inviteCodeCount = inviteCodeStore.getAvailableCount()
             open()
         }
     }
@@ -571,12 +570,12 @@ ApplicationWindow {
         onGetListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    InviteCodeStore {
-        id: inviteCodeStore
-        skywalker: skywalker
+    // InviteCodeStore {
+    //     id: inviteCodeStore
+    //     skywalker: skywalker
 
-        onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
-    }
+    //     onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
+    // }
 
     UnicodeFonts {
         id: unicodeFonts
@@ -773,7 +772,7 @@ ApplicationWindow {
         unwindStack()
         destroySearchView()
         destroyFeedsView()
-        inviteCodeStore.clear()
+        // inviteCodeStore.clear()
         skywalker.signOut()
     }
 

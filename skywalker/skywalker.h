@@ -12,7 +12,6 @@
 #include "favorite_feeds.h"
 #include "feed_list_model.h"
 #include "hashtag_index.h"
-#include "invite_code.h"
 #include "item_store.h"
 #include "list_list_model.h"
 #include "muted_words.h"
@@ -225,7 +224,6 @@ signals:
     void getListListInProgressChanged();
     void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
     void getPostThreadInProgressChanged();
-    void inviteCodes(InviteCodeList);
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString text); // Shared from another app
     void showNotifications(); // Action received from clicking an app notification

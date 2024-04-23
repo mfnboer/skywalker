@@ -90,12 +90,13 @@ Drawer {
             onClicked: profile()
         }
 
-        SkyMenuItem {
-            id: inviteCodesItem
-            icon: svgOutline.inviteCode
-            text: qsTr("Invite Codes") + ` (${inviteCodeCount})`
-            onClicked: inviteCodes()
-        }
+        // Bluesky does not use invite codes anymore. New atproto providers may
+        // SkyMenuItem {
+        //     id: inviteCodesItem
+        //     icon: svgOutline.inviteCode
+        //     text: qsTr("Invite Codes") + ` (${inviteCodeCount})`
+        //     onClicked: inviteCodes()
+        // }
 
         SkyMenuItem {
             id: bookmarksItem
