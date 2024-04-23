@@ -1,5 +1,9 @@
 next
 ====
+* Set language on post
+* Settings to filter feed posts on language (optional)
+* Show creator of a label
+* Remove invite codes
 * Bug fixes
 
 2.1

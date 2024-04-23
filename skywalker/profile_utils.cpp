@@ -45,7 +45,7 @@ void ProfileUtils::getHandle(const QString& did)
 
     if (profile)
     {
-        emit handle(profile->getHandle(), did);
+        emit handle(profile->getHandle(), profile->getDisplayName(), did);
         return;
     }
 
@@ -58,7 +58,7 @@ void ProfileUtils::getHandle(const QString& did)
                 return;
 
             AuthorCache::instance().put(BasicProfile(profile.get()));
-            emit handle(profile->mHandle, profile->mDid);
+            emit handle(profile->mHandle, profile->mDisplayName.value_or(""), profile->mDid);
         },
         [](const QString& error, const QString& msg){
             qDebug() << "getProfileView failed:" << error << " - " << msg;

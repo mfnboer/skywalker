@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
-#include "author_cache.h"
 #include <algorithm>
 
 namespace Skywalker {

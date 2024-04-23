@@ -39,12 +39,25 @@ Dialog {
             color: guiSettings.textColor
             text: qsTr("Creator:")
         }
-        Text {
+        SkyCleanedText {
             id: creatorText
             Layout.fillWidth: true
             color: guiSettings.textColor
             elide: Text.ElideRight
-            text: contentAuthorDid === label.did ? qsTr("User") : qsTr("Moderator")
+            plainText: ""
+        }
+
+        Item {}
+        Text {
+            id: creatorHandle
+            Layout.fillWidth: true
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: guiSettings.handleColor
+            elide: Text.ElideRight
+            onLinkActivated: (link) => {
+                root.getSkywalker().getDetailedProfile(link)
+                accept()
+            }
         }
 
         Text {
@@ -60,7 +73,21 @@ Dialog {
         }
     }
 
+    ProfileUtils {
+        id: profileUtils
+        skywalker: root.getSkywalker()
+
+        onHandle: (handle, displayName, did) => {
+            creatorText.plainText = displayName.length > 0 ? displayName : handle
+            creatorHandle.text = `<a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
+        }
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onCompleted: {
+        profileUtils.getHandle(label.did)
     }
 }

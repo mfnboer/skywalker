@@ -28,7 +28,7 @@ public:
                                    const QString& bannerImgSource, bool updateBanner);
 
 signals:
-    void handle(QString handle, QString did);
+    void handle(QString handle, QString displayName, QString did);
     void profileViewOk(Profile profile, const QString& token);
     void profileViewFailed(QString error);
     void updateProfileProgress(QString msg);
