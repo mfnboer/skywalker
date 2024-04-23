@@ -54,9 +54,10 @@ Rectangle {
         }
         SkyCleanedText {
             id: headerTexts
-            Layout.fillWidth: !showAsHome
+            Layout.fillWidth: true //!showAsHome
             Layout.alignment: Qt.AlignVCenter
             leftPadding: header.feedAvatar ? 0 : 10
+            rightPadding: showAsHome ? expandFeedsButton.width : 0
             elide: Text.ElideRight
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
@@ -68,6 +69,16 @@ Rectangle {
             Accessible.description: Accessible.name
             Accessible.onPressAction: expandFeeds()
 
+            ExpandFeedsButton {
+                id: expandFeedsButton
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                skywalker: header.skywalker
+                //Layout.fillWidth: true
+                Layout.alignment: Qt.AlignLeft
+                visible: showAsHome
+            }
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: parent.expandFeeds()
@@ -78,13 +89,7 @@ Rectangle {
                     expandFeedsButton.onClicked()
             }
         }
-        ExpandFeedsButton {
-            id: expandFeedsButton
-            skywalker: header.skywalker
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignLeft
-            visible: showAsHome
-        }
+
         FeedAvatar {
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
