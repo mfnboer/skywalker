@@ -31,7 +31,7 @@ public:
         PostCid,
         PostText, // Formatted
         PostPlainText,
-        PostLanguage,
+        PostLanguages,
         PostIndexedDateTime,
         PostRepostedByAuthor,
         PostImages,

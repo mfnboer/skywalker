@@ -119,6 +119,16 @@ void EditUserPreferences::setShowUnknownContentLanguage(bool show)
     }
 }
 
+void EditUserPreferences::setShowLanguageTags(bool show)
+{
+    if (show != mShowLanguageTags)
+    {
+        mShowLanguageTags = show;
+        setLocalSettingsModified(true);
+        emit showLanguageTagsChanged();
+    }
+}
+
 void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
 {
     if (displayMode != mDisplayMode)

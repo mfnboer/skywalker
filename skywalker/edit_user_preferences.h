@@ -25,6 +25,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool rewindToLastSeenPost READ getRewindToLastSeenPost WRITE setRewindToLastSeenPost NOTIFY rewindToLastSeenPostChanged FINAL)
     Q_PROPERTY(QStringList contentLanguages READ getContentLanguages WRITE setContentLanguages NOTIFY contentLanguagesChanged FINAL)
     Q_PROPERTY(bool showUnknownContentLanguage READ getShowUnknownContentLanguage WRITE setShowUnknownContentLanguage NOTIFY showUnknownContentLanguageChanged FINAL)
+    Q_PROPERTY(bool showLanguageTags READ getShowLanguageTags WRITE setShowLanguageTags NOTIFY showLanguageTagsChanged FINAL)
     Q_PROPERTY(QEnums::DisplayMode displayMode READ getDisplayMode WRITE setDisplayMode NOTIFY displayModeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool notificationsWifiOnly READ getNotificationsWifiOnly WRITE setNotificationsWifiOnly NOTIFY notificationsWifiOnlyChanged FINAL)
@@ -79,6 +80,9 @@ public:
     bool getShowUnknownContentLanguage() const { return mShowUnknownContentLanguage; }
     void setShowUnknownContentLanguage(bool show);
 
+    bool getShowLanguageTags() const { return mShowLanguageTags; }
+    void setShowLanguageTags(bool show);
+
     QEnums::DisplayMode getDisplayMode() const { return mDisplayMode; }
     void setDisplayMode(QEnums::DisplayMode displayMode);
 
@@ -101,6 +105,7 @@ signals:
     void rewindToLastSeenPostChanged();
     void contentLanguagesChanged();
     void showUnknownContentLanguageChanged();
+    void showLanguageTagsChanged();
     void displayModeChanged();
     void gifAutoPlayChanged();
     void notificationsWifiOnlyChanged();
@@ -125,6 +130,7 @@ private:
     bool mRewindToLastSeenPost = true;
     QStringList mContentLanguages;
     bool mShowUnknownContentLanguage = true;
+    bool mShowLanguageTags = false;
     QEnums::DisplayMode mDisplayMode = QEnums::DISPLAY_MODE_SYSTEM;
     bool mGifAutoPlay = true;
     bool mNotificationsWifiOnly = false;

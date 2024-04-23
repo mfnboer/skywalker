@@ -422,7 +422,7 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
             setGif(data, externalView.get());
 
         if (post.hasLanguage())
-            data->setLanguage(post.getLanguages().front());
+            data->setLanguage(post.getLanguages().front().getShortCode());
 
         setLabels(data, post);
         setReplyRestrictions(data, post);

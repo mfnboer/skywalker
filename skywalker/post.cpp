@@ -2,7 +2,6 @@
 // License: GPLv3
 #include "post.h"
 #include "author_cache.h"
-#include "language_utils.h"
 #include "user_settings.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/rich_text_master.h>
@@ -539,26 +538,20 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
     return mPost ? mPost->mLabels : NO_LABELS;
 }
 
-const std::vector<QString>& Post::getLanguages() const
+const LanguageList& Post::getLanguages() const
 {
-    if (!mLanguageCodes.empty())
-        return mLanguageCodes;
+    if (!mLanguages.empty())
+        return mLanguages;
 
     if (!mPost)
-        return mLanguageCodes;
+        return mLanguages;
 
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
-        return mLanguageCodes;
+        return mLanguages;
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
-
-    for (const QString& lang : record->mLanguages)
-    {
-        const QString code = LanguageUtils::languageCodeToShortCode(lang);
-        const_cast<Post*>(this)->mLanguageCodes.push_back(code);
-    }
-
-    return mLanguageCodes;
+    const_cast<Post*>(this)->mLanguages = LanguageUtils::getLanguages(record->mLanguages);
+    return mLanguages;
 }
 
 bool Post::hasLanguage() const

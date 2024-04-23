@@ -486,6 +486,16 @@ void UserSettings::setDefautlLanguageNoticeSeen(bool seen)
     mSettings.setValue("defaultLanguageNoticeSeen", seen);
 }
 
+bool UserSettings::getShowLanguageTags() const
+{
+    return mSettings.value("showLanguageTags", false).toBool();
+}
+
+void UserSettings::setShowLanguageTags(bool show)
+{
+    mSettings.setValue("showLanguageTags", show);
+}
+
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
 {
     mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);

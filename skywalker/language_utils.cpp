@@ -18,12 +18,37 @@ Language::Language(const QString& code, const QString& nativeName) :
 {
 }
 
-QList<Language> LanguageUtils::sLanguages;
+LanguageList LanguageUtils::sLanguages;
 std::unordered_map<QString, QString> LanguageUtils::sLanguageShortCodeToNameMap;
 
 QString LanguageUtils::languageCodeToShortCode(const QString& languageCode)
 {
     return languageCode.split('_').front();
+}
+
+QString LanguageUtils::getLanguageName(const QString& languageCode)
+{
+    initLanguages();
+    const auto shortCode = languageCodeToShortCode(languageCode);
+
+    if (sLanguageShortCodeToNameMap.contains(shortCode))
+        return sLanguageShortCodeToNameMap[shortCode];
+
+    return languageCode;
+}
+
+LanguageList LanguageUtils::getLanguages(const std::vector<QString>& langCodes)
+{
+    LanguageList languages;
+    languages.reserve(langCodes.size());
+
+    for (const QString& lang : langCodes)
+    {
+        const QString name = LanguageUtils::getLanguageName(lang);
+        languages.push_back(Language(lang, name));
+    }
+
+    return languages;
 }
 
 QString LanguageUtils::getInputLanguage()
@@ -107,7 +132,7 @@ bool LanguageUtils::isDefaultPostLanguageSet() const
     return !lang.isEmpty();
 }
 
-QList<Language> LanguageUtils::getUsedPostLanguages() const
+LanguageList LanguageUtils::getUsedPostLanguages() const
 {
     Q_ASSERT(mSkywalker);
     const QString& did = mSkywalker->getUserDid();
@@ -115,7 +140,7 @@ QList<Language> LanguageUtils::getUsedPostLanguages() const
     const QString defaultLang = settings->getDefaultPostLanguage(did);
     const QStringList langs = settings->getUsedPostLanguages(did);
     const QStringList contentLangs = settings->getContentLanguages(did);
-    QList<Language> usedLangs;
+    LanguageList usedLangs;
     std::unordered_set<QString> usedShortCodes;
 
     for (const QString& shortCode : langs)
@@ -190,8 +215,7 @@ void LanguageUtils::setDefaultLanguageNoticeSeen(bool seen)
 Language LanguageUtils::getLanguage(const QString& shortCode) const
 {
 
-    const QString& name = sLanguageShortCodeToNameMap.contains(shortCode) ?
-        sLanguageShortCodeToNameMap.at(shortCode) : shortCode;
+    const QString& name = getLanguageName(shortCode);
     return Language(shortCode, name);
 }
 

@@ -46,6 +46,7 @@ Column {
         postAuthor: author
         postText: quoteColumn.postText
         postImages: []
+        postLanguageLabels: []
         postContentLabels: []
         postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         postContentWarning: ""

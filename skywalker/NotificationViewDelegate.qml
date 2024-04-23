@@ -21,6 +21,7 @@ Rectangle {
     required property var notificationReasonPostRecordWithMedia // record_with_media_view
     required property date notificationReasonPostTimestamp
     required property bool notificationReasonPostNotFound
+    required property list<language> notificationReasonPostLanguages
     required property list<contentlabel> notificationReasonPostLabels
     required property bool notificationReasonPostLocallyDeleted
     required property date notificationTimestamp
@@ -29,7 +30,6 @@ Rectangle {
     required property string notificationCid
     required property string notificationPostText
     required property string notificationPostPlainText
-    required property string notificationPostLanguage
     required property date notificationPostTimestamp
     required property list<imageview> notificationPostImages
     required property var notificationPostExternal // externalview (var allows NULL)
@@ -46,6 +46,7 @@ Rectangle {
     required property int notificationPostReplyCount
     required property bool notificationPostBookmarked
     required property bool notificationPostNotFound
+    required property list<language> notificationPostLanguages
     required property list<contentlabel> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
@@ -170,6 +171,7 @@ Rectangle {
                 postText: notificationPostText
                 postPlainText: notificationPostPlainText
                 postImages: notificationPostImages
+                postLanguageLabels: notificationPostLanguages
                 postContentLabels: notificationPostLabels
                 postContentVisibility: notificationPostContentVisibility
                 postContentWarning: notificationPostContentWarning
@@ -195,10 +197,13 @@ Rectangle {
                 bookmarkNotFound: false
 
                 onReply: {
+                    const lang = notificationPostLanguages.length > 0 ?
+                                   notificationPostLanguages[0].shortCode : ""
+
                     root.composeReply(notificationPostUri, notificationCid, notificationPostText,
                                       notificationPostTimestamp, notificationAuthor,
                                       notificationPostReplyRootUri, notificationPostReplyRootCid,
-                                      notificationPostLanguage)
+                                      lang)
                 }
 
                 onRepost: {
@@ -311,6 +316,7 @@ Rectangle {
                 postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
                                    notificationReasonPostPlainText : ""
                 postImages: notificationReasonPostImages
+                postLanguageLabels: notificationReasonPostLanguages
                 postContentLabels: notificationReasonPostLabels
                 postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                 postContentWarning: ""

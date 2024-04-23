@@ -133,6 +133,9 @@ public:
     bool getDefaultLanguageNoticeSeen() const;
     void setDefautlLanguageNoticeSeen(bool seen);
 
+    Q_INVOKABLE bool getShowLanguageTags() const;
+    void setShowLanguageTags(bool show);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;

@@ -248,7 +248,7 @@ Page {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 color: guiSettings.textColor
-                text: qsTr("Which languages do you want to see in feeds (other than home). If no languages are selected than all posts will be shown. Note that the language indication posts may be wrong or missing.")
+                text: qsTr("Which languages do you want to see in feeds (other than home). If no languages are selected than all posts will be shown. Note that the language tags on posts may be wrong or missing.")
             }
 
             LanguageComboCheckBox {
@@ -260,9 +260,15 @@ Page {
             }
 
             AccessibleSwitch {
-                text: qsTr("Show posts without language indication")
+                text: qsTr("Show posts without language tag")
                 checked: userPrefs.showUnknownContentLanguage
                 onCheckedChanged: userPrefs.showUnknownContentLanguage = checked
+            }
+
+            AccessibleSwitch {
+                text: qsTr("Show language tags on post")
+                checked: userPrefs.showLanguageTags
+                onCheckedChanged: userPrefs.showLanguageTags = checked
             }
         }
 

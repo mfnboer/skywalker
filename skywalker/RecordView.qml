@@ -52,6 +52,7 @@ Item {
             postAuthor: record.author
             postText: record.postTextFormatted
             postImages: record.images
+            postLanguageLabels: record.languages
             postContentLabels: record.contentLabels
             postContentVisibility: record.contentVisibility
             postContentWarning: record.contentWarning

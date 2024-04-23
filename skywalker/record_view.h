@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "generator_view.h"
 #include "image_view.h"
+#include "language_utils.h"
 #include "list_view.h"
 #include "muted_words.h"
 #include "normalized_word_index.h"
@@ -25,6 +26,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(bool postIsReply READ isReply FINAL)
     Q_PROPERTY(BasicProfile replyToAuthor READ getReplyToAuthor FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
+    Q_PROPERTY(LanguageList languages READ getLanguages FINAL)
     Q_PROPERTY(ContentLabelList contentLabels READ getContentLabels FINAL)
     Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility FINAL)
     Q_PROPERTY(QString contentWarning READ getContentWarning FINAL)
@@ -59,6 +61,7 @@ public:
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
     bool isReply() const;
     BasicProfile getReplyToAuthor() const;
+    const LanguageList& getLanguages() const;
     std::vector<QString> getHashtags() const override;
     QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }
     const QString& getContentWarning() const { return mContentWarning; }
@@ -90,6 +93,7 @@ private:
     QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
     QString mContentWarning = "NOT INITIALIZED";
     QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
+    LanguageList mLanguages;
 };
 
 }

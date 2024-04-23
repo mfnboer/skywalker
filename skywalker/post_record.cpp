@@ -82,12 +82,16 @@ BasicProfile PostRecord::getReplyToAuthor() const
     return *author;
 }
 
-std::vector<QString> PostRecord::getLanguages() const
+const LanguageList& PostRecord::getLanguages() const
 {
-    if (!mRecord)
-        return {};
+    if (!mLanguages.empty())
+        return mLanguages;
 
-    return mRecord->mLanguages;
+    if (!mRecord)
+        return mLanguages;
+
+    const_cast<PostRecord*>(this)->mLanguages = LanguageUtils::getLanguages(mRecord->mLanguages);
+    return mLanguages;
 }
 
 bool PostRecord::hasLanguage() const

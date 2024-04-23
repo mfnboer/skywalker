@@ -482,7 +482,7 @@ bool PostFeedModel::passLanguageFilter(const Post& post) const
     if (!mLanguageFilterEnabled)
         return true;
 
-    const std::vector<QString>& postLangs = post.getLanguages();
+    const LanguageList& postLangs = post.getLanguages();
 
     if (postLangs.empty())
     {
@@ -498,13 +498,13 @@ bool PostFeedModel::passLanguageFilter(const Post& post) const
     if (sortedContentLangs.empty())
         return true;
 
-    for (const QString& lang : postLangs)
+    for (const Language& lang : postLangs)
     {
-        if (std::binary_search(sortedContentLangs.cbegin(), sortedContentLangs.cend(), lang))
+        if (std::binary_search(sortedContentLangs.cbegin(), sortedContentLangs.cend(), lang.getShortCode()))
             return true;
     }
 
-    qDebug() << "No matching language:" << postLangs << "text:" << post.getText();
+    qDebug() << "No matching language:" << post.getText();
     return false;
 }
 

@@ -220,12 +220,28 @@ BasicProfile RecordView::getReplyToAuthor() const
     return profile ? *profile : BasicProfile();
 }
 
+const LanguageList& RecordView::getLanguages() const
+{
+    if (!mLanguages.empty())
+        return mLanguages;
+
+    if (!mRecord)
+        return mLanguages;
+
+    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return mLanguages;
+
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
+    const_cast<RecordView*>(this)->mLanguages = LanguageUtils::getLanguages(recordValue->mLanguages);
+    return mLanguages;
+}
+
 std::vector<QString> RecordView::getHashtags() const
 {
     if (!mRecord)
         return {};
 
-    if (mRecord && mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);

@@ -2272,6 +2272,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setRewindToLastSeenPost(mUserSettings.getRewindToLastSeenPost(mUserDid));
     mEditUserPreferences->setContentLanguages(mUserSettings.getContentLanguages(mUserDid));
     mEditUserPreferences->setShowUnknownContentLanguage(mUserSettings.getShowUnknownContentLanguage(mUserDid));
+    mEditUserPreferences->setShowLanguageTags(mUserSettings.getShowLanguageTags());
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
     mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
@@ -2314,6 +2315,9 @@ void Skywalker::saveUserPreferences()
 
         qDebug() << "Show unknown content language:" << mEditUserPreferences->getShowUnknownContentLanguage();
         mUserSettings.setShowUnknownContentLanguage(mUserDid, mEditUserPreferences->getShowUnknownContentLanguage());
+
+        qDebug() << "Show language tags:" << mEditUserPreferences->getShowLanguageTags();
+        mUserSettings.setShowLanguageTags(mEditUserPreferences->getShowLanguageTags());
 
         qDebug() << "Display mode:" << mEditUserPreferences->getDisplayMode();
         mUserSettings.setDisplayMode(mEditUserPreferences->getDisplayMode());

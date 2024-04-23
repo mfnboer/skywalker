@@ -404,6 +404,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
+    case Role::NotificationReasonPostLanguages:
+        return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getLanguages());
     case Role::NotificationReasonPostTimestamp:
         return notification.getReasonPost(mReasonPostCache).getTimelineTimestamp();
     case Role::NotificationReasonPostNotFound:
@@ -424,10 +426,10 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getPostRecord().getFormattedText();
     case Role::NotificationPostPlainText:
         return notification.getPostRecord().getText();
-    case Role::NotificationPostLanguage:
+    case Role::NotificationPostLanguages:
     {
         const auto& postRecord = notification.getPostRecord();
-        return postRecord.hasLanguage() ? postRecord.getLanguages().front() : "";
+        return QVariant::fromValue(postRecord.getLanguages());
     }
     case Role::NotificationPostTimestamp:
     {
@@ -550,6 +552,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostIsReply), "notificationReasonPostIsReply" },
         { int(Role::NotificationReasonPostReplyToAuthor), "notificationReasonPostReplyToAuthor" },
         { int(Role::NotificationReasonPostImages), "notificationReasonPostImages" },
+        { int(Role::NotificationReasonPostLanguages), "notificationReasonPostLanguages" },
         { int(Role::NotificationReasonPostTimestamp), "notificationReasonPostTimestamp" },
         { int(Role::NotificationReasonPostExternal), "notificationReasonPostExternal" },
         { int(Role::NotificationReasonPostRecord), "notificationReasonPostRecord" },
@@ -563,7 +566,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationCid), "notificationCid" },
         { int(Role::NotificationPostText), "notificationPostText" },
         { int(Role::NotificationPostPlainText), "notificationPostPlainText" },
-        { int(Role::NotificationPostLanguage), "notificationPostLanguage" },
+        { int(Role::NotificationPostLanguages), "notificationPostLanguages" },
         { int(Role::NotificationPostTimestamp), "notificationPostTimestamp" },
         { int(Role::NotificationPostImages), "notificationPostImages" },
         { int(Role::NotificationPostExternal), "notificationPostExternal" },

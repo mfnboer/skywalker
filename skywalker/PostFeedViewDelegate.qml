@@ -11,7 +11,7 @@ Rectangle {
     required property string postCid
     required property string postText
     required property string postPlainText
-    required property string postLanguage
+    required property list<language> postLanguages
     required property date postIndexedDateTime
     required property basicprofile postRepostedByAuthor
     required property list<imageview> postImages
@@ -257,6 +257,7 @@ Rectangle {
                 postText: postEntry.postText
                 postPlainText: postEntry.postPlainText
                 postImages: postEntry.postImages
+                postLanguageLabels: postLanguages
                 postContentLabels: postLabels
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
@@ -335,8 +336,9 @@ Rectangle {
                 bookmarkNotFound: postBookmarkNotFound
 
                 onReply: {
+                    const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                                      author, postReplyRootUri, postReplyRootCid, postLanguage)
+                                      author, postReplyRootUri, postReplyRootCid, lang)
                 }
 
                 onRepost: {

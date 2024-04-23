@@ -16,6 +16,7 @@ Rectangle {
     required property var postRecordWithMedia // record_with_media_view
     required property bool postIsReply
     required property basicprofile postReplyToAuthor
+    required property list<language> postLanguages
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -89,6 +90,7 @@ Rectangle {
                 postText: draftPostView.postText
                 postPlainText: draftPostView.postPlainText
                 postImages: draftPostView.postImages
+                postLanguageLabels: draftPostView.postLanguages
                 postContentLabels: draftPostView.postLabels
                 postContentVisibility: draftPostView.postContentVisibility
                 postContentWarning: draftPostView.postContentWarning

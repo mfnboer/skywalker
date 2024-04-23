@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "external_view.h"
 #include "image_view.h"
+#include "language_utils.h"
 #include "normalized_word_index.h"
 #include "profile.h"
 #include "record_view.h"
@@ -95,8 +96,7 @@ public:
 
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
 
-    // Returns short language codes
-    const std::vector<QString>& getLanguages() const;
+    const LanguageList& getLanguages() const;
     bool hasLanguage() const;
 
     std::vector<QString> getHashtags() const override;
@@ -139,8 +139,7 @@ private:
     // Placeholder for a bookmarked post that cannot be found (probably deleted).
     bool mBookmarkNotFound = false;
 
-    std::vector<QString> mLanguageCodes;
-
+    LanguageList mLanguages;
     static int sNextGapId;
 };
 

@@ -8,6 +8,7 @@ Column {
     required property string postText
     required property list<imageview> postImages
     required property date postDateTime
+    required property list<language> postLanguageLabels
     required property list<contentlabel> postContentLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -181,7 +182,16 @@ Column {
         return unicodeFonts.onlyEmojis(postPlainText)
     }
 
+    function mustShowLangaugess() {
+        return root.getSkywalker().getUserSettings().getShowLanguageTags()
+    }
+
     function showPostAttachements() {
+        if (postLanguageLabels.length > 0 && mustShowLangaugess()) {
+            let component = Qt.createComponent("LanguageLabels.qml")
+            component.createObject(postBody, {languageLabels: postLanguageLabels})
+        }
+
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             let component = Qt.createComponent(qmlFile)
