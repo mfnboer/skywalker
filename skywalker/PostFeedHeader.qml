@@ -155,8 +155,12 @@ Rectangle {
             console.debug(lang)
         }
 
-        let msg = qsTr("Language filter is active. Only posts with the following languages are shown: ") +
-                  languageList.join(", ") + "<br><br>"
+        let msg = qsTr("Language filter is active.") + "<br><br>"
+
+        if (languageList.length > 0) {
+            msg += qsTr("Only posts with the following languages will be shown:") +
+                    " " + languageList.join(", ") + "<br><br>"
+        }
 
         if (!showPostWithMissingLanguage)
             msg += qsTr("Posts without language tags will not be shown.")

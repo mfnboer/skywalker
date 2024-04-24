@@ -22,5 +22,10 @@ Connections {
                 console.warn("fullPageHeight not set!")
         }
     }
+
+    Component.onDestruction: {
+        if (fullPageHeight > 0)
+            parent.height = fullPageHeight
+    }
 }
 
