@@ -1,5 +1,5 @@
-next
-====
+2.2
+===
 * Play gifs posted with the Bluesky web app
 * Set language on post
 * Settings to filter feed posts on language (optional)
