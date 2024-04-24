@@ -10,6 +10,10 @@ Rectangle {
     property string feedAvatar
     property bool showAsHome: false
     property bool isHomeFeed: false
+    property bool showLanguageFilter: false
+    property bool languageFilterEnabled: false
+    property list<language> filteredLanguages
+    property bool showPostWithMissingLanguage: true
 
     signal closed
     signal feedAvatarClicked
@@ -26,6 +30,7 @@ Rectangle {
         id: headerRow
         width: parent.width
         height: guiSettings.headerHeight
+        spacing: 0
 
         SvgButton {
             id: backButton
@@ -89,6 +94,15 @@ Rectangle {
             }
         }
 
+        SvgButton {
+            svg: svgOutline.language
+            iconColor: guiSettings.headerTextColor
+            Material.background: "transparent"
+            accessibleName: qsTr("language filter active")
+            visible: showLanguageFilter
+            onClicked: showLanguageFilterDetails()
+        }
+
         FeedAvatar {
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
@@ -130,5 +144,25 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function showLanguageFilterDetails() {
+        let languageList = []
+
+        for (let i = 0; i < filteredLanguages.length; ++i) {
+            const lang = `${filteredLanguages[i].nativeName} (${filteredLanguages[i].shortCode})`
+            languageList.push(lang)
+            console.debug(lang)
+        }
+
+        let msg = qsTr("Language filter is active. Only posts with the following languages are shown: ") +
+                  languageList.join(", ") + "<br><br>"
+
+        if (!showPostWithMissingLanguage)
+            msg += qsTr("Posts without language tags will not be shown.")
+        else
+            msg += qsTr("Posts without language tags will be shown.")
+
+        guiSettings.notice(root, msg)
     }
 }

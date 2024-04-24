@@ -142,6 +142,9 @@ public:
 
     void sync() { mSettings.sync(); }
 
+signals:
+    void contentLanguageFilterChanged();
+
 private:
     QString key(const QString& did, const QString& subkey) const;
     void cleanup();

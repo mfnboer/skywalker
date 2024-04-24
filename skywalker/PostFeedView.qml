@@ -26,6 +26,10 @@ ListView {
         feedName: postFeedView.model.feedName
         feedAvatar: postFeedView.model.getGeneratorView().avatar
         showAsHome: postFeedView.showAsHome
+        showLanguageFilter: postFeedView.model.languageFilterConfigured
+        languageFilterEnabled: postFeedView.model.languageFilterEnabled
+        filteredLanguages: postFeedView.model.filteredLanguages
+        showPostWithMissingLanguage: postFeedView.model.showPostWithMissingLanguage
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)

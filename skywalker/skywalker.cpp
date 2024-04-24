@@ -46,13 +46,13 @@ Skywalker::Skywalker(QObject* parent) :
     mContentFilter(mUserPreferences),
     mBookmarks(this),
     mMutedWords(this),
-    mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
-                   mBookmarks, mMutedWords, mSeenHashtags, mUserPreferences, mUserSettings, this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
-    mUserSettings(this)
+    mUserSettings(this),
+    mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+                   mBookmarks, mMutedWords, mSeenHashtags, mUserPreferences, mUserSettings, this)
 {
     mBookmarks.setSkywalker(this);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });

@@ -27,6 +27,10 @@ ListView {
         isList: true
         feedAvatar: postListFeedView.model.getListView().avatar
         showAsHome: postListFeedView.showAsHome
+        showLanguageFilter: postListFeedView.model.languageFilterConfigured
+        languageFilterEnabled: postListFeedView.model.languageFilterEnabled
+        filteredLanguages: postListFeedView.model.filteredLanguages
+        showPostWithMissingLanguage: postListFeedView.model.showPostWithMissingLanguage
 
         onClosed: postListFeedView.closed()
         onFeedAvatarClicked: {

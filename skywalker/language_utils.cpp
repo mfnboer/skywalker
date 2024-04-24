@@ -37,7 +37,8 @@ QString LanguageUtils::getLanguageName(const QString& languageCode)
     return languageCode;
 }
 
-LanguageList LanguageUtils::getLanguages(const std::vector<QString>& langCodes)
+template<typename List>
+static LanguageList getLanguageList(const List& langCodes)
 {
     LanguageList languages;
     languages.reserve(langCodes.size());
@@ -49,6 +50,16 @@ LanguageList LanguageUtils::getLanguages(const std::vector<QString>& langCodes)
     }
 
     return languages;
+}
+
+LanguageList LanguageUtils::getLanguages(const std::vector<QString>& langCodes)
+{
+    return getLanguageList(langCodes);
+}
+
+LanguageList LanguageUtils::getLanguages(const QStringList& langCodes)
+{
+    return getLanguageList(langCodes);
 }
 
 QString LanguageUtils::getInputLanguage()

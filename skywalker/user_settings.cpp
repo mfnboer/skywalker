@@ -461,9 +461,15 @@ QStringList UserSettings::getContentLanguages(const QString& did) const
 
 void UserSettings::setContentLanguages(const QString& did, const QStringList& languages)
 {
+    const auto oldLangs = getContentLanguages(did);
     QStringList sortedLangs = languages;
     std::sort(sortedLangs.begin(), sortedLangs.end());
-    mSettings.setValue(key(did, "contentLanguages"), sortedLangs);
+
+    if (oldLangs != sortedLangs)
+    {
+        mSettings.setValue(key(did, "contentLanguages"), sortedLangs);
+        emit contentLanguageFilterChanged();
+    }
 }
 
 bool UserSettings::getShowUnknownContentLanguage(const QString& did) const
@@ -473,7 +479,13 @@ bool UserSettings::getShowUnknownContentLanguage(const QString& did) const
 
 void UserSettings::setShowUnknownContentLanguage(const QString& did, bool show)
 {
-    mSettings.setValue(key(did, "showUnknownContentLanguage"), show);
+    const bool oldShow = getShowUnknownContentLanguage(did);
+
+    if (oldShow != show)
+    {
+        mSettings.setValue(key(did, "showUnknownContentLanguage"), show);
+        emit contentLanguageFilterChanged();
+    }
 }
 
 bool UserSettings::getDefaultLanguageNoticeSeen() const

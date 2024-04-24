@@ -122,15 +122,13 @@ QString GifUtils::getTenorViewGif(const QString& link) const
 // Ad = medium GIF
 QString GifUtils::getTenorMediaGif(const QString& link) const
 {
-    QString gifLink = link;
+    const QUrl url(link);
 
-    if (link.endsWith(".mp4") || link.endsWith(".webm"))
+    if (!url.isValid())
+        return {};
+
+    if (url.path().endsWith(".mp4") || url.path().endsWith(".webm"))
     {
-        const QUrl url(link);
-
-        if (!url.isValid())
-            return {};
-
         auto pathParts = url.path().split("/", Qt::SkipEmptyParts);
 
         if (pathParts.size() < 2)
@@ -150,11 +148,12 @@ QString GifUtils::getTenorMediaGif(const QString& link) const
 
         pathParts[pathParts.size() - 2] = baseTenorId + "Ad";
         pathParts[pathParts.size() - 1] = baseFileName + ".gif";
-        gifLink = TENOR_MEDIA_PREFIX + pathParts.join("/");
+        const QString gifLink = TENOR_MEDIA_PREFIX + pathParts.join("/");
+        return gifLink;
     }
 
-    if (gifLink.endsWith(".gif"))
-        return gifLink;
+    if (url.path().endsWith(".gif"))
+        return link;
 
     return {};
 }

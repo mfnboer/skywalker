@@ -1,9 +1,10 @@
 next
 ====
+* Play gifs posted with the Bluesky web app
 * Set language on post
 * Settings to filter feed posts on language (optional)
-* Show creator of a label
 * Show language tags (optional)
+* Show creator of a label
 * Remove invite codes
 * Bug fixes
 

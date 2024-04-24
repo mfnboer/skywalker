@@ -288,7 +288,6 @@ private:
     BookmarksModel::Ptr mBookmarksModel;
     MutedWords mMutedWords;
     MutedWordsNoMutes mMutedWordsNoMutes;
-    PostFeedModel mTimelineModel;
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
@@ -322,6 +321,7 @@ private:
     FavoriteFeeds mFavoriteFeeds;
     UserSettings mUserSettings;
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
+    PostFeedModel mTimelineModel;
     bool mDebugLogging = false;
 };
 

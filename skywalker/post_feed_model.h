@@ -15,6 +15,10 @@ class PostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(bool languageFilterConfigured READ isLanguageFilterConfigured NOTIFY languageFilterConfiguredChanged FINAL)
+    Q_PROPERTY(bool languageFilterEnabled READ isLanguageFilterEnabled WRITE enableLanguageFilter NOTIFY languageFilterEnabledChanged FINAL)
+    Q_PROPERTY(LanguageList filteredLanguages READ getFilterdLanguages NOTIFY languageFilterConfiguredChanged FINAL)
+    Q_PROPERTY(bool showPostWithMissingLanguage READ showPostWithMissingLanguage NOTIFY languageFilterConfiguredChanged)
 
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
@@ -38,7 +42,11 @@ public:
     Q_INVOKABLE const ListView getListView() const { return mListView; }
     void setListView(const ListView& view) { mListView = view; }
 
-    void enableLanguageFilter(bool enabled) { mLanguageFilterEnabled = enabled; }
+    bool isLanguageFilterConfigured() const;
+    void enableLanguageFilter(bool enabled);
+    bool isLanguageFilterEnabled() const { return mLanguageFilterEnabled; }
+    LanguageList getFilterdLanguages() const;
+    bool showPostWithMissingLanguage() const;
 
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
@@ -69,6 +77,10 @@ public:
     int findTimestamp(QDateTime timestamp) const;
 
     void clear();
+
+signals:
+    void languageFilterConfiguredChanged();
+    void languageFilterEnabledChanged();
 
 private:
     struct CidTimestamp

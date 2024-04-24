@@ -42,6 +42,7 @@ public:
     static QString languageCodeToShortCode(const QString& languageCode);
     static QString getLanguageName(const QString& languageCode);
     static LanguageList getLanguages(const std::vector<QString>& langCodes);
+    static LanguageList getLanguages(const QStringList& langCodes);
     static QString getInputLanguage();
 
     explicit LanguageUtils(QObject* parent = nullptr);

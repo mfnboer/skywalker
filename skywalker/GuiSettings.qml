@@ -102,7 +102,7 @@ Item {
         message.show(question)
     }
 
-    function notice(parent, msg, onOkCb) {
+    function notice(parent, msg, onOkCb = () => {}) {
         let component = Qt.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Ok })
         message.onAccepted.connect(() => { message.destroy(); onOkCb() })

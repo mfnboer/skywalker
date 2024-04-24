@@ -19,7 +19,36 @@ PostFeedModel::PostFeedModel(const QString& feedName,
     mUserPreferences(userPrefs),
     mUserSettings(userSettings),
     mFeedName(feedName)
-{}
+{
+    connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
+            [this]{ emit languageFilterConfiguredChanged(); });
+}
+
+bool PostFeedModel::isLanguageFilterConfigured() const
+{
+    return !mUserSettings.getShowUnknownContentLanguage(mUserDid) ||
+           !mUserSettings.getContentLanguages(mUserDid).empty();
+}
+
+void PostFeedModel::enableLanguageFilter(bool enabled)
+{
+    if (enabled != mLanguageFilterEnabled)
+    {
+        mLanguageFilterEnabled = enabled;
+        emit languageFilterEnabledChanged();
+    }
+}
+
+LanguageList PostFeedModel::getFilterdLanguages() const
+{
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
+    return LanguageUtils::getLanguages(langs);
+}
+
+bool PostFeedModel::showPostWithMissingLanguage() const
+{
+    return mUserSettings.getShowUnknownContentLanguage(mUserDid);
+}
 
 int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 {
