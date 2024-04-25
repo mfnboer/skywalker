@@ -1,5 +1,5 @@
-next
-====
+2.2.1
+=====
 * Post gifs in format compatible with latest Bluesky version.
 
 2.2

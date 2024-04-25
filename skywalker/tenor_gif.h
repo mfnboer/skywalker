@@ -1,8 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-#include <QDataStream>
-#include <QJsonObject>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -42,9 +40,7 @@ public:
         mSmallUrl(smallUrl), mSmallSize(smallSize),
         mImageUrl(imageUrl), mImageSize(imageSize),
         mOverviewSize(mSmallSize)
-    {
-        fixSize();
-    }
+    {}
 
     Q_INVOKABLE bool isNull() const { return mUrl.isEmpty(); }
     const QString& getId() const { return mId; }
@@ -61,12 +57,7 @@ public:
     // Get a URL that is compatible with Bluesky
     Q_INVOKABLE const QString getUrlForPosting() const;
 
-    QJsonObject toJson() const;
-    static TenorGif fromJson(const QJsonObject& json);
-
 private:
-    void fixSize();
-
     QString mId;
     QString mDescription;
     QString mSearchTerm;
