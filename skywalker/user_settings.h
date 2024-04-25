@@ -111,8 +111,8 @@ public:
     bool getRewindToLastSeenPost(const QString& did) const;
     void setRewindToLastSeenPost(const QString& did, bool rewind);
 
-    TenorGifList getRecentGifs(const QString& did) const;
-    void setRecentGifs(const QString& did, const TenorGifList& gifs);
+    QStringList getRecentGifs(const QString& did) const; // Returns list of GIF id's
+    void setRecentGifs(const QString& did, const QStringList& gifIds);
 
     QStringList getLastSearches(const QString& did) const;
     void setLastSearches(const QString& did, const QStringList& lastSearches);

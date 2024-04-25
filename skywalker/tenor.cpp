@@ -9,6 +9,8 @@ namespace Skywalker {
 namespace {
 
 constexpr char const* TENOR_BASE_URL = "https://tenor.googleapis.com/v2/";
+constexpr char const* MEDIA_FILTER = "tinygif,gif,gifpreview";
+constexpr char const* CONTENT_FILTER = "medium";
 constexpr int MAX_RECENT_GIFS = 25;
 
 }
@@ -67,7 +69,9 @@ QUrl Tenor::buildUrl(const QString& endpoint, const Params& params) const
     QUrlQuery query;
     query.addQueryItem("key", QUrl::toPercentEncoding(mApiKey));
     query.addQueryItem("client_key", QUrl::toPercentEncoding(mClientKey));
-    query.addQueryItem("locale", QUrl::toPercentEncoding(mLocale));
+
+    if (endpoint != "posts")
+        query.addQueryItem("locale", QUrl::toPercentEncoding(mLocale));
 
     for (const auto& kv : params)
         query.addQueryItem(kv.first, QUrl::toPercentEncoding(kv.second));
@@ -88,8 +92,43 @@ void Tenor::searchRecentGifs()
     mOverviewModel.clear();
     mQuery.clear();
 
-    const TenorGifList gifs = getRecentGifs();
-    mOverviewModel.addGifs(gifs);
+    const QStringList gifIdList = getRecentGifs();
+
+    if (gifIdList.empty())
+        return;
+
+    Q_ASSERT(gifIdList.size() <= 50); // maximum allowed by Tenor
+    Params params{{"ids", gifIdList.join(',')},
+                  {"media_filter", MEDIA_FILTER}};
+
+    setSearchInProgress(true);
+    QNetworkRequest request(buildUrl("posts", params));
+    QNetworkReply* reply = sNetwork.get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        searchGifsFinished(reply, "");
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+            errCode << reply->errorString();
+    });
+
+    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        qWarning() << "Posts SSL error:" <<  reply->request().url();
+    });
 }
 
 void Tenor::searchGifs(const QString& query, const QString& pos)
@@ -112,8 +151,8 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
     }
 
     Params params{{"q", query},
-                  {"media_filter", "tinygif,gifpreview"},
-                  {"contentfilter", "medium"}};
+                  {"media_filter", MEDIA_FILTER},
+                  {"contentfilter", CONTENT_FILTER}};
 
     if (!pos.isEmpty())
         params.append({"pos", pos});
@@ -180,13 +219,13 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
         if (getNext)
             getNext();
         else {
-            allCategoriesRetrieved();
+            getRecentCategory();
         }
 
         return;
     }
 
-    Params params{{"type", type}, {"contentfilter", "medium"}};
+    Params params{{"type", type}, {"contentfilter", CONTENT_FILTER}};
     QNetworkRequest request(buildUrl("categories", params));
     QNetworkReply* reply = sNetwork.get(request);
 
@@ -199,7 +238,7 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
         if (getNext)
             getNext();
         else
-            allCategoriesRetrieved();
+            getRecentCategory();
     });
 
     connect(reply, &QNetworkReply::errorOccurred, this, [reply](auto errCode){
@@ -212,6 +251,122 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
     });
 }
 
+void Tenor::getRecentCategory()
+{
+    if (mRecentCategory)
+    {
+        allCategoriesRetrieved();
+        return;
+    }
+
+    const QStringList gifIds = getRecentGifs();
+
+    if (gifIds.empty())
+    {
+        allCategoriesRetrieved();
+        return;
+    }
+
+    Params params{{"ids", gifIds.front()},
+                  {"media_filter", MEDIA_FILTER}};
+
+    QNetworkRequest request(buildUrl("posts", params));
+    QNetworkReply* reply = sNetwork.get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setRecentCategory(reply);
+        allCategoriesRetrieved();
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
+        if (!presence)
+            return;
+
+        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+            errCode << reply->errorString();
+        allCategoriesRetrieved();
+    });
+
+    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        qWarning() << "Posts SSL error:" <<  reply->request().url();
+        allCategoriesRetrieved();
+    });
+}
+
+void Tenor::setRecentCategory(QNetworkReply* reply)
+{
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qWarning() << "Get recent category failed:" << reply->request().url() << "error:" <<
+            reply->error() << reply->errorString();
+        return;
+    }
+
+    const auto data = reply->readAll();
+    const QJsonDocument json(QJsonDocument::fromJson(data));
+    const auto jsonObject = json.object();
+    const ATProto::XJsonObject xjson(jsonObject);
+    const auto results = xjson.getOptionalArray("results");
+
+    if (!results)
+    {
+        qWarning("Failed to get recent category");
+        return;
+    }
+
+    const auto& resultElem = results->first();
+
+    try {
+        const TenorGif gif = toTenorGif(resultElem, "");
+        setRecentCategory(gif);
+    }
+    catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "Invalid JSON:" << e.msg();
+    }
+}
+
+void Tenor::setRecentCategory(const TenorGif& gif)
+{
+    mRecentCategory = TenorCategory(gif.getSmallUrl(), tr("recently used"), true);
+}
+
+TenorGif Tenor::toTenorGif(const QJsonValue& resultElem, const QString& query) const
+{
+    if (!resultElem.isObject())
+        throw ATProto::InvalidJsonException("Non-object element");
+
+    const auto resultJson = resultElem.toObject();
+    const ATProto::XJsonObject resultXJson(resultJson);
+    const auto id = resultXJson.getRequiredString("id");
+    const auto description = resultXJson.getOptionalString("content_description", "");
+    qDebug() << id << description;
+
+    const auto mediaFormatsJson = resultXJson.getRequiredJsonObject("media_formats");
+    const ATProto::XJsonObject mediaFormatsXJson(mediaFormatsJson);
+    const auto smallJson = mediaFormatsXJson.getRequiredJsonObject("tinygif");
+    const auto smallFormat = mediaFormatFromJson(smallJson);
+    const auto imageJson = mediaFormatsXJson.getRequiredJsonObject("gifpreview");
+    const auto imageFormat = mediaFormatFromJson(imageJson);
+
+    // The mediumgif format seems to be better as it is smaller without
+    // much loss of quality. However Bluesky only plays the gif format.
+    const auto gifJson = mediaFormatsXJson.getRequiredJsonObject("gif");
+    const auto gifFormat =  mediaFormatFromJson(gifJson);
+
+    const TenorGif tenorGif(id, description, query,
+                            gifFormat.mUrl, gifFormat.mSize,
+                            smallFormat.mUrl, smallFormat.mSize,
+                            imageFormat.mUrl, imageFormat.mSize);
+
+    return tenorGif;
+}
+
 void Tenor::registerShare(const TenorGif& gif)
 {
     // ID will be empty if the gif was saved as part of a draft post
@@ -221,7 +376,11 @@ void Tenor::registerShare(const TenorGif& gif)
     qDebug() << "Register share:" << gif.getDescription() <<
             "id:" << gif.getId() << "q:" << gif.getSearchTerm();
 
-    Params params{{"id", gif.getId()}, {"q", gif.getSearchTerm()}};
+    Params params{{"id", gif.getId()}};
+
+    if (!gif.getSearchTerm().isEmpty())
+        params.push_back({"q", gif.getSearchTerm()});
+
     QNetworkRequest request(buildUrl("registershare", params));
     QNetworkReply* reply = sNetwork.get(request);
 
@@ -251,24 +410,25 @@ void Tenor::addRecentGif(const TenorGif& gif)
 {
     const QString did = mSkywalker->getUserDid();
     auto* settings = mSkywalker->getUserSettings();
-    TenorGifList gifs = settings->getRecentGifs(did);
+    QStringList gifIds = settings->getRecentGifs(did);
 
-    for (auto it = gifs.cbegin(); it != gifs.cend(); ++it)
+    for (auto it = gifIds.cbegin(); it != gifIds.cend(); ++it)
     {
-        const auto& recentGif = *it;
+        const auto& recentGifId = *it;
 
-        if (gif.getId() == recentGif.getId())
+        if (gif.getId() == recentGifId)
         {
-            gifs.erase(it);
+            gifIds.erase(it);
             break;
         }
     }
 
-    while (gifs.size() >= MAX_RECENT_GIFS)
-        gifs.pop_back();
+    while (gifIds.size() >= MAX_RECENT_GIFS)
+        gifIds.pop_back();
 
-    gifs.push_front(gif);
-    settings->setRecentGifs(did, gifs);
+    gifIds.push_front(gif.getId());
+    settings->setRecentGifs(did, gifIds);
+    setRecentCategory(gif);
 }
 
 void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
@@ -298,35 +458,9 @@ void Tenor::searchGifsFinished(QNetworkReply* reply, const QString& query)
 
     for (const auto& resultElem : *results)
     {
-        if (!resultElem.isObject())
-        {
-            qWarning() << "Non-object element in results";
-            continue;
-        }
-
         try {
-            const auto resultJson = resultElem.toObject();
-            const ATProto::XJsonObject resultXJson(resultJson);
-            const auto id = resultXJson.getRequiredString("id");
-            const auto description = resultXJson.getOptionalString("content_description", "");
-            qDebug() << id << description;
-
-            // Would be nicer to add URL to an MP4 or GIF directly.
-            // However the itemurl is compatible with the official Bluesky app.
-            const auto gifViewUrl = resultXJson.getRequiredString("itemurl");
-
-            const auto mediaFormatsJson = resultXJson.getRequiredJsonObject("media_formats");
-            const ATProto::XJsonObject mediaFormatsXJson(mediaFormatsJson);
-            const auto smallJson = mediaFormatsXJson.getRequiredJsonObject("tinygif");
-            const auto smallFormat = mediaFormatFromJson(smallJson);
-            const auto imageJson = mediaFormatsXJson.getRequiredJsonObject("gifpreview");
-            const auto imageFormat = mediaFormatFromJson(imageJson);
-
-            const TenorGif tenorGif(id, description, query, gifViewUrl,
-                                    smallFormat.mUrl, smallFormat.mSize,
-                                    imageFormat.mUrl, imageFormat.mSize);
-
-            tenorGifList.append(tenorGif);
+            const TenorGif gif = toTenorGif(resultElem, query);
+            tenorGifList.append(gif);
         }
         catch (ATProto::InvalidJsonException& e) {
             qWarning() << "Invalid JSON:" << e.msg();
@@ -350,6 +484,9 @@ Tenor::MediaFormat Tenor::mediaFormatFromJson(const QJsonObject& json) const
 
     mediaFormat.mSize.setWidth(dimsArray[0].toInt());
     mediaFormat.mSize.setHeight(dimsArray[1].toInt());
+
+    if (mediaFormat.mSize.isEmpty())
+        throw ATProto::InvalidJsonException("Invalid size");
 
     qDebug() << mediaFormat.mUrl << mediaFormat.mSize;
     return mediaFormat;
@@ -404,22 +541,12 @@ bool Tenor::categoriesFinished(QNetworkReply* reply, TenorCategoryList& category
     return true;
 }
 
-void Tenor::addRecentCategory(TenorCategoryList& categoryList)
-{
-    const TenorGifList gifs = getRecentGifs();
-
-    if (!gifs.empty())
-    {
-        const TenorGif& firstGif = gifs.front();
-        TenorCategory recent(firstGif.getSmallUrl(), tr("recently used"), true);
-        categoryList.push_back(recent);
-    }
-}
-
 void Tenor::allCategoriesRetrieved()
 {
     TenorCategoryList categoryList;
-    addRecentCategory(categoryList);
+
+    if (mRecentCategory)
+        categoryList.push_back(*mRecentCategory);
 
     int i = 0;
     int j = 0;
@@ -436,12 +563,12 @@ void Tenor::allCategoriesRetrieved()
     emit categories(categoryList);
 }
 
-TenorGifList Tenor::getRecentGifs()
+QStringList Tenor::getRecentGifs()
 {
     const QString did = mSkywalker->getUserDid();
     auto* settings = mSkywalker->getUserSettings();
-    TenorGifList gifs = settings->getRecentGifs(did);
-    return gifs;
+    QStringList gifIds = settings->getRecentGifs(did);
+    return gifIds;
 }
 
 }

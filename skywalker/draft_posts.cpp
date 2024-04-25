@@ -328,8 +328,18 @@ static void setGif(DraftPostData* data, const ExternalView* externalView)
         const int smallWidth = query.queryItemValue("smallWidth").toInt();
         const int smallHeight = query.queryItemValue("smallHeight").toInt();
 
+        int gifWidth = -1;
+        int gifHeight= -1;
+
+        if (query.hasQueryItem("gifWidth") && query.hasQueryItem("gifHeight"))
+        {
+            gifWidth = query.queryItemValue("gifWidth").toInt();
+            gifHeight = query.queryItemValue("gifHeight").toInt();
+        }
+
         // NOTE: The id is set to empty. This will avoid registration in Tenor::registerShare
-        TenorGif gif("", externalView->getTitle(), "", uri.toString(QUrl::RemoveQuery),
+        TenorGif gif("", externalView->getTitle(), "",
+                     uri.toString(QUrl::RemoveQuery), QSize(gifWidth, gifHeight),
                      smallUrl, QSize(smallWidth, smallHeight),
                      externalView->getThumbUrl(), QSize(1, 1));
         data->setGif(gif);
@@ -1329,6 +1339,8 @@ void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const Te
     // Pack all gif properties into the URI.
     QUrlQuery query{
         { "imageUrl", gif.getImageUrl() },
+        { "gifWidth", QString::number(gif.getSize().width()) },
+        { "gifHeight", QString::number(gif.getSize().height()) },
         { "smallWidth", QString::number(gif.getSmallSize().width()) },
         { "smallHeight", QString::number(gif.getSmallSize().height()) },
         { "smallUrl", gif.getSmallUrl() }

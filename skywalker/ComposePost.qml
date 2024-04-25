@@ -1458,7 +1458,7 @@ Page {
             tenor.registerShare(postItem.gif)
 
             let gifCard = linkCardReader.makeLinkCard(
-                    postItem.gif.url,
+                    postItem.gif.getUrlForPosting(),
                     `${postItem.gif.description} (via Tenor)\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
                     qsTr("This GIF has been posted from Skywalker for Android. " +
                          "Get Skywalker from Google Play.") +

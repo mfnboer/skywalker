@@ -50,11 +50,14 @@ private:
     QUrl buildUrl(const QString& endpoint, const Params& params) const;
 
     void getCategories(const QString& type, TenorCategoryList& categoryList, const std::function<void()>& getNext = {});
+    void getRecentCategory();
+    void setRecentCategory(QNetworkReply* reply);
+    void setRecentCategory(const TenorGif& gif);
+    TenorGif toTenorGif(const QJsonValue& resultElem, const QString& query) const;
     void searchGifsFinished(QNetworkReply* reply, const QString& query);
     bool categoriesFinished(QNetworkReply* reply, TenorCategoryList& categoryList);
-    void addRecentCategory(TenorCategoryList& categoryList);
     void allCategoriesRetrieved();
-    TenorGifList getRecentGifs();
+    QStringList getRecentGifs();
 
     struct MediaFormat
     {
@@ -69,6 +72,7 @@ private:
     QString mLocale;
     TenorCategoryList mCachedFeaturedCategories;
     TenorCategoryList mCachedTrendingCategories;
+    std::optional<TenorCategory> mRecentCategory;
     int mWidth = 300;
     int mSpacing = 4;
     TenorOverviewModel mOverviewModel;

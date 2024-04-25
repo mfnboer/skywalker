@@ -20,7 +20,30 @@ QSize getRequiredSize(const QJsonObject& json, const QString& key)
     sz.setWidth(sizeXJson.getRequiredInt("width"));
     sz.setHeight(sizeXJson.getRequiredInt("height"));
 
+    if (sz.isEmpty())
+        throw ATProto::InvalidJsonException("Invalid size");
+
     return sz;
+}
+
+QSize getOptionalSize(const QJsonObject& json, const QString& key)
+{
+    if (json.contains(key))
+        return getRequiredSize(json, key);
+
+    return QSize();
+}
+
+const QString TenorGif::getUrlForPosting() const
+{
+    // Without these parameters Bluesky will not play the GIF.
+    QUrl gifUrl(mUrl);
+    QUrlQuery query{
+        {"hh", QString::number(mSize.height())},
+        {"ww", QString::number(mSize.width())}
+    };
+    gifUrl.setQuery(query);
+    return gifUrl.toString();
 }
 
 QJsonObject TenorGif::toJson() const
@@ -30,6 +53,7 @@ QJsonObject TenorGif::toJson() const
     json.insert("description", mDescription);
     json.insert("searchTerm", mSearchTerm);
     json.insert("url", mUrl);
+    jsonInsert(json, "size", mSize);
     json.insert("smallUrl", mSmallUrl);
     jsonInsert(json, "smallSize", mSmallSize);
     json.insert("imageUrl", mImageUrl);
@@ -48,6 +72,7 @@ TenorGif TenorGif::fromJson(const QJsonObject& json)
             xjson.getRequiredString("description"),
             xjson.getRequiredString("searchTerm"),
             xjson.getRequiredString("url"),
+            getOptionalSize(json, "size"),
             xjson.getRequiredString("smallUrl"),
             getRequiredSize(json, "smallSize"),
             xjson.getRequiredString("imageUrl"),
@@ -62,19 +87,16 @@ TenorGif TenorGif::fromJson(const QJsonObject& json)
     return {};
 }
 
-QDataStream& operator<<(QDataStream& out, const TenorGif& gif)
+void TenorGif::fixSize()
 {
-    QJsonDocument json(gif.toJson());
-    return out << json.toJson(QJsonDocument::Compact);
-}
+    if (!mSize.isEmpty())
+        return;
 
-QDataStream& operator>>(QDataStream& in, TenorGif& gif)
-{
-    QByteArray data;
-    in >> data;
-    const auto json = QJsonDocument::fromJson(data);
-    gif = TenorGif::fromJson(json.object());
-    return in;
+    Q_ASSERT(!mSmallSize.isEmpty());
+    const qreal ratio = 498.0 / mSmallSize.width(); // 498 is a common width for gifs.
+    mSize = mSmallSize * ratio;
+
+    qDebug() << "No valid size set, estimated size:" << mSize;
 }
 
 }

@@ -1,3 +1,7 @@
+next
+====
+* Post gifs in format compatible with latest Bluesky version.
+
 2.2
 ===
 * Play gifs posted with the Bluesky web app

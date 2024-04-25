@@ -386,10 +386,10 @@ void UserSettings::setRewindToLastSeenPost(const QString& did, bool rewind)
     mSettings.setValue(key(did, "rewindToLastSeenPost"), rewind);
 }
 
-TenorGifList UserSettings::getRecentGifs(const QString& did) const
+QStringList UserSettings::getRecentGifs(const QString& did) const
 {
     const QStringList list = mSettings.value(key(did, "recentGifs")).toStringList();
-    TenorGifList gifList;
+    QStringList gifIdList;
 
     for (const auto& s : list)
     {
@@ -397,21 +397,26 @@ TenorGifList UserSettings::getRecentGifs(const QString& did) const
             continue;
 
         const auto json = QJsonDocument::fromJson(s.toUtf8());
-        const auto gif = TenorGif::fromJson(json.object());
+        const ATProto::XJsonObject& xjson(json.object());
+        const auto id = xjson.getOptionalString("id");
 
-        if (!gif.isNull())
-            gifList.push_back(gif);
+        if (id)
+            gifIdList.push_back(*id);
     }
 
-    return gifList;
+    return gifIdList;
 }
 
-void UserSettings::setRecentGifs(const QString& did, const TenorGifList& gifs)
+void UserSettings::setRecentGifs(const QString& did, const QStringList& gifIds)
 {
     QStringList list;
 
-    for (const auto& gif : gifs) {
-        const QJsonDocument jsonDoc(gif.toJson());
+    // The ID's are stored as JSON objects in older versions we stored the all
+    // GIF attributes in a JSON object.
+    for (const auto& id : gifIds) {
+        QJsonObject json;
+        json.insert("id", id);
+        const QJsonDocument jsonDoc(json);
         list.push_back(jsonDoc.toJson(QJsonDocument::Compact));
     }
 
