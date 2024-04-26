@@ -28,6 +28,7 @@ qt_add_executable(test_skywalker
     test_unicode_fonts.h)
 
 set(LINK_LIBS
+    PRIVATE libatproto
     PRIVATE libskywalker
     PRIVATE Qt6::Test
     PRIVATE Qt6::Core

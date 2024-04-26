@@ -288,7 +288,7 @@ void OffLineMessageChecker::resumeSession()
         [this](const QString& error, const QString& msg){
             qWarning() << "Session could not be resumed:" << error << " - " << msg;
 
-            if (error == "ExpiredToken")
+            if (error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
                 login();
             else
                 exit(EXIT_OK);

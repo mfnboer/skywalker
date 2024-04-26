@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
+import atproto
 
 Page {
     required property var skywalker
@@ -635,8 +636,7 @@ Page {
         }
 
         function retryGetFeed(modelId, error, msg) {
-            // TODO: define error strings in a central place
-            if (error === "BlockedActor" && itemAtIndex(0).retryGetFeed(modelId))
+            if (error === ATProtoErrorMsg.BLOCKED_ACTOR && itemAtIndex(0).retryGetFeed(modelId))
                 return
 
             statusPopup.show(msg, QEnums.STATUS_LEVEL_ERROR)
