@@ -1,3 +1,7 @@
+next
+====
+* Two-factor authentication support.
+
 2.2.1
 =====
 * Post gifs in format compatible with latest Bluesky version.

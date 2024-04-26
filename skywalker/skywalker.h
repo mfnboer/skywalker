@@ -57,7 +57,7 @@ public:
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
 
-    Q_INVOKABLE void login(const QString user, QString password, const QString host);
+    Q_INVOKABLE void login(const QString user, QString password, const QString host, const QString authFactorToken);
     Q_INVOKABLE void resumeSession();
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
@@ -185,7 +185,7 @@ public:
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
-    std::optional<QString> makeOptionalCursor(const QString& cursor) const;
+    std::optional<QString> makeOptionalString(const QString& str) const;
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
     HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
@@ -193,7 +193,7 @@ public:
 
 signals:
     void loginOk();
-    void loginFailed(QString error, QString host, QString handle);
+    void loginFailed(QString error, QString msg, QString host, QString handle, QString password);
     void resumeSessionOk();
     void resumeSessionExpired();
     void resumeSessionFailed(QString error);

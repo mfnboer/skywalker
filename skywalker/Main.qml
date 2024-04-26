@@ -94,16 +94,16 @@ ApplicationWindow {
 
         onLoginOk: start()
 
-        onLoginFailed: (error, host, handleOrDid) => {
+        onLoginFailed: (error, msg, host, handleOrDid, password) => {
             closeStartupStatus()
 
             if (handleOrDid.startsWith("did:")) {
                 const did = handleOrDid
                 const userSettings = getUserSettings()
                 const user = userSettings.getUser(did)
-                loginUser(host, user.handle, did, error)
+                loginUser(host, user.handle, did, error, msg, password)
             } else {
-                loginUser(host, handleOrDid, "", error)
+                loginUser(host, handleOrDid, "", error, msg, password)
             }
         }
 
@@ -661,17 +661,24 @@ ApplicationWindow {
         pushStack(page, StackView.Immediate)
     }
 
-    function loginUser(host, handle, did, error="") {
+    function loginUser(host, handle, did, error="", msg="", password="") {
         let component = Qt.createComponent("Login.qml")
-        let page = component.createObject(root, { host: host, user: handle, did:did, error: error })
+        let page = component.createObject(root, {
+                host: host,
+                user: handle,
+                did:did,
+                errorCode: error,
+                errorMsg: msg,
+                password: password
+        })
         page.onCanceled.connect(() => {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did) => {
+        page.onAccepted.connect((host, handle, password, did, authFactorToken) => {
                 popStack()
                 const user = did ? did : handle
-                skywalkerLogin(user, password, host)
+                skywalkerLogin(user, password, host, authFactorToken)
         })
         pushStack(page)
     }
@@ -761,9 +768,9 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(user, password, host) {
+    function skywalkerLogin(user, password, host, authFactorToken) {
         showStartupStatus()
-        skywalker.login(user, password, host)
+        skywalker.login(user, password, host, authFactorToken)
     }
 
     function signOutCurrentUser() {

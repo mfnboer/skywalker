@@ -103,12 +103,12 @@ Skywalker::~Skywalker()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString user, QString password, const QString host)
+void Skywalker::login(const QString user, QString password, const QString host, const QString authFactorToken)
 {
     qDebug() << "Login:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
-    mBsky->createSession(user, password,
+    mBsky->createSession(user, password, makeOptionalString(authFactorToken),
         [this, host, user, password]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
@@ -117,10 +117,10 @@ void Skywalker::login(const QString user, QString password, const QString host)
             emit loginOk();
             startRefreshTimers();
         },
-        [this, host, user](const QString& error, const QString& msg){
+        [this, host, user, password](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(msg, host, user);
+            emit loginFailed(error, msg, host, user, password);
         });
 }
 
@@ -439,7 +439,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         return;
     }
 
-    mBsky->getList(uri, 100, makeOptionalCursor(cursor),
+    mBsky->getList(uri, 100, makeOptionalString(cursor),
         [this, maxPages](auto output){
             mMutedReposts.setListCreated(true);
 
@@ -505,7 +505,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, makeOptionalCursor(cursor),
+    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, makeOptionalString(cursor),
         [this, tillTimestamp, maxPages, cursor](auto feed){
             mTimelineModel.addFeed(std::move(feed));
             setGetTimelineInProgress(false);
@@ -611,7 +611,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(limit, makeOptionalCursor(cursor),
+    mBsky->getTimeline(limit, makeOptionalString(cursor),
        [this, maxPages, minEntries, cursor](auto feed){
             setGetTimelineInProgress(false);
             int topPostIndex = -1;
@@ -793,7 +793,7 @@ void Skywalker::getFeed(int modelId, int limit, int maxPages, int minEntries, co
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetFeedInProgress(true);
 
-    mBsky->getFeed(feedUri, limit, makeOptionalCursor(cursor), langs,
+    mBsky->getFeed(feedUri, limit, makeOptionalString(cursor), langs,
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             setGetFeedInProgress(false);
             int addedPosts = 0;
@@ -884,7 +884,7 @@ void Skywalker::getListFeed(int modelId, int limit, int maxPages, int minEntries
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetFeedInProgress(true);
 
-    mBsky->getListFeed(listUri, limit, makeOptionalCursor(cursor), langs,
+    mBsky->getListFeed(listUri, limit, makeOptionalString(cursor), langs,
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             setGetFeedInProgress(false);
             int addedPosts = 0;
@@ -1063,13 +1063,13 @@ void Skywalker::getPostThread(const QString& uri)
         });
 }
 
-std::optional<QString> Skywalker::makeOptionalCursor(const QString& cursor) const
+std::optional<QString> Skywalker::makeOptionalString(const QString& str) const
 {
-    std::optional<QString> optionalCursor;
-    if (!cursor.isEmpty())
-        optionalCursor = cursor;
+    std::optional<QString> optionalString;
+    if (!str.isEmpty())
+        optionalString = str;
 
-    return optionalCursor;
+    return optionalString;
 }
 
 const PostThreadModel* Skywalker::getPostThreadModel(int id) const
@@ -1173,7 +1173,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
     }
 
     setGetNotificationsInProgress(true);
-    mBsky->listNotifications(limit, makeOptionalCursor(cursor), {},
+    mBsky->listNotifications(limit, makeOptionalString(cursor), {},
         [this, cursor](auto list){
             const bool clearFirst = cursor.isEmpty();
             mNotificationListModel.addNotifications(std::move(list), *mBsky, clearFirst);
@@ -1322,7 +1322,7 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     qDebug() << "Get author feed:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author.getDid(), limit, makeOptionalCursor(cursor),
+    mBsky->getAuthorFeed(author.getDid(), limit, makeOptionalString(cursor),
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
@@ -1413,7 +1413,7 @@ void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, 
     qDebug() << "Get author likes:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getActorLikes(author.getDid(), limit, makeOptionalCursor(cursor),
+    mBsky->getActorLikes(author.getDid(), limit, makeOptionalString(cursor),
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
@@ -1550,7 +1550,7 @@ void Skywalker::getAuthorFeedList(const QString& did, int id, const QString& cur
     }
 
     setGetFeedInProgress(true);
-    mBsky->getActorFeeds(did, {}, makeOptionalCursor(cursor),
+    mBsky->getActorFeeds(did, {}, makeOptionalString(cursor),
         [this, id, cursor](auto output){
             setGetFeedInProgress(false);
             const auto* model = mFeedListModels.get(id);
@@ -1652,7 +1652,7 @@ void Skywalker::removePostFeedModel(int id)
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getFollows(atId, limit, makeOptionalCursor(cursor),
+    mBsky->getFollows(atId, limit, makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1670,7 +1670,7 @@ void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QStri
 void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getFollowers(atId, limit, makeOptionalCursor(cursor),
+    mBsky->getFollowers(atId, limit, makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1688,7 +1688,7 @@ void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QSt
 void Skywalker::getBlocksAuthorList(int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getBlocks(limit, makeOptionalCursor(cursor),
+    mBsky->getBlocks(limit, makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1706,7 +1706,7 @@ void Skywalker::getBlocksAuthorList(int limit, const QString& cursor, int modelI
 void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getMutes(limit, makeOptionalCursor(cursor),
+    mBsky->getMutes(limit, makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1725,7 +1725,7 @@ void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int m
 {
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetAuthorListInProgress(true);
-    mBsky->getSuggestions(limit, makeOptionalCursor(cursor), langs,
+    mBsky->getSuggestions(limit, makeOptionalString(cursor), langs,
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1743,7 +1743,7 @@ void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int m
 void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getLikes(atId, limit, makeOptionalCursor(cursor),
+    mBsky->getLikes(atId, limit, makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1768,7 +1768,7 @@ void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString
 void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getRepostedBy(atId, limit, makeOptionalCursor(cursor),
+    mBsky->getRepostedBy(atId, limit, makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1786,7 +1786,7 @@ void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QStri
 void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getList(atId, limit, makeOptionalCursor(cursor),
+    mBsky->getList(atId, limit, makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1958,7 +1958,7 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
 void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     setGetListListInProgress(true);
-    mBsky->getLists(atId, limit, makeOptionalCursor(cursor),
+    mBsky->getLists(atId, limit, makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             qDebug() << "getListListAll succeeded, id:" << modelId;
@@ -1986,7 +1986,7 @@ void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int
 void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     setGetListListInProgress(true);
-    mBsky->getListBlocks(limit, makeOptionalCursor(cursor),
+    mBsky->getListBlocks(limit, makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             const auto* model = mListListModels.get(modelId);
@@ -2013,7 +2013,7 @@ void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const
 void Skywalker::getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     setGetListListInProgress(true);
-    mBsky->getListMutes(limit, makeOptionalCursor(cursor),
+    mBsky->getListMutes(limit, makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             const auto* model = mListListModels.get(modelId);

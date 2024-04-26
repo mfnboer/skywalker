@@ -2,14 +2,17 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
+import atproto
 
 Page {
     property string did
     property string host
     property string user
-    property string error
+    property string errorCode
+    property string errorMsg
+    property string password
 
-    signal accepted(string host, string handle, string password, string did)
+    signal accepted(string host, string handle, string password, string did, string authFactorTokenField)
     signal canceled
 
     id: loginPage
@@ -84,10 +87,44 @@ Page {
             Layout.leftMargin: 10
             Layout.rightMargin: 10
             svgIcon: svgFilled.lock
+            initialText: password
             echoMode: TextInput.Password
             placeholderText: qsTr("Password")
             inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
             maximumLength: 255
+        }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            topPadding: 10
+            leftPadding: 10
+            font.bold: true
+            color: guiSettings.textColor
+            text: qsTr("2FA Confirmation")
+            visible: errorCode === ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
+        }
+
+        SkyTextInput {
+            id: authFactorTokenField
+            Layout.fillWidth: true
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
+            svgIcon: svgOutline.confirmationCode
+            placeholderText: qsTr("Confirmation code")
+            inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
+            maximumLength: 253
+            visible: errorCode === ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
+        }
+
+        AccessibleText {
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
+            Layout.fillWidth: true
+            color: guiSettings.textColor
+            wrapMode: Text.Wrap
+            font.pointSize: guiSettings.scaledFont(7/8)
+            text: qsTr("Check your email for a login code and enter it here.")
+            visible: errorCode === ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
         }
 
         Label {
@@ -97,8 +134,8 @@ Page {
             Layout.fillWidth: true
             color: guiSettings.errorColor
             wrapMode: Text.Wrap
-            text: error
-            visible: error
+            text: errorMsg
+            visible: errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
 
             Accessible.role: Accessible.AlertMessage
             Accessible.name: text
@@ -110,10 +147,10 @@ Page {
         anchors.top: loginForm.bottom
         anchors.right: parent.right
         text: qsTr("OK")
-        enabled: hostField.editText && userField.text && passwordField.text
+        enabled: hostField.editText && userField.text && passwordField.text && (errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED || authFactorTokenField.text)
         onClicked: {
             const handle = autoCompleteHandle(userField.text, hostField.editText)
-            loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did)
+            loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did, authFactorTokenField.text)
         }
     }
 
@@ -138,9 +175,12 @@ Page {
     }
 
     Component.onCompleted: {
-        userField.setFocus()
+        if (errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
+            userField.forceActiveFocus()
+        else
+            authFactorTokenField.forceActiveFocus()
 
-        if (error)
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        if (errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
+            statusPopup.show(errorMsg, QEnums.STATUS_LEVEL_ERROR)
     }
 }

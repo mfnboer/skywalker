@@ -298,7 +298,7 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
     const auto searchText = preProcessSearchText(text);
 
     setSearchPostsInProgress(true);
-    bskyClient()->searchPosts(searchText, {}, mSkywalker->makeOptionalCursor(cursor),
+    bskyClient()->searchPosts(searchText, {}, mSkywalker->makeOptionalString(cursor),
         [this, presence=getPresence(), searchText, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
@@ -372,7 +372,7 @@ void SearchUtils::searchActors(const QString& text, const QString& cursor)
     const auto searchText = preProcessSearchText(text);
 
     setSearchActorsInProgress(true);
-    bskyClient()->searchActors(searchText, {}, mSkywalker->makeOptionalCursor(cursor),
+    bskyClient()->searchActors(searchText, {}, mSkywalker->makeOptionalString(cursor),
         [this, presence=getPresence(), searchText, cursor](auto output){
             if (!presence)
                 return;
@@ -432,7 +432,7 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
     const QStringList langs = mSkywalker->getUserSettings()->getContentLanguages(did);
 
     setSearchSuggestedActorsInProgress(true);
-    bskyClient()->getSuggestions({}, mSkywalker->makeOptionalCursor(cursor), langs,
+    bskyClient()->getSuggestions({}, mSkywalker->makeOptionalString(cursor), langs,
         [this, presence=getPresence(), cursor](auto output){
             if (!presence)
                 return;
@@ -488,7 +488,7 @@ void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
     }
 
     setSearchFeedsInProgress(true);
-    bskyClient()->getPopularFeedGenerators(text, 20, mSkywalker->makeOptionalCursor(cursor),
+    bskyClient()->getPopularFeedGenerators(text, 20, mSkywalker->makeOptionalString(cursor),
         [this, presence=getPresence(), cursor](auto output){
             if (!presence)
                 return;

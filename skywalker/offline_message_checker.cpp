@@ -336,7 +336,7 @@ void OffLineMessageChecker::login()
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
-    mBsky->createSession(mUserDid, password,
+    mBsky->createSession(mUserDid, password, {},
         [this]{
             qDebug() << "Login" << mUserDid << "succeeded";
             const auto* session = mBsky->getSession();
