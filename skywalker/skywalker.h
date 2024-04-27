@@ -59,6 +59,7 @@ public:
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host, const QString authFactorToken);
     Q_INVOKABLE void resumeSession(bool retry = false);
+    Q_INVOKABLE void deleteSession();
     Q_INVOKABLE void switchUser(const QString& did);
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();

@@ -381,6 +381,7 @@ ApplicationWindow {
         }
 
         onSignOut: {
+            skywalker.deleteSession()
             skywalker.clearPassword()
             signOutCurrentUser()
             signIn()

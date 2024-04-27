@@ -173,6 +173,13 @@ void Skywalker::resumeSession(bool retry)
         });
 }
 
+void Skywalker::deleteSession()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Delete session";
+    mBsky->deleteSession({}, {});
+}
+
 void Skywalker::switchUser(const QString& did)
 {
     qDebug() << "Switch to user:" << did;
