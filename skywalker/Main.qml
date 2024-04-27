@@ -416,14 +416,8 @@ ApplicationWindow {
             }
             else if (profile.did !== skywalker.getUserDid()) {
                 signOutCurrentUser()
-                const userSettings = skywalker.getUserSettings()
-                const host = userSettings.getHost(profile.did)
-                const password = userSettings.getPassword(profile.did)
-
-                if (password)
-                    skywalkerLogin(profile.did, password, host)
-                else
-                    loginUser(host, profile.handle, profile.did)
+                skywalker.switchUser(profile.did)
+                skywalker.resumeSession()
             }
 
             close()

@@ -58,7 +58,8 @@ public:
     ~Skywalker();
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host, const QString authFactorToken);
-    Q_INVOKABLE void resumeSession();
+    Q_INVOKABLE void resumeSession(bool retry = false);
+    Q_INVOKABLE void switchUser(const QString& did);
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
     Q_INVOKABLE void dataMigration();
@@ -254,7 +255,7 @@ private:
     void updateUser(const QString& did, const QString& host, const QString& password);
     ATProto::ProfileMaster& getProfileMaster();
     void saveSession(const ATProto::ComATProtoServer::Session& session);
-    bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
+    bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
     void shareImage(const QString& contentUri, const QString& text);

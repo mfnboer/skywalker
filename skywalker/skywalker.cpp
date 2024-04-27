@@ -124,13 +124,13 @@ void Skywalker::login(const QString user, QString password, const QString host, 
         });
 }
 
-void Skywalker::resumeSession()
+void Skywalker::resumeSession(bool retry)
 {
-    qDebug() << "Resume session";
+    qDebug() << "Resume session, retry:" << retry;
     QString host;
     ATProto::ComATProtoServer::Session session;
 
-    if (!getSession(host, session))
+    if (!getSavedSession(host, session))
     {
         qWarning() << "No saved session";
         emit resumeSessionFailed("");
@@ -149,14 +149,35 @@ void Skywalker::resumeSession()
             refreshSession();
             startRefreshTimers();
         },
-        [this](const QString& error, const QString& msg){
+        [this, retry, session](const QString& error, const QString& msg){
             qInfo() << "Session could not be resumed:" << error << " - " << msg;
 
-            if (error == "ExpiredToken")
-                emit resumeSessionExpired();
+            if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
+            {
+                mBsky->setSession(std::make_unique<ATProto::ComATProtoServer::Session>(session));
+                mBsky->refreshSession(
+                    [this]{
+                        qDebug() << "Session refreshed";
+                        saveSession(*mBsky->getSession());
+                        resumeSession(true);
+                    },
+                    [this](const QString& error, const QString& msg){
+                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+                        emit resumeSessionExpired();
+                    });
+            }
             else
+            {
                 emit resumeSessionFailed(msg);
+            }
         });
+}
+
+void Skywalker::switchUser(const QString& did)
+{
+    qDebug() << "Switch to user:" << did;
+    mUserDid = did;
+    mUserSettings.setActiveUserDid(did);
 }
 
 void Skywalker::startTimelineAutoUpdate()
@@ -2407,7 +2428,7 @@ void Skywalker::saveSession(const ATProto::ComATProtoServer::Session& session)
     mUserSettings.saveSession(session);
 }
 
-bool Skywalker::getSession(QString& host, ATProto::ComATProtoServer::Session& session)
+bool Skywalker::getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session)
 {
     const QString did = mUserSettings.getActiveUserDid();
 
