@@ -83,16 +83,32 @@ Page {
 
                     Accessible.ignored: true
                 }
-                SvgImage {
+                SvgButton {
+                    id: mailConfirmedImg
+                    imageMargin: 0
                     anchors.left: mailText.right
                     anchors.leftMargin: 5
-                    height: mailText.height
-                    width: height
-                    color: guiSettings.buttonColor
+                    implicitWidth: height
+                    implicitHeight: mailText.height
+                    iconColor: guiSettings.buttonColor
+                    Material.background: "transparent"
+                    accessibleName: qsTr("E-mail address confirmed")
                     svg: svgOutline.check
                     visible: userPrefs.emailConfirmed
-
-                    Accessible.ignored: true
+                    onClicked: root.getSkywalker().showStatusMessage(accessibleName, QEnums.STATUS_LEVEL_INFO)
+                }
+                SvgButton {
+                    imageMargin: 0
+                    implicitWidth: height
+                    implicitHeight: mailText.height
+                    anchors.left: mailConfirmedImg.right
+                    anchors.leftMargin: 5
+                    iconColor: guiSettings.textColor
+                    Material.background: "transparent"
+                    accessibleName: qsTr("Two-factor authentication enabled")
+                    svg: svgOutline.confirmationCode
+                    visible: userPrefs.emailAuthFactor
+                    onClicked: root.getSkywalker().showStatusMessage(accessibleName, QEnums.STATUS_LEVEL_INFO)
                 }
             }
 

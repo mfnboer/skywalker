@@ -13,6 +13,7 @@ class EditUserPreferences : public QObject
     Q_OBJECT
     Q_PROPERTY(QString email READ getEmail CONSTANT FINAL)
     Q_PROPERTY(bool emailConfirmed READ getEmailConfirmed CONSTANT FINAL)
+    Q_PROPERTY(bool emailAuthFactor READ getEmailAuthFactor CONSTANT FINAL)
     Q_PROPERTY(QString birthDate READ getBirthDate CONSTANT FINAL)
     Q_PROPERTY(QString did READ getDID CONSTANT FINAL)
     Q_PROPERTY(QString pds READ getPDS CONSTANT FINAL)
@@ -42,6 +43,9 @@ public:
 
     bool getEmailConfirmed() const { return mEmailConfirmed; }
     void setEmailConfirmed(bool confirmed) { mEmailConfirmed = confirmed; }
+
+    bool getEmailAuthFactor() const { return mEmailAuthFactor; }
+    void setEmailAuthFactor(bool set) { mEmailAuthFactor = set; }
 
     const QString getBirthDate() const;
 
@@ -113,6 +117,7 @@ signals:
 private:
     QString mEmail;
     bool mEmailConfirmed = false;
+    bool mEmailAuthFactor = false;
     std::optional<QDateTime> mBirthDate;
     QString mDID;
     QString mPDS;

@@ -2286,6 +2286,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences = std::make_unique<EditUserPreferences>(this);
     mEditUserPreferences->setEmail(session->mEmail.value_or(""));
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
+    mEditUserPreferences->setEmailAuthFactor(session->mEmailAuthFactor);
     mEditUserPreferences->setDID(mUserDid);
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
