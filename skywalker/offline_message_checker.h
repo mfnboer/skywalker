@@ -57,11 +57,10 @@ private:
 
     int startEventLoop();
     void exit(int exitCode);
-    void resumeSession();
+    void resumeSession(bool retry = false);
     bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();
-    void login();
     void getUserPreferences();
     void checkUnreadNotificationCount();
     void getNotifications(int toRead);

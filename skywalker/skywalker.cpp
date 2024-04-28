@@ -141,12 +141,15 @@ void Skywalker::resumeSession(bool retry)
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->resumeSession(session,
-        [this] {
+        [this, retry] {
             qInfo() << "Session resumed";
             saveSession(*mBsky->getSession());
             mUserDid = mBsky->getSession()->mDid;
             emit resumeSessionOk();
-            refreshSession();
+
+            if (!retry)
+                refreshSession();
+
             startRefreshTimers();
         },
         [this, retry, session](const QString& error, const QString& msg){

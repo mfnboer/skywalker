@@ -262,9 +262,9 @@ void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session
     mUserSettings.saveSession(session);
 }
 
-void OffLineMessageChecker::resumeSession()
+void OffLineMessageChecker::resumeSession(bool retry)
 {
-    qDebug() << "Resume session";
+    qDebug() << "Resume session, retry:" << retry;
     QString host;
     ATProto::ComATProtoServer::Session session;
 
@@ -285,13 +285,27 @@ void OffLineMessageChecker::resumeSession()
             saveSession(*mBsky->getSession());
             refreshSession();
         },
-        [this](const QString& error, const QString& msg){
+        [this, retry, session](const QString& error, const QString& msg){
             qWarning() << "Session could not be resumed:" << error << " - " << msg;
 
-            if (error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
-                login();
+            if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
+            {
+                mBsky->setSession(std::make_unique<ATProto::ComATProtoServer::Session>(session));
+                mBsky->refreshSession(
+                    [this]{
+                        qDebug() << "Session refreshed";
+                        saveSession(*mBsky->getSession());
+                        resumeSession(true);
+                    },
+                    [this](const QString& error, const QString& msg){
+                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+                        exit(EXIT_OK);
+                    });
+            }
             else
+            {
                 exit(EXIT_OK);
+            }
         });
 }
 
@@ -316,35 +330,6 @@ void OffLineMessageChecker::refreshSession()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Session could not be refreshed:" << error << " - " << msg;
-            exit(EXIT_OK);
-        });
-}
-
-void OffLineMessageChecker::login()
-{
-    const auto host = mUserSettings.getHost(mUserDid);
-    const auto password = mUserSettings.getPassword(mUserDid);
-
-    if (host.isEmpty() || password.isEmpty())
-    {
-        qWarning() << "Missing host or password to login";
-        exit(EXIT_OK);
-        return;
-    }
-
-    qDebug() << "Login:" << mUserDid << "host:" << host;
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
-
-    mBsky->createSession(mUserDid, password, {},
-        [this]{
-            qDebug() << "Login" << mUserDid << "succeeded";
-            const auto* session = mBsky->getSession();
-            saveSession(*session);
-            getUserPreferences();
-        },
-        [this](const QString& error, const QString& msg){
-            qWarning() << "Login" << mUserDid << "failed:" << error << " - " << msg;
             exit(EXIT_OK);
         });
 }
