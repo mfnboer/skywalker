@@ -137,8 +137,9 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
         }
         else
         {
-            contentLabels.removeIf([&contentLabel](const ContentLabel& l)
-                                   { return l.getText() == contentLabel.getText(); });
+            contentLabels.removeIf([&contentLabel](const ContentLabel& l){
+                return l.getText() == contentLabel.getText() && l.getDid() == contentLabel.getDid();
+            });
         }
     }
 
