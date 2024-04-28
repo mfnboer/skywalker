@@ -418,6 +418,7 @@ ApplicationWindow {
             else if (profile.did !== skywalker.getUserDid()) {
                 signOutCurrentUser()
                 skywalker.switchUser(profile.did)
+                showStartupStatus()
                 skywalker.resumeSession()
             }
 
@@ -735,16 +736,9 @@ ApplicationWindow {
                     return
                 }
 
-                const userSettings = skywalker.getUserSettings()
-                const host = userSettings.getHost(profile.did)
-                const password = userSettings.getPassword(profile.did)
-
-                if (!password) {
-                    loginUser(host, profile.handleOrDid, profile.did)
-                    return
-                }
-
-                skywalkerLogin(profile.did, password, host)
+                skywalker.switchUser(profile.did)
+                showStartupStatus()
+                skywalker.resumeSession()
         })
         page.onDeletedUser.connect((profile) => {
                 popStack()
