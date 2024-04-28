@@ -125,12 +125,14 @@ QString UserSettings::getHost(const QString& did) const
 
 void UserSettings::savePassword(const QString& did, const QString& password)
 {
+    Q_ASSERT(false);
     const QByteArray encryptedPassword = mEncryption.encrypt(password, KEY_ALIAS_PASSWORD);
     mSettings.setValue(key(did, "password"), encryptedPassword);
 }
 
 QString UserSettings::getPassword(const QString& did) const
 {
+    Q_ASSERT(false);
     const QByteArray encryptedPassword = mSettings.value(key(did, "password")).toByteArray();
 
     if (encryptedPassword.isEmpty())

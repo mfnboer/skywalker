@@ -34,7 +34,7 @@ bool PasswordEncryption::init(const QString& keyAlias)
     qDebug() << "Init:" << keyAlias << bool(initialized);
 #else
     qWarning() << "Encryption is only implemented for Android";
-    mKeyAliasIntialized[keyAlias] = true;
+    mKeyAliasIntialized[keyAlias] = false;
 #endif
     return mKeyAliasIntialized[keyAlias];
 }
@@ -87,7 +87,8 @@ QByteArray PasswordEncryption::encrypt(const QString& token, const QString& keyA
     return encryptedToken;
 #else
     qWarning() << "Encryption is only implemented for Android";
-    return token.toUtf8();
+    Q_UNUSED(token);
+    return {};
 #endif
 }
 
@@ -123,7 +124,8 @@ QString PasswordEncryption::decrypt(const QByteArray& token, const QString& keyA
     return decryptedToken.toString();
 #else
     qWarning() << "Encryption is only implemented for Android";
-    return token;
+    Q_UNUSED(token);
+    return {};
 #endif
 }
 

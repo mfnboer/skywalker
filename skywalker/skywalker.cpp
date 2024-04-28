@@ -109,10 +109,10 @@ void Skywalker::login(const QString user, QString password, const QString host, 
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
     mBsky->createSession(user, password, makeOptionalString(authFactorToken),
-        [this, host, user, password]{
+        [this, host, user]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
-            updateUser(session->mDid, host, password);
+            updateUser(session->mDid, host);
             saveSession(*session);
             emit loginOk();
             startRefreshTimers();
@@ -124,7 +124,7 @@ void Skywalker::login(const QString user, QString password, const QString host, 
         });
 }
 
-void Skywalker::resumeSession(bool retry)
+bool Skywalker::resumeSession(bool retry)
 {
     qDebug() << "Resume session, retry:" << retry;
     QString host;
@@ -132,9 +132,8 @@ void Skywalker::resumeSession(bool retry)
 
     if (!getSavedSession(host, session))
     {
-        qWarning() << "No saved session";
-        emit resumeSessionFailed("");
-        return;
+        qDebug() << "No saved session";
+        return false;
     }
 
     auto xrpc = std::make_unique<Xrpc::Client>(host);
@@ -166,7 +165,7 @@ void Skywalker::resumeSession(bool retry)
                     },
                     [this](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        emit resumeSessionExpired();
+                        emit resumeSessionFailed(msg);
                     });
             }
             else
@@ -174,6 +173,8 @@ void Skywalker::resumeSession(bool retry)
                 emit resumeSessionFailed(msg);
             }
         });
+
+    return true;
 }
 
 void Skywalker::deleteSession()
@@ -2426,11 +2427,11 @@ bool Skywalker::sendAppToBackground()
 #endif
 }
 
-void Skywalker::updateUser(const QString& did, const QString& host, const QString& password)
+void Skywalker::updateUser(const QString& did, const QString& host)
 {
     mUserDid = did;
     mUserSettings.addUser(did, host);
-    mUserSettings.savePassword(did, password);
+    // TODO: password was saved here before.
     mUserSettings.setActiveUserDid(did);
 }
 

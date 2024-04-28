@@ -80,7 +80,6 @@ Page {
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 enabled: isNewAccount()
-                focus: true
                 svgIcon: svgOutline.atSign
                 initialText: user
                 placeholderText: qsTr("User name")
@@ -164,6 +163,10 @@ Page {
         }
     }
 
+    VirtualKeyboardPageResizer {
+        id: virtualKeyboardPageResizer
+    }
+
     GuiSettings {
         id: guiSettings
     }
@@ -189,10 +192,14 @@ Page {
     }
 
     Component.onCompleted: {
+        virtualKeyboardPageResizer.fullPageHeight = parent.height
+
         if (authFactorTokenRequired())
-            authFactorTokenField.forceActiveFocus()
+            authFactorTokenField.setFocus()
+        else if (isNewAccount())
+            userField.setFocus()
         else
-            userField.forceActiveFocus()
+            passwordField.setFocus()
 
         if (errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
             statusPopup.show(errorMsg, QEnums.STATUS_LEVEL_ERROR)

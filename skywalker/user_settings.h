@@ -38,6 +38,7 @@ public:
 
     Q_INVOKABLE QString getHost(const QString& did) const;
 
+    // Deprecated
     void savePassword(const QString& did, const QString& password);
     Q_INVOKABLE QString getPassword(const QString& did) const;
 

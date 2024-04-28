@@ -109,11 +109,6 @@ ApplicationWindow {
 
         onResumeSessionOk: start()
 
-        onResumeSessionExpired: {
-            closeStartupStatus();
-            loginActiveUser();
-        }
-
         onResumeSessionFailed: (error) => {
             closeStartupStatus()
 
@@ -418,8 +413,14 @@ ApplicationWindow {
             else if (profile.did !== skywalker.getUserDid()) {
                 signOutCurrentUser()
                 skywalker.switchUser(profile.did)
-                showStartupStatus()
-                skywalker.resumeSession()
+
+                if (skywalker.resumeSession())
+                    showStartupStatus()
+                else {
+                    const userSettings = skywalker.getUserSettings()
+                    const host = userSettings.getHost(profile.did)
+                    loginUser(host, profile.handle, profile.did)
+                }
             }
 
             close()
@@ -679,23 +680,6 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function loginActiveUser() {
-        const userSettings = skywalker.getUserSettings()
-        const did = userSettings.getActiveUserDid()
-
-        if (did) {
-            const host = userSettings.getHost(did)
-            const password = userSettings.getPassword(did)
-
-            if (host && password) {
-                skywalkerLogin(did, password, host)
-                return
-            }
-        }
-
-        signIn()
-    }
-
     function newUser() {
         let component = Qt.createComponent("Login.qml")
         let page = component.createObject(root)
@@ -737,8 +721,14 @@ ApplicationWindow {
                 }
 
                 skywalker.switchUser(profile.did)
-                showStartupStatus()
-                skywalker.resumeSession()
+
+                if (skywalker.resumeSession()) {
+                    showStartupStatus()
+                }
+                else {
+                    const host = userSettings.getHost(profile.did)
+                    loginUser(host, profile.handle, profile.did)
+                }
         })
         page.onDeletedUser.connect((profile) => {
                 popStack()
@@ -1233,10 +1223,11 @@ ApplicationWindow {
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         notificationStack.push(notificationsView)
 
-        showStartupStatus()
-
         // Try to resume the previous session. If that fails, then ask the user to login.
-        skywalker.resumeSession()
+        if (skywalker.resumeSession())
+            showStartupStatus()
+        else
+            signIn()
 
         // NOTE: the user is not yet logged in, but global app settings are available.
         let settings = root.getSkywalker().getUserSettings()

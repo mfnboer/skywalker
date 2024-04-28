@@ -58,7 +58,7 @@ public:
     ~Skywalker();
 
     Q_INVOKABLE void login(const QString user, QString password, const QString host, const QString authFactorToken);
-    Q_INVOKABLE void resumeSession(bool retry = false);
+    Q_INVOKABLE bool resumeSession(bool retry = false);
     Q_INVOKABLE void deleteSession();
     Q_INVOKABLE void switchUser(const QString& did);
     Q_INVOKABLE void getUserProfileAndFollows();
@@ -197,7 +197,6 @@ signals:
     void loginOk();
     void loginFailed(QString error, QString msg, QString host, QString handle, QString password);
     void resumeSessionOk();
-    void resumeSessionExpired();
     void resumeSessionFailed(QString error);
     void timelineSyncOK(int index);
     void timelineSyncFailed();
@@ -253,7 +252,7 @@ private:
     void stopRefreshTimers();
     void refreshSession();
     void refreshNotificationCount();
-    void updateUser(const QString& did, const QString& host, const QString& password);
+    void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
