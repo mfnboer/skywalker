@@ -171,6 +171,7 @@ void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session
     mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
+    mSettings.remove(key(session.mDid, "password"));
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -185,7 +186,7 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) 
 
 void UserSettings::clearCredentials(const QString& did)
 {
-    mSettings.setValue(key(did, "password"), {});
+    mSettings.remove(key(did, "password"));
     mSettings.setValue(key(did, "access"), {});
     mSettings.setValue(key(did, "refresh"), {});
 }
