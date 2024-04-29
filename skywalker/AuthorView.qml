@@ -23,10 +23,10 @@ Page {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
+    readonly property bool hasFeeds: author.associated.feeds > 0
     readonly property int feedListModelId: skywalker.createFeedListModel()
-    property bool hasFeeds: false
+    readonly property bool hasLists: author.associated.lists > 0
     readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
-    property bool hasLists: false
 
     signal closed
 
@@ -82,6 +82,7 @@ Page {
                 width: parent.width - 4
                 height: parent.height - 4
                 avatarUrl: !contentVisible() ? "" : authorAvatar
+                isModerator: author.associated.isLabeler
                 onClicked:  {
                     if (authorAvatar)
                         root.viewFullImage([author.imageView], 0)
@@ -499,8 +500,6 @@ Page {
                         authorFeedView.interactive = true
                 }
 
-                onCountChanged: hasFeeds = count
-
                 delegate: GeneratorViewDelegate {
                     width: authorFeedView.width
                 }
@@ -548,8 +547,6 @@ Page {
                     if (verticalOvershoot < 0)
                         authorFeedView.interactive = true
                 }
-
-                onCountChanged: hasLists = count
 
                 delegate: ListViewDelegate {
                     width: authorFeedView.width
@@ -897,7 +894,11 @@ Page {
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)
-        getFeedList(feedListModelId)
-        getListList(listListModelId)
+
+        if (hasFeeds)
+            getFeedList(feedListModelId)
+
+        if (hasLists)
+            getListList(listListModelId)
     }
 }

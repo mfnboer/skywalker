@@ -55,6 +55,7 @@ Rectangle {
                 width: parent.width - 13
                 height: width
                 avatarUrl: author.avatarUrl
+                isModerator: author.associated.isLabeler
 
                 onClicked: selectDraft()
             }
