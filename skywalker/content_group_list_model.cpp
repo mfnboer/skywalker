@@ -56,7 +56,7 @@ QVariant ContentGroupListModel::data(const QModelIndex& index, int role) const
         if (it != mChangedVisibility.end())
             return it->second;
 
-        return QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group.mId));
+        return QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group));
     }
     }
 
@@ -76,7 +76,7 @@ bool ContentGroupListModel::setData(const QModelIndex &index, const QVariant &va
     case Role::ContentPrefVisibility:
     {
         const auto visibility = QEnums::ContentPrefVisibility(value.toInt());
-        const auto origVisibility = QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group.mId));
+        const auto origVisibility = QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group));
 
         if (visibility != origVisibility)
             mChangedVisibility[index.row()] = visibility;
@@ -124,9 +124,12 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
     for (const auto& [index, visibility] : mChangedVisibility)
     {
         const auto& contentGoup = mContentGroupList.at(index);
-        const auto& label = contentGoup.mId;
+        const auto& label = contentGoup.mLabelId;
         const auto labelVisibility = ATProto::UserPreferences::LabelVisibility(visibility);
         userPreferences.setLabelVisibility(label, labelVisibility);
+
+        if (contentGoup.mLegacyLabelId)
+            userPreferences.setLabelVisibility(*contentGoup.mLegacyLabelId, labelVisibility);
     }
 }
 

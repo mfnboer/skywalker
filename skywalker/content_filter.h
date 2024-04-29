@@ -23,17 +23,16 @@ class ContentGroup
 {
     Q_GADGET
     Q_PROPERTY(QString title MEMBER mTitle CONSTANT FINAL)
-    Q_PROPERTY(QString subTitle MEMBER mSubTitle CONSTANT FINAL)
-    Q_PROPERTY(bool isAdult MEMBER mAdultImages CONSTANT FINAL)
+    Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
+    Q_PROPERTY(bool isAdult MEMBER mAdult CONSTANT FINAL)
     QML_VALUE_TYPE(contentgroup)
 
 public:
-    QString mId;
+    QString mLabelId;
     QString mTitle;
-    QString mSubTitle;
-    QString mWarning;
-    std::vector<QString> mLabelValues;
-    bool mAdultImages;
+    QString mDescription;
+    std::optional<QString> mLegacyLabelId;
+    bool mAdult;
     QEnums::ContentVisibility mDefaultVisibility;
 
     bool isPostLevel() const { return mDefaultVisibility == QEnums::CONTENT_VISIBILITY_WARN_POST ||
@@ -46,30 +45,33 @@ class ContentFilter : public IContentFilter
 {
 public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
-    using ContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
+    using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
+    using ContentGroupMap = std::unordered_map<QString, ContentGroup>;
 
     static const std::vector<ContentGroup> CONTENT_GROUP_LIST;
-    static const ContentGroupMap& getContentGroups();
+    static const GlobalContentGroupMap& getContentGroups();
 
     // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
     static ContentLabelList getContentLabels(const LabelList& labels);
 
     explicit ContentFilter(const ATProto::UserPreferences& userPreferences);
 
-    QEnums::ContentVisibility getGroupVisibility(const QString& groupId) const;
-    QEnums::ContentVisibility getVisibility(const QString& label) const;
-    QString getWarning(const QString& label) const;
+    QEnums::ContentVisibility getGroupVisibility(const ContentGroup& group) const;
+    QEnums::ContentVisibility getVisibility(const ContentLabel& label) const;
+    QString getGroupWarning(const ContentGroup& group) const;
+    QString getWarning(const ContentLabel& label) const;
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const override;
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
 
 private:
-    static ContentGroupMap CONTENT_GROUPS;
+    static GlobalContentGroupMap CONTENT_GROUPS;
     static void initContentGroups();
     static void initLabelGroupMap();
 
     static std::unordered_map<QString, QString> sLabelGroupMap;
     const ATProto::UserPreferences& mUserPreferences;
+    std::unordered_map<QString, ContentGroupMap> mLabelerGroupMap; // labeler DID -> group map
 };
 
 class ContentFilterShowAll : public IContentFilter

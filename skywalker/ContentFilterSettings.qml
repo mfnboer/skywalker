@@ -63,7 +63,7 @@ Page {
                 color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
 
                 Accessible.role: Accessible.StaticText
-                Accessible.name: `${titleText.text}\n\n${subTitleText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
+                Accessible.name: `${titleText.text}\n\n${descriptionText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
             }
             Row {
                 id: buttonRow
@@ -115,16 +115,16 @@ Page {
             }
 
             Text {
-                id: subTitleText
+                id: descriptionText
                 bottomPadding: 5
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
-                text: contentGroup.subTitle
+                text: contentGroup.description
                 color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
 
                 Accessible.role: Accessible.StaticText
-                Accessible.name: `${titleText.text}\n\n${subTitleText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
+                Accessible.name: `${titleText.text}\n\n${descriptionText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
             }
 
             Rectangle {

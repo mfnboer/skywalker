@@ -6,79 +6,48 @@ namespace Skywalker {
 
 const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
     {
+        "porn",
+        QObject::tr("Adult Content"),
+        QObject::tr("Explicit sexual images"),
         "nsfw",
-        QObject::tr("Explicit Sexual Images"),
-        QObject::tr("i.e. pornography"),
-        QObject::tr("Sexually Explicit"),
-        {"porn", "nsfw"},
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA
     },
     {
         "nudity",
-        QObject::tr("Other Nudity"),
-        QObject::tr("Including non-sexual and artistic"),
-        QObject::tr("Nudity"),
-        {"nudity"},
+        QObject::tr("Non-sexual Nudity"),
+        QObject::tr("E.g. artistic nudes"),
+        {},
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA
     },
     {
-        "suggestive",
+        "sexual",
         QObject::tr("Sexually Suggestive"),
         QObject::tr("Does not include nudity"),
-        QObject::tr("Sexually Suggestive"),
-        {"sexual"},
+        "suggestive",
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA
     },
     {
+        "graphic-media",
+        QObject::tr("Graphic Media"),
+        QObject::tr("Explicit or potentially disturbing media"),
         "gore",
-        QObject::tr("Violent / Bloody"),
-        QObject::tr("Gore, self-harm, torture"),
-        QObject::tr("Violence"),
-        {"gore", "self-harm", "torture", "nsfl", "corpse"},
         true,
         QEnums::CONTENT_VISIBILITY_HIDE_MEDIA
-    },
-    {
-        "hate",
-        QObject::tr("Hate Group Iconography"),
-        QObject::tr("Images of terror groups, articles covering events, etc."),
-        QObject::tr("Hate Groups"),
-        {"icon-kkk", "icon-nazi", "icon-intolerant", "behavior-intolerant"},
-        false,
-        QEnums::CONTENT_VISIBILITY_HIDE_POST
-    },
-    {
-        "spam",
-        QObject::tr("Spam"),
-        QObject::tr("Excessive unwanted interactions"),
-        QObject::tr("Spam"),
-        {"spam"},
-        false,
-        QEnums::CONTENT_VISIBILITY_HIDE_POST
-    },
-    {
-        "impersonation",
-        QObject::tr("Impersonation"),
-        QObject::tr("Accounts falsely claiming to be people or orgs"),
-        QObject::tr("Impersonation"),
-        {"impersonation"},
-        false,
-        QEnums::CONTENT_VISIBILITY_WARN_POST
     }
 };
 
-ContentFilter::ContentGroupMap ContentFilter::CONTENT_GROUPS;
+ContentFilter::GlobalContentGroupMap ContentFilter::CONTENT_GROUPS;
 
 void ContentFilter::initContentGroups()
 {
     for (const auto& group : CONTENT_GROUP_LIST)
-        CONTENT_GROUPS[group.mId] = &group;
+        CONTENT_GROUPS[group.mLabelId] = &group;
 }
 
-const ContentFilter::ContentGroupMap& ContentFilter::getContentGroups()
+const ContentFilter::GlobalContentGroupMap& ContentFilter::getContentGroups()
 {
     if (CONTENT_GROUPS.empty())
         initContentGroups();
@@ -118,8 +87,10 @@ void ContentFilter::initLabelGroupMap()
 {
     for (const auto& [id, group] : getContentGroups())
     {
-        for (const auto& label : group->mLabelValues)
-            sLabelGroupMap[label] = id;
+        sLabelGroupMap[id] = id;
+
+        if (group->mLegacyLabelId)
+            sLabelGroupMap[*group->mLegacyLabelId] = id;
     }
 }
 
@@ -146,50 +117,83 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
     return contentLabels;
 }
 
-QEnums::ContentVisibility ContentFilter::getGroupVisibility(const QString& groupId) const
+QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& group) const
 {
-    const auto& group = getContentGroups().at(groupId);
 
-    if (group->mAdultImages && !mUserPreferences.getAdultContent())
+
+    if (group.mAdult && !mUserPreferences.getAdultContent())
         return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
 
-    const auto visibility = mUserPreferences.getLabelVisibility(groupId);
+    auto visibility = mUserPreferences.getLabelVisibility(group.mLabelId);
+
+    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN && group.mLegacyLabelId)
+        visibility = mUserPreferences.getLabelVisibility(*group.mLegacyLabelId);
 
     if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
-        return group->getContentVisibility(visibility);
+        return group.getContentVisibility(visibility);
 
-    return group->mDefaultVisibility;
+    return group.mDefaultVisibility;
 }
 
-QEnums::ContentVisibility ContentFilter::getVisibility(const QString& label) const
+QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label) const
 {
-    auto it = sLabelGroupMap.find(label);
+    auto it = sLabelGroupMap.find(label.getText());
 
-    if (it == sLabelGroupMap.end())
+    if (it != sLabelGroupMap.end())
     {
-        qDebug() << "Undefined label:" << label;
-        return QEnums::CONTENT_VISIBILITY_SHOW;
+        const auto& groupId = it->second;
+        const auto& group = getContentGroups().at(groupId);
+        return getGroupVisibility(*group);
     }
 
-    return getGroupVisibility(it->second);
+    auto labelerIt = mLabelerGroupMap.find(label.getDid());
+
+    if (labelerIt != mLabelerGroupMap.end())
+    {
+        const auto& groupMap = labelerIt->second;
+        auto groupIt = groupMap.find(label.getText());
+
+        if (groupIt != groupMap.end())
+            return getGroupVisibility(groupIt->second);
+    }
+
+
+    qDebug() << "Undefined label:" << label.getText() << "labeler:" << label.getDid();
+    return QEnums::CONTENT_VISIBILITY_SHOW;
 }
 
-QString ContentFilter::getWarning(const QString& label) const
+QString ContentFilter::getGroupWarning(const ContentGroup& group) const
 {
-    auto it = sLabelGroupMap.find(label);
-
-    if (it == sLabelGroupMap.end())
-    {
-        qDebug() << "Undefined label:" << label;
-        return QObject::tr("Unknown label") + QString(": %1").arg(label);
-    }
-
-    const auto& group = getContentGroups().at(it->second);
-
-    if (group->mAdultImages && !mUserPreferences.getAdultContent())
+    if (group.mAdult && !mUserPreferences.getAdultContent())
         return QObject::tr("Adult content");
 
-    return group->mWarning;
+    return group.mTitle;
+}
+
+QString ContentFilter::getWarning(const ContentLabel& label) const
+{
+    auto it = sLabelGroupMap.find(label.getText());
+
+    if (it != sLabelGroupMap.end())
+    {
+        const auto& groupId = it->second;
+        const auto& group = getContentGroups().at(groupId);
+        return getGroupWarning(*group);
+    }
+
+    auto labelerIt = mLabelerGroupMap.find(label.getDid());
+
+    if (labelerIt != mLabelerGroupMap.end())
+    {
+        const auto& groupMap = labelerIt->second;
+        auto groupIt = groupMap.find(label.getText());
+
+        if (groupIt != groupMap.end())
+            return getGroupWarning(groupIt->second);
+    }
+
+    qDebug() << "Undefined label:" << label.getText() << "labeler:" << label.getDid();
+    return QObject::tr("Unknown label") + QString(": %1").arg(label.getText());
 }
 
 std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const
@@ -205,13 +209,13 @@ std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWa
 
     for (const auto& label : contentLabels)
     {
-        const auto v = getVisibility(label.getText());
+        const auto v = getVisibility(label);
 
         if (v <= visibility)
             continue;
 
         visibility = v;
-        warning = getWarning(label.getText());
+        warning = getWarning(label);
     }
 
     return {visibility, warning};
