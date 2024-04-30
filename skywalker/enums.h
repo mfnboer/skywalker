@@ -110,6 +110,13 @@ public:
     };
     Q_ENUM(ContentPrefVisibility)
 
+    enum LabelTarget
+    {
+        LABEL_TARGET_CONTENT,
+        LABEL_TARGET_MEDIA
+    };
+    Q_ENUM(LabelTarget)
+
     static ContentPrefVisibility toContentPrefVisibility(ContentVisibility);
 
     enum ReportReasonType

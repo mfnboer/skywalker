@@ -1,9 +1,11 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-
+#include <QString>
 
 namespace Skywalker {
+
+constexpr char const* UI_LANGUAGE = "en";
 
 constexpr char const* SKYWALKER_HANDLE = "@skywalker.thereforeiam.eu";
 constexpr char const* HOME_FEED = "home";

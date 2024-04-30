@@ -28,15 +28,22 @@ class ContentGroup
     QML_VALUE_TYPE(contentgroup)
 
 public:
+    // TODO: make members private
     QString mLabelId;
     QString mTitle;
     QString mDescription;
     std::optional<QString> mLegacyLabelId;
     bool mAdult;
     QEnums::ContentVisibility mDefaultVisibility;
+    QEnums::LabelTarget mLabelTarget;
 
-    bool isPostLevel() const { return mDefaultVisibility == QEnums::CONTENT_VISIBILITY_WARN_POST ||
-                                      mDefaultVisibility == QEnums::CONTENT_VISIBILITY_HIDE_POST; }
+    ContentGroup() = default;
+    ContentGroup(const QString& labelId, const QString& title, const QString& description,
+                 const std::optional<QString>& legacyLabelId, bool adult,
+                 QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget);
+    explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef);
+
+    bool isPostLevel() const { return mLabelTarget == QEnums::LABEL_TARGET_CONTENT; }
 
     QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
 };

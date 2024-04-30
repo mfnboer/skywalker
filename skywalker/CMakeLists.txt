@@ -331,6 +331,8 @@ qt_add_qml_module(libskywalker
         QML_FILES LanguageComboCheckBox.qml
         QML_FILES LanguageLabels.qml
         QML_FILES ModeratorIcon.qml
+        SOURCES labeler.h
+        SOURCES labeler.cpp
 )
 
 if (NOT ANDROID)
