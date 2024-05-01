@@ -194,4 +194,38 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
         });
 }
 
+void ProfileUtils::getLabelerViewDetailed(const QString& did)
+{
+    if (!bskyClient())
+        return;
+
+    qDebug() << "Get detailed labeler view:" << did;
+
+    bskyClient()->getServices({did}, true,
+        [this](auto output){
+            if (output->mViews.empty())
+            {
+                qWarning() << "Invalid services output, views missing";
+                emit getLabelerViewDetailedFailed(tr("Could not get label information."));
+                return;
+            }
+
+            const auto& outputView = output->mViews.front();
+
+            if (outputView->mViewType != ATProto::AppBskyLabeler::GetServicesOutputView::ViewType::VIEW_DETAILED)
+            {
+                qWarning() << "Invalid view type:" << (int)outputView->mViewType;
+                emit getLabelerViewDetailedFailed(tr("Could not get label information."));
+                return;
+            }
+
+            const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::Ptr>(outputView->mView));
+            emit getLabelerViewDetailedOk(view);
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getLabelerViewDetailed failed:" << error << " - " << msg;
+            emit getLabelerViewDetailedFailed(msg);
+        });
+}
+
 }

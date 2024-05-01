@@ -1092,7 +1092,7 @@ ApplicationWindow {
 
     function editContentFilterSettings() {
         let component = Qt.createComponent("ContentFilterSettings.qml")
-        let contentGroupListModel = skywalker.getContentGroupListModel()
+        let contentGroupListModel = skywalker.getGlobalContentGroupListModel()
         let form = component.createObject(root, { model: contentGroupListModel })
         form.onClosed.connect(() => { popStack() })
         pushStack(form)

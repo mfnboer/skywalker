@@ -27,6 +27,8 @@ Page {
     readonly property int feedListModelId: skywalker.createFeedListModel()
     readonly property bool hasLists: author.associated.lists > 0
     readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
+    readonly property bool isLabeler: author.associated.isLabeler
+    property int contentGroupListModelId: -1
 
     signal closed
 
@@ -82,7 +84,7 @@ Page {
                 width: parent.width - 4
                 height: parent.height - 4
                 avatarUrl: !contentVisible() ? "" : authorAvatar
-                isModerator: author.associated.isLabeler
+                isModerator: isLabeler
                 onClicked:  {
                     if (authorAvatar)
                         root.viewFullImage([author.imageView], 0)
@@ -372,7 +374,13 @@ Page {
             TabBar {
                 id: feedMenuBar
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
+                currentIndex: isLabeler ? 0 : 1
 
+                AccessibleTabButton {
+                    text: qsTr("Labels")
+                    visible: isLabeler
+                    width: isLabeler ? implicitWidth : 0
+                }
                 AccessibleTabButton {
                     text: qsTr("Posts")
                     width: implicitWidth
@@ -425,7 +433,34 @@ Page {
             // -1 to make the interactive enable/disable work
             height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() + page.header.height - 1 : 0)
 
-            currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
+            currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 1
+
+            // Labels
+            ListView {
+                id: labelList
+                width: parent.width
+                height: parent.height
+                clip: true
+                spacing: 0
+                model: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
+                flickDeceleration: guiSettings.flickDeceleration
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
+
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0)
+                        authorFeedView.interactive = true
+                }
+
+                delegate: AccessibleText {
+                    id: titleText
+                    Layout.fillWidth: true
+                    font.bold: true
+                    wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    text: contentGroup.title
+                }
+            }
 
             // Posts
             AuthorPostsList {
@@ -712,6 +747,14 @@ Page {
         onUnmuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    ProfileUtils {
+        id: profileUtils
+        skywalker: page.skywalker
+
+        onGetLabelerViewDetailedOk: (view) => setLabeler(view);
+        onGetLabelerViewDetailedFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     UnicodeFonts {
         id: unicodeFonts
     }
@@ -869,6 +912,10 @@ Page {
         return qsTr("No posts")
     }
 
+    function setLabeler(view) {
+        contentGroupListModelId = skywalker.createContentGroupListModel(view.policies)
+    }
+
     function isUser(author) {
         return skywalker.getUserDid() === author.did
     }
@@ -880,6 +927,9 @@ Page {
         setAuthorBanner("")
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
+
+        if (contentGroupListModelId > -1)
+            skywalker.removeContentGroupListModel(contentGroupListModelId)
     }
 
     Component.onCompleted: {
@@ -900,5 +950,8 @@ Page {
 
         if (hasLists)
             getListList(listListModelId)
+
+        if (isLabeler)
+            profileUtils.getLabelerViewDetailed(author.did)
     }
 }

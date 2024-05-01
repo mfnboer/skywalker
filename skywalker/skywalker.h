@@ -13,6 +13,7 @@
 #include "feed_list_model.h"
 #include "hashtag_index.h"
 #include "item_store.h"
+#include "labeler.h"
 #include "list_list_model.h"
 #include "muted_words.h"
 #include "notification_list_model.h"
@@ -130,7 +131,10 @@ public:
     Q_INVOKABLE void copyToClipboard(const QString& text);
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels) const;
     Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels) const;
-    Q_INVOKABLE const ContentGroupListModel* getContentGroupListModel();
+    Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();
+    Q_INVOKABLE int createContentGroupListModel(const LabelerPolicies& policies);
+    Q_INVOKABLE ContentGroupListModel* getContentGroupListModel(int id) const;
+    Q_INVOKABLE void removeContentGroupListModel(int id);
     Q_INVOKABLE void saveContentFilterPreferences();
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
@@ -283,7 +287,7 @@ private:
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
-    std::unique_ptr<ContentGroupListModel> mContentGroupListModel;
+    ContentGroupListModel::Ptr mGlobalContentGroupListModel;
 
     Bookmarks mBookmarks;
     BookmarksModel::Ptr mBookmarksModel;
@@ -312,6 +316,7 @@ private:
     ItemStore<ListListModel::Ptr> mListListModels;
     ItemStore<FeedListModel::Ptr> mFeedListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
+    ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
     NotificationListModel mNotificationListModel;
 
     bool mGetNotificationsInProgress = false;

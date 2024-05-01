@@ -122,6 +122,13 @@ const ContentFilter::GlobalContentGroupMap& ContentFilter::getContentGroups()
     return CONTENT_GROUPS;
 }
 
+const ContentGroup* ContentFilter::getGlobalContentGroup(const QString& labelId)
+{
+    const auto& groups = getContentGroups();
+    auto it = groups.find(labelId);
+    return it != groups.end() ? it->second : nullptr;
+}
+
 QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const
 {
     switch (visibility)

@@ -17,8 +17,11 @@ public:
         ContentPrefVisibility
     };
 
+    using Ptr = std::unique_ptr<ContentGroupListModel>;
+
     explicit ContentGroupListModel(const ContentFilter& contentFilter, QObject* parent = nullptr);
-    void initContentGroups();
+    void setGlobalContentGroups();
+    void setContentGroups(std::vector<ContentGroup> groups);
     void clear();
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;

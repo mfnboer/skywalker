@@ -100,6 +100,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorListModels.empty());
     Q_ASSERT(mListListModels.empty());
     Q_ASSERT(mFeedListModels.empty());
+    Q_ASSERT(mContentGroupListModels.empty());
 }
 
 // NOTE: user can be handle or DID
@@ -2250,32 +2251,54 @@ QString Skywalker::getContentWarning(const ContentLabelList& contentLabels) cons
     return warning;
 }
 
-const ContentGroupListModel* Skywalker::getContentGroupListModel()
+const ContentGroupListModel* Skywalker::getGlobalContentGroupListModel()
 {
-    mContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);
-    mContentGroupListModel->setAdultContent(mUserPreferences.getAdultContent());
-    return mContentGroupListModel.get();
+    mGlobalContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);
+    mGlobalContentGroupListModel->setGlobalContentGroups();
+    mGlobalContentGroupListModel->setAdultContent(mUserPreferences.getAdultContent());
+    return mGlobalContentGroupListModel.get();
+}
+
+int Skywalker::createContentGroupListModel(const LabelerPolicies& policies)
+{
+    auto model = std::make_unique<ContentGroupListModel>(mContentFilter, this);
+    model->setContentGroups(policies.getContentGroupList());
+    model->setAdultContent(mUserPreferences.getAdultContent());
+    return mContentGroupListModels.put(std::move(model));
+}
+
+ContentGroupListModel* Skywalker::getContentGroupListModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mContentGroupListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeContentGroupListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mContentGroupListModels.remove(id);
 }
 
 void Skywalker::saveContentFilterPreferences()
 {
     Q_ASSERT(mBsky);
-    Q_ASSERT(mContentGroupListModel);
+    Q_ASSERT(mGlobalContentGroupListModel);
 
-    if (!mContentGroupListModel)
+    if (!mGlobalContentGroupListModel)
     {
         qWarning() << "No filter preferences to save";
         return;
     }
 
-    if (!mContentGroupListModel->isModified(mUserPreferences))
+    if (!mGlobalContentGroupListModel->isModified(mUserPreferences))
     {
         qDebug() << "Filter preferences not modified.";
         return;
     }
 
     auto prefs = mUserPreferences;
-    mContentGroupListModel->saveTo(prefs);
+    mGlobalContentGroupListModel->saveTo(prefs);
     saveUserPreferences(prefs);
 }
 
@@ -2631,7 +2654,7 @@ void Skywalker::signOut()
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;
-    mContentGroupListModel = nullptr;
+    mGlobalContentGroupListModel = nullptr;
     mTimelineModel.clear();
     mUserDid.clear();
     mUserProfile = {};

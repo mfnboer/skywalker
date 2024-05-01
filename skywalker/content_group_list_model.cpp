@@ -8,10 +8,9 @@ ContentGroupListModel::ContentGroupListModel(const ContentFilter& contentFilter,
     QAbstractListModel(parent),
     mContentFilter(contentFilter)
 {
-    initContentGroups();
 }
 
-void ContentGroupListModel::initContentGroups()
+void ContentGroupListModel::setGlobalContentGroups()
 {
     clear();
 
@@ -20,6 +19,15 @@ void ContentGroupListModel::initContentGroups()
     for (const auto& group : ContentFilter::CONTENT_GROUP_LIST)
         mContentGroupList.push_back(group);
 
+    endInsertRows();
+}
+
+void ContentGroupListModel::setContentGroups(std::vector<ContentGroup> groups)
+{
+    clear();
+
+    beginInsertRows({}, 0, groups.size() - 1);
+    mContentGroupList = std::move(groups);
     endInsertRows();
 }
 

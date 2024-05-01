@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "labeler.h"
 #include "presence.h"
 #include "profile.h"
 #include "wrapped_skywalker.h"
@@ -27,6 +28,8 @@ public:
                                    const QString& avatarImgSource, bool updateAvatar,
                                    const QString& bannerImgSource, bool updateBanner);
 
+    Q_INVOKABLE void getLabelerViewDetailed(const QString& did);
+
 signals:
     void handle(QString handle, QString displayName, QString did);
     void profileViewOk(Profile profile, const QString& token);
@@ -34,6 +37,8 @@ signals:
     void updateProfileProgress(QString msg);
     void updateProfileOk();
     void updateProfileFailed(QString error);
+    void getLabelerViewDetailedOk(LabelerViewDetailed);
+    void getLabelerViewDetailedFailed(QString error);
 
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,

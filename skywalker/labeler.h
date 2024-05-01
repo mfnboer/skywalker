@@ -36,10 +36,11 @@ public:
 
     const QStringList& getLabelValues() const { return mLabelValues; }
     const ContentGroup* getContentGroup(const QString& label) const;
+    std::vector<ContentGroup> getContentGroupList() const;
 
 private:
     QStringList mLabelValues;
-    std::unordered_map<QString, ContentGroup> mLabelContentGroupMap;
+    ContentGroupMap mLabelContentGroupMap;
 };
 
 class LabelerView

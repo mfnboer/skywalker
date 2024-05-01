@@ -33,9 +33,9 @@ public:
     QString mTitle;
     QString mDescription;
     std::optional<QString> mLegacyLabelId;
-    bool mAdult;
-    QEnums::ContentVisibility mDefaultVisibility;
-    QEnums::LabelTarget mLabelTarget;
+    bool mAdult = false;
+    QEnums::ContentVisibility mDefaultVisibility = QEnums::ContentVisibility::CONTENT_VISIBILITY_SHOW;
+    QEnums::LabelTarget mLabelTarget = QEnums::LabelTarget::LABEL_TARGET_CONTENT;
 
     ContentGroup() = default;
     ContentGroup(const QString& labelId, const QString& title, const QString& description,
@@ -48,15 +48,18 @@ public:
     QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
 };
 
+using ContentGroupList = QList<ContentGroup>;
+using ContentGroupMap = std::unordered_map<QString, ContentGroup>; // label ID -> group
+
 class ContentFilter : public IContentFilter
 {
 public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
     using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
-    using ContentGroupMap = std::unordered_map<QString, ContentGroup>;
 
     static const std::vector<ContentGroup> CONTENT_GROUP_LIST;
     static const GlobalContentGroupMap& getContentGroups();
+    static const ContentGroup* getGlobalContentGroup(const QString& labelId);
 
     // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
     static ContentLabelList getContentLabels(const LabelList& labels);
