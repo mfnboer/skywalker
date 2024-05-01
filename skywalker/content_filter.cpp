@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "content_filter.h"
 #include "definitions.h"
+#include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
 
@@ -127,6 +128,11 @@ const ContentGroup* ContentFilter::getGlobalContentGroup(const QString& labelId)
     const auto& groups = getContentGroups();
     auto it = groups.find(labelId);
     return it != groups.end() ? it->second : nullptr;
+}
+
+QString ContentGroup::getFormattedDescription() const
+{
+    return ATProto::RichTextMaster::plainToHtml(mDescription);
 }
 
 QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const

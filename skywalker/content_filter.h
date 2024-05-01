@@ -24,6 +24,7 @@ class ContentGroup
     Q_GADGET
     Q_PROPERTY(QString title MEMBER mTitle CONSTANT FINAL)
     Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
+    Q_PROPERTY(QString formattedDescription READ getFormattedDescription CONSTANT FINAL)
     Q_PROPERTY(bool isAdult MEMBER mAdult CONSTANT FINAL)
     QML_VALUE_TYPE(contentgroup)
 
@@ -44,7 +45,7 @@ public:
     explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef);
 
     bool isPostLevel() const { return mLabelTarget == QEnums::LABEL_TARGET_CONTENT; }
-
+    QString getFormattedDescription() const;
     QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
 };
 

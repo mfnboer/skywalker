@@ -440,6 +440,7 @@ Page {
                 id: labelList
                 width: parent.width
                 height: parent.height
+                topMargin: 10
                 clip: true
                 spacing: 0
                 model: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
@@ -452,14 +453,19 @@ Page {
                         authorFeedView.interactive = true
                 }
 
-                delegate: AccessibleText {
-                    id: titleText
-                    Layout.fillWidth: true
-                    font.bold: true
-                    wrapMode: Text.Wrap
-                    elide: Text.ElideRight
-                    text: contentGroup.title
+                delegate: ContentGroupDelegate {
+                    width: authorFeedView.width
+                    adultContent: labelList.model.adultContent
                 }
+
+                EmptyListIndication {
+                    svg: svgOutline.noLabels
+                    text: qsTr("No labels")
+                    list: labelList
+                }
+
+                function refresh() {}
+                function clear() {}
             }
 
             // Posts

@@ -2,6 +2,9 @@ import QtQuick
 import QtQuick.Controls
 
 RadioButton {
+    property int horizontalAlignment: Qt.AlignLeft
+    property int borderWidth: 1
+
     id: radio
     padding: 0
 
@@ -11,9 +14,10 @@ RadioButton {
         padding: 5
         background: Rectangle {
             color: radio.checked ? guiSettings.buttonColor : "transparent"
-            border.width: 1
+            border.width: radio.borderWidth
             border.color: guiSettings.buttonColor
         }
+        horizontalAlignment: radio.horizontalAlignment
         color: checked ? guiSettings.buttonTextColor : guiSettings.buttonColor
         text: radio.text
     }

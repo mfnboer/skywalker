@@ -333,6 +333,7 @@ qt_add_qml_module(libskywalker
         QML_FILES ModeratorIcon.qml
         SOURCES labeler.h
         SOURCES labeler.cpp
+        QML_FILES ContentGroupDelegate.qml
 )
 
 if (NOT ANDROID)

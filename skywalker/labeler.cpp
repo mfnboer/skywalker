@@ -30,6 +30,12 @@ std::vector<ContentGroup> LabelerPolicies::getContentGroupList() const
 
     for (const QString& label : mLabelValues)
     {
+        if (ContentLabel::isSystemLabelId(label))
+        {
+            qDebug() << "System label:" << label;
+            continue;
+        }
+
         const auto* customGroup = getContentGroup(label);
 
         if (customGroup)
@@ -51,6 +57,7 @@ std::vector<ContentGroup> LabelerPolicies::getContentGroupList() const
         qDebug() << "Label without definition:" << label;
         ContentGroup group;
         group.mLabelId = label;
+        group.mTitle = label;
         groupList.push_back(group);
     }
 

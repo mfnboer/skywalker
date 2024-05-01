@@ -15,14 +15,15 @@ class ContentLabel {
 
 public:
     ContentLabel() = default;
-
     ContentLabel(const QString& did, const QString& text, const QDateTime& createdAt) :
         mDid(did), mText(text), mCreatedAt(createdAt) {}
+
+    static bool isSystemLabelId(const QString& labelId) { return labelId.startsWith('!'); }
 
     const QString& getDid() const { return mDid; }
     const QString& getText() const { return mText; }
     const QDateTime& getCreatedAt() const { return mCreatedAt; }
-    Q_INVOKABLE bool isSystemLabel() const { return mText.startsWith("!"); }
+    Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mText); }
 
 private:
     QString mDid;
