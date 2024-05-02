@@ -5,6 +5,7 @@ import skywalker
 
 ColumnLayout {
     property int margin: 10
+    required property bool isSubscribed
     required property bool adultContent
     required property contentgroup contentGroup
     required property int contentPrefVisibility
@@ -37,6 +38,7 @@ ColumnLayout {
         id: buttonRow
         Layout.fillWidth: true
         spacing: -1
+        visible: isSubscribed
 
         SkyRadioButton {
             Layout.leftMargin: contentGroupView.margin
@@ -89,6 +91,11 @@ ColumnLayout {
             visible: contentGroup.isAdult && !adultContent
 
             Accessible.ignored: true
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: root.getSkywalker().showStatusMessage(qsTr("Adult content disabled"), QEnums.STATUS_LEVEL_INFO)
+            }
         }
     }
 

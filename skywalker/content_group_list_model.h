@@ -9,7 +9,8 @@ namespace Skywalker {
 class ContentGroupListModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_PROPERTY(bool adultContent READ getAdultContent() WRITE setAdultContent() NOTIFY adultContentChanged() FINAL)
+    Q_PROPERTY(bool adultContent READ getAdultContent WRITE setAdultContent NOTIFY adultContentChanged FINAL)
+    Q_PROPERTY(bool subscribed READ isSubscribed WRITE setSubscribed NOTIFY subscribedChanged FINAL)
 
 public:
     enum class Role {
@@ -20,6 +21,7 @@ public:
     using Ptr = std::unique_ptr<ContentGroupListModel>;
 
     explicit ContentGroupListModel(const ContentFilter& contentFilter, QObject* parent = nullptr);
+    ContentGroupListModel(const QString& labelerDid, const ContentFilter& contentFilter, QObject* parent = nullptr);
     void setGlobalContentGroups();
     void setContentGroups(std::vector<ContentGroup> groups);
     void clear();
@@ -31,11 +33,15 @@ public:
     bool getAdultContent() const { return mAdultContent; }
     void setAdultContent(bool adultContent);
 
+    bool isSubscribed() const { return mSubscribed; }
+    void setSubscribed(bool subscribed);
+
     bool isModified(const ATProto::UserPreferences& userPreferences) const;
     void saveTo(ATProto::UserPreferences& userPreferences) const;
 
 signals:
     void adultContentChanged();
+    void subscribedChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -43,6 +49,8 @@ protected:
 private:
     bool mAdultContent = false;
     const ContentFilter& mContentFilter;
+    QString mLabelerDid;
+    bool mSubscribed = false;
     std::vector<ContentGroup> mContentGroupList;
     std::unordered_map<int, QEnums::ContentPrefVisibility> mChangedVisibility;
 };

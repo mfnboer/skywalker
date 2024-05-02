@@ -55,10 +55,7 @@ std::vector<ContentGroup> LabelerPolicies::getContentGroupList() const
         }
 
         qDebug() << "Label without definition:" << label;
-        ContentGroup group;
-        group.mLabelId = label;
-        group.mTitle = label;
-        groupList.push_back(group);
+        groupList.push_back(ContentGroup(label));
     }
 
     return groupList;

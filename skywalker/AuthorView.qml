@@ -29,6 +29,8 @@ Page {
     readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
+    property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
+    property bool isSubscribed: contentGroupListModel ? contentGroupListModel.subscribed : false
 
     signal closed
 
@@ -243,16 +245,30 @@ Page {
 
                 SkyButton {
                     text: qsTr("Follow")
-                    visible: !following && !isUser(author) && contentVisible()
+                    visible: !following && !isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.follow(author)
                     Accessible.name: qsTr(`press to follow ${author.name}`)
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
-                    visible: following && !isUser(author) && contentVisible()
+                    visible: following && !isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.unfollow(author.did, following)
                     Accessible.name: qsTr(`press to unfollow ${author.name}`)
+                }
+
+                SkyButton {
+                    text: qsTr("Subscribe")
+                    visible: !isSubscribed && isLabeler
+                    onClicked: contentGroupListModel.setSubscribed(true)
+                    Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
+                }
+                SkyButton {
+                    flat: true
+                    text: qsTr("Unsubscribe")
+                    visible: isSubscribed && isLabeler
+                    onClicked: contentGroupListModel.setSubscribed(false)
+                    Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
                 }
             }
 
@@ -443,7 +459,7 @@ Page {
                 topMargin: 10
                 clip: true
                 spacing: 0
-                model: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
+                model: contentGroupListModel
                 flickDeceleration: guiSettings.flickDeceleration
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
@@ -453,8 +469,36 @@ Page {
                         authorFeedView.interactive = true
                 }
 
+                header: ColumnLayout {
+                    width: authorFeedView.width
+
+                    AccessibleText {
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        Layout.fillWidth: true
+                        wrapMode: Text.Wrap
+                        color: guiSettings.textColor
+                        text: qsTr("Labels are annotations on users and content. They can be used to warn and hide content.")
+                    }
+
+                    AccessibleText {
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        Layout.fillWidth: true
+                        wrapMode: Text.Wrap
+                        color: guiSettings.textColor
+                        text: qsTr(`Subscribe to ${author.handle} to use these labels`)
+                        visible: !page.isSubscribed
+                    }
+
+                    SeparatorLine {
+                        Layout.fillWidth: true
+                    }
+                }
+
                 delegate: ContentGroupDelegate {
                     width: authorFeedView.width
+                    isSubscribed: page.isSubscribed
                     adultContent: labelList.model.adultContent
                 }
 
@@ -919,7 +963,7 @@ Page {
     }
 
     function setLabeler(view) {
-        contentGroupListModelId = skywalker.createContentGroupListModel(view.policies)
+        contentGroupListModelId = skywalker.createContentGroupListModel(author.did, view.policies)
     }
 
     function isUser(author) {

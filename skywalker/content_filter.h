@@ -29,7 +29,24 @@ class ContentGroup
     QML_VALUE_TYPE(contentgroup)
 
 public:
-    // TODO: make members private
+    ContentGroup() = default;
+    explicit ContentGroup(const QString& labelId);
+    ContentGroup(const QString& labelId, const QString& title, const QString& description,
+                 const std::optional<QString>& legacyLabelId, bool adult,
+                 QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget);
+    explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef);
+
+    const QString& getLabelId() const { return mLabelId; }
+    const QString& getTitle() const { return mTitle; }
+    const std::optional<QString>& getLegacyLabelId() const { return mLegacyLabelId; }
+    bool isAdult() const { return mAdult; }
+    QEnums::ContentVisibility getDefaultVisibility() const { return mDefaultVisibility; }
+
+    bool isPostLevel() const { return mLabelTarget == QEnums::LABEL_TARGET_CONTENT; }
+    QString getFormattedDescription() const;
+    QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
+
+private:
     QString mLabelId;
     QString mTitle;
     QString mDescription;
@@ -37,16 +54,6 @@ public:
     bool mAdult = false;
     QEnums::ContentVisibility mDefaultVisibility = QEnums::ContentVisibility::CONTENT_VISIBILITY_SHOW;
     QEnums::LabelTarget mLabelTarget = QEnums::LabelTarget::LABEL_TARGET_CONTENT;
-
-    ContentGroup() = default;
-    ContentGroup(const QString& labelId, const QString& title, const QString& description,
-                 const std::optional<QString>& legacyLabelId, bool adult,
-                 QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget);
-    explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef);
-
-    bool isPostLevel() const { return mLabelTarget == QEnums::LABEL_TARGET_CONTENT; }
-    QString getFormattedDescription() const;
-    QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
 };
 
 using ContentGroupList = QList<ContentGroup>;
@@ -74,6 +81,8 @@ public:
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const override;
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
+
+    bool isSubscribedToLabeler(const QString& did) const;
 
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;

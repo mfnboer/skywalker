@@ -2259,9 +2259,9 @@ const ContentGroupListModel* Skywalker::getGlobalContentGroupListModel()
     return mGlobalContentGroupListModel.get();
 }
 
-int Skywalker::createContentGroupListModel(const LabelerPolicies& policies)
+int Skywalker::createContentGroupListModel(const QString& did, const LabelerPolicies& policies)
 {
-    auto model = std::make_unique<ContentGroupListModel>(mContentFilter, this);
+    auto model = std::make_unique<ContentGroupListModel>(did, mContentFilter, this);
     model->setContentGroups(policies.getContentGroupList());
     model->setAdultContent(mUserPreferences.getAdultContent());
     return mContentGroupListModels.put(std::move(model));

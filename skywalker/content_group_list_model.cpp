@@ -6,8 +6,18 @@ namespace Skywalker {
 
 ContentGroupListModel::ContentGroupListModel(const ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
-    mContentFilter(contentFilter)
+    mContentFilter(contentFilter),
+    mSubscribed(true) // implicitly subscribed to global labels
 {
+}
+
+ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, const ContentFilter& contentFilter, QObject* parent) :
+    QAbstractListModel(parent),
+    mContentFilter(contentFilter),
+    mLabelerDid(labelerDid),
+    mSubscribed(mContentFilter.isSubscribedToLabeler(mLabelerDid))
+{
+    qDebug() << "SUBSCRIBED:" << mSubscribed;
 }
 
 void ContentGroupListModel::setGlobalContentGroups()
@@ -120,6 +130,15 @@ void ContentGroupListModel::setAdultContent(bool adultContent)
     }
 }
 
+void ContentGroupListModel::setSubscribed(bool subscribed)
+{
+    if (subscribed != mSubscribed)
+    {
+        mSubscribed = subscribed;
+        emit subscribedChanged();
+    }
+}
+
 bool ContentGroupListModel::isModified(const ATProto::UserPreferences& userPreferences) const
 {
     return mAdultContent != userPreferences.getAdultContent() || !mChangedVisibility.empty();
@@ -132,14 +151,13 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
     for (const auto& [index, visibility] : mChangedVisibility)
     {
         const auto& contentGoup = mContentGroupList.at(index);
-        const auto& label = contentGoup.mLabelId;
+        const auto& label = contentGoup.getLabelId();
         const auto labelVisibility = ATProto::UserPreferences::LabelVisibility(visibility);
         userPreferences.setLabelVisibility(label, labelVisibility);
 
-        if (contentGoup.mLegacyLabelId)
-            userPreferences.setLabelVisibility(*contentGoup.mLegacyLabelId, labelVisibility);
+        if (contentGoup.getLegacyLabelId())
+            userPreferences.setLabelVisibility(*contentGoup.getLegacyLabelId(), labelVisibility);
     }
 }
-
 
 }

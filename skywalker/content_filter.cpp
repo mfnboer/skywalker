@@ -6,6 +6,9 @@
 
 namespace Skywalker {
 
+// We are implicitly subscribed to the Bluesky moderator
+#define BLUESKY_MODERATOR_DID QStringLiteral("did:plc:ar7c4by46qjdydhdevvrndac")
+
 const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
     {
         "porn",
@@ -46,6 +49,11 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
 };
 
 ContentFilter::GlobalContentGroupMap ContentFilter::CONTENT_GROUPS;
+
+ContentGroup::ContentGroup(const QString& labelId) :
+    mLabelId(labelId),
+    mTitle(labelId)
+{}
 
 ContentGroup::ContentGroup(
         const QString& labelId, const QString& title, const QString& description,
@@ -112,7 +120,7 @@ ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition&
 void ContentFilter::initContentGroups()
 {
     for (const auto& group : CONTENT_GROUP_LIST)
-        CONTENT_GROUPS[group.mLabelId] = &group;
+        CONTENT_GROUPS[group.getLabelId()] = &group;
 }
 
 const ContentFilter::GlobalContentGroupMap& ContentFilter::getContentGroups()
@@ -169,8 +177,8 @@ void ContentFilter::initLabelGroupMap()
     {
         sLabelGroupMap[id] = id;
 
-        if (group->mLegacyLabelId)
-            sLabelGroupMap[*group->mLegacyLabelId] = id;
+        if (group->getLegacyLabelId())
+            sLabelGroupMap[*group->getLegacyLabelId()] = id;
     }
 }
 
@@ -201,18 +209,18 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& 
 {
 
 
-    if (group.mAdult && !mUserPreferences.getAdultContent())
+    if (group.isAdult() && !mUserPreferences.getAdultContent())
         return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
 
-    auto visibility = mUserPreferences.getLabelVisibility(group.mLabelId);
+    auto visibility = mUserPreferences.getLabelVisibility(group.getLabelId());
 
-    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN && group.mLegacyLabelId)
-        visibility = mUserPreferences.getLabelVisibility(*group.mLegacyLabelId);
+    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN && group.getLegacyLabelId())
+        visibility = mUserPreferences.getLabelVisibility(*group.getLegacyLabelId());
 
     if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
         return group.getContentVisibility(visibility);
 
-    return group.mDefaultVisibility;
+    return group.getDefaultVisibility();
 }
 
 QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label) const
@@ -244,10 +252,10 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label
 
 QString ContentFilter::getGroupWarning(const ContentGroup& group) const
 {
-    if (group.mAdult && !mUserPreferences.getAdultContent())
+    if (group.isAdult() && !mUserPreferences.getAdultContent())
         return QObject::tr("Adult content");
 
-    return group.mTitle;
+    return group.getTitle();
 }
 
 QString ContentFilter::getWarning(const ContentLabel& label) const
@@ -299,6 +307,23 @@ std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWa
     }
 
     return {visibility, warning};
+}
+
+bool ContentFilter::isSubscribedToLabeler(const QString& did) const
+{
+    if (did == BLUESKY_MODERATOR_DID)
+        return true;
+
+    const auto& prefs = mUserPreferences.getLabelersPref();
+
+    // TODO: linear search ok?
+    for (const auto& labeler : prefs.mLabelers)
+    {
+        if (did == labeler.mDid)
+            return true;
+    }
+
+    return false;
 }
 
 }
