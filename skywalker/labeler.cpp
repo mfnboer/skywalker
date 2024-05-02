@@ -1,7 +1,6 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "labeler.h"
-#include <unordered_set>
 
 namespace Skywalker {
 
@@ -10,11 +9,12 @@ LabelerViewerState::LabelerViewerState(const ATProto::AppBskyLabeler::LabelerVie
 {
 }
 
-LabelerPolicies::LabelerPolicies(const ATProto::AppBskyLabeler::LabelerPolicies& policies) :
-    mLabelValues(policies.mLabelValues.cbegin(), policies.mLabelValues.cend())
+LabelerPolicies::LabelerPolicies(const ATProto::AppBskyLabeler::LabelerPolicies& policies, const QString& did) :
+    mLabelValues(policies.mLabelValues.cbegin(), policies.mLabelValues.cend()),
+    mLabelerDid(did)
 {
     for (const auto& def : policies.mLabelValueDefinitions)
-        mLabelContentGroupMap[def->mIdentifier] = ContentGroup(*def);
+        mLabelContentGroupMap[def->mIdentifier] = ContentGroup(*def, did);
 }
 
 const ContentGroup* LabelerPolicies::getContentGroup(const QString& label) const
@@ -55,7 +55,7 @@ std::vector<ContentGroup> LabelerPolicies::getContentGroupList() const
         }
 
         qDebug() << "Label without definition:" << label;
-        groupList.push_back(ContentGroup(label));
+        groupList.push_back(ContentGroup(label, mLabelerDid));
     }
 
     return groupList;
@@ -83,7 +83,7 @@ LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerViewDetailed& vie
 
 LabelerViewDetailed::LabelerViewDetailed(const ATProto::AppBskyLabeler::LabelerViewDetailed& view) :
     LabelerView(view),
-    mPolicies(*view.mPolicies)
+    mPolicies(*view.mPolicies, getCreator().getDid())
 {
 }
 

@@ -334,6 +334,8 @@ qt_add_qml_module(libskywalker
         SOURCES labeler.h
         SOURCES labeler.cpp
         QML_FILES ContentGroupDelegate.qml
+        SOURCES content_group.h
+        SOURCES content_group.cpp
 )
 
 if (NOT ANDROID)

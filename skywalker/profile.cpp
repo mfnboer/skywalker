@@ -240,6 +240,11 @@ void BasicProfile::setAvatarUrl(const QString& avatarUrl)
     }
 }
 
+bool BasicProfile::isFixedLabeler() const
+{
+    return ContentFilter::isFixedLabelerSubscription(getDid());
+}
+
 Profile::Profile(const ATProto::AppBskyActor::ProfileView* profile) :
     BasicProfile(profile)
 {

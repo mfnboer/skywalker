@@ -154,6 +154,6 @@ Page {
 
     Component.onDestruction: {
         console.debug("Save filter settings");
-        skywalker.saveContentFilterPreferences();
+        skywalker.saveGlobalContentFilterPreferences();
     }
 }

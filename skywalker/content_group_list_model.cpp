@@ -17,7 +17,6 @@ ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, const Co
     mLabelerDid(labelerDid),
     mSubscribed(mContentFilter.isSubscribedToLabeler(mLabelerDid))
 {
-    qDebug() << "SUBSCRIBED:" << mSubscribed;
 }
 
 void ContentGroupListModel::setGlobalContentGroups()
@@ -139,9 +138,19 @@ void ContentGroupListModel::setSubscribed(bool subscribed)
     }
 }
 
+bool ContentGroupListModel::isFixedSubscription() const
+{
+    if (mLabelerDid.isEmpty())
+        return true;
+
+    return mContentFilter.isFixedLabelerSubscription(mLabelerDid);
+}
+
 bool ContentGroupListModel::isModified(const ATProto::UserPreferences& userPreferences) const
 {
-    return mAdultContent != userPreferences.getAdultContent() || !mChangedVisibility.empty();
+    return mAdultContent != userPreferences.getAdultContent() ||
+           !mChangedVisibility.empty() ||
+           (!mLabelerDid.isEmpty() && mSubscribed != mContentFilter.isSubscribedToLabeler(mLabelerDid));
 }
 
 void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) const
@@ -150,14 +159,39 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
 
     for (const auto& [index, visibility] : mChangedVisibility)
     {
-        const auto& contentGoup = mContentGroupList.at(index);
-        const auto& label = contentGoup.getLabelId();
+        const auto& contentGroup = mContentGroupList.at(index);
+        const auto& label = contentGroup.getLabelId();
         const auto labelVisibility = ATProto::UserPreferences::LabelVisibility(visibility);
-        userPreferences.setLabelVisibility(label, labelVisibility);
 
-        if (contentGoup.getLegacyLabelId())
-            userPreferences.setLabelVisibility(*contentGoup.getLegacyLabelId(), labelVisibility);
+        qDebug() << "Changed label:" << label << "visibitlity:" << (int)labelVisibility;
+
+        Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label));
+        userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), label, labelVisibility);
+
+        if (contentGroup.getLegacyLabelId())
+            userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), *contentGroup.getLegacyLabelId(), labelVisibility);
     }
+
+    if (mLabelerDid.isEmpty() || mSubscribed == mContentFilter.isSubscribedToLabeler(mLabelerDid))
+        return;
+
+    auto prefs = userPreferences.getLabelersPref();
+
+    if (mSubscribed)
+    {
+        qDebug() << "Subscribe to labeler:" << mLabelerDid;
+        ATProto::AppBskyActor::LabelerPrefItem item;
+        item.mDid = mLabelerDid;
+        prefs.mLabelers.push_back(item);
+    }
+    else
+    {
+        qDebug() << "Unsubscribe from labeler:" << mLabelerDid;
+        std::erase_if(prefs.mLabelers, [this](const auto& item){ return item.mDid == mLabelerDid; });
+        userPreferences.removeContentLabelPrefs(mLabelerDid);
+    }
+
+    userPreferences.setLabelersPref(prefs);
 }
 
 }

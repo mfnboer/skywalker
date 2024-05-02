@@ -123,6 +123,8 @@ public:
     // If avatarUrl is a "image://", then the profile takes ownership of the image
     void setAvatarUrl(const QString& avatarUrl);
 
+    Q_INVOKABLE bool isFixedLabeler() const;
+
 protected:
     const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;
     const ATProto::AppBskyActor::ProfileView* mProfileView = nullptr;

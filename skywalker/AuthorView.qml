@@ -259,15 +259,15 @@ Page {
 
                 SkyButton {
                     text: qsTr("Subscribe")
-                    visible: !isSubscribed && isLabeler
-                    onClicked: contentGroupListModel.setSubscribed(true)
+                    visible: !isSubscribed && isLabeler && !author.isFixedLabeler()
+                    onClicked: contentGroupListModel.subscribed = true
                     Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Unsubscribe")
-                    visible: isSubscribed && isLabeler
-                    onClicked: contentGroupListModel.setSubscribed(false)
+                    visible: isSubscribed && isLabeler && !author.isFixedLabeler()
+                    onClicked: contentGroupListModel.subscribed = false
                     Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
                 }
             }
@@ -978,8 +978,10 @@ Page {
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
 
-        if (contentGroupListModelId > -1)
+        if (contentGroupListModelId > -1) {
+            skywalker.saveContentFilterPreferences(contentGroupListModel)
             skywalker.removeContentGroupListModel(contentGroupListModelId)
+        }
     }
 
     Component.onCompleted: {

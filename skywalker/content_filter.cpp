@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "content_filter.h"
-#include "definitions.h"
 #include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
@@ -17,7 +16,8 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         "nsfw",
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
-        QEnums::LABEL_TARGET_MEDIA
+        QEnums::LABEL_TARGET_MEDIA,
+        ""
     },
     {
         "nudity",
@@ -26,7 +26,8 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         {},
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
-        QEnums::LABEL_TARGET_MEDIA
+        QEnums::LABEL_TARGET_MEDIA,
+        ""
     },
     {
         "sexual",
@@ -35,7 +36,8 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         "suggestive",
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
-        QEnums::LABEL_TARGET_MEDIA
+        QEnums::LABEL_TARGET_MEDIA,
+        ""
     },
     {
         "graphic-media",
@@ -44,78 +46,12 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         "gore",
         true,
         QEnums::CONTENT_VISIBILITY_HIDE_MEDIA,
-        QEnums::LABEL_TARGET_MEDIA
+        QEnums::LABEL_TARGET_MEDIA,
+        ""
     }
 };
 
 ContentFilter::GlobalContentGroupMap ContentFilter::CONTENT_GROUPS;
-
-ContentGroup::ContentGroup(const QString& labelId) :
-    mLabelId(labelId),
-    mTitle(labelId)
-{}
-
-ContentGroup::ContentGroup(
-        const QString& labelId, const QString& title, const QString& description,
-        const std::optional<QString>& legacyLabelId, bool adult,
-        QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget) :
-    mLabelId(labelId),
-    mTitle(title),
-    mDescription(description),
-    mLegacyLabelId(legacyLabelId),
-    mAdult(adult),
-    mDefaultVisibility(defaultVisibility),
-    mLabelTarget(labelTarget)
-{
-}
-
-ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef) :
-    mLabelId(labelDef.mIdentifier),
-    mAdult(labelDef.mAdultOnly)
-{
-    switch (labelDef.mBlurs)
-    {
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Blurs::CONTENT:
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Blurs::NONE:
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Blurs::UNKNOWN:
-        mLabelTarget = QEnums::LABEL_TARGET_CONTENT;
-        break;
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Blurs::MEDIA:
-        mLabelTarget = QEnums::LABEL_TARGET_MEDIA;
-        break;
-    }
-
-    switch (labelDef.mDefaultSetting)
-    {
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Setting::IGNORE:
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Setting::UNKNOWN:
-        mDefaultVisibility = QEnums::CONTENT_VISIBILITY_SHOW;
-        break;
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Setting::WARN:
-        mDefaultVisibility = isPostLevel() ? QEnums::CONTENT_VISIBILITY_WARN_POST : QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
-        break;
-    case ATProto::ComATProtoLabel::LabelValueDefinition::Setting::HIDE:
-        mDefaultVisibility = isPostLevel() ? QEnums::CONTENT_VISIBILITY_HIDE_POST : QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
-        break;
-    }
-
-    for (const auto& locale : labelDef.mLocales)
-    {
-        // TODO: improve language matching, e.g. en_US, en_UK, en
-        if (locale->mLang == UI_LANGUAGE)
-        {
-            mTitle = locale->mName;
-            mDescription = locale->mDescription;
-            break;
-        }
-    }
-
-    if (mTitle.isEmpty() && !labelDef.mLocales.empty())
-    {
-        mTitle = labelDef.mLocales.front()->mLang;
-        mDescription = labelDef.mLocales.front()->mDescription;
-    }
-}
 
 void ContentFilter::initContentGroups()
 {
@@ -136,6 +72,11 @@ const ContentGroup* ContentFilter::getGlobalContentGroup(const QString& labelId)
     const auto& groups = getContentGroups();
     auto it = groups.find(labelId);
     return it != groups.end() ? it->second : nullptr;
+}
+
+bool ContentFilter::isGlobalLabel(const QString& labelId)
+{
+    return getGlobalContentGroup(labelId) != nullptr;
 }
 
 QString ContentGroup::getFormattedDescription() const
@@ -207,15 +148,13 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
 
 QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& group) const
 {
-
-
     if (group.isAdult() && !mUserPreferences.getAdultContent())
         return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
 
-    auto visibility = mUserPreferences.getLabelVisibility(group.getLabelId());
+    auto visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), group.getLabelId());
 
     if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN && group.getLegacyLabelId())
-        visibility = mUserPreferences.getLabelVisibility(*group.getLegacyLabelId());
+        visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), *group.getLegacyLabelId());
 
     if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
         return group.getContentVisibility(visibility);
@@ -311,7 +250,7 @@ std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWa
 
 bool ContentFilter::isSubscribedToLabeler(const QString& did) const
 {
-    if (did == BLUESKY_MODERATOR_DID)
+    if (isFixedLabelerSubscription(did))
         return true;
 
     const auto& prefs = mUserPreferences.getLabelersPref();
@@ -324,6 +263,11 @@ bool ContentFilter::isSubscribedToLabeler(const QString& did) const
     }
 
     return false;
+}
+
+bool ContentFilter::isFixedLabelerSubscription(const QString& did)
+{
+    return did == BLUESKY_MODERATOR_DID;
 }
 
 }

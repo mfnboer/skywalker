@@ -5,6 +5,7 @@ import skywalker
 
 ColumnLayout {
     property int margin: 10
+    required property var model
     required property bool isSubscribed
     required property bool adultContent
     required property contentgroup contentGroup
@@ -49,7 +50,7 @@ ColumnLayout {
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
-                    contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_SHOW
+                    model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_SHOW
             }
 
             Accessible.name: qsTr(`show ${contentGroup.text}`)
@@ -62,7 +63,7 @@ ColumnLayout {
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
-                    contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_WARN
+                    model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_WARN
             }
 
             Accessible.name: qsTr(`warn for ${contentGroup.text}`)
@@ -76,7 +77,7 @@ ColumnLayout {
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
-                    contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_HIDE
+                    model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_HIDE
             }
 
             Accessible.name: qsTr(`hide ${contentGroup.text}`)

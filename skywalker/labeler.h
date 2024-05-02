@@ -32,7 +32,7 @@ class LabelerPolicies
 
 public:
     LabelerPolicies() = default;
-    explicit LabelerPolicies(const ATProto::AppBskyLabeler::LabelerPolicies& policies);
+    explicit LabelerPolicies(const ATProto::AppBskyLabeler::LabelerPolicies& policies, const QString& did);
 
     const QStringList& getLabelValues() const { return mLabelValues; }
     const ContentGroup* getContentGroup(const QString& label) const;
@@ -41,6 +41,7 @@ public:
 private:
     QStringList mLabelValues;
     ContentGroupMap mLabelContentGroupMap;
+    QString mLabelerDid;
 };
 
 class LabelerView

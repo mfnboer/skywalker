@@ -135,7 +135,8 @@ public:
     Q_INVOKABLE int createContentGroupListModel(const QString& did, const LabelerPolicies& policies);
     Q_INVOKABLE ContentGroupListModel* getContentGroupListModel(int id) const;
     Q_INVOKABLE void removeContentGroupListModel(int id);
-    Q_INVOKABLE void saveContentFilterPreferences();
+    Q_INVOKABLE void saveGlobalContentFilterPreferences();
+    Q_INVOKABLE void saveContentFilterPreferences(const ContentGroupListModel* model);
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();

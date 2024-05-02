@@ -2280,9 +2280,8 @@ void Skywalker::removeContentGroupListModel(int id)
     mContentGroupListModels.remove(id);
 }
 
-void Skywalker::saveContentFilterPreferences()
+void Skywalker::saveGlobalContentFilterPreferences()
 {
-    Q_ASSERT(mBsky);
     Q_ASSERT(mGlobalContentGroupListModel);
 
     if (!mGlobalContentGroupListModel)
@@ -2291,14 +2290,22 @@ void Skywalker::saveContentFilterPreferences()
         return;
     }
 
-    if (!mGlobalContentGroupListModel->isModified(mUserPreferences))
+    saveContentFilterPreferences(mGlobalContentGroupListModel.get());
+}
+
+void Skywalker::saveContentFilterPreferences(const ContentGroupListModel* model)
+{
+    Q_ASSERT(model);
+    qDebug() << "Save label preferences, labeler DID:" << model->getLabelerDid();
+
+    if (!model->isModified(mUserPreferences))
     {
         qDebug() << "Filter preferences not modified.";
         return;
     }
 
     auto prefs = mUserPreferences;
-    mGlobalContentGroupListModel->saveTo(prefs);
+    model->saveTo(prefs);
     saveUserPreferences(prefs);
 }
 

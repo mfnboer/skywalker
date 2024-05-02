@@ -2,12 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "content_label.h"
-#include "enums.h"
-#include <atproto/lib/user_preferences.h>
-#include <atproto/lib/lexicon/com_atproto_label.h>
-#include <QStringList>
-#include <QObject>
-#include <QtQmlIntegration>
+#include "content_group.h"
 #include <tuple>
 
 namespace Skywalker {
@@ -19,46 +14,6 @@ public:
     virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const = 0;
 };
 
-class ContentGroup
-{
-    Q_GADGET
-    Q_PROPERTY(QString title MEMBER mTitle CONSTANT FINAL)
-    Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
-    Q_PROPERTY(QString formattedDescription READ getFormattedDescription CONSTANT FINAL)
-    Q_PROPERTY(bool isAdult MEMBER mAdult CONSTANT FINAL)
-    QML_VALUE_TYPE(contentgroup)
-
-public:
-    ContentGroup() = default;
-    explicit ContentGroup(const QString& labelId);
-    ContentGroup(const QString& labelId, const QString& title, const QString& description,
-                 const std::optional<QString>& legacyLabelId, bool adult,
-                 QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget);
-    explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef);
-
-    const QString& getLabelId() const { return mLabelId; }
-    const QString& getTitle() const { return mTitle; }
-    const std::optional<QString>& getLegacyLabelId() const { return mLegacyLabelId; }
-    bool isAdult() const { return mAdult; }
-    QEnums::ContentVisibility getDefaultVisibility() const { return mDefaultVisibility; }
-
-    bool isPostLevel() const { return mLabelTarget == QEnums::LABEL_TARGET_CONTENT; }
-    QString getFormattedDescription() const;
-    QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
-
-private:
-    QString mLabelId;
-    QString mTitle;
-    QString mDescription;
-    std::optional<QString> mLegacyLabelId;
-    bool mAdult = false;
-    QEnums::ContentVisibility mDefaultVisibility = QEnums::ContentVisibility::CONTENT_VISIBILITY_SHOW;
-    QEnums::LabelTarget mLabelTarget = QEnums::LabelTarget::LABEL_TARGET_CONTENT;
-};
-
-using ContentGroupList = QList<ContentGroup>;
-using ContentGroupMap = std::unordered_map<QString, ContentGroup>; // label ID -> group
-
 class ContentFilter : public IContentFilter
 {
 public:
@@ -68,6 +23,7 @@ public:
     static const std::vector<ContentGroup> CONTENT_GROUP_LIST;
     static const GlobalContentGroupMap& getContentGroups();
     static const ContentGroup* getGlobalContentGroup(const QString& labelId);
+    static bool isGlobalLabel(const QString& labelId);
 
     // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
     static ContentLabelList getContentLabels(const LabelList& labels);
@@ -83,6 +39,7 @@ public:
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
 
     bool isSubscribedToLabeler(const QString& did) const;
+    static bool isFixedLabelerSubscription(const QString& did);
 
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;
@@ -104,5 +61,3 @@ public:
 };
 
 }
-
-Q_DECLARE_METATYPE(::Skywalker::ContentGroup)
