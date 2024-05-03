@@ -253,16 +253,10 @@ bool ContentFilter::isSubscribedToLabeler(const QString& did) const
     if (isFixedLabelerSubscription(did))
         return true;
 
+    ATProto::AppBskyActor::LabelerPrefItem item;
+    item.mDid = did;
     const auto& prefs = mUserPreferences.getLabelersPref();
-
-    // TODO: linear search ok?
-    for (const auto& labeler : prefs.mLabelers)
-    {
-        if (did == labeler.mDid)
-            return true;
-    }
-
-    return false;
+    return prefs.mLabelers.contains(item);
 }
 
 bool ContentFilter::isFixedLabelerSubscription(const QString& did)

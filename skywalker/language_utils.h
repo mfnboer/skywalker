@@ -16,13 +16,23 @@ class Language
     QML_VALUE_TYPE(language)
 
 public:
+    enum class Match
+    {
+        NONE,
+        SHORT_CODE,
+        CODE
+    };
+
     Language() = default;
     Language(const QString& code, const QString& nativeName);
 
     const QString& getShortCode() const { return mShortCode; }
     const QString& getNativeName() const { return mNativeName; }
 
+    Match compare(const Language& other) const;
+
 private:
+    QString mCode;
     QString mShortCode;
     QString mNativeName;
 };

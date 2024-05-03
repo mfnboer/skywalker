@@ -13,9 +13,21 @@ static constexpr char const* DEFAULT_LANGUAGE = "en";
 static constexpr int MAX_USED_LANGUAGES = 5;
 
 Language::Language(const QString& code, const QString& nativeName) :
+    mCode(code),
     mShortCode(LanguageUtils::languageCodeToShortCode(code)),
     mNativeName(nativeName)
 {
+}
+
+Language::Match Language::compare(const Language& other) const
+{
+    if (mCode == other.mCode)
+        return Match::CODE;
+
+    if (mShortCode == other.mShortCode)
+        return Match::SHORT_CODE;
+
+    return Match::NONE;
 }
 
 LanguageList LanguageUtils::sLanguages;

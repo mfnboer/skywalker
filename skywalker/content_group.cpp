@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "content_group.h"
 #include "definitions.h"
+#include "language_utils.h"
 
 namespace Skywalker {
 
@@ -59,15 +60,22 @@ ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition&
         break;
     }
 
+    //const Language uiLang(UI_LANGUAGE, {});
+    const Language uiLang("de", {});
+
     for (const auto& locale : labelDef.mLocales)
     {
-        // TODO: improve language matching, e.g. en_US, en_UK, en
-        if (locale->mLang == UI_LANGUAGE)
+        const auto match = uiLang.compare(Language(locale->mLang, {}));
+
+        if (match != Language::Match::NONE && mTitle.isEmpty())
         {
             mTitle = locale->mName;
             mDescription = locale->mDescription;
-            break;
         }
+
+        // Full match on UI-language
+        if (match == Language::Match::CODE)
+            break;
     }
 
     if (mTitle.isEmpty() && !labelDef.mLocales.empty())

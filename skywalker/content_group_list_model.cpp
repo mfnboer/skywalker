@@ -176,18 +176,18 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
         return;
 
     auto prefs = userPreferences.getLabelersPref();
+    ATProto::AppBskyActor::LabelerPrefItem item;
+    item.mDid = mLabelerDid;
 
     if (mSubscribed)
     {
         qDebug() << "Subscribe to labeler:" << mLabelerDid;
-        ATProto::AppBskyActor::LabelerPrefItem item;
-        item.mDid = mLabelerDid;
-        prefs.mLabelers.push_back(item);
+        prefs.mLabelers.insert(item);
     }
     else
     {
         qDebug() << "Unsubscribe from labeler:" << mLabelerDid;
-        std::erase_if(prefs.mLabelers, [this](const auto& item){ return item.mDid == mLabelerDid; });
+        prefs.mLabelers.erase(item);
         userPreferences.removeContentLabelPrefs(mLabelerDid);
     }
 
