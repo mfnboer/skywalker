@@ -259,6 +259,18 @@ bool ContentFilter::isSubscribedToLabeler(const QString& did) const
     return prefs.mLabelers.contains(item);
 }
 
+std::unordered_set<QString> ContentFilter::getSubscribedLabelerDids() const
+{
+    auto dids = mUserPreferences.getLabelerDids();
+    dids.insert(BLUESKY_MODERATOR_DID);
+    return dids;
+}
+
+size_t ContentFilter::numLabelers() const
+{
+    return mUserPreferences.numLabelers() + 1; // +1 for Bluesky labeler
+}
+
 bool ContentFilter::isFixedLabelerSubscription(const QString& did)
 {
     return did == BLUESKY_MODERATOR_DID;

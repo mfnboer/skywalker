@@ -10,7 +10,7 @@ Item {
 
     id: view
     width: parent.width
-    height: filter.imageVisible() ? (gifUtils.isGif(postExternal.uri) ? Math.max(gifImage.height + tenorAttribution.height, gifLoadingIndicator.height) : card.columnHeight)
+    height: filter.imageVisible() ? (gifUtils.isGif(postExternal.uri) ? Math.max(gifImage.height + tenorAttribution.height + 5, gifLoadingIndicator.height) : card.columnHeight)
                                   : filter.height
 
     Accessible.role: Accessible.Link

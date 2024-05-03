@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQml.Models
 import skywalker
 
 SvgButton {
@@ -50,6 +51,8 @@ SvgButton {
             id: menuInstantiator
             model: []
             delegate: MenuItem {
+                required property favoritefeedview modelData
+
                 contentItem: SkyCleanedText {
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: feedAvatar.width + 5

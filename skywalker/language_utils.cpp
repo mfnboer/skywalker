@@ -168,6 +168,9 @@ LanguageList LanguageUtils::getUsedPostLanguages() const
 
     for (const QString& shortCode : langs)
     {
+        if (shortCode.isEmpty())
+            continue;
+
         usedLangs.push_back(getLanguage(shortCode));
         usedShortCodes.insert(shortCode);
     }
@@ -203,6 +206,12 @@ LanguageList LanguageUtils::getUsedPostLanguages() const
 
 void LanguageUtils::addUsedPostLanguage(const QString& language)
 {
+    if (language.isEmpty())
+    {
+        qDebug() << "No language";
+        return;
+    }
+
     Q_ASSERT(mSkywalker);
     const QString& did = mSkywalker->getUserDid();
     auto* settings = mSkywalker->getUserSettings();
@@ -212,6 +221,7 @@ void LanguageUtils::addUsedPostLanguage(const QString& language)
         return;
 
     langs.removeOne(language);
+    langs.removeAll(""); // somehow empty languages got in the list
 
     while (langs.size() >= MAX_USED_LANGUAGES)
         langs.pop_back();

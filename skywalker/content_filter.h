@@ -39,6 +39,9 @@ public:
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
 
     bool isSubscribedToLabeler(const QString& did) const;
+    std::unordered_set<QString> getSubscribedLabelerDids() const;
+    size_t numLabelers() const;
+
     static bool isFixedLabelerSubscription(const QString& did);
 
 private:

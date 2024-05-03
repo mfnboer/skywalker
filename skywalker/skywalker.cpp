@@ -347,6 +347,7 @@ void Skywalker::getUserPreferences()
             mUserPreferences = prefs;
             updateFavoriteFeeds();
             loadMutedReposts();
+            initLabelers();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
@@ -441,6 +442,7 @@ void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs, std::
         [this, prefs, okCb]{
             qDebug() << "saveUserPreferences ok";
             mUserPreferences = prefs;
+            initLabelers();
 
             if (okCb)
                 okCb();
@@ -503,10 +505,15 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         });
 }
 
+void Skywalker::initLabelers()
+{
+    Q_ASSERT(mBsky);
+    mBsky->setLabelerDids(mContentFilter.getSubscribedLabelerDids());
+}
+
 void Skywalker::dataMigration()
 {
     migrateDraftPosts();
-    //emit dataMigrationDone();
 }
 
 void Skywalker::syncTimeline(int maxPages)
@@ -2264,6 +2271,8 @@ int Skywalker::createContentGroupListModel(const QString& did, const LabelerPoli
     auto model = std::make_unique<ContentGroupListModel>(did, mContentFilter, this);
     model->setContentGroups(policies.getContentGroupList());
     model->setAdultContent(mUserPreferences.getAdultContent());
+    connect(model.get(), &ContentGroupListModel::error, this, [this](QString error)
+            { showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     return mContentGroupListModels.put(std::move(model));
 }
 

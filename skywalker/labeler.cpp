@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "labeler.h"
+#include "content_filter.h"
 
 namespace Skywalker {
 

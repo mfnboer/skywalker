@@ -213,6 +213,7 @@ private:
 }
 
 Q_DECLARE_METATYPE(::Skywalker::ProfileViewerState)
+Q_DECLARE_METATYPE(::Skywalker::ProfileAssociated)
 Q_DECLARE_METATYPE(::Skywalker::BasicProfile)
 Q_DECLARE_METATYPE(::Skywalker::Profile)
 Q_DECLARE_METATYPE(::Skywalker::DetailedProfile)

@@ -200,16 +200,16 @@ Column {
                                               contentWarning: postContentWarning})
         }
 
-        if (postContentLabels.length > 0) {
-            let component = Qt.createComponent("ContentLabels.qml")
-            component.createObject(postBody, {contentLabels: postContentLabels, contentAuthorDid: postAuthor.did})
-        }
-
         if (postExternal) {
             let component = Qt.createComponent("ExternalView.qml")
             component.createObject(postBody, {postExternal: postBody.postExternal,
                                               contentVisibility: postContentVisibility,
                                               contentWarning: postContentWarning})
+        }
+
+        if (postContentLabels.length > 0) {
+            let component = Qt.createComponent("ContentLabels.qml")
+            component.createObject(postBody, {contentLabels: postContentLabels, contentAuthorDid: postAuthor.did})
         }
 
         if (postRecord) {

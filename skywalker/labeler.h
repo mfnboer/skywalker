@@ -1,7 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "content_filter.h"
+#include "content_group.h"
 #include "profile.h"
 #include <atproto/lib/lexicon/app_bsky_labeler.h>
 #include <QtQmlIntegration>
@@ -94,3 +94,8 @@ private:
 };
 
 }
+
+Q_DECLARE_METATYPE(::Skywalker::LabelerViewerState)
+Q_DECLARE_METATYPE(::Skywalker::LabelerPolicies)
+Q_DECLARE_METATYPE(::Skywalker::LabelerView)
+Q_DECLARE_METATYPE(::Skywalker::LabelerViewDetailed)

@@ -47,6 +47,7 @@ public:
 signals:
     void adultContentChanged();
     void subscribedChanged();
+    void error(QString msg);
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

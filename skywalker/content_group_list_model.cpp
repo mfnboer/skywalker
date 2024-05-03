@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "content_group_list_model.h"
+#include <atproto/lib/client.h>
 
 namespace Skywalker {
 
@@ -133,6 +134,12 @@ void ContentGroupListModel::setSubscribed(bool subscribed)
 {
     if (subscribed != mSubscribed)
     {
+        if (subscribed && mContentFilter.numLabelers() >= ATProto::Client::MAX_LABELERS)
+        {
+            emit error(tr("Already subscribed to maximum number of labelers: %1").arg(mContentFilter.numLabelers()));
+            return;
+        }
+
         mSubscribed = subscribed;
         emit subscribedChanged();
     }

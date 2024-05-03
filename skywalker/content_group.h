@@ -55,3 +55,5 @@ using ContentGroupList = QList<ContentGroup>;
 using ContentGroupMap = std::unordered_map<QString, ContentGroup>; // label ID -> group
 
 }
+
+Q_DECLARE_METATYPE(::Skywalker::ContentGroup)

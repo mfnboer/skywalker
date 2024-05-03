@@ -267,6 +267,7 @@ private:
     void updateFavoriteFeeds();
     void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
+    void initLabelers();
     void disableDebugLogging();
     void restoreDebugLogging();
     void handleAppStateChange(Qt::ApplicationState state);
