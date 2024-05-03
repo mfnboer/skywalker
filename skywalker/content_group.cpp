@@ -60,8 +60,7 @@ ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition&
         break;
     }
 
-    //const Language uiLang(UI_LANGUAGE, {});
-    const Language uiLang("de", {});
+    const Language uiLang(UI_LANGUAGE, {});
 
     for (const auto& locale : labelDef.mLocales)
     {
