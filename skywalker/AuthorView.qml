@@ -31,6 +31,9 @@ Page {
     property int contentGroupListModelId: -1
     property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
     property bool isSubscribed: contentGroupListModel ? contentGroupListModel.subscribed : false
+    property labelerviewdetailed labeler
+    property string labelerLikeUri: ""
+    property int labelerLikeCount: 0
 
     signal closed
 
@@ -327,43 +330,21 @@ Page {
                 topPadding: 10
                 visible: contentVisible()
 
-                Text {
-                    color: guiSettings.linkColor
-                    text: qsTr(`<b>${author.followersCount}</b> followers`)
-
-                    Accessible.role: Accessible.Link
-                    Accessible.name: unicodeFonts.toPlainText(text)
-                    Accessible.onPressAction: showFollowers()
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: parent.showFollowers()
-                    }
-
-                    function showFollowers() {
-                        let modelId = skywalker.createAuthorListModel(
-                                QEnums.AUTHOR_LIST_FOLLOWERS, author.did)
-                        root.viewAuthorList(modelId, qsTr("Followers"))
-                    }
+                StatAuthors {
+                    atUri: author.did
+                    count: author.followersCount
+                    nameSingular: qsTr("follower")
+                    namePlural: qsTr("followers")
+                    authorListType: QEnums.AUTHOR_LIST_FOLLOWERS
+                    authorListHeader: qsTr("Followers")
                 }
-                Text {
-                    color: guiSettings.linkColor
-                    text: qsTr(`<b>${author.followsCount}</b> following`)
-
-                    Accessible.role: Accessible.Link
-                    Accessible.name: unicodeFonts.toPlainText(text)
-                    Accessible.onPressAction: showFollowing()
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: parent.showFollowing()   
-                    }
-
-                    function showFollowing() {
-                        let modelId = skywalker.createAuthorListModel(
-                                QEnums.AUTHOR_LIST_FOLLOWS, author.did)
-                        root.viewAuthorList(modelId, qsTr("Following"))
-                    }
+                StatAuthors {
+                    atUri: author.did
+                    count: author.followsCount
+                    nameSingular: qsTr("following")
+                    namePlural: qsTr("following")
+                    authorListType: QEnums.AUTHOR_LIST_FOLLOWS
+                    authorListHeader: qsTr("Following")
                 }
                 Text {
                     color: guiSettings.textColor
@@ -385,6 +366,31 @@ Page {
                 visible: contentVisible()
 
                 onLinkActivated: (link) => root.openLink(link)
+            }
+
+            Row {
+                // height: likeIcon.height
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                spacing: 10
+                visible: isLabeler
+
+                StatIcon {
+                    id: likeIcon
+                    iconColor: labelerLikeUri ? guiSettings.likeColor : guiSettings.statsColor
+                    svg: labelerLikeUri ? svgFilled.like : svgOutline.like
+                    onClicked: likeLabeler(labelerLikeUri, labeler.uri, labeler.cid)
+                    Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(labelerLikeCount, qsTr("like"), qsTr("likes"))
+                }
+
+                StatAuthors {
+                    atUri: labeler.uri
+                    count: labelerLikeCount
+                    nameSingular: qsTr("like")
+                    namePlural: qsTr("likes")
+                    authorListType: QEnums.AUTHOR_LIST_LIKES
+                    authorListHeader: qsTr("Liked by")
+                }
             }
 
             TabBar {
@@ -801,12 +807,26 @@ Page {
         id: profileUtils
         skywalker: page.skywalker
 
-        onGetLabelerViewDetailedOk: (view) => setLabeler(view);
+        onGetLabelerViewDetailedOk: (view) => setLabeler(view)
         onGetLabelerViewDetailedFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onLikeLabelerOk: (likeUri) => {
+            labelerLikeUri = likeUri
+            ++labelerLikeCount
+        }
+
+        onUndoLikeLabelerOk: {
+            labelerLikeUri = ""
+            --labelerLikeCount
+        }
     }
 
     UnicodeFonts {
         id: unicodeFonts
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
     }
 
     GuiSettings {
@@ -964,6 +984,16 @@ Page {
 
     function setLabeler(view) {
         contentGroupListModelId = skywalker.createContentGroupListModel(author.did, view.policies)
+        labeler = view
+        labelerLikeUri = labeler.viewer.like
+        labelerLikeCount = labeler.likeCount
+    }
+
+    function likeLabeler(likeUri, uri, cid) {
+        if (likeUri)
+            profileUtils.undoLikeLabeler(likeUri, cid)
+        else
+            profileUtils.likeLabeler(uri, cid)
     }
 
     function isUser(author) {

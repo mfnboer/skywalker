@@ -5,6 +5,7 @@
 #include "presence.h"
 #include "profile.h"
 #include "wrapped_skywalker.h"
+#include <atproto/lib/post_master.h>
 #include <atproto/lib/profile_master.h>
 
 namespace Skywalker {
@@ -29,6 +30,8 @@ public:
                                    const QString& bannerImgSource, bool updateBanner);
 
     Q_INVOKABLE void getLabelerViewDetailed(const QString& did);
+    Q_INVOKABLE void likeLabeler(const QString& uri, const QString& cid);
+    Q_INVOKABLE void undoLikeLabeler(const QString& likeUri, const QString& cid);
 
 signals:
     void handle(QString handle, QString displayName, QString did);
@@ -39,6 +42,10 @@ signals:
     void updateProfileFailed(QString error);
     void getLabelerViewDetailedOk(LabelerViewDetailed);
     void getLabelerViewDetailedFailed(QString error);
+    void likeLabelerOk(QString likeUri);
+    void likeLabelerFailed(QString error);
+    void undoLikeLabelerOk();
+    void undoLikeLabelerFailed(QString error);
 
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
@@ -49,7 +56,10 @@ private:
                                ATProto::Blob::Ptr bannerBlob, bool updateBanner);
 
     ATProto::ProfileMaster* profileMaster();
+    ATProto::PostMaster* postMaster();
+
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
+    std::unique_ptr<ATProto::PostMaster> mPostMaster;
     std::unordered_map<QString, ATProto::Blob::Ptr> mDidAvatarBlobMap;
 };
 

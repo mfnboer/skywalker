@@ -2,10 +2,11 @@ import QtQuick
 import skywalker
 
 SvgImage {
-    x: parent.width - width * 0.9
-    y: height - height * 0.1
+    x: parent.width - width * 0.8
+    y: height - height * 0.2
     height: width
-    color: guiSettings.favoriteColor
+    color: "lightgrey"
+    outlineColor: guiSettings.backgroundColor
     svg: svgFilled.moderator
 
     GuiSettings {

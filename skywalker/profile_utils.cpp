@@ -19,6 +19,8 @@ ProfileUtils::ProfileUtils(QObject* parent) :
                 [this]{
                     qDebug() << "Reset profile master";
                     mProfileMaster = nullptr;
+                    qDebug() << "Reset post master";
+                    mPostMaster = nullptr;
                 });
     });
 }
@@ -37,6 +39,22 @@ ATProto::ProfileMaster* ProfileUtils::profileMaster()
     }
 
     return mProfileMaster.get();
+}
+
+ATProto::PostMaster* ProfileUtils::postMaster()
+{
+    if (!mPostMaster)
+    {
+        auto* client = bskyClient();
+        Q_ASSERT(client);
+
+        if (client)
+            mPostMaster = std::make_unique<ATProto::PostMaster>(*client);
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mPostMaster.get();
 }
 
 void ProfileUtils::getHandle(const QString& did)
@@ -225,6 +243,48 @@ void ProfileUtils::getLabelerViewDetailed(const QString& did)
         [this](const QString& error, const QString& msg){
             qDebug() << "getLabelerViewDetailed failed:" << error << " - " << msg;
             emit getLabelerViewDetailedFailed(msg);
+        });
+}
+
+void ProfileUtils::likeLabeler(const QString& uri, const QString& cid)
+{
+    if (!postMaster())
+        return;
+
+    postMaster()->like(uri, cid,
+        [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
+            if (!presence)
+                return;
+
+            emit likeLabelerOk(likeUri);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Like failed:" << error << " - " << msg;
+            emit likeLabelerFailed(msg);
+        });
+}
+
+void ProfileUtils::undoLikeLabeler(const QString& likeUri, const QString& cid)
+{
+    if (!postMaster())
+        return;
+
+    postMaster()->undo(likeUri,
+        [this, presence=getPresence(), cid]{
+            if (!presence)
+                return;
+
+            emit undoLikeLabelerOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo like failed:" << error << " - " << msg;
+            emit undoLikeLabelerFailed(msg);
         });
 }
 

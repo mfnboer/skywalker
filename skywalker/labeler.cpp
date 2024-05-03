@@ -64,6 +64,7 @@ std::vector<ContentGroup> LabelerPolicies::getContentGroupList() const
 
 LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerView& view) :
     mUri(view.mUri),
+    mCid(view.mCid),
     mCreator(Profile(view.mCreator.get()).nonVolatileCopy()),
     mLikeCount(view.mLikeCount),
     mViewer(*view.mViewer),
@@ -74,6 +75,7 @@ LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerView& view) :
 
 LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerViewDetailed& view) :
     mUri(view.mUri),
+    mCid(view.mCid),
     mCreator(Profile(view.mCreator.get()).nonVolatileCopy()),
     mLikeCount(view.mLikeCount),
     mViewer(*view.mViewer),

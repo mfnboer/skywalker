@@ -170,12 +170,9 @@ Rectangle {
                 iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
                 svg: feedLikeUri ? svgFilled.like : svgOutline.like
                 statistic: feedLikeCount
-
                 onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid)
 
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, "like", "likes")
-                Accessible.onPressAction: clicked()
+                Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, qsTr("like"), qsTr("likes"))
             }
 
             StatIcon {
@@ -184,9 +181,7 @@ Rectangle {
                 svg: svgOutline.moreVert
                 onClicked: moreMenu.open()
 
-                Accessible.role: Accessible.Button
                 Accessible.name: qsTr("more options")
-                Accessible.onPressAction: clicked()
 
                 Menu {
                     id: moreMenu

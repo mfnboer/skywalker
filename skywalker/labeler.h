@@ -48,6 +48,7 @@ class LabelerView
 {
     Q_GADGET
     Q_PROPERTY(QString uri READ getUri FINAL)
+    Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(Profile creator READ getCreator FINAL)
     Q_PROPERTY(int likeCount READ getLikeCount FINAL)
     Q_PROPERTY(LabelerViewerState viewer READ getViewer FINAL)
@@ -61,6 +62,7 @@ public:
     explicit LabelerView(const ATProto::AppBskyLabeler::LabelerViewDetailed& view);
 
     const QString& getUri() const { return mUri; }
+    const QString& getCid() const { return mCid; }
     const Profile& getCreator() const { return mCreator; }
     int getLikeCount() const { return mLikeCount; }
     const LabelerViewerState& getViewer() const { return mViewer; }
@@ -69,7 +71,7 @@ public:
 
 private:
     QString mUri;
-    // CID is available, but we don't need it now
+    QString mCid;
     Profile mCreator;
     int mLikeCount;
     LabelerViewerState mViewer;

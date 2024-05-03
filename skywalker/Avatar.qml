@@ -42,7 +42,7 @@ Item {
             width: parent.width
             height: parent.height
             color: "white"
-            svg: avatarItem.unknownSvg
+            svg: isModerator ? svgFilled.moderator : avatarItem.unknownSvg
         }
     }
     MouseArea {
@@ -58,7 +58,7 @@ Item {
     }
 
     ModeratorIcon {
-        width: parent.width * 0.3
+        width: parent.width * 0.6
         visible: isModerator
     }
 

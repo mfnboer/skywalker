@@ -336,6 +336,7 @@ qt_add_qml_module(libskywalker
         QML_FILES ContentGroupDelegate.qml
         SOURCES content_group.h
         SOURCES content_group.cpp
+        QML_FILES StatAuthors.qml
 )
 
 if (NOT ANDROID)
