@@ -9,25 +9,25 @@ namespace Skywalker {
 class ContentLabel {
     Q_GADGET
     Q_PROPERTY(QString did READ getDid FINAL)
-    Q_PROPERTY(QString text READ getText FINAL)
+    Q_PROPERTY(QString labelId READ getLabelId FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     QML_VALUE_TYPE(contentlabel)
 
 public:
     ContentLabel() = default;
-    ContentLabel(const QString& did, const QString& text, const QDateTime& createdAt) :
-        mDid(did), mText(text), mCreatedAt(createdAt) {}
+    ContentLabel(const QString& did, const QString& labelId, const QDateTime& createdAt) :
+        mDid(did), mLabelId(labelId), mCreatedAt(createdAt) {}
 
     static bool isSystemLabelId(const QString& labelId) { return labelId.startsWith('!'); }
 
     const QString& getDid() const { return mDid; }
-    const QString& getText() const { return mText; }
+    const QString& getLabelId() const { return mLabelId; }
     const QDateTime& getCreatedAt() const { return mCreatedAt; }
-    Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mText); }
+    Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mLabelId); }
 
 private:
     QString mDid;
-    QString mText;
+    QString mLabelId;
     QDateTime mCreatedAt;
 };
 

@@ -31,7 +31,7 @@ Dialog {
             Layout.fillWidth: true
             color: guiSettings.textColor
             elide: Text.ElideRight
-            text: label.text
+            text: label.labelId
         }
 
         Text {

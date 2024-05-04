@@ -138,7 +138,7 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
         else
         {
             contentLabels.removeIf([&contentLabel](const ContentLabel& l){
-                return l.getText() == contentLabel.getText() && l.getDid() == contentLabel.getDid();
+                return l.getLabelId() == contentLabel.getLabelId() && l.getDid() == contentLabel.getDid();
             });
         }
     }
@@ -164,7 +164,7 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& 
 
 QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label) const
 {
-    auto it = sLabelGroupMap.find(label.getText());
+    auto it = sLabelGroupMap.find(label.getLabelId());
 
     if (it != sLabelGroupMap.end())
     {
@@ -178,14 +178,14 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label
     if (labelerIt != mLabelerGroupMap.end())
     {
         const auto& groupMap = labelerIt->second;
-        auto groupIt = groupMap.find(label.getText());
+        auto groupIt = groupMap.find(label.getLabelId());
 
         if (groupIt != groupMap.end())
             return getGroupVisibility(groupIt->second);
     }
 
 
-    qDebug() << "Undefined label:" << label.getText() << "labeler:" << label.getDid();
+    qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QEnums::CONTENT_VISIBILITY_SHOW;
 }
 
@@ -199,7 +199,7 @@ QString ContentFilter::getGroupWarning(const ContentGroup& group) const
 
 QString ContentFilter::getWarning(const ContentLabel& label) const
 {
-    auto it = sLabelGroupMap.find(label.getText());
+    auto it = sLabelGroupMap.find(label.getLabelId());
 
     if (it != sLabelGroupMap.end())
     {
@@ -213,14 +213,14 @@ QString ContentFilter::getWarning(const ContentLabel& label) const
     if (labelerIt != mLabelerGroupMap.end())
     {
         const auto& groupMap = labelerIt->second;
-        auto groupIt = groupMap.find(label.getText());
+        auto groupIt = groupMap.find(label.getLabelId());
 
         if (groupIt != groupMap.end())
             return getGroupWarning(groupIt->second);
     }
 
-    qDebug() << "Undefined label:" << label.getText() << "labeler:" << label.getDid();
-    return QObject::tr("Unknown label") + QString(": %1").arg(label.getText());
+    qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
+    return QObject::tr("Unknown label") + QString(": %1").arg(label.getLabelId());
 }
 
 std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const

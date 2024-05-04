@@ -34,7 +34,7 @@ ScrollView {
                 font.pointSize: guiSettings.scaledFont(5/8)
                 font.italic: true
                 color: guiSettings.textColor
-                text: modelData.text
+                text: modelData.labelId
 
                 Accessible.role: Accessible.StaticText
                 Accessible.name: qsTr(`content label: ${text}`)
