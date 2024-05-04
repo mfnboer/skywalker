@@ -6,70 +6,49 @@ import skywalker
 Dialog {
     required property string contentAuthorDid
     required property contentlabel label
-    readonly property string contentWarning: skywalker.getContentWarning([label])
+    readonly property contentgroup contentGroup: skywalker.getContentGroup(label.did, label.labelId)
 
     id: contentLabelInfo
     width: parent.width
     contentHeight: grid.height
-    title: qsTr("Content label")
+    title: contentGroup.title
     modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
-    GridLayout {
+    ColumnLayout {
         id: grid
         width: parent.width
-        columns: 2
-        columnSpacing: 10
 
-        Text {
-            font.bold: true
-            color: guiSettings.textColor
-            text: qsTr("Label:")
-        }
-        Text {
-            Layout.fillWidth: true
-            color: guiSettings.textColor
-            elide: Text.ElideRight
-            text: label.labelId
-        }
-
-        Text {
-            font.bold: true
-            color: guiSettings.textColor
-            text: qsTr("Creator:")
-        }
-        SkyCleanedText {
-            id: creatorText
-            Layout.fillWidth: true
-            color: guiSettings.textColor
-            elide: Text.ElideRight
-            plainText: ""
-        }
-
-        Item {}
         Text {
             id: creatorHandle
             Layout.fillWidth: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            color: guiSettings.handleColor
             elide: Text.ElideRight
+            color: guiSettings.textColor
             onLinkActivated: (link) => {
                 root.getSkywalker().getDetailedProfile(link)
                 accept()
             }
         }
 
-        Text {
-            font.bold: true
-            color: guiSettings.textColor
-            text: qsTr("Date:")
-        }
-        Text {
+        AccessibleText {
             Layout.fillWidth: true
-            color: guiSettings.textColor
             elide: Text.ElideRight
+            color: Material.color(Material.Grey)
+            font.pointSize: guiSettings.scaledFont(7/8)
             text: label.createdAt.toLocaleString(Qt.locale(), Locale.LongFormat)
+        }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            Layout.topMargin: 10
+            wrapMode: Text.Wrap
+            maximumLineCount: 1000
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            color: guiSettings.textColor
+            text: contentGroup.formattedDescription
         }
     }
 
@@ -78,8 +57,7 @@ Dialog {
         skywalker: root.getSkywalker()
 
         onHandle: (handle, displayName, did) => {
-            creatorText.plainText = displayName.length > 0 ? displayName : handle
-            creatorHandle.text = `<a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
+            creatorHandle.text = `Set by <a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
         }
     }
 

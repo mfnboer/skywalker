@@ -2347,6 +2347,17 @@ void Skywalker::copyToClipboard(const QString& text)
     emit statusMessage(tr("Copied to clipboard"));
 }
 
+ContentGroup Skywalker::getContentGroup(const QString& did, const QString& labelId) const
+{
+    const auto* group = mContentFilter.getContentGroup(did, labelId);
+
+    if (group)
+        return *group;
+
+    qWarning() << "Uknown label:" << labelId << "did:" << did;
+    return ContentGroup(labelId, did);
+}
+
 QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels) const
 {
     const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(contentLabels);

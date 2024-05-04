@@ -30,6 +30,9 @@ public:
 
     explicit ContentFilter(const ATProto::UserPreferences& userPreferences);
 
+    // Returns a global content group if the labelId is a global label
+    const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const;
+
     QEnums::ContentVisibility getGroupVisibility(const ContentGroup& group) const;
     QEnums::ContentVisibility getVisibility(const ContentLabel& label) const;
     QString getGroupWarning(const ContentGroup& group) const;

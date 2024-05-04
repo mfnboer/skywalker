@@ -17,6 +17,7 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
+        QEnums::LABEL_SEVERITY_ALERT,
         ""
     },
     {
@@ -27,6 +28,7 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
+        QEnums::LABEL_SEVERITY_NONE,
         ""
     },
     {
@@ -37,6 +39,7 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
+        QEnums::LABEL_SEVERITY_NONE,
         ""
     },
     {
@@ -47,6 +50,7 @@ const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
         true,
         QEnums::CONTENT_VISIBILITY_HIDE_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
+        QEnums::LABEL_SEVERITY_ALERT,
         ""
     }
 };
@@ -123,6 +127,27 @@ void ContentFilter::initLabelGroupMap()
     }
 }
 
+const ContentGroup* ContentFilter::getContentGroup(const QString& did, const QString& labelId) const
+{
+    auto* group = getGlobalContentGroup(labelId);
+
+    if (group)
+        return group;
+
+    auto itDid = mLabelerGroupMap.find(did);
+
+    if (itDid == mLabelerGroupMap.end())
+        return nullptr;
+
+    const ContentGroupMap& groupMap = itDid->second;
+    auto itLabel = groupMap.find(labelId);
+
+    if (itLabel == groupMap.end())
+        return nullptr;
+
+    return &itLabel->second;
+}
+
 ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
 {
     ContentLabelList contentLabels;
@@ -194,7 +219,7 @@ QString ContentFilter::getGroupWarning(const ContentGroup& group) const
     if (group.isAdult() && !mUserPreferences.getAdultContent())
         return QObject::tr("Adult content");
 
-    return group.getTitle();
+    return group.getTitleWithSeverity();
 }
 
 QString ContentFilter::getWarning(const ContentLabel& label) const

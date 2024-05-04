@@ -111,6 +111,8 @@ public:
     };
     Q_ENUM(ContentPrefVisibility)
 
+    static ContentPrefVisibility toContentPrefVisibility(ContentVisibility);
+
     enum LabelTarget
     {
         LABEL_TARGET_CONTENT,
@@ -118,7 +120,13 @@ public:
     };
     Q_ENUM(LabelTarget)
 
-    static ContentPrefVisibility toContentPrefVisibility(ContentVisibility);
+    enum LabelSeverity
+    {
+        LABEL_SEVERITY_NONE,
+        LABEL_SEVERITY_INFO,
+        LABEL_SEVERITY_ALERT
+    };
+    Q_ENUM(LabelSeverity)
 
     enum ReportReasonType
     {

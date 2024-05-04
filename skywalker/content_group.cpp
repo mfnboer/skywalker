@@ -16,7 +16,7 @@ ContentGroup::ContentGroup(
     const QString& labelId, const QString& title, const QString& description,
     const std::optional<QString>& legacyLabelId, bool adult,
     QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget,
-    const QString& labelerDid) :
+    const QEnums::LabelSeverity& severity, const QString& labelerDid) :
     mLabelId(labelId),
     mTitle(title),
     mDescription(description),
@@ -24,6 +24,7 @@ ContentGroup::ContentGroup(
     mAdult(adult),
     mDefaultVisibility(defaultVisibility),
     mLabelTarget(labelTarget),
+    mSeverity(severity),
     mLabelerDid(labelerDid)
 {
 }
@@ -60,6 +61,20 @@ ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition&
         break;
     }
 
+    switch (labelDef.mSeverity)
+    {
+    case ATProto::ComATProtoLabel::LabelValueDefinition::Severity::NONE:
+    case ATProto::ComATProtoLabel::LabelValueDefinition::Severity::UNKNOWN:
+        mSeverity = QEnums::LABEL_SEVERITY_NONE;
+        break;
+    case ATProto::ComATProtoLabel::LabelValueDefinition::Severity::INFORM:
+        mSeverity = QEnums::LABEL_SEVERITY_INFO;
+        break;
+    case ATProto::ComATProtoLabel::LabelValueDefinition::Severity::ALERT:
+        mSeverity = QEnums::LABEL_SEVERITY_ALERT;
+        break;
+    }
+
     const Language uiLang(UI_LANGUAGE, {});
 
     for (const auto& locale : labelDef.mLocales)
@@ -81,6 +96,18 @@ ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition&
     {
         mTitle = labelDef.mLocales.front()->mLang;
         mDescription = labelDef.mLocales.front()->mDescription;
+    }
+}
+
+QString ContentGroup::getTitleWithSeverity() const
+{
+    switch (mSeverity) {
+    case QEnums::LABEL_SEVERITY_ALERT:
+        return QString("⚠️ %1").arg(mTitle);
+    case QEnums::LABEL_SEVERITY_INFO:
+        return QString("ℹ️ %1").arg(mTitle);
+    default:
+        return mTitle;
     }
 }
 

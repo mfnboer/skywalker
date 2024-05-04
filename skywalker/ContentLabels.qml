@@ -6,6 +6,7 @@ ScrollView {
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
     readonly property list<contentlabel> nonSystemLabels: filterSystemLabels()
+    property var skywalker: root.getSkywalker()
 
     id: labelView
     width: Math.min(parent.width, labelRow.width)
@@ -34,7 +35,7 @@ ScrollView {
                 font.pointSize: guiSettings.scaledFont(5/8)
                 font.italic: true
                 color: guiSettings.textColor
-                text: modelData.labelId
+                text: getDisplayText(modelData)
 
                 Accessible.role: Accessible.StaticText
                 Accessible.name: qsTr(`content label: ${text}`)
@@ -49,6 +50,11 @@ ScrollView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function getDisplayText(label) {
+        const contentGroup = skywalker.getContentGroup(label.did, label.labelId)
+        return contentGroup.titleWithSeverity
     }
 
     function filterSystemLabels() {

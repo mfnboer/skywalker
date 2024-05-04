@@ -129,6 +129,7 @@ public:
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);
+    Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels) const;
     Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels) const;
     Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();

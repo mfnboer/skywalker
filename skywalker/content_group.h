@@ -13,10 +13,12 @@ class ContentGroup
 {
     Q_GADGET
     Q_PROPERTY(QString title MEMBER mTitle CONSTANT FINAL)
+    Q_PROPERTY(QString titleWithSeverity READ getTitleWithSeverity CONSTANT FINAL)
     Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
     Q_PROPERTY(QString formattedDescription READ getFormattedDescription CONSTANT FINAL)
     Q_PROPERTY(bool isAdult MEMBER mAdult CONSTANT FINAL)
     Q_PROPERTY(QEnums::LabelTarget target MEMBER mLabelTarget CONSTANT FINAL)
+    Q_PROPERTY(QEnums::LabelSeverity severity MEMBER mSeverity CONSTANT FINAL)
     QML_VALUE_TYPE(contentgroup)
 
 public:
@@ -25,12 +27,13 @@ public:
     ContentGroup(const QString& labelId, const QString& title, const QString& description,
                  const std::optional<QString>& legacyLabelId, bool adult,
                  QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget,
-                 const QString& labelerDid);
+                 const QEnums::LabelSeverity& severity, const QString& labelerDid);
     explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef,
                           const QString& labelerDid);
 
     const QString& getLabelId() const { return mLabelId; }
     const QString& getTitle() const { return mTitle; }
+    QString getTitleWithSeverity() const;
     const std::optional<QString>& getLegacyLabelId() const { return mLegacyLabelId; }
     bool isAdult() const { return mAdult; }
     QEnums::ContentVisibility getDefaultVisibility() const { return mDefaultVisibility; }
@@ -49,6 +52,7 @@ private:
     bool mAdult = false;
     QEnums::ContentVisibility mDefaultVisibility = QEnums::ContentVisibility::CONTENT_VISIBILITY_SHOW;
     QEnums::LabelTarget mLabelTarget = QEnums::LabelTarget::LABEL_TARGET_CONTENT;
+    QEnums::LabelSeverity mSeverity = QEnums::LabelSeverity::LABEL_SEVERITY_NONE;
     QString mLabelerDid; // empty means global
 };
 
