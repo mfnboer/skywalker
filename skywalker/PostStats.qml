@@ -106,7 +106,7 @@ Column {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Delete")
-                    enabled: authorIsUser
+                    visible: authorIsUser
                     onTriggered: deletePost()
 
                     MenuItemSvg { svg: svgOutline.delete }

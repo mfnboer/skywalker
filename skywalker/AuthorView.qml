@@ -177,7 +177,7 @@ Page {
                         }
                         AccessibleMenuItem {
                             text: qsTr("Translate")
-                            enabled: authorDescription
+                            visible: authorDescription
                             onTriggered: root.translateText(authorDescription)
 
                             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -189,8 +189,20 @@ Page {
                             MenuItemSvg { svg: svgOutline.share }
                         }
                         AccessibleMenuItem {
+                            text: following ? qsTr("Unfollow") : qsTr("Follow")
+                            visible: isLabeler && !isUser(author) && contentVisible()
+                            onClicked: {
+                                if (following)
+                                    graphUtils.unfollow(author.did, following)
+                                else
+                                    graphUtils.follow(author)
+                            }
+
+                            MenuItemSvg { svg: following ? svgOutline.noUsers : svgOutline.addUser }
+                        }
+                        AccessibleMenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
-                            enabled: !isUser(author) && author.viewer.mutedByList.isNull()
+                            visible: !isUser(author) && author.viewer.mutedByList.isNull()
                             onTriggered: {
                                 if (authorMuted)
                                     graphUtils.unmute(author.did)
@@ -202,7 +214,7 @@ Page {
                         }
                         AccessibleMenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
-                            enabled: !isUser(author) && author.viewer.blockingByList.isNull()
+                            visible: !isUser(author) && author.viewer.blockingByList.isNull()
                             onTriggered: {
                                 if (blocking)
                                     graphUtils.unblock(author.did, blocking)
@@ -214,7 +226,7 @@ Page {
                         }
                         AccessibleMenuItem {
                            text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
-                           enabled: !isUser(author)
+                           visible: !isUser(author)
                            onTriggered: {
                                if (authorMutedReposts)
                                    graphUtils.unmuteReposts(author.did)

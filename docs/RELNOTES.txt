@@ -1,6 +1,7 @@
 next
 ====
 * Two-factor authentication support.
+* Show likes on feed generator.
 
 2.2.1
 =====
