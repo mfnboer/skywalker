@@ -270,6 +270,7 @@ private:
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void initLabelers();
     void loadLabelSettings();
+    void removeLabelerSubscriptions(const std::unordered_set<QString>& dids);
     void disableDebugLogging();
     void restoreDebugLogging();
     void handleAppStateChange(Qt::ApplicationState state);

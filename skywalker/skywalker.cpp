@@ -515,8 +515,8 @@ void Skywalker::loadLabelSettings()
 {
     Q_ASSERT(mBsky);
     qDebug() << "Load label settings";
-    const std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids();
-    const std::vector<QString> dids(labelerDids.begin(), labelerDids.end());
+    std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids();
+    std::vector<QString> dids(labelerDids.begin(), labelerDids.end());
 
     if (dids.empty())
     {
@@ -526,7 +526,9 @@ void Skywalker::loadLabelSettings()
     }
 
     mBsky->getServices(dids, true,
-        [this](auto output){
+        [this, labelerDids](auto output){
+            auto remainingDids = labelerDids;
+
             for (const auto& v : output->mViews)
             {
                 if (v->mViewType != ATProto::AppBskyLabeler::GetServicesOutputView::ViewType::VIEW_DETAILED)
@@ -540,7 +542,15 @@ void Skywalker::loadLabelSettings()
                 const auto& policies = view.getPolicies();
                 const auto& groupMap = policies.getLabelContentGroupMap();
                 const auto& did = view.getCreator().getDid();
+                qDebug() << "Add label policies for:" << did << view.getCreator().getHandle();
                 mContentFilter.addContentGroupMap(did, groupMap);
+                remainingDids.erase(did);
+            }
+
+            if (!remainingDids.empty())
+            {
+                qWarning() << "Remove subscriptions for non-existing labelers";
+                removeLabelerSubscriptions(remainingDids);
             }
 
             loadMutedReposts();
@@ -549,6 +559,23 @@ void Skywalker::loadLabelSettings()
             qWarning() << "initLabelSettings failed:" << error << " - " << msg;
             emit getUserPreferencesFailed(tr("Failed to get labelers: %1").arg(error));
         });
+}
+
+void Skywalker::removeLabelerSubscriptions(const std::unordered_set<QString>& dids)
+{
+    auto userPrefs = mUserPreferences;
+    auto labelersPref = userPrefs.getLabelersPref();
+
+    for (const auto& did : dids)
+    {
+        qWarning() << "Labeler not found:" << did;
+        ATProto::AppBskyActor::LabelerPrefItem item;
+        item.mDid = did;
+        labelersPref.mLabelers.erase(item);
+    }
+
+    userPrefs.setLabelersPref(labelersPref);
+    saveUserPreferences(userPrefs);
 }
 
 void Skywalker::dataMigration()
