@@ -13,14 +13,35 @@ ColumnLayout {
 
     id: contentGroupView
 
-    SkyCleanedText {
-        Layout.leftMargin: contentGroupView.margin
-        Layout.rightMargin: contentGroupView.margin
+    RowLayout {
         Layout.fillWidth: true
-        font.bold: true
-        elide: Text.ElideRight
-        color: guiSettings.textColor
-        plainText: contentGroup.title
+
+        SkyCleanedText {
+            id: titleText
+            Layout.leftMargin: contentGroupView.margin
+            Layout.rightMargin: contentGroupView.margin
+            Layout.fillWidth: true
+            font.bold: true
+            elide: Text.ElideRight
+            color: guiSettings.textColor
+            plainText: contentGroup.title
+        }
+        SvgButton {
+            imageMargin: 0
+            implicitWidth: height
+            implicitHeight: titleText.height
+            Layout.rightMargin: contentGroupView.margin
+            svg: contentGroup.target === QEnums.LABEL_TARGET_CONTENT ? svgOutline.chat : svgOutline.image
+            accessibleName: qsTr("target of the label")
+            iconColor: guiSettings.textColor
+            Material.background: "transparent"
+            onClicked: {
+                if (contentGroup.target === QEnums.LABEL_TARGET_CONTENT)
+                    root.getSkywalker().showStatusMessage(qsTr("Label targets full content"), QEnums.STATUS_LEVEL_INFO)
+                else
+                    root.getSkywalker().showStatusMessage(qsTr("Label targets images"), QEnums.STATUS_LEVEL_INFO)
+            }
+        }
     }
 
     AccessibleText {

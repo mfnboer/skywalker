@@ -42,6 +42,10 @@ public:
     std::unordered_set<QString> getSubscribedLabelerDids() const;
     size_t numLabelers() const;
 
+    void addContentGroupMap(const QString& did, const ContentGroupMap& contentGroupMap);
+    void addContentGroups(const QString& did, const std::vector<ContentGroup>& contentGroups);
+    void removeContentGroups(const QString& did);
+
     static bool isFixedLabelerSubscription(const QString& did);
 
 private:

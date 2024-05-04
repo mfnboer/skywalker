@@ -276,4 +276,27 @@ bool ContentFilter::isFixedLabelerSubscription(const QString& did)
     return did == BLUESKY_MODERATOR_DID;
 }
 
+void ContentFilter::addContentGroupMap(const QString& did, const ContentGroupMap& contentGroupMap)
+{
+    Q_ASSERT(!did.isEmpty());
+    qDebug() << "Add content group map for did:" << did;
+    mLabelerGroupMap[did] = contentGroupMap;
+}
+
+void ContentFilter::addContentGroups(const QString& did, const std::vector<ContentGroup>& contentGroups)
+{
+    Q_ASSERT(!did.isEmpty());
+    qDebug() << "Add content groups for did:" << did;
+    auto& groupMap = mLabelerGroupMap[did];
+
+    for (const auto& group : contentGroups)
+        groupMap[group.getLabelId()] = group;
+}
+
+void ContentFilter::removeContentGroups(const QString& did)
+{
+    Q_ASSERT(!did.isEmpty());
+    mLabelerGroupMap.erase(did);
+}
+
 }

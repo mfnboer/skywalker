@@ -16,6 +16,7 @@ class ContentGroup
     Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
     Q_PROPERTY(QString formattedDescription READ getFormattedDescription CONSTANT FINAL)
     Q_PROPERTY(bool isAdult MEMBER mAdult CONSTANT FINAL)
+    Q_PROPERTY(QEnums::LabelTarget target MEMBER mLabelTarget CONSTANT FINAL)
     QML_VALUE_TYPE(contentgroup)
 
 public:

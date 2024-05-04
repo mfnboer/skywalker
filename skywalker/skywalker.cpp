@@ -346,12 +346,12 @@ void Skywalker::getUserPreferences()
         [this](auto prefs){
             mUserPreferences = prefs;
             updateFavoriteFeeds();
-            loadMutedReposts();
             initLabelers();
+            loadLabelSettings();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
-            emit getUserPreferencesFailed();
+            emit getUserPreferencesFailed(msg);
         });
 }
 
@@ -500,7 +500,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
             else
             {
                 qWarning() << "loadMutedReposts failed:" << error << " - " << msg;
-                emit getUserPreferencesFailed();
+                emit getUserPreferencesFailed(tr("Failed to load muted reposts: %1").arg(msg));
             }
         });
 }
@@ -509,6 +509,46 @@ void Skywalker::initLabelers()
 {
     Q_ASSERT(mBsky);
     mBsky->setLabelerDids(mContentFilter.getSubscribedLabelerDids());
+}
+
+void Skywalker::loadLabelSettings()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Load label settings";
+    const std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids();
+    const std::vector<QString> dids(labelerDids.begin(), labelerDids.end());
+
+    if (dids.empty())
+    {
+        qDebug() << "No labelers";
+        loadMutedReposts();
+        return;
+    }
+
+    mBsky->getServices(dids, true,
+        [this](auto output){
+            for (const auto& v : output->mViews)
+            {
+                if (v->mViewType != ATProto::AppBskyLabeler::GetServicesOutputView::ViewType::VIEW_DETAILED)
+                {
+                    qWarning() << "Invalid view type:" << (int)v->mViewType;
+                    emit getUserPreferencesFailed(tr("Failed to get labelers: %1").arg("invalid view type"));
+                    return;
+                }
+
+                const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::Ptr>(v->mView));
+                const auto& policies = view.getPolicies();
+                const auto& groupMap = policies.getLabelContentGroupMap();
+                const auto& did = view.getCreator().getDid();
+                mContentFilter.addContentGroupMap(did, groupMap);
+            }
+
+            loadMutedReposts();
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << "initLabelSettings failed:" << error << " - " << msg;
+            emit getUserPreferencesFailed(tr("Failed to get labelers: %1").arg(error));
+        });
 }
 
 void Skywalker::dataMigration()

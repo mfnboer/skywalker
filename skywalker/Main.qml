@@ -156,10 +156,10 @@ ApplicationWindow {
             userSettings.updateLastSignInTimestamp(did)
         }
 
-        onGetUserPreferencesFailed: {
+        onGetUserPreferencesFailed: (error) => {
             console.warn("FAILED TO LOAD USER PREFERENCES")
             closeStartupStatus()
-            statusPopup.show("FAILED TO LOAD USER PREFERENCES", QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }

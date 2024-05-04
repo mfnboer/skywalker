@@ -37,6 +37,7 @@ public:
     const QStringList& getLabelValues() const { return mLabelValues; }
     const ContentGroup* getContentGroup(const QString& label) const;
     std::vector<ContentGroup> getContentGroupList() const;
+    const ContentGroupMap& getLabelContentGroupMap() const { return mLabelContentGroupMap; }
 
 private:
     QStringList mLabelValues;

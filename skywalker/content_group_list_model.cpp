@@ -5,14 +5,14 @@
 
 namespace Skywalker {
 
-ContentGroupListModel::ContentGroupListModel(const ContentFilter& contentFilter, QObject* parent) :
+ContentGroupListModel::ContentGroupListModel(ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
     mContentFilter(contentFilter),
     mSubscribed(true) // implicitly subscribed to global labels
 {
 }
 
-ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, const ContentFilter& contentFilter, QObject* parent) :
+ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
     mContentFilter(contentFilter),
     mLabelerDid(labelerDid),
@@ -190,12 +190,14 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
     {
         qDebug() << "Subscribe to labeler:" << mLabelerDid;
         prefs.mLabelers.insert(item);
+        mContentFilter.addContentGroups(mLabelerDid, mContentGroupList);
     }
     else
     {
         qDebug() << "Unsubscribe from labeler:" << mLabelerDid;
         prefs.mLabelers.erase(item);
         userPreferences.removeContentLabelPrefs(mLabelerDid);
+        mContentFilter.removeContentGroups(mLabelerDid);
     }
 
     userPreferences.setLabelersPref(prefs);

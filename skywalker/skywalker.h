@@ -210,7 +210,7 @@ signals:
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
-    void getUserPreferencesFailed();
+    void getUserPreferencesFailed(QString error);
     void dataMigrationStatus(QString status);
     void dataMigrationDone();
     void autoUpdateTimeLineInProgressChanged();
@@ -269,6 +269,7 @@ private:
     void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void initLabelers();
+    void loadLabelSettings();
     void disableDebugLogging();
     void restoreDebugLogging();
     void handleAppStateChange(Qt::ApplicationState state);

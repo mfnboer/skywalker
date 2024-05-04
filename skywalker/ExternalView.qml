@@ -28,8 +28,6 @@ Item {
     }
     AnimatedImagePreview {
         id: gifImage
-        contentVisibility: view.contentVisibility
-        contentWarning: view.contentWarning
         url: gifUtils.getGifUrl(postExternal.uri)
         title: url ? postExternal.title : ""
         visible: url && filter.imageVisible()

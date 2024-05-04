@@ -4,16 +4,14 @@ import QtQuick.Layouts
 import skywalker
 
 RoundedFrame {
-    required property int contentVisibility // QEnums::ContentVisibility
-    required property string contentWarning
     required property string url
     property string title
     property alias status: img.status
 
     id: frame
     objectToRound: img
-    width: filter.imageVisible() ? img.width : parent.width
-    height: filter.imageVisible() ? img.height : filter.height
+    width: img.width
+    height: img.height
 
     ThumbAnimatedImageView {
         id: img
@@ -23,17 +21,8 @@ RoundedFrame {
         url: frame.url
     }
     MouseArea {
-        enabled: filter.imageVisible()
         anchors.fill: img
         cursorShape: Qt.PointingHandCursor
         onClicked: root.viewFullAnimatedImage(url, title)
-    }
-
-    FilteredImageWarning {
-        id: filter
-        width: parent.width
-        contentVisibiliy: frame.contentVisibility
-        contentWarning: frame.contentWarning
-        imageUrl: frame.url
     }
 }

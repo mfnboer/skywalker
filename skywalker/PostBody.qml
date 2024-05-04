@@ -201,6 +201,7 @@ Column {
         }
 
         if (postExternal) {
+            console.debug("VISIBILITY:", postContentVisibility, postContentWarning)
             let component = Qt.createComponent("ExternalView.qml")
             component.createObject(postBody, {postExternal: postBody.postExternal,
                                               contentVisibility: postContentVisibility,
