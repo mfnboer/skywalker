@@ -55,11 +55,8 @@ Page {
             width: parent.width
             columns: 2
 
-            AccessibleText {
+            HeaderText {
                 Layout.columnSpan: 2
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Account")
             }
 
@@ -159,12 +156,9 @@ Page {
                 }
             }
 
-            AccessibleText {
+            HeaderText {
                 Layout.columnSpan: 2
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+                Layout.topMargin: 10
                 text: qsTr("Logged-out visibility")
             }
 
@@ -202,11 +196,9 @@ Page {
             anchors.top: accountGrid.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
+                Layout.bottomMargin: 10
                 text: qsTr("Home feed preferences")
             }
 
@@ -253,11 +245,8 @@ Page {
             anchors.top: homeFeedColumn.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
                 text: qsTr("Language preferences")
             }
             AccessibleText {
@@ -293,11 +282,8 @@ Page {
             anchors.top: languageColumn.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
                 text: qsTr("Appearance")
             }
 
@@ -352,11 +338,8 @@ Page {
             anchors.top: appearanceColumn.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
                 text: qsTr("Pull notifications")
             }
 

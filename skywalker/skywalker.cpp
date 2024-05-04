@@ -1689,6 +1689,37 @@ void Skywalker::removePostFeedModel(int id)
     mPostFeedModels.remove(id);
 }
 
+void Skywalker::getLabelersAuthorList(int modelId)
+{
+    const std::unordered_set<QString> labelers = mContentFilter.getSubscribedLabelerDids();
+
+    if (labelers.empty())
+    {
+        qDebug() << "No labelers";
+        return;
+    }
+
+    std::vector<QString> dids;
+
+    for (const auto& did : labelers)
+        dids.push_back(did);
+
+    setGetAuthorListInProgress(true);
+    mBsky->getProfiles(dids,
+        [this, modelId](auto profileDetailedList){
+            setGetAuthorListInProgress(false);
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->addAuthors(std::move(profileDetailedList), "");
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getLabelersAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
@@ -1901,6 +1932,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
         break;
     case AuthorListModel::Type::AUTHOR_LIST_SUGGESTIONS:
         getSuggestionsAuthorList(limit, cursor, id);
+        break;
+    case AuthorListModel::Type::AUTHOR_LIST_LABELERS:
+        getLabelersAuthorList(id);
         break;
     }
 }

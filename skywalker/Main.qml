@@ -1093,9 +1093,13 @@ ApplicationWindow {
     function editContentFilterSettings() {
         let component = Qt.createComponent("ContentFilterSettings.qml")
         let contentGroupListModel = skywalker.getGlobalContentGroupListModel()
-        let form = component.createObject(root, { model: contentGroupListModel })
+        let labelerModelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LABELERS, "")
+        let form = component.createObject(root, {
+                globalLabelModel: contentGroupListModel,
+                labelerAuthorListModelId: labelerModelId })
         form.onClosed.connect(() => { popStack() })
         pushStack(form)
+        skywalker.getAuthorList(labelerModelId)
     }
 
     function reportAuthor(author) {

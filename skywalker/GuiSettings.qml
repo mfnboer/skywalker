@@ -29,6 +29,7 @@ Item {
     readonly property string footerColor: Material.background
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: "black"
+    readonly property string headerHighLightColor: Material.theme === Material.Light ? "lightblue" : "darkslategrey"
     readonly property string headerTextColor: "white"
     readonly property string labelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"

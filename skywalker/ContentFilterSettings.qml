@@ -4,7 +4,10 @@ import QtQuick.Layouts
 import skywalker
 
 Page {
-    required property var model
+    required property var globalLabelModel
+    required property int labelerAuthorListModelId
+    property var skywalker: root.getSkywalker()
+    property int margin: 10
 
     signal closed()
 
@@ -18,134 +21,85 @@ Page {
         onBack: page.closed()
     }
 
-    AccessibleSwitch {
-        topPadding: 10
-        bottomPadding: 20
-        id: adultContentSwitch
-        width: parent.width
-        Material.accent: guiSettings.buttonColor
-        text: qsTr("Adult content")
-        checked: page.model.adultContent
-        onCheckedChanged: page.model.adultContent = checked
-
-        Accessible.role: Accessible.Button
-        Accessible.name: text
-        Accessible.onPressAction: toggle()
-    }
-
-    ListView {
-        anchors.top: adultContentSwitch.bottom
-        anchors.bottom: parent.bottom
-        width: parent.width
+    Flickable {
+        anchors.fill: parent
         clip: true
-        spacing: 5
+        contentWidth: parent.width
+        contentHeight: labelerListView.y + labelerListView.height
+        flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        model: page.model
-        flickDeceleration: guiSettings.flickDeceleration
 
-        Accessible.role: Accessible.List
+        HeaderText {
+            id: globalContentFilters
+            text: qsTr("Global content filters")
+        }
 
-        delegate: GridLayout {
-            required property var model
-            required property contentgroup contentGroup
-            required property int contentPrefVisibility
-
+        AccessibleSwitch {
+            anchors.top: globalContentFilters.bottom
+            anchors.topMargin: 10
+            bottomPadding: 20
+            id: adultContentSwitch
             width: parent.width
-            columns: 2
+            Material.accent: guiSettings.buttonColor
+            text: qsTr("Adult content")
+            checked: page.globalLabelModel.adultContent
+            onCheckedChanged: page.globalLabelModel.adultContent = checked
 
-            Text {
-                id: titleText
-                Layout.fillWidth: true
-                font.bold: true
-                wrapMode: Text.Wrap
-                elide: Text.ElideRight
-                text: contentGroup.title
-                color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
+            Accessible.role: Accessible.Button
+            Accessible.name: text
+            Accessible.onPressAction: toggle()
+        }
 
-                Accessible.role: Accessible.StaticText
-                Accessible.name: `${titleText.text}\n\n${descriptionText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
+        ListView {
+            id: globalLabelListView
+            anchors.top: adultContentSwitch.bottom
+            width: parent.width
+            height: contentHeight
+            clip: true
+            model: page.globalLabelModel
+            boundsBehavior: Flickable.StopAtBounds
+
+            Accessible.role: Accessible.List
+
+            delegate: ContentGroupDelegate {
+                width: parent.width
+                isSubscribed: true
+                adultContent: page.globalLabelModel.adultContent
             }
-            Row {
-                id: buttonRow
-                Layout.rowSpan: 2
-                spacing: -1
+        }
 
-                SkyRadioButton {
-                    checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE
-                    text: qsTr("Hide");
-                    visible: !contentGroup.isAdult || page.model.adultContent
-                    onCheckedChanged: {
-                        if (checked)
-                            model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_HIDE
-                    }
+        HeaderText {
+            id: subscribedLabelers
+            anchors.top: globalLabelListView.bottom
+            text: qsTr("Subscribed to labelers")
+        }
 
-                    Accessible.name: qsTr(`hide ${titleText.text}`)
-                }
-                SkyRadioButton {
-                    checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_WARN
-                    text: qsTr("Warn");
-                    visible: !contentGroup.isAdult || page.model.adultContent
-                    onCheckedChanged: {
-                        if (checked)
-                            model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_WARN
-                    }
+        ListView {
+            id: labelerListView
+            anchors.top: subscribedLabelers.bottom
+            anchors.topMargin: 10
+            width: parent.width
+            height: contentHeight
+            clip: true
+            model: skywalker.getAuthorListModel(page.labelerAuthorListModelId)
+            boundsBehavior: Flickable.StopAtBounds
 
-                    Accessible.name: qsTr(`warn for ${titleText.text}`)
-                }
-                SkyRadioButton {
-                    checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW
-                    text: qsTr("Show");
-                    visible: !contentGroup.isAdult || page.model.adultContent
-                    onCheckedChanged: {
-                        if (checked)
-                            model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_SHOW
-                    }
+            Accessible.role: Accessible.List
 
-                    Accessible.name: qsTr(`show ${titleText.text}`)
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    padding: 10
-                    color: guiSettings.buttonColor
-                    text: qsTr("Hide")
-                    visible: contentGroup.isAdult && !page.model.adultContent
+            delegate: AuthorViewDelegate {
+                width: parent.width - 20
+                required property int index
 
-                    Accessible.ignored: true
+                SvgImage {
+                    height: 40
+                    width: height
+                    x: parent.width - 20
+                    y: (parent.height + height) / 2
+                    svg: svgOutline.navigateNext
+                    color: guiSettings.textColor
                 }
             }
-
-            Text {
-                id: descriptionText
-                bottomPadding: 5
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                elide: Text.ElideRight
-                text: contentGroup.description
-                color: !contentGroup.isAdult || page.model.adultContent ? guiSettings.textColor : Material.color(Material.Grey)
-
-                Accessible.role: Accessible.StaticText
-                Accessible.name: `${titleText.text}\n\n${descriptionText.text}\n\npreference is: ${(getContentPrefVisibilitySpeech())}`
-            }
-
-            Rectangle {
-                Layout.columnSpan: 2
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: guiSettings.separatorColor
-            }
-
-            function getContentPrefVisibilitySpeech() {
-                if (contentGroup.isAdult && !page.model.adultContent)
-                    return qsTr("hide, adult content is disabled")
-
-                return accessibilityUtils.getContentPrefVisibilitySpeech(contentPrefVisibility)
-            }
-
-        }   
-    }
-
-    AccessibilityUtils {
-        id: accessibilityUtils
+        }
     }
 
     GuiSettings {
@@ -155,5 +109,6 @@ Page {
     Component.onDestruction: {
         console.debug("Save filter settings");
         skywalker.saveGlobalContentFilterPreferences();
+        skywalker.removeAuthorListModel(labelerAuthorListModelId)
     }
 }
