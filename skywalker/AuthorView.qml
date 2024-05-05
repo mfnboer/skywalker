@@ -713,7 +713,7 @@ Page {
             }
 
             function refresh() {
-                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0)
+                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(1)
 
                 for (let i = 0; i < children.length; ++i) {
                     let c = children[i]
