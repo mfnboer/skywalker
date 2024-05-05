@@ -138,6 +138,7 @@ public:
     Q_INVOKABLE void removeContentGroupListModel(int id);
     Q_INVOKABLE void saveGlobalContentFilterPreferences();
     Q_INVOKABLE void saveContentFilterPreferences(const ContentGroupListModel* model);
+    Q_INVOKABLE ContentFilter* getContentFilter() { return &mContentFilter; }
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();

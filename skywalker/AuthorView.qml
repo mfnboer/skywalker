@@ -496,13 +496,14 @@ Page {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         color: guiSettings.textColor
-                        text: qsTr("Labels are annotations on users and content. They can be used to warn and hide content.")
+                        text: qsTr("Labels are annotations on users and content. They can be used to warn, hide and categorize content.")
                     }
 
                     AccessibleText {
                         Layout.leftMargin: 10
                         Layout.rightMargin: 10
                         Layout.fillWidth: true
+                        height: page.isSubscribed ? implicitHeight : 0
                         wrapMode: Text.Wrap
                         color: guiSettings.textColor
                         text: qsTr(`Subscribe to ${author.handle} to use these labels`)

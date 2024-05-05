@@ -24,7 +24,10 @@ ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, ContentF
 
 void ContentGroupListModel::init()
 {
+    mAdultContent = mContentFilter.getAdultContent();
+
     connect(&mContentFilter, &ContentFilter::contentGroupsChanged, this, [this]{
+        mAdultContent = mContentFilter.getAdultContent();
         mChangedVisibility.clear();
         emit dataChanged(createIndex(0, 0), createIndex(mContentGroupList.size() - 1, 0));
     });

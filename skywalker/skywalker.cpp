@@ -507,7 +507,10 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 void Skywalker::initLabelers()
 {
     Q_ASSERT(mBsky);
-    mBsky->setLabelerDids(mContentFilter.getSubscribedLabelerDids());
+    const auto& dids = mContentFilter.getSubscribedLabelerDids();
+
+    if (mBsky->setLabelerDids(dids))
+        emit mContentFilter.subscribedLabelersChanged();
 }
 
 void Skywalker::loadLabelSettings()
@@ -1777,7 +1780,10 @@ void Skywalker::getLabelersAuthorList(int modelId)
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->clear();
                 (*model)->addAuthors(std::move(profileDetailedList), "");
+            }
         },
         [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
@@ -2373,7 +2379,6 @@ const ContentGroupListModel* Skywalker::getGlobalContentGroupListModel()
 {
     mGlobalContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);
     mGlobalContentGroupListModel->setGlobalContentGroups();
-    mGlobalContentGroupListModel->setAdultContent(mUserPreferences.getAdultContent());
     return mGlobalContentGroupListModel.get();
 }
 
@@ -2381,7 +2386,6 @@ int Skywalker::createContentGroupListModel(const QString& did, const LabelerPoli
 {
     auto model = std::make_unique<ContentGroupListModel>(did, mContentFilter, this);
     model->setContentGroups(policies.getContentGroupList());
-    model->setAdultContent(mUserPreferences.getAdultContent());
     connect(model.get(), &ContentGroupListModel::error, this, [this](QString error)
             { showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     return mContentGroupListModels.put(std::move(model));

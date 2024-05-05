@@ -202,7 +202,7 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
 
 QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& group) const
 {
-    if (group.isAdult() && !mUserPreferences.getAdultContent())
+    if (group.isAdult() && !getAdultContent())
         return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
 
     auto visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), group.getLabelId());
@@ -245,7 +245,7 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label
 
 QString ContentFilter::getGroupWarning(const ContentGroup& group) const
 {
-    if (group.isAdult() && !mUserPreferences.getAdultContent())
+    if (group.isAdult() && !getAdultContent())
         return QObject::tr("Adult content");
 
     return group.getTitleWithSeverity();

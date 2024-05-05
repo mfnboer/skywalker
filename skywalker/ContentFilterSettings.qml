@@ -87,7 +87,7 @@ Page {
             Accessible.role: Accessible.List
 
             delegate: AuthorViewDelegate {
-                width: parent.width - 20
+                width: labelerListView.width - 20
                 required property int index
 
                 SvgImage {
@@ -114,8 +114,20 @@ Page {
         id: guiSettings
     }
 
+    function reloadSubscribedLabelers() {
+        skywalker.getAuthorList(labelerAuthorListModelId)
+    }
+
     Component.onDestruction: {
+        let contentFilter = skywalker.getContentFilter()
+        contentFilter.onSubscribedLabelersChanged.disconnect(reloadSubscribedLabelers)
+
         skywalker.saveGlobalContentFilterPreferences();
         skywalker.removeAuthorListModel(labelerAuthorListModelId)
+    }
+
+    Component.onCompleted: {
+        let contentFilter = skywalker.getContentFilter()
+        contentFilter.onSubscribedLabelersChanged.connect(reloadSubscribedLabelers)
     }
 }

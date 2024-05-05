@@ -41,6 +41,8 @@ public:
     // Returns a global content group if the labelId is a global label
     const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const;
 
+    bool getAdultContent() const { return mUserPreferences.getAdultContent(); }
+
     QEnums::ContentVisibility getGroupVisibility(const ContentGroup& group) const;
     QEnums::ContentVisibility getVisibility(const ContentLabel& label) const;
     QString getGroupWarning(const ContentGroup& group) const;
@@ -61,6 +63,7 @@ public:
 
 signals:
     void contentGroupsChanged();
+    void subscribedLabelersChanged();
 
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;
