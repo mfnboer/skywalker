@@ -24,9 +24,9 @@ void ContentGroupListModel::setGlobalContentGroups()
 {
     clear();
 
-    beginInsertRows({}, 0, ContentFilter::CONTENT_GROUP_LIST.size() - 1);
+    beginInsertRows({}, 0, ContentFilter::USER_CONTENT_GROUP_LIST.size() - 1);
 
-    for (const auto& group : ContentFilter::CONTENT_GROUP_LIST)
+    for (const auto& group : ContentFilter::USER_CONTENT_GROUP_LIST)
         mContentGroupList.push_back(group);
 
     endInsertRows();

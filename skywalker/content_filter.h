@@ -20,8 +20,14 @@ public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
     using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
 
-    static const std::vector<ContentGroup> CONTENT_GROUP_LIST;
-    static const GlobalContentGroupMap& getContentGroups();
+    // System labels have a hard coded setting.
+    static const std::vector<ContentGroup> SYSTEM_CONTENT_GROUP_LIST;
+
+    // User label\s have a default setting that can be changed by the user.
+    static const std::vector<ContentGroup> USER_CONTENT_GROUP_LIST;
+
+    // System and user labels make up the global labels.
+    static const GlobalContentGroupMap& getGlobalContentGroups();
     static const ContentGroup* getGlobalContentGroup(const QString& labelId);
     static bool isGlobalLabel(const QString& labelId);
 

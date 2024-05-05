@@ -8,7 +8,32 @@ namespace Skywalker {
 // We are implicitly subscribed to the Bluesky moderator
 #define BLUESKY_MODERATOR_DID QStringLiteral("did:plc:ar7c4by46qjdydhdevvrndac")
 
-const std::vector<ContentGroup> ContentFilter::CONTENT_GROUP_LIST = {
+const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
+    {
+        "!hide",
+        QObject::tr("Content Blocked"),
+        QObject::tr("This content has been hidden by the moderators."),
+        "",
+        false,
+        QEnums::CONTENT_VISIBILITY_HIDE_POST,
+        QEnums::LABEL_TARGET_CONTENT,
+        QEnums::LABEL_SEVERITY_ALERT,
+        ""
+    },
+    {
+        "!warn",
+        QObject::tr("Content Warning"),
+        QObject::tr("This content has received a general warning from the moderators."),
+        "",
+        false,
+        QEnums::CONTENT_VISIBILITY_WARN_POST,
+        QEnums::LABEL_TARGET_CONTENT,
+        QEnums::LABEL_SEVERITY_ALERT,
+        ""
+    }
+};
+
+const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
     {
         "porn",
         QObject::tr("Adult Content"),
@@ -59,11 +84,14 @@ ContentFilter::GlobalContentGroupMap ContentFilter::CONTENT_GROUPS;
 
 void ContentFilter::initContentGroups()
 {
-    for (const auto& group : CONTENT_GROUP_LIST)
+    for (const auto& group : SYSTEM_CONTENT_GROUP_LIST)
+        CONTENT_GROUPS[group.getLabelId()] = &group;
+
+    for (const auto& group : USER_CONTENT_GROUP_LIST)
         CONTENT_GROUPS[group.getLabelId()] = &group;
 }
 
-const ContentFilter::GlobalContentGroupMap& ContentFilter::getContentGroups()
+const ContentFilter::GlobalContentGroupMap& ContentFilter::getGlobalContentGroups()
 {
     if (CONTENT_GROUPS.empty())
         initContentGroups();
@@ -73,7 +101,7 @@ const ContentFilter::GlobalContentGroupMap& ContentFilter::getContentGroups()
 
 const ContentGroup* ContentFilter::getGlobalContentGroup(const QString& labelId)
 {
-    const auto& groups = getContentGroups();
+    const auto& groups = getGlobalContentGroups();
     auto it = groups.find(labelId);
     return it != groups.end() ? it->second : nullptr;
 }
@@ -118,7 +146,7 @@ ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences) :
 
 void ContentFilter::initLabelGroupMap()
 {
-    for (const auto& [id, group] : getContentGroups())
+    for (const auto& [id, group] : getGlobalContentGroups())
     {
         sLabelGroupMap[id] = id;
 
@@ -194,7 +222,7 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label
     if (it != sLabelGroupMap.end())
     {
         const auto& groupId = it->second;
-        const auto& group = getContentGroups().at(groupId);
+        const auto& group = getGlobalContentGroups().at(groupId);
         return getGroupVisibility(*group);
     }
 
@@ -229,7 +257,7 @@ QString ContentFilter::getWarning(const ContentLabel& label) const
     if (it != sLabelGroupMap.end())
     {
         const auto& groupId = it->second;
-        const auto& group = getContentGroups().at(groupId);
+        const auto& group = getGlobalContentGroups().at(groupId);
         return getGroupWarning(*group);
     }
 
