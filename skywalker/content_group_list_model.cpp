@@ -10,6 +10,7 @@ ContentGroupListModel::ContentGroupListModel(ContentFilter& contentFilter, QObje
     mContentFilter(contentFilter),
     mSubscribed(true) // implicitly subscribed to global labels
 {
+    init();
 }
 
 ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, QObject* parent) :
@@ -18,6 +19,15 @@ ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, ContentF
     mLabelerDid(labelerDid),
     mSubscribed(mContentFilter.isSubscribedToLabeler(mLabelerDid))
 {
+    init();
+}
+
+void ContentGroupListModel::init()
+{
+    connect(&mContentFilter, &ContentFilter::contentGroupsChanged, this, [this]{
+        mChangedVisibility.clear();
+        emit dataChanged(createIndex(0, 0), createIndex(mContentGroupList.size() - 1, 0));
+    });
 }
 
 void ContentGroupListModel::setGlobalContentGroups()

@@ -71,7 +71,7 @@ ColumnLayout {
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
-                    model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_SHOW
+                    setContentPrefVisibility(QEnums.CONTENT_PREF_VISIBILITY_SHOW)
             }
 
             Accessible.name: qsTr(`show ${contentGroup.text}`)
@@ -84,7 +84,7 @@ ColumnLayout {
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
-                    model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_WARN
+                    setContentPrefVisibility(QEnums.CONTENT_PREF_VISIBILITY_WARN)
             }
 
             Accessible.name: qsTr(`warn for ${contentGroup.text}`)
@@ -98,7 +98,7 @@ ColumnLayout {
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
-                    model.contentPrefVisibility = QEnums.CONTENT_PREF_VISIBILITY_HIDE
+                    setContentPrefVisibility(QEnums.CONTENT_PREF_VISIBILITY_HIDE)
             }
 
             Accessible.name: qsTr(`hide ${contentGroup.text}`)
@@ -127,5 +127,10 @@ ColumnLayout {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function setContentPrefVisibility(pref) {
+        if (model.contentPrefVisibility !== pref)
+            model.contentPrefVisibility = pref
     }
 }

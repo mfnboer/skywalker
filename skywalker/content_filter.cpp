@@ -46,10 +46,10 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         ""
     },
     {
-        "nudity",
-        QObject::tr("Non-sexual Nudity"),
-        QObject::tr("E.g. artistic nudes"),
-        {},
+        "sexual",
+        QObject::tr("Sexually Suggestive"),
+        QObject::tr("Does not include nudity"),
+        "suggestive",
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
@@ -57,10 +57,10 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         ""
     },
     {
-        "sexual",
-        QObject::tr("Sexually Suggestive"),
-        QObject::tr("Does not include nudity"),
-        "suggestive",
+        "nudity",
+        QObject::tr("Non-sexual Nudity"),
+        QObject::tr("E.g. artistic nudes"),
+        {},
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
@@ -137,7 +137,8 @@ QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPrefer
 
 std::unordered_map<QString, QString> ContentFilter::sLabelGroupMap;
 
-ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences) :
+ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent) :
+    QObject(parent),
     mUserPreferences(userPreferences)
 {
     if (sLabelGroupMap.empty())

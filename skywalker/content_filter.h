@@ -14,8 +14,10 @@ public:
     virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const = 0;
 };
 
-class ContentFilter : public IContentFilter
+class ContentFilter : public QObject, public IContentFilter
 {
+    Q_OBJECT
+
 public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
     using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
@@ -23,7 +25,7 @@ public:
     // System labels have a hard coded setting.
     static const std::vector<ContentGroup> SYSTEM_CONTENT_GROUP_LIST;
 
-    // User label\s have a default setting that can be changed by the user.
+    // User labels have a default setting that can be changed by the user.
     static const std::vector<ContentGroup> USER_CONTENT_GROUP_LIST;
 
     // System and user labels make up the global labels.
@@ -34,7 +36,7 @@ public:
     // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
     static ContentLabelList getContentLabels(const LabelList& labels);
 
-    explicit ContentFilter(const ATProto::UserPreferences& userPreferences);
+    explicit ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent = nullptr);
 
     // Returns a global content group if the labelId is a global label
     const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const;
@@ -56,6 +58,9 @@ public:
     void removeContentGroups(const QString& did);
 
     static bool isFixedLabelerSubscription(const QString& did);
+
+signals:
+    void contentGroupsChanged();
 
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;

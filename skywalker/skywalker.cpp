@@ -43,7 +43,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
-    mContentFilter(mUserPreferences),
+    mContentFilter(mUserPreferences, this),
     mBookmarks(this),
     mMutedWords(this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
@@ -442,7 +442,6 @@ void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs, std::
         [this, prefs, okCb]{
             qDebug() << "saveUserPreferences ok";
             mUserPreferences = prefs;
-            initLabelers();
 
             if (okCb)
                 okCb();
@@ -575,7 +574,7 @@ void Skywalker::removeLabelerSubscriptions(const std::unordered_set<QString>& di
     }
 
     userPrefs.setLabelersPref(labelersPref);
-    saveUserPreferences(userPrefs);
+    saveUserPreferences(userPrefs, [this]{ initLabelers(); });
 }
 
 void Skywalker::dataMigration()
@@ -2427,7 +2426,10 @@ void Skywalker::saveContentFilterPreferences(const ContentGroupListModel* model)
 
     auto prefs = mUserPreferences;
     model->saveTo(prefs);
-    saveUserPreferences(prefs);
+    saveUserPreferences(prefs, [this]{
+        initLabelers();
+        emit mContentFilter.contentGroupsChanged();
+    });
 }
 
 ATProto::ProfileMaster& Skywalker::getProfileMaster()

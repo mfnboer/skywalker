@@ -98,6 +98,14 @@ Page {
                     svg: svgOutline.navigateNext
                     color: guiSettings.textColor
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        skywalker.saveGlobalContentFilterPreferences();
+                        skywalker.getDetailedProfile(author.did)
+                    }
+                }
             }
         }
     }
@@ -107,7 +115,6 @@ Page {
     }
 
     Component.onDestruction: {
-        console.debug("Save filter settings");
         skywalker.saveGlobalContentFilterPreferences();
         skywalker.removeAuthorListModel(labelerAuthorListModelId)
     }

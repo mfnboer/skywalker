@@ -53,6 +53,8 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
+    void init();
+
     bool mAdultContent = false;
     ContentFilter& mContentFilter;
     QString mLabelerDid;
