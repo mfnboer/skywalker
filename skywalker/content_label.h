@@ -11,6 +11,7 @@ class ContentLabel {
     Q_PROPERTY(QString did READ getDid FINAL)
     Q_PROPERTY(QString labelId READ getLabelId FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
+    Q_PROPERTY(bool isSystemLabel READ isSystemLabel FINAL)
     QML_VALUE_TYPE(contentlabel)
 
 public:

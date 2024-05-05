@@ -7,11 +7,11 @@ Dialog {
     required property string contentAuthorDid
     required property contentlabel label
     readonly property contentgroup contentGroup: skywalker.getContentGroup(label.did, label.labelId)
+    property string labelerHandle: ""
 
     id: contentLabelInfo
     width: parent.width
     contentHeight: grid.height
-    title: contentGroup.title
     modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
@@ -20,12 +20,32 @@ Dialog {
         id: grid
         width: parent.width
 
-        Text {
+        RowLayout {
+            Layout.fillWidth: true
+
+            SkyCleanedText {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                wrapMode: Text.Wrap
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(10/8)
+                color: guiSettings.textColor
+                plainText: contentGroup.title
+            }
+
+            SkyButton {
+                text: qsTr("Appeal")
+                visible: canAppeal()
+            }
+        }
+
+        AccessibleText {
             id: creatorHandle
             Layout.fillWidth: true
             font.pointSize: guiSettings.scaledFont(7/8)
             elide: Text.ElideRight
             color: guiSettings.textColor
+            text: `Set by ${labelerHandle}`
             onLinkActivated: (link) => {
                 root.getSkywalker().getDetailedProfile(link)
                 accept()
@@ -50,6 +70,17 @@ Dialog {
             color: guiSettings.textColor
             text: contentGroup.formattedDescription
         }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            Layout.topMargin: 10
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            font.italic: true
+            color: guiSettings.textColor
+            text: qsTr("You may appeal this label if you feel it was placed in error.")
+            visible: canAppeal()
+        }
     }
 
     ProfileUtils {
@@ -57,12 +88,16 @@ Dialog {
         skywalker: root.getSkywalker()
 
         onHandle: (handle, displayName, did) => {
-            creatorHandle.text = `Set by <a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
+            labelerHandle = `<a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
         }
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function canAppeal() {
+        return label.did !== contentAuthorDid && !label.isSystemLabel()
     }
 
     Component.onCompleted: {
