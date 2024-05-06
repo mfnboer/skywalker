@@ -64,27 +64,19 @@ Page {
                 color: guiSettings.textColor
                 text: qsTr("Email:")
             }
-            Rectangle {
+            RowLayout {
                 Layout.fillWidth: true
-                height: mailText.height
-                color: "transparent"
 
-                Accessible.role: Accessible.StaticText
-                Accessible.name: userPrefs.email + (userPrefs.emailConfirmed ? qsTr(", confirmed") : "")
-
-                Text {
+                AccessibleText {
                     id: mailText
+                    Layout.fillWidth: true
                     color: guiSettings.textColor
                     elide: Text.ElideRight
                     text: userPrefs.email
-
-                    Accessible.ignored: true
                 }
                 SvgButton {
                     id: mailConfirmedImg
                     imageMargin: 0
-                    anchors.left: mailText.right
-                    anchors.leftMargin: 5
                     implicitWidth: height
                     implicitHeight: mailText.height
                     iconColor: guiSettings.buttonColor
@@ -98,8 +90,6 @@ Page {
                     imageMargin: 0
                     implicitWidth: height
                     implicitHeight: mailText.height
-                    anchors.left: mailConfirmedImg.right
-                    anchors.leftMargin: 5
                     iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     accessibleName: qsTr("Two-factor authentication enabled")
