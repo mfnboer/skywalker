@@ -13,7 +13,7 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
         "!hide",
         QObject::tr("Content Blocked"),
         QObject::tr("This content has been hidden by the moderators."),
-        "",
+        {},
         false,
         QEnums::CONTENT_VISIBILITY_HIDE_POST,
         QEnums::LABEL_TARGET_CONTENT,
@@ -24,7 +24,7 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
         "!warn",
         QObject::tr("Content Warning"),
         QObject::tr("This content has received a general warning from the moderators."),
-        "",
+        {},
         false,
         QEnums::CONTENT_VISIBILITY_WARN_POST,
         QEnums::LABEL_TARGET_CONTENT,
@@ -38,7 +38,7 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         "porn",
         QObject::tr("Adult Content"),
         QObject::tr("Explicit sexual images"),
-        "nsfw",
+        {"nsfw"},
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
@@ -49,7 +49,7 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         "sexual",
         QObject::tr("Sexually Suggestive"),
         QObject::tr("Does not include nudity"),
-        "suggestive",
+        {"suggestive"},
         true,
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
@@ -71,7 +71,7 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         "graphic-media",
         QObject::tr("Graphic Media"),
         QObject::tr("Explicit or potentially disturbing media"),
-        "gore",
+        {"gore", "corpse"},
         true,
         QEnums::CONTENT_VISIBILITY_HIDE_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
@@ -85,10 +85,20 @@ ContentFilter::GlobalContentGroupMap ContentFilter::CONTENT_GROUPS;
 void ContentFilter::initContentGroups()
 {
     for (const auto& group : SYSTEM_CONTENT_GROUP_LIST)
+    {
         CONTENT_GROUPS[group.getLabelId()] = &group;
 
+        for (const auto& legacyId : group.getLegacyLabelIds())
+            CONTENT_GROUPS[legacyId] = &group;
+    }
+
     for (const auto& group : USER_CONTENT_GROUP_LIST)
+    {
         CONTENT_GROUPS[group.getLabelId()] = &group;
+
+        for (const auto& legacyId : group.getLegacyLabelIds())
+            CONTENT_GROUPS[legacyId] = &group;
+    }
 }
 
 const ContentFilter::GlobalContentGroupMap& ContentFilter::getGlobalContentGroups()
@@ -135,25 +145,10 @@ QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPrefer
     return QEnums::CONTENT_VISIBILITY_SHOW;
 }
 
-std::unordered_map<QString, QString> ContentFilter::sLabelGroupMap;
-
 ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent) :
     QObject(parent),
     mUserPreferences(userPreferences)
 {
-    if (sLabelGroupMap.empty())
-        initLabelGroupMap();
-}
-
-void ContentFilter::initLabelGroupMap()
-{
-    for (const auto& [id, group] : getGlobalContentGroups())
-    {
-        sLabelGroupMap[id] = id;
-
-        if (group->getLegacyLabelId())
-            sLabelGroupMap[*group->getLegacyLabelId()] = id;
-    }
 }
 
 const ContentGroup* ContentFilter::getContentGroup(const QString& did, const QString& labelId) const
@@ -183,7 +178,8 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
 
     for (const auto& label : labels)
     {
-        const ContentLabel contentLabel(label->mSrc, label->mVal, label->mCreatedAt);
+        const ContentLabel contentLabel(label->mSrc, label->mUri, label->mCid.value_or(""),
+                                        label->mVal, label->mCreatedAt);
 
         if (!label->mNeg)
         {
@@ -207,8 +203,16 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& 
 
     auto visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), group.getLabelId());
 
-    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN && group.getLegacyLabelId())
-        visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), *group.getLegacyLabelId());
+    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+    {
+        for (const auto& legacyId : group.getLegacyLabelIds())
+        {
+            visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), legacyId);
+
+            if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+                break;
+        }
+    }
 
     if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
         return group.getContentVisibility(visibility);
@@ -218,26 +222,10 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& 
 
 QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label) const
 {
-    auto it = sLabelGroupMap.find(label.getLabelId());
+    const auto* group = getContentGroup(label.getDid(), label.getLabelId());
 
-    if (it != sLabelGroupMap.end())
-    {
-        const auto& groupId = it->second;
-        const auto& group = getGlobalContentGroups().at(groupId);
+    if (group)
         return getGroupVisibility(*group);
-    }
-
-    auto labelerIt = mLabelerGroupMap.find(label.getDid());
-
-    if (labelerIt != mLabelerGroupMap.end())
-    {
-        const auto& groupMap = labelerIt->second;
-        auto groupIt = groupMap.find(label.getLabelId());
-
-        if (groupIt != groupMap.end())
-            return getGroupVisibility(groupIt->second);
-    }
-
 
     qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QEnums::CONTENT_VISIBILITY_SHOW;
@@ -253,25 +241,10 @@ QString ContentFilter::getGroupWarning(const ContentGroup& group) const
 
 QString ContentFilter::getWarning(const ContentLabel& label) const
 {
-    auto it = sLabelGroupMap.find(label.getLabelId());
+    const auto* group = getContentGroup(label.getDid(), label.getLabelId());
 
-    if (it != sLabelGroupMap.end())
-    {
-        const auto& groupId = it->second;
-        const auto& group = getGlobalContentGroups().at(groupId);
+    if (group)
         return getGroupWarning(*group);
-    }
-
-    auto labelerIt = mLabelerGroupMap.find(label.getDid());
-
-    if (labelerIt != mLabelerGroupMap.end())
-    {
-        const auto& groupMap = labelerIt->second;
-        auto groupIt = groupMap.find(label.getLabelId());
-
-        if (groupIt != groupMap.end())
-            return getGroupWarning(groupIt->second);
-    }
 
     qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QObject::tr("Unknown label") + QString(": %1").arg(label.getLabelId());

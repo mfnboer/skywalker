@@ -25,7 +25,7 @@ public:
     ContentGroup() = default;
     ContentGroup(const QString& labelId, const QString& labelerDid);
     ContentGroup(const QString& labelId, const QString& title, const QString& description,
-                 const std::optional<QString>& legacyLabelId, bool adult,
+                 const QStringList& legacyLabelIds, bool adult,
                  QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget,
                  const QEnums::LabelSeverity& severity, const QString& labelerDid);
     explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef,
@@ -34,7 +34,7 @@ public:
     const QString& getLabelId() const { return mLabelId; }
     const QString& getTitle() const { return mTitle; }
     QString getTitleWithSeverity() const;
-    const std::optional<QString>& getLegacyLabelId() const { return mLegacyLabelId; }
+    const QStringList& getLegacyLabelIds() const { return mLegacyLabelIds; }
     bool isAdult() const { return mAdult; }
     QEnums::ContentVisibility getDefaultVisibility() const { return mDefaultVisibility; }
 
@@ -48,7 +48,7 @@ private:
     QString mLabelId;
     QString mTitle;
     QString mDescription;
-    std::optional<QString> mLegacyLabelId;
+    QStringList mLegacyLabelIds;
     bool mAdult = false;
     QEnums::ContentVisibility mDefaultVisibility = QEnums::ContentVisibility::CONTENT_VISIBILITY_SHOW;
     QEnums::LabelTarget mLabelTarget = QEnums::LabelTarget::LABEL_TARGET_CONTENT;

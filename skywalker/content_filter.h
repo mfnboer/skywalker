@@ -68,9 +68,7 @@ signals:
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;
     static void initContentGroups();
-    static void initLabelGroupMap();
 
-    static std::unordered_map<QString, QString> sLabelGroupMap;
     const ATProto::UserPreferences& mUserPreferences;
     std::unordered_map<QString, ContentGroupMap> mLabelerGroupMap; // labeler DID -> group map
 };

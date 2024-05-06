@@ -194,7 +194,6 @@ public:
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
-    std::optional<QString> makeOptionalString(const QString& str) const;
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
     HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }

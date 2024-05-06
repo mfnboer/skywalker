@@ -338,6 +338,9 @@ qt_add_qml_module(libskywalker
         SOURCES content_group.cpp
         QML_FILES StatAuthors.qml
         QML_FILES HeaderText.qml
+        QML_FILES ReportAppeal.qml
+        SOURCES utils.h
+        SOURCES utils.cpp
 )
 
 if (NOT ANDROID)

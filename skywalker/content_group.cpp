@@ -14,13 +14,13 @@ ContentGroup::ContentGroup(const QString& labelId, const QString& labelerDid) :
 
 ContentGroup::ContentGroup(
     const QString& labelId, const QString& title, const QString& description,
-    const std::optional<QString>& legacyLabelId, bool adult,
+    const QStringList& legacyLabelIds, bool adult,
     QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget,
     const QEnums::LabelSeverity& severity, const QString& labelerDid) :
     mLabelId(labelId),
     mTitle(title),
     mDescription(description),
-    mLegacyLabelId(legacyLabelId),
+    mLegacyLabelIds(legacyLabelIds),
     mAdult(adult),
     mDefaultVisibility(defaultVisibility),
     mLabelTarget(labelTarget),

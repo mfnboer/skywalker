@@ -188,8 +188,8 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
         Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label));
         userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), label, labelVisibility);
 
-        if (contentGroup.getLegacyLabelId())
-            userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), *contentGroup.getLegacyLabelId(), labelVisibility);
+        for (const auto& legacyId : contentGroup.getLegacyLabelIds())
+            userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), legacyId, labelVisibility);
     }
 
     if (mLabelerDid.isEmpty() || mSubscribed == mContentFilter.isSubscribedToLabeler(mLabelerDid))

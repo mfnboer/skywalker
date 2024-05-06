@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "report_utils.h"
+#include "utils.h"
 
 namespace Skywalker {
 
@@ -15,11 +16,13 @@ ReportUtils::ReportUtils(QObject* parent) :
     mReportReasons.append(ReportReason(QEnums::REPORT_REASON_TYPE_OTHER));
 }
 
-void ReportUtils::reportAuthor(const QString& did, QEnums::ReportReasonType reasonType, const QString& details)
+void ReportUtils::reportAuthor(const QString& did, QEnums::ReportReasonType reasonType,
+                               const QString& details, const QString& labelerDid)
 {
     qDebug() << "Report author:" << did << reasonType << details;
 
-    bskyClient()->reportAuthor(did, ATProto::ComATProtoModeration::ReasonType(reasonType), details,
+    bskyClient()->reportAuthor(did, ATProto::ComATProtoModeration::ReasonType(reasonType),
+        details, Utils::makeOptionalString(labelerDid),
         [this, presence=getPresence()]{
             if (!presence)
                 return;
@@ -36,11 +39,13 @@ void ReportUtils::reportAuthor(const QString& did, QEnums::ReportReasonType reas
         });
 }
 
-void ReportUtils::reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType, const QString& details)
+void ReportUtils::reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
+                                   const QString& details, const QString& labelerDid)
 {
     qDebug() << "Report post or feed:" << uri << cid << reasonType << details;
     
-    bskyClient()->reportPostOrFeed(uri, cid, ATProto::ComATProtoModeration::ReasonType(reasonType), details,
+    bskyClient()->reportPostOrFeed(uri, cid, ATProto::ComATProtoModeration::ReasonType(reasonType),
+        details, Utils::makeOptionalString(labelerDid),
         [this, presence=getPresence()]{
             if (!presence)
                 return;

@@ -16,8 +16,10 @@ class ReportUtils : public WrappedSkywalker, public Presence
 public:
     explicit ReportUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void reportAuthor(const QString& did, QEnums::ReportReasonType reasonType, const QString& details);
-    Q_INVOKABLE void reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType, const QString& details);
+    Q_INVOKABLE void reportAuthor(const QString& did, QEnums::ReportReasonType reasonType,
+                                  const QString& details, const QString& labelerDid = "");
+    Q_INVOKABLE void reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
+                                      const QString& details, const QString& labelerDid = "");
 
     const ReportReasonList& getReportReasons() const { return mReportReasons; }
 
