@@ -88,7 +88,6 @@ Page {
 
             delegate: AuthorViewDelegate {
                 width: labelerListView.width - 20
-                required property int index
 
                 SvgImage {
                     height: 40

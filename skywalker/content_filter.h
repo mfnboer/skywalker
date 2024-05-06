@@ -53,6 +53,7 @@ public:
 
     bool isSubscribedToLabeler(const QString& did) const;
     std::unordered_set<QString> getSubscribedLabelerDids() const;
+    std::vector<QString> getSubscribedLabelerDidsOrdered() const;
     size_t numLabelers() const;
 
     void addContentGroupMap(const QString& did, const ContentGroupMap& contentGroupMap);

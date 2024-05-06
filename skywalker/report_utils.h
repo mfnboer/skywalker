@@ -10,7 +10,6 @@ namespace Skywalker {
 class ReportUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
-    Q_PROPERTY(ReportReasonList reportReasons READ getReportReasons CONSTANT FINAL)
     QML_ELEMENT
 
 public:
@@ -21,14 +20,17 @@ public:
     Q_INVOKABLE void reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
                                       const QString& details, const QString& labelerDid = "");
 
-    const ReportReasonList& getReportReasons() const { return mReportReasons; }
+    Q_INVOKABLE static ReportReasonList getReportReasons(QEnums::ReportTarget target);
 
 signals:
     void reportOk();
     void reportFailed(QString error);
 
 private:
-    ReportReasonList mReportReasons;
+    static const ReportReasonList ACCOUNT_REASONS;
+    static const ReportReasonList POST_REASONS;
+    static const ReportReasonList FEED_REASONS;
+    static const ReportReasonList LIST_REASONS;
 };
 
 }

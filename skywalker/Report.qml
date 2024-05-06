@@ -14,6 +14,7 @@ Page {
     property listview list
     property int reasonType: QEnums.REPORT_REASON_TYPE_NULL // QEnums.ReasonType
     property string details
+    readonly property int labelerAuthorListModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LABELERS, "")
 
     signal closed
 
@@ -52,21 +53,42 @@ Page {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Send")
-            visible: reasonType !== QEnums.REPORT_REASON_TYPE_NULL
+            enabled: reasonType !== QEnums.REPORT_REASON_TYPE_NULL
             onClicked: sendReport()
         }
     }
 
+    AccessibleText {
+        id: labelerHeaderText
+        x: 10
+        width: parent.width - 20
+        height: visible ? implicitHeight : 0
+        font.pointSize: guiSettings.scaledFont(9/8)
+        font.bold: true
+        text: qsTr("Report to:")
+        visible: labelerComboBox.visible
+    }
+
+    AuthorComboBox {
+        id: labelerComboBox
+        anchors.top: labelerHeaderText.bottom
+        x: 10
+        width: parent.width - 20
+        height: visible ? implicitHeight : 0
+        model: skywalker.getAuthorListModel(page.labelerAuthorListModelId)
+        visible: count > 1
+    }
+
     ListView {
         id: reasonList
-        anchors.top: parent.top
+        anchors.top: labelerComboBox.bottom
         anchors.bottom: parent.bottom
         x: 10
         width: parent.width - 20
         spacing: 0
         boundsBehavior: Flickable.StopAtBounds
         clip: true
-        model: reportUtils.reportReasons
+        model: reportUtils.getReportReasons(getReportTarget())
 
         header: Rectangle {
             z: guiSettings.headerZLevel
@@ -233,17 +255,44 @@ Page {
     }
 
     function sendReport() {
+        let labelerDid = ""
+
+        if (labelerComboBox.currentValue)
+            labelerDid = labelerComboBox.currentValue.did
+
         if (postUri) {
-            reportUtils.reportPostOrFeed(postUri, postCid, reasonType, details)
+            reportUtils.reportPostOrFeed(postUri, postCid, reasonType, details, labelerDid)
         }
         else if (!author.isNull()) {
-            reportUtils.reportAuthor(author.did, reasonType, details)
+            reportUtils.reportAuthor(author.did, reasonType, details, labelerDid)
         }
         else if (!feed.isNull()) {
-            reportUtils.reportPostOrFeed(feed.uri, feed.cid, reasonType, details)
+            reportUtils.reportPostOrFeed(feed.uri, feed.cid, reasonType, details, labelerDid)
         }
         else if (!list.isNull()) {
-            reportUtils.reportPostOrFeed(list.uri, list.cid, reasonType, details)
+            reportUtils.reportPostOrFeed(list.uri, list.cid, reasonType, details, labelerDid)
         }
+    }
+
+    function getReportTarget() {
+        if (postUri)
+            return QEnums.REPORT_TARGET_POST
+        if (!author.isNull())
+            return QEnums.REPORT_TARGET_ACCOUNT
+        if (!feed.isNull())
+            return QEnums.REPORT_TARGET_FEED
+        if (!list.isNull())
+            return QEnums.REPORT_TARGET_LIST
+
+        console.warn("UKNOWN REPORT TARGET")
+        return QEnums.REPORT_TARGET_POST
+    }
+
+    Component.onDestruction: {
+        skywalker.removeAuthorListModel(labelerAuthorListModelId)
+    }
+
+    Component.onCompleted: {
+        skywalker.getAuthorList(labelerAuthorListModelId)
     }
 }

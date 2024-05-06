@@ -245,6 +245,7 @@ Page {
                         }
                         AccessibleMenuItem {
                             text: qsTr("Report account")
+                            visible: !isUser(author)
                             onTriggered: root.reportAuthor(author)
 
                             MenuItemSvg { svg: svgOutline.report }

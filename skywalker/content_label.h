@@ -14,7 +14,6 @@ class ContentLabel {
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(QString labelId READ getLabelId FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
-    Q_PROPERTY(bool isSystemLabel READ isSystemLabel FINAL)
     QML_VALUE_TYPE(contentlabel)
 
 public:
@@ -37,8 +36,8 @@ public:
     const QDateTime& getCreatedAt() const { return mCreatedAt; }
     Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mLabelId); }
 
-    Q_INVOKABLE bool appliesToActor() const { return ATProto::ATUri(mUri).getCollection() == ATProto::ATUri::COLLECTION_ACTOR_PROFILE; }
-    Q_INVOKABLE QString getActorDid() const { return ATProto::ATUri(mUri).getAuthority(); }
+    Q_INVOKABLE bool appliesToActor() const;
+    Q_INVOKABLE QString getActorDid() const;
 
 private:
     QString mDid;

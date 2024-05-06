@@ -1752,7 +1752,7 @@ void Skywalker::removePostFeedModel(int id)
 
 void Skywalker::getLabelersAuthorList(int modelId)
 {
-    const std::unordered_set<QString> labelers = mContentFilter.getSubscribedLabelerDids();
+    const std::vector<QString> labelers = mContentFilter.getSubscribedLabelerDidsOrdered();
 
     if (labelers.empty())
     {
@@ -1760,13 +1760,8 @@ void Skywalker::getLabelersAuthorList(int modelId)
         return;
     }
 
-    std::vector<QString> dids;
-
-    for (const auto& did : labelers)
-        dids.push_back(did);
-
     setGetAuthorListInProgress(true);
-    mBsky->getProfiles(dids,
+    mBsky->getProfiles(labelers,
         [this, modelId](auto profileDetailedList){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);

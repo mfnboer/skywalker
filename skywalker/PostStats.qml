@@ -113,6 +113,7 @@ Column {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report post")
+                    visible: !authorIsUser
                     onTriggered: reportPost()
 
                     MenuItemSvg { svg: svgOutline.report }

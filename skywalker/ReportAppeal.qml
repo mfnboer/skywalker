@@ -79,6 +79,7 @@ Page {
             width: parent.width
             leftPadding: page.margin
             rightPadding: page.margin
+            wrapMode: Text.Wrap
             text: qsTr(`This appeal will be sent to ${labelerHandle}`)
         }
 

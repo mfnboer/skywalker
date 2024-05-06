@@ -141,6 +141,15 @@ public:
     };
     Q_ENUM(ReportReasonType)
 
+    enum ReportTarget
+    {
+        REPORT_TARGET_POST,
+        REPORT_TARGET_ACCOUNT,
+        REPORT_TARGET_FEED,
+        REPORT_TARGET_LIST
+    };
+    Q_ENUM(ReportTarget)
+
     enum MutedPostReason
     {
         MUTED_POST_NONE = 0,

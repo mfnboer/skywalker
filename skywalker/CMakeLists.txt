@@ -341,6 +341,9 @@ qt_add_qml_module(libskywalker
         QML_FILES ReportAppeal.qml
         SOURCES utils.h
         SOURCES utils.cpp
+        QML_FILES AuthorComboBox.qml
+        QML_FILES AuthorItemDelegate.qml
+        SOURCES content_label.cpp
 )
 
 if (NOT ANDROID)

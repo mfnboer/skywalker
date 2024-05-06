@@ -293,6 +293,19 @@ std::unordered_set<QString> ContentFilter::getSubscribedLabelerDids() const
     return dids;
 }
 
+std::vector<QString> ContentFilter::getSubscribedLabelerDidsOrdered() const
+{
+    std::vector<QString> dids;
+    dids.push_back(BLUESKY_MODERATOR_DID);
+
+    auto subscribedDids = mUserPreferences.getLabelerDids();
+
+    for (const auto& did : subscribedDids)
+        dids.push_back(did);
+
+    return dids;
+}
+
 size_t ContentFilter::numLabelers() const
 {
     return mUserPreferences.numLabelers() + 1; // +1 for Bluesky labeler
