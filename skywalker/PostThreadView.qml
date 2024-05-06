@@ -170,10 +170,11 @@ ListView {
         const author = getReplyToAuthor()
         const postReplyRootUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootUri)
         const postReplyRootCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootCid)
-        const postLanguage = model.getData(postEntryIndex, AbstractPostFeedModel.PostLanguage)
+        const postLanguages = model.getData(postEntryIndex, AbstractPostFeedModel.PostLanguages)
 
+        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                          author, postReplyRootUri, postReplyRootCid, postLanguage,
+                          author, postReplyRootUri, postReplyRootCid, lang,
                           initialText, imageSource)
     }
 
