@@ -6,23 +6,33 @@ import skywalker
 RoundedFrame {
     required property string url
     property string title
+    required property int contentVisibility // QEnums::ContentVisibility
+    required property string contentWarning
     property alias status: img.status
 
     id: frame
     objectToRound: img
-    width: img.width
-    height: img.height
+    width: filter.imageVisible() ? img.width : parent.width
+    height: filter.imageVisible() ? img.height : filter.height
 
     ThumbAnimatedImageView {
         id: img
         width: Math.min(implicitWidth, frame.parent.width)
         Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
-        url: frame.url
+        url: filter.imageVisible() ? frame.url : ""
     }
     MouseArea {
         anchors.fill: img
         cursorShape: Qt.PointingHandCursor
+        enabled: filter.imageVisible()
         onClicked: root.viewFullAnimatedImage(url, title)
+    }
+    FilteredImageWarning {
+        id: filter
+        width: parent.width
+        contentVisibiliy: frame.contentVisibility
+        contentWarning: frame.contentWarning
+        imageUrl: frame.url
     }
 }

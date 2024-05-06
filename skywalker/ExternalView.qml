@@ -10,8 +10,9 @@ Item {
 
     id: view
     width: parent.width
-    height: filter.imageVisible() ? (gifUtils.isGif(postExternal.uri) ? Math.max(gifImage.height + tenorAttribution.height + 5, gifLoadingIndicator.height) : card.columnHeight)
-                                  : filter.height
+    height: gifUtils.isGif(postExternal.uri) ?
+                Math.max(gifImage.height + tenorAttribution.height + 5, gifLoadingIndicator.height) :
+                card.columnHeight
 
     Accessible.role: Accessible.Link
     Accessible.name: getSpeech()
@@ -24,13 +25,17 @@ Item {
         title: postExternal.title
         description: postExternal.description
         thumbUrl: postExternal.thumbUrl
-        visible: !gifUtils.isGif(postExternal.uri) && filter.imageVisible()
+        contentVisibility: view.contentVisibility
+        contentWarning: view.contentWarning
+        visible: !gifUtils.isGif(postExternal.uri)
     }
     AnimatedImagePreview {
         id: gifImage
         url: gifUtils.getGifUrl(postExternal.uri)
         title: url ? postExternal.title : ""
-        visible: url && filter.imageVisible()
+        contentVisibility: view.contentVisibility
+        contentWarning: view.contentWarning
+        visible: url
     }
     BusyIndicator {
         id: gifLoadingIndicator
@@ -58,15 +63,9 @@ Item {
         visible: gifImage.visible && gifUtils.isGiphyLink(postExternal.uri) && gifImage.status === Image.Ready
     }
 
-    FilteredImageWarning {
-        id: filter
-        width: parent.width - 2
-        contentVisibiliy: view.contentVisibility
-        contentWarning: view.contentWarning
-        imageUrl: postExternal.thumbUrl
-    }
     MouseArea {
         anchors.fill: parent
+        z: -1
         cursorShape: Qt.PointingHandCursor
         onClicked: openExternalLink()
         enabled: isLinkEnabled()
@@ -77,7 +76,7 @@ Item {
     }
 
     function isLinkEnabled() {
-        return !gifUtils.isGif(postExternal.uri) && filter.imageVisible()
+        return !gifUtils.isGif(postExternal.uri)
     }
 
     function openExternalLink() {

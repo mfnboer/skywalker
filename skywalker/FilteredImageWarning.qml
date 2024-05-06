@@ -11,7 +11,7 @@ Row {
     property imageview nullImage
     property string imageUrl // Set instead of images list
 
-    height: Math.max(imgIcon.height, contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnText.height : hideText.height)
+    height: !imageVisible() ? Math.max(imgIcon.height, contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnText.height : hideText.height) : 0
     spacing: 10
 
     Accessible.role: warnText.visible ? Accessible.Link : Accessible.StaticText
@@ -38,7 +38,7 @@ Row {
         text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
               (images.length === 1 || imageUrl ? qsTr("Show picture") : qsTr("Show pictures")) + "</a>"
         visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
-        onLinkActivated: showWarnedMedia = true
+        onLinkActivated: showWarnedMedia = true;
     }
 
     Text {
