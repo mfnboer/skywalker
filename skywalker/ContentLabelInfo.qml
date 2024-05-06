@@ -16,6 +16,8 @@ Dialog {
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
+    signal appeal(contentgroup group, string labelerHandle)
+
     ColumnLayout {
         id: grid
         width: parent.width
@@ -36,8 +38,21 @@ Dialog {
             SkyButton {
                 text: qsTr("Appeal")
                 visible: canAppeal()
+                onClicked: appeal(contentGroup, labelerHandle)
             }
         }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            Layout.topMargin: 10
+            wrapMode: Text.Wrap
+            maximumLineCount: 1000
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            color: guiSettings.textColor
+            text: contentGroup.formattedDescription
+        }
+
 
         AccessibleText {
             id: creatorHandle
@@ -58,17 +73,6 @@ Dialog {
             color: Material.color(Material.Grey)
             font.pointSize: guiSettings.scaledFont(7/8)
             text: label.createdAt.toLocaleString(Qt.locale(), Locale.LongFormat)
-        }
-
-        AccessibleText {
-            Layout.fillWidth: true
-            Layout.topMargin: 10
-            wrapMode: Text.Wrap
-            maximumLineCount: 1000
-            elide: Text.ElideRight
-            textFormat: Text.RichText
-            color: guiSettings.textColor
-            text: contentGroup.formattedDescription
         }
 
         AccessibleText {

@@ -20,6 +20,7 @@ TextEdit {
 
     id: editText
     width: parentPage.width
+    height: graphemeLength === 0 ? placeholderTextField.height : implicitHeight
     leftPadding: 10
     rightPadding: 10
     activeFocusOnTab: true
@@ -149,12 +150,14 @@ TextEdit {
     }
 
     Text {
-        anchors.fill: parent
+        id: placeholderTextField
+        width: parent.width
         leftPadding: editText.leftPadding
         rightPadding: editText.rightPadding
         topPadding: editText.topPadding
         bottomPadding: editText.bottomPadding
         font.pointSize: editText.font.pointSize
+        wrapMode: Text.Wrap
         color: guiSettings.placeholderTextColor
         text: placeholderText
         visible: editText.graphemeLength === 0

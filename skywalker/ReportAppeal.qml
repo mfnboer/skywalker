@@ -9,7 +9,7 @@ Page {
     property var skywalker: root.getSkywalker()
     readonly property int margin: 10
 
-    signal detailsChanged(string text)
+    signal closed
 
     id: page
     width: parent.width
@@ -19,7 +19,7 @@ Page {
     header: SimpleHeader {
         text: qsTr("Appeal")
         backIsCancel: true
-        onBack: page.closed()
+        onBack: { console.debug("CANCEL"); page.closed() }
 
         SkyButton {
             anchors.rightMargin: 10
@@ -85,12 +85,13 @@ Page {
         SkyFormattedTextEdit {
             id: detailsText
             anchors.top: appealHeaderText.bottom
+            anchors.topMargin: 10
             width: parent.width
             leftPadding: page.margin
             rightPadding: page.margin
             parentPage: page
             parentFlick: flick
-            placeholderText: qsTr("Please explain why you think this label was incorrectly applied")
+            placeholderText: qsTr("Please explain why you think this label was incorrectly applied.")
             maxLength: 2000
         }
     }

@@ -68,12 +68,27 @@ ScrollView {
         return labels
     }
 
+    function appeal(contentLabel, contentGroup, labelerHandle) {
+        let component = Qt.createComponent("ReportAppeal.qml")
+        let page = component.createObject(root.currentStackItem(), {
+            label: contentLabel,
+            contentGroup: contentGroup,
+            labelerHandle: labelerHandle
+        })
+        page.onClosed.connect(() => root.popStack())
+        root.pushStack(page)
+    }
+
     function showInfo(contentLabel) {
         let component = Qt.createComponent("ContentLabelInfo.qml")
         let infoPage = component.createObject(root.currentStackItem(),
                 { contentAuthorDid: contentAuthorDid, label: contentLabel })
         infoPage.onAccepted.connect(() => infoPage.destroy())
         infoPage.onRejected.connect(() => infoPage.destroy())
+        infoPage.onAppeal.connect((contentGroup, labelerHandle) => {
+            appeal(contentLabel, contentGroup, labelerHandle)
+            infoPage.destroy()
+        })
         infoPage.open()
     }
 }

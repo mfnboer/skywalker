@@ -1,5 +1,7 @@
 next
 ====
+* Support custom labelers (moderators)
+* Appeal labels
 * Two-factor authentication support.
 * Show likes on feed generator.
 

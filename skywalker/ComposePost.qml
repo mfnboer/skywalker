@@ -576,6 +576,8 @@ Page {
                         title: card ? card.title : ""
                         description: card ? card.description : ""
                         thumbUrl: card ? card.thumb : ""
+                        contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
+                        contentWarning: ""
                         visible: card
 
                         onCardChanged: threadPosts.postList[index].card = card
