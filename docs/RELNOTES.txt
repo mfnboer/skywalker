@@ -4,6 +4,7 @@ next
 * Appeal labels
 * Two-factor authentication support.
 * Show likes on feed generator.
+* Bug fixes
 
 2.2.1
 =====

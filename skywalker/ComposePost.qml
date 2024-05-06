@@ -466,7 +466,7 @@ Page {
                             if (page.openedAsQuotePost && index === 0)
                                 return
 
-                            page.quoteList = page.nullList
+                            quoteList = page.nullList
 
                             if (firstPostLink || firstFeedLink)
                                 return
