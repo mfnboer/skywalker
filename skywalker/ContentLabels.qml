@@ -6,6 +6,7 @@ ScrollView {
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
     readonly property list<contentlabel> nonSystemLabels: filterSystemLabels()
+    property var skywalker: root.getSkywalker()
 
     id: labelView
     width: Math.min(parent.width, labelRow.width)
@@ -34,7 +35,7 @@ ScrollView {
                 font.pointSize: guiSettings.scaledFont(5/8)
                 font.italic: true
                 color: guiSettings.textColor
-                text: modelData.text
+                text: getDisplayText(modelData)
 
                 Accessible.role: Accessible.StaticText
                 Accessible.name: qsTr(`content label: ${text}`)
@@ -51,6 +52,11 @@ ScrollView {
         id: guiSettings
     }
 
+    function getDisplayText(label) {
+        const contentGroup = skywalker.getContentGroup(label.did, label.labelId)
+        return contentGroup.titleWithSeverity
+    }
+
     function filterSystemLabels() {
         let labels = []
 
@@ -62,12 +68,27 @@ ScrollView {
         return labels
     }
 
+    function appeal(contentLabel, contentGroup, labelerHandle) {
+        let component = Qt.createComponent("ReportAppeal.qml")
+        let page = component.createObject(root.currentStackItem(), {
+            label: contentLabel,
+            contentGroup: contentGroup,
+            labelerHandle: labelerHandle
+        })
+        page.onClosed.connect(() => root.popStack())
+        root.pushStack(page)
+    }
+
     function showInfo(contentLabel) {
         let component = Qt.createComponent("ContentLabelInfo.qml")
         let infoPage = component.createObject(root.currentStackItem(),
                 { contentAuthorDid: contentAuthorDid, label: contentLabel })
         infoPage.onAccepted.connect(() => infoPage.destroy())
         infoPage.onRejected.connect(() => infoPage.destroy())
+        infoPage.onAppeal.connect((contentGroup, labelerHandle) => {
+            appeal(contentLabel, contentGroup, labelerHandle)
+            infoPage.destroy()
+        })
         infoPage.open()
     }
 }

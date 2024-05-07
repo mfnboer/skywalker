@@ -2,12 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "content_label.h"
-#include "enums.h"
-#include <atproto/lib/user_preferences.h>
-#include <atproto/lib/lexicon/com_atproto_label.h>
-#include <QStringList>
-#include <QObject>
-#include <QtQmlIntegration>
+#include "content_group.h"
 #include <tuple>
 
 namespace Skywalker {
@@ -19,57 +14,64 @@ public:
     virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const = 0;
 };
 
-class ContentGroup
+class ContentFilter : public QObject, public IContentFilter
 {
-    Q_GADGET
-    Q_PROPERTY(QString title MEMBER mTitle CONSTANT FINAL)
-    Q_PROPERTY(QString subTitle MEMBER mSubTitle CONSTANT FINAL)
-    Q_PROPERTY(bool isAdult MEMBER mAdultImages CONSTANT FINAL)
-    QML_VALUE_TYPE(contentgroup)
+    Q_OBJECT
 
-public:
-    QString mId;
-    QString mTitle;
-    QString mSubTitle;
-    QString mWarning;
-    std::vector<QString> mLabelValues;
-    bool mAdultImages;
-    QEnums::ContentVisibility mDefaultVisibility;
-
-    bool isPostLevel() const { return mDefaultVisibility == QEnums::CONTENT_VISIBILITY_WARN_POST ||
-                                      mDefaultVisibility == QEnums::CONTENT_VISIBILITY_HIDE_POST; }
-
-    QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
-};
-
-class ContentFilter : public IContentFilter
-{
 public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
-    using ContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
+    using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
 
-    static const std::vector<ContentGroup> CONTENT_GROUP_LIST;
-    static const ContentGroupMap& getContentGroups();
+    // System labels have a hard coded setting.
+    static const std::vector<ContentGroup> SYSTEM_CONTENT_GROUP_LIST;
+
+    // User labels have a default setting that can be changed by the user.
+    static const std::vector<ContentGroup> USER_CONTENT_GROUP_LIST;
+
+    // System and user labels make up the global labels.
+    static const GlobalContentGroupMap& getGlobalContentGroups();
+    static const ContentGroup* getGlobalContentGroup(const QString& labelId);
+    static bool isGlobalLabel(const QString& labelId);
 
     // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
     static ContentLabelList getContentLabels(const LabelList& labels);
 
-    explicit ContentFilter(const ATProto::UserPreferences& userPreferences);
+    explicit ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent = nullptr);
 
-    QEnums::ContentVisibility getGroupVisibility(const QString& groupId) const;
-    QEnums::ContentVisibility getVisibility(const QString& label) const;
-    QString getWarning(const QString& label) const;
+    // Returns a global content group if the labelId is a global label
+    const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const;
+
+    bool getAdultContent() const { return mUserPreferences.getAdultContent(); }
+
+    QEnums::ContentVisibility getGroupVisibility(const ContentGroup& group) const;
+    QEnums::ContentVisibility getVisibility(const ContentLabel& label) const;
+    QString getGroupWarning(const ContentGroup& group) const;
+    QString getWarning(const ContentLabel& label) const;
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const override;
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
 
-private:
-    static ContentGroupMap CONTENT_GROUPS;
-    static void initContentGroups();
-    static void initLabelGroupMap();
+    bool isSubscribedToLabeler(const QString& did) const;
+    std::unordered_set<QString> getSubscribedLabelerDids() const;
+    std::vector<QString> getSubscribedLabelerDidsOrdered() const;
+    size_t numLabelers() const;
 
-    static std::unordered_map<QString, QString> sLabelGroupMap;
+    void addContentGroupMap(const QString& did, const ContentGroupMap& contentGroupMap);
+    void addContentGroups(const QString& did, const std::vector<ContentGroup>& contentGroups);
+    void removeContentGroups(const QString& did);
+
+    static bool isFixedLabelerSubscription(const QString& did);
+
+signals:
+    void contentGroupsChanged();
+    void subscribedLabelersChanged();
+
+private:
+    static GlobalContentGroupMap CONTENT_GROUPS;
+    static void initContentGroups();
+
     const ATProto::UserPreferences& mUserPreferences;
+    std::unordered_map<QString, ContentGroupMap> mLabelerGroupMap; // labeler DID -> group map
 };
 
 class ContentFilterShowAll : public IContentFilter
@@ -82,5 +84,3 @@ public:
 };
 
 }
-
-Q_DECLARE_METATYPE(::Skywalker::ContentGroup)

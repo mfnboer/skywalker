@@ -13,9 +13,21 @@ static constexpr char const* DEFAULT_LANGUAGE = "en";
 static constexpr int MAX_USED_LANGUAGES = 5;
 
 Language::Language(const QString& code, const QString& nativeName) :
+    mCode(code),
     mShortCode(LanguageUtils::languageCodeToShortCode(code)),
     mNativeName(nativeName)
 {
+}
+
+Language::Match Language::compare(const Language& other) const
+{
+    if (mCode == other.mCode)
+        return Match::CODE;
+
+    if (mShortCode == other.mShortCode)
+        return Match::SHORT_CODE;
+
+    return Match::NONE;
 }
 
 LanguageList LanguageUtils::sLanguages;
@@ -156,6 +168,9 @@ LanguageList LanguageUtils::getUsedPostLanguages() const
 
     for (const QString& shortCode : langs)
     {
+        if (shortCode.isEmpty())
+            continue;
+
         usedLangs.push_back(getLanguage(shortCode));
         usedShortCodes.insert(shortCode);
     }
@@ -191,6 +206,12 @@ LanguageList LanguageUtils::getUsedPostLanguages() const
 
 void LanguageUtils::addUsedPostLanguage(const QString& language)
 {
+    if (language.isEmpty())
+    {
+        qDebug() << "No language";
+        return;
+    }
+
     Q_ASSERT(mSkywalker);
     const QString& did = mSkywalker->getUserDid();
     auto* settings = mSkywalker->getUserSettings();
@@ -200,6 +221,7 @@ void LanguageUtils::addUsedPostLanguage(const QString& language)
         return;
 
     langs.removeOne(language);
+    langs.removeAll(""); // somehow empty languages got in the list
 
     while (langs.size() >= MAX_USED_LANGUAGES)
         langs.pop_back();

@@ -19,6 +19,8 @@ ProfileUtils::ProfileUtils(QObject* parent) :
                 [this]{
                     qDebug() << "Reset profile master";
                     mProfileMaster = nullptr;
+                    qDebug() << "Reset post master";
+                    mPostMaster = nullptr;
                 });
     });
 }
@@ -37,6 +39,22 @@ ATProto::ProfileMaster* ProfileUtils::profileMaster()
     }
 
     return mProfileMaster.get();
+}
+
+ATProto::PostMaster* ProfileUtils::postMaster()
+{
+    if (!mPostMaster)
+    {
+        auto* client = bskyClient();
+        Q_ASSERT(client);
+
+        if (client)
+            mPostMaster = std::make_unique<ATProto::PostMaster>(*client);
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mPostMaster.get();
 }
 
 void ProfileUtils::getHandle(const QString& did)
@@ -191,6 +209,82 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
 
             qDebug() << "Update profile failed:" << error << " - " << msg;
             emit updateProfileFailed(msg);
+        });
+}
+
+void ProfileUtils::getLabelerViewDetailed(const QString& did)
+{
+    if (!bskyClient())
+        return;
+
+    qDebug() << "Get detailed labeler view:" << did;
+
+    bskyClient()->getServices({did}, true,
+        [this](auto output){
+            if (output->mViews.empty())
+            {
+                qWarning() << "Invalid services output, views missing";
+                emit getLabelerViewDetailedFailed(tr("Could not get label information."));
+                return;
+            }
+
+            const auto& outputView = output->mViews.front();
+
+            if (outputView->mViewType != ATProto::AppBskyLabeler::GetServicesOutputView::ViewType::VIEW_DETAILED)
+            {
+                qWarning() << "Invalid view type:" << (int)outputView->mViewType;
+                emit getLabelerViewDetailedFailed(tr("Could not get label information."));
+                return;
+            }
+
+            const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::Ptr>(outputView->mView));
+            emit getLabelerViewDetailedOk(view);
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getLabelerViewDetailed failed:" << error << " - " << msg;
+            emit getLabelerViewDetailedFailed(msg);
+        });
+}
+
+void ProfileUtils::likeLabeler(const QString& uri, const QString& cid)
+{
+    if (!postMaster())
+        return;
+
+    postMaster()->like(uri, cid,
+        [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
+            if (!presence)
+                return;
+
+            emit likeLabelerOk(likeUri);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Like failed:" << error << " - " << msg;
+            emit likeLabelerFailed(msg);
+        });
+}
+
+void ProfileUtils::undoLikeLabeler(const QString& likeUri, const QString& cid)
+{
+    if (!postMaster())
+        return;
+
+    postMaster()->undo(likeUri,
+        [this, presence=getPresence(), cid]{
+            if (!presence)
+                return;
+
+            emit undoLikeLabelerOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo like failed:" << error << " - " << msg;
+            emit undoLikeLabelerFailed(msg);
         });
 }
 

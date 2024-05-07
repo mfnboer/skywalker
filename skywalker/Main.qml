@@ -156,10 +156,10 @@ ApplicationWindow {
             userSettings.updateLastSignInTimestamp(did)
         }
 
-        onGetUserPreferencesFailed: {
+        onGetUserPreferencesFailed: (error) => {
             console.warn("FAILED TO LOAD USER PREFERENCES")
             closeStartupStatus()
-            statusPopup.show("FAILED TO LOAD USER PREFERENCES", QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }
@@ -1092,10 +1092,14 @@ ApplicationWindow {
 
     function editContentFilterSettings() {
         let component = Qt.createComponent("ContentFilterSettings.qml")
-        let contentGroupListModel = skywalker.getContentGroupListModel()
-        let form = component.createObject(root, { model: contentGroupListModel })
+        let contentGroupListModel = skywalker.getGlobalContentGroupListModel()
+        let labelerModelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LABELERS, "")
+        let form = component.createObject(root, {
+                globalLabelModel: contentGroupListModel,
+                labelerAuthorListModelId: labelerModelId })
         form.onClosed.connect(() => { popStack() })
         pushStack(form)
+        skywalker.getAuthorList(labelerModelId)
     }
 
     function reportAuthor(author) {

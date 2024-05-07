@@ -8,6 +8,8 @@ RoundedFrame {
     property string title
     property string description
     property string thumbUrl
+    required property int contentVisibility // QEnums::ContentVisibility
+    required property string contentWarning
     property int columnHeight: externalColumn.height
 
     id: card
@@ -15,18 +17,32 @@ RoundedFrame {
     border.width: 1
     border.color: guiSettings.borderColor
 
+    FilteredImageWarning {
+        id: filter
+        width: parent.width - 2
+        contentVisibiliy: card.contentVisibility
+        contentWarning: card.contentWarning
+        imageUrl: card.thumbUrl
+    }
+
     Column {
         id: externalColumn
         width: parent.width
         topPadding: 1
         spacing: 3
-        visible: false
 
+        // HACK: The filter should be in this place, but inside a rounded object links
+        // cannot be clicked.
+        Rectangle {
+            width: filter.width
+            height: filter.height
+            color: "transparent"
+        }
         ImageAutoRetry {
             id: thumbImg
             x: 1
             width: parent.width - 2
-            source: card.thumbUrl
+            source: filter.imageVisible() ? card.thumbUrl : ""
             fillMode: Image.PreserveAspectFit
         }
         Text {

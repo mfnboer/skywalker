@@ -352,7 +352,7 @@ static void setLabels(DraftPostData* data, const Post& post)
     const auto labels = ContentFilter::getContentLabels(post.getLabels());
 
     for (const auto& label : labels)
-        labelNames.push_back(label.getText());
+        labelNames.push_back(label.getLabelId());
 
     data->setLabels(labelNames);
 }

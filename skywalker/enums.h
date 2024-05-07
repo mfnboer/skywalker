@@ -88,7 +88,8 @@ public:
         AUTHOR_LIST_REPOSTS,
         AUTHOR_LIST_SEARCH_RESULTS,
         AUTHOR_LIST_LIST_MEMBERS,
-        AUTHOR_LIST_SUGGESTIONS
+        AUTHOR_LIST_SUGGESTIONS,
+        AUTHOR_LIST_LABELERS
     };
     Q_ENUM(AuthorListType)
 
@@ -112,6 +113,21 @@ public:
 
     static ContentPrefVisibility toContentPrefVisibility(ContentVisibility);
 
+    enum LabelTarget
+    {
+        LABEL_TARGET_CONTENT,
+        LABEL_TARGET_MEDIA
+    };
+    Q_ENUM(LabelTarget)
+
+    enum LabelSeverity
+    {
+        LABEL_SEVERITY_NONE,
+        LABEL_SEVERITY_INFO,
+        LABEL_SEVERITY_ALERT
+    };
+    Q_ENUM(LabelSeverity)
+
     enum ReportReasonType
     {
         REPORT_REASON_TYPE_NULL = -1,
@@ -120,9 +136,19 @@ public:
         REPORT_REASON_TYPE_MISLEADING = (int)ATProto::ComATProtoModeration::ReasonType::MISLEADING,
         REPORT_REASON_TYPE_SEXUAL = (int)ATProto::ComATProtoModeration::ReasonType::SEXUAL,
         REPORT_REASON_TYPE_RUDE = (int)ATProto::ComATProtoModeration::ReasonType::RUDE,
-        REPORT_REASON_TYPE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OTHER
+        REPORT_REASON_TYPE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OTHER,
+        REPORT_REASON_TYPE_APPEAL = (int)ATProto::ComATProtoModeration::ReasonType::APPEAL
     };
     Q_ENUM(ReportReasonType)
+
+    enum ReportTarget
+    {
+        REPORT_TARGET_POST,
+        REPORT_TARGET_ACCOUNT,
+        REPORT_TARGET_FEED,
+        REPORT_TARGET_LIST
+    };
+    Q_ENUM(ReportTarget)
 
     enum MutedPostReason
     {

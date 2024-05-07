@@ -57,6 +57,7 @@ ListView {
                     width: parent.width - 12
                     height: width
                     avatarUrl: authorVisible() ? author.avatarUrl : ""
+                    isModerator: author.associated.isLabeler
                     onClicked: authorClicked(author)
                 }
             }

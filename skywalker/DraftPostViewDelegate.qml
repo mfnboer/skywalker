@@ -55,6 +55,7 @@ Rectangle {
                 width: parent.width - 13
                 height: width
                 avatarUrl: author.avatarUrl
+                isModerator: author.associated.isLabeler
 
                 onClicked: selectDraft()
             }
@@ -107,11 +108,9 @@ Rectangle {
             Layout.alignment: Qt.AlignRight
             Layout.columnSpan: 2
             svg: svgOutline.delete
-            onClicked: { console.debug("DELETE"); deleted() }
+            onClicked: deleted()
 
-            Accessible.role: Accessible.Button
             Accessible.name: qsTr("delete draft post")
-            Accessible.onPressAction: clicked()
         }
 
         // Separator

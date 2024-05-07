@@ -23,10 +23,17 @@ Page {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
+    readonly property bool hasFeeds: author.associated.feeds > 0
     readonly property int feedListModelId: skywalker.createFeedListModel()
-    property bool hasFeeds: false
+    readonly property bool hasLists: author.associated.lists > 0
     readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
-    property bool hasLists: false
+    readonly property bool isLabeler: author.associated.isLabeler
+    property int contentGroupListModelId: -1
+    property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
+    property bool isSubscribed: contentGroupListModel ? contentGroupListModel.subscribed : false
+    property labelerviewdetailed labeler
+    property string labelerLikeUri: ""
+    property int labelerLikeCount: 0
 
     signal closed
 
@@ -82,6 +89,7 @@ Page {
                 width: parent.width - 4
                 height: parent.height - 4
                 avatarUrl: !contentVisible() ? "" : authorAvatar
+                isModerator: isLabeler
                 onClicked:  {
                     if (authorAvatar)
                         root.viewFullImage([author.imageView], 0)
@@ -169,7 +177,7 @@ Page {
                         }
                         AccessibleMenuItem {
                             text: qsTr("Translate")
-                            enabled: authorDescription
+                            visible: authorDescription
                             onTriggered: root.translateText(authorDescription)
 
                             MenuItemSvg { svg: svgOutline.googleTranslate }
@@ -181,8 +189,20 @@ Page {
                             MenuItemSvg { svg: svgOutline.share }
                         }
                         AccessibleMenuItem {
+                            text: following ? qsTr("Unfollow") : qsTr("Follow")
+                            visible: isLabeler && !isUser(author) && contentVisible()
+                            onClicked: {
+                                if (following)
+                                    graphUtils.unfollow(author.did, following)
+                                else
+                                    graphUtils.follow(author)
+                            }
+
+                            MenuItemSvg { svg: following ? svgOutline.noUsers : svgOutline.addUser }
+                        }
+                        AccessibleMenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
-                            enabled: !isUser(author) && author.viewer.mutedByList.isNull()
+                            visible: !isUser(author) && author.viewer.mutedByList.isNull()
                             onTriggered: {
                                 if (authorMuted)
                                     graphUtils.unmute(author.did)
@@ -194,7 +214,7 @@ Page {
                         }
                         AccessibleMenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
-                            enabled: !isUser(author) && author.viewer.blockingByList.isNull()
+                            visible: !isUser(author) && author.viewer.blockingByList.isNull()
                             onTriggered: {
                                 if (blocking)
                                     graphUtils.unblock(author.did, blocking)
@@ -206,7 +226,7 @@ Page {
                         }
                         AccessibleMenuItem {
                            text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
-                           enabled: !isUser(author)
+                           visible: !isUser(author)
                            onTriggered: {
                                if (authorMutedReposts)
                                    graphUtils.unmuteReposts(author.did)
@@ -225,6 +245,7 @@ Page {
                         }
                         AccessibleMenuItem {
                             text: qsTr("Report account")
+                            visible: !isUser(author)
                             onTriggered: root.reportAuthor(author)
 
                             MenuItemSvg { svg: svgOutline.report }
@@ -240,16 +261,30 @@ Page {
 
                 SkyButton {
                     text: qsTr("Follow")
-                    visible: !following && !isUser(author) && contentVisible()
+                    visible: !following && !isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.follow(author)
                     Accessible.name: qsTr(`press to follow ${author.name}`)
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
-                    visible: following && !isUser(author) && contentVisible()
+                    visible: following && !isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.unfollow(author.did, following)
                     Accessible.name: qsTr(`press to unfollow ${author.name}`)
+                }
+
+                SkyButton {
+                    text: qsTr("Subscribe")
+                    visible: !isSubscribed && isLabeler && !author.isFixedLabeler()
+                    onClicked: contentGroupListModel.subscribed = true
+                    Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
+                }
+                SkyButton {
+                    flat: true
+                    text: qsTr("Unsubscribe")
+                    visible: isSubscribed && isLabeler && !author.isFixedLabeler()
+                    onClicked: contentGroupListModel.subscribed = false
+                    Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
                 }
             }
 
@@ -308,43 +343,21 @@ Page {
                 topPadding: 10
                 visible: contentVisible()
 
-                Text {
-                    color: guiSettings.linkColor
-                    text: qsTr(`<b>${author.followersCount}</b> followers`)
-
-                    Accessible.role: Accessible.Link
-                    Accessible.name: unicodeFonts.toPlainText(text)
-                    Accessible.onPressAction: showFollowers()
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: parent.showFollowers()
-                    }
-
-                    function showFollowers() {
-                        let modelId = skywalker.createAuthorListModel(
-                                QEnums.AUTHOR_LIST_FOLLOWERS, author.did)
-                        root.viewAuthorList(modelId, qsTr("Followers"))
-                    }
+                StatAuthors {
+                    atUri: author.did
+                    count: author.followersCount
+                    nameSingular: qsTr("follower")
+                    namePlural: qsTr("followers")
+                    authorListType: QEnums.AUTHOR_LIST_FOLLOWERS
+                    authorListHeader: qsTr("Followers")
                 }
-                Text {
-                    color: guiSettings.linkColor
-                    text: qsTr(`<b>${author.followsCount}</b> following`)
-
-                    Accessible.role: Accessible.Link
-                    Accessible.name: unicodeFonts.toPlainText(text)
-                    Accessible.onPressAction: showFollowing()
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: parent.showFollowing()   
-                    }
-
-                    function showFollowing() {
-                        let modelId = skywalker.createAuthorListModel(
-                                QEnums.AUTHOR_LIST_FOLLOWS, author.did)
-                        root.viewAuthorList(modelId, qsTr("Following"))
-                    }
+                StatAuthors {
+                    atUri: author.did
+                    count: author.followsCount
+                    nameSingular: qsTr("following")
+                    namePlural: qsTr("following")
+                    authorListType: QEnums.AUTHOR_LIST_FOLLOWS
+                    authorListHeader: qsTr("Following")
                 }
                 Text {
                     color: guiSettings.textColor
@@ -368,10 +381,41 @@ Page {
                 onLinkActivated: (link) => root.openLink(link)
             }
 
+            Row {
+                // height: likeIcon.height
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                spacing: 10
+                visible: isLabeler
+
+                StatIcon {
+                    id: likeIcon
+                    iconColor: labelerLikeUri ? guiSettings.likeColor : guiSettings.statsColor
+                    svg: labelerLikeUri ? svgFilled.like : svgOutline.like
+                    onClicked: likeLabeler(labelerLikeUri, labeler.uri, labeler.cid)
+                    Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(labelerLikeCount, qsTr("like"), qsTr("likes"))
+                }
+
+                StatAuthors {
+                    atUri: labeler.uri
+                    count: labelerLikeCount
+                    nameSingular: qsTr("like")
+                    namePlural: qsTr("likes")
+                    authorListType: QEnums.AUTHOR_LIST_LIKES
+                    authorListHeader: qsTr("Liked by")
+                }
+            }
+
             TabBar {
                 id: feedMenuBar
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
+                currentIndex: isLabeler ? 0 : 1
 
+                AccessibleTabButton {
+                    text: qsTr("Labels")
+                    visible: isLabeler
+                    width: isLabeler ? implicitWidth : 0
+                }
                 AccessibleTabButton {
                     text: qsTr("Posts")
                     width: implicitWidth
@@ -424,7 +468,69 @@ Page {
             // -1 to make the interactive enable/disable work
             height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() + page.header.height - 1 : 0)
 
-            currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
+            currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 1
+
+            // Labels
+            ListView {
+                id: labelList
+                width: parent.width
+                height: parent.height
+                topMargin: 10
+                clip: true
+                spacing: 0
+                model: contentGroupListModel
+                flickDeceleration: guiSettings.flickDeceleration
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
+
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0)
+                        authorFeedView.interactive = true
+                }
+
+                header: ColumnLayout {
+                    width: authorFeedView.width
+
+                    AccessibleText {
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        Layout.fillWidth: true
+                        wrapMode: Text.Wrap
+                        color: guiSettings.textColor
+                        text: qsTr("Labels are annotations on users and content. They can be used to warn, hide and categorize content.")
+                    }
+
+                    AccessibleText {
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        Layout.fillWidth: true
+                        height: page.isSubscribed ? implicitHeight : 0
+                        wrapMode: Text.Wrap
+                        color: guiSettings.textColor
+                        text: qsTr(`Subscribe to ${author.handle} to use these labels`)
+                        visible: !page.isSubscribed
+                    }
+
+                    SeparatorLine {
+                        Layout.fillWidth: true
+                    }
+                }
+
+                delegate: ContentGroupDelegate {
+                    width: authorFeedView.width
+                    isSubscribed: page.isSubscribed
+                    adultContent: labelList.model.adultContent
+                }
+
+                EmptyListIndication {
+                    svg: svgOutline.noLabels
+                    text: qsTr("No labels")
+                    list: labelList
+                }
+
+                function refresh() {}
+                function clear() {}
+            }
 
             // Posts
             AuthorPostsList {
@@ -499,8 +605,6 @@ Page {
                         authorFeedView.interactive = true
                 }
 
-                onCountChanged: hasFeeds = count
-
                 delegate: GeneratorViewDelegate {
                     width: authorFeedView.width
                 }
@@ -548,8 +652,6 @@ Page {
                     if (verticalOvershoot < 0)
                         authorFeedView.interactive = true
                 }
-
-                onCountChanged: hasLists = count
 
                 delegate: ListViewDelegate {
                     width: authorFeedView.width
@@ -612,7 +714,7 @@ Page {
             }
 
             function refresh() {
-                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0)
+                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(1)
 
                 for (let i = 0; i < children.length; ++i) {
                     let c = children[i]
@@ -715,8 +817,30 @@ Page {
         onUnmuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    ProfileUtils {
+        id: profileUtils
+        skywalker: page.skywalker
+
+        onGetLabelerViewDetailedOk: (view) => setLabeler(view)
+        onGetLabelerViewDetailedFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onLikeLabelerOk: (likeUri) => {
+            labelerLikeUri = likeUri
+            ++labelerLikeCount
+        }
+
+        onUndoLikeLabelerOk: {
+            labelerLikeUri = ""
+            --labelerLikeCount
+        }
+    }
+
     UnicodeFonts {
         id: unicodeFonts
+    }
+
+    AccessibilityUtils {
+        id: accessibilityUtils
     }
 
     GuiSettings {
@@ -872,6 +996,20 @@ Page {
         return qsTr("No posts")
     }
 
+    function setLabeler(view) {
+        contentGroupListModelId = skywalker.createContentGroupListModel(author.did, view.policies)
+        labeler = view
+        labelerLikeUri = labeler.viewer.like
+        labelerLikeCount = labeler.likeCount
+    }
+
+    function likeLabeler(likeUri, uri, cid) {
+        if (likeUri)
+            profileUtils.undoLikeLabeler(likeUri, cid)
+        else
+            profileUtils.likeLabeler(uri, cid)
+    }
+
     function isUser(author) {
         return skywalker.getUserDid() === author.did
     }
@@ -883,6 +1021,11 @@ Page {
         setAuthorBanner("")
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
+
+        if (contentGroupListModelId > -1) {
+            skywalker.saveContentFilterPreferences(contentGroupListModel)
+            skywalker.removeContentGroupListModel(contentGroupListModelId)
+        }
     }
 
     Component.onCompleted: {
@@ -897,7 +1040,14 @@ Page {
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)
-        getFeedList(feedListModelId)
-        getListList(listListModelId)
+
+        if (hasFeeds)
+            getFeedList(feedListModelId)
+
+        if (hasLists)
+            getListList(listListModelId)
+
+        if (isLabeler)
+            profileUtils.getLabelerViewDetailed(author.did)
     }
 }

@@ -1,25 +1,56 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "content_group_list_model.h"
+#include <atproto/lib/client.h>
 
 namespace Skywalker {
 
-ContentGroupListModel::ContentGroupListModel(const ContentFilter& contentFilter, QObject* parent) :
+ContentGroupListModel::ContentGroupListModel(ContentFilter& contentFilter, QObject* parent) :
     QAbstractListModel(parent),
-    mContentFilter(contentFilter)
+    mContentFilter(contentFilter),
+    mSubscribed(true) // implicitly subscribed to global labels
 {
-    initContentGroups();
+    init();
 }
 
-void ContentGroupListModel::initContentGroups()
+ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, QObject* parent) :
+    QAbstractListModel(parent),
+    mContentFilter(contentFilter),
+    mLabelerDid(labelerDid),
+    mSubscribed(mContentFilter.isSubscribedToLabeler(mLabelerDid))
+{
+    init();
+}
+
+void ContentGroupListModel::init()
+{
+    mAdultContent = mContentFilter.getAdultContent();
+
+    connect(&mContentFilter, &ContentFilter::contentGroupsChanged, this, [this]{
+        mAdultContent = mContentFilter.getAdultContent();
+        mChangedVisibility.clear();
+        emit dataChanged(createIndex(0, 0), createIndex(mContentGroupList.size() - 1, 0));
+    });
+}
+
+void ContentGroupListModel::setGlobalContentGroups()
 {
     clear();
 
-    beginInsertRows({}, 0, ContentFilter::CONTENT_GROUP_LIST.size() - 1);
+    beginInsertRows({}, 0, ContentFilter::USER_CONTENT_GROUP_LIST.size() - 1);
 
-    for (const auto& group : ContentFilter::CONTENT_GROUP_LIST)
+    for (const auto& group : ContentFilter::USER_CONTENT_GROUP_LIST)
         mContentGroupList.push_back(group);
 
+    endInsertRows();
+}
+
+void ContentGroupListModel::setContentGroups(std::vector<ContentGroup> groups)
+{
+    clear();
+
+    beginInsertRows({}, 0, groups.size() - 1);
+    mContentGroupList = std::move(groups);
     endInsertRows();
 }
 
@@ -56,7 +87,7 @@ QVariant ContentGroupListModel::data(const QModelIndex& index, int role) const
         if (it != mChangedVisibility.end())
             return it->second;
 
-        return QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group.mId));
+        return QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group));
     }
     }
 
@@ -76,7 +107,7 @@ bool ContentGroupListModel::setData(const QModelIndex &index, const QVariant &va
     case Role::ContentPrefVisibility:
     {
         const auto visibility = QEnums::ContentPrefVisibility(value.toInt());
-        const auto origVisibility = QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group.mId));
+        const auto origVisibility = QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group));
 
         if (visibility != origVisibility)
             mChangedVisibility[index.row()] = visibility;
@@ -112,9 +143,34 @@ void ContentGroupListModel::setAdultContent(bool adultContent)
     }
 }
 
+void ContentGroupListModel::setSubscribed(bool subscribed)
+{
+    if (subscribed != mSubscribed)
+    {
+        if (subscribed && mContentFilter.numLabelers() >= ATProto::Client::MAX_LABELERS)
+        {
+            emit error(tr("Already subscribed to maximum number of labelers: %1").arg(mContentFilter.numLabelers()));
+            return;
+        }
+
+        mSubscribed = subscribed;
+        emit subscribedChanged();
+    }
+}
+
+bool ContentGroupListModel::isFixedSubscription() const
+{
+    if (mLabelerDid.isEmpty())
+        return true;
+
+    return mContentFilter.isFixedLabelerSubscription(mLabelerDid);
+}
+
 bool ContentGroupListModel::isModified(const ATProto::UserPreferences& userPreferences) const
 {
-    return mAdultContent != userPreferences.getAdultContent() || !mChangedVisibility.empty();
+    return mAdultContent != userPreferences.getAdultContent() ||
+           !mChangedVisibility.empty() ||
+           (!mLabelerDid.isEmpty() && mSubscribed != mContentFilter.isSubscribedToLabeler(mLabelerDid));
 }
 
 void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) const
@@ -123,12 +179,41 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
 
     for (const auto& [index, visibility] : mChangedVisibility)
     {
-        const auto& contentGoup = mContentGroupList.at(index);
-        const auto& label = contentGoup.mId;
+        const auto& contentGroup = mContentGroupList.at(index);
+        const auto& label = contentGroup.getLabelId();
         const auto labelVisibility = ATProto::UserPreferences::LabelVisibility(visibility);
-        userPreferences.setLabelVisibility(label, labelVisibility);
-    }
-}
 
+        qDebug() << "Changed label:" << label << "visibitlity:" << (int)labelVisibility;
+
+        Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label));
+        userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), label, labelVisibility);
+
+        for (const auto& legacyId : contentGroup.getLegacyLabelIds())
+            userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), legacyId, labelVisibility);
+    }
+
+    if (mLabelerDid.isEmpty() || mSubscribed == mContentFilter.isSubscribedToLabeler(mLabelerDid))
+        return;
+
+    auto prefs = userPreferences.getLabelersPref();
+    ATProto::AppBskyActor::LabelerPrefItem item;
+    item.mDid = mLabelerDid;
+
+    if (mSubscribed)
+    {
+        qDebug() << "Subscribe to labeler:" << mLabelerDid;
+        prefs.mLabelers.insert(item);
+        mContentFilter.addContentGroups(mLabelerDid, mContentGroupList);
+    }
+    else
+    {
+        qDebug() << "Unsubscribe from labeler:" << mLabelerDid;
+        prefs.mLabelers.erase(item);
+        userPreferences.removeContentLabelPrefs(mLabelerDid);
+        mContentFilter.removeContentGroups(mLabelerDid);
+    }
+
+    userPreferences.setLabelersPref(prefs);
+}
 
 }

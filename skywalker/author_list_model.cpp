@@ -69,6 +69,7 @@ void AuthorListModel::clear()
 
     mCursor.clear();
     mRawLists.clear();
+    mRawDetailedLists.clear();
     mRawItemLists.clear();
 }
 
@@ -85,6 +86,30 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors,
     endInsertRows();
 
     mRawLists.push_back(std::forward<ATProto::AppBskyActor::ProfileViewList>(authors));
+    qDebug() << "New list size:" << mList.size();
+}
+
+void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailedList authors, const QString& cursor)
+{
+    qDebug() << "Add authors:" << authors.size() << "cursor:" << cursor;
+    mCursor = cursor;
+
+    AuthorList list;
+
+    for (const auto& author : authors)
+    {
+        const ListEntry entry(Profile(author.get()));
+        AuthorCache::instance().put(entry.mProfile);
+        list.push_back(entry);
+    }
+
+    const size_t newRowCount = mList.size() + list.size();
+
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), list.begin(), list.end());
+    endInsertRows();
+
+    mRawDetailedLists.push_back(std::forward<ATProto::AppBskyActor::ProfileViewDetailedList>(authors));
     qDebug() << "New list size:" << mList.size();
 }
 

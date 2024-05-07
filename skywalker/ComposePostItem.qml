@@ -59,7 +59,7 @@ Item {
         if (cwPorn)
             labels.push("porn")
         if (cwGore)
-            labels.push("gore")
+            labels.push("graphic-media")
 
         return labels
     }
@@ -77,7 +77,7 @@ Item {
                 cwNudity = true
             else if (label === "porn")
                 cwPorn = true
-            else if (label === "gore")
+            else if (label === "gore" || label === "graphic-media")
                 cwGore = true
         })
     }

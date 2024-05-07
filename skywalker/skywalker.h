@@ -13,6 +13,7 @@
 #include "feed_list_model.h"
 #include "hashtag_index.h"
 #include "item_store.h"
+#include "labeler.h"
 #include "list_list_model.h"
 #include "muted_words.h"
 #include "notification_list_model.h"
@@ -128,10 +129,16 @@ public:
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);
+    Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels) const;
     Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels) const;
-    Q_INVOKABLE const ContentGroupListModel* getContentGroupListModel();
-    Q_INVOKABLE void saveContentFilterPreferences();
+    Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();
+    Q_INVOKABLE int createContentGroupListModel(const QString& did, const LabelerPolicies& policies);
+    Q_INVOKABLE ContentGroupListModel* getContentGroupListModel(int id) const;
+    Q_INVOKABLE void removeContentGroupListModel(int id);
+    Q_INVOKABLE void saveGlobalContentFilterPreferences();
+    Q_INVOKABLE void saveContentFilterPreferences(const ContentGroupListModel* model);
+    Q_INVOKABLE ContentFilter* getContentFilter() { return &mContentFilter; }
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();
@@ -187,7 +194,6 @@ public:
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
-    std::optional<QString> makeOptionalString(const QString& str) const;
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
     HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
@@ -205,7 +211,7 @@ signals:
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
-    void getUserPreferencesFailed();
+    void getUserPreferencesFailed(QString error);
     void dataMigrationStatus(QString status);
     void dataMigrationDone();
     void autoUpdateTimeLineInProgressChanged();
@@ -232,6 +238,7 @@ signals:
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
+    void getLabelersAuthorList(int modelId);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getBlocksAuthorList(int limit, const QString& cursor, int modelId);
@@ -262,6 +269,9 @@ private:
     void updateFavoriteFeeds();
     void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
+    void initLabelers();
+    void loadLabelSettings();
+    void removeLabelerSubscriptions(const std::unordered_set<QString>& dids);
     void disableDebugLogging();
     void restoreDebugLogging();
     void handleAppStateChange(Qt::ApplicationState state);
@@ -283,7 +293,7 @@ private:
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
-    std::unique_ptr<ContentGroupListModel> mContentGroupListModel;
+    ContentGroupListModel::Ptr mGlobalContentGroupListModel;
 
     Bookmarks mBookmarks;
     BookmarksModel::Ptr mBookmarksModel;
@@ -312,6 +322,7 @@ private:
     ItemStore<ListListModel::Ptr> mListListModels;
     ItemStore<FeedListModel::Ptr> mFeedListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
+    ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
     NotificationListModel mNotificationListModel;
 
     bool mGetNotificationsInProgress = false;

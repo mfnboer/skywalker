@@ -12,8 +12,11 @@ Rectangle {
 
     id: control
     height: statText.height
-    width: statIcon.width + statText.width
+    width: statIcon.width + (statText.visible ? statText.width : 0)
     color: "transparent"
+
+    Accessible.role: Accessible.Button
+    Accessible.onPressAction: if (enabled) clicked()
 
     SvgImage {
         id: statIcon

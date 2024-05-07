@@ -210,13 +210,20 @@ Page {
                 id: likeIcon
                 iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
                 svg: feedLikeUri ? svgFilled.like : svgOutline.like
-                statistic: feedLikeCount
-
                 onClicked: likeFeed(feedLikeUri, feed.uri, feed.cid)
+                Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, qsTr("like"), qsTr("likes"))
+            }
 
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, "like", "likes")
-                Accessible.onPressAction: clicked()
+            StatAuthors {
+                anchors.left: likeIcon.right
+                anchors.top: parent.top
+                anchors.leftMargin: 10
+                atUri: feed.uri
+                count: feedLikeCount
+                nameSingular: qsTr("like")
+                namePlural: qsTr("likes")
+                authorListType: QEnums.AUTHOR_LIST_LIKES
+                authorListHeader: qsTr("Liked by")
             }
         }
     }

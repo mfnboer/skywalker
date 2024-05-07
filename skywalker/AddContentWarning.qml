@@ -36,18 +36,17 @@ Dialog {
             }
             AccessibleCheckBox {
                 checked: nudity
-                text: qsTr("Nudity")
+                text: qsTr("Non-sexual Nudity")
                 onCheckedChanged: nudity = checked
             }
             AccessibleCheckBox {
                 checked: porn
-                text: qsTr("Pornography / Sexually explicit")
+                text: qsTr("Adult Content, e.g. pornography")
                 onCheckedChanged: porn = checked
-                Accessible.onPressAction: toggle()
             }
             AccessibleCheckBox {
                 checked: gore
-                text: qsTr("Violent / Bloody")
+                text: qsTr("Graphic Media, e.g. violent/bloody")
                 onCheckedChanged: gore = checked
             }
         }

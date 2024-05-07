@@ -6,70 +6,84 @@ import skywalker
 Dialog {
     required property string contentAuthorDid
     required property contentlabel label
-    readonly property string contentWarning: skywalker.getContentWarning([label])
+    readonly property contentgroup contentGroup: skywalker.getContentGroup(label.did, label.labelId)
+    property string labelerHandle: ""
 
     id: contentLabelInfo
     width: parent.width
     contentHeight: grid.height
-    title: qsTr("Content label")
     modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
-    GridLayout {
+    signal appeal(contentgroup group, string labelerHandle)
+
+    ColumnLayout {
         id: grid
         width: parent.width
-        columns: 2
-        columnSpacing: 10
 
-        Text {
-            font.bold: true
-            color: guiSettings.textColor
-            text: qsTr("Label:")
-        }
-        Text {
+        RowLayout {
             Layout.fillWidth: true
-            color: guiSettings.textColor
-            elide: Text.ElideRight
-            text: label.text
+
+            SkyCleanedText {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                wrapMode: Text.Wrap
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(10/8)
+                color: guiSettings.textColor
+                plainText: contentGroup.title
+            }
+
+            SkyButton {
+                text: qsTr("Appeal")
+                visible: canAppeal()
+                onClicked: appeal(contentGroup, labelerHandle)
+            }
         }
 
-        Text {
-            font.bold: true
-            color: guiSettings.textColor
-            text: qsTr("Creator:")
-        }
-        SkyCleanedText {
-            id: creatorText
+        AccessibleText {
             Layout.fillWidth: true
-            color: guiSettings.textColor
+            Layout.topMargin: 10
+            wrapMode: Text.Wrap
+            maximumLineCount: 1000
             elide: Text.ElideRight
-            plainText: ""
+            textFormat: Text.RichText
+            color: guiSettings.textColor
+            text: contentGroup.formattedDescription
         }
 
-        Item {}
-        Text {
+
+        AccessibleText {
             id: creatorHandle
             Layout.fillWidth: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            color: guiSettings.handleColor
             elide: Text.ElideRight
+            color: guiSettings.textColor
+            text: `Set by ${labelerHandle}`
             onLinkActivated: (link) => {
                 root.getSkywalker().getDetailedProfile(link)
                 accept()
             }
         }
 
-        Text {
-            font.bold: true
-            color: guiSettings.textColor
-            text: qsTr("Date:")
-        }
-        Text {
+        AccessibleText {
             Layout.fillWidth: true
-            color: guiSettings.textColor
             elide: Text.ElideRight
+            color: Material.color(Material.Grey)
+            font.pointSize: guiSettings.scaledFont(7/8)
             text: label.createdAt.toLocaleString(Qt.locale(), Locale.LongFormat)
+        }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            Layout.topMargin: 10
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            font.italic: true
+            color: guiSettings.textColor
+            text: qsTr("You may appeal this label if you feel it was placed in error.")
+            visible: canAppeal()
         }
     }
 
@@ -78,13 +92,18 @@ Dialog {
         skywalker: root.getSkywalker()
 
         onHandle: (handle, displayName, did) => {
-            creatorText.plainText = displayName.length > 0 ? displayName : handle
-            creatorHandle.text = `<a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
+            labelerHandle = `<a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
         }
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function canAppeal() {
+        // You can appeal to labels on your own content placed by a moderator
+        return contentAuthorDid === skywalker.getUserDid() && label.did !== contentAuthorDid &&
+                !label.isSystemLabel()
     }
 
     Component.onCompleted: {

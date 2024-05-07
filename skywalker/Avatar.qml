@@ -5,6 +5,7 @@ import skywalker
 
 Item {
     property string avatarUrl
+    property bool isModerator: false
     property int radius: width / 2
     property svgimage unknownSvg: svgFilled.unknownAvatar
 
@@ -41,7 +42,7 @@ Item {
             width: parent.width
             height: parent.height
             color: "white"
-            svg: avatarItem.unknownSvg
+            svg: isModerator ? svgFilled.moderator : avatarItem.unknownSvg
         }
     }
     MouseArea {
@@ -54,6 +55,11 @@ Item {
             console.debug("Avatar press and hold")
             avatarItem.pressAndHold()
         }
+    }
+
+    ModeratorIcon {
+        width: parent.width * 0.6
+        visible: isModerator
     }
 
     GuiSettings {

@@ -55,11 +55,8 @@ Page {
             width: parent.width
             columns: 2
 
-            AccessibleText {
+            HeaderText {
                 Layout.columnSpan: 2
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Account")
             }
 
@@ -67,27 +64,19 @@ Page {
                 color: guiSettings.textColor
                 text: qsTr("Email:")
             }
-            Rectangle {
+            RowLayout {
                 Layout.fillWidth: true
-                height: mailText.height
-                color: "transparent"
 
-                Accessible.role: Accessible.StaticText
-                Accessible.name: userPrefs.email + (userPrefs.emailConfirmed ? qsTr(", confirmed") : "")
-
-                Text {
+                AccessibleText {
                     id: mailText
+                    Layout.fillWidth: true
                     color: guiSettings.textColor
                     elide: Text.ElideRight
                     text: userPrefs.email
-
-                    Accessible.ignored: true
                 }
                 SvgButton {
                     id: mailConfirmedImg
                     imageMargin: 0
-                    anchors.left: mailText.right
-                    anchors.leftMargin: 5
                     implicitWidth: height
                     implicitHeight: mailText.height
                     iconColor: guiSettings.buttonColor
@@ -101,8 +90,6 @@ Page {
                     imageMargin: 0
                     implicitWidth: height
                     implicitHeight: mailText.height
-                    anchors.left: mailConfirmedImg.right
-                    anchors.leftMargin: 5
                     iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     accessibleName: qsTr("Two-factor authentication enabled")
@@ -159,12 +146,9 @@ Page {
                 }
             }
 
-            AccessibleText {
+            HeaderText {
                 Layout.columnSpan: 2
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+                Layout.topMargin: 10
                 text: qsTr("Logged-out visibility")
             }
 
@@ -202,11 +186,9 @@ Page {
             anchors.top: accountGrid.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
+                Layout.bottomMargin: 10
                 text: qsTr("Home feed preferences")
             }
 
@@ -253,11 +235,8 @@ Page {
             anchors.top: homeFeedColumn.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
                 text: qsTr("Language preferences")
             }
             AccessibleText {
@@ -293,11 +272,8 @@ Page {
             anchors.top: languageColumn.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
                 text: qsTr("Appearance")
             }
 
@@ -352,11 +328,8 @@ Page {
             anchors.top: appearanceColumn.bottom
             width: parent.width
 
-            AccessibleText {
-                topPadding: 20
-                font.pointSize: guiSettings.scaledFont(9/8)
-                font.bold: true
-                color: guiSettings.textColor
+            HeaderText {
+                Layout.topMargin: 10
                 text: qsTr("Pull notifications")
             }
 

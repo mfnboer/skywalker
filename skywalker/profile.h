@@ -48,6 +48,28 @@ private:
     ListViewBasic mBlockingByList;
 };
 
+class ProfileAssociated
+{
+    Q_GADGET
+    Q_PROPERTY(int lists READ getLists FINAL)
+    Q_PROPERTY(int feeds READ getFeeds FINAL)
+    Q_PROPERTY(int isLabeler READ isLabeler FINAL)
+    QML_VALUE_TYPE(profileassociated)
+
+public:
+    ProfileAssociated() = default;
+    explicit ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated& associated);
+
+    int getLists() const { return mLists; }
+    int getFeeds() const { return mFeeds; }
+    bool isLabeler() const { return mLabeler; }
+
+private:
+    int mLists = 0;
+    int mFeeds = 0;
+    bool mLabeler = false;
+};
+
 class BasicProfile
 {
     Q_GADGET
@@ -58,6 +80,7 @@ class BasicProfile
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
+    Q_PROPERTY(ProfileAssociated associated READ getAssociated FINAL)
     Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
     Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
     QML_VALUE_TYPE(basicprofile)
@@ -68,7 +91,8 @@ public:
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileView* profile);
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
     BasicProfile(const QString& did, const QString& handle, const QString& displayName,
-                 const QString& avatarUrl, const ProfileViewerState& viewer = {},
+                 const QString& avatarUrl, const ProfileAssociated& associated = {},
+                 const ProfileViewerState& viewer = {},
                  const ContentLabelList& contentLabels = {});
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
@@ -79,6 +103,7 @@ public:
     QString getHandle() const;
     QString getAvatarUrl() const;
     ImageView getImageView() const;
+    ProfileAssociated getAssociated() const;
     ProfileViewerState getViewer() const;
     ContentLabelList getContentLabels() const;
 
@@ -98,6 +123,8 @@ public:
     // If avatarUrl is a "image://", then the profile takes ownership of the image
     void setAvatarUrl(const QString& avatarUrl);
 
+    Q_INVOKABLE bool isFixedLabeler() const;
+
 protected:
     const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;
     const ATProto::AppBskyActor::ProfileView* mProfileView = nullptr;
@@ -110,6 +137,7 @@ private:
     QString mDisplayName;
     QString mAvatarUrl;
     SharedImageSource::SharedPtr mAvatarSource;
+    ProfileAssociated mAssociated;
     ProfileViewerState mViewer;
     ContentLabelList mContentLabels;
 };
@@ -129,7 +157,8 @@ public:
     explicit Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
     Profile(const QString& did, const QString& handle, const QString& displayName,
-            const QString& avatarUrl, const ProfileViewerState& viewer,
+            const QString& avatarUrl, const ProfileAssociated& associated,
+            const ProfileViewerState& viewer,
             const ContentLabelList& contentLabels, const QString& description);
 
     QString getDescription() const;
@@ -158,7 +187,8 @@ public:
     DetailedProfile() = default;
     explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
     DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
-                    const QString& avatarUrl, const ProfileViewerState& viewer,
+                    const QString& avatarUrl, const ProfileAssociated& associated,
+                    const ProfileViewerState& viewer,
                     const ContentLabelList& contentLabels, const QString& description,
                     const QString& banner, int followersCount, int followsCount, int postsCount);
 
@@ -183,6 +213,7 @@ private:
 }
 
 Q_DECLARE_METATYPE(::Skywalker::ProfileViewerState)
+Q_DECLARE_METATYPE(::Skywalker::ProfileAssociated)
 Q_DECLARE_METATYPE(::Skywalker::BasicProfile)
 Q_DECLARE_METATYPE(::Skywalker::Profile)
 Q_DECLARE_METATYPE(::Skywalker::DetailedProfile)

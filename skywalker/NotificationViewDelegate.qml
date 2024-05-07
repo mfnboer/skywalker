@@ -85,6 +85,7 @@ Rectangle {
                 width: parent.width - 13
                 height: width
                 avatarUrl: notificationAuthor.avatarUrl
+                isModerator: notificationAuthor.associated.isLabeler
                 visible: showPost()
 
                 onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
@@ -244,6 +245,7 @@ Rectangle {
                     width: 34
                     height: width
                     avatarUrl: notificationAuthor.avatarUrl
+                    isModerator: notificationAuthor.associated.isLabeler
 
                     onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
 
@@ -260,6 +262,7 @@ Rectangle {
                         width: authorAvatar.width
                         height: width
                         avatarUrl: notificationOtherAuthors[index].avatarUrl
+                        isModerator: notificationOtherAuthors[index].associated.isLabeler
 
                         onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
 

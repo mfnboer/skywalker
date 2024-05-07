@@ -36,9 +36,7 @@ Column {
             enabled: !replyDisabled
             onClicked: reply()
 
-            Accessible.role: Accessible.Button
             Accessible.name: (replyDisabled ? qsTr("reply not allowed") : qsTr("reply")) + statSpeech(replyCount, "reply", "replies")
-            Accessible.onPressAction: if (enabled) clicked()
         }
         StatIcon {
             width: parent.width / 5
@@ -48,9 +46,7 @@ Column {
             visible: !bookmarkNotFound
             onClicked: repost()
 
-            Accessible.role: Accessible.Button
             Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
-            Accessible.onPressAction: clicked()
         }
         StatIcon {
             width: parent.width / 5
@@ -60,9 +56,7 @@ Column {
             visible: !bookmarkNotFound
             onClicked: like()
 
-            Accessible.role: Accessible.Button
             Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
-            Accessible.onPressAction: clicked()
         }
         StatIcon {
             width: parent.width / 5
@@ -70,9 +64,7 @@ Column {
             svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
             onClicked: bookmark()
 
-            Accessible.role: Accessible.Button
             Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
-            Accessible.onPressAction: clicked()
         }
         StatIcon {
             width: parent.width / 5
@@ -80,9 +72,7 @@ Column {
             visible: !bookmarkNotFound
             onClicked: moreMenu.open()
 
-            Accessible.role: Accessible.Button
             Accessible.name: qsTr("more options")
-            Accessible.onPressAction: clicked()
 
             Menu {
                 id: moreMenu
@@ -116,13 +106,14 @@ Column {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Delete")
-                    enabled: authorIsUser
+                    visible: authorIsUser
                     onTriggered: deletePost()
 
                     MenuItemSvg { svg: svgOutline.delete }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report post")
+                    visible: !authorIsUser
                     onTriggered: reportPost()
 
                     MenuItemSvg { svg: svgOutline.report }

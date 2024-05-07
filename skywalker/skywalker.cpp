@@ -8,6 +8,7 @@
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
+#include "utils.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
 #include <QGuiApplication>
@@ -43,7 +44,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
-    mContentFilter(mUserPreferences),
+    mContentFilter(mUserPreferences, this),
     mBookmarks(this),
     mMutedWords(this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
@@ -100,6 +101,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorListModels.empty());
     Q_ASSERT(mListListModels.empty());
     Q_ASSERT(mFeedListModels.empty());
+    Q_ASSERT(mContentGroupListModels.empty());
 }
 
 // NOTE: user can be handle or DID
@@ -108,7 +110,7 @@ void Skywalker::login(const QString user, QString password, const QString host, 
     qDebug() << "Login:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
-    mBsky->createSession(user, password, makeOptionalString(authFactorToken),
+    mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
         [this, host, user]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
@@ -345,11 +347,12 @@ void Skywalker::getUserPreferences()
         [this](auto prefs){
             mUserPreferences = prefs;
             updateFavoriteFeeds();
-            loadMutedReposts();
+            initLabelers();
+            loadLabelSettings();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
-            emit getUserPreferencesFailed();
+            emit getUserPreferencesFailed(msg);
         });
 }
 
@@ -471,7 +474,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         return;
     }
 
-    mBsky->getList(uri, 100, makeOptionalString(cursor),
+    mBsky->getList(uri, 100, Utils::makeOptionalString(cursor),
         [this, maxPages](auto output){
             mMutedReposts.setListCreated(true);
 
@@ -497,15 +500,90 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
             else
             {
                 qWarning() << "loadMutedReposts failed:" << error << " - " << msg;
-                emit getUserPreferencesFailed();
+                emit getUserPreferencesFailed(tr("Failed to load muted reposts: %1").arg(msg));
             }
         });
+}
+
+void Skywalker::initLabelers()
+{
+    Q_ASSERT(mBsky);
+    const auto& dids = mContentFilter.getSubscribedLabelerDids();
+
+    if (mBsky->setLabelerDids(dids))
+        emit mContentFilter.subscribedLabelersChanged();
+}
+
+void Skywalker::loadLabelSettings()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Load label settings";
+    std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids();
+    std::vector<QString> dids(labelerDids.begin(), labelerDids.end());
+
+    if (dids.empty())
+    {
+        qDebug() << "No labelers";
+        loadMutedReposts();
+        return;
+    }
+
+    mBsky->getServices(dids, true,
+        [this, labelerDids](auto output){
+            auto remainingDids = labelerDids;
+
+            for (const auto& v : output->mViews)
+            {
+                if (v->mViewType != ATProto::AppBskyLabeler::GetServicesOutputView::ViewType::VIEW_DETAILED)
+                {
+                    qWarning() << "Invalid view type:" << (int)v->mViewType;
+                    emit getUserPreferencesFailed(tr("Failed to get labelers: %1").arg("invalid view type"));
+                    return;
+                }
+
+                const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::Ptr>(v->mView));
+                const auto& policies = view.getPolicies();
+                const auto& groupMap = policies.getLabelContentGroupMap();
+                const auto& did = view.getCreator().getDid();
+                qDebug() << "Add label policies for:" << did << view.getCreator().getHandle();
+                mContentFilter.addContentGroupMap(did, groupMap);
+                remainingDids.erase(did);
+            }
+
+            if (!remainingDids.empty())
+            {
+                qWarning() << "Remove subscriptions for non-existing labelers";
+                removeLabelerSubscriptions(remainingDids);
+            }
+
+            loadMutedReposts();
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << "initLabelSettings failed:" << error << " - " << msg;
+            emit getUserPreferencesFailed(tr("Failed to get labelers: %1").arg(error));
+        });
+}
+
+void Skywalker::removeLabelerSubscriptions(const std::unordered_set<QString>& dids)
+{
+    auto userPrefs = mUserPreferences;
+    auto labelersPref = userPrefs.getLabelersPref();
+
+    for (const auto& did : dids)
+    {
+        qWarning() << "Labeler not found:" << did;
+        ATProto::AppBskyActor::LabelerPrefItem item;
+        item.mDid = did;
+        labelersPref.mLabelers.erase(item);
+    }
+
+    userPrefs.setLabelersPref(labelersPref);
+    saveUserPreferences(userPrefs, [this]{ initLabelers(); });
 }
 
 void Skywalker::dataMigration()
 {
     migrateDraftPosts();
-    //emit dataMigrationDone();
 }
 
 void Skywalker::syncTimeline(int maxPages)
@@ -537,7 +615,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, makeOptionalString(cursor),
+    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor),
         [this, tillTimestamp, maxPages, cursor](auto feed){
             mTimelineModel.addFeed(std::move(feed));
             setGetTimelineInProgress(false);
@@ -643,7 +721,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(limit, makeOptionalString(cursor),
+    mBsky->getTimeline(limit, Utils::makeOptionalString(cursor),
        [this, maxPages, minEntries, cursor](auto feed){
             setGetTimelineInProgress(false);
             int topPostIndex = -1;
@@ -825,7 +903,7 @@ void Skywalker::getFeed(int modelId, int limit, int maxPages, int minEntries, co
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetFeedInProgress(true);
 
-    mBsky->getFeed(feedUri, limit, makeOptionalString(cursor), langs,
+    mBsky->getFeed(feedUri, limit, Utils::makeOptionalString(cursor), langs,
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             setGetFeedInProgress(false);
             int addedPosts = 0;
@@ -916,7 +994,7 @@ void Skywalker::getListFeed(int modelId, int limit, int maxPages, int minEntries
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetFeedInProgress(true);
 
-    mBsky->getListFeed(listUri, limit, makeOptionalString(cursor), langs,
+    mBsky->getListFeed(listUri, limit, Utils::makeOptionalString(cursor), langs,
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             setGetFeedInProgress(false);
             int addedPosts = 0;
@@ -1095,15 +1173,6 @@ void Skywalker::getPostThread(const QString& uri)
         });
 }
 
-std::optional<QString> Skywalker::makeOptionalString(const QString& str) const
-{
-    std::optional<QString> optionalString;
-    if (!str.isEmpty())
-        optionalString = str;
-
-    return optionalString;
-}
-
 const PostThreadModel* Skywalker::getPostThreadModel(int id) const
 {
     qDebug() << "Get model:" << id;
@@ -1205,7 +1274,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
     }
 
     setGetNotificationsInProgress(true);
-    mBsky->listNotifications(limit, makeOptionalString(cursor), {},
+    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {},
         [this, cursor](auto list){
             const bool clearFirst = cursor.isEmpty();
             mNotificationListModel.addNotifications(std::move(list), *mBsky, clearFirst);
@@ -1354,7 +1423,7 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     qDebug() << "Get author feed:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author.getDid(), limit, makeOptionalString(cursor),
+    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor),
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
@@ -1445,7 +1514,7 @@ void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, 
     qDebug() << "Get author likes:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getActorLikes(author.getDid(), limit, makeOptionalString(cursor),
+    mBsky->getActorLikes(author.getDid(), limit, Utils::makeOptionalString(cursor),
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
@@ -1582,7 +1651,7 @@ void Skywalker::getAuthorFeedList(const QString& did, int id, const QString& cur
     }
 
     setGetFeedInProgress(true);
-    mBsky->getActorFeeds(did, {}, makeOptionalString(cursor),
+    mBsky->getActorFeeds(did, {}, Utils::makeOptionalString(cursor),
         [this, id, cursor](auto output){
             setGetFeedInProgress(false);
             const auto* model = mFeedListModels.get(id);
@@ -1681,10 +1750,39 @@ void Skywalker::removePostFeedModel(int id)
     mPostFeedModels.remove(id);
 }
 
+void Skywalker::getLabelersAuthorList(int modelId)
+{
+    const std::vector<QString> labelers = mContentFilter.getSubscribedLabelerDidsOrdered();
+
+    if (labelers.empty())
+    {
+        qDebug() << "No labelers";
+        return;
+    }
+
+    setGetAuthorListInProgress(true);
+    mBsky->getProfiles(labelers,
+        [this, modelId](auto profileDetailedList){
+            setGetAuthorListInProgress(false);
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+            {
+                (*model)->clear();
+                (*model)->addAuthors(std::move(profileDetailedList), "");
+            }
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getLabelersAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getFollows(atId, limit, makeOptionalString(cursor),
+    mBsky->getFollows(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1702,7 +1800,7 @@ void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QStri
 void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getFollowers(atId, limit, makeOptionalString(cursor),
+    mBsky->getFollowers(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1720,7 +1818,7 @@ void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QSt
 void Skywalker::getBlocksAuthorList(int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getBlocks(limit, makeOptionalString(cursor),
+    mBsky->getBlocks(limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1738,7 +1836,7 @@ void Skywalker::getBlocksAuthorList(int limit, const QString& cursor, int modelI
 void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getMutes(limit, makeOptionalString(cursor),
+    mBsky->getMutes(limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1757,7 +1855,7 @@ void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int m
 {
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     setGetAuthorListInProgress(true);
-    mBsky->getSuggestions(limit, makeOptionalString(cursor), langs,
+    mBsky->getSuggestions(limit, Utils::makeOptionalString(cursor), langs,
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1775,7 +1873,7 @@ void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int m
 void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getLikes(atId, limit, makeOptionalString(cursor),
+    mBsky->getLikes(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1800,7 +1898,7 @@ void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString
 void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getRepostedBy(atId, limit, makeOptionalString(cursor),
+    mBsky->getRepostedBy(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1818,7 +1916,7 @@ void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QStri
 void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
-    mBsky->getList(atId, limit, makeOptionalString(cursor),
+    mBsky->getList(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
@@ -1893,6 +1991,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
         break;
     case AuthorListModel::Type::AUTHOR_LIST_SUGGESTIONS:
         getSuggestionsAuthorList(limit, cursor, id);
+        break;
+    case AuthorListModel::Type::AUTHOR_LIST_LABELERS:
+        getLabelersAuthorList(id);
         break;
     }
 }
@@ -1990,7 +2091,7 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
 void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     setGetListListInProgress(true);
-    mBsky->getLists(atId, limit, makeOptionalString(cursor),
+    mBsky->getLists(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             qDebug() << "getListListAll succeeded, id:" << modelId;
@@ -2018,7 +2119,7 @@ void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int
 void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     setGetListListInProgress(true);
-    mBsky->getListBlocks(limit, makeOptionalString(cursor),
+    mBsky->getListBlocks(limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             const auto* model = mListListModels.get(modelId);
@@ -2045,7 +2146,7 @@ void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const
 void Skywalker::getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     setGetListListInProgress(true);
-    mBsky->getListMutes(limit, makeOptionalString(cursor),
+    mBsky->getListMutes(limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             const auto* model = mListListModels.get(modelId);
@@ -2238,6 +2339,17 @@ void Skywalker::copyToClipboard(const QString& text)
     emit statusMessage(tr("Copied to clipboard"));
 }
 
+ContentGroup Skywalker::getContentGroup(const QString& did, const QString& labelId) const
+{
+    const auto* group = mContentFilter.getContentGroup(did, labelId);
+
+    if (group)
+        return *group;
+
+    qWarning() << "Uknown label:" << labelId << "did:" << did;
+    return ContentGroup(labelId, did);
+}
+
 QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels) const
 {
     const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(contentLabels);
@@ -2250,33 +2362,65 @@ QString Skywalker::getContentWarning(const ContentLabelList& contentLabels) cons
     return warning;
 }
 
-const ContentGroupListModel* Skywalker::getContentGroupListModel()
+const ContentGroupListModel* Skywalker::getGlobalContentGroupListModel()
 {
-    mContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);
-    mContentGroupListModel->setAdultContent(mUserPreferences.getAdultContent());
-    return mContentGroupListModel.get();
+    mGlobalContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);
+    mGlobalContentGroupListModel->setGlobalContentGroups();
+    return mGlobalContentGroupListModel.get();
 }
 
-void Skywalker::saveContentFilterPreferences()
+int Skywalker::createContentGroupListModel(const QString& did, const LabelerPolicies& policies)
 {
-    Q_ASSERT(mBsky);
-    Q_ASSERT(mContentGroupListModel);
+    auto model = std::make_unique<ContentGroupListModel>(did, mContentFilter, this);
+    model->setContentGroups(policies.getContentGroupList());
+    connect(model.get(), &ContentGroupListModel::error, this, [this](QString error)
+            { showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
+    return mContentGroupListModels.put(std::move(model));
+}
 
-    if (!mContentGroupListModel)
+ContentGroupListModel* Skywalker::getContentGroupListModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mContentGroupListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeContentGroupListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mContentGroupListModels.remove(id);
+}
+
+void Skywalker::saveGlobalContentFilterPreferences()
+{
+    Q_ASSERT(mGlobalContentGroupListModel);
+
+    if (!mGlobalContentGroupListModel)
     {
         qWarning() << "No filter preferences to save";
         return;
     }
 
-    if (!mContentGroupListModel->isModified(mUserPreferences))
+    saveContentFilterPreferences(mGlobalContentGroupListModel.get());
+}
+
+void Skywalker::saveContentFilterPreferences(const ContentGroupListModel* model)
+{
+    Q_ASSERT(model);
+    qDebug() << "Save label preferences, labeler DID:" << model->getLabelerDid();
+
+    if (!model->isModified(mUserPreferences))
     {
         qDebug() << "Filter preferences not modified.";
         return;
     }
 
     auto prefs = mUserPreferences;
-    mContentGroupListModel->saveTo(prefs);
-    saveUserPreferences(prefs);
+    model->saveTo(prefs);
+    saveUserPreferences(prefs, [this]{
+        initLabelers();
+        emit mContentFilter.contentGroupsChanged();
+    });
 }
 
 ATProto::ProfileMaster& Skywalker::getProfileMaster()
@@ -2631,7 +2775,7 @@ void Skywalker::signOut()
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;
-    mContentGroupListModel = nullptr;
+    mGlobalContentGroupListModel = nullptr;
     mTimelineModel.clear();
     mUserDid.clear();
     mUserProfile = {};
