@@ -2575,7 +2575,6 @@ void Skywalker::updateUser(const QString& did, const QString& host)
 {
     mUserDid = did;
     mUserSettings.addUser(did, host);
-    // TODO: password was saved here before.
     mUserSettings.setActiveUserDid(did);
 }
 

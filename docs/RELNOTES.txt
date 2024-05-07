@@ -1,9 +1,10 @@
-next
-====
+2.3
+===
 * Support custom labelers (moderators)
-* Appeal labels
-* Two-factor authentication support.
-* Show likes on feed generator.
+* Appeal labels placed on your own content
+* Aligned label definitions with Bluesky app
+* Two-factor authentication support
+* Show likes on feed generator
 * Bug fixes
 
 2.2.1
