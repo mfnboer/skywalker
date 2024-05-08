@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
+import atproto
 
 Page {
     required property var skywalker
@@ -67,35 +68,64 @@ Page {
         onFeedsClicked: root.viewFeedsView()
     }
 
-    Row {
-        id: searchModeBar
+    TabBar {
+        id: searchBar
         width: parent.width
         leftPadding: page.margin
         rightPadding: page.margin
 
-        SvgButton {
-            id: searchModeToggle
-            anchors.verticalCenter: searchModeBar.verticalCenter
-            width: height
-            height: 35
-            radius: 3
-            imageMargin: 5
-            svg: page.isPostSearch ? svgOutline.chat : svgOutline.user
-            accessibleName: getSpeech()
-            onClicked: page.isPostSearch = !page.isPostSearch
+        onCurrentIndexChanged: page.isPostSearch = (currentIndex !== tabUsers.TabBar.index)
 
-            function getSpeech() {
-                if (page.isPostSearch)
-                    return qsTr("Search mode is posts. Click to change to users.")
-                else
-                    return qsTr("Search mode is users. Click to change to posts.")
-            }
+        AccessibleTabButton {
+            text: qsTr("Top")
+            width: implicitWidth;
         }
+        AccessibleTabButton {
+            text: qsTr("Latest")
+            width: implicitWidth;
+        }
+        AccessibleTabButton {
+            id: tabUsers
+            text: qsTr("Users")
+            width: implicitWidth;
+        }
+    }
 
+    Rectangle {
+        id: searchBarSeparator
+        anchors.top: searchBar.bottom
+        width: parent.width
+        height: 1
+        color: guiSettings.separatorColor
+    }
+
+    Row {
+        id: searchModeBar
+        anchors.top: searchBarSeparator.bottom
+        width: parent.width
+        height: page.isPostSearch ? implicitHeight : 0
+        leftPadding: page.margin
+        rightPadding: page.margin
+        topPadding: 5
+        bottomPadding: 5
+        visible: page.isPostSearch
+
+        SvgImage {
+            id: restrictionIcon
+            y: height
+            width: height
+            height: searchModeText.height
+            color: guiSettings.linkColor
+            svg: svgOutline.noReplyRestrictions
+
+            Accessible.ignored: true
+        }
         AccessibleText {
             id: searchModeText
-            width: parent.width - searchModeToggle.width - 2 * page.margin - (blockHashtagButton.visible ? blockHashtagButton.width : 0)
+            width: parent.width - implicitHeight - 2 * page.margin - (blockHashtagButton.visible ? implicitHeight : 0)
             anchors.verticalCenter: searchModeBar.verticalCenter
+            leftPadding: 5
+            rightPadding: 5
             elide: Text.ElideRight
             color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
             text: page.isPostSearch ? qsTr(`Posts from ${page.getSearchPostScopeText()}`) : qsTr("Users")
@@ -107,16 +137,21 @@ Page {
             }
         }
 
-        SvgButton {
+        SvgImage {
             id: blockHashtagButton
-            anchors.verticalCenter: searchModeBar.verticalCenter
+            y: height
             width: height
-            height: 35
-            imageMargin: 5
-            svg: svgOutline.mute
-            accessibleName: qsTr(`Mute hashtag ${page.getSearchText()}`)
+            height: searchModeText.height
+            color: guiSettings.linkColor
+            svg: svgOutline.block
             visible: isHashtagSearch
-            onClicked: muteWord(page.getSearchText())
+
+            MouseArea {
+                y: -height
+                width: parent.width
+                height: parent.height
+                onClicked: muteWord(page.getSearchText())
+            }
         }
     }
 
@@ -124,8 +159,9 @@ Page {
         id: searchModeSeparator
         anchors.top: searchModeBar.bottom
         width: parent.width
-        height: 1
+        height: page.isPostSearch ? 1 : 0
         color: guiSettings.separatorColor
+        visible: page.isPostSearch
     }
 
     SimpleAuthorListView {
@@ -161,55 +197,86 @@ Page {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: parent.bottom
         width: parent.width
-        currentIndex: currentText ? (page.isPostSearch ? postsView.index : usersView.index) :
-                                    (page.header.hasFocus() ? recentSearchesView.index : suggestedUsersView.index)
+        currentIndex: currentText ? searchBar.currentIndex :
+                                    (page.header.hasFocus() ? recentSearchesView.StackLayout.index : suggestedUsersView.StackLayout.index)
         visible: !page.isTyping || !currentText
 
         onCurrentIndexChanged: {
-            if (currentIndex === recentSearchesView.index)
+            if (currentIndex === recentSearchesView.StackLayout.index)
                 recentSearchesView.model = searchUtils.getLastSearches()
         }
 
         ListView {
-            readonly property int index: 0
-
-            id: postsView
+            id: postsViewTop
             width: parent.width
             height: parent.height
             spacing: 0
             clip: true
-            model: searchUtils.getSearchPostFeedModel()
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
             flickDeceleration: guiSettings.flickDeceleration
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
 
             delegate: PostFeedViewDelegate {
-                width: postsView.width
+                width: postsViewTop.width
             }
 
             FlickableRefresher {
-                inProgress: searchUtils.searchPostsInProgress
-                verticalOvershoot: postsView.verticalOvershoot
-                bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts()
+                inProgress: searchUtils.searchPostsTopInProgress
+                verticalOvershoot: postsViewTop.verticalOvershoot
+                bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
                 topText: ""
             }
 
             EmptyListIndication {
                 svg: svgOutline.noPosts
                 text: qsTr("No posts found")
-                list: postsView
+                list: postsViewTop
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchPostsInProgress
+                running: searchUtils.searchPostsTopInProgress
             }
         }
 
         ListView {
-            readonly property int index: 1
+            id: postsViewLatest
+            width: parent.width
+            height: parent.height
+            spacing: 0
+            clip: true
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
+            flickDeceleration: guiSettings.flickDeceleration
+            ScrollIndicator.vertical: ScrollIndicator {}
 
+            Accessible.role: Accessible.List
+
+            delegate: PostFeedViewDelegate {
+                width: postsViewLatest.width
+            }
+
+            FlickableRefresher {
+                inProgress: searchUtils.searchPostsLatestInProgress
+                verticalOvershoot: postsViewLatest.verticalOvershoot
+                bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
+                topText: ""
+            }
+
+            EmptyListIndication {
+                svg: svgOutline.noPosts
+                text: qsTr("No posts found")
+                list: postsViewLatest
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: searchUtils.searchPostsLatestInProgress
+            }
+        }
+
+        ListView {
             id: usersView
             width: parent.width
             height: parent.height
@@ -222,7 +289,7 @@ Page {
             Accessible.role: Accessible.List
 
             delegate: AuthorViewDelegate {
-                width: postsView.width
+                width: usersView.width
                 onFollow: (profile) => { graphUtils.follow(profile) }
                 onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
             }
@@ -247,8 +314,6 @@ Page {
         }
 
         ListView {
-            readonly property int index: 2
-
             id: suggestedUsersView
             width: parent.width
             height: parent.height
@@ -272,7 +337,7 @@ Page {
             }
 
             delegate: AuthorViewDelegate {
-                width: postsView.width
+                width: suggestedUsersView.width
                 onFollow: (profile) => { graphUtils.follow(profile) }
                 onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
             }
@@ -297,8 +362,6 @@ Page {
         }
 
         ListView {
-            readonly property int index: 3
-
             id: recentSearchesView
             width: parent.width
             height: parent.height
@@ -323,7 +386,7 @@ Page {
             delegate: Rectangle {
                 required property string modelData
 
-                width: parent.width
+                width: recentSearchesView.width
                 height: Math.max(recentSearchIcon.height, recentSearchText.height)
                 color: "transparent"
 
@@ -405,12 +468,13 @@ Page {
                 return
 
             const searchTerm = getPostSearchTerm(query)
-            searchPosts(searchTerm)
+            searchPosts(searchTerm, SearchSortOrder.TOP)
+            searchPosts(searchTerm, SearchSortOrder.LATEST)
         }
 
-        function scopedNextPageSearchPosts() {
+        function scopedNextPageSearchPosts(sortOrder) {
             const searchTerm = getPostSearchTerm(header.getDisplayText())
-            getNextPageSearchPosts(searchTerm)
+            getNextPageSearchPosts(searchTerm, sortOrder)
         }
 
         function getPostSearchTerm(query) {
@@ -493,7 +557,8 @@ Page {
     function forceDestroy() {
         searchUtils.clearAllSearchResults();
         usersView.model = null
-        postsView.model = null
+        postsViewTop.model = null
+        postsViewLatest.model = null
         searchUtils.removeModels()
         destroy()
     }

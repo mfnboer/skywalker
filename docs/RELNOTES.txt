@@ -1,3 +1,7 @@
+next
+====
+* Added top and latest to search
+
 2.3
 ===
 * Support custom labelers (moderators)

@@ -116,11 +116,10 @@ SearchUtils::~SearchUtils()
 
 void SearchUtils::removeModels()
 {
-    if (mSearchPostFeedModelId >= 0)
-    {
-        mSkywalker->removeSearchPostFeedModel(mSearchPostFeedModelId);
-        mSearchPostFeedModelId = -1;
-    }
+    for (const auto& [_, modelId] : mSearchPostFeedModelId)
+        mSkywalker->removeSearchPostFeedModel(modelId);
+
+    mSearchPostFeedModelId.clear();
 
     if (mSearchUsersModelId >= 0) {
         mSkywalker->removeAuthorListModel(mSearchUsersModelId);
@@ -153,12 +152,18 @@ void SearchUtils::setHashtagTypeaheadList(const QStringList& list)
     }
 }
 
-void SearchUtils::setSearchPostsInProgress(bool inProgress)
+void SearchUtils::setSearchPostsInProgress(const QString& sortOrder, bool inProgress)
 {
-    if (inProgress != mSearchPostsInProgress)
+    if (inProgress != mSearchPostsInProgress[sortOrder])
     {
-        mSearchPostsInProgress = inProgress;
-        emit searchPostsInProgressChanged();
+        mSearchPostsInProgress[sortOrder] = inProgress;
+
+        if (sortOrder == ATProto::AppBskyFeed::SearchSortOrder::TOP)
+            emit searchPostsTopInProgressChanged();
+        else if (sortOrder == ATProto::AppBskyFeed::SearchSortOrder::LATEST)
+            emit searchPostsLatestInProgressChanged();
+        else
+            Q_ASSERT(false);
     }
 }
 
@@ -282,15 +287,15 @@ QString SearchUtils::preProcessSearchText(const QString& text) const
     return newText;
 }
 
-void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries, const QString& cursor)
+void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, int maxPages, int minEntries, const QString& cursor)
 {
-    qDebug() << "Search posts:" << text << "cursor:" << cursor << "max pages:"
+    qDebug() << "Search posts:" << text << "order:" << sortOrder << "cursor:" << cursor << "max pages:"
              << maxPages << "min entries:" << minEntries;
 
     if (text.isEmpty())
         return;
 
-    if (mSearchPostsInProgress)
+    if (getSearchPostsInProgress(sortOrder))
     {
         qDebug() << "Search posts still in progress";
         return;
@@ -298,14 +303,15 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
 
     const auto searchText = preProcessSearchText(text);
 
-    setSearchPostsInProgress(true);
+    setSearchPostsInProgress(sortOrder, true);
     bskyClient()->searchPosts(searchText, {}, Utils::makeOptionalString(cursor),
-        [this, presence=getPresence(), searchText, maxPages, minEntries, cursor](auto feed){
+        Utils::makeOptionalString(sortOrder),
+        [this, presence=getPresence(), searchText, sortOrder, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
 
-            setSearchPostsInProgress(false);
-            auto& model = *getSearchPostFeedModel();
+            setSearchPostsInProgress(sortOrder, false);
+            auto& model = *getSearchPostFeedModel(sortOrder);
 
             int added = cursor.isEmpty() ?
                             model.setFeed(std::move(feed)) :
@@ -315,24 +321,24 @@ void SearchUtils::searchPosts(const QString& text, int maxPages, int minEntries,
             int entriesToAdd = minEntries - added;
 
             if (entriesToAdd > 0)
-                getNextPageSearchPosts(searchText, maxPages - 1, entriesToAdd);
+                getNextPageSearchPosts(searchText, sortOrder, maxPages - 1, entriesToAdd);
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), sortOrder](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            setSearchPostsInProgress(false);
+            setSearchPostsInProgress(sortOrder, false);
             qDebug() << "searchPosts failed:" << error << " - " << msg;
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
-void SearchUtils::getNextPageSearchPosts(const QString& text, int maxPages, int minEntries)
+void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sortOrder, int maxPages, int minEntries)
 {
-    qDebug() << "Get next page search posts:" << "max pages:" << maxPages
+    qDebug() << "Get next page search posts:" << text << "order:" << sortOrder << "max pages:" << maxPages
              << "min entries:" << minEntries;
 
-    if (mSearchPostsInProgress)
+    if (getSearchPostsInProgress(sortOrder))
     {
         qDebug() << "Search posts still in progress";
         return;
@@ -345,7 +351,7 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, int maxPages, int 
         return;
     }
 
-    const auto& model = *getSearchPostFeedModel();
+    const auto& model = *getSearchPostFeedModel(sortOrder);
     const auto& cursor = model.getCursorNextPage();
 
     if (cursor.isEmpty())
@@ -354,7 +360,7 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, int maxPages, int 
         return;
     }
 
-    searchPosts(text, maxPages, minEntries, cursor);
+    searchPosts(text, sortOrder, maxPages, minEntries, cursor);
 }
 
 void SearchUtils::searchActors(const QString& text, const QString& cursor)
@@ -534,14 +540,14 @@ Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
     searchFeeds(text, cursor);
 }
 
-SearchPostFeedModel* SearchUtils::getSearchPostFeedModel()
+SearchPostFeedModel* SearchUtils::getSearchPostFeedModel(const QString& sortOrder)
 {
     Q_ASSERT(mSkywalker);
 
-    if (mSearchPostFeedModelId < 0)
-        mSearchPostFeedModelId = mSkywalker->createSearchPostFeedModel();
+    if (!mSearchPostFeedModelId.contains(sortOrder))
+        mSearchPostFeedModelId[sortOrder] = mSkywalker->createSearchPostFeedModel();
 
-    return mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId);
+    return mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId[sortOrder]);
 }
 
 AuthorListModel* SearchUtils::getSearchUsersModel()
@@ -584,10 +590,10 @@ void SearchUtils::clearAllSearchResults()
 {
     mAuthorTypeaheadList.clear();
 
-    if (mSearchPostFeedModelId >= 0)
+    for (const auto& [_, modelId] : mSearchPostFeedModelId)
     {
         Q_ASSERT(mSkywalker);
-        auto* model = mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId);
+        auto* model = mSkywalker->getSearchPostFeedModel(modelId);
         model->clear();
     }
 
