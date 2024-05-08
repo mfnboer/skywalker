@@ -123,8 +123,15 @@ Page {
             height: searchModeText.height
             color: guiSettings.linkColor
             svg: svgOutline.noReplyRestrictions
-
             Accessible.ignored: true
+
+            MouseArea {
+                y: -height
+                width: parent.width
+                height: parent.height
+                onClicked: page.changeSearchPostScope()
+                enabled: page.isPostSearch
+            }
         }
         AccessibleText {
             id: searchModeText
