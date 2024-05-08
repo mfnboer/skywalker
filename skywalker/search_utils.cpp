@@ -484,6 +484,41 @@ void SearchUtils::getNextPageSuggestedActors()
     getSuggestedActors(cursor);
 }
 
+void SearchUtils::getSuggestedFollows(const QString& user)
+{
+    Q_ASSERT(mSkywalker);
+    qDebug() << "Get suggested follows:" << user;
+
+    if (mSearchSuggestedActorsInProgress)
+    {
+        qDebug() << "Search suggested actors still in progress";
+        return;
+    }
+
+    const QString& did = mSkywalker->getUserDid();
+    const QStringList langs = mSkywalker->getUserSettings()->getContentLanguages(did);
+
+    setSearchSuggestedActorsInProgress(true);
+    bskyClient()->getSuggestedFollows(user, langs,
+        [this, presence=getPresence()](auto output){
+            if (!presence)
+                return;
+
+            setSearchSuggestedActorsInProgress(false);
+            auto* model = getSearchSuggestedUsersModel();
+            model->clear();
+            model->addAuthors(std::move(output->mSuggestions), "");
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            setSearchSuggestedActorsInProgress(false);
+            qDebug() << "getSuggestedFollows failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
 {
     qDebug() << "Search feeds:" << text << "cursor:" << cursor;

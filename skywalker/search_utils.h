@@ -40,6 +40,7 @@ public:
     Q_INVOKABLE void getNextPageSearchActors(const QString& text);
     Q_INVOKABLE void getSuggestedActors(const QString& cursor = {});
     Q_INVOKABLE void getNextPageSuggestedActors();
+    Q_INVOKABLE void getSuggestedFollows(const QString& user);
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder);

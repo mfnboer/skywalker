@@ -1,6 +1,8 @@
 next
 ====
 * Added top and latest to search
+* When you press the search button on a profile, the suggested users you get
+  will be based on that profile.
 
 2.3
 ===

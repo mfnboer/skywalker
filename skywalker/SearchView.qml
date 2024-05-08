@@ -46,7 +46,7 @@ Page {
                 searchUtils.authorTypeaheadList = []
                 searchUtils.hashtagTypeaheadList = []
                 page.isHashtagSearch = false
-                searchUtils.getSuggestedActors()
+                searchUtils.suggestUsers()
             }
         }
 
@@ -490,6 +490,13 @@ Page {
                 return query
         }
 
+        function suggestUsers() {
+            if (!postSearchUser || postSearchUser === "me")
+                getSuggestedActors()
+            else
+                getSuggestedFollows(postSearchUser)
+        }
+
         Component.onDestruction: {
             // The destuctor of SearchUtils is called too late by the QML engine
             // Remove models now before the Skywalker object is destroyed.
@@ -585,7 +592,11 @@ Page {
             searchBar.setTopPosts()
             postSearchUser = searchScope
             header.setSearchText(searchText)
-            searchUtils.search(searchText)
+
+            if (searchText)
+                searchUtils.search(searchText)
+            else
+                searchUtils.suggestUsers()
         }
     }
 
@@ -593,6 +604,6 @@ Page {
         if (initialSearch)
             searchUtils.search(initialSearch)
         else
-            searchUtils.getSuggestedActors()
+            searchUtils.suggestUsers()
     }
 }
