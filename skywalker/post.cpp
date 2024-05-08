@@ -99,10 +99,20 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost, int rawIndex)
     {
         mPost = feedViewPost->mPost.get();
 
+        // Cache authors to minimize network requests for authors later.
         const BasicProfile profile = getAuthor();
 
         if (!profile.isNull())
             AuthorCache::instance().put(profile);
+
+        if (feedViewPost->mReply)
+        {
+            if (feedViewPost->mReply->mGrandparentAuthor)
+            {
+                BasicProfile grandparent(feedViewPost->mReply->mGrandparentAuthor.get());
+                AuthorCache::instance().put(grandparent);
+            }
+        }
     }
 }
 
