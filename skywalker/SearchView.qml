@@ -77,10 +77,12 @@ Page {
         onCurrentIndexChanged: page.isPostSearch = (currentIndex !== tabUsers.TabBar.index)
 
         AccessibleTabButton {
+            id: tabTopPosts
             text: qsTr("Top")
             width: implicitWidth;
         }
         AccessibleTabButton {
+            id: tabLatestPosts
             text: qsTr("Latest")
             width: implicitWidth;
         }
@@ -88,6 +90,10 @@ Page {
             id: tabUsers
             text: qsTr("Users")
             width: implicitWidth;
+        }
+
+        function setTopPosts() {
+            currentIndex = tabTopPosts.TabBar.index
         }
     }
 
@@ -576,7 +582,7 @@ Page {
         initialSearch = searchText
 
         if (searchText || searchScope) {
-            isPostSearch = true
+            searchBar.setTopPosts()
             postSearchUser = searchScope
             header.setSearchText(searchText)
             searchUtils.search(searchText)
