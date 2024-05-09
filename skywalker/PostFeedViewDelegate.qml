@@ -53,7 +53,7 @@ Rectangle {
         if (postThreadType & QEnums.THREAD_ENTRY)
             return guiSettings.postHighLightColor
         else
-            return "transparent"
+            return guiSettings.backgroundColor
     }
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 2 : 0
     border.color: guiSettings.borderColor
@@ -268,6 +268,7 @@ Rectangle {
                 postRecordWithMedia: postEntry.postRecordWithMedia
                 postDateTime: postEntry.postIndexedDateTime
                 detailedView: postThreadType & QEnums.THREAD_ENTRY
+                ellipsisBackgroundColor: postEntry.color
             }
 
             // Reposts and likes in detailed view of post entry in thread view

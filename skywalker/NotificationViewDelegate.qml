@@ -59,7 +59,7 @@ Rectangle {
 
     id: notification
     height: grid.height
-    color: notificationIsRead ? "transparent" : guiSettings.postHighLightColor
+    color: notificationIsRead ? guiSettings.backgroundColor : guiSettings.postHighLightColor
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()
@@ -181,6 +181,7 @@ Rectangle {
                 postRecord: notificationPostRecord
                 postRecordWithMedia: notificationPostRecordWithMedia
                 postDateTime: notificationPostTimestamp
+                ellipsisBackgroundColor: notification.color
             }
 
             PostStats {
@@ -328,6 +329,7 @@ Rectangle {
                 postExternal: notificationReasonPostExternal
                 postRecord: notificationReasonPostRecord
                 postRecordWithMedia: notificationReasonPostRecordWithMedia
+                ellipsisBackgroundColor: notification.color
                 visible: showPostForAggregatableReason()
             }
         }

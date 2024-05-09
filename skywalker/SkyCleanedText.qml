@@ -7,6 +7,11 @@ Text {
     property string elidedText
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
+    property int intialShowMaxLineCount: maximumLineCount
+    property bool isCapped: false
+    property int heightBeforeCap
+    property int lineCountBeforeCap
+    property int capLineCount: intialShowMaxLineCount
 
     id: theText
     clip: true
@@ -75,7 +80,7 @@ Text {
         if (wrapMode === Text.NoWrap)
             return
 
-        if (ellipsis.visible)
+        if (isCapped)
             return
 
         if (fontMetrics.height <= 0)
@@ -83,11 +88,13 @@ Text {
 
         const numLines = Math.floor(height / fontMetrics.height)
 
-        if (numLines <= maximumLineCount)
+        if (numLines <= capLineCount)
             return
 
-        height = height * (maximumLineCount / numLines)
-        ellipsis.visible = true
+        lineCountBeforeCap = numLines
+        heightBeforeCap = height
+        height = height * (capLineCount / numLines)
+        isCapped = true
     }
 
     function resetText() {
@@ -105,7 +112,7 @@ Text {
     function determineTextFormat() {
         text = plainText
         height = undefined
-        ellipsis.visible = false
+        isCapped = false
 
         if (isRichText())
             return
@@ -126,7 +133,24 @@ Text {
         color: theText.color
         background: Rectangle { color: ellipsisBackgroundColor }
         text: "…"
-        visible: false
+        visible: isCapped
+    }
+
+    Label {
+        id: showMoreLabel
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        leftPadding: theText.leftPadding
+        background: Rectangle { color: ellipsisBackgroundColor }
+        text: qsTr(`<a href="show"style="color: ${guiSettings.linkColor}">Show ${(lineCountBeforeCap - capLineCount + 1)} lines more</a>`)
+        visible: isCapped && capLineCount < theText.maximumLineCount
+
+        onLinkActivated: {
+            isCapped = false
+            capLineCount = theText.maximumLineCount
+            theText.height = heightBeforeCap
+        }
     }
 
     FontMetrics {

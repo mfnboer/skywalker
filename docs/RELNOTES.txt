@@ -1,6 +1,7 @@
 next
 ====
 * Button to clear recent searches
+* Cap very long posts (user can tap "show more" for full post)
 
 2.4
 ===
