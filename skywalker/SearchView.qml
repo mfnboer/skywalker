@@ -11,8 +11,8 @@ Page {
     property bool isHashtagSearch: false
     property bool isPostSearch: true
     property string postSearchUser // empty, "me", handle
-    property string initialSearch
     property string currentText
+    property bool firstSearch: true
     readonly property int margin: 10
 
     signal closed
@@ -593,8 +593,6 @@ Page {
         else
             page.header.unfocus()
 
-        initialSearch = searchText
-
         if (searchText || searchScope) {
             searchBar.setTopPosts()
             postSearchUser = searchScope
@@ -605,12 +603,10 @@ Page {
             else
                 searchUtils.suggestUsers()
         }
-    }
-
-    Component.onCompleted: {
-        if (initialSearch)
-            searchUtils.search(initialSearch)
-        else
+        else if (firstSearch) {
             searchUtils.suggestUsers()
+        }
+
+        firstSearch = false
     }
 }
