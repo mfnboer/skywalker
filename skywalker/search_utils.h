@@ -50,6 +50,7 @@ public:
     Q_INVOKABLE void clearAllSearchResults();
     Q_INVOKABLE QStringList getLastSearches() const;
     Q_INVOKABLE void addLastSearch(const QString& search);
+    Q_INVOKABLE void clearLastSearches() const;
 
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }

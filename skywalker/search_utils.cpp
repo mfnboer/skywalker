@@ -684,4 +684,12 @@ void SearchUtils::addLastSearch(const QString& search)
     settings->setLastSearches(did, lastSearches);
 }
 
+void SearchUtils::clearLastSearches() const
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    settings->setLastSearches(did, {});
+}
+
 }

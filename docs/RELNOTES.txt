@@ -1,3 +1,7 @@
+next
+====
+* Button to clear recent searches
+
 2.4
 ===
 * Added top and latest to search

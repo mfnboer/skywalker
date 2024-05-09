@@ -211,7 +211,9 @@ Page {
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: currentText ? searchBar.currentIndex :
-                                    (page.header.hasFocus() ? recentSearchesView.StackLayout.index : suggestedUsersView.StackLayout.index)
+                                    ((page.header.hasFocus() || recentSearchesView.keepFocus) ?
+                                         recentSearchesView.StackLayout.index :
+                                         suggestedUsersView.StackLayout.index)
         visible: !page.isTyping || !currentText
 
         onCurrentIndexChanged: {
@@ -375,6 +377,8 @@ Page {
         }
 
         ListView {
+            property bool keepFocus: false
+
             id: recentSearchesView
             width: parent.width
             height: parent.height
@@ -387,13 +391,25 @@ Page {
 
             header: AccessibleText {
                 width: parent.width
-                topPadding: 10
-                bottomPadding: 10
-                horizontalAlignment: Text.AlignHCenter
+                padding: 10
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(9/8)
                 text: qsTr("Recent searches")
                 visible: recentSearchesView.count > 0
+
+                SvgButton {
+                    anchors.right: parent.right
+                    width: height
+                    height: parent.height
+                    svg: svgOutline.close
+                    accessibleName: qsTr("clear recent searches")
+                    onPressed: {
+                        recentSearchesView.keepFocus = true
+                        console.debug("CLICKED")
+                        page.header.forceFocus()
+                        clearRecentSearches()
+                    }
+                }
             }
 
             delegate: Rectangle {
@@ -571,6 +587,22 @@ Page {
                         skywalker.mutedWords.addEntry(word)
                         skywalker.saveMutedWords()
                         skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
+                    })
+    }
+
+    function clearRecentSearches() {
+        guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Are you sure to clear your recent searches?"),
+                    () => {
+                        searchUtils.clearLastSearches()
+                        recentSearchesView.model = []
+                        recentSearchesView.keepFocus = false
+                        page.header.forceFocus()
+                    },
+                    () =>  {
+                        recentSearchesView.keepFocus = false
+                        page.header.forceFocus()
                     })
     }
 
