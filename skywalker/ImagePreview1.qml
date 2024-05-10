@@ -7,6 +7,7 @@ RoundedFrame {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property list<imageview> images
+    readonly property int maxHeight: 1200
 
     id: frame
     objectToRound: img
@@ -23,9 +24,18 @@ RoundedFrame {
         onWidthChanged: setHeight()
 
         function setHeight() {
-            let image = images[0]
-            if (image.width > 0 && image.height > 0)
-                height = image.height / image.width * width
+            const image = images[0]
+
+            if (image.width > 0 && image.height > 0) {
+                const newHeight = image.height / image.width * width
+
+                if (newHeight > maxHeight) {
+                    fillMode = Image.PreserveAspectCrop
+                    newHeight = maxHeight
+                }
+
+                height = newHeight
+            }
         }
     }
     MouseArea {
