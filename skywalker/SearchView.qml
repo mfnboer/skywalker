@@ -240,8 +240,9 @@ Page {
             FlickableRefresher {
                 inProgress: searchUtils.searchPostsTopInProgress
                 verticalOvershoot: postsViewTop.verticalOvershoot
+                topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
-                topText: ""
+                topText: qsTr("Pull down to refresh search results")
             }
 
             EmptyListIndication {
@@ -275,8 +276,9 @@ Page {
             FlickableRefresher {
                 inProgress: searchUtils.searchPostsLatestInProgress
                 verticalOvershoot: postsViewLatest.verticalOvershoot
+                topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
-                topText: ""
+                topText: qsTr("Pull down to refresh search results")
             }
 
             EmptyListIndication {
@@ -299,6 +301,7 @@ Page {
             clip: true
             model: searchUtils.getSearchUsersModel()
             flickDeceleration: guiSettings.flickDeceleration
+            boundsBehavior: Flickable.StopAtBounds
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
@@ -504,6 +507,11 @@ Page {
         function scopedNextPageSearchPosts(sortOrder) {
             const searchTerm = getPostSearchTerm(header.getDisplayText())
             getNextPageSearchPosts(searchTerm, sortOrder)
+        }
+
+        function scopedRefreshSearchPosts(sortOrder) {
+            const searchTerm = getPostSearchTerm(header.getDisplayText())
+            searchPosts(searchTerm, sortOrder)
         }
 
         function getPostSearchTerm(query) {

@@ -14,7 +14,7 @@ Text {
 
     id: refreshText
     anchors.horizontalCenter: parent.horizontalCenter
-    y: guiSettings.headerHeight - verticalOvershoot - height
+    y: (parent.headerItem ? parent.headerItem.height : 0) - verticalOvershoot - height
     z: parent.z - 1
     font.italic: true
     color: guiSettings.textColor
