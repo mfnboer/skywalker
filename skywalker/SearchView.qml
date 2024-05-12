@@ -301,7 +301,6 @@ Page {
             clip: true
             model: searchUtils.getSearchUsersModel()
             flickDeceleration: guiSettings.flickDeceleration
-            boundsBehavior: Flickable.StopAtBounds
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List

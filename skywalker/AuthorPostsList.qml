@@ -45,11 +45,15 @@ ListView {
     FlickableRefresher {
         inProgress: skywalker.getAuthorFeedInProgress
         verticalOvershoot: authorPostsList.verticalOvershoot
+        topOvershootFun: () => {
+            if (modelId >= 0)
+                getFeed(modelId)
+        }
         bottomOvershootFun: () => {
             if (modelId >= 0)
                 getFeedNextPage(modelId)
         }
-        topText: ""
+        topText: qsTr("Pull down to refresh")
     }
 
     BusyIndicator {

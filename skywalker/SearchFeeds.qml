@@ -83,8 +83,9 @@ Page {
             FlickableRefresher {
                 inProgress: searchUtils.searchFeedsInProgress
                 verticalOvershoot: feedListView.verticalOvershoot
+                topOvershootFun: () => searchUtils.searchFeeds(page.header.getDisplayText())
                 bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.header.getDisplayText())
-                topText: ""
+                topText: qsTr("Pull down to refresh")
             }
 
             EmptyListIndication {
