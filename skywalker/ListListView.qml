@@ -66,7 +66,6 @@ ListView {
 
     FlickableRefresher {
         inProgress: skywalker.getListListInProgress
-        verticalOvershoot: view.verticalOvershoot
         topOvershootFun: () => refresh()
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
         topText: qsTr("Refresh lists")

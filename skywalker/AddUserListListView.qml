@@ -33,9 +33,7 @@ ListView {
 
     FlickableRefresher {
         inProgress: skywalker.getListListInProgress
-        verticalOvershoot: view.verticalOvershoot
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
-        topText: ""
     }
 
     EmptyListIndication {

@@ -62,9 +62,9 @@ ComboBox {
 
     FlickableRefresher {
         inProgress: control.inProgress
-        verticalOvershoot: popup.contentItem.verticalOvershoot
         bottomOvershootFun: control.bottomOvershootFun
-        topText: ""
+        list: popup.contentItem
+        enableScrollToTop: false
     }
 
     GuiSettings {

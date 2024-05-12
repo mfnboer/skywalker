@@ -41,7 +41,6 @@ ListView {
 
     FlickableRefresher {
         inProgress: skywalker.getNotificationsInProgress
-        verticalOvershoot: notificationListView.verticalOvershoot
         topOvershootFun: () => skywalker.getNotifications(25, true)
         bottomOvershootFun: () => skywalker.getNotificationsNextPage()
         topText: qsTr("Pull down to refresh notifications")

@@ -522,6 +522,8 @@ Page {
                     adultContent: labelList.model.adultContent
                 }
 
+                FlickableRefresher {}
+
                 EmptyListIndication {
                     svg: svgOutline.noLabels
                     text: qsTr("No labels")
@@ -611,9 +613,7 @@ Page {
 
                 FlickableRefresher {
                     inProgress: skywalker.getFeedInProgress
-                    verticalOvershoot: authorFeedList.verticalOvershoot
                     bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
-                    topText: ""
                 }
 
                 BusyIndicator {
@@ -666,9 +666,7 @@ Page {
 
                 FlickableRefresher {
                     inProgress: skywalker.getListListInProgress
-                    verticalOvershoot: authorListList.verticalOvershoot
                     bottomOvershootFun: () => getListListNextPage(listListModelId)
-                    topText: ""
                 }
 
                 BusyIndicator {

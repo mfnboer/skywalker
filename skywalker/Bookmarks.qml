@@ -29,7 +29,6 @@ ListView {
 
     FlickableRefresher {
         inProgress: model.inProgress
-        verticalOvershoot: bookmarksView.verticalOvershoot
         topOvershootFun: () => skywalker.getBookmarksPage(true)
         bottomOvershootFun: () => skywalker.getBookmarksPage()
         topText: qsTr("Pull down to refresh bookmarks")

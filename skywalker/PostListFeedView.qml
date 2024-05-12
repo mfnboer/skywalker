@@ -59,7 +59,6 @@ ListView {
 
     FlickableRefresher {
         inProgress: skywalker.getFeedInProgress
-        verticalOvershoot: postListFeedView.verticalOvershoot
         topOvershootFun: () => skywalker.getListFeed(modelId)
         bottomOvershootFun: () => skywalker.getListFeedNextPage(modelId)
         topText: qsTr("Pull down to refresh feed")

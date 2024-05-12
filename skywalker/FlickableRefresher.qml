@@ -3,23 +3,52 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Text {
-    required property string topText
-    required property bool inProgress
-    required property int verticalOvershoot
+Item {
+    property string topText: ""
+    property bool inProgress: false
     property var topOvershootFun: null
     property var bottomOvershootFun: null
     property bool inTopOvershoot: false
     property bool inBottomOvershoot: false
+    property var list: parent
+    property int verticalOvershoot: list.verticalOvershoot
+    property var scrollToTopFun: () => list.positionViewAtBeginning()
+    property bool scrollTopTopButtonVisible: false
+    property bool enableScrollToTop: true
 
-    id: refreshText
-    anchors.horizontalCenter: parent.horizontalCenter
-    y: (parent.headerItem ? parent.headerItem.height : 0) - verticalOvershoot - height
-    z: parent.z - 1
-    font.italic: true
-    color: guiSettings.textColor
-    visible: verticalOvershoot < 0
-    text: inTopOvershoot ? qsTr("Refreshing...") : topText
+    anchors.fill: parent
+    //z: parent.z - 1
+
+    Text {
+        id: refreshText
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: (list.headerItem ? list.headerItem.height : 0) - verticalOvershoot - height
+        font.italic: true
+        color: guiSettings.textColor
+        visible: verticalOvershoot < 0
+        text: inTopOvershoot ? qsTr("Refreshing...") : topText
+    }
+
+    SvgButton {
+        id: scrollToTopButton
+        x: (parent.width - width) / 2
+        y: parent.height - height - (list.footerItem ? list.footerItem.height : 0) - 10
+        width: 40
+        height: width
+        iconColor: guiSettings.textColor
+        Material.background: guiSettings.backgroundColor
+        svg: svgOutline.scrollToTop
+        accessibleName: qsTr("Scroll to top")
+        visible: scrollTopTopButtonVisible && !list.atYBeginning && enableScrollToTop
+        onClicked: scrollToTopFun()
+    }
+
+    Timer {
+        id: hideScrollToTopButtonTimer
+        interval: 2500
+
+        onTriggered: scrollTopTopButtonVisible = false
+    }
 
     onVerticalOvershootChanged: {
         if (!enabled)
@@ -46,7 +75,26 @@ Text {
         }
     }
 
+    function showScrollToTopButton() {
+        hideScrollToTopButtonTimer.stop()
+        scrollTopTopButtonVisible = true
+    }
+
+    function hideScrollToTopButton() {
+        hideScrollToTopButtonTimer.start()
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onDestruction: {
+        list.onMovementStarted.disconnect(showScrollToTopButton)
+        list.onMovementEnded.disconnect(hideScrollToTopButton)
+    }
+
+    Component.onCompleted: {
+        list.onMovementStarted.connect(showScrollToTopButton)
+        list.onMovementEnded.connect(hideScrollToTopButton)
     }
 }

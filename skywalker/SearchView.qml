@@ -239,10 +239,9 @@ Page {
 
             FlickableRefresher {
                 inProgress: searchUtils.searchPostsTopInProgress
-                verticalOvershoot: postsViewTop.verticalOvershoot
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
-                topText: qsTr("Pull down to refresh search results")
+                topText: qsTr("Pull down to refresh")
             }
 
             EmptyListIndication {
@@ -275,10 +274,9 @@ Page {
 
             FlickableRefresher {
                 inProgress: searchUtils.searchPostsLatestInProgress
-                verticalOvershoot: postsViewLatest.verticalOvershoot
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
-                topText: qsTr("Pull down to refresh search results")
+                topText: qsTr("Pull down to refresh")
             }
 
             EmptyListIndication {
@@ -313,9 +311,7 @@ Page {
 
             FlickableRefresher {
                 inProgress: searchUtils.searchActorsInProgress
-                verticalOvershoot: usersView.verticalOvershoot
                 bottomOvershootFun: () => searchUtils.getNextPageSearchActors(header.getDisplayText())
-                topText: ""
             }
 
             EmptyListIndication {
@@ -361,9 +357,7 @@ Page {
 
             FlickableRefresher {
                 inProgress: searchUtils.searchSuggestedActorsInProgress
-                verticalOvershoot: suggestedUsersView.verticalOvershoot
                 bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
-                topText: ""
             }
 
             EmptyListIndication {

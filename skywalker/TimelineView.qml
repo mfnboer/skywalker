@@ -65,9 +65,9 @@ ListView {
 
     FlickableRefresher {
         inProgress: skywalker.getTimelineInProgress
-        verticalOvershoot: timelineView.verticalOvershoot
         topOvershootFun: () => skywalker.getTimeline(50)
         bottomOvershootFun: () => skywalker.getTimelineNextPage()
+        scrollToTopFun: () => moveToPost(0)
         enabled: timelineView.inSync
         topText: qsTr("Pull down to refresh timeline")
     }

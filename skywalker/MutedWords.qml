@@ -72,6 +72,8 @@ ListView {
         }
     }
 
+    FlickableRefresher {}
+
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: svgOutline.mutedWords

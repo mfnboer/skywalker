@@ -108,6 +108,8 @@ Page {
                     }
                 }
             }
+
+            FlickableRefresher {}
         }
 
         // GIFs
@@ -156,9 +158,7 @@ Page {
 
             FlickableRefresher {
                 inProgress: tenor.searchInProgress
-                verticalOvershoot: gifOverview.verticalOvershoot
                 bottomOvershootFun: () => tenor.getNextPage()
-                topText: ""
             }
         }
 
