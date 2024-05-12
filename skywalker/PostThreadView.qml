@@ -144,6 +144,8 @@ ListView {
         width: view.width
     }
 
+    FlickableRefresher {}
+
     Timer {
         id: syncTimer
         interval: 100

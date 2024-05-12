@@ -20,6 +20,7 @@ Item {
     readonly property string bannerDefaultColor: "blue"
     readonly property string borderColor: Material.color(Material.Grey)
     readonly property string buttonColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string buttonNeutralColor: Material.theme === Material.Light ? Material.background : "darkslategrey"
     readonly property string buttonTextColor: "white"
     readonly property string contentLabelColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string contentUserLabelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
