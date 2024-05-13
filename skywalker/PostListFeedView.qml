@@ -62,6 +62,7 @@ ListView {
         topOvershootFun: () => skywalker.getListFeed(modelId)
         bottomOvershootFun: () => skywalker.getListFeedNextPage(modelId)
         topText: qsTr("Pull down to refresh feed")
+        enableScrollToTop: !showAsHome
     }
 
     EmptyListIndication {

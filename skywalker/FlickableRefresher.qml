@@ -22,7 +22,7 @@ Item {
     Text {
         id: refreshText
         anchors.horizontalCenter: parent.horizontalCenter
-        y: (list.headerItem ? list.headerItem.height : 0) - verticalOvershoot - height
+        y: ((list.headerItem && list.headerItem.visible) ? list.headerItem.height : 0) - verticalOvershoot - height
         font.italic: true
         color: guiSettings.textColor
         visible: verticalOvershoot < 0
@@ -32,7 +32,7 @@ Item {
     SvgButton {
         id: scrollToTopButton
         x: (parent.width - width) / 2
-        y: parent.height - height - (list.footerItem ? list.footerItem.height : 0) - 10
+        y: parent.height - height - ((list.footerItem && list.footerItem.visible) ? list.footerItem.height : 0) - 10
         width: 50
         height: width
         iconColor: guiSettings.textColor

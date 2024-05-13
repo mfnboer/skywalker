@@ -70,6 +70,7 @@ ListView {
         scrollToTopFun: () => moveToPost(0)
         enabled: timelineView.inSync
         topText: qsTr("Pull down to refresh timeline")
+        enableScrollToTop: false
     }
 
     EmptyListIndication {
