@@ -45,7 +45,7 @@ Item {
 
     Timer {
         id: hideScrollToTopButtonTimer
-        interval: 2500
+        interval: 2000
 
         onTriggered: scrollTopTopButtonVisible = false
     }

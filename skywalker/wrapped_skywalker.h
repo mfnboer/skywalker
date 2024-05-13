@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <atproto/lib/client.h>
+#include <atproto/lib/plc_directory_client.h>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -26,6 +27,7 @@ signals:
 
 protected:
     ATProto::Client* bskyClient();
+    ATProto::PlcDirectoryClient& plcDirectory();
     Skywalker* mSkywalker = nullptr;
 };
 

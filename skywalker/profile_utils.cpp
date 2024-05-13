@@ -288,4 +288,18 @@ void ProfileUtils::undoLikeLabeler(const QString& likeUri, const QString& cid)
         });
 }
 
+void ProfileUtils::getFirstAppearance(const QString& did)
+{
+    plcDirectory().getFirstAppearance(did,
+        [this, presence=getPresence(), did](QDateTime appearance){
+            if (!presence)
+                return;
+
+            emit firstAppearanceOk(did, appearance);
+        },
+        [](int errorCode, const QString& errorMsg){
+               qDebug() << "getFirstAppearance failed:" << errorCode << " - " << errorMsg;
+        });
+}
+
 }

@@ -1,5 +1,6 @@
 next
 ====
+* Show first appearance date on profile
 * Button to clear recent searches
 * Cap very long posts (user can tap "show more" for full post)
 * Go to top button

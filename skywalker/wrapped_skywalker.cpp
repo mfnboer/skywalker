@@ -29,4 +29,10 @@ ATProto::Client* WrappedSkywalker::bskyClient()
     return client;
 }
 
+ATProto::PlcDirectoryClient& WrappedSkywalker::plcDirectory()
+{
+    Q_ASSERT(mSkywalker);
+    return mSkywalker->getPlcDirectory();
+}
+
 }

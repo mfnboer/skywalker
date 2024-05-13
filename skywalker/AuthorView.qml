@@ -34,6 +34,7 @@ Page {
     property labelerviewdetailed labeler
     property string labelerLikeUri: ""
     property int labelerLikeCount: 0
+    property string firstAppearanceDate: "unknown"
 
     signal closed
 
@@ -379,6 +380,15 @@ Page {
                 visible: contentVisible()
 
                 onLinkActivated: (link) => root.openLink(link)
+            }
+
+            Text {
+                id: firstAppearanceText
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                color: guiSettings.textColor
+                text: qsTr(`🗓 First appearance: ${firstAppearanceDate}`)
+                visible: contentVisible()
             }
 
             Row {
@@ -831,6 +841,10 @@ Page {
             labelerLikeUri = ""
             --labelerLikeCount
         }
+
+        onFirstAppearanceOk: (did, appearance) => {
+            firstAppearanceDate = appearance.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+        }
     }
 
     UnicodeFonts {
@@ -1038,6 +1052,7 @@ Page {
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)
+        profileUtils.getFirstAppearance(author.did)
 
         if (hasFeeds)
             getFeedList(feedListModelId)

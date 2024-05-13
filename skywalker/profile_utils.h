@@ -32,6 +32,7 @@ public:
     Q_INVOKABLE void getLabelerViewDetailed(const QString& did);
     Q_INVOKABLE void likeLabeler(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLikeLabeler(const QString& likeUri, const QString& cid);
+    Q_INVOKABLE void getFirstAppearance(const QString& did);
 
 signals:
     void handle(QString handle, QString displayName, QString did);
@@ -46,6 +47,7 @@ signals:
     void likeLabelerFailed(QString error);
     void undoLikeLabelerOk();
     void undoLikeLabelerFailed(QString error);
+    void firstAppearanceOk(QString did, QDateTime appearance);
 
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,

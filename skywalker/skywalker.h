@@ -23,6 +23,7 @@
 #include "search_post_feed_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
+#include <atproto/lib/plc_directory_client.h>
 #include <atproto/lib/profile_master.h>
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
@@ -194,6 +195,7 @@ public:
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
+    ATProto::PlcDirectoryClient& getPlcDirectory() { return mPlcDirectory; }
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
     HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
@@ -280,6 +282,7 @@ private:
     void migrateDraftPosts();
 
     std::unique_ptr<ATProto::Client> mBsky;
+    ATProto::PlcDirectoryClient mPlcDirectory;
 
     QString mAvatarUrl;
     QString mUserDid;
