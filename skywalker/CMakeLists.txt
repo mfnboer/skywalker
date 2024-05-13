@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 include(FetchContent)
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
@@ -344,6 +344,10 @@ qt_add_qml_module(libskywalker
         QML_FILES AuthorComboBox.qml
         QML_FILES AuthorItemDelegate.qml
         SOURCES content_label.cpp
+        SOURCES anniversary_card.h
+        SOURCES anniversary_card.cpp
+        QML_FILES AnniversaryCardMaker.qml
+        QML_FILES ColorSelector.qml
 )
 
 if (NOT ANDROID)
@@ -355,6 +359,7 @@ target_link_libraries(libskywalker
     PRIVATE Qt6::Core
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
+    PRIVATE Qt6::Svg
     ${COVERAGE_LIB}
 )
 

@@ -284,6 +284,10 @@ void Skywalker::getUserProfileAndFollows()
             mUserFollows.clear();
             emit getUserProfileFailed(msg);
         });
+
+    mPlcDirectory.getFirstAppearance(session->mDid,
+        [this](QDateTime appearance){ mFirstAppearance = appearance; },
+        {});
 }
 
 void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages)
@@ -2749,6 +2753,55 @@ void Skywalker::migrateDraftPosts()
     mDraftPostsMigration->migrateFromRepoToFile();
 }
 
+bool Skywalker::isAnniversary() const
+{
+    if (mFirstAppearance.isNull())
+    {
+        qWarning() << "First appearane unknown";
+        return false;
+    }
+
+    const QDate firstDate = mFirstAppearance.date();
+    const QDate thisDate = QDate::currentDate();
+
+    if (thisDate.year() <= firstDate.year())
+        return false;
+
+    if (thisDate.month() != firstDate.month())
+        return false;
+
+    if (thisDate.day() == firstDate.day())
+        return true;
+
+    // Check for Feb 29 as first appearance
+    if (thisDate.month() != 2)
+        return false;
+
+    if (firstDate.day() != 29)
+        return false;
+
+    if (thisDate.day() != 28)
+        return false;
+
+    // Today is Feb 28 and the first appearance day is Feb 29
+    // If this year is a leap year, then the anniversary is Feb 29
+    // Otherwise we celebrate at Feb 28
+    return !QDate::isLeapYear(thisDate.year());
+}
+
+int Skywalker::getAnniversaryYears() const
+{
+    if (mFirstAppearance.isNull())
+    {
+        qWarning() << "First appearane unknown";
+        return 0;
+    }
+
+    const int firstYear = mFirstAppearance.date().year();
+    const int thisYear = QDate::currentDate().year();
+    return thisYear - firstYear;
+}
+
 void Skywalker::signOut()
 {
     Q_ASSERT(mPostThreadModels.empty());
@@ -2778,6 +2831,7 @@ void Skywalker::signOut()
     mTimelineModel.clear();
     mUserDid.clear();
     mUserProfile = {};
+    mFirstAppearance = {};
     mLoggedOutVisibility = true;
     mUserFollows.clear();
     mMutedReposts.clear();

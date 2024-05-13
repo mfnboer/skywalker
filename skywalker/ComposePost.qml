@@ -842,6 +842,21 @@ Page {
         Accessible.onPressAction: showDraftPosts()
     }
 
+    Text {
+        anchors.top: draftsLink.bottom
+        anchors.topMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pointSize: guiSettings.scaledFont(9/8)
+        textFormat: Text.RichText
+        text: qsTr(`<a href=\"card\" style=\"color: ${guiSettings.linkColor}\">Add anniversary card</a>`)
+        visible: threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
+        onLinkActivated: addAnniversaryCard()
+
+        Accessible.role: Accessible.Link
+        Accessible.name: unicodeFonts.toPlainText(text)
+        Accessible.onPressAction: addAnniversaryCard()
+    }
+
     footer: Rectangle {
         id: textFooter
         width: page.width
@@ -1331,14 +1346,14 @@ Page {
     }
 
     // "file://" or "image://" source
-    function photoPicked(source) {
+    function photoPicked(source, altText = "") {
         console.debug("IMAGE:", source)
         let postItem = currentPostItem()
 
         if (!postItem)
             return
 
-        postItem.altTexts.push("")
+        postItem.altTexts.push(altText)
         postItem.images.push(source)
         let scrollBar = postItem.getImageScroller().ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
@@ -1351,7 +1366,7 @@ Page {
             if (!postItem)
                 return
 
-            postItem.postText.append(text)
+            postItem.getPostText().append(text)
         }
     }
 
@@ -1583,6 +1598,18 @@ Page {
         draftsPage.onDeleted.connect((index) => draftPosts.removeDraftPost(index))
 
         root.pushStack(draftsPage)
+    }
+
+    function addAnniversaryCard() {
+        let component = Qt.createComponent("AnniversaryCardMaker.qml")
+        let cardPage = component.createObject(page)
+        cardPage.onCanceled.connect(() => root.popStack())
+        cardPage.onAddCard.connect((source, years) => {
+            page.photoPicked(source, qsTr(`Bluesky anniversary card created with ${guiSettings.skywalkerHandle}`))
+            page.addSharedText(qsTr(`Today is my ${years} year Bluesky anniversary 🥳`))
+            root.popStack()
+        })
+        root.pushStack(cardPage)
     }
 
     function setDraftPost(draftDataList) {

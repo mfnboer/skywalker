@@ -159,6 +159,8 @@ public:
     // TODO: refactor to separate App Utils class
     Q_INVOKABLE bool sendAppToBackground();
 
+    Q_INVOKABLE bool isAnniversary() const;
+    Q_INVOKABLE int getAnniversaryYears() const;
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void clearPassword();
     Q_INVOKABLE void signOut();
@@ -287,6 +289,7 @@ private:
     QString mAvatarUrl;
     QString mUserDid;
     Profile mUserProfile;
+    QDateTime mFirstAppearance;
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
