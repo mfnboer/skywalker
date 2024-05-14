@@ -1,5 +1,5 @@
-next
-====
+2.5
+===
 * Show first appearance date on profile
 * Bluesky anniversary card
 * Button to clear recent searches
