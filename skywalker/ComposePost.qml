@@ -66,6 +66,8 @@ Page {
     property bool threadGateCreated: false
     property list<string> postedUris: []
 
+    property bool isAnniversary: skywalker.isAnniversary()
+
     signal closed
 
     id: page
@@ -849,7 +851,7 @@ Page {
         font.pointSize: guiSettings.scaledFont(9/8)
         textFormat: Text.RichText
         text: qsTr(`<a href=\"card\" style=\"color: ${guiSettings.linkColor}\">Add anniversary card</a>`)
-        visible: threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
+        visible: isAnniversary && threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
         onLinkActivated: addAnniversaryCard()
 
         Accessible.role: Accessible.Link
@@ -1605,7 +1607,7 @@ Page {
         let cardPage = component.createObject(page)
         cardPage.onCanceled.connect(() => root.popStack())
         cardPage.onAddCard.connect((source, years) => {
-            page.photoPicked(source, qsTr(`Bluesky anniversary card created with ${guiSettings.skywalkerHandle}`))
+            page.photoPicked(source, qsTr(`Bluesky anniversary card sent with ${guiSettings.skywalkerHandle}`))
             page.addSharedText(qsTr(`Today is my ${years} year Bluesky anniversary 🥳`))
             root.popStack()
         })

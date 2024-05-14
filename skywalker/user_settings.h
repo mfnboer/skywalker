@@ -137,6 +137,9 @@ public:
     Q_INVOKABLE bool getShowLanguageTags() const;
     void setShowLanguageTags(bool show);
 
+    QDate getAnniversaryNoticeDate(const QString& did) const;
+    void setAnniversaryNoticeDate(const QString& did, QDate date);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;

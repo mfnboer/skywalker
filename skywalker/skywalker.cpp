@@ -146,12 +146,27 @@ bool Skywalker::resumeSession(bool retry)
             qInfo() << "Session resumed";
             saveSession(*mBsky->getSession());
             mUserDid = mBsky->getSession()->mDid;
-            emit resumeSessionOk();
 
             if (!retry)
-                refreshSession();
-
-            startRefreshTimers();
+            {
+                mBsky->refreshSession(
+                    [this]{
+                        qDebug() << "Session refreshed";
+                        saveSession(*mBsky->getSession());
+                        startRefreshTimers();
+                        emit resumeSessionOk();
+                    },
+                    [this](const QString& error, const QString& msg){
+                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+                        mUserSettings.clearCredentials(mUserDid);
+                        emit resumeSessionFailed(msg);
+                    });
+            }
+            else
+            {
+                startRefreshTimers();
+                emit resumeSessionOk();
+            }
         },
         [this, retry, session](const QString& error, const QString& msg){
             qInfo() << "Session could not be resumed:" << error << " - " << msg;
@@ -165,8 +180,9 @@ bool Skywalker::resumeSession(bool retry)
                         saveSession(*mBsky->getSession());
                         resumeSession(true);
                     },
-                    [this](const QString& error, const QString& msg){
+                    [this, did=session.mDid](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+                        mUserSettings.clearCredentials(did);
                         emit resumeSessionFailed(msg);
                     });
             }
@@ -286,7 +302,10 @@ void Skywalker::getUserProfileAndFollows()
         });
 
     mPlcDirectory.getFirstAppearance(session->mDid,
-        [this](QDateTime appearance){ mFirstAppearance = appearance; },
+        [this](QDateTime appearance){
+            mFirstAppearance = appearance;
+            checkAnniversary();
+        },
         {});
 }
 
@@ -328,7 +347,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
 
 void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr user)
 {
-    Q_ASSERT(mUserDid == user->mDid);
+    //Q_ASSERT(mUserDid == user->mDid);
     qDebug() << "Got user:" << user->mHandle << "#follows:" << mUserFollows.size();
     AuthorCache::instance().setUser(BasicProfile(*user));
     mUserSettings.saveDisplayName(mUserDid, user->mDisplayName.value_or(""));
@@ -689,6 +708,8 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
 void Skywalker::finishTimelineSync(int index)
 {
+    mTimelineSynced = true;
+
     // Inform the GUI about the timeline sync.
     // This will show the timeline to the user.
     emit timelineSyncOK(index);
@@ -698,6 +719,8 @@ void Skywalker::finishTimelineSync(int index)
     // If there is any, then this will open the post composition page. This should
     // only been done when the startup sequence in the GUI is finished.
     JNICallbackListener::handlePendingIntent();
+
+    checkAnniversary();
 }
 
 void Skywalker::finishTimelineSyncFailed()
@@ -2761,6 +2784,7 @@ bool Skywalker::isAnniversary() const
         return false;
     }
 
+    // TODO: move to different class
     const QDate firstDate = mFirstAppearance.date();
     const QDate thisDate = QDate::currentDate();
 
@@ -2800,6 +2824,35 @@ int Skywalker::getAnniversaryYears() const
     const int firstYear = mFirstAppearance.date().year();
     const int thisYear = QDate::currentDate().year();
     return thisYear - firstYear;
+}
+
+void Skywalker::checkAnniversary()
+{
+    if (!mTimelineSynced)
+    {
+        qDebug() << "Timeline not synced";
+        return;
+    }
+
+    if (isAnniversary())
+    {
+        qDebug() << "Today is anniversary!";
+        const QDate noticeDate = mUserSettings.getAnniversaryNoticeDate(mUserDid);
+        const QDate today = QDate::currentDate();
+
+        if (noticeDate == today)
+        {
+            qDebug() << "Anniversary notice already given";
+            return;
+        }
+
+        mUserSettings.setAnniversaryNoticeDate(mUserDid, today);
+        emit anniversary();
+    }
+    else
+    {
+        qDebug() << "No anniversary";
+    }
 }
 
 void Skywalker::signOut()
@@ -2843,6 +2896,7 @@ void Skywalker::signOut()
     mSeenHashtags.clear();
     mFavoriteFeeds.clear();
     mUserSettings.setActiveUserDid({});
+    mTimelineSynced = false;
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);
     setGetFeedInProgress(false);

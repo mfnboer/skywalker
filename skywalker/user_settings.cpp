@@ -186,6 +186,7 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) 
 
 void UserSettings::clearCredentials(const QString& did)
 {
+    qDebug() << "Clear credentials:" << did;
     mSettings.remove(key(did, "password"));
     mSettings.setValue(key(did, "access"), {});
     mSettings.setValue(key(did, "refresh"), {});
@@ -514,6 +515,16 @@ bool UserSettings::getShowLanguageTags() const
 void UserSettings::setShowLanguageTags(bool show)
 {
     mSettings.setValue("showLanguageTags", show);
+}
+
+QDate UserSettings::getAnniversaryNoticeDate(const QString& did) const
+{
+    return mSettings.value(key(did, "anniversaryNoticeDate")).toDate();
+}
+
+void UserSettings::setAnniversaryNoticeDate(const QString& did, QDate date)
+{
+    mSettings.setValue(key(did, "anniversaryNoticeDate"), date);
 }
 
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)

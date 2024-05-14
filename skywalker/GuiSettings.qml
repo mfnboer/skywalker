@@ -104,9 +104,9 @@ Item {
         message.show(question)
     }
 
-    function notice(parent, msg, onOkCb = () => {}) {
+    function notice(parent, msg, emoji = "", onOkCb = () => {}) {
         let component = Qt.createComponent("Message.qml")
-        let message = component.createObject(parent, { standardButtons: Dialog.Ok })
+        let message = component.createObject(parent, { emoji: emoji, standardButtons: Dialog.Ok })
         message.onAccepted.connect(() => { message.destroy(); onOkCb() })
         message.onRejected.connect(() => message.destroy())
         message.show(msg)

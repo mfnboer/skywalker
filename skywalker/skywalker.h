@@ -239,6 +239,7 @@ signals:
     void sharedImageReceived(QString source, QString text); // Shared from another app
     void showNotifications(); // Action received from clicking an app notification
     void bskyClientDeleted();
+    void anniversary();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
@@ -282,6 +283,7 @@ private:
     void pauseApp();
     void resumeApp();
     void migrateDraftPosts();
+    void checkAnniversary();
 
     std::unique_ptr<ATProto::Client> mBsky;
     ATProto::PlcDirectoryClient mPlcDirectory;
@@ -340,6 +342,7 @@ private:
     UserSettings mUserSettings;
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;
+    bool mTimelineSynced = false;
     bool mDebugLogging = false;
 };
 

@@ -1,10 +1,12 @@
 next
 ====
 * Show first appearance date on profile
+* Bluesky anniversary card
 * Button to clear recent searches
 * Cap very long posts (user can tap "show more" for full post)
 * Go to top button
 * Refresh search results on pull down
+* Bug fix for "Token has been revoked" issue
 
 2.4
 ===
