@@ -2712,6 +2712,12 @@ void Skywalker::pauseApp()
 {
     qDebug() << "Pause app";
 
+    if (mBsky && mBsky->getSession())
+    {
+        // Make sure tokens are saved as the offline message checker needs them
+        mUserSettings.saveSession(*mBsky->getSession());
+    }
+
     saveHashtags();
     mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
@@ -2731,6 +2737,18 @@ void Skywalker::pauseApp()
 void Skywalker::resumeApp()
 {
     qDebug() << "Resume app";
+
+    if (mBsky && mBsky->getSession())
+    {
+        auto savedSession = mUserSettings.getSession(mUserDid);
+
+        // The offline message checker may have refreshed tokens. Update these tokens
+        // so we do not use an old token for refreshing below.
+        if (!savedSession.mRefreshJwt.isEmpty())
+            mBsky->updateTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
+        else
+            qWarning() << "No tokens";
+    }
 
     if (!mTimelineUpdatePaused)
     {

@@ -1,3 +1,7 @@
+next
+====
+* Bug fix for potential cause of revoked tokens
+
 2.5
 ===
 * Show first appearance date on profile
