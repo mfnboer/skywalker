@@ -1,5 +1,5 @@
-next
-====
+2.5.1
+=====
 * Bug fix for potential cause of revoked tokens
 
 2.5
