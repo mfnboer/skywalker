@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Page {
-    property int years: root.getSkywalker().getAnniversaryYears()
+    property int years: root.getSkywalker().getAnniversary().getAnniversaryYears()
 
     signal canceled
     signal addCard(string source, int years)

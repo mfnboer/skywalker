@@ -66,7 +66,7 @@ Page {
     property bool threadGateCreated: false
     property list<string> postedUris: []
 
-    property bool isAnniversary: skywalker.isAnniversary()
+    property bool isAnniversary: skywalker.getAnniversary().isAnniversary()
 
     signal closed
 

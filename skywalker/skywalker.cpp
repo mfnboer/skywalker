@@ -51,6 +51,7 @@ Skywalker::Skywalker(QObject* parent) :
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mUserSettings(this),
+    mAnniversary(mUserDid, mUserSettings, this),
     mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                    mBookmarks, mMutedWords, mSeenHashtags, mUserPreferences, mUserSettings, this)
 {
@@ -299,7 +300,7 @@ void Skywalker::getUserProfileAndFollows()
 
     mPlcDirectory.getFirstAppearance(session->mDid,
         [this](QDateTime appearance){
-            mFirstAppearance = appearance;
+            mAnniversary.setFirstAppearance(appearance);
             checkAnniversary();
         },
         {});
@@ -2796,56 +2797,6 @@ void Skywalker::migrateDraftPosts()
     mDraftPostsMigration->migrateFromRepoToFile();
 }
 
-bool Skywalker::isAnniversary() const
-{
-    if (mFirstAppearance.isNull())
-    {
-        qWarning() << "First appearane unknown";
-        return false;
-    }
-
-    // TODO: move to different class
-    const QDate firstDate = mFirstAppearance.date();
-    const QDate thisDate = QDate::currentDate();
-
-    if (thisDate.year() <= firstDate.year())
-        return false;
-
-    if (thisDate.month() != firstDate.month())
-        return false;
-
-    if (thisDate.day() == firstDate.day())
-        return true;
-
-    // Check for Feb 29 as first appearance
-    if (thisDate.month() != 2)
-        return false;
-
-    if (firstDate.day() != 29)
-        return false;
-
-    if (thisDate.day() != 28)
-        return false;
-
-    // Today is Feb 28 and the first appearance day is Feb 29
-    // If this year is a leap year, then the anniversary is Feb 29
-    // Otherwise we celebrate at Feb 28
-    return !QDate::isLeapYear(thisDate.year());
-}
-
-int Skywalker::getAnniversaryYears() const
-{
-    if (mFirstAppearance.isNull())
-    {
-        qWarning() << "First appearane unknown";
-        return 0;
-    }
-
-    const int firstYear = mFirstAppearance.date().year();
-    const int thisYear = QDate::currentDate().year();
-    return thisYear - firstYear;
-}
-
 void Skywalker::checkAnniversary()
 {
     if (!mTimelineSynced)
@@ -2854,25 +2805,8 @@ void Skywalker::checkAnniversary()
         return;
     }
 
-    if (isAnniversary())
-    {
-        qDebug() << "Today is anniversary!";
-        const QDate noticeDate = mUserSettings.getAnniversaryNoticeDate(mUserDid);
-        const QDate today = QDate::currentDate();
-
-        if (noticeDate == today)
-        {
-            qDebug() << "Anniversary notice already given";
-            return;
-        }
-
-        mUserSettings.setAnniversaryNoticeDate(mUserDid, today);
+    if (mAnniversary.checkAnniversary())
         emit anniversary();
-    }
-    else
-    {
-        qDebug() << "No anniversary";
-    }
 }
 
 void Skywalker::signOut()
@@ -2904,7 +2838,7 @@ void Skywalker::signOut()
     mTimelineModel.clear();
     mUserDid.clear();
     mUserProfile = {};
-    mFirstAppearance = {};
+    mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
     mUserFollows.clear();
     mMutedReposts.clear();

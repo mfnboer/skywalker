@@ -348,6 +348,8 @@ qt_add_qml_module(libskywalker
         SOURCES anniversary_card.cpp
         QML_FILES AnniversaryCardMaker.qml
         QML_FILES ColorSelector.qml
+        SOURCES anniversary.h
+        SOURCES anniversary.cpp
 )
 
 if (NOT ANDROID)

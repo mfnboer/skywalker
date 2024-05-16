@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "anniversary.h"
 #include "author_feed_model.h"
 #include "author_list_model.h"
 #include "bookmarks.h"
@@ -141,6 +142,7 @@ public:
     Q_INVOKABLE void saveGlobalContentFilterPreferences();
     Q_INVOKABLE void saveContentFilterPreferences(const ContentGroupListModel* model);
     Q_INVOKABLE ContentFilter* getContentFilter() { return &mContentFilter; }
+    Q_INVOKABLE Anniversary* getAnniversary() { return &mAnniversary; }
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();
@@ -160,8 +162,6 @@ public:
     // TODO: refactor to separate App Utils class
     Q_INVOKABLE bool sendAppToBackground();
 
-    Q_INVOKABLE bool isAnniversary() const;
-    Q_INVOKABLE int getAnniversaryYears() const;
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void clearPassword();
     Q_INVOKABLE void signOut();
@@ -293,7 +293,6 @@ private:
     QString mAvatarUrl;
     QString mUserDid;
     Profile mUserProfile;
-    QDateTime mFirstAppearance;
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
@@ -342,6 +341,7 @@ private:
     HashtagIndex mSeenHashtags;
     FavoriteFeeds mFavoriteFeeds;
     UserSettings mUserSettings;
+    Anniversary mAnniversary;
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;

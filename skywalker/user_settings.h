@@ -10,7 +10,15 @@
 
 namespace Skywalker {
 
-class UserSettings : public QObject
+class IUserSettings
+{
+public:
+    virtual ~IUserSettings() = default;
+    virtual QDate getAnniversaryNoticeDate(const QString& did) const = 0;
+    virtual void setAnniversaryNoticeDate(const QString& did, QDate date) = 0;
+};
+
+class UserSettings : public QObject, public IUserSettings
 {
     Q_OBJECT
 public:
@@ -136,8 +144,8 @@ public:
     Q_INVOKABLE bool getShowLanguageTags() const;
     void setShowLanguageTags(bool show);
 
-    QDate getAnniversaryNoticeDate(const QString& did) const;
-    void setAnniversaryNoticeDate(const QString& did, QDate date);
+    QDate getAnniversaryNoticeDate(const QString& did) const override;
+    void setAnniversaryNoticeDate(const QString& did, QDate date) override;
 
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);

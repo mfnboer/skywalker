@@ -233,7 +233,7 @@ ApplicationWindow {
         onShowNotifications: viewNotifications()
 
         onAnniversary: {
-            const years = skywalker.getAnniversaryYears()
+            const years = skywalker.getAnniversary().getAnniversaryYears()
             guiSettings.notice(root,
                 qsTr(`Today is your ${years} year Bluesky anniversary. On this day you can send an anniversary card. You can find it on the post page, when you click the button to send a post.`),
                 "🥳")
