@@ -4,7 +4,6 @@
 #include "enums.h"
 #include "password_encryption.h"
 #include "profile.h"
-#include "tenor_gif.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QSettings>

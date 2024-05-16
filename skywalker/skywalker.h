@@ -55,6 +55,7 @@ class Skywalker : public QObject
 
 public:
     static constexpr const char* VERSION = APP_VERSION;
+    static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
@@ -70,7 +71,7 @@ public:
     Q_INVOKABLE void startTimelineAutoUpdate();
     Q_INVOKABLE void stopTimelineAutoUpdate();
     Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
-                void getTimelinePrepend(int autoGapFill = 0);
+                void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE);
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false);
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
@@ -262,7 +263,7 @@ private:
     void updatePostIndexTimestamps();
     void startRefreshTimers();
     void stopRefreshTimers();
-    void refreshSession();
+    void refreshSession(const std::function<void()>& cbOk = {});
     void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
@@ -282,6 +283,7 @@ private:
     void handleAppStateChange(Qt::ApplicationState state);
     void pauseApp();
     void resumeApp();
+    void updateTimeline(int autoGapFill, int pageSize);
     void migrateDraftPosts();
     void checkAnniversary();
 

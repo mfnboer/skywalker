@@ -31,7 +31,6 @@ static constexpr auto TIMELINE_UPDATE_INTERVAL = 91s;
 static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 29s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
-static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 static constexpr int FEED_ADD_PAGE_SIZE = 50;
@@ -57,15 +56,9 @@ Skywalker::Skywalker(QObject* parent) :
 {
     mBookmarks.setSkywalker(this);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
-
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
-
-    connect(&mTimelineUpdateTimer, &QTimer::timeout, this,
-            [this]{
-                getTimelinePrepend(2);
-                updatePostIndexTimestamps();
-            });
+    connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(2, TIMELINE_PREPEND_PAGE_SIZE); });
 
     AuthorCache::instance().addProfileStore(&mUserFollows);
     OffLineMessageChecker::createNotificationChannels();
@@ -236,7 +229,7 @@ void Skywalker::stopRefreshTimers()
     mRefreshNotificationTimer.stop();
 }
 
-void Skywalker::refreshSession()
+void Skywalker::refreshSession(const std::function<void()>& cbOk)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Refresh session";
@@ -250,9 +243,12 @@ void Skywalker::refreshSession()
     }
 
     mBsky->refreshSession(
-        [this]{
+        [this, cbOk]{
             qDebug() << "Session refreshed";
             saveSession(*mBsky->getSession());
+
+            if (cbOk)
+                cbOk();
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "Session could not be refreshed:" << error << " - " << msg;
@@ -782,7 +778,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     );
 }
 
-void Skywalker::getTimelinePrepend(int autoGapFill)
+void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
 {
     Q_ASSERT(mBsky);
     qInfo() << "Get timeline prepend";
@@ -802,7 +798,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill)
     setAutoUpdateTimelineInProgress(true);
     setGetTimelineInProgress(true);
 
-    mBsky->getTimeline(TIMELINE_PREPEND_PAGE_SIZE, {},
+    mBsky->getTimeline(pageSize, {},
         [this, autoGapFill](auto feed){
             const int gapId = mTimelineModel.prependFeed(std::move(feed));
             setGetTimelineInProgress(false);
@@ -2759,7 +2755,13 @@ void Skywalker::resumeApp()
     mTimelineUpdatePaused = false;
     startRefreshTimers();
     startTimelineAutoUpdate();
-    refreshSession();
+    refreshSession([this]{ updateTimeline(2, 100); });
+}
+
+void Skywalker::updateTimeline(int autoGapFill, int pageSize)
+{
+    getTimelinePrepend(autoGapFill, pageSize);
+    updatePostIndexTimestamps();
 }
 
 void Skywalker::migrateDraftPosts()
