@@ -260,6 +260,7 @@ bool OffLineMessageChecker::getSession(QString& host, ATProto::ComATProtoServer:
 void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
     mUserSettings.saveSession(session);
+    mUserSettings.sync();
 }
 
 void OffLineMessageChecker::resumeSession(bool retry)

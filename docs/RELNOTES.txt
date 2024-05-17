@@ -1,6 +1,7 @@
 next
 ====
 * Check for new posts on waking up from sleep
+* Bug fixes
 
 2.5.1
 =====
