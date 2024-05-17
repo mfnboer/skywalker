@@ -14,9 +14,9 @@ class Anniversary : public QObject
 public:
     explicit Anniversary(const QString& userDid, IUserSettings& userSettings, QObject* parent = nullptr);
 
-    Q_INVOKABLE bool isAnniversary() const;
-    Q_INVOKABLE int getAnniversaryYears() const;
-    bool checkAnniversary() const;
+    Q_INVOKABLE bool isAnniversary(QDate date = QDate::currentDate()) const;
+    Q_INVOKABLE int getAnniversaryYears(QDate date = QDate::currentDate()) const;
+    bool checkAnniversary(QDate date = QDate::currentDate()) const;
     void setFirstAppearance(QDateTime firstAppearance) { mFirstAppearance = firstAppearance; }
 
 private:

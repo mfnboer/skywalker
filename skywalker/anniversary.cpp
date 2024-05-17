@@ -11,7 +11,7 @@ Anniversary::Anniversary(const QString& userDid, IUserSettings& userSettings, QO
 {
 }
 
-bool Anniversary::isAnniversary() const
+bool Anniversary::isAnniversary(QDate date) const
 {
     if (mFirstAppearance.isNull())
     {
@@ -20,34 +20,33 @@ bool Anniversary::isAnniversary() const
     }
 
     const QDate firstDate = mFirstAppearance.date();
-    const QDate thisDate = QDate::currentDate();
 
-    if (thisDate.year() <= firstDate.year())
+    if (date.year() <= firstDate.year())
         return false;
 
-    if (thisDate.month() != firstDate.month())
+    if (date.month() != firstDate.month())
         return false;
 
-    if (thisDate.day() == firstDate.day())
+    if (date.day() == firstDate.day())
         return true;
 
     // Check for Feb 29 as first appearance
-    if (thisDate.month() != 2)
+    if (date.month() != 2)
         return false;
 
     if (firstDate.day() != 29)
         return false;
 
-    if (thisDate.day() != 28)
+    if (date.day() != 28)
         return false;
 
     // Today is Feb 28 and the first appearance day is Feb 29
     // If this year is a leap year, then the anniversary is Feb 29
     // Otherwise we celebrate at Feb 28
-    return !QDate::isLeapYear(thisDate.year());
+    return !QDate::isLeapYear(date.year());
 }
 
-int Anniversary::getAnniversaryYears() const
+int Anniversary::getAnniversaryYears(QDate date) const
 {
     if (mFirstAppearance.isNull())
     {
@@ -56,25 +55,24 @@ int Anniversary::getAnniversaryYears() const
     }
 
     const int firstYear = mFirstAppearance.date().year();
-    const int thisYear = QDate::currentDate().year();
+    const int thisYear = date.year();
     return thisYear - firstYear;
 }
 
-bool Anniversary::checkAnniversary() const
+bool Anniversary::checkAnniversary(QDate date) const
 {
-    if (isAnniversary())
+    if (isAnniversary(date))
     {
         qDebug() << "Today is anniversary!";
         const QDate noticeDate = mUserSettings.getAnniversaryNoticeDate(mUserDid);
-        const QDate today = QDate::currentDate();
 
-        if (noticeDate == today)
+        if (noticeDate == date)
         {
             qDebug() << "Anniversary notice already given";
             return false;
         }
 
-        mUserSettings.setAnniversaryNoticeDate(mUserDid, today);
+        mUserSettings.setAnniversaryNoticeDate(mUserDid, date);
         return true;
     }
     else
