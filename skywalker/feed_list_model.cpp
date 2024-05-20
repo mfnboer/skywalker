@@ -45,7 +45,7 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
         return mFavoriteFeeds.isSavedFeed(feed.getUri());
     case Role::FeedPinned:
         return mFavoriteFeeds.isPinnedFeed(feed.getUri());
-    case Role::EndOfeed:
+    case Role::EndOfFeed:
         return index.row() == (int)mFeeds.size() - 1 && isEndOfList();
     }
 
@@ -79,7 +79,7 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, cons
         qDebug() << "No new feeds";
 
         if (!mFeeds.empty())
-            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfeed });
+            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfFeed });
 
         return;
     }
@@ -107,7 +107,7 @@ void FeedListModel::addFeeds(const QList<GeneratorView>& feeds)
         qDebug() << "No new feeds";
 
         if (!mFeeds.empty())
-            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfeed });
+            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfFeed });
 
         return;
     }
@@ -130,7 +130,7 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
         { int(Role::FeedCreator), "feedCreator" },
         { int(Role::FeedSaved), "feedSaved" },
         { int(Role::FeedPinned), "feedPinned" },
-        { int(Role::EndOfeed), "endOfFeed" }
+        { int(Role::EndOfFeed), "endOfFeed" }
     };
 
     return roles;

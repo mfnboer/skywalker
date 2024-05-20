@@ -150,6 +150,7 @@ ApplicationWindow {
             skywalker.loadBookmarks()
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
+            skywalker.chat.getConvos()
 
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
@@ -250,6 +251,7 @@ ApplicationWindow {
         readonly property int notificationIndex: 1
         readonly property int searchIndex: 2
         readonly property int feedsIndex: 3
+        readonly property int chatIndex: 4
 
         id: stackLayout
         anchors.fill: parent
@@ -266,6 +268,9 @@ ApplicationWindow {
         }
         StackView {
             id: feedsStack
+        }
+        StackView {
+            id: chatStack
         }
     }
 
@@ -881,6 +886,14 @@ ApplicationWindow {
         }
     }
 
+    function viewChat() {
+        unwindStack()
+        stackLayout.currentIndex = stackLayout.chatIndex
+
+        if (skywalker.chat.unreadCount > 0 || !skywalker.chat.convosLoaded())
+            skywalker.chat.getConvos()
+    }
+
     function createSearchView() {
         let searchComponent = Qt.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
@@ -1155,10 +1168,6 @@ ApplicationWindow {
         return timelineStack.get(0)
     }
 
-    function getNotificationsView() {
-        return notificationStack.get(0)
-    }
-
     function currentStack() {
         return stackLayout.children[stackLayout.currentIndex]
     }
@@ -1233,6 +1242,11 @@ ApplicationWindow {
                 { skywalker: skywalker, timeline: timelineView })
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         notificationStack.push(notificationsView)
+
+        let chatComponent = Qt.createComponent("ConvoListView.qml")
+        let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
+        chatView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
+        chatStack.push(chatView)
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         if (skywalker.resumeSession())

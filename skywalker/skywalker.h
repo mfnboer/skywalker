@@ -6,6 +6,7 @@
 #include "author_list_model.h"
 #include "bookmarks.h"
 #include "bookmarks_model.h"
+#include "chat.h"
 #include "content_group_list_model.h"
 #include "draft_posts_migration.h"
 #include "draft_posts_model.h"
@@ -39,6 +40,7 @@ class Skywalker : public QObject
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
+    Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
     Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
@@ -174,6 +176,7 @@ public:
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
+    Chat* getChat() { return &mChat; }
     Bookmarks* getBookmarks() { return &mBookmarks; }
     MutedWords* getMutedWords() { return &mMutedWords; }
     void setAutoUpdateTimelineInProgress(bool inProgress);
@@ -287,7 +290,7 @@ private:
     void migrateDraftPosts();
     void checkAnniversary();
 
-    std::unique_ptr<ATProto::Client> mBsky;
+    ATProto::Client::Ptr mBsky;
     ATProto::PlcDirectoryClient mPlcDirectory;
 
     QString mAvatarUrl;
@@ -333,6 +336,7 @@ private:
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
     NotificationListModel mNotificationListModel;
+    Chat mChat;
 
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;

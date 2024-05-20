@@ -62,12 +62,12 @@ ListView {
         inProgress: skywalker.getAuthorListInProgress
         topOvershootFun: () => refresh()
         bottomOvershootFun: () => skywalker.getAuthorListNextPage(modelId)
-        topText: "Refresh"
+        topText: qsTr("Refresh")
     }
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: svgOutline.noUsers
+        svg: svgOutline.noDirectMessages
         text: qsTr("None")
         list: authorListView
     }

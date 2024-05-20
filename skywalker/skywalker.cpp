@@ -47,6 +47,7 @@ Skywalker::Skywalker(QObject* parent) :
     mBookmarks(this),
     mMutedWords(this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
+    mChat(mBsky, mUserDid, this),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
@@ -2831,6 +2832,7 @@ void Skywalker::signOut()
     mAuthorListModels.clear();
     mListListModels.clear();
     mNotificationListModel.clear();
+    mChat.clear();
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;

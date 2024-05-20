@@ -10,6 +10,7 @@ Rectangle {
     property bool notificationsActive: false
     property bool searchActive: false
     property bool feedsActive: false
+    property bool messagesActive: false
     property int unreadNotifications: 0
     property bool showHomeFeedBadge: false
 
@@ -17,6 +18,7 @@ Rectangle {
     signal notificationsClicked()
     signal searchClicked()
     signal feedsClicked()
+    signal messagesClicked()
 
     width: parent.width
     height: guiSettings.footerHeight
@@ -54,26 +56,8 @@ Rectangle {
                 color: guiSettings.textColor
                 svg: homeActive ? svgFilled.home : svgOutline.home
 
-                // Badge counter
-                Rectangle {
-                    x: parent.width - 17
-                    y: -parent.y + 6
-                    width: Math.max(unreadCountText.width + 10, height)
-                    height: 20
-                    radius: 8
-                    color: guiSettings.badgeColor
-                    border.color: guiSettings.badgeBorderColor
-                    border.width: 2
-                    visible: timeline.unreadPosts > 0
-
-                    Text {
-                        id: unreadCountText
-                        anchors.centerIn: parent
-                        font.bold: true
-                        font.pointSize: guiSettings.scaledFont(6/8)
-                        color: guiSettings.badgeTextColor
-                        text: timeline.unreadPosts
-                    }
+                BadgeCounter {
+                    counter: timeline.unreadPosts
                 }
 
                 // Feed badge
@@ -161,7 +145,37 @@ Rectangle {
             color: guiSettings.backgroundColor
 
             Accessible.role: Accessible.PageTab
-            Accessible.name: skywalker.unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
+            Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
+            Accessible.onPressAction: messagesClicked()
+
+            SvgImage {
+                id: messagesButton
+                y: height + 5
+                width: height
+                height: parent.height - 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: guiSettings.textColor
+                svg: messagesActive ? svgFilled.directMessage : svgOutline.directMessage
+                Accessible.ignored: true
+
+                BadgeCounter {
+                    counter: skywalker.chat.unreadCount
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: messagesClicked()
+            }
+        }
+
+        Rectangle {
+            height: parent.height
+            Layout.fillWidth: true
+            color: guiSettings.backgroundColor
+
+            Accessible.role: Accessible.PageTab
+            Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
             Accessible.onPressAction: notificationsClicked()
 
             SvgImage {
@@ -174,25 +188,8 @@ Rectangle {
                 svg: notificationsActive ? svgFilled.notifications : svgOutline.notifications
                 Accessible.ignored: true
 
-                Rectangle {
-                    x: parent.width - 17
-                    y: -parent.y + 6
-                    width: Math.max(unreadNotificationsText.width + 10, height)
-                    height: 20
-                    radius: 8
-                    color: guiSettings.badgeColor
-                    border.color: guiSettings.badgeBorderColor
-                    border.width: 2
-                    visible: skywalker.unreadNotificationCount > 0
-
-                    Text {
-                        id: unreadNotificationsText
-                        anchors.centerIn: parent
-                        font.bold: true
-                        font.pointSize: guiSettings.scaledFont(6/8)
-                        color: guiSettings.badgeTextColor
-                        text: skywalker.unreadNotificationCount
-                    }
+                BadgeCounter {
+                    counter: root.getSkywalker().unreadNotificationCount
                 }
             }
 

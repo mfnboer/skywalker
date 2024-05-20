@@ -66,6 +66,7 @@ Page {
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: root.viewFeedsView()
+        onMessagesClicked: root.viewChat()
     }
 
     TabBar {

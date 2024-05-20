@@ -350,6 +350,19 @@ qt_add_qml_module(libskywalker
         QML_FILES ColorSelector.qml
         SOURCES anniversary.h
         SOURCES anniversary.cpp
+        QML_FILES BadgeCounter.qml
+        SOURCES chat_profile.h
+        SOURCES chat_profile.cpp
+        SOURCES convo_view.h
+        SOURCES convo_view.cpp
+        SOURCES convo_list_model.h
+        SOURCES convo_list_model.cpp
+        SOURCES chat.h
+        SOURCES chat.cpp
+        QML_FILES ConvoListView.qml
+        QML_FILES ConvoViewDelegate.qml
+        SOURCES message_view.h
+        SOURCES message_view.cpp
 )
 
 if (NOT ANDROID)
