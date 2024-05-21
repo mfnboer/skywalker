@@ -14,11 +14,13 @@ class MessageView
     Q_PROPERTY(QString formattedText READ getFormattedText FINAL)
     Q_PROPERTY(QString senderDid READ getSenderDid FINAL)
     Q_PROPERTY(QDateTime sentAt READ getSentAt FINAL)
+    Q_PROPERTY(bool deleted READ isDeleted FINAL)
     QML_VALUE_TYPE(messageview)
 
 public:
     MessageView() = default;
     explicit MessageView(const ATProto::ChatBskyConvo::MessageView& msg);
+    explicit MessageView(const ATProto::ChatBskyConvo::DeletedMessageView& msg);
 
     const QString& getId() const { return mId; }
     const QString& getRev() const { return mRev; }
@@ -26,6 +28,8 @@ public:
     const QString& getFormattedText() const { return mFormattedText; }
     const QString& getSenderDid() const { return mSenderDid; }
     const QDateTime getSentAt() const { return mSentAt; }
+    bool isDeleted() const { return mDeleted; }
+    bool isNull() const { return mId.isEmpty(); }
 
 private:
     QString mId;
@@ -35,6 +39,9 @@ private:
     // TODO embed
     QString mSenderDid;
     QDateTime mSentAt;
+    bool mDeleted = false;
 };
+
+using MessageViewList = QList<MessageView>;
 
 }

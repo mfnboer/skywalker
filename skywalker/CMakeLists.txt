@@ -363,6 +363,11 @@ qt_add_qml_module(libskywalker
         QML_FILES ConvoViewDelegate.qml
         SOURCES message_view.h
         SOURCES message_view.cpp
+        SOURCES message_list_model.h
+        SOURCES message_list_model.cpp
+        QML_FILES MessagesListView.qml
+        QML_FILES MessagesListHeader.qml
+        QML_FILES MessageViewDelegate.qml
 )
 
 if (NOT ANDROID)

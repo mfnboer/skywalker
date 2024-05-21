@@ -16,4 +16,13 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::MessageView& msg) :
 {
 }
 
+MessageView::MessageView(const ATProto::ChatBskyConvo::DeletedMessageView& msg) :
+    mId(msg.mId),
+    mRev(msg.mRev),
+    mSenderDid(msg.mSender->mDid),
+    mSentAt(msg.mSentAt),
+    mDeleted(true)
+{
+}
+
 }

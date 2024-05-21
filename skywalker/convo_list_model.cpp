@@ -45,6 +45,7 @@ void ConvoListModel::clear()
         endRemoveRows();
     }
 
+    mConvoIdIndexMap.clear();
     mCursor.clear();
 }
 
@@ -52,6 +53,7 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoViewList& conv
 {
     qDebug() << "Add convos:" << convos.size() << "cursor:" << cursor;
     mCursor = cursor;
+    changeData({ int(Role::EndOfList) }, (int)mConvos.size() - 1, (int)mConvos.size() - 1);
 
     if (convos.empty())
     {
@@ -67,10 +69,44 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoViewList& conv
     {
         qDebug() << "New convo, id:" << convo->mId << "rev:" << convo->mRev;
         mConvos.emplace_back(*convo, mUserDid);
+        mConvoIdIndexMap[convo->mId] = mConvos.size() - 1;
     }
 
     endInsertRows();
     qDebug() << "New convos size:" << mConvos.size();
+}
+
+void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
+{
+    auto it = mConvoIdIndexMap.find(convo.mId);
+
+    if (it == mConvoIdIndexMap.end())
+    {
+        qWarning() << "Cannot find convo:" << convo.mId;
+        return;
+    }
+
+    const int index = it->second;
+    Q_ASSERT(index >= 0);
+    Q_ASSERT(index < (int)mConvos.size());
+
+    if (index < 0 || index >= (int)mConvos.size())
+    {
+        qWarning() << "Index out of range:" << index << "size:" << mConvos.size();
+        return;
+    }
+
+    auto& oldConvo = mConvos[index];
+    Q_ASSERT(oldConvo.getId() == convo.mId);
+
+    if (oldConvo.getId() != convo.mId)
+    {
+        qWarning() << "Non-matching convo:" << oldConvo.getId() << convo.mId;
+        return;
+    }
+
+    oldConvo = ConvoView{convo, mUserDid};
+    changeData({ int(Role::Convo) }, index, index);
 }
 
 QHash<int, QByteArray> ConvoListModel::roleNames() const
@@ -81,6 +117,17 @@ QHash<int, QByteArray> ConvoListModel::roleNames() const
     };
 
     return roles;
+}
+
+void ConvoListModel::changeData(const QList<int>& roles, int begin, int end)
+{
+    if (end < 0)
+        end = (int)mConvos.size() - 1;
+
+    if (begin < 0 || begin >= (int)mConvos.size() || end < 0 || end >= (int)mConvos.size())
+        return;
+
+    emit dataChanged(createIndex(begin, 0), createIndex(end, 0), roles);
 }
 
 }

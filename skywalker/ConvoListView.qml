@@ -36,6 +36,7 @@ ListView {
 
     delegate: ConvoViewDelegate {
         width: conversationsView.width
+        onViewConvo: (convo) => conversationsView.viewMessages(convo)
     }
 
     FlickableRefresher {
@@ -52,7 +53,21 @@ ListView {
         list: conversationsView
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: chat.getConvosInProgress
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    function viewMessages(convo) {
+        let component = Qt.createComponent("MessagesListView.qml")
+        let view = component.createObject(conversationsView, { chat: chat, convo: convo })
+        view.onClosed.connect(() => { root.popStack() })
+        chat.getMessages(convo.id)
+        chat.updateRead(convo.id, convo.unreadCount)
+        root.pushStack(view)
     }
 }

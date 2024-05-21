@@ -179,10 +179,8 @@ Rectangle {
                     () => deleteItem(listItemUri))
     }
 
-    function authorVisible()
-    {
-        let visibility = skywalker.getContentVisibility(author.labels)
-        return visibility === QEnums.CONTENT_VISIBILITY_SHOW
+    function authorVisible() {
+        return guiSettings.authorVisible(author)
     }
 
     function isUser(author) {

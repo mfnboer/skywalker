@@ -203,6 +203,7 @@ Rectangle {
     PostButton {
         y: -height - 10
         svg: isHashtagSearch() ? svgOutline.hashtag : svgOutline.chat
+        visible: !messagesActive
         overrideOnClicked: () => post()
 
         Accessible.role: Accessible.Button

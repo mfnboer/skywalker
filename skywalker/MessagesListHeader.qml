@@ -3,51 +3,52 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-
 Rectangle {
     required property convoview convo
-    required property bool endOfList
     property var skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
     readonly property int margin: 10
 
-    signal viewConvo(convoview convo)
+    signal back
 
-    id: convoRect
-    height: convoRow.height
-    color: guiSettings.backgroundColor
+    id: headerRect
+    width: parent.width
+    height: guiSettings.headerHeight
+    z: guiSettings.headerZLevel
+    color: guiSettings.headerColor
+
+    Accessible.role: Accessible.Pane
 
     RowLayout {
         id: convoRow
         width: parent.width
-        height: Math.max(avatarRect.height, convoColumn.height)
-        spacing: 10
+        height: parent.height
+        spacing: 5
 
-        Rectangle {
-            id: avatarRect
-            height: avatar.height + 10
-            width: guiSettings.threadColumnWidth
-            color: "transparent"
+        SvgButton {
+            id: backButton
+            iconColor: guiSettings.headerTextColor
+            Material.background: "transparent"
+            svg: svgOutline.arrowBack
+            accessibleName: qsTr("go back")
+            onClicked: headerRect.back()
+        }
 
-            Avatar {
-                id: avatar
-                x: parent.x + 8
-                y: parent.y + 5
-                width: parent.width - 13
-                height: width
-                avatarUrl: guiSettings.authorVisible(firstMember) ? firstMember.avatarUrl : ""
-                isModerator: firstMember.associated.isLabeler
-                onClicked: skywalker.getDetailedProfile(firstMember.did)
-
-                BadgeCounter {
-                    counter: convo.unreadCount
-                }
-            }
+        Avatar {
+            id: avatar
+            Layout.alignment: Qt.AlignVCenter
+            width: parent.height - 10
+            height: width
+            avatarUrl: guiSettings.authorVisible(firstMember) ? firstMember.avatarUrl : ""
+            isModerator: firstMember.associated.isLabeler
+            onClicked: skywalker.getDetailedProfile(firstMember.did)
         }
 
         Column {
             id: convoColumn
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
+            Layout.leftMargin: 5
             Layout.rightMargin: margin
             spacing: 3
 
@@ -57,7 +58,7 @@ Rectangle {
                 topPadding: 5
                 elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
+                color: guiSettings.headerTextColor
                 plainText: convo.memberNames
             }
 
@@ -84,40 +85,12 @@ Rectangle {
                         height: width
                         avatarUrl: guiSettings.authorVisible(modelData.basicProfile) ? modelData.basicProfile.avatarUrl : ""
                         isModerator: modelData.basicProfile.associated.isLabeler
-                        onClicked: viewConvo(convo)
                     }
                 }
 
                 visible: convo.members.length > 1
             }
         }
-    }
-
-    MouseArea {
-        z: -2
-        anchors.fill: parent
-        onClicked: viewConvo(convo)
-    }
-
-    Rectangle {
-        id: seperator
-        anchors.top: convoRow.bottom
-        width: parent.width
-        height: 1
-        color: guiSettings.separatorColor
-    }
-
-    // End of feed indication
-    Text {
-        anchors.top: seperator.bottom
-        width: parent.width
-        horizontalAlignment: Text.AlignHCenter
-        topPadding: 10
-        elide: Text.ElideRight
-        color: guiSettings.textColor
-        text: qsTr("End of conversations")
-        font.italic: true
-        visible: endOfList
     }
 
     GuiSettings {

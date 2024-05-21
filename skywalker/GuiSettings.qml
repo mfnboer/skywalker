@@ -1,5 +1,6 @@
 ﻿import QtQuick
 import QtQuick.Controls
+import skywalker
 
 Item {
     // Geometry
@@ -35,6 +36,11 @@ Item {
     readonly property string labelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"
     readonly property string linkColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string messageTimeColor: Material.color(Material.Grey)
+    readonly property string messageUserBackgroundColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string messageUserTextColor: "white"
+    readonly property string messageOtherBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "darkslategrey"
+    readonly property string messageOtherTextColor: Material.theme === Material.Light ? "black" : "white"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
     readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "#264040"
     readonly property string selectionColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
@@ -138,5 +144,11 @@ Item {
         default:
             return qsTr("List")
         }
+    }
+
+    function authorVisible(author)
+    {
+        let visibility = skywalker.getContentVisibility(author.labels)
+        return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 }

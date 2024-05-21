@@ -56,7 +56,7 @@ ListView {
                     y: parent.y + rowPadding
                     width: parent.width - 12
                     height: width
-                    avatarUrl: authorVisible() ? author.avatarUrl : ""
+                    avatarUrl: guiSettings.authorVisible(author) ? author.avatarUrl : ""
                     isModerator: author.associated.isLabeler
                     onClicked: authorClicked(author)
                 }
@@ -110,12 +110,6 @@ ListView {
             z: -1
             anchors.fill: parent
             onClicked: authorClicked(author)
-        }
-
-        function authorVisible()
-        {
-            let visibility = skywalker.getContentVisibility(author.labels)
-            return visibility === QEnums.CONTENT_VISIBILITY_SHOW
         }
     }
 

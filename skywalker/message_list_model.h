@@ -1,32 +1,35 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "convo_view.h"
+#include "message_view.h"
 #include <QAbstractListModel>
-#include <vector>
+#include <deque>
 
 namespace Skywalker
 {
 
-class ConvoListModel : public QAbstractListModel
+class MessageListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
     enum class Role {
-        Convo = Qt::UserRole + 1,
+        Message = Qt::UserRole + 1,
+        SenderIsUser,
+        SameSenderAsNext,
+        SameSenderAsPrevious,
+        SameTimeAsNext,
         EndOfList
     };
 
-    using Ptr = std::unique_ptr<ConvoListModel>;
+    using Ptr = std::unique_ptr<MessageListModel>;
 
-    explicit ConvoListModel(const QString& userDid, QObject* parent = nullptr);
+    explicit MessageListModel(const QString& userDid, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void clear();
-    void addConvos(const ATProto::ChatBskyConvo::ConvoViewList& convos, const QString& cursor);
-    void updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo);
+    void addMessages(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageList& messages, const QString& cursor);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
@@ -37,8 +40,9 @@ private:
     void changeData(const QList<int>& roles, int begin = 0, int end = -1);
 
     const QString& mUserDid;
-    std::vector<ConvoView> mConvos;
-    std::unordered_map<QString, int> mConvoIdIndexMap;
+
+    // Ordered from oldest to newest
+    std::deque<MessageView> mMessages;
     QString mCursor;
 };
 

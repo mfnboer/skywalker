@@ -890,7 +890,7 @@ ApplicationWindow {
         unwindStack()
         stackLayout.currentIndex = stackLayout.chatIndex
 
-        if (skywalker.chat.unreadCount > 0 || !skywalker.chat.convosLoaded())
+        if (!skywalker.chat.convosLoaded())
             skywalker.chat.getConvos()
     }
 
