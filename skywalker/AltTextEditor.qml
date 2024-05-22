@@ -22,6 +22,7 @@ Page {
         onButtonClicked: altTextChanged(page.text)
     }
 
+    // Needed for SkyFormattedTextEdit
     footer: Rectangle {
         height: 0
         color: "transparent"

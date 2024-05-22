@@ -10,16 +10,17 @@ HashtagListView {
     required property PostUtils postUtils
 
     id: searchList
-    y: getParentY(editText) + editText.cursorRectangle.y + editText.cursorRectangle.height + 5
     z: 10
     width: parentPage.width
-    height: parentPage.footer.y - y - 5
     model: searchUtils.hashtagTypeaheadList
     visible: postUtils.editTag.length > 0
 
     onVisibleChanged: {
         if (!visible && searchUtils)
             searchUtils.hashtagTypeaheadList = []
+
+        if (visible)
+            setPosition()
     }
 
     onHashtagClicked: (hashtag) => {
@@ -37,5 +38,21 @@ HashtagListView {
 
     function getParentY(item) {
         return item.mapToItem(parentPage, 0, 0).y
+    }
+
+    function setPosition() {
+        const belowY = editText.mapToItem(parentPage, 0, 0).y + editText.cursorRectangle.y + editText.cursorRectangle.height + 5
+        const belowHeight = parentPage.footer.y - belowY - 5
+
+        if (belowHeight > 80) {
+            y = belowY
+            height = belowHeight
+            return
+        }
+
+        const aboveY = editText.mapToItem(parentPage, 0, 0).y + editText.cursorRectangle.y - 5
+        const aboveHeight = aboveY - parentPage.header.y - 5
+        y = aboveY - aboveHeight
+        height = aboveHeight
     }
 }

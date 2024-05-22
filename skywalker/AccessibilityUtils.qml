@@ -13,15 +13,8 @@ Item {
         id: guiSettings
     }
 
-    function isToday(date) {
-        const today = new Date()
-        return date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
-    }
-
     function getTimeSpeech(date) {
-        const time = isToday(date) ?
+        const time = guiSettings.isToday(date) ?
             date.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
             date.toLocaleString(Qt.locale(), Locale.ShortFormat)
         return time

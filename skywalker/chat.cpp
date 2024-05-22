@@ -8,18 +8,22 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 static constexpr auto MESSAGES_UPDATE_INTERVAL = 11s;
+static constexpr auto CONVOS_UPDATE_INTERVAL = 31s;
 
 Chat::Chat(ATProto::Client::Ptr& bsky, const QString& userDid, QObject* parent) :
     QObject(parent),
+    mPresence(std::make_unique<Presence>()),
     mBsky(bsky),
     mUserDid(userDid),
     mConvoListModel(userDid, this)
 {
     connect(&mMessagesUpdateTimer, &QTimer::timeout, this, [this]{ updateMessages(); });
+    connect(&mConvosUpdateTimer, &QTimer::timeout, this, [this]{ updateConvos(); });
 }
 
-void Chat::clear()
+void Chat::reset()
 {
+    qDebug() << "Reset chat";
     mConvoListModel.clear();
     mMessageListModels.clear();
     mConvoIdUpdatingMessages.clear();
@@ -27,6 +31,35 @@ void Chat::clear()
     setConvosInProgress(false);
     mLoaded = false;
     stopMessagesUpdateTimer();
+    mChatMaster = nullptr;
+    mPostMaster = nullptr;
+    mPresence = std::make_unique<Presence>();
+}
+
+ATProto::ChatMaster* Chat::chatMaster()
+{
+    if (!mChatMaster)
+    {
+        if (mBsky)
+            mChatMaster = std::make_unique<ATProto::ChatMaster>(*mBsky);
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mChatMaster.get();
+}
+
+ATProto::PostMaster* Chat::postMaster()
+{
+    if (!mPostMaster)
+    {
+        if (mBsky)
+            mPostMaster = std::make_unique<ATProto::PostMaster>(*mBsky);
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mPostMaster.get();
 }
 
 void Chat::getConvos(const QString& cursor)
@@ -42,7 +75,10 @@ void Chat::getConvos(const QString& cursor)
 
     setConvosInProgress(true);
     mBsky->listConvos({}, Utils::makeOptionalString(cursor),
-        [this, cursor](ATProto::ChatBskyConvo::ConvoListOutput::Ptr output){
+        [this, presence=*mPresence, cursor](ATProto::ChatBskyConvo::ConvoListOutput::Ptr output){
+            if (!presence)
+                return;
+
             if (cursor.isEmpty())
             {
                 mConvoListModel.clear();
@@ -52,9 +88,13 @@ void Chat::getConvos(const QString& cursor)
             mConvoListModel.addConvos(output->mConvos, output->mCursor.value_or(""));
             updateUnreadCount(*output);
             mLoaded = true;
+            startConvosUpdateTimer();
             setConvosInProgress(false);
         },
-        [this](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
             qDebug() << "getConvos FAILED:" << error << " - " << msg;
             setConvosInProgress(false);
             emit getConvosFailed(msg);
@@ -72,6 +112,42 @@ void Chat::getConvosNextPage()
     }
 
     getConvos(cursor);
+}
+
+void Chat::updateConvos()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Update convos";
+
+    mBsky->listConvos({}, {},
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoListOutput::Ptr output){
+            if (!presence)
+                return;
+
+            if (output->mConvos.empty())
+            {
+                qDebug() << "No convos";
+                return;
+            }
+
+            const QString rev = output->mConvos.front()->mRev;
+
+            if (rev == mConvoListModel.getLastRev())
+            {
+                qDebug() << "No updated convos, rev:" << rev;
+                return;
+            }
+
+            mConvoListModel.clear();
+            mUnreadCount = 0;
+            mConvoListModel.addConvos(output->mConvos, output->mCursor.value_or(""));
+            updateUnreadCount(*output);
+            mLoaded = true;
+        },
+        [](const QString& error, const QString& msg){
+            qDebug() << "updateConvos FAILED:" << error << " - " << msg;
+        }
+        );
 }
 
 void Chat::setUnreadCount(int unread)
@@ -154,7 +230,10 @@ void Chat::getMessages(const QString& convoId, const QString& cursor)
 
     setMessagesInProgress(true);
     mBsky->getMessages(convoId, {}, Utils::makeOptionalString(cursor),
-        [this, convoId, cursor](ATProto::ChatBskyConvo::GetMessagesOutput::Ptr output){
+        [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyConvo::GetMessagesOutput::Ptr output){
+            if (!presence)
+                return;
+
             auto* model = getMessageListModel(convoId);
 
             if (model)
@@ -171,7 +250,10 @@ void Chat::getMessages(const QString& convoId, const QString& cursor)
 
             setMessagesInProgress(false);
         },
-        [this](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
             qDebug() << "getMessages FAILED:" << error << " - " << msg;
             setMessagesInProgress(false);
             emit getMessagesFailed(msg);
@@ -214,7 +296,10 @@ void Chat::updateMessages(const QString& convoId)
     setMessagesUpdating(convoId, true);
 
     mBsky->getMessages(convoId, {}, {},
-        [this, convoId](ATProto::ChatBskyConvo::GetMessagesOutput::Ptr output){
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::GetMessagesOutput::Ptr output){
+            if (!presence)
+                return;
+
             setMessagesUpdating(convoId, false);
             auto* model = getMessageListModel(convoId);
 
@@ -226,7 +311,10 @@ void Chat::updateMessages(const QString& convoId)
 
             model->updateMessages(output->mMessages, output->mCursor.value_or(""));
         },
-        [this, convoId](const QString& error, const QString& msg){
+        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
             qDebug() << "updateMessages FAILED:" << error << " - " << msg;
             setMessagesUpdating(convoId, false);
         });
@@ -240,7 +328,7 @@ void Chat::updateMessages()
         updateMessages(convoId);
 }
 
-void Chat::updateRead(const QString& convoId)
+void Chat::updateRead(const QString& convoId, const QString& messageId)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Update read convo:" << convoId;
@@ -251,14 +339,16 @@ void Chat::updateRead(const QString& convoId)
         return;
 
     const int oldUnreadCount = convo->getUnreadCount();
+    const MessageView& lastMessage = convo->getLastMessage();
 
-    if (oldUnreadCount <= 0)
+    if (lastMessage.getId() == messageId && oldUnreadCount <= 0)
         return;
 
-    const MessageView& lastMsg = convo->getLastMessage();
+    mBsky->updateRead(convoId, Utils::makeOptionalString(messageId),
+        [this, presence=*mPresence, oldUnreadCount](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+            if (!presence)
+                return;
 
-    mBsky->updateRead(convoId, Utils::makeOptionalString(lastMsg.getId()),
-        [this, oldUnreadCount](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
             mConvoListModel.updateConvo(*output->mConvo);
             const int readCount = oldUnreadCount - output->mConvo->mUnreadCount;
             setUnreadCount(mUnreadCount - readCount);
@@ -267,6 +357,77 @@ void Chat::updateRead(const QString& convoId)
             qDebug() << "updateRead FAILED:" << error << " - " << msg;
         }
     );
+}
+
+void Chat::sendMessage(const QString& convoId, const QString& text, const QString& quoteUri, const QString& quoteCid)
+{
+    qDebug() << "Send message:" << text;
+
+    if (!chatMaster())
+        return;
+
+    emit sendMessageProgress(tr("Sending message"));
+
+    chatMaster()->createMessage(text,
+        [this, presence=*mPresence, convoId, quoteUri, quoteCid](auto message){
+            if (!presence)
+                return;
+
+            continueSendMessage(convoId, message, quoteUri, quoteCid);
+        });
+}
+
+void Chat::continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message, const QString& quoteUri, const QString& quoteCid)
+{
+    if (quoteUri.isEmpty())
+    {
+        continueSendMessage(convoId, message);
+        return;
+    }
+
+    if (!postMaster())
+        return;
+
+    postMaster()->checkRecordExists(quoteUri, quoteCid,
+        [this, presence=*mPresence, convoId, message, quoteUri, quoteCid]{
+            if (!presence)
+                return;
+
+            if (chatMaster())
+            {
+                chatMaster()->addQuoteToMessage(*message, quoteUri, quoteCid);
+                continueSendMessage(convoId, message);
+            }
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Record not found:" << error << " - " << msg;
+            emit sendMessageFailed(tr("Quoted record") + ": " + msg);
+        });
+}
+
+void Chat::continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message)
+{
+    if (!mBsky)
+        return;
+
+    mBsky->sendMessage(convoId, *message,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::MessageView::Ptr messageView){
+            if (!presence)
+                return;
+
+            qDebug() << "Message sent:" << messageView->mId;
+            emit sendMessageOk();
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Record not found:" << error << " - " << msg;
+            emit sendMessageFailed(msg);
+        });
 }
 
 void Chat::startMessagesUpdateTimer()
@@ -290,6 +451,34 @@ void Chat::setMessagesUpdating(const QString& convoId, bool updating)
         mConvoIdUpdatingMessages.insert(convoId);
     else
         mConvoIdUpdatingMessages.erase(convoId);
+}
+
+void Chat::startConvosUpdateTimer()
+{
+    qDebug() << "Start convos update timer";
+    mConvosUpdateTimer.start(CONVOS_UPDATE_INTERVAL);
+}
+
+void Chat::stopConvosUpdateTimer()
+{
+    qDebug() << "Stop convos update timer";
+    mConvosUpdateTimer.stop();
+}
+
+void Chat::pause()
+{
+    qDebug() << "Pause";
+    stopMessagesUpdateTimer();
+    stopConvosUpdateTimer();
+}
+void Chat::resume()
+{
+    qDebug() << "Resume";
+
+    if (!mMessageListModels.empty())
+        startMessagesUpdateTimer();
+
+    mConvosUpdateTimer.start();
 }
 
 }

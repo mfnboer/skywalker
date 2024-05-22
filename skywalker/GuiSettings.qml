@@ -37,6 +37,8 @@ Item {
     readonly property string likeColor: "palevioletred"
     readonly property string linkColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string messageTimeColor: Material.color(Material.Grey)
+    readonly property string messageNewBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "darkslategrey"
+    readonly property string messageNewTextColor: Material.theme === Material.Light ? "black" : "white"
     readonly property string messageUserBackgroundColor: Material.theme === Material.Light ? "#58a6ff" : "#264040"
     readonly property string messageUserTextColor: "white"
     readonly property string messageOtherBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "darkslategrey"
@@ -67,6 +69,13 @@ Item {
 
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;
+    }
+
+    function isToday(date) {
+        const today = new Date()
+        return date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
     }
 
     function durationToString(duration) {

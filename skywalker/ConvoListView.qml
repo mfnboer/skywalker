@@ -66,13 +66,32 @@ ListView {
         let component = Qt.createComponent("MessagesListView.qml")
         let view = component.createObject(conversationsView, { chat: chat, convo: convo })
 
-        view.onClosed.connect(() => {
-            chat.updateRead(convo.id)
-            chat.removeMessageListModel(convo.id)
+        view.onClosed.connect((lastMessageId) => {
+            chat.updateRead(convo.id, lastMessageId)
             root.popStack()
         })
 
         chat.getMessages(convo.id)
         root.pushStack(view)
+    }
+
+    function getConvosFailedHandler(error) {
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function initHandlers() {
+        chat.onGetConvosFailed.connect(getConvosFailedHandler)
+    }
+
+    function destroyHandlers() {
+        chat.onGetConvosFailed.disconnect(getConvosFailedHandler)
+    }
+
+    Component.onDestruction: {
+        destroyHandlers()
+    }
+
+    Component.onCompleted: {
+        initHandlers()
     }
 }

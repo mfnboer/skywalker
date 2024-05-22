@@ -68,7 +68,7 @@ Rectangle {
                     topPadding: 5
                     font.pointSize: guiSettings.scaledFont(6/8)
                     color: guiSettings.messageTimeColor
-                    text: Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
+                    text: getConvoTimeIndication()
                 }
             }
 
@@ -129,6 +129,13 @@ Rectangle {
         text: qsTr("End of conversations")
         font.italic: true
         visible: endOfList
+    }
+
+    function getConvoTimeIndication() {
+        if (guiSettings.isToday(convo.lastMessageDate))
+            return Qt.locale().toString(convo.lastMessageDate, Qt.locale().timeFormat(Locale.ShortFormat))
+        else
+            return Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
     }
 
     GuiSettings {

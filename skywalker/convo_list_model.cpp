@@ -120,6 +120,14 @@ const ConvoView* ConvoListModel::getConvo(const QString& convoId) const
     return &mConvos[index];
 }
 
+QString ConvoListModel::getLastRev() const
+{
+    if (mConvos.empty())
+        return "";
+
+    return mConvos.front().getRev();
+}
+
 QHash<int, QByteArray> ConvoListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{

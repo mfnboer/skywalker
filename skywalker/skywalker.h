@@ -6,7 +6,6 @@
 #include "author_list_model.h"
 #include "bookmarks.h"
 #include "bookmarks_model.h"
-#include "chat.h"
 #include "content_group_list_model.h"
 #include "draft_posts_migration.h"
 #include "draft_posts_model.h"
@@ -33,6 +32,8 @@
 #include <QtQmlIntegration>
 
 namespace Skywalker {
+
+class Chat;
 
 class Skywalker : public QObject
 {
@@ -176,7 +177,7 @@ public:
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
-    Chat* getChat() { return &mChat; }
+    Chat* getChat();
     Bookmarks* getBookmarks() { return &mBookmarks; }
     MutedWords* getMutedWords() { return &mMutedWords; }
     void setAutoUpdateTimelineInProgress(bool inProgress);
@@ -336,7 +337,7 @@ private:
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
     NotificationListModel mNotificationListModel;
-    Chat mChat;
+    std::unique_ptr<Chat> mChat;
 
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;

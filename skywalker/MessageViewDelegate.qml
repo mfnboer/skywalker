@@ -12,7 +12,7 @@ Rectangle {
     required property bool sameTimeAsNext
     required property bool sameDateAsPrevious;
     required property bool endOfList
-    property int maxTextWidth: viewWidth - 40
+    property int maxTextWidth: viewWidth - 80
     property int maxTextLines: 1000
     readonly property int margin: 10
 
@@ -24,7 +24,6 @@ Rectangle {
         width: viewWidth
         topPadding: 10
         horizontalAlignment: Text.AlignHCenter
-        color: guiSettings.textColor
         font.italic: true
         text: qsTr("Start of conversation")
         visible: endOfList
@@ -37,7 +36,6 @@ Rectangle {
         height: visible ? implicitHeight : 0
         padding: 10
         horizontalAlignment: Text.AlignHCenter
-        color: guiSettings.textColor
         font.bold: true
         text: Qt.locale().toString(message.sentAt, Qt.locale().dateFormat(Locale.ShortFormat))
         visible: !sameDateAsPrevious
@@ -70,6 +68,8 @@ Rectangle {
             font.italic: message.deleted
             color: senderIsUser ? guiSettings.messageUserTextColor : guiSettings.messageOtherTextColor
             plainText: !message.deleted ? message.formattedText : deletedText
+
+            onLinkActivated: (link) => root.openLink(link)
 
             TextMetrics {
                 id: textMetrics

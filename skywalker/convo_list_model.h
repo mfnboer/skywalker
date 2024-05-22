@@ -30,6 +30,7 @@ public:
     const ConvoView* getConvo(const QString& convoId) const;
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
+    QString getLastRev() const;
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

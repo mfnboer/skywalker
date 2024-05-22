@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "chat.h"
 #include "definitions.h"
 #include "file_utils.h"
 #include "jni_callback.h"
@@ -47,7 +48,7 @@ Skywalker::Skywalker(QObject* parent) :
     mBookmarks(this),
     mMutedWords(this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
-    mChat(mBsky, mUserDid, this),
+    mChat(std::make_unique<Chat>(mBsky, mUserDid, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
@@ -2645,6 +2646,11 @@ QDateTime Skywalker::getSyncTimestamp() const
     return mUserSettings.getSyncTimestamp(mUserDid);
 }
 
+Chat* Skywalker::getChat()
+{
+    return mChat.get();
+}
+
 void Skywalker::shareImage(const QString& contentUri, const QString& text)
 {
     if (!FileUtils::checkReadMediaPermission())
@@ -2730,6 +2736,8 @@ void Skywalker::pauseApp()
         stopRefreshTimers();
         mTimelineUpdatePaused = true;
     }
+
+    mChat->pause();
 }
 
 void Skywalker::resumeApp()
@@ -2755,9 +2763,13 @@ void Skywalker::resumeApp()
     }
 
     mTimelineUpdatePaused = false;
-    startRefreshTimers();
-    startTimelineAutoUpdate();
-    refreshSession([this]{ updateTimeline(2, 100); });
+
+    refreshSession([this]{
+        startRefreshTimers();
+        startTimelineAutoUpdate();
+        updateTimeline(2, 100);
+        mChat->resume();
+    });
 }
 
 void Skywalker::updateTimeline(int autoGapFill, int pageSize)
@@ -2832,7 +2844,7 @@ void Skywalker::signOut()
     mAuthorListModels.clear();
     mListListModels.clear();
     mNotificationListModel.clear();
-    mChat.clear();
+    mChat->reset();
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;

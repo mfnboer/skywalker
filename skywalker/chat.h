@@ -3,7 +3,10 @@
 #pragma once
 #include "convo_list_model.h"
 #include "message_list_model.h"
+#include "presence.h"
+#include <atproto/lib/chat_master.h>
 #include <atproto/lib/client.h>
+#include <atproto/lib/post_master.h>
 
 namespace Skywalker {
 
@@ -18,9 +21,11 @@ class Chat : public QObject
 public:
     explicit Chat(ATProto::Client::Ptr& bsky, const QString& mUserDid, QObject* parent = nullptr);
 
-    void clear();
+    void reset();
+
     Q_INVOKABLE void getConvos(const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage();
+    Q_INVOKABLE void updateConvos();
     Q_INVOKABLE bool convosLoaded() const { return mLoaded; }
 
     ConvoListModel* getConvoListModel() { return &mConvoListModel; }
@@ -35,29 +40,45 @@ public:
     Q_INVOKABLE void getMessages(const QString& convoId, const QString& cursor = "");
     Q_INVOKABLE void getMessagesNextPage(const QString& convoId);
     Q_INVOKABLE void updateMessages(const QString& convoId);
-    Q_INVOKABLE void updateRead(const QString& convoId);
+    Q_INVOKABLE void updateRead(const QString& convoId, const QString& messageId);
+
+    Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text, const QString& quoteUri, const QString& quoteCid);
 
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }
     void setMessagesInProgress(bool inProgress);
 
+    void pause();
+    void resume();
+
 signals:
     void unreadCountChanged();
     void getConvosInProgressChanged();
-    void getConvosFailed(QString error);
+    void getConvosFailed(QString error); // TODO: handle failures
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
-    // TODO: handle failures
+    void sendMessageProgress(QString msg);
+    void sendMessageFailed(QString error);
+    void sendMessageOk();
 
 private:
+    ATProto::ChatMaster* chatMaster();
+    ATProto::PostMaster* postMaster();
     void setUnreadCount(int unread);
     void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output);
     void updateMessages();
     void startMessagesUpdateTimer();
     void stopMessagesUpdateTimer();
+    void startConvosUpdateTimer();
+    void stopConvosUpdateTimer();
     bool isMessagesUpdating(const QString& convoId) const { return mConvoIdUpdatingMessages.contains(convoId); }
     void setMessagesUpdating(const QString& convoId, bool updating);
+    void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message, const QString& quoteUri, const QString& quoteCid);
+    void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message);
 
+    std::unique_ptr<Presence> mPresence;
     ATProto::Client::Ptr& mBsky;
+    std::unique_ptr<ATProto::ChatMaster> mChatMaster;
+    std::unique_ptr<ATProto::PostMaster> mPostMaster;
     const QString& mUserDid;
     ConvoListModel mConvoListModel;
     int mUnreadCount = 0;
@@ -67,6 +88,7 @@ private:
     std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
     QTimer mMessagesUpdateTimer;
+    QTimer mConvosUpdateTimer;
 };
 
 }
