@@ -16,6 +16,7 @@ class Chat : public QObject
     Q_PROPERTY(ConvoListModel* convoListModel READ getConvoListModel CONSTANT FINAL)
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged FINAL)
     Q_PROPERTY(bool getConvosInProgress READ isGetConvosInProgress NOTIFY getConvosInProgressChanged FINAL)
+    Q_PROPERTY(bool startConvoInProgress READ isStartConvoInProgress NOTIFY startConvoInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
@@ -26,6 +27,8 @@ public:
     Q_INVOKABLE void getConvos(const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage();
     Q_INVOKABLE void updateConvos();
+    Q_INVOKABLE void startConvoForMembers(const QStringList& dids);
+    Q_INVOKABLE void startConvoForMember(const QString& did);
     Q_INVOKABLE bool convosLoaded() const { return mLoaded; }
 
     ConvoListModel* getConvoListModel() { return &mConvoListModel; }
@@ -33,6 +36,9 @@ public:
 
     bool isGetConvosInProgress() const { return mGetConvosInProgress; }
     void setConvosInProgress(bool inProgress);
+
+    bool isStartConvoInProgress() const { return mStartConvoInProgress; }
+    void setStartConvoInProgress(bool inProgress);
 
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
@@ -53,7 +59,10 @@ public:
 signals:
     void unreadCountChanged();
     void getConvosInProgressChanged();
-    void getConvosFailed(QString error); // TODO: handle failures
+    void getConvosFailed(QString error);
+    void startConvoForMembersOk(ConvoView convo);
+    void startConvoForMembersFailed(QString error);
+    void startConvoInProgressChanged();
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void sendMessageProgress(QString msg);
@@ -87,6 +96,7 @@ private:
     std::unordered_map<QString, MessageListModel::Ptr> mMessageListModels; // convoId -> model
     std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
+    bool mStartConvoInProgress = false;
     QTimer mMessagesUpdateTimer;
     QTimer mConvosUpdateTimer;
 };

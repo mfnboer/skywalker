@@ -50,12 +50,11 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter
             Layout.leftMargin: 5
             Layout.rightMargin: margin
-            spacing: 3
+            spacing: 0
 
             SkyCleanedText {
                 width: parent.width
                 Layout.fillHeight: true
-                topPadding: 5
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.headerTextColor

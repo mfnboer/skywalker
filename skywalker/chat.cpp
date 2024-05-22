@@ -29,6 +29,8 @@ void Chat::reset()
     mConvoIdUpdatingMessages.clear();
     setUnreadCount(0);
     setConvosInProgress(false);
+    setStartConvoInProgress(false);
+    setMessagesInProgress(false);
     mLoaded = false;
     stopMessagesUpdateTimer();
     mChatMaster = nullptr;
@@ -150,6 +152,45 @@ void Chat::updateConvos()
         );
 }
 
+void Chat::startConvoForMembers(const QStringList& dids)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Start convo for members:" << dids;
+
+    if (mStartConvoInProgress)
+    {
+        qDebug() << "Start convo still in progress";
+        return;
+    }
+
+    const std::vector<QString> members(dids.begin(), dids.end());
+    setStartConvoInProgress(true);
+
+    mBsky->getConvoForMembers(members,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+            if (!presence)
+                return;
+
+            setStartConvoInProgress(false);
+            const ConvoView convo(*output->mConvo, mUserDid);
+            emit startConvoForMembersOk(convo);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            setStartConvoInProgress(false);
+            qDebug() << "startConvoForMembers FAILED:" << error << " - " << msg;
+            emit startConvoForMembersFailed(msg);
+        });
+}
+
+void Chat::startConvoForMember(const QString& did)
+{
+    QStringList dids(did);
+    startConvoForMembers(dids);
+}
+
 void Chat::setUnreadCount(int unread)
 {
     if (unread < 0)
@@ -181,6 +222,15 @@ void Chat::setConvosInProgress(bool inProgress)
     {
         mGetConvosInProgress = inProgress;
         emit getConvosInProgressChanged();
+    }
+}
+
+void Chat::setStartConvoInProgress(bool inProgress)
+{
+    if (inProgress != mStartConvoInProgress)
+    {
+        mStartConvoInProgress = inProgress;
+        emit startConvoInProgressChanged();
     }
 }
 

@@ -48,7 +48,7 @@ Rectangle {
         Column {
             id: convoColumn
             Layout.fillWidth: true
-            spacing: 3
+            spacing: 0
 
             RowLayout {
                 width: parent.width
@@ -56,7 +56,6 @@ Rectangle {
 
                 SkyCleanedText {
                     Layout.fillWidth:  true
-                    topPadding: 5
                     elide: Text.ElideRight
                     font.bold: true
                     color: guiSettings.textColor
@@ -65,7 +64,6 @@ Rectangle {
 
                 AccessibleText {
                     Layout.rightMargin: margin
-                    topPadding: 5
                     font.pointSize: guiSettings.scaledFont(6/8)
                     color: guiSettings.messageTimeColor
                     text: getConvoTimeIndication()

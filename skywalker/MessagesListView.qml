@@ -135,6 +135,7 @@ Page {
         busyIndicator.running = false
         newMessageText.clear()
         chat.updateMessages(convo.id)
+        sendButton.forceActiveFocus()
     }
 
     function sendMessageFailedHandler(error) {
@@ -184,5 +185,6 @@ Page {
         virtualKeyboardPageResizer.fullPageHeight = parent.height
         messagesView.positionViewAtEnd()
         initHandlers()
+        sendButton.forceActiveFocus()
     }
 }

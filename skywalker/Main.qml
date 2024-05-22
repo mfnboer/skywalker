@@ -1224,6 +1224,28 @@ ApplicationWindow {
         return skywalker
     }
 
+    function chatOnStartConvoForMembersOk(convo) {
+        let component = Qt.createComponent("MessagesListView.qml")
+        let view = component.createObject(root, { chat: skywalker.chat, convo: convo })
+
+        view.onClosed.connect((lastMessageId) => {
+            skywalker.chat.getConvos()
+            root.popStack()
+        })
+
+        skywalker.chat.getMessages(convo.id)
+        root.pushStack(view)
+    }
+
+    function chatOnStartConvoForMembersFailed(error) {
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function initHandlers() {
+        skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
+        skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
+    }
+
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)
         console.debug("Font pt:", Qt.application.font.pointSize)
@@ -1247,6 +1269,8 @@ ApplicationWindow {
         let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
         chatView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         chatStack.push(chatView)
+
+        initHandlers()
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         if (skywalker.resumeSession())
