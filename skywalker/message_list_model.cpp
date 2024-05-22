@@ -45,8 +45,10 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
 
         return nextMessage->getSentAt() - message.getSentAt() < 5min;
     }
+    case Role::SameDateAsPrevious:
+        return !prevMessage->isNull() && message.getSentAt().date() == prevMessage->getSentAt().date();
     case Role::EndOfList:
-        return index.row() == (int)mMessages.size() - 1 && isEndOfList();
+        return index.row() == 0 && isEndOfList();
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -71,7 +73,7 @@ void MessageListModel::addMessages(const ATProto::ChatBskyConvo::GetMessagesOutp
 {
     qDebug() << "Add messages:" << messages.size() << "cursor:" << cursor;
     mCursor = cursor;
-    changeData({ int(Role::EndOfList) }, (int)mMessages.size() - 1, (int)mMessages.size() - 1);
+    changeData({ int(Role::EndOfList) }, 0, 0);
 
     if (messages.empty())
     {
@@ -132,6 +134,7 @@ QHash<int, QByteArray> MessageListModel::roleNames() const
         { int(Role::SameSenderAsNext), "sameSenderAsNext" },
         { int(Role::SameSenderAsPrevious), "sameSenderAsPrevious" },
         { int(Role::SameTimeAsNext), "sameTimeAsNext" },
+        { int(Role::SameDateAsPrevious), "sameDateAsPrevious" },
         { int(Role::EndOfList), "endOfList" }
     };
 

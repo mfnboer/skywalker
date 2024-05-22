@@ -10,18 +10,44 @@ Rectangle {
     required property bool sameSenderAsNext
     required property bool sameSenderAsPrevious
     required property bool sameTimeAsNext
+    required property bool sameDateAsPrevious;
     required property bool endOfList
     property int maxTextWidth: viewWidth - 40
     property int maxTextLines: 1000
     readonly property int margin: 10
 
     width: viewWidth
-    height: messageDateText.y + messageDateText.height
+    height: messageTimeText.y + messageTimeText.height
+
+    AccessibleText {
+        id: conversationStartText
+        width: viewWidth
+        topPadding: 10
+        horizontalAlignment: Text.AlignHCenter
+        color: guiSettings.textColor
+        font.italic: true
+        text: qsTr("Start of conversation")
+        visible: endOfList
+    }
+
+    AccessibleText {
+        id: messageDateText
+        y: conversationStartText.y + (conversationStartText.visible ? conversationStartText.height : 0)
+        width: viewWidth
+        height: visible ? implicitHeight : 0
+        padding: 10
+        horizontalAlignment: Text.AlignHCenter
+        color: guiSettings.textColor
+        font.bold: true
+        text: Qt.locale().toString(message.sentAt, Qt.locale().dateFormat(Locale.ShortFormat))
+        visible: !sameDateAsPrevious
+    }
 
     Rectangle {
         id: messageRect
         x: senderIsUser ? viewWidth - margin - width : margin
-        y: 5
+        anchors.top: messageDateText.bottom;
+        anchors.topMargin: 5
         width: messageText.width
         height: messageText.height
         radius: 10
@@ -63,7 +89,7 @@ Rectangle {
     }
 
     AccessibleText {
-        id: messageDateText
+        id: messageTimeText
         anchors.left: messageRect.left
         anchors.top: messageRect.bottom
         anchors.topMargin: visible ? 5 : 0

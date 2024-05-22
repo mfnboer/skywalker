@@ -18,6 +18,7 @@ public:
         SameSenderAsNext,
         SameSenderAsPrevious,
         SameTimeAsNext,
+        SameDateAsPrevious,
         EndOfList
     };
 
