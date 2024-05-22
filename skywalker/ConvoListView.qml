@@ -65,9 +65,14 @@ ListView {
     function viewMessages(convo) {
         let component = Qt.createComponent("MessagesListView.qml")
         let view = component.createObject(conversationsView, { chat: chat, convo: convo })
-        view.onClosed.connect(() => { root.popStack() })
+
+        view.onClosed.connect(() => {
+            chat.updateRead(convo.id)
+            chat.removeMessageListModel(convo.id)
+            root.popStack()
+        })
+
         chat.getMessages(convo.id)
-        chat.updateRead(convo.id, convo.unreadCount)
         root.pushStack(view)
     }
 }

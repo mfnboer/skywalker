@@ -78,12 +78,33 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoViewList& conv
 
 void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
 {
+    const auto* oldConvo = getConvo(convo.mId);
+
+    if (!oldConvo)
+        return;
+
+    Q_ASSERT(oldConvo->getId() == convo.mId);
+
+    if (oldConvo->getId() != convo.mId)
+    {
+        qWarning() << "Non-matching convo:" << oldConvo->getId() << convo.mId;
+        return;
+    }
+
     auto it = mConvoIdIndexMap.find(convo.mId);
+    const int index = it->second;
+    mConvos[index] = ConvoView{convo, mUserDid};
+    changeData({ int(Role::Convo) }, index, index);
+}
+
+const ConvoView* ConvoListModel::getConvo(const QString& convoId) const
+{
+    auto it = mConvoIdIndexMap.find(convoId);
 
     if (it == mConvoIdIndexMap.end())
     {
-        qWarning() << "Cannot find convo:" << convo.mId;
-        return;
+        qWarning() << "Cannot find convo:" << convoId;
+        return nullptr;
     }
 
     const int index = it->second;
@@ -93,20 +114,10 @@ void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
     if (index < 0 || index >= (int)mConvos.size())
     {
         qWarning() << "Index out of range:" << index << "size:" << mConvos.size();
-        return;
+        return nullptr;
     }
 
-    auto& oldConvo = mConvos[index];
-    Q_ASSERT(oldConvo.getId() == convo.mId);
-
-    if (oldConvo.getId() != convo.mId)
-    {
-        qWarning() << "Non-matching convo:" << oldConvo.getId() << convo.mId;
-        return;
-    }
-
-    oldConvo = ConvoView{convo, mUserDid};
-    changeData({ int(Role::Convo) }, index, index);
+    return &mConvos[index];
 }
 
 QHash<int, QByteArray> ConvoListModel::roleNames() const

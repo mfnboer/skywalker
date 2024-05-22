@@ -9,7 +9,7 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
     mRev(convo.mRev),
     mMuted(convo.mMuted),
     mUnreadCount(convo.mUnreadCount)
-{
+{    
     mMembers.reserve(convo.mMembers.size());
     mMemberNames.reserve(convo.mMembers.size());
 
@@ -22,12 +22,20 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
             mDidMemberMap[member->mDid] = mMembers.size() - 1;
         }
     }
+
+    if (convo.mLastMessage)
+        mLastMessage = MessageView{*convo.mLastMessage};
 }
 
 ChatBasicProfile ConvoView::getMember(const QString& did) const
 {
     auto it = mDidMemberMap.find(did);
     return it != mDidMemberMap.end() ? mMembers[it->second] : ChatBasicProfile{};
+}
+
+QDateTime ConvoView::getLastMessageDate() const
+{
+    return mLastMessage.isNull() ? QDateTime{} : mLastMessage.getSentAt();
 }
 
 }

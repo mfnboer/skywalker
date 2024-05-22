@@ -48,17 +48,28 @@ Rectangle {
         Column {
             id: convoColumn
             Layout.fillWidth: true
-            Layout.rightMargin: margin
             spacing: 3
 
-            SkyCleanedText {
+            RowLayout {
                 width: parent.width
-                Layout.fillHeight: true
-                topPadding: 5
-                elide: Text.ElideRight
-                font.bold: true
-                color: guiSettings.textColor
-                plainText: convo.memberNames
+                spacing: 3
+
+                SkyCleanedText {
+                    Layout.fillWidth:  true
+                    topPadding: 5
+                    elide: Text.ElideRight
+                    font.bold: true
+                    color: guiSettings.textColor
+                    plainText: convo.memberNames
+                }
+
+                AccessibleText {
+                    Layout.rightMargin: margin
+                    topPadding: 5
+                    font.pointSize: guiSettings.scaledFont(6/8)
+                    color: guiSettings.messageTimeColor
+                    text: Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
+                }
             }
 
             AccessibleText {

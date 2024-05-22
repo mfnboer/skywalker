@@ -21,6 +21,7 @@ public:
     MessageView() = default;
     explicit MessageView(const ATProto::ChatBskyConvo::MessageView& msg);
     explicit MessageView(const ATProto::ChatBskyConvo::DeletedMessageView& msg);
+    explicit MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageType& msg);
 
     const QString& getId() const { return mId; }
     const QString& getRev() const { return mRev; }

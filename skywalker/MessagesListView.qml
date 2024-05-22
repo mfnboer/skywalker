@@ -51,4 +51,8 @@ ListView {
     GuiSettings {
         id: guiSettings
     }
+
+    Component.onCompleted: {
+        positionViewAtEnd()
+    }
 }

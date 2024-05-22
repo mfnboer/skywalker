@@ -4,6 +4,8 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 MessageListModel::MessageListModel(const QString& userDid, QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid)
@@ -41,9 +43,7 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
         if (nextMessage->isNull())
             return false;
 
-        const auto msgTime = message.getSentAt().time();
-        const auto nextTime = nextMessage->getSentAt().time();
-        return msgTime.hour() == nextTime.hour() && msgTime.minute() == nextTime.minute();
+        return nextMessage->getSentAt() - message.getSentAt() < 5min;
     }
     case Role::EndOfList:
         return index.row() == (int)mMessages.size() - 1 && isEndOfList();
@@ -89,25 +89,39 @@ void MessageListModel::addMessages(const ATProto::ChatBskyConvo::GetMessagesOutp
             continue;
         }
 
-        const auto* messageView = std::get_if<ATProto::ChatBskyConvo::MessageView::Ptr>(&message);
-        const auto* deletedMessageView = std::get_if<ATProto::ChatBskyConvo::DeletedMessageView::Ptr>(&message);
-
-        if (messageView)
-        {
-            const auto& msg = *messageView;
-            qDebug() << "New message, id:" << msg->mId << "rev:" << msg->mRev << "text:" << msg->mText;
-            mMessages.emplace_front(*msg);
-        }
-        else if (deletedMessageView)
-        {
-            const auto& msg = *deletedMessageView;
-            qDebug() << "Deleted message, ud:" << msg->mId << "rev:" << msg->mRev;
-            mMessages.emplace_front(*msg);
-        }
+        mMessages.emplace_front(message);
     }
 
     endInsertRows();
     qDebug() << "New messages size:" << mMessages.size();
+}
+
+void MessageListModel::updateMessages(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageList& messages, const QString& cursor)
+{
+    if (mMessages.empty())
+    {
+        clear();
+        addMessages(messages, cursor);
+        return;
+    }
+
+    if (messages.empty())
+    {
+        clear();
+        addMessages(messages, cursor);
+        return;
+    }
+
+    const MessageView& firstStoredMsg = mMessages.back();
+    const MessageView firstNewMsg(messages.front());
+    qDebug() << "First stored msg id:" << firstStoredMsg.getId() << "new msg id:" << firstNewMsg.getId();
+
+    if (firstStoredMsg.getId() != firstNewMsg.getId())
+    {
+        clear();
+        addMessages(messages, cursor);
+        return;
+    }
 }
 
 QHash<int, QByteArray> MessageListModel::roleNames() const

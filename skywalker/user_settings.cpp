@@ -172,6 +172,7 @@ void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.remove(key(session.mDid, "password"));
+    mSettings.sync();
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const

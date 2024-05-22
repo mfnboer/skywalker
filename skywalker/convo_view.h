@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "chat_profile.h"
+#include "message_view.h"
 #include <atproto/lib/lexicon/chat_bsky_convo.h>
 #include <unordered_map>
 
@@ -16,6 +17,8 @@ class ConvoView
     Q_PROPERTY(QString memberNames READ getMemberNames FINAL)
     Q_PROPERTY(bool muted READ isMuted FINAL)
     Q_PROPERTY(int unreadCount READ getUnreadCount FINAL)
+    Q_PROPERTY(MessageView lastMessage READ getLastMessage FINAL)
+    Q_PROPERTY(QDateTime lastMessageDate READ getLastMessageDate FINAL)
     QML_VALUE_TYPE(convoview)
 public:
     ConvoView() = default;
@@ -27,6 +30,8 @@ public:
     const QString getMemberNames() const { return mMemberNames.join(','); }
     bool isMuted() const { return mMuted; }
     int getUnreadCount() const { return mUnreadCount; }
+    const MessageView& getLastMessage() const { return mLastMessage; }
+    QDateTime getLastMessageDate() const;
 
     Q_INVOKABLE ChatBasicProfile getMember(const QString& did) const;
 
@@ -36,7 +41,7 @@ private:
     ChatBasicProfileList mMembers; // all others than the user
     bool mMuted = false;
     int mUnreadCount = 0;
-    // Last message
+    MessageView mLastMessage;
     QStringList mMemberNames;
     std::unordered_map<QString, int> mDidMemberMap; // DID -> index in mMembers
 };

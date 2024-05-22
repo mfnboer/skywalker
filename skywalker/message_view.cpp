@@ -25,4 +25,43 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::DeletedMessageView& msg) 
 {
 }
 
+MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageType& msg)
+{
+    if (ATProto::isNullVariant(msg))
+    {
+        qWarning() << "Unknown message type";
+        return;
+    }
+
+    const auto* messageView = std::get_if<ATProto::ChatBskyConvo::MessageView::Ptr>(&msg);
+
+    if (messageView)
+    {
+        const auto& view = *messageView;
+        mId = view->mId;
+        mRev = view->mRev;
+        mText = view->mText;
+        mFormattedText = ATProto::RichTextMaster::getFormattedMessageText(*view, UserSettings::getLinkColor());
+        mSenderDid = view->mSender->mDid;
+        mSentAt = view->mSentAt;
+        return;
+    }
+
+    const auto* deletedMessageView = std::get_if<ATProto::ChatBskyConvo::DeletedMessageView::Ptr>(&msg);
+
+    if (deletedMessageView)
+    {
+        const auto& view = *deletedMessageView;
+        mId = view->mId;
+        mRev = view->mRev;
+        mSenderDid = view->mSender->mDid;
+        mSentAt = view->mSentAt;
+        mDeleted = true;
+        return;
+    }
+
+    Q_ASSERT(false);
+    qWarning() << "Should not get here";
+}
+
 }

@@ -30,9 +30,12 @@ public:
     void setConvosInProgress(bool inProgress);
 
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
+    Q_INVOKABLE void removeMessageListModel(const QString& convoId);
+
     Q_INVOKABLE void getMessages(const QString& convoId, const QString& cursor = "");
     Q_INVOKABLE void getMessagesNextPage(const QString& convoId);
-    Q_INVOKABLE void updateRead(const QString& convoId, int readCount);
+    Q_INVOKABLE void updateMessages(const QString& convoId);
+    Q_INVOKABLE void updateRead(const QString& convoId);
 
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }
     void setMessagesInProgress(bool inProgress);
@@ -48,6 +51,11 @@ signals:
 private:
     void setUnreadCount(int unread);
     void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output);
+    void updateMessages();
+    void startMessagesUpdateTimer();
+    void stopMessagesUpdateTimer();
+    bool isMessagesUpdating(const QString& convoId) const { return mConvoIdUpdatingMessages.contains(convoId); }
+    void setMessagesUpdating(const QString& convoId, bool updating);
 
     ATProto::Client::Ptr& mBsky;
     const QString& mUserDid;
@@ -56,7 +64,9 @@ private:
     bool mGetConvosInProgress = false;
     bool mLoaded = false;
     std::unordered_map<QString, MessageListModel::Ptr> mMessageListModels; // convoId -> model
+    std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
+    QTimer mMessagesUpdateTimer;
 };
 
 }

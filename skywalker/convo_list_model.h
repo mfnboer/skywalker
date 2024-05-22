@@ -27,6 +27,7 @@ public:
     void clear();
     void addConvos(const ATProto::ChatBskyConvo::ConvoViewList& convos, const QString& cursor);
     void updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo);
+    const ConvoView* getConvo(const QString& convoId) const;
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 

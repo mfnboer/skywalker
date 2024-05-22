@@ -8,6 +8,7 @@ Rectangle {
     required property messageview message
     required property bool senderIsUser
     required property bool sameSenderAsNext
+    required property bool sameSenderAsPrevious
     required property bool sameTimeAsNext
     required property bool endOfList
     property int maxTextWidth: viewWidth - 40
@@ -49,6 +50,15 @@ Rectangle {
                 font: messageText.font
                 text: !message.deleted ? message.text : messageText.deletedText
             }
+        }
+
+        Rectangle {
+            x: senderIsUser ? parent.width - width : 0
+            y: parent.height - height
+            width: parent.radius
+            height: width
+            color: parent.color
+            visible: !sameSenderAsNext
         }
     }
 
