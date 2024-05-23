@@ -29,11 +29,18 @@ ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState&
     }
 }
 
+ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat& associated) :
+    mAllowIncoming((QEnums::AllowIncomingChat)associated.mAllowIncoming)
+{
+}
+
 ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated& associated) :
     mLists(associated.mLists),
     mFeeds(associated.mFeeds),
     mLabeler(associated.mLabeler)
 {
+    if (associated.mChat)
+        mChat = ProfileAssociatedChat(*associated.mChat);
 }
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile) :
@@ -243,6 +250,25 @@ void BasicProfile::setAvatarUrl(const QString& avatarUrl)
 bool BasicProfile::isFixedLabeler() const
 {
     return ContentFilter::isFixedLabelerSubscription(getDid());
+}
+
+bool BasicProfile::canSendDirectMessage() const
+{
+    const auto allowIncoming = getAssociated().getChat().getAllowIncoming();
+    qDebug() << getHandle() << allowIncoming;
+
+    switch (allowIncoming)
+    {
+    case QEnums::ALLOW_INCOMING_CHAT_NONE:
+        return false;
+    case QEnums::ALLOW_INCOMING_CHAT_ALL:
+        return true;
+    case QEnums::ALLOW_INCOMING_CHAT_FOLLOWING:
+        return !getViewer().getFollowedBy().isEmpty();
+    }
+
+    qWarning() << "Unknown allow incoming value:" << allowIncoming;
+    return false;
 }
 
 Profile::Profile(const ATProto::AppBskyActor::ProfileView* profile) :

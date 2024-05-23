@@ -19,6 +19,7 @@ Rectangle {
 
     RowLayout {
         id: convoRow
+        y: 5
         width: parent.width
         height: Math.max(avatarRect.height, convoColumn.height)
         spacing: 10
@@ -99,6 +100,18 @@ Rectangle {
 
                 visible: convo.members.length > 1
             }
+
+            SkyCleanedText {
+                readonly property string deletedText: qsTr("deleted")
+                readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
+
+                width: parent.width
+                topPadding: 5
+                elide: Text.ElideRight
+                textFormat: Text.RichText
+                font.italic: convo.lastMessage.deleted
+                plainText: qsTr(`${(sentByUser ? "You: " : "")}${(!convo.lastMessage.deleted ? convo.lastMessage.formattedText : deletedText)}`)
+            }
         }
     }
 
@@ -108,17 +121,9 @@ Rectangle {
         onClicked: viewConvo(convo)
     }
 
-    Rectangle {
-        id: seperator
-        anchors.top: convoRow.bottom
-        width: parent.width
-        height: 1
-        color: guiSettings.separatorColor
-    }
-
     // End of feed indication
     Text {
-        anchors.top: seperator.bottom
+        anchors.top: convoRow.bottom
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
         topPadding: 10
@@ -132,6 +137,8 @@ Rectangle {
     function getConvoTimeIndication() {
         if (guiSettings.isToday(convo.lastMessageDate))
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().timeFormat(Locale.ShortFormat))
+        else if (guiSettings.isYesterday(convo.lastMessageDate))
+            return qsTr("yesterday")
         else
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
     }

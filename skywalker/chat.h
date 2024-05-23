@@ -42,6 +42,7 @@ public:
 
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
+    Q_INVOKABLE bool messageConvoOpen() const { return !mMessageListModels.empty(); }
 
     Q_INVOKABLE void getMessages(const QString& convoId, const QString& cursor = "");
     Q_INVOKABLE void getMessagesNextPage(const QString& convoId);

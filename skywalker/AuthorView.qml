@@ -264,6 +264,7 @@ Page {
                     svg: svgOutline.directMessage
                     accessibleName: qsTr(`direct message ${author.name}`)
                     onClicked: skywalker.chat.startConvoForMember(author.did)
+                    visible: author.canSendDirectMessage() && !isUser(author) && !skywalker.chat.messageConvoOpen()
                 }
 
                 SkyButton {

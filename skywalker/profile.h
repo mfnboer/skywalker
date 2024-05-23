@@ -48,12 +48,30 @@ private:
     ListViewBasic mBlockingByList;
 };
 
+class ProfileAssociatedChat
+{
+    Q_GADGET
+    Q_PROPERTY(QEnums::AllowIncomingChat allowIncoming READ getAllowIncoming FINAL)
+    QML_VALUE_TYPE(profileassociatedchat)
+
+public:
+    ProfileAssociatedChat() = default;
+    explicit ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat& associated);
+
+    QEnums::AllowIncomingChat getAllowIncoming() const { return mAllowIncoming; }
+
+private:
+    // Default bsky setting is following
+    QEnums::AllowIncomingChat mAllowIncoming = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+};
+
 class ProfileAssociated
 {
     Q_GADGET
     Q_PROPERTY(int lists READ getLists FINAL)
     Q_PROPERTY(int feeds READ getFeeds FINAL)
     Q_PROPERTY(int isLabeler READ isLabeler FINAL)
+    Q_PROPERTY(ProfileAssociatedChat chat READ getChat FINAL)
     QML_VALUE_TYPE(profileassociated)
 
 public:
@@ -63,11 +81,13 @@ public:
     int getLists() const { return mLists; }
     int getFeeds() const { return mFeeds; }
     bool isLabeler() const { return mLabeler; }
+    const ProfileAssociatedChat& getChat() const { return mChat; }
 
 private:
     int mLists = 0;
     int mFeeds = 0;
     bool mLabeler = false;
+    ProfileAssociatedChat mChat;
 };
 
 class BasicProfile
@@ -124,6 +144,7 @@ public:
     void setAvatarUrl(const QString& avatarUrl);
 
     Q_INVOKABLE bool isFixedLabeler() const;
+    Q_INVOKABLE bool canSendDirectMessage() const;
 
 protected:
     const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;

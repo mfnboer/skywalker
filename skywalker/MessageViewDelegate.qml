@@ -37,7 +37,7 @@ Rectangle {
         padding: 10
         horizontalAlignment: Text.AlignHCenter
         font.bold: true
-        text: Qt.locale().toString(message.sentAt, Qt.locale().dateFormat(Locale.ShortFormat))
+        text: getMessageDateIndication()
         visible: !sameDateAsPrevious
     }
 
@@ -100,6 +100,15 @@ Rectangle {
         font.pointSize: guiSettings.scaledFont(6/8)
         text: Qt.locale().toString(message.sentAt, Qt.locale().timeFormat(Locale.ShortFormat))
         visible: !sameSenderAsNext || !sameTimeAsNext
+    }
+
+    function getMessageDateIndication() {
+        if (guiSettings.isToday(message.sentAt))
+            return qsTr("today")
+        else if (guiSettings.isYesterday(message.sentAt))
+            return qsTr("yesterday")
+        else
+            return Qt.locale().toString(message.sentAt, Qt.locale().dateFormat(Locale.ShortFormat))
     }
 
     GuiSettings {

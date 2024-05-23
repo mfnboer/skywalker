@@ -528,7 +528,8 @@ void Chat::resume()
     if (!mMessageListModels.empty())
         startMessagesUpdateTimer();
 
-    mConvosUpdateTimer.start();
+    if (mLoaded)
+        startConvosUpdateTimer();
 }
 
 }

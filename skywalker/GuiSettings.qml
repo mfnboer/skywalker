@@ -78,6 +78,11 @@ Item {
             date.getFullYear() === today.getFullYear()
     }
 
+    function isYesterday(date) {
+        const nextDay = new Date(new Date().setDate(date.getDate() + 1))
+        return isToday(nextDay)
+    }
+
     function durationToString(duration) {
         if (duration < 59.5)
             return Math.round(duration) + qsTr("s", "seconds")

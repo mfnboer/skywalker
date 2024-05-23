@@ -212,6 +212,14 @@ public:
         FONT_SQUARE
     };
     Q_ENUM(FontType)
+
+    enum AllowIncomingChat
+    {
+        ALLOW_INCOMING_CHAT_ALL = (int)ATProto::AppBskyActor::AllowIncomingType::ALL,
+        ALLOW_INCOMING_CHAT_NONE = (int)ATProto::AppBskyActor::AllowIncomingType::NONE,
+        ALLOW_INCOMING_CHAT_FOLLOWING = (int)ATProto::AppBskyActor::AllowIncomingType::FOLLOWING
+    };
+    Q_ENUM(AllowIncomingChat)
 };
 
 }
