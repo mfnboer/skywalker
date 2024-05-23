@@ -368,6 +368,8 @@ qt_add_qml_module(libskywalker
         QML_FILES MessagesListView.qml
         QML_FILES MessagesListHeader.qml
         QML_FILES MessageViewDelegate.qml
+        QML_FILES StartConversation.qml
+        SOURCES profile_matcher.h
 )
 
 if (NOT ANDROID)

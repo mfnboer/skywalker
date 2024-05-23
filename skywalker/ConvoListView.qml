@@ -31,6 +31,7 @@ ListView {
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: positionViewAtBeginning()
+        onAddConvoClicked: addConvo()
     }
     footerPositioning: ListView.OverlayFooter
 
@@ -60,6 +61,19 @@ ListView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function addConvo() {
+        let component = Qt.createComponent("StartConversation.qml")
+        let page = component.createObject(conversationsView)
+        page.onClosed.connect(() => root.popStack())
+
+        page.onSelected.connect((did) => {
+            skywalker.chat.startConvoForMember(did)
+            root.popStack()
+        })
+
+        root.pushStack(page)
     }
 
     function viewMessages(convo) {

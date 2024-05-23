@@ -19,7 +19,7 @@ bool Anniversary::isAnniversary(QDate date) const
         return false;
     }
 
-    const QDate firstDate = mFirstAppearance.date();
+    const QDate firstDate = mFirstAppearance.toLocalTime().date();
 
     if (date.year() <= firstDate.year())
         return false;
@@ -54,7 +54,7 @@ int Anniversary::getAnniversaryYears(QDate date) const
         return 0;
     }
 
-    const int firstYear = mFirstAppearance.date().year();
+    const int firstYear = mFirstAppearance.toLocalTime().date().year();
     const int thisYear = date.year();
     return thisYear - firstYear;
 }

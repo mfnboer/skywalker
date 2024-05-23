@@ -255,7 +255,6 @@ bool BasicProfile::isFixedLabeler() const
 bool BasicProfile::canSendDirectMessage() const
 {
     const auto allowIncoming = getAssociated().getChat().getAllowIncoming();
-    qDebug() << getHandle() << allowIncoming;
 
     switch (allowIncoming)
     {

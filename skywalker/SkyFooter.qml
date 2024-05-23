@@ -19,6 +19,7 @@ Rectangle {
     signal searchClicked()
     signal feedsClicked()
     signal messagesClicked()
+    signal addConvoClicked()
 
     width: parent.width
     height: guiSettings.footerHeight
@@ -202,13 +203,27 @@ Rectangle {
 
     PostButton {
         y: -height - 10
-        svg: isHashtagSearch() ? svgOutline.hashtag : svgOutline.chat
-        visible: !messagesActive
-        overrideOnClicked: () => post()
+        svg: getSvg()
+        overrideOnClicked: () => {
+            if (messagesActive)
+                addConvoClicked()
+            else
+                post()
+        }
 
         Accessible.role: Accessible.Button
         Accessible.name: qsTr("post")
         Accessible.onPressAction: clicked()
+
+        function getSvg() {
+            if (messagesActive)
+                return svgOutline.add
+
+            if (isHashtagSearch())
+                return svgOutline.hashtag
+
+            return svgOutline.chat
+        }
     }
 
     GuiSettings {

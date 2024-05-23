@@ -138,7 +138,7 @@ Rectangle {
         if (guiSettings.isToday(convo.lastMessageDate))
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().timeFormat(Locale.ShortFormat))
         else if (guiSettings.isYesterday(convo.lastMessageDate))
-            return qsTr("yesterday")
+            return qsTr("Yesterday")
         else
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
     }

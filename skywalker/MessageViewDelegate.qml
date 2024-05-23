@@ -10,7 +10,7 @@ Rectangle {
     required property bool sameSenderAsNext
     required property bool sameSenderAsPrevious
     required property bool sameTimeAsNext
-    required property bool sameDateAsPrevious;
+    required property bool sameDateAsPrevious
     required property bool endOfList
     property int maxTextWidth: viewWidth - 80
     property int maxTextLines: 1000
@@ -104,9 +104,9 @@ Rectangle {
 
     function getMessageDateIndication() {
         if (guiSettings.isToday(message.sentAt))
-            return qsTr("today")
+            return qsTr("Today")
         else if (guiSettings.isYesterday(message.sentAt))
-            return qsTr("yesterday")
+            return qsTr("Yesterday")
         else
             return Qt.locale().toString(message.sentAt, Qt.locale().dateFormat(Locale.ShortFormat))
     }

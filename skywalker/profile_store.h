@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "profile.h"
+#include "profile_matcher.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
@@ -60,9 +61,9 @@ public:
     virtual void remove(const QString& did) override;
     virtual void clear() override;
 
-    const std::unordered_set<const BasicProfile*> findProfiles(const QString& text, int limit = 10) const;
-    const std::unordered_set<const BasicProfile*>& findWordMatch(const QString& word) const;
-    const std::unordered_set<const BasicProfile*> findWordPrefixMatch(const QString& prefix, int limit = 10) const;
+    const std::unordered_set<const BasicProfile*> findProfiles(const QString& text, int limit = 10, const IProfileMatcher& matcher = AnyProfileMatcher{}) const;
+    const std::unordered_set<const BasicProfile*> findWordMatch(const QString& word, const IProfileMatcher& matcher = AnyProfileMatcher{}) const;
+    const std::unordered_set<const BasicProfile*> findWordPrefixMatch(const QString& prefix, int limit = 10, const IProfileMatcher& matcher = AnyProfileMatcher{}) const;
 
 private:
     std::set<QString> getWords(const BasicProfile& profile) const;

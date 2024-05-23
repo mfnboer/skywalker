@@ -117,7 +117,8 @@ void IndexedProfileStore::clear()
     ProfileStore::clear();
 }
 
-const std::unordered_set<const BasicProfile*> IndexedProfileStore::findProfiles(const QString& text, int limit) const
+const std::unordered_set<const BasicProfile*> IndexedProfileStore::findProfiles(
+    const QString& text, int limit, const IProfileMatcher& matcher) const
 {
     const std::vector<QString> words = SearchUtils::getNormalizedWords(text);
 
@@ -125,9 +126,9 @@ const std::unordered_set<const BasicProfile*> IndexedProfileStore::findProfiles(
         return {};
 
     if (words.size() == 1)
-        return findWordPrefixMatch(words.front(), limit);
+        return findWordPrefixMatch(words.front(), limit, matcher);
 
-    std::unordered_set<const BasicProfile*> matches = findWordMatch(words.front());
+    std::unordered_set<const BasicProfile*> matches = findWordMatch(words.front(), matcher);
     std::unordered_set<QString> usedWords = {words.front()};
 
     for (size_t i = 1; i < words.size() - 1; ++i)
@@ -184,18 +185,30 @@ void IndexedProfileStore::removeNonPrefixMatches(std::unordered_set<const BasicP
     }
 }
 
-const std::unordered_set<const BasicProfile*>& IndexedProfileStore::findWordMatch(const QString& word) const
+const std::unordered_set<const BasicProfile*> IndexedProfileStore::findWordMatch(const QString& word, const IProfileMatcher& matcher) const
 {
     static const std::unordered_set<const BasicProfile*> NO_MATCH;
 
     const auto it = mWordIndex.find(word);
-    return it != mWordIndex.end() ? it->second : NO_MATCH;
+
+    if (it == mWordIndex.end())
+        return NO_MATCH;
+
+    std::unordered_set<const BasicProfile*> matches;
+
+    for (const auto* profile : it->second)
+    {
+        if (matcher.match(*profile))
+            matches.insert(profile);
+    }
+
+    return matches;
 }
 
-const std::unordered_set<const BasicProfile*> IndexedProfileStore::findWordPrefixMatch(const QString& prefix, int limit) const
+const std::unordered_set<const BasicProfile*> IndexedProfileStore::findWordPrefixMatch(const QString& prefix, int limit, const IProfileMatcher& matcher) const
 {
     std::unordered_set<const BasicProfile*> matches;
-    const auto& exactMatches = findWordMatch(prefix);
+    const auto& exactMatches = findWordMatch(prefix, matcher);
 
     if (exactMatches.size() >= (size_t)limit)
     {
@@ -215,10 +228,13 @@ const std::unordered_set<const BasicProfile*> IndexedProfileStore::findWordPrefi
     {
         for (const BasicProfile* profile : it->second)
         {
-            matches.insert(profile);
+            if (matcher.match(*profile))
+            {
+                matches.insert(profile);
 
-            if (matches.size() >= (size_t)limit)
-                return matches;
+                if (matches.size() >= (size_t)limit)
+                    return matches;
+            }
         }
     }
 

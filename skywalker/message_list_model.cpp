@@ -46,7 +46,7 @@ QVariant MessageListModel::data(const QModelIndex& index, int role) const
         return nextMessage->getSentAt() - message.getSentAt() < 5min;
     }
     case Role::SameDateAsPrevious:
-        return !prevMessage->isNull() && message.getSentAt().date() == prevMessage->getSentAt().date();
+        return !prevMessage->isNull() && message.getSentAt().toLocalTime().date() == prevMessage->getSentAt().toLocalTime().date();
     case Role::EndOfList:
         return index.row() == 0 && isEndOfList();
     }
