@@ -12,6 +12,7 @@ Rectangle {
     readonly property int margin: 10
 
     signal viewConvo(convoview convo)
+    signal deleteConvo(convoview convo)
 
     id: convoRect
     height: convoRow.height
@@ -71,46 +72,84 @@ Rectangle {
                 }
             }
 
-            AccessibleText {
-                width: parent.width
-                Layout.preferredHeight: visible ? implicitHeight : 0
-                color: guiSettings.handleColor
-                font.pointSize: guiSettings.scaledFont(7/8)
-                text: `@${firstMember.handle}`
-                visible: convo.members.length <= 1
-            }
+            RowLayout {
+                width: parent.width - 10
 
-            Row {
-                width: parent.width
-                spacing: 3
+                Column
+                {
+                    Layout.fillWidth: true
 
-                Repeater {
-                    model: convo.members.slice(1)
+                    AccessibleText {
+                        width: parent.width
+                        Layout.preferredHeight: visible ? implicitHeight : 0
+                        elide: Text.ElideRight
+                        color: guiSettings.handleColor
+                        font.pointSize: guiSettings.scaledFont(7/8)
+                        text: `@${firstMember.handle}`
+                        visible: convo.members.length <= 1
+                    }
 
-                    Avatar {
-                        required property chatbasicprofile modelData
+                    Row {
+                        width: parent.width
+                        spacing: 3
 
-                        width: 25
-                        height: width
-                        avatarUrl: guiSettings.authorVisible(modelData.basicProfile) ? modelData.basicProfile.avatarUrl : ""
-                        isModerator: modelData.basicProfile.associated.isLabeler
-                        onClicked: viewConvo(convo)
+                        Repeater {
+                            model: convo.members.slice(1)
+
+                            Avatar {
+                                required property chatbasicprofile modelData
+
+                                width: 25
+                                height: width
+                                avatarUrl: guiSettings.authorVisible(modelData.basicProfile) ? modelData.basicProfile.avatarUrl : ""
+                                isModerator: modelData.basicProfile.associated.isLabeler
+                                onClicked: viewConvo(convo)
+                            }
+                        }
+
+                        visible: convo.members.length > 1
+                    }
+
+                    SkyCleanedText {
+                        readonly property string deletedText: qsTr("deleted")
+                        readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
+
+                        width: parent.width
+                        topPadding: 5
+                        elide: Text.ElideRight
+                        textFormat: Text.RichText
+                        font.italic: convo.lastMessage.deleted
+                        plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}${(!convo.lastMessage.deleted ? convo.lastMessage.formattedText : deletedText)}`)
                     }
                 }
 
-                visible: convo.members.length > 1
-            }
+                SvgButton {
+                    id: moreButton
+                    Layout.preferredWidth: 34
+                    Layout.preferredHeight: 34
+                    svg: svgOutline.moreVert
+                    accessibleName: qsTr("more options")
+                    onClicked: moreMenu.open()
 
-            SkyCleanedText {
-                readonly property string deletedText: qsTr("deleted")
-                readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
+                    Menu {
+                        id: moreMenu
+                        modal: true
 
-                width: parent.width
-                topPadding: 5
-                elide: Text.ElideRight
-                textFormat: Text.RichText
-                font.italic: convo.lastMessage.deleted
-                plainText: qsTr(`${(sentByUser ? "You: " : "")}${(!convo.lastMessage.deleted ? convo.lastMessage.formattedText : deletedText)}`)
+                        onAboutToShow: root.enablePopupShield(true)
+                        onAboutToHide: root.enablePopupShield(false)
+
+                        CloseMenuItem {
+                            text: qsTr("<b>Conversation</b>")
+                            Accessible.name: qsTr("close more options menu")
+                        }
+                        AccessibleMenuItem {
+                            text: qsTr("Delete")
+                            onTriggered: deleteConvo(convo)
+
+                            MenuItemSvg { svg: svgOutline.delete }
+                        }
+                    }
+                }
             }
         }
     }

@@ -7,7 +7,7 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-static constexpr auto MESSAGES_UPDATE_INTERVAL = 11s;
+static constexpr auto MESSAGES_UPDATE_INTERVAL = 9s;
 static constexpr auto CONVOS_UPDATE_INTERVAL = 31s;
 
 Chat::Chat(ATProto::Client::Ptr& bsky, const QString& userDid, QObject* parent) :
@@ -189,6 +189,28 @@ void Chat::startConvoForMember(const QString& did)
 {
     QStringList dids(did);
     startConvoForMembers(dids);
+}
+
+void Chat::leaveConvo(const QString& convoId)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Leave convo:" << convoId;
+
+    mBsky->leaveConvo(convoId,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::LeaveConvoOutput::Ptr output){
+            if (!presence)
+                return;
+
+            qDebug() << "Left convo:" << output->mConvoId;
+            getConvos();
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "leaveConvo FAILED:" << error << " - " << msg;
+            emit leaveConvoFailed(msg);
+        });
 }
 
 void Chat::setUnreadCount(int unread)

@@ -47,6 +47,15 @@ Page {
         onAuthorClicked: (profile) => selected(profile.did)
     }
 
+    AccessibleText {
+        anchors.centerIn: parent
+        width: parent.width - 60
+        font.italic: true
+        wrapMode: Text.Wrap
+        text: qsTr("Users that do not allow to be messaged are not shown in the search results.")
+        visible: typeaheadView.count === 0
+    }
+
     Timer {
         id: authorTypeaheadSearchTimer
         interval: 500
@@ -55,6 +64,8 @@ Page {
 
             if (text.length > 0)
                 searchUtils.searchAuthorsTypeahead(text, 100, true)
+            else
+                searchUtils.authorTypeaheadList = []
         }
     }
 

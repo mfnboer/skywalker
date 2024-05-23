@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE void updateConvos();
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids);
     Q_INVOKABLE void startConvoForMember(const QString& did);
+    Q_INVOKABLE void leaveConvo(const QString& convoId);
     Q_INVOKABLE bool convosLoaded() const { return mLoaded; }
 
     ConvoListModel* getConvoListModel() { return &mConvoListModel; }
@@ -64,6 +65,7 @@ signals:
     void startConvoForMembersOk(ConvoView convo);
     void startConvoForMembersFailed(QString error);
     void startConvoInProgressChanged();
+    void leaveConvoFailed(QString error);
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void sendMessageProgress(QString msg);

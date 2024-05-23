@@ -38,6 +38,7 @@ ListView {
     delegate: ConvoViewDelegate {
         width: conversationsView.width
         onViewConvo: (convo) => conversationsView.viewMessages(convo)
+        onDeleteConvo: (convo) => conversationsView.deleteConvo(convo)
     }
 
     FlickableRefresher {
@@ -76,6 +77,12 @@ ListView {
         root.pushStack(page)
     }
 
+    function deleteConvo(convo) {
+        guiSettings.askYesNoQuestion(conversationsView,
+                qsTr(`Do you want to delete the conversation with <b>${convo.memberNames}</b>. Your messages will be deleted for you, but not for the other participant.`),
+                () => chat.leaveConvo(convo.id))
+    }
+
     function viewMessages(convo) {
         let component = Qt.createComponent("MessagesListView.qml")
         let view = component.createObject(conversationsView, { chat: chat, convo: convo })
@@ -93,12 +100,18 @@ ListView {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    function leaveConvoFailedHandler(error) {
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     function initHandlers() {
         chat.onGetConvosFailed.connect(getConvosFailedHandler)
+        chat.onLeaveConvoFailed.connect(leaveConvoFailedHandler)
     }
 
     function destroyHandlers() {
         chat.onGetConvosFailed.disconnect(getConvosFailedHandler)
+        chat.onLeaveConvoFailed.disconnect(leaveConvoFailedHandler)
     }
 
     Component.onDestruction: {
