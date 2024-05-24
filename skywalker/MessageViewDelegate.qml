@@ -72,6 +72,7 @@ Rectangle {
             elide: Text.ElideRight
             textFormat: Text.RichText
             font.italic: message.deleted
+            font.pointSize: getMessageFontSize()
             color: senderIsUser ? guiSettings.messageUserTextColor : guiSettings.messageOtherTextColor
             plainText: !message.deleted ? message.formattedText : deletedText
 
@@ -140,6 +141,26 @@ Rectangle {
             return qsTr("Yesterday")
         else
             return Qt.locale().toString(message.sentAt, Qt.locale().dateFormat(Locale.ShortFormat))
+    }
+
+    function getMessageFontSize() {
+        return onlyEmojisMessage() ?
+                    guiSettings.scaledFont(unicodeFonts.graphemeLength(message.text) === 1 ? 9 : 3) :
+                    guiSettings.scaledFont(1)
+    }
+
+    function onlyEmojisMessage() {
+        if (!message.text)
+            return false
+
+        if (unicodeFonts.graphemeLength(message.text) > 5)
+            return false
+
+        return unicodeFonts.onlyEmojis(message.text)
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

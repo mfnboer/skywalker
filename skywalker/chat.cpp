@@ -99,7 +99,7 @@ void Chat::getConvos(const QString& cursor)
 
             qDebug() << "getConvos FAILED:" << error << " - " << msg;
             setConvosInProgress(false);
-            emit getConvosFailed(msg);
+            emit failure(msg);
         }
     );
 }
@@ -209,7 +209,49 @@ void Chat::leaveConvo(const QString& convoId)
                 return;
 
             qDebug() << "leaveConvo FAILED:" << error << " - " << msg;
-            emit leaveConvoFailed(msg);
+            emit failure(msg);
+        });
+}
+
+void Chat::muteConvo(const QString& convoId)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Mute convo:" << convoId;
+
+    mBsky->muteConvo(convoId,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+            if (!presence)
+                return;
+
+            mConvoListModel.updateConvo(*output->mConvo);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "muteConvo FAILED:" << error << " - " << msg;
+            emit failure(msg);
+        });
+}
+
+void Chat::unmuteConvo(const QString& convoId)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Unmute convo:" << convoId;
+
+    mBsky->unmuteConvo(convoId,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+            if (!presence)
+                return;
+
+            mConvoListModel.updateConvo(*output->mConvo);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "unmuteConvo FAILED:" << error << " - " << msg;
+            emit failure(msg);
         });
 }
 
@@ -233,7 +275,10 @@ void Chat::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& outp
     int unread = mUnreadCount;
 
     for (const auto& convo : output.mConvos)
-        unread += convo->mUnreadCount;
+    {
+        if (!convo->mMuted)
+            unread += convo->mUnreadCount;
+    }
 
     setUnreadCount(unread);
 }
@@ -426,8 +471,12 @@ void Chat::updateRead(const QString& convoId)
                 return;
 
             mConvoListModel.updateConvo(*output->mConvo);
-            const int readCount = oldUnreadCount - output->mConvo->mUnreadCount;
-            setUnreadCount(mUnreadCount - readCount);
+
+            if (!output->mConvo->mMuted)
+            {
+                const int readCount = oldUnreadCount - output->mConvo->mUnreadCount;
+                setUnreadCount(mUnreadCount - readCount);
+            }
         },
         [](const QString& error, const QString& msg){
             qDebug() << "updateRead FAILED:" << error << " - " << msg;

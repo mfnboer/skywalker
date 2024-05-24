@@ -13,6 +13,8 @@ Rectangle {
 
     signal viewConvo(convoview convo)
     signal deleteConvo(convoview convo)
+    signal muteConvo(convoview convo)
+    signal unmuteConvo(convoview convo)
 
     id: convoRect
     height: convoRow.height
@@ -42,7 +44,7 @@ Rectangle {
                 onClicked: skywalker.getDetailedProfile(firstMember.did)
 
                 BadgeCounter {
-                    counter: convo.unreadCount
+                    counter: convo.muted ? 0 : convo.unreadCount
                 }
             }
         }
@@ -52,20 +54,31 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 0
 
-            RowLayout {
+            Row {
                 width: parent.width
                 spacing: 3
 
                 SkyCleanedText {
-                    Layout.fillWidth:  true
+                    id: nameText
+                    width: parent.width - mutedImg.width - timeText.width - parent.spacing * (convo.muted ? 2 : 1)
                     elide: Text.ElideRight
                     font.bold: true
                     color: guiSettings.textColor
                     plainText: convo.memberNames
                 }
 
+                SvgImage {
+                    id: mutedImg
+                    height: convo.muted ? nameText.height : 0
+                    width: height
+                    color: guiSettings.textColor
+                    svg: svgOutline.notificationsOff
+                    visible: convo.muted
+                }
+
                 AccessibleText {
-                    Layout.rightMargin: margin
+                    id: timeText
+                    rightPadding: margin
                     font.pointSize: guiSettings.scaledFont(6/8)
                     color: guiSettings.messageTimeColor
                     text: getConvoTimeIndication()
@@ -146,6 +159,12 @@ Rectangle {
                             onTriggered: deleteConvo(convo)
 
                             MenuItemSvg { svg: svgOutline.delete }
+                        }
+                        AccessibleMenuItem {
+                            text: convo.muted ? qsTr("Unmute") : qsTr("Mute")
+                            onTriggered: convo.muted ? unmuteConvo(convo) : muteConvo(convo)
+
+                            MenuItemSvg { svg: convo.muted ? svgOutline.notifications : svgOutline.notificationsOff }
                         }
                     }
                 }

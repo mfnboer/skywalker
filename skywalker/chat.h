@@ -30,6 +30,8 @@ public:
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids);
     Q_INVOKABLE void startConvoForMember(const QString& did);
     Q_INVOKABLE void leaveConvo(const QString& convoId);
+    Q_INVOKABLE void muteConvo(const QString& convoId);
+    Q_INVOKABLE void unmuteConvo(const QString& convoId);
     Q_INVOKABLE bool convosLoaded() const { return mLoaded; }
 
     ConvoListModel* getConvoListModel() { return &mConvoListModel; }
@@ -62,11 +64,9 @@ public:
 signals:
     void unreadCountChanged();
     void getConvosInProgressChanged();
-    void getConvosFailed(QString error);
     void startConvoForMembersOk(ConvoView convo);
     void startConvoForMembersFailed(QString error);
     void startConvoInProgressChanged();
-    void leaveConvoFailed(QString error);
     void leaveConvoOk();
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
@@ -75,6 +75,7 @@ signals:
     void sendMessageOk();
     void deleteMessageFailed(QString error);
     void deleteMessageOk();
+    void failure(QString error);
 
 private:
     ATProto::ChatMaster* chatMaster();

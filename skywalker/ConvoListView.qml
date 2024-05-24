@@ -39,6 +39,8 @@ ListView {
         width: conversationsView.width
         onViewConvo: (convo) => conversationsView.viewMessages(convo)
         onDeleteConvo: (convo) => conversationsView.deleteConvo(convo)
+        onMuteConvo: (convo) => chat.muteConvo(convo.id)
+        onUnmuteConvo: (convo) =>chat.unmuteConvo(convo.id)
     }
 
     FlickableRefresher {
@@ -91,29 +93,23 @@ ListView {
         root.pushStack(view)
     }
 
-    function getConvosFailedHandler(error) {
-        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-    }
-
     function leaveConvoOkHandler() {
         skywalker.showStatusMessage(qsTr("Conversation deleted"), QEnums.STATUS_LEVEL_INFO)
         chat.getConvos();
     }
 
-    function leaveConvoFailedHandler(error) {
+    function failureHandler(error) {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     function initHandlers() {
-        chat.onGetConvosFailed.connect(getConvosFailedHandler)
         chat.onLeaveConvoOk.connect(leaveConvoOkHandler)
-        chat.onLeaveConvoFailed.connect(leaveConvoFailedHandler)
+        chat.onFailure.connect(failureHandler)
     }
 
     function destroyHandlers() {
-        chat.onGetConvosFailed.disconnect(getConvosFailedHandler)
         chat.onLeaveConvoOk.disconnect(leaveConvoOkHandler)
-        chat.onLeaveConvoFailed.disconnect(leaveConvoFailedHandler)
+        chat.onFailure.disconnect(failureHandler)
     }
 
     Component.onDestruction: {
