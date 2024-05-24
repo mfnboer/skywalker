@@ -16,6 +16,9 @@ Rectangle {
     property int maxTextLines: 1000
     readonly property int margin: 10
 
+    signal deleteMessage(string messageId)
+
+    id: view
     width: viewWidth
     height: messageTimeText.y + messageTimeText.height
 
@@ -57,8 +60,11 @@ Rectangle {
             readonly property string deletedText: qsTr("deleted")
 
             id: messageText
-            width: Math.min(textWidth + 5 + padding * 2, maxTextWidth)
-            padding: 10
+            width: Math.min(textWidth + 5 + leftPadding + rightPadding, maxTextWidth)
+            leftPadding: 10
+            rightPadding: 10
+            topPadding: 5
+            bottomPadding: 5
             wrapMode: Text.Wrap
             intialShowMaxLineCount: Math.min(maxTextLines, 25)
             maximumLineCount: maxTextLines
@@ -85,6 +91,31 @@ Rectangle {
             height: width
             color: parent.color
             visible: !sameSenderAsNext
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            z: -2
+            onPressAndHold: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>Message</b>")
+                    Accessible.name: qsTr("close messages menu")
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Delete")
+                    onTriggered: deleteMessage()
+
+                    MenuItemSvg { svg: svgOutline.delete }
+                }
+            }
         }
     }
 

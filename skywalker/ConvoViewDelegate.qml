@@ -81,7 +81,6 @@ Rectangle {
 
                     AccessibleText {
                         width: parent.width
-                        Layout.preferredHeight: visible ? implicitHeight : 0
                         elide: Text.ElideRight
                         color: guiSettings.handleColor
                         font.pointSize: guiSettings.scaledFont(7/8)
@@ -140,7 +139,7 @@ Rectangle {
 
                         CloseMenuItem {
                             text: qsTr("<b>Conversation</b>")
-                            Accessible.name: qsTr("close more options menu")
+                            Accessible.name: qsTr("close conversations menu")
                         }
                         AccessibleMenuItem {
                             text: qsTr("Delete")

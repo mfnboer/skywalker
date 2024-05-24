@@ -11,13 +11,13 @@ Page {
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
 
-    signal closed(string lastMessageId)
+    signal closed
 
     id: page
 
     header: MessagesListHeader {
         convo: page.convo
-        onBack: page.closed(messagesView.model.getLastMessageId())
+        onBack: page.closed()
     }
 
     // Needed for SkyFormattedTextEdit
@@ -122,10 +122,12 @@ Page {
     }
 
     function sendMessage() {
+        sendButton.forceActiveFocus() // take focus from the text input to get complete text
         isSending = true
         const qUri = ""
         const qCid = ""
         let msgText = newMessageText.text
+        console.debug("Send message:", convo.id, msgText)
         chat.sendMessage(convo.id, msgText, qUri, qCid)
     }
 
@@ -178,6 +180,8 @@ Page {
     }
 
     Component.onDestruction: {
+        const lastMessageId = messagesView.model.getLastMessageId()
+        chat.updateRead(convo.id, lastMessageId)
         destroyHandlers()
     }
 
