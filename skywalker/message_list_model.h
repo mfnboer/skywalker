@@ -34,7 +34,7 @@ public:
     void updateMessages(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageList& messages, const QString& cursor);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
-    Q_INVOKABLE MessageView getLastMessage() const;
+    const MessageView* getLastMessage() const;
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

@@ -97,7 +97,7 @@ ListView {
 
     function leaveConvoOkHandler() {
         skywalker.showStatusMessage(qsTr("Conversation deleted"), QEnums.STATUS_LEVEL_INFO)
-        chat.updateConvos();
+        chat.getConvos();
     }
 
     function leaveConvoFailedHandler(error) {
@@ -106,11 +106,13 @@ ListView {
 
     function initHandlers() {
         chat.onGetConvosFailed.connect(getConvosFailedHandler)
+        chat.onLeaveConvoOk.connect(leaveConvoOkHandler)
         chat.onLeaveConvoFailed.connect(leaveConvoFailedHandler)
     }
 
     function destroyHandlers() {
         chat.onGetConvosFailed.disconnect(getConvosFailedHandler)
+        chat.onLeaveConvoOk.disconnect(leaveConvoOkHandler)
         chat.onLeaveConvoFailed.disconnect(leaveConvoFailedHandler)
     }
 

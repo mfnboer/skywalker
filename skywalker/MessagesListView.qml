@@ -160,7 +160,7 @@ Page {
 
     function deleteMessageOkHandler() {
         skywalker.showStatusMessage(qsTr("Message deleted"), QEnums.STATUS_LEVEL_INFO)
-        chat.updateMessages(convo.id)
+        chat.getMessages(convo.id)
     }
 
     function deleteMessageFailedHandler(error) {
@@ -200,11 +200,7 @@ Page {
     }
 
     Component.onDestruction: {
-        const lastMessage = messagesView.model.getLastMessage()
-
-        if (!lastMessage.isNull())
-            chat.updateRead(convo.id, lastMessage.id, lastMessage.rev)
-
+        chat.updateRead(convo.id)
         destroyHandlers()
     }
 

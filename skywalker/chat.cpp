@@ -400,7 +400,7 @@ void Chat::updateMessages()
         updateMessages(convoId);
 }
 
-void Chat::updateRead(const QString& convoId, const QString& messageId, const QString& messageRev)
+void Chat::updateRead(const QString& convoId)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Update read convo:" << convoId;
@@ -408,26 +408,19 @@ void Chat::updateRead(const QString& convoId, const QString& messageId, const QS
     const auto* convo = mConvoListModel.getConvo(convoId);
 
     if (!convo)
+    {
+        qDebug() << "No convo";
+        return;
+    }
+
+    const QString& lastReadMessageId = getLastReadMessageId(*convo);
+
+    if (lastReadMessageId.isEmpty())
         return;
 
     const int oldUnreadCount = convo->getUnreadCount();
-    const MessageView& lastMessage = convo->getLastMessage();
 
-    if (lastMessage.getId() == messageId && oldUnreadCount <= 0)
-        return;
-
-    const QString* updateId = &messageId;
-
-    // The last message in a convo can be a deleted message view. This delete view
-    // does not show in the list of message itself (seems a bug in bsky to me).
-    // If this delete view
-    if (lastMessage.isDeleted() && lastMessage.getRev() > messageRev)
-    {
-        qDebug() << "Replace" << messageId << "with deleted last message id in convo:" << lastMessage.getId();
-        updateId = &lastMessage.getId();
-    }
-
-    mBsky->updateRead(convoId, Utils::makeOptionalString(*updateId),
+    mBsky->updateRead(convoId, lastReadMessageId,
         [this, presence=*mPresence, oldUnreadCount](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
             if (!presence)
                 return;
@@ -440,6 +433,53 @@ void Chat::updateRead(const QString& convoId, const QString& messageId, const QS
             qDebug() << "updateRead FAILED:" << error << " - " << msg;
         }
     );
+}
+
+QString Chat::getLastReadMessageId(const ConvoView& convo) const
+{
+    auto it = mMessageListModels.find(convo.getId());
+
+    if (it == mMessageListModels.end())
+    {
+        qDebug() << "No read messages";
+        return {};
+    }
+
+    const auto& messageListModel = it->second;
+    const MessageView* lastReadMessage = messageListModel->getLastMessage();
+    const MessageView& lastConvoMessage = convo.getLastMessage();
+
+    if (!lastReadMessage )
+    {
+        if (lastConvoMessage.isDeleted())
+        {
+            qDebug() << "All messages deleted, convo has a deleted last message";
+            return lastConvoMessage.getId();
+        }
+
+        qDebug() << "Last convo message not yet seen";
+        return {};
+    }
+
+    Q_ASSERT(lastReadMessage);
+    const int currentUnreadCount = convo.getUnreadCount();
+
+    if (lastReadMessage->getId() == lastConvoMessage.getId() && currentUnreadCount <= 0)
+    {
+        qDebug() << "Last read message already marked as read";
+        return {};
+    }
+
+    // The last message in a convo can be a deleted message view. This delete view
+    // does not show in the list of message itself (seems a bug in bsky to me).
+    // If this delete view
+    if (lastConvoMessage.isDeleted() && lastConvoMessage.getRev() > lastReadMessage->getRev())
+    {
+        qDebug() << "Last convo message is deleted and newer than last read";
+        return lastConvoMessage.getId();
+    }
+
+    return lastReadMessage->getId();
 }
 
 void Chat::sendMessage(const QString& convoId, const QString& text, const QString& quoteUri, const QString& quoteCid)
