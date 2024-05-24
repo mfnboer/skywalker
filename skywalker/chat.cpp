@@ -84,7 +84,7 @@ void Chat::getConvos(const QString& cursor)
             if (cursor.isEmpty())
             {
                 mConvoListModel.clear();
-                mUnreadCount = 0;
+                setUnreadCount(0);
             }
 
             mConvoListModel.addConvos(output->mConvos, output->mCursor.value_or(""));
@@ -141,7 +141,7 @@ void Chat::updateConvos()
             }
 
             mConvoListModel.clear();
-            mUnreadCount = 0;
+            setUnreadCount(0);
             mConvoListModel.addConvos(output->mConvos, output->mCursor.value_or(""));
             updateUnreadCount(*output);
             mLoaded = true;
@@ -202,7 +202,7 @@ void Chat::leaveConvo(const QString& convoId)
                 return;
 
             qDebug() << "Left convo:" << output->mConvoId;
-            getConvos();
+            emit leaveConvoOk();
         },
         [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
@@ -400,7 +400,7 @@ void Chat::updateMessages()
         updateMessages(convoId);
 }
 
-void Chat::updateRead(const QString& convoId, const QString& messageId)
+void Chat::updateRead(const QString& convoId, const QString& messageId, const QString& messageRev)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Update read convo:" << convoId;
@@ -416,7 +416,18 @@ void Chat::updateRead(const QString& convoId, const QString& messageId)
     if (lastMessage.getId() == messageId && oldUnreadCount <= 0)
         return;
 
-    mBsky->updateRead(convoId, Utils::makeOptionalString(messageId),
+    const QString* updateId = &messageId;
+
+    // The last message in a convo can be a deleted message view. This delete view
+    // does not show in the list of message itself (seems a bug in bsky to me).
+    // If this delete view
+    if (lastMessage.isDeleted() && lastMessage.getRev() > messageRev)
+    {
+        qDebug() << "Replace" << messageId << "with deleted last message id in convo:" << lastMessage.getId();
+        updateId = &lastMessage.getId();
+    }
+
+    mBsky->updateRead(convoId, Utils::makeOptionalString(*updateId),
         [this, presence=*mPresence, oldUnreadCount](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
             if (!presence)
                 return;

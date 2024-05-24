@@ -158,6 +158,15 @@ Page {
         skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
+    function deleteMessageOkHandler() {
+        skywalker.showStatusMessage(qsTr("Message deleted"), QEnums.STATUS_LEVEL_INFO)
+        chat.updateMessages(convo.id)
+    }
+
+    function deleteMessageFailedHandler(error) {
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     function getMessagesFailedHandler(error) {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
@@ -172,6 +181,8 @@ Page {
         chat.onSendMessageOk.connect(sendMessageOkHandler)
         chat.onSendMessageFailed.connect(sendMessageFailedHandler)
         chat.onSendMessageProgress.connect(sendMessageProgressHandler)
+        chat.onDeleteMessageOk.connect(deleteMessageOkHandler)
+        chat.onDeleteMessageFailed.connect(deleteMessageFailedHandler)
         chat.onGetMessagesFailed.connect(getMessagesFailedHandler)
     }
 
@@ -181,14 +192,19 @@ Page {
         chat.onSendMessageOk.disconnect(sendMessageOkHandler)
         chat.onSendMessageFailed.disconnect(sendMessageFailedHandler)
         chat.onSendMessageProgress.disconnect(sendMessageProgressHandler)
+        chat.onDeleteMessageOk.disconnect(deleteMessageOkHandler)
+        chat.onDeleteMessageFailed.disconnect(deleteMessageFailedHandler)
         chat.onGetMessagesFailed.disconnect(getMessagesFailedHandler)
 
         chat.removeMessageListModel(convo.id)
     }
 
     Component.onDestruction: {
-        const lastMessageId = messagesView.model.getLastMessageId()
-        chat.updateRead(convo.id, lastMessageId)
+        const lastMessage = messagesView.model.getLastMessage()
+
+        if (!lastMessage.isNull())
+            chat.updateRead(convo.id, lastMessage.id, lastMessage.rev)
+
         destroyHandlers()
     }
 

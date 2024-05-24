@@ -48,7 +48,7 @@ public:
     Q_INVOKABLE void getMessages(const QString& convoId, const QString& cursor = "");
     Q_INVOKABLE void getMessagesNextPage(const QString& convoId);
     Q_INVOKABLE void updateMessages(const QString& convoId);
-    Q_INVOKABLE void updateRead(const QString& convoId, const QString& messageId);
+    Q_INVOKABLE void updateRead(const QString& convoId, const QString& messageId, const QString& messageRev);
 
     Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text, const QString& quoteUri, const QString& quoteCid);
     Q_INVOKABLE void deleteMessage(const QString& convoId, const QString& messageId);
@@ -67,6 +67,7 @@ signals:
     void startConvoForMembersFailed(QString error);
     void startConvoInProgressChanged();
     void leaveConvoFailed(QString error);
+    void leaveConvoOk();
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void sendMessageProgress(QString msg);

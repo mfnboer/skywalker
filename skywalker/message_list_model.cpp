@@ -126,12 +126,12 @@ void MessageListModel::updateMessages(const ATProto::ChatBskyConvo::GetMessagesO
     }
 }
 
-QString MessageListModel::getLastMessageId() const
+MessageView MessageListModel::getLastMessage() const
 {
     if (mMessages.empty())
-        return "";
+        return {};
 
-    return mMessages.back().getId();
+    return mMessages.back();
 }
 
 QHash<int, QByteArray> MessageListModel::roleNames() const

@@ -57,7 +57,7 @@ Rectangle {
         // TODO: show ava/name for multi-person chat
         SkyCleanedText {
             readonly property alias textWidth: textMetrics.boundingRect.width
-            readonly property string deletedText: qsTr("deleted")
+            readonly property string deletedText: qsTr("message deleted")
 
             id: messageText
             width: Math.min(textWidth + 5 + leftPadding + rightPadding, maxTextWidth)

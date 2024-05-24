@@ -110,7 +110,7 @@ Rectangle {
                     }
 
                     SkyCleanedText {
-                        readonly property string deletedText: qsTr("deleted")
+                        readonly property string deletedText: qsTr("message deleted")
                         readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
 
                         width: parent.width

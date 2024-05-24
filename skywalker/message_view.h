@@ -30,7 +30,7 @@ public:
     const QString& getSenderDid() const { return mSenderDid; }
     const QDateTime getSentAt() const { return mSentAt; }
     bool isDeleted() const { return mDeleted; }
-    bool isNull() const { return mId.isEmpty(); }
+    Q_INVOKABLE bool isNull() const { return mId.isEmpty(); }
 
 private:
     QString mId;

@@ -95,6 +95,11 @@ ListView {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    function leaveConvoOkHandler() {
+        skywalker.showStatusMessage(qsTr("Conversation deleted"), QEnums.STATUS_LEVEL_INFO)
+        chat.updateConvos();
+    }
+
     function leaveConvoFailedHandler(error) {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
