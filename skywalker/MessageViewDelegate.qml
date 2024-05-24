@@ -111,7 +111,7 @@ Rectangle {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Delete")
-                    onTriggered: deleteMessage()
+                    onTriggered: deleteMessage(message.id)
 
                     MenuItemSvg { svg: svgOutline.delete }
                 }

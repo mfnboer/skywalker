@@ -41,6 +41,7 @@ Page {
 
         delegate: MessageViewDelegate {
             viewWidth: messagesView.width
+            onDeleteMessage: (messageId) => page.deleteMessage(messageId)
         }
 
         FlickableRefresher {
@@ -129,6 +130,12 @@ Page {
         let msgText = newMessageText.text
         console.debug("Send message:", convo.id, msgText)
         chat.sendMessage(convo.id, msgText, qUri, qCid)
+    }
+
+    function deleteMessage(messageId) {
+        guiSettings.askYesNoQuestion(page,
+            qsTr("Do you want to delete the message? The message will be deleted for you, the other participant will still see it."),
+            () => chat.deleteMessage(convo.id, messageId))
     }
 
     function sendMessageOkHandler() {

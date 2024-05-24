@@ -51,6 +51,7 @@ public:
     Q_INVOKABLE void updateRead(const QString& convoId, const QString& messageId);
 
     Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text, const QString& quoteUri, const QString& quoteCid);
+    Q_INVOKABLE void deleteMessage(const QString& convoId, const QString& messageId);
 
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }
     void setMessagesInProgress(bool inProgress);
@@ -71,6 +72,8 @@ signals:
     void sendMessageProgress(QString msg);
     void sendMessageFailed(QString error);
     void sendMessageOk();
+    void deleteMessageFailed(QString error);
+    void deleteMessageOk();
 
 private:
     ATProto::ChatMaster* chatMaster();

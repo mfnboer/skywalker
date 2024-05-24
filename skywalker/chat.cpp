@@ -502,6 +502,30 @@ void Chat::continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::M
         });
 }
 
+void Chat::deleteMessage(const QString& convoId, const QString& messageId)
+{
+    qDebug() << "Delete message, convoId:" << convoId << "messageId:" << messageId;
+
+    if (!mBsky)
+        return;
+
+    mBsky->deleteMessageForSelf(convoId, messageId,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::DeletedMessageView::Ptr deletedView){
+            if (!presence)
+                return;
+
+            qDebug() << "Message deleted:" << deletedView->mId;
+            emit deleteMessageOk();
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "deleteMessage failed:" << error << " - " << msg;
+            emit deleteMessageFailed(msg);
+        });
+}
+
 void Chat::startMessagesUpdateTimer()
 {
     if (!mMessagesUpdateTimer.isActive())
