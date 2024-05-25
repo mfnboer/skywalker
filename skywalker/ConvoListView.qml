@@ -10,7 +10,7 @@ ListView {
     signal closed
 
     id: conversationsView
-    spacing: 10
+    spacing: 15
     clip: true
     model: chat.convoListModel
     flickDeceleration: guiSettings.flickDeceleration

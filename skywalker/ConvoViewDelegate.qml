@@ -85,12 +85,12 @@ Rectangle {
                 }
             }
 
-            RowLayout {
+            Row {
                 width: parent.width - 10
 
                 Column
                 {
-                    Layout.fillWidth: true
+                    width: parent.width - moreButton.width
 
                     AccessibleText {
                         width: parent.width
@@ -131,7 +131,7 @@ Rectangle {
                         elide: Text.ElideRight
                         textFormat: Text.RichText
                         font.italic: convo.lastMessage.deleted
-                        plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}${(!convo.lastMessage.deleted ? convo.lastMessage.formattedText : deletedText)}`)
+                        plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}${(!convo.lastMessage.deleted ? convo.lastMessage.text : deletedText)}`)
                     }
                 }
 
