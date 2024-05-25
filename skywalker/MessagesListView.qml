@@ -29,7 +29,7 @@ Page {
     ListView {
         id: messagesView
         width: parent.width
-        anchors.top: parent.top
+        //anchors.top: parent.top
         height: parent.height - flick.height
         spacing: 0
         clip: true
@@ -114,12 +114,17 @@ Page {
         running: false
     }
 
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
-    }
-
     GuiSettings {
         id: guiSettings
+    }
+
+    Connections {
+        target: Qt.inputMethod
+
+        function onKeyboardRectangleChanged() {
+            const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
+            messagesView.y = Math.min(keyboardY, Math.max(messagesView.height - messagesView.contentHeight, 0))
+        }
     }
 
     function sendMessage() {
@@ -205,7 +210,6 @@ Page {
     }
 
     Component.onCompleted: {
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
         messagesView.positionViewAtEnd()
         initHandlers()
         sendButton.forceActiveFocus()
