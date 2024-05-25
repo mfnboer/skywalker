@@ -22,14 +22,13 @@ Page {
 
     // Needed for SkyFormattedTextEdit
     footer: Rectangle {
-        height: 10
+        height: 0
         color: "transparent"
     }
 
     ListView {
         id: messagesView
         width: parent.width
-        //anchors.top: parent.top
         height: parent.height - flick.height
         spacing: 0
         clip: true
@@ -80,19 +79,29 @@ Page {
             x: page.margin
             width: parent.width - sendButton.width - 3 * page.margin
             height: newMessageText.height
-            radius: 10
-            color: guiSettings.messageNewBackgroundColor
+            color: "transparent"
 
+            // HACK: to keep margin between the top of the Android keyboard and the bottom
+            // of the text input we add extra padding.
             SkyFormattedTextEdit {
                 id: newMessageText
                 width: parent.width
                 padding: page.margin
+                bottomPadding: 2 * page.margin
                 parentPage: page
                 parentFlick: flick
                 color: guiSettings.messageNewTextColor
                 placeholderText: qsTr("Say something nice")
                 maxLength: page.maxMessageLength
                 // TODO: font selector?
+
+                Rectangle {
+                    z: -1
+                    width: parent.width
+                    height: parent.height - page.margin
+                    radius: 10
+                    color: guiSettings.messageNewBackgroundColor
+                }
             }
         }
 
@@ -100,7 +109,7 @@ Page {
             id: sendButton
             anchors.right: parent.right
             anchors.rightMargin: page.margin
-            y: parent.height - 5
+            y: parent.height - 5 - page.margin
             svg: svgFilled.send
             accessibleName: qsTr("send message")
             enabled: !page.isSending && newMessageText.graphemeLength > 0 && newMessageText.graphemeLength <= page.maxMessageLength
@@ -119,11 +128,26 @@ Page {
     }
 
     Connections {
+        property bool keyboardVisible: false
+
         target: Qt.inputMethod
 
         function onKeyboardRectangleChanged() {
             const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-            messagesView.y = Math.min(keyboardY, Math.max(messagesView.height - messagesView.contentHeight, 0))
+
+            if (keyboardY > 0) {
+                if (!keyboardVisible) {
+                    const keyboardHeight = page.height - keyboardY
+                    messagesView.y = Math.min(keyboardHeight, Math.max(messagesView.height - messagesView.contentHeight, 0))
+                    header.y = keyboardHeight
+                    keyboardVisible = true
+                }
+            }
+            else {
+                messagesView.y = 0
+                header.y = 0
+                keyboardVisible = false
+            }
         }
     }
 
