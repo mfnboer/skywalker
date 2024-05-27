@@ -90,6 +90,7 @@ Page {
             color: guiSettings.messageNewTextColor
             placeholderText: qsTr("Say something nice")
             maxLength: page.maxMessageLength
+            enableLinkShortening: false
             // TODO: font selector?
         }
     }
