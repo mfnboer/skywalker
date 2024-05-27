@@ -42,6 +42,7 @@ Page {
         delegate: MessageViewDelegate {
             viewWidth: messagesView.width
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
+            onReportMessage: (msg) => page.reportDirectMessage(msg)
         }
 
         FlickableRefresher {
@@ -174,6 +175,10 @@ Page {
         guiSettings.askYesNoQuestion(page,
             qsTr("Do you want to delete the message? The message will be deleted for you, the other participant will still see it."),
             () => chat.deleteMessage(convo.id, messageId))
+    }
+
+    function reportDirectMessage(msg) {
+        root.reportDirectMessage(msg, convo.id, convo.getMember(msg.senderDid).basicProfile)
     }
 
     function sendMessageOkHandler() {

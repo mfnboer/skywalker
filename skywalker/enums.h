@@ -146,7 +146,8 @@ public:
         REPORT_TARGET_POST,
         REPORT_TARGET_ACCOUNT,
         REPORT_TARGET_FEED,
-        REPORT_TARGET_LIST
+        REPORT_TARGET_LIST,
+        REPORT_TARGET_DIRECT_MESSAGE
     };
     Q_ENUM(ReportTarget)
 

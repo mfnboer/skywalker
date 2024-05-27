@@ -1156,6 +1156,17 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function reportDirectMessage(message, convoId, sender) {
+        let component = Qt.createComponent("Report.qml")
+        let form = component.createObject(root, {
+                skywalker: skywalker,
+                message: message,
+                convoId: convoId,
+                author: sender })
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
     function translateText(text) {
         const lang = Qt.locale().name.split("_")[0]
         const normalized = unicodeFonts.normalizeToNFKD(text)
