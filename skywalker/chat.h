@@ -23,6 +23,9 @@ public:
     explicit Chat(ATProto::Client::Ptr& bsky, const QString& mUserDid, QObject* parent = nullptr);
 
     void reset();
+    void initSettings();
+    void updateSettings(QEnums::AllowIncomingChat allowIncoming);
+    QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
 
     Q_INVOKABLE void getConvos(const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage();
@@ -75,6 +78,7 @@ signals:
     void sendMessageOk();
     void deleteMessageFailed(QString error);
     void deleteMessageOk();
+    void settingsFailed(QString error);
     void failure(QString error);
 
 private:
@@ -108,6 +112,7 @@ private:
     bool mStartConvoInProgress = false;
     QTimer mMessagesUpdateTimer;
     QTimer mConvosUpdateTimer;
+    QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 };
 
 }

@@ -30,6 +30,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(QEnums::DisplayMode displayMode READ getDisplayMode WRITE setDisplayMode NOTIFY displayModeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool notificationsWifiOnly READ getNotificationsWifiOnly WRITE setNotificationsWifiOnly NOTIFY notificationsWifiOnlyChanged FINAL)
+    Q_PROPERTY(QEnums::AllowIncomingChat allowIncomingChat READ getAllowIncomingChat WRITE setAllowIncomingChat NOTIFY allowIncomingChatChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -96,6 +97,9 @@ public:
     bool getNotificationsWifiOnly() const { return mNotificationsWifiOnly; }
     void setNotificationsWifiOnly(bool wifiOnly);
 
+    QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
+    void setAllowIncomingChat(QEnums::AllowIncomingChat allowIncomingChat);
+
     bool isLocalSettingsModified() const { return mLocalSettingsModified; }
     void setLocalSettingsModified(bool modified) { mLocalSettingsModified = modified; }
 
@@ -113,6 +117,7 @@ signals:
     void displayModeChanged();
     void gifAutoPlayChanged();
     void notificationsWifiOnlyChanged();
+    void allowIncomingChatChanged();
 
 private:
     QString mEmail;
@@ -139,6 +144,7 @@ private:
     QEnums::DisplayMode mDisplayMode = QEnums::DISPLAY_MODE_SYSTEM;
     bool mGifAutoPlay = true;
     bool mNotificationsWifiOnly = false;
+    QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
     bool mLocalSettingsModified = false;
 };
 

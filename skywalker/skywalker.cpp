@@ -59,6 +59,7 @@ Skywalker::Skywalker(QObject* parent) :
 {
     mBookmarks.setSkywalker(this);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
+    connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(2, TIMELINE_PREPEND_PAGE_SIZE); });
@@ -371,6 +372,7 @@ void Skywalker::getUserPreferences()
             updateFavoriteFeeds();
             initLabelers();
             loadLabelSettings();
+            mChat->initSettings();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
@@ -2479,6 +2481,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
     mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
+    mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
     mEditUserPreferences->setLocalSettingsModified(false);
 
     if (session->getPDS())
@@ -2544,6 +2547,10 @@ void Skywalker::saveUserPreferences()
                 emit statusMessage(tr("Failed to change logged-out visibility: ") + msg, QEnums::STATUS_LEVEL_ERROR);
             });
     }
+
+    const auto allowIncomingChat = mEditUserPreferences->getAllowIncomingChat();
+    if (allowIncomingChat != mChat->getAllowIncomingChat())
+        mChat->updateSettings(allowIncomingChat);
 
     if (!mEditUserPreferences->isModified())
     {

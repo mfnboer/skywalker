@@ -34,9 +34,66 @@ void Chat::reset()
     setStartConvoInProgress(false);
     setMessagesInProgress(false);
     mLoaded = false;
+    mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
     mChatMaster = nullptr;
     mPostMaster = nullptr;
     mPresence = std::make_unique<Presence>();
+}
+
+void Chat::initSettings()
+{
+    qDebug() << "Init settings";
+    Q_ASSERT(mBsky);
+
+    if (!chatMaster())
+        return;
+
+    chatMaster()->getDeclaration(mUserDid,
+        [this, presence=*mPresence](ATProto::ChatBskyActor::Declaration::Ptr declaration){
+            if (!presence)
+                return;
+
+            mAllowIncomingChat = (QEnums::AllowIncomingChat)declaration->mAllowIncoming;
+            qDebug() << "Allow incoming chat:" << mAllowIncomingChat;
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to get chat settings:" << error << "-" << msg;
+            mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+
+            if (error != ATProto::ATProtoErrorMsg::INVALID_REQUEST)
+                emit settingsFailed(msg);
+        });
+}
+
+void Chat::updateSettings(QEnums::AllowIncomingChat allowIncoming)
+{
+    qDebug() << "Init settings";
+    Q_ASSERT(mBsky);
+
+    if (!chatMaster())
+        return;
+
+    ATProto::ChatBskyActor::Declaration declaration;
+    declaration.mAllowIncoming = (ATProto::AppBskyActor::AllowIncomingType)allowIncoming;
+
+    chatMaster()->updateDeclaration(mUserDid, declaration,
+        [this, presence=*mPresence, allowIncoming]{
+            if (!presence)
+                return;
+
+            mAllowIncomingChat = allowIncoming;
+            qDebug() << "Allow incoming chat:" << mAllowIncomingChat;
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to get chat settings:" << error << "-" << msg;
+            emit settingsFailed(msg);
+        });
 }
 
 ATProto::ChatMaster* Chat::chatMaster()
