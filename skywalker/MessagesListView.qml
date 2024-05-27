@@ -7,6 +7,7 @@ Page {
     required property var chat
     required property convoview convo
     property bool isSending: false
+    property int maxInputTextHeight
     readonly property int maxMessageLength: 1000
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
@@ -29,7 +30,7 @@ Page {
     ListView {
         id: messagesView
         width: parent.width
-        height: parent.height - flick.height
+        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding
         spacing: 0
         clip: true
         model: chat.getMessageListModel(convo.id)
@@ -65,56 +66,52 @@ Page {
     Flickable {
         id: flick
         width: parent.width
-        height: Math.min(newMessageRect.height, parent.height)
+        height: Math.min(newMessageText.height, maxInputTextHeight) - newMessageText.padding - newMessageText.bottomPadding
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: newMessageText.bottomPadding
         clip: true
         contentWidth: parent.width
-        contentHeight: newMessageRect.height
+        contentHeight: newMessageText.contentHeight
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
         onHeightChanged: newMessageText.ensureVisible(newMessageText.cursorRectangle)
 
-        Rectangle {
-            id: newMessageRect
+        // HACK: to keep margin between the top of the Android keyboard and the bottom
+        // of the text input we add extra padding.
+        SkyFormattedTextEdit {
+            id: newMessageText
             x: page.margin
             width: parent.width - sendButton.width - 3 * page.margin
-            height: newMessageText.height
-            color: "transparent"
-
-            // HACK: to keep margin between the top of the Android keyboard and the bottom
-            // of the text input we add extra padding.
-            SkyFormattedTextEdit {
-                id: newMessageText
-                width: parent.width
-                padding: page.margin
-                bottomPadding: 2 * page.margin
-                parentPage: page
-                parentFlick: flick
-                color: guiSettings.messageNewTextColor
-                placeholderText: qsTr("Say something nice")
-                maxLength: page.maxMessageLength
-                // TODO: font selector?
-
-                Rectangle {
-                    z: -1
-                    width: parent.width
-                    height: parent.height - page.margin
-                    radius: 10
-                    color: guiSettings.messageNewBackgroundColor
-                }
-            }
+            padding: page.margin
+            bottomPadding: 2 * page.margin
+            parentPage: page
+            parentFlick: flick
+            color: guiSettings.messageNewTextColor
+            placeholderText: qsTr("Say something nice")
+            maxLength: page.maxMessageLength
+            // TODO: font selector?
         }
+    }
 
-        SvgTransparentButton {
-            id: sendButton
-            anchors.right: parent.right
-            anchors.rightMargin: page.margin
-            y: parent.height - 5 - page.margin
-            svg: svgFilled.send
-            accessibleName: qsTr("send message")
-            enabled: !page.isSending && newMessageText.graphemeLength > 0 && newMessageText.graphemeLength <= page.maxMessageLength
-            onClicked: sendMessage()
-        }
+    SvgTransparentButton {
+        id: sendButton
+        anchors.right: parent.right
+        anchors.rightMargin: page.margin
+        y: flick.y + flick.height + 5
+        svg: svgFilled.send
+        accessibleName: qsTr("send message")
+        enabled: !page.isSending && newMessageText.graphemeLength > 0 && newMessageText.graphemeLength <= page.maxMessageLength
+        onClicked: sendMessage()
+    }
+
+    Rectangle {
+        x: page.margin
+        y: flick.y - newMessageText.padding
+        z: -1
+        width: newMessageText.width
+        height: flick.height + 2 * newMessageText.padding
+        radius: 10
+        color: guiSettings.messageNewBackgroundColor
     }
 
     BusyIndicator {
@@ -135,11 +132,23 @@ Page {
         function onKeyboardRectangleChanged() {
             const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
 
+            // NOTE: This function seems to be called many times when the keyboard
+            // pops up, with increasing Y values. The first Y value seems to be the
+            // position of the top of the keyboard, not sure where the others calls
+            // come from.
             if (keyboardY > 0) {
                 if (!keyboardVisible) {
                     const keyboardHeight = page.height - keyboardY
+
+                    // Shrink empty space between message list and text input. The
+                    // text input shifted up to make place for the keyboard.
                     messagesView.y = Math.min(keyboardHeight, Math.max(messagesView.height - messagesView.contentHeight, 0))
+
+                    // Qt seems to scroll the whole window up!. Pull the header
+                    // down to make it visible
                     header.y = keyboardHeight
+
+                    newMessageText.ensureVisible(newMessageText.cursorRectangle)
                     keyboardVisible = true
                 }
             }
@@ -234,6 +243,8 @@ Page {
     }
 
     Component.onCompleted: {
+        const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
+        maxInputTextHeight = 4 * inputTextHeight + newMessageText.padding + newMessageText.bottomPadding
         messagesView.positionViewAtEnd()
         initHandlers()
         sendButton.forceActiveFocus()
