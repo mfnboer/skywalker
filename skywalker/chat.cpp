@@ -24,6 +24,8 @@ Chat::Chat(ATProto::Client::Ptr& bsky, const QString& userDid, QObject* parent) 
 void Chat::reset()
 {
     qDebug() << "Reset chat";
+    stopMessagesUpdateTimer();
+    stopConvosUpdateTimer();
     mConvoListModel.clear();
     mMessageListModels.clear();
     mConvoIdUpdatingMessages.clear();
@@ -32,7 +34,6 @@ void Chat::reset()
     setStartConvoInProgress(false);
     setMessagesInProgress(false);
     mLoaded = false;
-    stopMessagesUpdateTimer();
     mChatMaster = nullptr;
     mPostMaster = nullptr;
     mPresence = std::make_unique<Presence>();
