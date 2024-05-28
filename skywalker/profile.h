@@ -146,6 +146,10 @@ public:
     Q_INVOKABLE bool isFixedLabeler() const;
     Q_INVOKABLE bool canSendDirectMessage() const;
 
+    // Check if communication is blocked either due to the user blocking it
+    // or being blocked by it.
+    Q_INVOKABLE bool isBlocked() const;
+
 protected:
     const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;
     const ATProto::AppBskyActor::ProfileView* mProfileView = nullptr;

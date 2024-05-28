@@ -23,7 +23,7 @@ class CanChatProfileMatcher : public IProfileMatcher
 public:
     virtual bool match(const BasicProfile& profile) const override
     {
-        return profile.canSendDirectMessage();
+        return profile.canSendDirectMessage() && !profile.isBlocked();
     }
 };
 

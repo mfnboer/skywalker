@@ -270,6 +270,12 @@ bool BasicProfile::canSendDirectMessage() const
     return false;
 }
 
+bool BasicProfile::isBlocked() const
+{
+    const auto viewer = getViewer();
+    return viewer.isBlockedBy() || !viewer.getBlocking().isEmpty() || !viewer.getBlockingByList().isNull();
+}
+
 Profile::Profile(const ATProto::AppBskyActor::ProfileView* profile) :
     BasicProfile(profile)
 {
