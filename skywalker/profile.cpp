@@ -110,7 +110,12 @@ static QString createName(const QString& handle, const QString& displayName)
 
 QString BasicProfile::getName() const
 {
-    return createName(getHandle(), getDisplayName());
+    const QString name = createName(getHandle(), getDisplayName());
+
+    if (hasInvalidHandle())
+        return QString("⚠️ %1").arg(name);
+
+    return name;
 }
 
 QString BasicProfile::getDisplayName() const
@@ -143,14 +148,14 @@ QString BasicProfile::getHandle() const
 
 bool BasicProfile::hasInvalidHandle() const
 {
-    return getHandle() == INVALID_HANDLE;
+    return getHandle().endsWith(INVALID_HANDLE_SUFFIX);
 }
 
 QString BasicProfile::getHandleOrDid() const
 {
     const QString& handle = getHandle();
 
-    if (handle.isEmpty() || handle == INVALID_HANDLE)
+    if (handle.isEmpty() || handle.endsWith(INVALID_HANDLE_SUFFIX))
         return getDid();
 
     return handle;

@@ -5,6 +5,7 @@ import skywalker
 
 Rectangle {
     required property int viewWidth
+    required property convoview convo
     required property messageview message
     required property bool senderIsUser
     required property bool sameSenderAsNext
@@ -75,9 +76,20 @@ Rectangle {
             font.italic: message.deleted
             font.pointSize: getMessageFontSize()
             color: senderIsUser ? guiSettings.messageUserTextColor : guiSettings.messageOtherTextColor
-            plainText: !message.deleted ? message.formattedText : deletedText
+            plainText: getMessageDisplayText()
 
             onLinkActivated: (link) => root.openLink(link)
+
+            function getMessageDisplayText() {
+                if (message.deleted)
+                    return deletedText
+
+                // Something fishy with this profile, make links not clickable
+                if (convo.getMember(message.senderDid).basicProfile.hasInvalidHandle())
+                    return message.text
+
+                return message.formattedText
+            }
 
             TextMetrics {
                 id: textMetrics

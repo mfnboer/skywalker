@@ -1051,7 +1051,7 @@ Page {
         skywalker.onAuthorFeedError.connect(feedFailedHandler)
         skywalker.onAuthorFeedOk.connect(feedOkHandler)
 
-        authorName = author.displayName
+        authorName = author.name
         authorDescription = author.description
         authorAvatar = author.avatarUrl
         authorBanner = author.banner

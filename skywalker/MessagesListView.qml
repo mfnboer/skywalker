@@ -49,6 +49,7 @@ Page {
 
         delegate: MessageViewDelegate {
             viewWidth: messagesView.width
+            convo: page.convo
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
             onReportMessage: (msg) => page.reportDirectMessage(msg)
         }
