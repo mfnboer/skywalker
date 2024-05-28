@@ -27,6 +27,14 @@ Page {
         color: "transparent"
     }
 
+    onHeightChanged: {
+        // When the Android keyboard is visible the height sometimes shrinks to
+        // the size of the visible window. I don't why that happens. Would be nice
+        // if could do so from the start. But shrinking the height on the keyboard event
+        // cause the whole screen to move up into the void????
+        page.header.y = 0
+    }
+
     ListView {
         id: messagesView
         width: parent.width
@@ -65,6 +73,8 @@ Page {
     }
 
     Flickable {
+        property bool contentYUpdating: false
+
         id: flick
         width: parent.width
         height: Math.min(newMessageText.height, maxInputTextHeight) - newMessageText.padding - newMessageText.bottomPadding
@@ -75,7 +85,20 @@ Page {
         contentHeight: newMessageText.contentHeight
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
+
         onHeightChanged: newMessageText.ensureVisible(newMessageText.cursorRectangle)
+
+        onContentYChanged: {
+            if (contentYUpdating)
+                return
+
+            contentYUpdating = true
+            newMessageText.ensureVisible(newMessageText.cursorRectangle)
+            contentYUpdating = false
+        }
+
+        // After dragging the cursor may have moved outside the visible flick area.
+        onDragEnded: newMessageText.resetCursorPosition()
 
         // HACK: to keep margin between the top of the Android keyboard and the bottom
         // of the text input we add extra padding.
@@ -254,7 +277,7 @@ Page {
 
     Component.onCompleted: {
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
-        maxInputTextHeight = 4 * inputTextHeight + newMessageText.padding + newMessageText.bottomPadding
+        maxInputTextHeight = 5 * inputTextHeight + newMessageText.padding + newMessageText.bottomPadding
         messagesView.positionViewAtEnd()
         initHandlers()
         sendButton.forceActiveFocus()

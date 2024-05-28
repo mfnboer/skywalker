@@ -140,13 +140,30 @@ TextEdit {
     }
 
     function ensureVisible(cursor) {
-        const editTextY = editText.mapToItem(flick, 0, 0).y
+        if (parentFlick.dragging)
+            return
+
+        const editTextY = editText.mapToItem(parentFlick, 0, 0).y
         let cursorY = cursor.y + editTextY
 
         if (cursorY < 0)
             parentFlick.contentY += cursorY;
         else if (parentFlick.height < cursorY + cursor.height)
             parentFlick.contentY += cursorY + cursor.height - parentFlick.height
+    }
+
+    function isCursorVisible() {
+        const editTextY = editText.mapToItem(parentFlick, 0, 0).y
+        let cursorY = cursorRectangle.y + editTextY
+        return cursorY >= 0 && parentFlick.height >= cursorY + cursorRectangle.height
+    }
+
+    // Set cursor in the center position if it has become invisible
+    function resetCursorPosition() {
+        if (!isCursorVisible()) {
+            const point = editText.mapFromItem(parentFlick, parentFlick.width / 2, parentFlick.height / 2)
+            cursorPosition = positionAt(point.x, point.y)
+        }
     }
 
     Text {
