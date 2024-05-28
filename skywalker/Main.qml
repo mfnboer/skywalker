@@ -1193,6 +1193,10 @@ ApplicationWindow {
         return null
     }
 
+    function currentStackIsChat() {
+        return stackLayout.currentIndex === stackLayout.chatIndex
+    }
+
     function popStack() {
         let item = currentStack().pop()
 

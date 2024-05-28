@@ -9,6 +9,7 @@ using namespace std::chrono_literals;
 
 static constexpr auto MESSAGES_UPDATE_INTERVAL = 9s;
 static constexpr auto CONVOS_UPDATE_INTERVAL = 31s;
+static constexpr char const* DM_ACCESS_ERROR = "Your APP password does not allow access to your direct messages. Create a new APP password that allows access.";
 
 Chat::Chat(ATProto::Client::Ptr& bsky, const QString& userDid, QObject* parent) :
     QObject(parent),
@@ -162,7 +163,11 @@ void Chat::getConvos(const QString& cursor)
 
             qDebug() << "getConvos FAILED:" << error << " - " << msg;
             setConvosInProgress(false);
-            emit failure(msg);
+
+            if (error == ATProto::ATProtoErrorMsg::INVALID_TOKEN)
+                emit failure(DM_ACCESS_ERROR);
+            else
+                emit failure(msg);
         }
     );
 }
@@ -244,7 +249,11 @@ void Chat::startConvoForMembers(const QStringList& dids)
 
             setStartConvoInProgress(false);
             qDebug() << "startConvoForMembers FAILED:" << error << " - " << msg;
-            emit startConvoForMembersFailed(msg);
+
+            if (error == ATProto::ATProtoErrorMsg::INVALID_TOKEN)
+                emit startConvoForMembersFailed(DM_ACCESS_ERROR);
+            else
+                emit startConvoForMembersFailed(msg);
         });
 }
 

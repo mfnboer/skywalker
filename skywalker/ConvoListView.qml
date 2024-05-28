@@ -99,7 +99,8 @@ ListView {
     }
 
     function failureHandler(error) {
-        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        if (root.currentStackIsChat())
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     function initHandlers() {
