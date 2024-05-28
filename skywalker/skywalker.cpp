@@ -74,6 +74,8 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
     connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
             [this]{ emit showNotifications(); });
+    connect(&jniCallbackListener, &JNICallbackListener::showDirectMessages, this,
+            [this]{ emit showDirectMessages(); });
 
     auto* app = (QGuiApplication*)QGuiApplication::instance();
     Q_ASSERT(app);
@@ -714,7 +716,7 @@ void Skywalker::finishTimelineSync(int index)
     // Inform the GUI about the timeline sync.
     // This will show the timeline to the user.
     emit timelineSyncOK(index);
-    OffLineMessageChecker::checkNoticationPermission();
+    OffLineMessageChecker::checkNotificationPermission();
 
     // Now we can handle pending intent (content share).
     // If there is any, then this will open the post composition page. This should
@@ -727,7 +729,7 @@ void Skywalker::finishTimelineSync(int index)
 void Skywalker::finishTimelineSyncFailed()
 {
     emit timelineSyncFailed();
-    OffLineMessageChecker::checkNoticationPermission();
+    OffLineMessageChecker::checkNotificationPermission();
     JNICallbackListener::handlePendingIntent();
 }
 
@@ -2732,6 +2734,8 @@ void Skywalker::pauseApp()
     saveHashtags();
     mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
+    mUserSettings.setOffLineChatCheckRev(mUserDid, mChat->getLastRev());
+    mUserSettings.setCheckOfflineChat(mUserDid, mChat->convosLoaded());
     mUserSettings.resetNextNotificationId();
     mUserSettings.sync();
     OffLineMessageChecker::start(mUserSettings.getNotificationsWifiOnly());

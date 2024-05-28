@@ -83,6 +83,8 @@ public:
     bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
                           ATProto::Client& bsky, bool clearFirst = false,
                           const std::function<void()>& doneCb = nullptr);
+    QString addNotifications(ATProto::ChatBskyConvo::ConvoListOutput::Ptr convoListOutput,
+                          const QString& lastRev, const QString& userDid);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 

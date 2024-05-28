@@ -26,18 +26,22 @@ public class NewMessageNotifier {
     private static final String LOGTAG = "NewMessageNotifier";
 
     // Values must be the same as OffLineMessageChecker::IconType
-    private static final int IC_CHAT = 0;
+    private static final int IC_POST = 0;
     private static final int IC_FOLLOW = 1;
     private static final int IC_LIKE = 2;
     private static final int IC_MENTION = 3;
     private static final int IC_REPOST = 4;
+    private static final int IC_CHAT = 5;
+
+    // Must be the same as channel IDs in offline_message_checker.cpp
+    private static final String CHANNEL_CHAT = "CHANNEL_CHAT";
 
     private static Context mContext;
 
     private static int iconTypeToResource(int iconType) {
         switch (iconType) {
-            case IC_CHAT:
-                return R.drawable.ic_chat;
+            case IC_POST:
+                return R.drawable.ic_post;
             case IC_FOLLOW:
                 return R.drawable.ic_follow;
             case IC_LIKE:
@@ -46,9 +50,11 @@ public class NewMessageNotifier {
                 return R.drawable.ic_mention;
             case IC_REPOST:
                 return R.drawable.ic_repost;
+            case IC_CHAT:
+                return R.drawable.ic_chat;
             default:
                 Log.w(LOGTAG, "Unknown icon type: " + iconType);
-                return R.drawable.ic_chat;
+                return R.drawable.ic_post;
         }
     }
 
@@ -68,9 +74,17 @@ public class NewMessageNotifier {
         }
     }
 
+    public static Intent createNotificationIntent(String channelId) {
+        String action = channelId.equals(CHANNEL_CHAT) ?
+            com.gmail.mfnboer.SkywalkerActivity.INTENT_ACTION_SHOW_DIRECT_MESSAGES :
+            com.gmail.mfnboer.SkywalkerActivity.INTENT_ACTION_SHOW_NOTIFICATIONS;
+
+        return new Intent(action);
+    }
+
     public static void createNotification(String channelId, int notificationId, String title, String msg, long when, int iconType, byte[] avatar) {
         Log.d(LOGTAG, "Create notification: " + channelId + " id: " + notificationId + " title: " + title + " msg: " + msg);
-        Intent intent = new Intent(com.gmail.mfnboer.SkywalkerActivity.INTENT_ACTION_SHOW_NOTIFICATIONS);
+        Intent intent = createNotificationIntent(channelId);
         intent.setComponent(new ComponentName("com.gmail.mfnboer.skywalker", "com.gmail.mfnboer.SkywalkerActivity"));
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 

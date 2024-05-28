@@ -232,6 +232,7 @@ ApplicationWindow {
         }
 
         onShowNotifications: viewNotifications()
+        onShowDirectMessages: viewChat()
 
         onAnniversary: {
             const years = skywalker.getAnniversary().getAnniversaryYears()

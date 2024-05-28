@@ -107,6 +107,12 @@ public:
     void setOfflineMessageCheckTimestamp(QDateTime timestamp);
     QDateTime getOfflineMessageCheckTimestamp() const;
 
+    void setOffLineChatCheckRev(const QString& did, const QString& rev);
+    QString getOffLineChatCheckRev(const QString& did) const;
+
+    void setCheckOfflineChat(const QString& did, bool check);
+    bool mustCheckOfflineChat(const QString& did) const;
+
     void resetNextNotificationId();
     int getNextNotificationId();
 

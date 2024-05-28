@@ -248,7 +248,6 @@ Page {
             }
 
             RadioButton {
-                Layout.fillWidth: true
                 Layout.leftMargin: 10
                 padding: 0
                 checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_ALL
@@ -259,7 +258,6 @@ Page {
                 }
             }
             RadioButton {
-                Layout.fillWidth: true
                 Layout.leftMargin: 10
                 padding: 0
                 checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_FOLLOWING
@@ -270,7 +268,6 @@ Page {
                 }
             }
             RadioButton {
-                Layout.fillWidth: true
                 Layout.leftMargin: 10
                 padding: 0
                 checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_NONE

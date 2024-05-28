@@ -122,6 +122,11 @@ ATProto::PostMaster* Chat::postMaster()
     return mPostMaster.get();
 }
 
+QString Chat::getLastRev() const
+{
+    return mConvoListModel.getLastRev();
+}
+
 void Chat::getConvos(const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -424,6 +429,7 @@ void Chat::getMessages(const QString& convoId, const QString& cursor)
             }
 
             setMessagesInProgress(false);
+            emit getMessagesOk(cursor);
         },
         [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
@@ -596,7 +602,7 @@ void Chat::sendMessage(const QString& convoId, const QString& text, const QStrin
     if (!chatMaster())
         return;
 
-    emit sendMessageProgress(tr("Sending message"));
+    emit sendMessageProgress();
 
     chatMaster()->createMessage(text,
         [this, presence=*mPresence, convoId, quoteUri, quoteCid](auto message){
@@ -733,7 +739,10 @@ void Chat::resume()
         startMessagesUpdateTimer();
 
     if (mLoaded)
+    {
+        getConvos();
         startConvosUpdateTimer();
+    }
 }
 
 }

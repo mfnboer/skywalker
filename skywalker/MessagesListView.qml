@@ -163,7 +163,7 @@ Page {
     }
 
     function sendMessage() {
-        sendButton.forceActiveFocus() // take focus from the text input to get complete text
+        Qt.inputMethod.commit()
         isSending = true
         const qUri = ""
         const qCid = ""
@@ -183,12 +183,10 @@ Page {
     }
 
     function sendMessageOkHandler() {
-        skywalker.showStatusMessage(qsTr("Message sent"), QEnums.STATUS_LEVEL_INFO)
         isSending = false
         busyIndicator.running = false
         newMessageText.clear()
         chat.updateMessages(convo.id)
-        sendButton.forceActiveFocus()
     }
 
     function sendMessageFailedHandler(error) {
@@ -197,9 +195,8 @@ Page {
         busyIndicator.running = false
     }
 
-    function sendMessageProgressHandler(msg) {
+    function sendMessageProgressHandler() {
         busyIndicator.running = true
-        skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
     function deleteMessageOkHandler() {
@@ -209,6 +206,11 @@ Page {
 
     function deleteMessageFailedHandler(error) {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function getMessagesOkHandler(cursor) {
+        if (!cursor)
+            messagesView.positionViewAtEnd()
     }
 
     function getMessagesFailedHandler(error) {
@@ -227,6 +229,7 @@ Page {
         chat.onSendMessageProgress.connect(sendMessageProgressHandler)
         chat.onDeleteMessageOk.connect(deleteMessageOkHandler)
         chat.onDeleteMessageFailed.connect(deleteMessageFailedHandler)
+        chat.onGetMessagesOk.connect(getMessagesOkHandler)
         chat.onGetMessagesFailed.connect(getMessagesFailedHandler)
     }
 
@@ -238,6 +241,7 @@ Page {
         chat.onSendMessageProgress.disconnect(sendMessageProgressHandler)
         chat.onDeleteMessageOk.disconnect(deleteMessageOkHandler)
         chat.onDeleteMessageFailed.disconnect(deleteMessageFailedHandler)
+        chat.onGetMessagesOk.disconnect(getMessagesOkHandler)
         chat.onGetMessagesFailed.disconnect(getMessagesFailedHandler)
 
         chat.removeMessageListModel(convo.id)

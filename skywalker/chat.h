@@ -26,6 +26,7 @@ public:
     void initSettings();
     void updateSettings(QEnums::AllowIncomingChat allowIncoming);
     QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
+    QString getLastRev() const;
 
     Q_INVOKABLE void getConvos(const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage();
@@ -73,7 +74,8 @@ signals:
     void leaveConvoOk();
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
-    void sendMessageProgress(QString msg);
+    void getMessagesOk(QString cursor);
+    void sendMessageProgress();
     void sendMessageFailed(QString error);
     void sendMessageOk();
     void deleteMessageFailed(QString error);

@@ -348,6 +348,26 @@ QDateTime UserSettings::getOfflineMessageCheckTimestamp() const
     return mSettings.value("offlineMessageCheckTimestamp").toDateTime();
 }
 
+void UserSettings::setOffLineChatCheckRev(const QString& did, const QString& rev)
+{
+    mSettings.setValue(key(did, "offlineChatCheckRev"), rev);
+}
+
+QString UserSettings::getOffLineChatCheckRev(const QString& did) const
+{
+    return mSettings.value(key(did, "offlineChatCheckRev")).toString();
+}
+
+void UserSettings::setCheckOfflineChat(const QString& did, bool check)
+{
+    mSettings.setValue(key(did, "checkOfflineChat"), check);
+}
+
+bool UserSettings::mustCheckOfflineChat(const QString& did) const
+{
+    return mSettings.value(key(did, "checkOfflineChat"), false).toBool();
+}
+
 void UserSettings::resetNextNotificationId()
 {
     mSettings.setValue("nextNotificationId", 1);
