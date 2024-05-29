@@ -87,6 +87,11 @@ Item {
         return speech
     }
 
+    function getLabelerSpeech(labeler) {
+        let speech = qsTr(`labeler: ${labeler.creator.name}\n\n${labeler.creator.description}`)
+        return speech
+    }
+
     function getContentPrefVisibilitySpeech(pref) {
         switch (pref) {
         case QEnums.CONTENT_PREF_VISIBILITY_HIDE:

@@ -39,6 +39,7 @@ struct Quote
         QUOTE_POST,
         QUOTE_FEED,
         QUOTE_LIST,
+        QUOTE_LABELER,
         UNKNOWN
     };
 
@@ -48,7 +49,8 @@ struct Quote
 
     std::variant<QuotePost::Ptr,
                  ATProto::AppBskyFeed::GeneratorView::Ptr,
-                 ATProto::AppBskyGraph::ListView::Ptr> mRecord;
+                 ATProto::AppBskyGraph::ListView::Ptr,
+                 ATProto::AppBskyLabeler::LabelerView::Ptr> mRecord;
 
     QJsonObject toJson() const;
 

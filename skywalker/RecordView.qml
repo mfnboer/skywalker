@@ -79,6 +79,12 @@ Item {
             Accessible.ignored: true
         }
 
+        QuoteLabeler {
+            width: parent.width
+            labeler: record.labeler
+            visible: record.labelerAvailable
+        }
+
         Text {
             width: parent.width
             color: guiSettings.textColor
@@ -140,6 +146,8 @@ Item {
             root.viewPostFeed(record.feed)
         else if (record.listAvailable)
             root.viewList(record.list)
+        else if (record.labelerAvailable)
+            skywalker.getDetailedProfile(record.labeler.creator.did)
     }
 
     function getSpeech() {
@@ -154,6 +162,9 @@ Item {
         }
         else if (record.listAvailable) {
             return accessibilityUtils.getListSpeech(record.list)
+        }
+        else if (record.labelerAvailable) {
+            return accessibilityUtils.getLabelerSpeech(record.labeler)
         }
 
         return accessibilityUtils.getPostNotAvailableSpeech(

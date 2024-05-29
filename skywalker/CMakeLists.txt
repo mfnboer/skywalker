@@ -370,6 +370,7 @@ qt_add_qml_module(libskywalker
         QML_FILES MessageViewDelegate.qml
         QML_FILES StartConversation.qml
         SOURCES profile_matcher.h
+        QML_FILES QuoteLabeler.qml
 )
 
 if (NOT ANDROID)
