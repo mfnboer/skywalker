@@ -1,5 +1,5 @@
-next
-====
+2.6
+===
 * Direct messages
 * Show warning sign on profiles with invalid handles
 * Check for new posts on waking up from sleep
