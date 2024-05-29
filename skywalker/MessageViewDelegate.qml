@@ -22,6 +22,7 @@ Rectangle {
 
     id: view
     width: viewWidth
+    color: guiSettings.backgroundColor
     height: messageTimeText.y + messageTimeText.height
 
     AccessibleText {

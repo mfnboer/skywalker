@@ -139,6 +139,8 @@ Rectangle {
                     id: moreButton
                     Layout.preferredWidth: 34
                     Layout.preferredHeight: 34
+                    iconColor: guiSettings.textColor
+                    Material.background: "transparent"
                     svg: svgOutline.moreVert
                     accessibleName: qsTr("more options")
                     onClicked: moreMenu.open()

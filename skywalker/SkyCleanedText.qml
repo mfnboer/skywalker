@@ -15,6 +15,7 @@ Text {
 
     id: theText
     clip: true
+    color: guiSettings.textColor
     text: plainText
 
     onPlainTextChanged: determineTextFormat()
