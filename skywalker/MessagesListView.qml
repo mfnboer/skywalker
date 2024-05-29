@@ -42,10 +42,11 @@ Page {
         spacing: 0
         clip: true
         model: chat.getMessageListModel(convo.id)
+        boundsMovement: Flickable.StopAtBounds
         flickDeceleration: guiSettings.flickDeceleration
         ScrollIndicator.vertical: ScrollIndicator {}
 
-        onHeightChanged: positionViewAtEnd()
+        onHeightChanged: moveToEnd()
 
         delegate: MessageViewDelegate {
             viewWidth: messagesView.width
@@ -57,7 +58,6 @@ Page {
         FlickableRefresher {
             inProgress: chat.getMessagesInProgress
             topOvershootFun: () => chat.getMessagesNextPage(convo.id)
-            bottomOvershootFun: () => chat.getMessages(convo.id)
         }
 
         EmptyListIndication {
@@ -71,6 +71,14 @@ Page {
             anchors.centerIn: parent
             running: chat.getMessagesInProgress
         }
+
+        function moveToEnd() {
+            positionViewAtEnd()
+
+            // positionViewAtEnd not always gets completely to the end...
+            // This seems to fix it...
+            contentY = Math.max(originY, originY + contentHeight - height)
+        }
     }
 
     Flickable {
@@ -83,7 +91,7 @@ Page {
         anchors.bottomMargin: newMessageText.bottomPadding
         clip: true
         contentWidth: parent.width
-        contentHeight: newMessageText.contentHeight
+        contentHeight: newMessageText.contentHeight + page.margin
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
@@ -234,7 +242,7 @@ Page {
 
     function getMessagesOkHandler(cursor) {
         if (!cursor)
-            messagesView.positionViewAtEnd()
+            messagesView.moveToEnd()
     }
 
     function getMessagesFailedHandler(error) {
@@ -242,7 +250,8 @@ Page {
     }
 
     function rowsInsertedHandler(parent, start, end) {
-        messagesView.positionViewAtEnd()
+        if (end === messagesView.count - 1)
+            messagesView.moveToEnd()
     }
 
     function initHandlers() {
@@ -279,7 +288,7 @@ Page {
     Component.onCompleted: {
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
         maxInputTextHeight = 5 * inputTextHeight + newMessageText.padding + newMessageText.bottomPadding
-        messagesView.positionViewAtEnd()
+        messagesView.moveToEnd()
         initHandlers()
         sendButton.forceActiveFocus()
     }
