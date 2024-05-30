@@ -37,6 +37,8 @@ class GeneratorView
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(int likeCount READ getLikeCount FINAL)
+    Q_PROPERTY(bool acceptsInteractions READ acceptsInteractions FINAL)
+    Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
     Q_PROPERTY(GeneratorViewerState viewer READ getViewer FINAL)
     QML_VALUE_TYPE(generatorview)
 
@@ -56,6 +58,8 @@ public:
     QString getAvatar() const;
     ImageView getImageView() const;
     int getLikeCount() const;
+    bool acceptsInteractions() const;
+    ContentLabelList getContentLabels() const;
     GeneratorViewerState getViewer() const;
 
 private:

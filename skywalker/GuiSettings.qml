@@ -165,4 +165,8 @@ Item {
         let visibility = skywalker.getContentVisibility(author.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
+
+    function feedVisible(feed) {
+        return authorVisible(feed)
+    }
 }

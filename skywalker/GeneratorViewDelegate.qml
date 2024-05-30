@@ -12,6 +12,7 @@ Rectangle {
     required property bool feedSaved
     required property bool feedPinned
     required property bool endOfFeed
+    property bool showFeed: feedVisible()
     property int maxTextLines: 1000
 
     id: generatorView
@@ -37,7 +38,7 @@ Rectangle {
             x: 8
             y: 5
             width: guiSettings.threadBarWidth * 5
-            avatarUrl: feed.avatar
+            avatarUrl: showFeed ? feed.avatar : ""
 
             onClicked: feedClicked(feed)
 
@@ -151,6 +152,7 @@ Rectangle {
             textFormat: Text.RichText
             color: guiSettings.textColor
             text: feed.formattedDescription
+            visible: showFeed
 
             onLinkActivated: (link) => root.openLink(link)
 
@@ -275,5 +277,9 @@ Rectangle {
     function favoriteClicked(feed, add) {
         skywalker.favoriteFeeds.pinFeed(feed, add)
         skywalker.saveFavoriteFeeds()
+    }
+
+    function feedVisible() {
+        return guiSettings.feedVisible(feed)
     }
 }

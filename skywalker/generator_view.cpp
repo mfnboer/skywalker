@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "generator_view.h"
+#include "content_filter.h"
 #include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
 
@@ -77,6 +78,16 @@ ImageView GeneratorView::getImageView() const
 int GeneratorView::getLikeCount() const
 {
     return view() ? view()->mLikeCount : 0;
+}
+
+bool GeneratorView::acceptsInteractions() const
+{
+    return view() ? view()->mAcceptsInteractions : false;
+}
+
+ContentLabelList GeneratorView::getContentLabels() const
+{
+    return view() ? ContentFilter::getContentLabels(view()->mLabels) : ContentLabelList{};
 }
 
 GeneratorViewerState GeneratorView::getViewer() const

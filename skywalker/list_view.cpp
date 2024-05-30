@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "list_view.h"
+#include "content_filter.h"
 #include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
 
@@ -113,6 +114,17 @@ QString ListViewBasic::getAvatar() const
 ImageView ListViewBasic::getImageView() const
 {
     return ImageView(getAvatar(), getName());
+}
+
+ContentLabelList ListViewBasic::getContentLabels() const
+{
+    if (basicView())
+        return ContentFilter::getContentLabels(basicView()->mLabels);
+
+    if (view())
+        return ContentFilter::getContentLabels(view()->mLabels);
+
+    return {};
 }
 
 ListViewerState ListViewBasic::getViewer() const

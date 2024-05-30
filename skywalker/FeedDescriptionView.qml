@@ -10,6 +10,9 @@ Page {
     property string feedLikeUri: feed.viewer.like
     property bool isSavedFeed: skywalker.favoriteFeeds.isSavedFeed(feed.uri)
     property bool isPinnedFeed: skywalker.favoriteFeeds.isPinnedFeed(feed.uri)
+    property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
+    property string contentWarning: ""
+    property bool showWarnedMedia: false
 
     signal closed
 
@@ -40,7 +43,7 @@ Page {
             x: 8
             y: 5
             width: 100
-            avatarUrl: feed.avatar
+            avatarUrl: !contentVisible() ? "" : feed.avatar
             onClicked: {
                 if (feed.avatar)
                     root.viewFullImage([feed.imageView], 0)
@@ -201,6 +204,21 @@ Page {
         }
 
         Rectangle {
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            height: contentLabels.height
+            color: "transparent"
+
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.right: undefined
+                contentLabels: feed.labels
+                contentAuthorDid: feed.creator.did
+            }
+        }
+
+        Rectangle {
             height: likeIcon.height
             Layout.columnSpan: 3
             Layout.fillWidth: true
@@ -257,5 +275,17 @@ Page {
             feedUtils.undoLike(likeUri, cid)
         else
             feedUtils.like(uri, cid)
+    }
+
+    function contentVisible() {
+        if (author.viewer.blockedBy)
+            return false
+
+        return contentVisibility === QEnums.CONTENT_VISIBILITY_SHOW || showWarnedMedia
+    }
+
+    Component.onCompleted: {
+        contentVisibility = skywalker.getContentVisibility(feed.labels)
+        contentWarning = skywalker.getContentWarning(feed.labels)
     }
 }
