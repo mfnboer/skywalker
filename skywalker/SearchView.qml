@@ -66,6 +66,7 @@ Page {
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: root.viewFeedsView()
+        onMessagesClicked: root.viewChat()
     }
 
     TabBar {
@@ -560,7 +561,11 @@ Page {
 
         let component = Qt.createComponent("SearchPostScope.qml")
         let scopePage = component.createObject(page, { userName: userName, otherUserHandle: otherHandle })
-        scopePage.onRejected.connect(() => scopePage.destroy())
+        scopePage.onRejected.connect(() => {
+                postSearchUser = scopePage.getUserName()
+                searchUtils.scopedSearchPosts(page.getSearchText())
+                scopePage.destroy()
+        })
         scopePage.onAccepted.connect(() => {
                 postSearchUser = scopePage.getUserName()
                 searchUtils.scopedSearchPosts(page.getSearchText())

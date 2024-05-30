@@ -202,6 +202,12 @@ Page {
                             MenuItemSvg { svg: following ? svgOutline.noUsers : svgOutline.addUser }
                         }
                         AccessibleMenuItem {
+                            text: qsTr("Search")
+                            onTriggered: root.viewSearchView("", author.handle)
+
+                            MenuItemSvg { svg: svgOutline.search }
+                        }
+                        AccessibleMenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
                             visible: !isUser(author) && author.viewer.mutedByList.isNull()
                             onTriggered: {
@@ -255,9 +261,10 @@ Page {
                 }
 
                 SvgButton {
-                    svg: svgOutline.search
-                    accessibleName: qsTr(`search posts from ${author.name}`)
-                    onClicked: root.viewSearchView("", author.handle)
+                    svg: svgOutline.directMessage
+                    accessibleName: qsTr(`direct message ${author.name}`)
+                    onClicked: skywalker.chat.startConvoForMember(author.did)
+                    visible: author.canSendDirectMessage() && !isUser(author) && !skywalker.chat.messageConvoOpen()
                 }
 
                 SkyButton {
@@ -1044,7 +1051,7 @@ Page {
         skywalker.onAuthorFeedError.connect(feedFailedHandler)
         skywalker.onAuthorFeedOk.connect(feedOkHandler)
 
-        authorName = author.displayName
+        authorName = author.name
         authorDescription = author.description
         authorAvatar = author.avatarUrl
         authorBanner = author.banner

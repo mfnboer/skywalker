@@ -12,6 +12,8 @@ Page {
     property date postDateTime
     property generatorview feed
     property listview list
+    property string convoId
+    property messageview message
     property int reasonType: QEnums.REPORT_REASON_TYPE_NULL // QEnums.ReasonType
     property string details
     readonly property int labelerAuthorListModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LABELERS, "")
@@ -44,7 +46,7 @@ Page {
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
-            text: postUri ? qsTr("Report post") : !author.isNull() ? qsTr("Report account") : qsTr("Report feed")
+            text: getReportTitle()
         }
 
         SkyButton {
@@ -76,7 +78,7 @@ Page {
         width: parent.width - 20
         height: visible ? implicitHeight : 0
         model: skywalker.getAuthorListModel(page.labelerAuthorListModelId)
-        visible: count > 1
+        visible: count > 1 && message.isNull()
     }
 
     ListView {
@@ -93,16 +95,33 @@ Page {
         header: Rectangle {
             z: guiSettings.headerZLevel
             width: parent.width
-            height: page.postUri ? quotePost.height : !page.author.isNull() ? authorRow.height : quoteFeed.height
+            height: calcHeight()
             color: guiSettings.postHighLightColor
             border.width: 2
             border.color: guiSettings.borderColor
+
+            function calcHeight() {
+                if (quotePost.visible)
+                    return quotePost.height
+
+                if (quoteMessage.visible)
+                    return quoteMessage.height
+
+                if (authorRow.visible)
+                    return authorRow.height
+
+                if (quoteFeed.visible)
+                    return quoteFeed.height
+
+                if (quoteList.visible)
+                    return quoteList.height
+            }
 
             RowLayout {
                 id: authorRow
                 width: parent.width
                 spacing: 10
-                visible: !postUri && !page.author.isNull()
+                visible: !postUri && message.isNull() && !page.author.isNull()
 
                 Rectangle {
                     width: 60
@@ -146,7 +165,18 @@ Page {
                 author: page.author
                 postText: page.postText
                 postDateTime: page.postDateTime
+                ellipsisBackgroundColor: parent.color
                 visible: page.postUri
+            }
+
+            QuotePost {
+                id: quoteMessage
+                width: parent.width
+                author: page.author
+                postText: page.message.formattedText
+                postDateTime: message.sentAt
+                ellipsisBackgroundColor: parent.color
+                visible: !page.message.isNull()
             }
 
             QuoteFeed {
@@ -263,6 +293,9 @@ Page {
         if (postUri) {
             reportUtils.reportPostOrFeed(postUri, postCid, reasonType, details, labelerDid)
         }
+        else if (!message.isNull()) {
+            reportUtils.reportDirectMessage(message.senderDid, convoId, message.id, reasonType, details)
+        }
         else if (!author.isNull()) {
             reportUtils.reportAuthor(author.did, reasonType, details, labelerDid)
         }
@@ -274,9 +307,27 @@ Page {
         }
     }
 
+    function getReportTitle() {
+        if (postUri)
+            return "Report post"
+        if (!message.isNull())
+            return "Report message"
+        if (!author.isNull())
+            return "Report account"
+        if (!feed.isNull())
+            return "Report feed"
+        if (!list.isNull())
+            return "Report list"
+
+        console.warn("UKNOWN REPORT")
+        return "Report"
+    }
+
     function getReportTarget() {
         if (postUri)
             return QEnums.REPORT_TARGET_POST
+        if (!message.isNull())
+            return QEnums.REPORT_DIRECT_MESSAGE
         if (!author.isNull())
             return QEnums.REPORT_TARGET_ACCOUNT
         if (!feed.isNull())
@@ -294,5 +345,7 @@ Page {
 
     Component.onCompleted: {
         skywalker.getAuthorList(labelerAuthorListModelId)
+        console.debug("POST:", page.postText)
+        console.debug("MSG:", page.message.formattedText)
     }
 }

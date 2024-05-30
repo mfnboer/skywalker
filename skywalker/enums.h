@@ -146,7 +146,8 @@ public:
         REPORT_TARGET_POST,
         REPORT_TARGET_ACCOUNT,
         REPORT_TARGET_FEED,
-        REPORT_TARGET_LIST
+        REPORT_TARGET_LIST,
+        REPORT_TARGET_DIRECT_MESSAGE
     };
     Q_ENUM(ReportTarget)
 
@@ -212,6 +213,14 @@ public:
         FONT_SQUARE
     };
     Q_ENUM(FontType)
+
+    enum AllowIncomingChat
+    {
+        ALLOW_INCOMING_CHAT_ALL = (int)ATProto::AppBskyActor::AllowIncomingType::ALL,
+        ALLOW_INCOMING_CHAT_NONE = (int)ATProto::AppBskyActor::AllowIncomingType::NONE,
+        ALLOW_INCOMING_CHAT_FOLLOWING = (int)ATProto::AppBskyActor::AllowIncomingType::FOLLOWING
+    };
+    Q_ENUM(AllowIncomingChat)
 };
 
 }

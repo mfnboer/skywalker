@@ -159,4 +159,13 @@ void EditUserPreferences::setNotificationsWifiOnly(bool wifiOnly)
     }
 }
 
+void EditUserPreferences::setAllowIncomingChat(QEnums::AllowIncomingChat allowIncomingChat)
+{
+    if (allowIncomingChat != mAllowIncomingChat)
+    {
+        mAllowIncomingChat = allowIncomingChat;
+        emit allowIncomingChatChanged();
+    }
+}
+
 }

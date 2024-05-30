@@ -24,7 +24,7 @@ public:
         FeedLikeUri,
         FeedSaved,
         FeedPinned,
-        EndOfeed
+        EndOfFeed
     };
 
     using Ptr = std::unique_ptr<FeedListModel>;

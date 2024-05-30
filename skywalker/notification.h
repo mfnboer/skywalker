@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "message_view.h"
 #include "post.h"
 #include "post_record.h"
 #include "profile.h"
@@ -17,6 +18,7 @@ public:
 
     explicit Notification(const ATProto::AppBskyNotification::Notification* notification);
     Notification(const QString& inviteCode, const BasicProfile& usedBy);
+    Notification(const MessageView& messageView, const BasicProfile& messageSender);
 
     QString getUri() const;
     QString getCid() const;
@@ -40,6 +42,7 @@ public:
     QString getPostUri() const;
 
     void addOtherAuthor(const BasicProfile& author);
+    const MessageView& getDirectMessage() const { return mDirectMessage; }
 
 private:
     Post getPost(const PostCache& cache, const QString& uri) const;
@@ -48,6 +51,8 @@ private:
     BasicProfileList mOtherAuthors;
     QString mInviteCode;
     BasicProfile mInviteCodeUsedBy;
+    MessageView mDirectMessage;
+    BasicProfile mMessageSender;
     bool mEndOfList = false;
 };
 

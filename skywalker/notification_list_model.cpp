@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "notification_list_model.h"
 #include "author_cache.h"
+#include "convo_view.h"
 #include "content_filter.h"
 #include "enums.h"
 #include "invite_code_store.h"
@@ -107,6 +108,56 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
     });
 
     return true;
+}
+
+QString NotificationListModel::addNotifications(
+    ATProto::ChatBskyConvo::ConvoListOutput::Ptr convoListOutput, const QString& lastRev, const QString& userDid)
+{
+    qDebug() << "Add chat notifications:" << convoListOutput->mConvos.size();
+
+    if (convoListOutput->mConvos.empty())
+    {
+        qDebug() << "No conversations";
+        return {};
+    }
+
+    for (const auto& convo : convoListOutput->mConvos)
+    {
+        if (convo->mRev <= lastRev)
+        {
+            qDebug() << "Messages already seen, rev:" << convo->mRev << "last:" << lastRev;
+            break;
+        }
+
+        if (!convo->mLastMessage)
+        {
+            qDebug() << "Convo has no last message:" << convo->mId << convo->mRev;
+            continue;
+        }
+
+        const ConvoView convoView(*convo, userDid);
+        const ChatBasicProfile sender = convoView.getMember(convoView.getLastMessage().getSenderDid());
+        const BasicProfile profile = sender.getBasicProfile();
+
+        if (profile.isNull())
+        {
+            qWarning() << "Unknown message sender:" << convo->mId << convo->mRev;
+            continue;
+        }
+
+        const MessageView messageView(*convo->mLastMessage);
+
+        if (messageView.isDeleted())
+        {
+            qDebug() << "Last message is deleted";
+            continue;
+        }
+
+        const Notification notification(messageView, profile);
+        mList.push_back(notification);
+    }
+
+    return convoListOutput->mConvos.front()->mRev;
 }
 
 void NotificationListModel::filterNotificationList(NotificationList& list) const

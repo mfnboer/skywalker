@@ -17,6 +17,12 @@ Notification::Notification(const QString& inviteCode, const BasicProfile& usedBy
 {
 }
 
+Notification::Notification(const MessageView& messageView, const BasicProfile& messageSender) :
+    mDirectMessage(messageView),
+    mMessageSender(messageSender)
+{
+}
+
 QString Notification::getUri() const
 {
     return mNotification ? mNotification->mUri : QString();
@@ -35,6 +41,9 @@ Notification::Reason Notification::getReason() const
     if (!mInviteCode.isEmpty())
         return Reason::INVITE_CODE_USED;
 
+    if (!mDirectMessage.isNull())
+        return Reason::DIRECT_MESSAGE;
+
     return Reason::UNKNOWN;
 }
 
@@ -45,7 +54,13 @@ QString Notification::getReasonSubjectUri() const
 
 BasicProfile Notification::getAuthor() const
 {
-    return mNotification ? BasicProfile(mNotification->mAuthor.get()) : BasicProfile();
+    if (mNotification)
+        return BasicProfile(mNotification->mAuthor.get());
+
+    if (!mMessageSender.isNull())
+        return mMessageSender;
+
+    return {};
 }
 
 PostRecord Notification::getPostRecord() const
@@ -96,7 +111,13 @@ bool Notification::isRead() const
 
 QDateTime Notification::getTimestamp() const
 {
-    return mNotification ? mNotification->mIndexedAt : QDateTime();
+    if (mNotification)
+        return mNotification->mIndexedAt;
+
+    if (!mDirectMessage.isNull())
+        return mDirectMessage.getSentAt();
+
+    return {};
 }
 
 QString Notification::getPostUri() const
@@ -114,6 +135,7 @@ QString Notification::getPostUri() const
         return getUri();
         break;
     case Reason::INVITE_CODE_USED:
+    case Reason::DIRECT_MESSAGE:
     case Reason::UNKNOWN:
         return getUri();
         break;

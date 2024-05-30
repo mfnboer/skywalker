@@ -44,6 +44,7 @@ Page {
         onSearchClicked: root.viewSearchView()
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: feedListView.positionViewAtBeginning()
+        onMessagesClicked: root.viewChat()
     }
 
     TabBar {

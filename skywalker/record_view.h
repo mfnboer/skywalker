@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "generator_view.h"
 #include "image_view.h"
+#include "labeler.h"
 #include "language_utils.h"
 #include "list_view.h"
 #include "muted_words.h"
@@ -41,6 +42,8 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(GeneratorView feed READ getFeed FINAL)
     Q_PROPERTY(bool listAvailable READ getListAvailable FINAL)
     Q_PROPERTY(ListView list READ getList FINAL)
+    Q_PROPERTY(bool labelerAvailable READ getLabelerAvailable FINAL)
+    Q_PROPERTY(LabelerView labeler READ getLabeler FINAL)
     QML_VALUE_TYPE(recordview)
 
 public:
@@ -76,6 +79,8 @@ public:
     GeneratorView getFeed() const;
     bool getListAvailable() const { return mList != nullptr; }
     ListView getList() const;
+    bool getLabelerAvailable() const { return mLabeler != nullptr; }
+    LabelerView getLabeler() const;
 
     void setContentVisibility(QEnums::ContentVisibility visibility) { mContentVisibility = visibility; }
     void setContentWarning(const QString& warning) { mContentWarning = warning; }
@@ -86,6 +91,7 @@ private:
     const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;
     const ATProto::AppBskyFeed::GeneratorView* mFeed = nullptr;
     const ATProto::AppBskyGraph::ListView* mList = nullptr;
+    const ATProto::AppBskyLabeler::LabelerView* mLabeler = nullptr;
     bool mNotFound = false;
     bool mBlocked = false;
     bool mNotSupported = false;

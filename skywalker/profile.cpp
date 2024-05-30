@@ -29,11 +29,18 @@ ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState&
     }
 }
 
+ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat& associated) :
+    mAllowIncoming((QEnums::AllowIncomingChat)associated.mAllowIncoming)
+{
+}
+
 ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated& associated) :
     mLists(associated.mLists),
     mFeeds(associated.mFeeds),
     mLabeler(associated.mLabeler)
 {
+    if (associated.mChat)
+        mChat = ProfileAssociatedChat(*associated.mChat);
 }
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile) :
@@ -103,7 +110,12 @@ static QString createName(const QString& handle, const QString& displayName)
 
 QString BasicProfile::getName() const
 {
-    return createName(getHandle(), getDisplayName());
+    const QString name = createName(getHandle(), getDisplayName());
+
+    if (hasInvalidHandle())
+        return QString("⚠️ %1").arg(name);
+
+    return name;
 }
 
 QString BasicProfile::getDisplayName() const
@@ -136,14 +148,14 @@ QString BasicProfile::getHandle() const
 
 bool BasicProfile::hasInvalidHandle() const
 {
-    return getHandle() == INVALID_HANDLE;
+    return getHandle().endsWith(INVALID_HANDLE_SUFFIX);
 }
 
 QString BasicProfile::getHandleOrDid() const
 {
     const QString& handle = getHandle();
 
-    if (handle.isEmpty() || handle == INVALID_HANDLE)
+    if (handle.isEmpty() || handle.endsWith(INVALID_HANDLE_SUFFIX))
         return getDid();
 
     return handle;
@@ -243,6 +255,30 @@ void BasicProfile::setAvatarUrl(const QString& avatarUrl)
 bool BasicProfile::isFixedLabeler() const
 {
     return ContentFilter::isFixedLabelerSubscription(getDid());
+}
+
+bool BasicProfile::canSendDirectMessage() const
+{
+    const auto allowIncoming = getAssociated().getChat().getAllowIncoming();
+
+    switch (allowIncoming)
+    {
+    case QEnums::ALLOW_INCOMING_CHAT_NONE:
+        return false;
+    case QEnums::ALLOW_INCOMING_CHAT_ALL:
+        return true;
+    case QEnums::ALLOW_INCOMING_CHAT_FOLLOWING:
+        return !getViewer().getFollowedBy().isEmpty();
+    }
+
+    qWarning() << "Unknown allow incoming value:" << allowIncoming;
+    return false;
+}
+
+bool BasicProfile::isBlocked() const
+{
+    const auto viewer = getViewer();
+    return viewer.isBlockedBy() || !viewer.getBlocking().isEmpty() || !viewer.getBlockingByList().isNull();
 }
 
 Profile::Profile(const ATProto::AppBskyActor::ProfileView* profile) :

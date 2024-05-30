@@ -14,7 +14,7 @@ Dialog {
     topMargin: guiSettings.headerHeight
     title: qsTr("Posts from:")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
+    standardButtons: Dialog.Ok
 
     GridLayout {
         id: scopeGrid

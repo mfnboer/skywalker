@@ -5,6 +5,7 @@
 #include "feed_list_model.h"
 #include "presence.h"
 #include "profile.h"
+#include "profile_matcher.h"
 #include "search_post_feed_model.h"
 #include "wrapped_skywalker.h"
 #include <vector>
@@ -32,7 +33,7 @@ public:
     ~SearchUtils();
 
     Q_INVOKABLE void removeModels();
-    Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20);
+    Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20, bool canChatOnly = false);
     Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
     Q_INVOKABLE void searchPosts(const QString& text, const QString& sortOrder, int maxPages = 10, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const QString& sortOrder, int maxPages = 10, int minEntries = 10);
@@ -51,7 +52,6 @@ public:
     Q_INVOKABLE QStringList getLastSearches() const;
     Q_INVOKABLE void addLastSearch(const QString& search);
     Q_INVOKABLE void clearLastSearches() const;
-
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);
@@ -78,8 +78,8 @@ signals:
     void searchFeedsInProgressChanged();
 
 private:
-    void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList);
-    void localSearchAuthorsTypeahead(const QString& typed, int limit);
+    void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList, const IProfileMatcher& matcher = AnyProfileMatcher{});
+    void localSearchAuthorsTypeahead(const QString& typed, int limit, const IProfileMatcher& matcher = AnyProfileMatcher{});
     QString preProcessSearchText(const QString& text) const;
 
     BasicProfileList mAuthorTypeaheadList;
@@ -92,6 +92,8 @@ private:
     bool mSearchActorsInProgress = false;
     bool mSearchSuggestedActorsInProgress = false;
     bool mSearchFeedsInProgress = false;
+    AnyProfileMatcher mAnyProfileMatcher;
+    CanChatProfileMatcher mCanChatProfileMatcher;
 };
 
 }

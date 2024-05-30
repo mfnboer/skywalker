@@ -92,6 +92,8 @@ const ReportReasonList ReportUtils::LIST_REASONS = {
     }
 };
 
+const ReportReasonList ReportUtils::DIRECT_MESSAGE_REASONS = ReportUtils::POST_REASONS;
+
 ReportUtils::ReportUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {
@@ -143,6 +145,29 @@ void ReportUtils::reportPostOrFeed(const QString& uri, const QString& cid, QEnum
         });
 }
 
+void ReportUtils::reportDirectMessage(const QString& did, const QString& convoId, const QString& messageId,
+                                      QEnums::ReportReasonType reasonType, const QString& details)
+{
+    qDebug() << "Report direct message:" << did << convoId << messageId << reasonType << details;
+
+    bskyClient()->reportDirectMessage(did, convoId, messageId,
+        ATProto::ComATProtoModeration::ReasonType(reasonType), details,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            qDebug() << "Report direct message succeeded";
+            emit reportOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Report direct message failed:" << error << " - " << msg;
+            emit reportFailed(msg);
+        });
+}
+
 ReportReasonList ReportUtils::getReportReasons(QEnums::ReportTarget target)
 {
     switch (target)
@@ -155,6 +180,8 @@ ReportReasonList ReportUtils::getReportReasons(QEnums::ReportTarget target)
         return FEED_REASONS;
     case QEnums::ReportTarget::REPORT_TARGET_LIST:
         return LIST_REASONS;
+    case QEnums::ReportTarget::REPORT_TARGET_DIRECT_MESSAGE:
+        return DIRECT_MESSAGE_REASONS;
     }
 
     Q_ASSERT(false);

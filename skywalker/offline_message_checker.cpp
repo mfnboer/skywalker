@@ -19,6 +19,7 @@ constexpr char const* CHANNEL_POST = "CHANNEL_POST";
 constexpr char const* CHANNEL_LIKE = "CHANNEL_LIKE";
 constexpr char const* CHANNEL_REPOST = "CHANNEL_REPOST";
 constexpr char const* CHANNEL_FOLLOW = "CHANNEL_FOLLOW";
+constexpr char const* CHANNEL_CHAT = "CHANNEL_CHAT";
 
 constexpr int EXIT_OK = 0;
 constexpr int EXIT_RETRY = -1;
@@ -116,6 +117,11 @@ const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNE
         CHANNEL_FOLLOW,
         QObject::tr("Follows"),
         QObject::tr("New followers")
+    },
+    {
+        CHANNEL_CHAT,
+        QObject::tr("Direct messages"),
+        QObject::tr("New direct messages")
     }
 };
 
@@ -371,8 +377,8 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
 
             if (newCount == 0)
             {
-                qDebug() << "No new messages";
-                exit(EXIT_OK);
+                qDebug() << "No new posts";
+                getChatNotifications();
                 return;
             }
 
@@ -380,7 +386,7 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Failed to get unread notification count:" << error << " - " << msg;
-            exit(EXIT_OK);
+            getChatNotifications();
         });
 }
 
@@ -392,26 +398,59 @@ void OffLineMessageChecker::getNotifications(int toRead)
     mBsky->listNotifications(limit, {}, {},
         [this, toRead](auto notifications){
             const bool added = mNotificationListModel.addNotifications(std::move(notifications), *mBsky, false,
-                [this]{ getAvatars(); });
+                [this]{ getChatNotifications(); });
 
             const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
             mUserSettings.setOfflineUnread(mUserDid, prevUnread + toRead);
             mUserSettings.sync();
 
             if (!added)
-                exit(EXIT_OK);
+                getChatNotifications();
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
-            exit(EXIT_OK);
+            getChatNotifications();
         },
         false);
+}
+
+void OffLineMessageChecker::getChatNotifications()
+{
+    qDebug() << "Get chat notifications";
+
+    if (!mUserSettings.mustCheckOfflineChat(mUserDid))
+    {
+        qDebug() << "Chat not enabled";
+        getAvatars();
+    }
+
+    mBsky->listConvos({}, {},
+        [this](ATProto::ChatBskyConvo::ConvoListOutput::Ptr output){
+            const QString lastRev = mUserSettings.getOffLineChatCheckRev(mUserDid);
+            const QString rev = mNotificationListModel.addNotifications(std::move(output), lastRev, mUserDid);
+
+            if (!rev.isNull() && rev > lastRev)
+                mUserSettings.setOffLineChatCheckRev(mUserDid, rev);
+
+            getAvatars();
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getChatNotifications FAILED:" << error << " - " << msg;
+            getAvatars();
+        }
+    );
 }
 
 void OffLineMessageChecker::getAvatars()
 {
     std::set<QString> avatarUrls;
     const auto& notifications = mNotificationListModel.getNotifications();
+
+    if (notifications.empty())
+    {
+        qDebug() << "No notifications";
+        exit(EXIT_OK);
+    }
 
     for (const auto& notification : notifications)
     {
@@ -477,7 +516,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     // NOTE: postText can be empty if there is only an image.
     QString msg = !postRecord.isNull() ? postRecord.getFormattedText() : "";
     QString channelId = CHANNEL_POST;
-    IconType iconType = IconType::CHAT;
+    IconType iconType = IconType::POST;
 
     switch (notification.getReason())
     {
@@ -519,6 +558,11 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         break;
     case ATProto::AppBskyNotification::NotificationReason::QUOTE:
         break;
+    case ATProto::AppBskyNotification::NotificationReason::DIRECT_MESSAGE:
+        channelId = CHANNEL_CHAT;
+        iconType = IconType::CHAT;
+        msg = notification.getDirectMessage().getFormattedText();
+        break;
     case ATProto::AppBskyNotification::NotificationReason::INVITE_CODE_USED:
     case ATProto::AppBskyNotification::NotificationReason::UNKNOWN:
         return;
@@ -532,7 +576,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     createNotification(channelId, notification.getAuthor(), msg, when, iconType);
 }
 
-bool OffLineMessageChecker::checkNoticationPermission()
+bool OffLineMessageChecker::checkNotificationPermission()
 {
 #if defined(Q_OS_ANDROID)
     static constexpr char const* POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
@@ -560,7 +604,7 @@ bool OffLineMessageChecker::checkNoticationPermission()
 void OffLineMessageChecker::start(bool wifiOnly)
 {
 #if defined(Q_OS_ANDROID)
-    if (!checkNoticationPermission())
+    if (!checkNotificationPermission())
         return;
 
     jboolean jWifiOnly = wifiOnly;

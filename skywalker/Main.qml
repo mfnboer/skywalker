@@ -150,6 +150,7 @@ ApplicationWindow {
             skywalker.loadBookmarks()
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
+            skywalker.chat.getConvos()
 
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
@@ -231,6 +232,7 @@ ApplicationWindow {
         }
 
         onShowNotifications: viewNotifications()
+        onShowDirectMessages: viewChat()
 
         onAnniversary: {
             const years = skywalker.getAnniversary().getAnniversaryYears()
@@ -250,6 +252,7 @@ ApplicationWindow {
         readonly property int notificationIndex: 1
         readonly property int searchIndex: 2
         readonly property int feedsIndex: 3
+        readonly property int chatIndex: 4
 
         id: stackLayout
         anchors.fill: parent
@@ -266,6 +269,9 @@ ApplicationWindow {
         }
         StackView {
             id: feedsStack
+        }
+        StackView {
+            id: chatStack
         }
     }
 
@@ -881,6 +887,14 @@ ApplicationWindow {
         }
     }
 
+    function viewChat() {
+        unwindStack()
+        stackLayout.currentIndex = stackLayout.chatIndex
+
+        if (!skywalker.chat.convosLoaded())
+            skywalker.chat.getConvos()
+    }
+
     function createSearchView() {
         let searchComponent = Qt.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
@@ -1143,6 +1157,17 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function reportDirectMessage(message, convoId, sender) {
+        let component = Qt.createComponent("Report.qml")
+        let form = component.createObject(root, {
+                skywalker: skywalker,
+                message: message,
+                convoId: convoId,
+                author: sender })
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
     function translateText(text) {
         const lang = Qt.locale().name.split("_")[0]
         const normalized = unicodeFonts.normalizeToNFKD(text)
@@ -1153,10 +1178,6 @@ ApplicationWindow {
 
     function getTimelineView() {
         return timelineStack.get(0)
-    }
-
-    function getNotificationsView() {
-        return notificationStack.get(0)
     }
 
     function currentStack() {
@@ -1170,6 +1191,10 @@ ApplicationWindow {
             return stack.get(stack.depth - 1)
 
         return null
+    }
+
+    function currentStackIsChat() {
+        return stackLayout.currentIndex === stackLayout.chatIndex
     }
 
     function popStack() {
@@ -1215,6 +1240,28 @@ ApplicationWindow {
         return skywalker
     }
 
+    function chatOnStartConvoForMembersOk(convo) {
+        let component = Qt.createComponent("MessagesListView.qml")
+        let view = component.createObject(root, { chat: skywalker.chat, convo: convo })
+
+        view.onClosed.connect((lastMessageId) => {
+            skywalker.chat.getConvos()
+            root.popStack()
+        })
+
+        skywalker.chat.getMessages(convo.id)
+        root.pushStack(view)
+    }
+
+    function chatOnStartConvoForMembersFailed(error) {
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function initHandlers() {
+        skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
+        skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
+    }
+
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)
         console.debug("Font pt:", Qt.application.font.pointSize)
@@ -1233,6 +1280,13 @@ ApplicationWindow {
                 { skywalker: skywalker, timeline: timelineView })
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         notificationStack.push(notificationsView)
+
+        let chatComponent = Qt.createComponent("ConvoListView.qml")
+        let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
+        chatView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
+        chatStack.push(chatView)
+
+        initHandlers()
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         if (skywalker.resumeSession())

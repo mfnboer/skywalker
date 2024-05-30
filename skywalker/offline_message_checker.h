@@ -37,7 +37,7 @@ public:
     static void start(bool wifiOnly);
 
     static void createNotificationChannels();
-    static bool checkNoticationPermission();
+    static bool checkNotificationPermission();
 
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
     explicit OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop);
@@ -48,11 +48,12 @@ private:
     // Values must be equal to the values in NewMessageNotifier.java
     enum class IconType
     {
-        CHAT = 0,
+        POST = 0,
         FOLLOW = 1,
         LIKE = 2,
         MENTION = 3,
-        REPOST = 4
+        REPOST = 4,
+        CHAT = 5
     };
 
     int startEventLoop();
@@ -64,6 +65,7 @@ private:
     void getUserPreferences();
     void checkUnreadNotificationCount();
     void getNotifications(int toRead);
+    void getChatNotifications();
     void getAvatars();
     void getAvatars(const QStringList& urls);
     void createNotifications();

@@ -13,15 +13,8 @@ Item {
         id: guiSettings
     }
 
-    function isToday(date) {
-        const today = new Date()
-        return date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
-    }
-
     function getTimeSpeech(date) {
-        const time = isToday(date) ?
+        const time = guiSettings.isToday(date) ?
             date.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
             date.toLocaleString(Qt.locale(), Locale.ShortFormat)
         return time
@@ -91,6 +84,11 @@ Item {
 
     function getListSpeech(list) {
         let speech = qsTr(`${(guiSettings.listTypeName(list.purpose))} by ${list.creator.name}\n\n${list.description}`)
+        return speech
+    }
+
+    function getLabelerSpeech(labeler) {
+        let speech = qsTr(`labeler: ${labeler.creator.name}\n\n${labeler.creator.description}`)
         return speech
     }
 

@@ -19,6 +19,8 @@ public:
                                   const QString& details, const QString& labelerDid = "");
     Q_INVOKABLE void reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
                                       const QString& details, const QString& labelerDid = "");
+    Q_INVOKABLE void reportDirectMessage(const QString& did, const QString& convoId, const QString& messageId,
+                                         QEnums::ReportReasonType reasonType, const QString& details);
 
     Q_INVOKABLE static ReportReasonList getReportReasons(QEnums::ReportTarget target);
 
@@ -31,6 +33,7 @@ private:
     static const ReportReasonList POST_REASONS;
     static const ReportReasonList FEED_REASONS;
     static const ReportReasonList LIST_REASONS;
+    static const ReportReasonList DIRECT_MESSAGE_REASONS;
 };
 
 }

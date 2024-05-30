@@ -25,10 +25,12 @@ public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
     private static final int MAX_TEXT_LEN = 32768;
     public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
+    public static final String INTENT_ACTION_SHOW_DIRECT_MESSAGES = "com.gmail.mfnboer.skywalker.showDirectMessages";
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
     public static native void emitShowNotifications();
+    public static native void emitShowDirectMessages();
 
     private boolean mIsIntentPending = false;
     private boolean mIsReady = false;
@@ -101,6 +103,8 @@ public class SkywalkerActivity extends QtActivity {
             handleActionSend(intent);
         else if (action.equals(INTENT_ACTION_SHOW_NOTIFICATIONS))
             handleActionShowNotifications(intent);
+        else if (action.equals(INTENT_ACTION_SHOW_DIRECT_MESSAGES))
+            handleActionShowDirectMessages(intent);
         else
             Log.d(LOGTAG, "Unsupported intent action: " + intent.getAction());
     }
@@ -108,6 +112,11 @@ public class SkywalkerActivity extends QtActivity {
     private void handleActionShowNotifications(Intent intent) {
         Log.d(LOGTAG, "Handle SHOW_NOTIFICATIONS");
         emitShowNotifications();
+    }
+
+    private void handleActionShowDirectMessages(Intent intent) {
+        Log.d(LOGTAG, "Handle SHOW_DIRECT_MESSAGES");
+        emitShowDirectMessages();
     }
 
     private void handleActionSend(Intent intent) {

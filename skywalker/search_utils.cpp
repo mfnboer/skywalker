@@ -194,7 +194,7 @@ void SearchUtils::setSearchFeedsInProgress(bool inProgress)
     }
 }
 
-void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList)
+void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList, const IProfileMatcher& matcher)
 {
     if (profileViewBasicList.empty())
         return;
@@ -210,25 +210,31 @@ void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileVie
             continue;
 
         BasicProfile basicProfile(profile.get());
-        mAuthorTypeaheadList.append(basicProfile.nonVolatileCopy());
+
+        if (matcher.match(basicProfile))
+            mAuthorTypeaheadList.append(basicProfile.nonVolatileCopy());
     }
 
     emit authorTypeaheadListChanged();
 }
 
-void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit)
+void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit, bool canChatOnly)
 {
-    localSearchAuthorsTypeahead(typed, limit);
+    const IProfileMatcher* matcher = canChatOnly ?
+            &static_cast<IProfileMatcher&>(mCanChatProfileMatcher) :
+            &static_cast<IProfileMatcher&>(mAnyProfileMatcher);
+
+    localSearchAuthorsTypeahead(typed, limit, *matcher);
 
     if (mAuthorTypeaheadList.size() >= limit)
         return;
 
     bskyClient()->searchActorsTypeahead(typed, limit - mAuthorTypeaheadList.size(),
-        [this, presence=getPresence()](auto searchOutput){
+        [this, presence=getPresence(), matcher](auto searchOutput){
             if (!presence)
                 return;
 
-            addAuthorTypeaheadList(searchOutput->mActors);
+            addAuthorTypeaheadList(searchOutput->mActors, *matcher);
         },
         [presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -253,10 +259,10 @@ void SearchUtils::searchHashtagsTypeahead(const QString& typed, int limit)
     setHashtagTypeaheadList(results);
 }
 
-void SearchUtils::localSearchAuthorsTypeahead(const QString& typed, int limit)
+void SearchUtils::localSearchAuthorsTypeahead(const QString& typed, int limit, const IProfileMatcher& matcher)
 {
     const IndexedProfileStore& following = mSkywalker->getUserFollows();
-    const std::unordered_set<const BasicProfile*> profiles = following.findProfiles(typed, limit);
+    const std::unordered_set<const BasicProfile*> profiles = following.findProfiles(typed, limit, matcher);
     BasicProfileList profileList;
 
     for (const auto* profile : profiles)

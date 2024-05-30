@@ -58,7 +58,15 @@ void _handleShowNotifications(JNIEnv*)
     auto& instance = *gTheInstance;
 
     if (instance)
-        instance->showNotifications();
+        instance->handleShowNotifications();
+}
+
+void _handleShowDirectMessages(JNIEnv*)
+{
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleShowDirectMessages();
 }
 
 #endif
@@ -102,9 +110,10 @@ JNICallbackListener::JNICallbackListener() : QObject()
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
-        { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) }
+        { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
+        { "emitShowDirectMessages", "()V", reinterpret_cast<void *>(_handleShowDirectMessages) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 3);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 4);
 #endif
 }
 
@@ -128,9 +137,14 @@ void JNICallbackListener::handleSharedImageReceived(const QString fileName, cons
     emit sharedImageReceived(fileName, text);
 }
 
-void JNICallbackListener::handleSHowNotifications()
+void JNICallbackListener::handleShowNotifications()
 {
     emit showNotifications();
+}
+
+void JNICallbackListener::handleShowDirectMessages()
+{
+    emit showDirectMessages();
 }
 
 }

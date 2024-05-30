@@ -44,6 +44,12 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         mList = record.get();
         break;
     }
+    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    {
+        const auto& record = std::get<ATProto::AppBskyLabeler::LabelerView::Ptr>(view.mRecord);
+        mLabeler = record.get();
+        break;
+    }
     default:
         qWarning() << "Record type not supported:" << view.mUnsupportedType;
         mNotSupported = true;
@@ -84,6 +90,11 @@ QString RecordView::getText() const
         const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::Ptr>(mRecord->mValue);
         return recordValue->mDescription.value_or("");
     }
+    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::Ptr>(mRecord->mValue);
+        return recordValue->mCreator->mDescription.value_or("");
+    }
     default:
         break;
     }
@@ -112,6 +123,12 @@ QString RecordView::getFormattedText() const
     {
         const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::Ptr>(mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedListDescription(*recordValue, UserSettings::getLinkColor());
+    }
+    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::Ptr>(mRecord->mValue);
+        return ATProto::RichTextMaster::getFormattedLabelerDescription(*recordValue, UserSettings::getLinkColor());
+
     }
     default:
         break;
@@ -272,6 +289,14 @@ ListView RecordView::getList() const
         return {};
 
     return ListView(mList);
+}
+
+LabelerView RecordView::getLabeler() const
+{
+    if (!mLabeler)
+        return {};
+
+    return LabelerView(*mLabeler);
 }
 
 }

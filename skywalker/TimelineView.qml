@@ -35,6 +35,7 @@ ListView {
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
+        onMessagesClicked: root.viewChat()
     }
     footerPositioning: ListView.OverlayFooter
 

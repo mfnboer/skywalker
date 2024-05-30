@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "chat.h"
 #include "definitions.h"
 #include "file_utils.h"
 #include "jni_callback.h"
@@ -47,6 +48,7 @@ Skywalker::Skywalker(QObject* parent) :
     mBookmarks(this),
     mMutedWords(this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
+    mChat(std::make_unique<Chat>(mBsky, mUserDid, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
@@ -57,6 +59,7 @@ Skywalker::Skywalker(QObject* parent) :
 {
     mBookmarks.setSkywalker(this);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
+    connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(2, TIMELINE_PREPEND_PAGE_SIZE); });
@@ -71,6 +74,8 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
     connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
             [this]{ emit showNotifications(); });
+    connect(&jniCallbackListener, &JNICallbackListener::showDirectMessages, this,
+            [this]{ emit showDirectMessages(); });
 
     auto* app = (QGuiApplication*)QGuiApplication::instance();
     Q_ASSERT(app);
@@ -369,6 +374,7 @@ void Skywalker::getUserPreferences()
             updateFavoriteFeeds();
             initLabelers();
             loadLabelSettings();
+            mChat->initSettings();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
@@ -710,7 +716,7 @@ void Skywalker::finishTimelineSync(int index)
     // Inform the GUI about the timeline sync.
     // This will show the timeline to the user.
     emit timelineSyncOK(index);
-    OffLineMessageChecker::checkNoticationPermission();
+    OffLineMessageChecker::checkNotificationPermission();
 
     // Now we can handle pending intent (content share).
     // If there is any, then this will open the post composition page. This should
@@ -723,7 +729,7 @@ void Skywalker::finishTimelineSync(int index)
 void Skywalker::finishTimelineSyncFailed()
 {
     emit timelineSyncFailed();
-    OffLineMessageChecker::checkNoticationPermission();
+    OffLineMessageChecker::checkNotificationPermission();
     JNICallbackListener::handlePendingIntent();
 }
 
@@ -2477,6 +2483,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
     mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
     mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
+    mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
     mEditUserPreferences->setLocalSettingsModified(false);
 
     if (session->getPDS())
@@ -2542,6 +2549,10 @@ void Skywalker::saveUserPreferences()
                 emit statusMessage(tr("Failed to change logged-out visibility: ") + msg, QEnums::STATUS_LEVEL_ERROR);
             });
     }
+
+    const auto allowIncomingChat = mEditUserPreferences->getAllowIncomingChat();
+    if (allowIncomingChat != mChat->getAllowIncomingChat())
+        mChat->updateSettings(allowIncomingChat);
 
     if (!mEditUserPreferences->isModified())
     {
@@ -2644,6 +2655,11 @@ QDateTime Skywalker::getSyncTimestamp() const
     return mUserSettings.getSyncTimestamp(mUserDid);
 }
 
+Chat* Skywalker::getChat()
+{
+    return mChat.get();
+}
+
 void Skywalker::shareImage(const QString& contentUri, const QString& text)
 {
     if (!FileUtils::checkReadMediaPermission())
@@ -2718,6 +2734,8 @@ void Skywalker::pauseApp()
     saveHashtags();
     mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
+    mUserSettings.setOffLineChatCheckRev(mUserDid, mChat->getLastRev());
+    mUserSettings.setCheckOfflineChat(mUserDid, mChat->convosLoaded());
     mUserSettings.resetNextNotificationId();
     mUserSettings.sync();
     OffLineMessageChecker::start(mUserSettings.getNotificationsWifiOnly());
@@ -2729,6 +2747,8 @@ void Skywalker::pauseApp()
         stopRefreshTimers();
         mTimelineUpdatePaused = true;
     }
+
+    mChat->pause();
 }
 
 void Skywalker::resumeApp()
@@ -2754,9 +2774,13 @@ void Skywalker::resumeApp()
     }
 
     mTimelineUpdatePaused = false;
-    startRefreshTimers();
-    startTimelineAutoUpdate();
-    refreshSession([this]{ updateTimeline(2, 100); });
+
+    refreshSession([this]{
+        startRefreshTimers();
+        startTimelineAutoUpdate();
+        updateTimeline(2, 100);
+        mChat->resume();
+    });
 }
 
 void Skywalker::updateTimeline(int autoGapFill, int pageSize)
@@ -2831,6 +2855,7 @@ void Skywalker::signOut()
     mAuthorListModels.clear();
     mListListModels.clear();
     mNotificationListModel.clear();
+    mChat->reset();
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;

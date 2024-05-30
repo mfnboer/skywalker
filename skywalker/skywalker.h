@@ -33,12 +33,15 @@
 
 namespace Skywalker {
 
+class Chat;
+
 class Skywalker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
+    Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
     Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
@@ -174,6 +177,7 @@ public:
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
+    Chat* getChat();
     Bookmarks* getBookmarks() { return &mBookmarks; }
     MutedWords* getMutedWords() { return &mMutedWords; }
     void setAutoUpdateTimelineInProgress(bool inProgress);
@@ -239,6 +243,7 @@ signals:
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString text); // Shared from another app
     void showNotifications(); // Action received from clicking an app notification
+    void showDirectMessages(); // Action received from clicking an app notification
     void bskyClientDeleted();
     void anniversary();
 
@@ -287,7 +292,7 @@ private:
     void migrateDraftPosts();
     void checkAnniversary();
 
-    std::unique_ptr<ATProto::Client> mBsky;
+    ATProto::Client::Ptr mBsky;
     ATProto::PlcDirectoryClient mPlcDirectory;
 
     QString mAvatarUrl;
@@ -333,6 +338,7 @@ private:
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
     NotificationListModel mNotificationListModel;
+    std::unique_ptr<Chat> mChat;
 
     bool mGetNotificationsInProgress = false;
     int mUnreadNotificationCount = 0;
