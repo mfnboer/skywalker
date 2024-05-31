@@ -23,7 +23,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_OBJECT
     QML_ELEMENT
 public:
-    static constexpr int MAX_TIMELINE_SIZE = 5000;
+    static constexpr int MAX_TIMELINE_SIZE = 8000;
 
     enum class Role {
         Author = Qt::UserRole + 1,

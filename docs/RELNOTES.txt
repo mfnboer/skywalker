@@ -1,6 +1,7 @@
 next
 ====
 * Show labels on feeds, lists and labelers
+* Increase timeline capacity to 8000
 
 2.6
 ===
