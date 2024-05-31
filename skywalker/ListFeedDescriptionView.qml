@@ -8,9 +8,10 @@ Page {
     required property listview list
     property string listBlockedUri: list.viewer.blocked
     property bool listMuted: list.viewer.muted
-
     property bool isSavedList: skywalker.favoriteFeeds.isSavedFeed(list.uri)
     property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
+    property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
+    property string contentWarning: ""
 
     signal closed
     signal listUpdated(listview list)
@@ -43,7 +44,7 @@ Page {
             y: 5
             width: 100
             Layout.alignment: Qt.AlignTop
-            avatarUrl: list.avatar
+            avatarUrl: !contentVisible() ? "" : list.avatar
             onClicked: {
                 if (list.avatar)
                     root.viewFullImage([list.imageView], 0)
@@ -123,6 +124,14 @@ Page {
                 topPadding: 5
                 muted: listMuted
                 blockedUri: listBlockedUri
+            }
+
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.right: undefined
+                contentLabels: list.labels
+                contentAuthorDid: list.creator.did
             }
         }
 
@@ -428,5 +437,17 @@ Page {
 
     function isOwnList() {
         return skywalker.getUserDid() === list.creator.did
+    }
+
+    function contentVisible() {
+        if (feed.viewer.blockedBy)
+            return false
+
+        return contentVisibility === QEnums.CONTENT_VISIBILITY_SHOW || showWarnedMedia
+    }
+
+    Component.onCompleted: {
+        contentVisibility = skywalker.getContentVisibility(list.labels)
+        contentWarning = skywalker.getContentWarning(list.labels)
     }
 }

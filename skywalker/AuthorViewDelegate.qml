@@ -180,7 +180,7 @@ Rectangle {
     }
 
     function authorVisible() {
-        return guiSettings.authorVisible(author)
+        return guiSettings.contentVisible(author)
     }
 
     function isUser(author) {

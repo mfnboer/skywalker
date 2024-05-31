@@ -1,3 +1,7 @@
+next
+====
+* Show labels on feeds, lists and labelers
+
 2.6
 ===
 * Direct messages

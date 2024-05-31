@@ -278,7 +278,7 @@ Page {
     }
 
     function contentVisible() {
-        if (author.viewer.blockedBy)
+        if (feed.viewer.blockedBy)
             return false
 
         return contentVisibility === QEnums.CONTENT_VISIBILITY_SHOW || showWarnedMedia

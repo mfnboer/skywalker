@@ -39,7 +39,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter
             width: parent.height - 10
             height: width
-            avatarUrl: guiSettings.authorVisible(firstMember) ? firstMember.avatarUrl : ""
+            avatarUrl: guiSettings.contentVisible(firstMember) ? firstMember.avatarUrl : ""
             isModerator: firstMember.associated.isLabeler
             onClicked: skywalker.getDetailedProfile(firstMember.did)
         }
@@ -82,7 +82,7 @@ Rectangle {
 
                         width: 25
                         height: width
-                        avatarUrl: guiSettings.authorVisible(modelData.basicProfile) ? modelData.basicProfile.avatarUrl : ""
+                        avatarUrl: guiSettings.contentVisible(modelData.basicProfile) ? modelData.basicProfile.avatarUrl : ""
                         isModerator: modelData.basicProfile.associated.isLabeler
                     }
                 }

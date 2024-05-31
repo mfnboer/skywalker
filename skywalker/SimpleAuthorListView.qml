@@ -56,7 +56,7 @@ ListView {
                     y: parent.y + rowPadding
                     width: parent.width - 12
                     height: width
-                    avatarUrl: guiSettings.authorVisible(author) ? author.avatarUrl : ""
+                    avatarUrl: guiSettings.contentVisible(author) ? author.avatarUrl : ""
                     isModerator: author.associated.isLabeler
                     onClicked: authorClicked(author)
                 }
@@ -97,6 +97,15 @@ ListView {
                 text: author.handle ? `@${author.handle}` : ""
 
                 Accessible.ignored: true
+            }
+
+            ContentLabels {
+                id: contentLabels
+                Layout.columnSpan: 3
+                anchors.left: parent.left
+                anchors.right: undefined
+                contentLabels: author.labels
+                contentAuthorDid: author.did
             }
 
             Rectangle {

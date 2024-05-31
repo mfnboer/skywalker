@@ -139,6 +139,15 @@ Rectangle {
             }
         }
 
+        ContentLabels {
+            id: contentLabels
+            Layout.columnSpan: 3
+            anchors.left: parent.left
+            anchors.right: undefined
+            contentLabels: feed.labels
+            contentAuthorDid: feed.creator.did
+        }
+
         Text {
             topPadding: 5
             bottomPadding: 10
@@ -280,6 +289,6 @@ Rectangle {
     }
 
     function feedVisible() {
-        return guiSettings.feedVisible(feed)
+        return guiSettings.contentVisible(feed)
     }
 }

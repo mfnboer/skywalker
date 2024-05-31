@@ -84,7 +84,7 @@ Rectangle {
                 y: postHeader.y + 5
                 width: parent.width - 13
                 height: width
-                avatarUrl: notificationAuthor.avatarUrl
+                avatarUrl: authorVisible(notificationAuthor) ? notificationAuthor.avatarUrl : ""
                 isModerator: notificationAuthor.associated.isLabeler
                 visible: showPost()
 
@@ -245,7 +245,7 @@ Rectangle {
                     id: authorAvatar
                     width: 34
                     height: width
-                    avatarUrl: notificationAuthor.avatarUrl
+                    avatarUrl: authorVisible(notificationAuthor) ? notificationAuthor.avatarUrl : ""
                     isModerator: notificationAuthor.associated.isLabeler
 
                     onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
@@ -262,7 +262,7 @@ Rectangle {
 
                         width: authorAvatar.width
                         height: width
-                        avatarUrl: notificationOtherAuthors[index].avatarUrl
+                        avatarUrl: authorVisible(notificationOtherAuthors[index]) ? notificationOtherAuthors[index].avatarUrl : ""
                         isModerator: notificationOtherAuthors[index].associated.isLabeler
 
                         onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
@@ -344,7 +344,7 @@ Rectangle {
                     id: usedByAvatar
                     width: 34
                     height: width
-                    avatarUrl: notificationInviteCodeUsedBy.avatarUrl
+                    avatarUrl: authorVisible(notificationInviteCodeUsedBy) ? notificationInviteCodeUsedBy.avatarUrl : ""
 
                     onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
 
@@ -518,5 +518,9 @@ Rectangle {
 
         if (showPost())
             return getPostSpeech()
+    }
+
+    function authorVisible(author) {
+        return guiSettings.contentVisible(author)
     }
 }

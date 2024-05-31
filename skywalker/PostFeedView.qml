@@ -24,7 +24,7 @@ ListView {
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: postFeedView.model.feedName
-        feedAvatar: postFeedView.model.getGeneratorView().avatar
+        feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatar : ""
         showAsHome: postFeedView.showAsHome
         showLanguageFilter: postFeedView.model.languageFilterConfigured
         languageFilterEnabled: postFeedView.model.languageFilterEnabled

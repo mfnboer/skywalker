@@ -10,6 +10,7 @@ Rectangle {
     required property bool listMuted
     required property bool listSaved
     required property bool listPinned
+    property bool showList: listVisible()
     property bool ownLists: true
     property bool allowEdit: true
     property int margin: 10
@@ -46,7 +47,7 @@ Rectangle {
             y: 5
             width: guiSettings.threadBarWidth * 5
             Layout.alignment: Qt.AlignTop
-            avatarUrl: list.avatar
+            avatarUrl: showList ? list.avatar : ""
 
             onClicked: listClicked(list)
 
@@ -166,6 +167,15 @@ Rectangle {
             }
         }
 
+        ContentLabels {
+            id: contentLabels
+            Layout.columnSpan: 3
+            anchors.left: parent.left
+            anchors.right: undefined
+            contentLabels: list.labels
+            contentAuthorDid: list.creator.did
+        }
+
         Text {
             topPadding: 5
             Layout.columnSpan: 3
@@ -178,7 +188,7 @@ Rectangle {
             textFormat: Text.RichText
             color: guiSettings.textColor
             text: list.formattedDescription
-            visible: text
+            visible: text && showList
 
             onLinkActivated: (link) => root.openLink(link)
 
@@ -459,5 +469,9 @@ Rectangle {
 
     function listClicked(list) {
         root.viewListByUri(list.uri, true)
+    }
+
+    function listVisible() {
+        return guiSettings.contentVisible(list)
     }
 }

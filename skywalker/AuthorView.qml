@@ -398,6 +398,21 @@ Page {
                 visible: contentVisible()
             }
 
+            Rectangle {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                height: labelerContentLabels.height
+                color: "transparent"
+                visible: isLabeler
+
+                ContentLabels {
+                    id: labelerContentLabels
+                    anchors.left: parent.left
+                    anchors.right: undefined
+                    contentLabels: labeler.contentLabels
+                    contentAuthorDid: author.did
+                }
+            }
+
             Row {
                 // height: likeIcon.height
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
