@@ -11,6 +11,7 @@ Page {
     readonly property int maxMessageLength: 1000
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
+    property int textInputToolbarHeight: 0
 
     signal closed
 
@@ -116,14 +117,14 @@ Page {
             x: page.margin
             width: parent.width - sendButton.width - 3 * page.margin
             padding: page.margin
-            bottomPadding: 2 * page.margin
+            bottomPadding: 2 * page.margin + textInputToolbarHeight
             parentPage: page
             parentFlick: flick
             color: guiSettings.messageNewTextColor
             placeholderText: qsTr("Say something nice")
             maxLength: page.maxMessageLength
             enableLinkShortening: false
-            // TODO: font selector?
+            fontSelectorCombo: fontSelector
         }
     }
 
@@ -143,9 +144,18 @@ Page {
         y: flick.y - newMessageText.padding
         z: -1
         width: newMessageText.width
-        height: flick.height + 2 * newMessageText.padding
+        height: flick.height + 2 * newMessageText.padding + textInputToolbarHeight
         radius: 10
         color: guiSettings.messageNewBackgroundColor
+
+        FontComboBox {
+            id: fontSelector
+            x: page.margin
+            anchors.bottom: parent.bottom
+            popup.height: page.height - (page.header.y + page.header.height)
+            focusPolicy: Qt.NoFocus
+            visible: textInputToolbarHeight > 0
+        }
     }
 
     BusyIndicator {
@@ -183,12 +193,14 @@ Page {
                     header.y = keyboardHeight
 
                     newMessageText.ensureVisible(newMessageText.cursorRectangle)
+                    textInputToolbarHeight = 24
                     keyboardVisible = true
                 }
             }
             else {
                 messagesView.y = 0
                 header.y = 0
+                textInputToolbarHeight = 0
                 keyboardVisible = false
             }
         }
