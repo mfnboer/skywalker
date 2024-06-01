@@ -85,7 +85,7 @@ public:
     void setContentVisibility(QEnums::ContentVisibility visibility) { mContentVisibility = visibility; }
     void setContentWarning(const QString& warning) { mContentWarning = warning; }
     void setMutedReason(const QEnums::MutedPostReason mutedReason) { mMutedReason = mutedReason; }
-    void setMutedReason(const IMutedWords& mutedWords);
+    void setMutedReason(const IMatchWords& mutedWords);
 
 private:
     const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;

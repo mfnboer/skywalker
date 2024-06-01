@@ -13,14 +13,7 @@
 
 namespace Skywalker {
 
-class IMutedWords
-{
-public:
-    virtual ~IMutedWords() = default;
-    virtual bool match(const NormalizedWordIndex& post) const = 0;
-};
-
-class MutedWords : public QObject, public IMutedWords
+class MutedWords : public QObject, public IMatchWords
 {
     Q_OBJECT
     Q_PROPERTY(QStringList entries READ getEntries NOTIFY entriesChanged FINAL)
@@ -29,7 +22,7 @@ class MutedWords : public QObject, public IMutedWords
 public:
     static constexpr size_t MAX_ENTRIES = 100;
 
-    MutedWords(QObject* parent = nullptr);
+    explicit MutedWords(QObject* parent = nullptr);
 
     QStringList getEntries() const;
     void clear();
@@ -90,7 +83,7 @@ private:
     bool mDirty = false;
 };
 
-class MutedWordsNoMutes : public IMutedWords
+class MutedWordsNoMutes : public IMatchWords
 {
 public:
     bool match(const NormalizedWordIndex&) const override { return false; }

@@ -28,4 +28,11 @@ private:
     std::unordered_map<QString, std::vector<int>> mUniqueNormalizedWords;
 };
 
+class IMatchWords
+{
+public:
+    virtual ~IMatchWords() = default;
+    virtual bool match(const NormalizedWordIndex& post) const = 0;
+};
+
 }

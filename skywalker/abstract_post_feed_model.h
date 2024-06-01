@@ -74,7 +74,7 @@ public:
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
                           const IContentFilter& contentFilter, const Bookmarks& bookmarks,
-                          const IMutedWords& mutedWords, HashtagIndex& hashtags,
+                          const IMatchWords& mutedWords, HashtagIndex& hashtags,
                           QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -117,7 +117,7 @@ protected:
     const IProfileStore& mMutedReposts;
     const IContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
-    const IMutedWords& mMutedWords;
+    const IMatchWords& mMutedWords;
     HashtagIndex& mHashtags;
 
 private:

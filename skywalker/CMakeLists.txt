@@ -371,6 +371,8 @@ qt_add_qml_module(libskywalker
         QML_FILES StartConversation.qml
         SOURCES profile_matcher.h
         QML_FILES QuoteLabeler.qml
+        SOURCES focus_hashtags.h
+        SOURCES focus_hashtags.cpp
 )
 
 if (NOT ANDROID)

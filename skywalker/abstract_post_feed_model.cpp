@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
                                              const IContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                             const IMutedWords& mutedWords, HashtagIndex& hashtags,
+                                             const IMatchWords& mutedWords, HashtagIndex& hashtags,
                                              QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),

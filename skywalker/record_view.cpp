@@ -265,7 +265,7 @@ std::vector<QString> RecordView::getHashtags() const
     return ATProto::RichTextMaster::getFacetTags(*recordValue);
 }
 
-void RecordView::setMutedReason(const IMutedWords& mutedWords)
+void RecordView::setMutedReason(const IMatchWords& mutedWords)
 {
     if (getAuthor().getViewer().isMuted())
         setMutedReason(QEnums::MUTED_POST_AUTHOR);
