@@ -378,6 +378,14 @@ ApplicationWindow {
             close()
         }
 
+        onFocusHashtags: {
+            let component = Qt.createComponent("FocusHashtags.qml")
+            let page = component.createObject(root)
+            page.onClosed.connect(() => { popStack() })
+            pushStack(page)
+            close()
+        }
+
         onSettings: {
             editSettings()
             close()

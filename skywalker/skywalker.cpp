@@ -5,6 +5,7 @@
 #include "chat.h"
 #include "definitions.h"
 #include "file_utils.h"
+#include "focus_hashtags.h"
 #include "jni_callback.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
@@ -47,6 +48,7 @@ Skywalker::Skywalker(QObject* parent) :
     mContentFilter(mUserPreferences, this),
     mBookmarks(this),
     mMutedWords(this),
+    mFocusHashtags(new FocusHashtags(this)),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mChat(std::make_unique<Chat>(mBsky, mUserDid, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),

@@ -548,6 +548,16 @@ void UserSettings::setAnniversaryNoticeDate(const QString& did, QDate date)
     mSettings.setValue(key(did, "anniversaryNoticeDate"), date);
 }
 
+const QJsonDocument UserSettings::getFocusHashtags(const QString& did) const
+{
+    return mSettings.value(key(did, "focusHashtags")).toJsonDocument();
+}
+
+void UserSettings::setFocusHashtags(const QString& did, const QJsonDocument& jsonHashtags)
+{
+    mSettings.setValue(key(did, "focusHashtags"), jsonHashtags);
+}
+
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
 {
     mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);

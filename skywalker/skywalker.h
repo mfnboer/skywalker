@@ -34,6 +34,7 @@
 namespace Skywalker {
 
 class Chat;
+class FocusHashtags;
 
 class Skywalker : public QObject
 {
@@ -44,6 +45,7 @@ class Skywalker : public QObject
     Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
     Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
+    Q_PROPERTY(FocusHashtags* focusHashtags READ getFocusHashtags CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
@@ -180,6 +182,7 @@ public:
     Chat* getChat();
     Bookmarks* getBookmarks() { return &mBookmarks; }
     MutedWords* getMutedWords() { return &mMutedWords; }
+    FocusHashtags* getFocusHashtags() { return mFocusHashtags.get(); }
     void setAutoUpdateTimelineInProgress(bool inProgress);
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
@@ -313,6 +316,7 @@ private:
     BookmarksModel::Ptr mBookmarksModel;
     MutedWords mMutedWords;
     MutedWordsNoMutes mMutedWordsNoMutes;
+    std::unique_ptr<FocusHashtags> mFocusHashtags;
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;

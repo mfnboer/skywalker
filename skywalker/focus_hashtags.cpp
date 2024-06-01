@@ -87,6 +87,10 @@ QJsonDocument FocusHashtags::toJson() const
 void FocusHashtags::setEntries(const QJsonDocument& json)
 {
     clear();
+
+    if (json.isEmpty())
+        return;
+
     QJsonArray entryArray = json.array();
 
     for (const auto entryJson : entryArray)
@@ -124,6 +128,13 @@ void FocusHashtags::addEntry(FocusHashtagEntry* entry)
     emit entriesChanged();
 }
 
+void FocusHashtags::addEntry(const QString& hashtag)
+{
+    auto* entry = new FocusHashtagEntry(this);
+    entry->addHashtag(hashtag);
+    addEntry(entry);
+}
+
 void FocusHashtags::removeEntry(int entryId)
 {
     for (int i = 0; i < mEntries.size(); ++i)
@@ -141,6 +152,7 @@ void FocusHashtags::removeEntry(int entryId)
             }
 
             mEntries.remove(i);
+            delete entry;
             emit entriesChanged();
 
             break;

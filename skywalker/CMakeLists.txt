@@ -373,6 +373,8 @@ qt_add_qml_module(libskywalker
         QML_FILES QuoteLabeler.qml
         SOURCES focus_hashtags.h
         SOURCES focus_hashtags.cpp
+        QML_FILES FocusHashtags.qml
+        QML_FILES AddFocusHashtag.qml
 )
 
 if (NOT ANDROID)

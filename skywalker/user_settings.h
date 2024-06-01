@@ -153,6 +153,9 @@ public:
     QDate getAnniversaryNoticeDate(const QString& did) const override;
     void setAnniversaryNoticeDate(const QString& did, QDate date) override;
 
+    const QJsonDocument getFocusHashtags(const QString& did) const;
+    void setFocusHashtags(const QString& did, const QJsonDocument& jsonHashtags);
+
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;

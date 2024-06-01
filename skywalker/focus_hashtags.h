@@ -27,8 +27,8 @@ public:
     QJsonObject toJson() const;
 
     const QStringList& getHashtags() const { return mHashtags; }
-    void addHashtag(const QString& hashtag);
-    void removeHashtag(const QString& hashtag);
+    Q_INVOKABLE void addHashtag(const QString& hashtag);
+    Q_INVOKABLE void removeHashtag(const QString& hashtag);
 
     int getId() const { return mId; }
     const QColor& getHightlightColor() const { return mHightlightColor; }
@@ -64,8 +64,9 @@ public:
 
     void clear();
     const FocusHashtagEntryList& getEntries() const { return mEntries; }
-    void addEntry(FocusHashtagEntry* entry);
-    void removeEntry(int entryId);
+    Q_INVOKABLE void addEntry(FocusHashtagEntry* entry);
+    Q_INVOKABLE void addEntry(const QString& hashtag);
+    Q_INVOKABLE void removeEntry(int entryId);
 
     bool match(const NormalizedWordIndex& post) const override;
 

@@ -17,6 +17,7 @@ Drawer {
     signal modLists()
     signal userLists()
     signal mutedWords()
+    signal focusHashtags()
     signal settings()
     signal switchAccount()
     signal inviteCodes()
@@ -157,6 +158,12 @@ Drawer {
                     onTriggered: mutedWords()
 
                     MenuItemSvg { svg: svgOutline.mutedWords }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Focus Hashtags")
+                    onTriggered: focusHashtags()
+
+                    MenuItemSvg { svg: svgOutline.hashtag }
                 }
             }
         }
