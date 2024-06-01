@@ -11,7 +11,8 @@ Page {
     readonly property int maxMessageLength: 1000
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
-    property int textInputToolbarHeight: 0
+    property bool keyboardVisible: false
+    property int textInputToolbarHeight: keyboardVisible || !guiSettings.isAndroid ? 24 : 0
 
     signal closed
 
@@ -156,6 +157,15 @@ Page {
             focusPolicy: Qt.NoFocus
             visible: textInputToolbarHeight > 0
         }
+
+        TextLengthCounter {
+            anchors.rightMargin: page.margin
+            anchors.right: parent.right
+            anchors.bottomMargin: 5
+            anchors.bottom: parent.bottom
+            textField: newMessageText
+            visible: textInputToolbarHeight > 0
+        }
     }
 
     BusyIndicator {
@@ -169,8 +179,6 @@ Page {
     }
 
     Connections {
-        property bool keyboardVisible: false
-
         target: Qt.inputMethod
 
         function onKeyboardRectangleChanged() {
@@ -193,14 +201,12 @@ Page {
                     header.y = keyboardHeight
 
                     newMessageText.ensureVisible(newMessageText.cursorRectangle)
-                    textInputToolbarHeight = 24
                     keyboardVisible = true
                 }
             }
             else {
                 messagesView.y = 0
                 header.y = 0
-                textInputToolbarHeight = 0
                 keyboardVisible = false
             }
         }

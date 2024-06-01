@@ -1,6 +1,7 @@
 next
 ====
 * Font selector for message composition
+* Text length counter in message composition
 * Show labels on feeds, lists and labelers
 * Increase timeline capacity to 8000
 

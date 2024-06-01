@@ -61,6 +61,7 @@ Item {
 
     // Misc
     readonly property real flickDeceleration: 1000
+    readonly property bool isAndroid: Qt.platform.os === "android"
 
     // Identity
     readonly property string skywalkerHandle: "@skywalker.thereforeiam.eu"
