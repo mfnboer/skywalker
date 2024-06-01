@@ -99,13 +99,20 @@ ListView {
                 Accessible.ignored: true
             }
 
-            ContentLabels {
-                id: contentLabels
+            Rectangle {
                 Layout.columnSpan: 3
-                anchors.left: parent.left
-                anchors.right: undefined
-                contentLabels: author.labels
-                contentAuthorDid: author.did
+                Layout.fillWidth: true
+                height: contentLabels.height + 3
+                color: "transparent"
+
+                ContentLabels {
+                    id: contentLabels
+                    anchors.left: parent.left
+                    anchors.leftMargin: 8
+                    anchors.right: undefined
+                    contentLabels: author.labels
+                    contentAuthorDid: author.did
+                }
             }
 
             Rectangle {

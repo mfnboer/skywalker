@@ -139,13 +139,20 @@ Rectangle {
             }
         }
 
-        ContentLabels {
-            id: contentLabels
+        Rectangle {
             Layout.columnSpan: 3
-            anchors.left: parent.left
-            anchors.right: undefined
-            contentLabels: feed.labels
-            contentAuthorDid: feed.creator.did
+            Layout.fillWidth: true
+            height: contentLabels.height + 3
+            color: "transparent"
+
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.leftMargin: generatorView.margin
+                anchors.right: undefined
+                contentLabels: feed.labels
+                contentAuthorDid: feed.creator.did
+            }
         }
 
         Text {

@@ -167,13 +167,20 @@ Rectangle {
             }
         }
 
-        ContentLabels {
-            id: contentLabels
+        Rectangle {
             Layout.columnSpan: 3
-            anchors.left: parent.left
-            anchors.right: undefined
-            contentLabels: list.labels
-            contentAuthorDid: list.creator.did
+            Layout.fillWidth: true
+            height: contentLabels.height + 3
+            color: "transparent"
+
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.leftMargin: view.margin
+                anchors.right: undefined
+                contentLabels: list.labels
+                contentAuthorDid: list.creator.did
+            }
         }
 
         Text {
