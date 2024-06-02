@@ -32,44 +32,73 @@ ListView {
     }
     headerPositioning: ListView.OverlayHeader
 
-    delegate: ColumnLayout {
+    delegate: Column {
         required property var modelData // FocusHashtagEntry
 
         width: view.width
+        spacing: 0
 
-        RowLayout {
-            spacing: 0
+        Rectangle {
+            width: parent.width
+            height: hashtagRow.height
+            color: modelData.highlightColor
 
-            AccessibleText {
-                id: entryText
-                Layout.fillWidth: true
-                leftPadding: 10
-                rightPadding: 10
-                elide: Text.ElideRight
-                wrapMode: Text.Wrap
-                font.pointSize: guiSettings.scaledFont(9/8)
-                color: guiSettings.textColor
-                text: modelData.hashtags.join(" ")
-            }
-            SvgButton {
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
-                svg: svgOutline.add
-                accessibleName: qsTr(`edit ${entryText.text}`)
-                onClicked: addHashtagToEntry(modelData)
-            }
-            SvgButton {
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
-                svg: svgOutline.delete
-                accessibleName: qsTr(`delete ${entryText.text}`)
-                onClicked: skywalker.focusHashtags.removeEntry(modelData.id)
+            RowLayout {
+                id: hashtagRow
+                width: parent.width
+                spacing: 0
+
+                AccessibleText {
+                    id: entryText
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: implicitHeight
+                    padding: 10
+                    elide: Text.ElideRight
+                    wrapMode: Text.Wrap
+                    font.pointSize: guiSettings.scaledFont(9/8)
+                    color: guiSettings.textColor
+                    text: getEntryText(modelData.hashtags)
+                }
+                SvgButton {
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 30
+                    Layout.rightMargin: 5
+                    imageMargin: 0
+                    iconColor: guiSettings.textColor
+                    Material.background: "transparent"
+                    svg: svgOutline.palette
+                    accessibleName: qsTr(`set hightlight color for ${entryText.text}`)
+                    onClicked: setHighlightColor(modelData)
+                }
+                SvgButton {
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 30
+                    Layout.rightMargin: 5
+                    imageMargin: 0
+                    iconColor: guiSettings.textColor
+                    Material.background: "transparent"
+                    svg: svgOutline.add
+                    accessibleName: qsTr(`edit ${entryText.text}`)
+                    onClicked: addHashtagToEntry(modelData)
+                }
+                SvgButton {
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: 30
+                    Layout.rightMargin: 10
+                    imageMargin: 0
+                    id: deleteButton
+                    iconColor: guiSettings.textColor
+                    Material.background: "transparent"
+                    svg: svgOutline.delete
+                    accessibleName: qsTr(`delete ${entryText.text}`)
+                    onClicked: deleteHashtagEntry(modelData)
+                }
             }
         }
 
         Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
+            width: parent.width
+            height: 1
             color: guiSettings.separatorColor
         }
     }
@@ -85,6 +114,13 @@ ListView {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function deleteHashtagEntry(entry) {
+        guiSettings.askYesNoQuestion(
+                    view,
+                    qsTr(`Do you really want to delete: #${entry.hashtags[0]} ?`),
+                    () => skywalker.focusHashtags.removeEntry(entry.id))
     }
 
     function addHashtagEntry() {
@@ -119,5 +155,36 @@ ListView {
 
         dialog.onRejected.connect(() => dialog.destroy())
         dialog.show()
+    }
+
+    function setHighlightColor(entry) {
+        let component = Qt.createComponent("ColorSelector.qml")
+        let cs = component.createObject(view)
+        cs.selectedColor = entry.highlightColor
+        cs.onRejected.connect(() => cs.destroy())
+        cs.onAccepted.connect(() => {
+            entry.highlightColor = cs.selectedColor
+            cs.destroy()
+        })
+        cs.open()
+    }
+
+    function getEntryText(hashtags) {
+        let text = ""
+
+        for (let i = 0; i < hashtags.length; ++i) {
+            const tag = hashtags[i]
+
+            if (i > 0)
+                text += ' '
+
+            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
+        }
+
+        return text
+    }
+
+    Component.onDestruction: {
+        skywalker.focusHashtags.save(skywalker.getUserDid(), skywalker.getUserSettings())
     }
 }

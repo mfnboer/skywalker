@@ -22,6 +22,9 @@ class UserSettings : public QObject, public IUserSettings
 {
     Q_OBJECT
 public:
+    static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
+    Q_INVOKABLE static void setActiveDisplayMode(QEnums::DisplayMode mode) { sActiveDisplayMode = mode; }
+
     static QString getLinkColor() { return sLinkColor; }
     Q_INVOKABLE static void setLinkColor(const QString& color) { sLinkColor = color; }
 
@@ -173,6 +176,7 @@ private:
     PasswordEncryption mEncryption;
 
     // Derived from display mode
+    static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK
     static QString sLinkColor;
 };
 

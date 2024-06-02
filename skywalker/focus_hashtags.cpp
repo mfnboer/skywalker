@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "focus_hashtags.h"
+#include "user_settings.h"
 #include <atproto/lib/xjson.h>
 #include <QJsonArray>
 #include <QDebug>
@@ -21,7 +22,8 @@ FocusHashtagEntry* FocusHashtagEntry::fromJson(const QJsonObject& json, QObject*
     ATProto::XJsonObject xjson(json);
     const auto& hashtags = xjson.getRequiredStringVector("hashtags");
     entry->mHashtags.assign(hashtags.begin(), hashtags.end());
-    entry->mHightlightColor = xjson.getRequiredString("highlightColor");
+    entry->mHighlightColorLightMode = xjson.getRequiredString("highlightColorLightMode");
+    entry->mHighlightColorDarkMode = xjson.getRequiredString("highlightColorDarkMode");
     return entry;
 }
 
@@ -34,7 +36,8 @@ QJsonObject FocusHashtagEntry::toJson() const
         hashtags.append(tag);
 
     json.insert("hashtags", hashtags);
-    json.insert("highlightColor", mHightlightColor.name());
+    json.insert("highlightColorLightMode", mHighlightColorLightMode.name());
+    json.insert("highlightColorDarkMode", mHighlightColorLightMode.name());
     return json;
 }
 
@@ -59,13 +62,49 @@ void FocusHashtagEntry::removeHashtag(const QString& hashtag)
         emit hashtagsChanged();
 }
 
+const QColor& FocusHashtagEntry::getHightlightColor() const
+{
+    const auto displayMode = UserSettings::getActiveDisplayMode();
+
+    switch (displayMode)
+    {
+    case QEnums::DISPLAY_MODE_LIGHT:
+        return mHighlightColorLightMode;
+    case QEnums::DISPLAY_MODE_DARK:
+        return mHighlightColorDarkMode;
+    case QEnums::DISPLAY_MODE_SYSTEM:
+        Q_ASSERT(false);
+        qWarning() << "Unexpected SYSTEM mode";
+        return mHighlightColorLightMode;
+    }
+
+    Q_ASSERT(false);
+    qWarning() << "Invalid display mode:" << displayMode;
+    return mHighlightColorLightMode;
+}
+
 void FocusHashtagEntry::setHighlightColor(const QColor& color)
 {
-    if (color != mHightlightColor)
+    if (color == getHightlightColor())
+        return;
+
+    const auto displayMode = UserSettings::getActiveDisplayMode();
+
+    switch (displayMode)
     {
-        mHightlightColor = color;
-        emit highlightColorChanged();
+    case QEnums::DISPLAY_MODE_LIGHT:
+        mHighlightColorLightMode = color;
+        break;
+    case QEnums::DISPLAY_MODE_DARK:
+        mHighlightColorDarkMode = color;
+        break;
+    case QEnums::DISPLAY_MODE_SYSTEM:
+        Q_ASSERT(false);
+        qWarning() << "Unexpected SYSTEM mode";
+        return;
     }
+
+    emit highlightColorChanged();
 }
 
 
@@ -171,6 +210,27 @@ bool FocusHashtags::match(const NormalizedWordIndex& post) const
     }
 
     return false;
+}
+
+void FocusHashtags::save(const QString& did, UserSettings* settings) const
+{
+    Q_ASSERT(settings);
+    qDebug() << "Save focus hashtags:" << did;
+    settings->setFocusHashtags(did, toJson());
+}
+
+void FocusHashtags::load(const QString& did, const UserSettings* settings)
+{
+    Q_ASSERT(settings);
+    qDebug() << "Load focus hashtags:" << did;
+
+    try {
+        const auto json = settings->getFocusHashtags(did);
+        setEntries(json);
+    }
+    catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "Could not load focus hashtags:" << e.msg();
+    }
 }
 
 }

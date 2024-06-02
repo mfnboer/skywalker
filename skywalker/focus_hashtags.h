@@ -10,6 +10,8 @@
 
 namespace Skywalker {
 
+class UserSettings;
+
 class FocusHashtagEntry : public QObject
 {
     Q_OBJECT
@@ -31,7 +33,7 @@ public:
     Q_INVOKABLE void removeHashtag(const QString& hashtag);
 
     int getId() const { return mId; }
-    const QColor& getHightlightColor() const { return mHightlightColor; }
+    const QColor& getHightlightColor() const;
     void setHighlightColor(const QColor& color);
 
 signals:
@@ -41,7 +43,8 @@ signals:
 private:
     int mId;
     QStringList mHashtags;
-    QColor mHightlightColor;
+    QColor mHighlightColorLightMode{0xffffcc};
+    QColor mHighlightColorDarkMode{0x666600};
 
     static int sNextId;
 };
@@ -69,6 +72,9 @@ public:
     Q_INVOKABLE void removeEntry(int entryId);
 
     bool match(const NormalizedWordIndex& post) const override;
+
+    Q_INVOKABLE void save(const QString& did, UserSettings* settings) const;
+    Q_INVOKABLE void load(const QString& did, const UserSettings* settings);
 
 signals:
     void entriesChanged();

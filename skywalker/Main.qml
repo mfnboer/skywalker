@@ -150,6 +150,7 @@ ApplicationWindow {
             skywalker.loadBookmarks()
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
+            skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
             skywalker.chat.getConvos()
 
             setStartupStatus(qsTr("Rewinding timeline"))
@@ -1241,6 +1242,7 @@ ApplicationWindow {
         console.debug("Theme set to:", root.Material.theme)
         root.Material.accent = guiSettings.accentColor
         let userSettings = skywalker.getUserSettings()
+        userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
         userSettings.setLinkColor(guiSettings.linkColor)
     }
 

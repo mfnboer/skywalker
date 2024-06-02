@@ -13,6 +13,7 @@ namespace Skywalker {
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
 static constexpr int MAX_ATTEMPTS_DRAFT_MIGRATION = 10;
 
+QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
 QString UserSettings::sLinkColor("blue");
 
 UserSettings::UserSettings(QObject* parent) :
