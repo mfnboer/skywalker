@@ -6,7 +6,6 @@
 #include "hashtag_index.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
-#include "muted_words.h"
 #include "post.h"
 #include "profile_store.h"
 #include <QAbstractListModel>
@@ -15,6 +14,8 @@
 #include <unordered_set>
 
 namespace Skywalker {
+
+class FocusHashtags;
 
 class AbstractPostFeedModel : public QAbstractListModel,
                               public LocalPostModelChanges,
@@ -64,6 +65,7 @@ public:
         PostContentVisibility,
         PostContentWarning,
         PostMutedReason,
+        PostHighlightColor,
         PostLocallyDeleted,
         EndOfFeed
     };
@@ -74,7 +76,8 @@ public:
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
                           const IContentFilter& contentFilter, const Bookmarks& bookmarks,
-                          const IMatchWords& mutedWords, HashtagIndex& hashtags,
+                          const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
+                          HashtagIndex& hashtags,
                           QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -118,6 +121,7 @@ protected:
     const IContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
     const IMatchWords& mMutedWords;
+    const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
 
 private:

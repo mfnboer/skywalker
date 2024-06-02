@@ -19,6 +19,8 @@ class FocusHashtagEntry : public QObject
     Q_PROPERTY(int id READ getId CONSTANT FINAL)
     Q_PROPERTY(QStringList hashtags READ getHashtags NOTIFY hashtagsChanged FINAL)
     Q_PROPERTY(QColor highlightColor READ getHightlightColor WRITE setHighlightColor NOTIFY highlightColorChanged FINAL)
+    Q_PROPERTY(QColor textColor READ getTextColor NOTIFY textColorChanged FINAL)
+    Q_PROPERTY(QColor linkColor READ getLinkColor NOTIFY linkColorChanged FINAL)
 
 public:
     static constexpr int MAX_HASHTAGS = 20;
@@ -35,10 +37,14 @@ public:
     int getId() const { return mId; }
     const QColor& getHightlightColor() const;
     void setHighlightColor(const QColor& color);
+    QColor getTextColor() const;
+    QColor getLinkColor() const;
 
 signals:
     void hashtagsChanged();
     void highlightColorChanged();
+    void textColorChanged();
+    void linkColorChanged();
 
 private:
     int mId;
@@ -73,6 +79,9 @@ public:
 
     bool match(const NormalizedWordIndex& post) const override;
 
+    // Returns invalid color when no match is found
+    QColor highlightColor(const NormalizedWordIndex& post) const;
+
     Q_INVOKABLE void save(const QString& did, UserSettings* settings) const;
     Q_INVOKABLE void load(const QString& did, const UserSettings* settings);
 
@@ -81,7 +90,7 @@ signals:
 
 private:
     FocusHashtagEntryList mEntries;
-    std::unordered_map<QString, int> mAllHashtags;
+    std::unordered_map<QString, std::unordered_set<FocusHashtagEntry*>> mAllHashtags;
 };
 
 }

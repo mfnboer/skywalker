@@ -57,7 +57,8 @@ Skywalker::Skywalker(QObject* parent) :
     mUserSettings(this),
     mAnniversary(mUserDid, mUserSettings, this),
     mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
-                   mBookmarks, mMutedWords, mSeenHashtags, mUserPreferences, mUserSettings, this)
+                   mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
+                   mUserPreferences, mUserSettings, this)
 {
     mBookmarks.setSkywalker(this);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
@@ -1185,7 +1186,7 @@ void Skywalker::getPostThread(const QString& uri)
             setGetPostThreadInProgress(false);
             auto model = std::make_unique<PostThreadModel>(
                 mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-                mMutedWords, mSeenHashtags, this);
+                mMutedWords, *mFocusHashtags, mSeenHashtags, this);
             int postEntryIndex = model->setPostThread(std::move(thread));
 
             if (postEntryIndex < 0)
@@ -1614,7 +1615,7 @@ int Skywalker::createAuthorFeedModel(const BasicProfile& author, QEnums::AuthorF
 {
     auto model = std::make_unique<AuthorFeedModel>(
         author, mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-        mMutedWords, mSeenHashtags, this);
+        mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setFilter(filter);
     const int id = mAuthorFeedModels.put(std::move(model));
     return id;
@@ -1637,7 +1638,7 @@ int Skywalker::createSearchPostFeedModel()
 {
     auto model = std::make_unique<SearchPostFeedModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-        mMutedWords, mSeenHashtags, this);
+        mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = mSearchPostFeedModels.put(std::move(model));
     return id;
 }
@@ -1750,7 +1751,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
             mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks, mMutedWords,
-            mSeenHashtags, mUserPreferences, mUserSettings, this);
+            *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
     const int id = mPostFeedModels.put(std::move(model));
@@ -1761,7 +1762,7 @@ int Skywalker::createPostFeedModel(const ListView& listView)
 {
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
                                                  mUserDid, mUserFollows, mMutedReposts,
-                                                 mContentFilter, mBookmarks, mMutedWords,
+                                                 mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setListView(listView);
     model->enableLanguageFilter(true);
@@ -2571,7 +2572,7 @@ const BookmarksModel* Skywalker::createBookmarksModel()
 {
     mBookmarksModel = std::make_unique<BookmarksModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-        mMutedWords, mSeenHashtags, this);
+        mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
     connect(mBookmarksModel.get(), &BookmarksModel::failure, this,
             [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
@@ -2588,7 +2589,7 @@ DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 {
     return std::make_unique<DraftPostsModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilterShowAll, mBookmarks,
-        mMutedWordsNoMutes, mSeenHashtags, this);
+        mMutedWordsNoMutes, *mFocusHashtags, mSeenHashtags, this);
 }
 
 bool Skywalker::sendAppToBackground()

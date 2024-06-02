@@ -3,6 +3,7 @@
 #include "anniversary_card.h"
 #include "definitions.h"
 #include "shared_image_provider.h"
+#include "utils.h"
 #include <QByteArray>
 #include <QPainter>
 #include <QSvgRenderer>
@@ -93,10 +94,8 @@ void AnniversaryCard::initCard()
     painter.drawText(cardImage.rect().adjusted(0, 130, 0, 0), Qt::AlignCenter,
                      QString::number(mYears));
 
-    const float blackness = mBackgroundColor.toCmyk().blackF();
-    qDebug() << "Blackness:" << blackness;
     painter.setViewport(cardImage.rect());
-    painter.setPen(QPen(blackness < 0.3 ? "black" : "white"));
+    painter.setPen(QPen(Utils::determineForegroundColor(mBackgroundColor, "black", "white")));
     painter.setFont(QFont("Times", 18, -1, true));
     painter.drawText(cardImage.rect().adjusted(0, 0, -10, -5), Qt::AlignRight | Qt::AlignBottom,
                      QString("sent with %1").arg(SKYWALKER_HANDLE));

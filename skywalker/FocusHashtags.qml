@@ -55,16 +55,17 @@ ListView {
                     padding: 10
                     elide: Text.ElideRight
                     wrapMode: Text.Wrap
+                    textFormat: Text.RichText
                     font.pointSize: guiSettings.scaledFont(9/8)
-                    color: guiSettings.textColor
-                    text: getEntryText(modelData.hashtags)
+                    color: modelData.textColor
+                    text: getEntryText(modelData)
                 }
                 SvgButton {
                     Layout.preferredWidth: 30
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: guiSettings.textColor
+                    iconColor: modelData.textColor
                     Material.background: "transparent"
                     svg: svgOutline.palette
                     accessibleName: qsTr(`set hightlight color for ${entryText.text}`)
@@ -75,7 +76,7 @@ ListView {
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: guiSettings.textColor
+                    iconColor: modelData.textColor
                     Material.background: "transparent"
                     svg: svgOutline.add
                     accessibleName: qsTr(`edit ${entryText.text}`)
@@ -87,7 +88,7 @@ ListView {
                     Layout.rightMargin: 10
                     imageMargin: 0
                     id: deleteButton
-                    iconColor: guiSettings.textColor
+                    iconColor: modelData.textColor
                     Material.background: "transparent"
                     svg: svgOutline.delete
                     accessibleName: qsTr(`delete ${entryText.text}`)
@@ -169,18 +170,19 @@ ListView {
         cs.open()
     }
 
-    function getEntryText(hashtags) {
+    function getEntryText(entry) {
         let text = ""
 
-        for (let i = 0; i < hashtags.length; ++i) {
-            const tag = hashtags[i]
+        for (let i = 0; i < entry.hashtags.length; ++i) {
+            const tag = entry.hashtags[i]
 
             if (i > 0)
                 text += ' '
 
-            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
+            text += `<a href="${tag}" style="color: ${entry.linkColor}; text-decoration: none">#${tag}</a>`
         }
 
+        console.debug("TEXT:", text)
         return text
     }
 

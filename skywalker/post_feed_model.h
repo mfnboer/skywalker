@@ -29,6 +29,7 @@ public:
                            const ContentFilter& contentFilter,
                            const Bookmarks& bookmarks,
                            const MutedWords& mutedWords,
+                           const FocusHashtags& focusHashtags,
                            HashtagIndex& hashtags,
                            const ATProto::UserPreferences& userPrefs,
                            const UserSettings& userSettings,

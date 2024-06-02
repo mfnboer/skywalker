@@ -23,6 +23,7 @@ Column {
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property bool attachmentsInitialized: false
+    property string textColor: guiSettings.textColor
 
     id: postBody
 
@@ -36,7 +37,7 @@ Column {
         ellipsisBackgroundColor: postBody.ellipsisBackgroundColor
         elide: Text.ElideRight
         textFormat: Text.RichText
-        color: guiSettings.textColor
+        color: textColor
         font.pointSize: getPostFontSize()
         plainText: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0

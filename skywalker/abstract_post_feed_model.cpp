@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "abstract_post_feed_model.h"
 #include "content_filter.h"
+#include "focus_hashtags.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -11,7 +12,8 @@ using namespace std::chrono_literals;
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
                                              const IContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                             const IMatchWords& mutedWords, HashtagIndex& hashtags,
+                                             const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
+                                             HashtagIndex& hashtags,
                                              QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
@@ -20,6 +22,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mContentFilter(contentFilter),
     mBookmarks(bookmarks),
     mMutedWords(mutedWords),
+    mFocusHashtags(focusHashtags),
     mHashtags(hashtags)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
@@ -265,6 +268,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
         return QEnums::MUTED_POST_NONE;
     }
+    case Role::PostHighlightColor:
+    {
+        const QColor color = mFocusHashtags.highlightColor(post);
+        return color.isValid() ? color.name() : "";
+    }
     case Role::PostLocallyDeleted:
     {
         if (!change)
@@ -334,6 +342,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostContentVisibility), "postContentVisibility" },
         { int(Role::PostContentWarning), "postContentWarning" },
         { int(Role::PostMutedReason), "postMutedReason" },
+        { int(Role::PostHighlightColor), "postHighlightColor" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };

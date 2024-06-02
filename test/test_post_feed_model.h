@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <definitions.h>
+#include <focus_hashtags.h>
 #include <post_feed_model.h>
 #include <QtTest/QTest>
 
@@ -16,7 +17,7 @@ private slots:
     {
         mPostFeedModel = std::make_unique<PostFeedModel>(
             HOME_FEED, mUserDid, mFollowing, mMutedReposts, mContentFilter,
-            mBookmarks, mMutedWords, mHashtags, mUserPreferences, mUserSettings);
+            mBookmarks, mMutedWords, mFocusHashtags, mHashtags, mUserPreferences, mUserSettings);
     }
 
     void cleanup()
@@ -442,6 +443,7 @@ private:
     UserSettings mUserSettings;
     Bookmarks mBookmarks;
     MutedWords mMutedWords;
+    FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};
     PostFeedModel::Ptr mPostFeedModel;
     int mNextPostId = 1;

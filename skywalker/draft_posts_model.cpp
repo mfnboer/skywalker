@@ -8,9 +8,10 @@ namespace Skywalker {
 DraftPostsModel::DraftPostsModel(const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const IContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                 const IMatchWords& mutedWords, HashtagIndex& hashtags,
+                                 const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
+                                 HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent)
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent)
 {
 }
 

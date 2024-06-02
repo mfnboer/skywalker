@@ -44,6 +44,7 @@ Rectangle {
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
     required property int postMutedReason // QEnums::MutedPostReason
+    required property string postHighlightColor
     required property bool postLocallyDeleted
     required property bool endOfFeed
 
@@ -53,7 +54,7 @@ Rectangle {
         if (postThreadType & QEnums.THREAD_ENTRY)
             return guiSettings.postHighLightColor
         else
-            return guiSettings.backgroundColor
+            return postHighlightColor ? postHighlightColor : guiSettings.backgroundColor
     }
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 2 : 0
     border.color: guiSettings.borderColor
@@ -90,7 +91,7 @@ Rectangle {
                             return guiSettings.threadStartColor
                         case QEnums.POST_REPLY:
                         case QEnums.POST_LAST_REPLY:
-                            return !postParentInThread && index % 2 === 0 ? "transparent" : guiSettings.threadMidColor
+                            return !postParentInThread && index % 2 === 0 ? guiSettings.backgroundColor : guiSettings.threadMidColor
                         case QEnums.POST_THREAD: {
                             if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
                                 return guiSettings.threadStartColor
@@ -106,7 +107,7 @@ Rectangle {
                             return guiSettings.threadMidColor
                         }
                         default:
-                            return "transparent"
+                            return guiSettings.backgroundColor
                         }
                     }
                     opacity: avatar.opacity
@@ -123,7 +124,7 @@ Rectangle {
         Rectangle {
             width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
-            color: "transparent"
+            color: guiSettings.backgroundColor
             visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
 
             SvgImage {
@@ -181,7 +182,7 @@ Rectangle {
                             return guiSettings.threadMidColor
                         }
                         default:
-                            return "transparent"
+                            return guiSettings.backgroundColor
                         }
                     }
                 }
@@ -190,7 +191,7 @@ Rectangle {
                     color: {
                         switch (postType) {
                         case QEnums.POST_STANDALONE:
-                            return "transparent"
+                            return guiSettings.backgroundColor
                         case QEnums.POST_LAST_REPLY:
                             return guiSettings.threadEndColor
                         case QEnums.POST_THREAD: {
@@ -434,7 +435,7 @@ Rectangle {
                         return guiSettings.threadEntryColor
                     }
                     if (postThreadType & QEnums.THREAD_LEAF) {
-                        return "transparent"
+                        return guiSettings.backgroundColor
                     } else if (postThreadType & QEnums.THREAD_PARENT)  {
                         return guiSettings.threadStartColor
                     }
@@ -442,7 +443,7 @@ Rectangle {
                     return guiSettings.threadMidColor
                 }
                 default:
-                    return "transparent"
+                    return guiSettings.backgroundColor
                 }
             }
             opacity: avatar.opacity

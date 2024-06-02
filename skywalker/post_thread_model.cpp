@@ -8,9 +8,10 @@ namespace Skywalker {
 PostThreadModel::PostThreadModel(const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                 const MutedWords& mutedWords, HashtagIndex& hashtags,
+                                 const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
+                                 HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent)
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)

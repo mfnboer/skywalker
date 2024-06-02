@@ -15,7 +15,8 @@ public:
     SearchPostFeedModel(const QString& userDid, const IProfileStore& following,
                         const IProfileStore& mutedReposts,
                         const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                        const MutedWords& mutedWords, HashtagIndex& hashtags,
+                        const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
+                        HashtagIndex& hashtags,
                         QObject* parent = nullptr);
 
     // Returns how many entries have been added.

@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "focus_hashtags.h"
 #include "user_settings.h"
+#include "utils.h"
 #include <atproto/lib/xjson.h>
 #include <QJsonArray>
 #include <QDebug>
@@ -37,7 +38,7 @@ QJsonObject FocusHashtagEntry::toJson() const
 
     json.insert("hashtags", hashtags);
     json.insert("highlightColorLightMode", mHighlightColorLightMode.name());
-    json.insert("highlightColorDarkMode", mHighlightColorLightMode.name());
+    json.insert("highlightColorDarkMode", mHighlightColorDarkMode.name());
     return json;
 }
 
@@ -88,6 +89,7 @@ void FocusHashtagEntry::setHighlightColor(const QColor& color)
     if (color == getHightlightColor())
         return;
 
+    const QColor oldTextColor = getTextColor();
     const auto displayMode = UserSettings::getActiveDisplayMode();
 
     switch (displayMode)
@@ -104,9 +106,24 @@ void FocusHashtagEntry::setHighlightColor(const QColor& color)
         return;
     }
 
+    if (oldTextColor != getTextColor())
+    {
+        emit textColorChanged();
+        emit linkColorChanged();
+    }
+
     emit highlightColorChanged();
 }
 
+QColor FocusHashtagEntry::getTextColor() const
+{
+    return Utils::determineForegroundColor(getHightlightColor(), Qt::black, Qt::white);
+}
+
+QColor FocusHashtagEntry::getLinkColor() const
+{
+    return Utils::determineForegroundColor(getHightlightColor(), Qt::blue, 0x58a6ff);
+}
 
 FocusHashtags::FocusHashtags(QObject* parent) :
     QObject(parent)
@@ -161,7 +178,7 @@ void FocusHashtags::addEntry(FocusHashtagEntry* entry)
     const auto& hashtags = entry->getHashtags();
 
     for (const auto& tag : hashtags)
-        ++mAllHashtags[tag];
+        mAllHashtags[tag].insert(entry);
 
     mEntries.push_back(entry);
     emit entriesChanged();
@@ -178,7 +195,7 @@ void FocusHashtags::removeEntry(int entryId)
 {
     for (int i = 0; i < mEntries.size(); ++i)
     {
-        const auto* entry = mEntries[i];
+        auto* entry = mEntries[i];
 
         if (entry->getId() == entryId)
         {
@@ -186,7 +203,9 @@ void FocusHashtags::removeEntry(int entryId)
 
             for (const auto& tag : hashtags)
             {
-                if (--mAllHashtags[tag] <= 0)
+                mAllHashtags[tag].erase(entry);
+
+                if (mAllHashtags[tag].empty())
                     mAllHashtags.erase(tag);
             }
 
@@ -210,6 +229,29 @@ bool FocusHashtags::match(const NormalizedWordIndex& post) const
     }
 
     return false;
+}
+
+QColor FocusHashtags::highlightColor(const NormalizedWordIndex& post) const
+{
+    const std::vector<QString> hashtags = post.getHashtags();
+
+    for (const auto& tag : hashtags)
+    {
+        auto it = mAllHashtags.find(tag);
+
+        if (it == mAllHashtags.end())
+            continue;
+
+        const std::unordered_set<FocusHashtagEntry*>& entries = it->second;
+
+        if (!entries.empty())
+        {
+            const FocusHashtagEntry* entry = *entries.begin();
+            return entry->getHightlightColor();
+        }
+    }
+
+    return {};
 }
 
 void FocusHashtags::save(const QString& did, UserSettings* settings) const

@@ -11,11 +11,12 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              const ContentFilter& contentFilter,
                              const Bookmarks& bookmarks,
                              const MutedWords& mutedWords,
+                             const FocusHashtags& focusHashtags,
                              HashtagIndex& hashtags,
                              const ATProto::UserPreferences& userPrefs,
                              const UserSettings& userSettings,
                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, hashtags, parent),
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
     mUserSettings(userSettings),
     mFeedName(feedName)
