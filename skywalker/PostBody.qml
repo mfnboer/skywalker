@@ -23,7 +23,7 @@ Column {
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property bool attachmentsInitialized: false
-    property string textColor: guiSettings.textColor
+    property string postHighlightColor: "transparent"
 
     id: postBody
 
@@ -37,7 +37,7 @@ Column {
         ellipsisBackgroundColor: postBody.ellipsisBackgroundColor
         elide: Text.ElideRight
         textFormat: Text.RichText
-        color: textColor
+        color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
@@ -46,6 +46,14 @@ Column {
         onLinkActivated: (link) => root.openLink(link)
 
         Accessible.ignored: true
+
+        Rectangle {
+            anchors.fill: parent
+            z: parent.z - 1
+            radius: 5
+            color: postHighlightColor
+            opacity: guiSettings.focusHighlightOpacity
+        }
     }
 
     Row {

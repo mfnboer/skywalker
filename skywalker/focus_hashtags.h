@@ -19,8 +19,6 @@ class FocusHashtagEntry : public QObject
     Q_PROPERTY(int id READ getId CONSTANT FINAL)
     Q_PROPERTY(QStringList hashtags READ getHashtags NOTIFY hashtagsChanged FINAL)
     Q_PROPERTY(QColor highlightColor READ getHightlightColor WRITE setHighlightColor NOTIFY highlightColorChanged FINAL)
-    Q_PROPERTY(QColor textColor READ getTextColor NOTIFY textColorChanged FINAL)
-    Q_PROPERTY(QColor linkColor READ getLinkColor NOTIFY linkColorChanged FINAL)
 
 public:
     static constexpr int MAX_HASHTAGS = 20;
@@ -35,22 +33,17 @@ public:
     Q_INVOKABLE void removeHashtag(const QString& hashtag);
 
     int getId() const { return mId; }
-    const QColor& getHightlightColor() const;
+    const QColor& getHightlightColor() const { return mHighlightColor; }
     void setHighlightColor(const QColor& color);
-    QColor getTextColor() const;
-    QColor getLinkColor() const;
 
 signals:
     void hashtagsChanged();
     void highlightColorChanged();
-    void textColorChanged();
-    void linkColorChanged();
 
 private:
     int mId;
     QStringList mHashtags;
-    QColor mHighlightColorLightMode{0xffffcc};
-    QColor mHighlightColorDarkMode{0x666600};
+    QColor mHighlightColor{"yellow"};
 
     static int sNextId;
 };

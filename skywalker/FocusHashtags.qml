@@ -41,7 +41,7 @@ ListView {
         Rectangle {
             width: parent.width
             height: hashtagRow.height
-            color: modelData.highlightColor
+            color: "transparent"
 
             RowLayout {
                 id: hashtagRow
@@ -57,7 +57,7 @@ ListView {
                     wrapMode: Text.Wrap
                     textFormat: Text.RichText
                     font.pointSize: guiSettings.scaledFont(9/8)
-                    color: modelData.textColor
+                    color: guiSettings.textColor
                     text: getEntryText(modelData)
                 }
                 SvgButton {
@@ -65,7 +65,7 @@ ListView {
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: modelData.textColor
+                    iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     svg: svgOutline.palette
                     accessibleName: qsTr(`set hightlight color for ${entryText.text}`)
@@ -76,7 +76,7 @@ ListView {
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: modelData.textColor
+                    iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     svg: svgOutline.add
                     accessibleName: qsTr(`edit ${entryText.text}`)
@@ -88,12 +88,19 @@ ListView {
                     Layout.rightMargin: 10
                     imageMargin: 0
                     id: deleteButton
-                    iconColor: modelData.textColor
+                    iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     svg: svgOutline.delete
                     accessibleName: qsTr(`delete ${entryText.text}`)
                     onClicked: deleteHashtagEntry(modelData)
                 }
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                z: parent.z - 1
+                color: modelData.highlightColor
+                opacity: guiSettings.focusHighlightOpacity
             }
         }
 
@@ -179,7 +186,7 @@ ListView {
             if (i > 0)
                 text += ' '
 
-            text += `<a href="${tag}" style="color: ${entry.linkColor}; text-decoration: none">#${tag}</a>`
+            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
         }
 
         console.debug("TEXT:", text)

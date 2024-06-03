@@ -23,8 +23,7 @@ FocusHashtagEntry* FocusHashtagEntry::fromJson(const QJsonObject& json, QObject*
     ATProto::XJsonObject xjson(json);
     const auto& hashtags = xjson.getRequiredStringVector("hashtags");
     entry->mHashtags.assign(hashtags.begin(), hashtags.end());
-    entry->mHighlightColorLightMode = xjson.getRequiredString("highlightColorLightMode");
-    entry->mHighlightColorDarkMode = xjson.getRequiredString("highlightColorDarkMode");
+    entry->mHighlightColor = xjson.getRequiredString("highlightColor");
     return entry;
 }
 
@@ -37,8 +36,7 @@ QJsonObject FocusHashtagEntry::toJson() const
         hashtags.append(tag);
 
     json.insert("hashtags", hashtags);
-    json.insert("highlightColorLightMode", mHighlightColorLightMode.name());
-    json.insert("highlightColorDarkMode", mHighlightColorDarkMode.name());
+    json.insert("highlightColor", mHighlightColor.name());
     return json;
 }
 
@@ -63,66 +61,13 @@ void FocusHashtagEntry::removeHashtag(const QString& hashtag)
         emit hashtagsChanged();
 }
 
-const QColor& FocusHashtagEntry::getHightlightColor() const
-{
-    const auto displayMode = UserSettings::getActiveDisplayMode();
-
-    switch (displayMode)
-    {
-    case QEnums::DISPLAY_MODE_LIGHT:
-        return mHighlightColorLightMode;
-    case QEnums::DISPLAY_MODE_DARK:
-        return mHighlightColorDarkMode;
-    case QEnums::DISPLAY_MODE_SYSTEM:
-        Q_ASSERT(false);
-        qWarning() << "Unexpected SYSTEM mode";
-        return mHighlightColorLightMode;
-    }
-
-    Q_ASSERT(false);
-    qWarning() << "Invalid display mode:" << displayMode;
-    return mHighlightColorLightMode;
-}
-
 void FocusHashtagEntry::setHighlightColor(const QColor& color)
 {
-    if (color == getHightlightColor())
-        return;
-
-    const QColor oldTextColor = getTextColor();
-    const auto displayMode = UserSettings::getActiveDisplayMode();
-
-    switch (displayMode)
+    if (color != mHighlightColor)
     {
-    case QEnums::DISPLAY_MODE_LIGHT:
-        mHighlightColorLightMode = color;
-        break;
-    case QEnums::DISPLAY_MODE_DARK:
-        mHighlightColorDarkMode = color;
-        break;
-    case QEnums::DISPLAY_MODE_SYSTEM:
-        Q_ASSERT(false);
-        qWarning() << "Unexpected SYSTEM mode";
-        return;
+        mHighlightColor = color;
+        emit highlightColorChanged();
     }
-
-    if (oldTextColor != getTextColor())
-    {
-        emit textColorChanged();
-        emit linkColorChanged();
-    }
-
-    emit highlightColorChanged();
-}
-
-QColor FocusHashtagEntry::getTextColor() const
-{
-    return Utils::determineForegroundColor(getHightlightColor(), Qt::black, Qt::white);
-}
-
-QColor FocusHashtagEntry::getLinkColor() const
-{
-    return Utils::determineForegroundColor(getHightlightColor(), Qt::blue, 0x58a6ff);
 }
 
 FocusHashtags::FocusHashtags(QObject* parent) :

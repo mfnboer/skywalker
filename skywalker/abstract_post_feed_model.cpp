@@ -271,7 +271,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostHighlightColor:
     {
         const QColor color = mFocusHashtags.highlightColor(post);
-        return color.isValid() ? color.name() : "";
+        return color.isValid() ? color.name() : "transparent";
     }
     case Role::PostLocallyDeleted:
     {

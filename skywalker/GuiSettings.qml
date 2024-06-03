@@ -56,6 +56,9 @@ Item {
     readonly property string threadMidColor: Material.theme === Material.Light ? "lightcyan" : "#000033"
     readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "navy"
 
+    // Opacity
+    readonly property double focusHighlightOpacity: 0.2
+
     // Font size
     readonly property double labelFontSize: scaledFont(6/8)
 
