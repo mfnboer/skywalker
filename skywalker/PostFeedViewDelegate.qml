@@ -270,7 +270,7 @@ Rectangle {
                 postDateTime: postEntry.postIndexedDateTime
                 detailedView: postThreadType & QEnums.THREAD_ENTRY
                 ellipsisBackgroundColor: postEntry.color
-                postHighlightColor: postEntry.postHighlightColor // TODO ellipsis color
+                postHighlightColor: postEntry.postHighlightColor
             }
 
             // Reposts and likes in detailed view of post entry in thread view

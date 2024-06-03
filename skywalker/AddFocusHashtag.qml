@@ -14,7 +14,6 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
 
-    // TODO input validation
     SkyTextInput {
         id: textInput
         width: parent.width
