@@ -26,7 +26,8 @@ qt_add_executable(test_skywalker
     test_search_utils.h
     main.cpp
     test_unicode_fonts.h
-    test_anniversary.h)
+    test_anniversary.h
+    test_focus_hashtags.h)
 
 set(LINK_LIBS
     PRIVATE libatproto

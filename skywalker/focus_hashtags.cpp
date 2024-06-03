@@ -209,6 +209,9 @@ void FocusHashtags::removeHashtagFromEntry(FocusHashtagEntry* entry, const QStri
         const QString normalizedTag = SearchUtils::normalizeText(hashtag);
         mAllHashtags[normalizedTag].erase(entry);
 
+        if (mAllHashtags[normalizedTag].empty())
+            mAllHashtags.erase(normalizedTag);
+
         if (entry->empty())
             removeEntry(entry->getId());
     }

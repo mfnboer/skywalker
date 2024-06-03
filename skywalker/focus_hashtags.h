@@ -12,7 +12,6 @@
 namespace Skywalker {
 
 class UserSettings;
-class FocusHashtags;
 
 class FocusHashtagEntry : public QObject
 {
@@ -32,6 +31,8 @@ public:
 
     const std::set<QString>& getHashtagSet() const { return mHashtags; }
     QStringList getHashtags() const;
+    bool addHashtag(const QString& hashtag);
+    bool removeHashtag(const QString& hashtag);
 
     int getId() const { return mId; }
     const QColor& getHightlightColor() const { return mHighlightColor; }
@@ -44,16 +45,11 @@ signals:
     void highlightColorChanged();
 
 private:
-    bool addHashtag(const QString& hashtag);
-    bool removeHashtag(const QString& hashtag);
-
     int mId;
     std::set<QString> mHashtags;
     QColor mHighlightColor{"yellow"};
 
     static int sNextId;
-
-    friend class FocusHashtags;
 };
 
 using FocusHashtagEntryList = QList<FocusHashtagEntry*>;
