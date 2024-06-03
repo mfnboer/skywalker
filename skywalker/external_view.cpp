@@ -6,27 +6,10 @@ namespace Skywalker
 {
 
 ExternalView::ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal* external) :
-    mExternal(external)
+    mUri(external->mUri),
+    mTitle(external->mTitle),
+    mDescription(external->mDescription),
+    mThumbUrl(external->mThumb.value_or(""))
 {}
-
-QString ExternalView::getUri() const
-{
-    return mExternal ? mExternal->mUri : QString();
-}
-
-QString ExternalView::getTitle() const
-{
-    return mExternal ? mExternal->mTitle : QString();
-}
-
-QString ExternalView::getDescription() const
-{
-    return mExternal ? mExternal->mDescription : QString();
-}
-
-QString ExternalView::getThumbUrl() const
-{
-    return (mExternal && mExternal->mThumb) ? *mExternal->mThumb : QString();
-}
 
 }

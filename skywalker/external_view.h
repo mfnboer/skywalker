@@ -22,13 +22,16 @@ public:
     ExternalView() = default;
     explicit ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal* external);
 
-    QString getUri() const;
-    QString getTitle() const;
-    QString getDescription() const;
-    QString getThumbUrl() const;
+    QString getUri() const { return mUri; }
+    QString getTitle() const { return mTitle; }
+    QString getDescription() const { return mDescription; }
+    QString getThumbUrl() const { return mThumbUrl; }
 
 private:
-    const ATProto::AppBskyEmbed::ExternalViewExternal* mExternal = nullptr;
+    QString mUri;
+    QString mTitle;
+    QString mDescription;
+    QString mThumbUrl;
 };
 
 }
