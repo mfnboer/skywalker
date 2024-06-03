@@ -21,6 +21,7 @@ Dialog {
         svgIcon: svgOutline.hashtag
         initialText: focusHashtag
         placeholderText: qsTr("Hashtag for focus")
+        validator: RegularExpressionValidator { regularExpression: /[^ ]+/ }
         enabled: true
 
         onDisplayTextChanged: {

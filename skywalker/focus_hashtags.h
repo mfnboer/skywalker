@@ -38,6 +38,7 @@ public:
     const QColor& getHightlightColor() const { return mHighlightColor; }
     void setHighlightColor(const QColor& color);
 
+    Q_INVOKABLE int size() const { return mHashtags.size(); }
     bool empty() const { return mHashtags.empty(); }
 
 signals:
@@ -47,7 +48,7 @@ signals:
 private:
     int mId;
     std::set<QString> mHashtags;
-    QColor mHighlightColor{"yellow"};
+    QColor mHighlightColor = Qt::yellow;
 
     static int sNextId;
 };
@@ -71,7 +72,7 @@ public:
     void clear();
     const FocusHashtagEntryList& getEntries() const { return mEntries; }
     Q_INVOKABLE void addEntry(FocusHashtagEntry* entry);
-    Q_INVOKABLE void addEntry(const QString& hashtag);
+    Q_INVOKABLE void addEntry(const QString& hashtag, QColor highlightColor = {});
     Q_INVOKABLE void removeEntry(int entryId);
     Q_INVOKABLE void addHashtagToEntry(FocusHashtagEntry* entry, const QString hashtag);
     Q_INVOKABLE void removeHashtagFromEntry(FocusHashtagEntry* entry, const QString hashtag);

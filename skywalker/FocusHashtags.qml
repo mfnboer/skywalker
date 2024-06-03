@@ -207,8 +207,14 @@ ListView {
             const tag = dialog.getText()
 
             if (tag) {
-                skywalker.focusHashtags.removeHashtagFromEntry(entry, hashtag)
-                skywalker.focusHashtags.addHashtagToEntry(entry, tag)
+                if (entry.size() > 1) {
+                    skywalker.focusHashtags.removeHashtagFromEntry(entry, hashtag)
+                    skywalker.focusHashtags.addHashtagToEntry(entry, tag)
+                }
+                else {
+                    skywalker.focusHashtags.addEntry(tag, entry.highlightColor)
+                    skywalker.focusHashtags.removeEntry(entry.id)
+                }
             }
 
             dialog.destroy()

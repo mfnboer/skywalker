@@ -158,10 +158,14 @@ void FocusHashtags::addEntry(FocusHashtagEntry* entry)
     emit entriesChanged();
 }
 
-void FocusHashtags::addEntry(const QString& hashtag)
+void FocusHashtags::addEntry(const QString& hashtag, QColor highlightColor)
 {
     auto* entry = new FocusHashtagEntry(this);
     entry->addHashtag(hashtag);
+
+    if (highlightColor.isValid())
+        entry->setHighlightColor(highlightColor);
+
     addEntry(entry);
 }
 
