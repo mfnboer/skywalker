@@ -1,8 +1,8 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "focus_hashtags.h"
+#include "search_utils.h"
 #include "user_settings.h"
-#include "utils.h"
 #include <atproto/lib/xjson.h>
 #include <QJsonArray>
 #include <QDebug>
@@ -22,7 +22,7 @@ FocusHashtagEntry* FocusHashtagEntry::fromJson(const QJsonObject& json, QObject*
     auto* entry = new FocusHashtagEntry(parent);
     ATProto::XJsonObject xjson(json);
     const auto& hashtags = xjson.getRequiredStringVector("hashtags");
-    entry->mHashtags.assign(hashtags.begin(), hashtags.end());
+    entry->mHashtags.insert(hashtags.begin(), hashtags.end());
     entry->mHighlightColor = xjson.getRequiredString("highlightColor");
     return entry;
 }
@@ -40,25 +40,38 @@ QJsonObject FocusHashtagEntry::toJson() const
     return json;
 }
 
-void FocusHashtagEntry::addHashtag(const QString& hashtag)
+QStringList FocusHashtagEntry::getHashtags() const
+{
+    return QStringList(mHashtags.begin(), mHashtags.end());
+}
+
+bool FocusHashtagEntry::addHashtag(const QString& hashtag)
 {
     if (mHashtags.size() >= MAX_HASHTAGS)
     {
         qWarning() << "Cannot add hashtag, size:" << mHashtags.size();
-        return;
+        return false;
     }
 
-    if (!mHashtags.contains(hashtag))
+    if (!mHashtags.contains(SearchUtils::normalizeText(hashtag)))
     {
-        mHashtags.push_back(hashtag);
+        mHashtags.insert(hashtag);
         emit hashtagsChanged();
+        return true;
     }
+
+    return false;
 }
 
-void FocusHashtagEntry::removeHashtag(const QString& hashtag)
+bool FocusHashtagEntry::removeHashtag(const QString& hashtag)
 {
-    if (mHashtags.removeOne(hashtag))
+    if (mHashtags.erase(hashtag))
+    {
         emit hashtagsChanged();
+        return true;
+    }
+
+    return false;
 }
 
 void FocusHashtagEntry::setHighlightColor(const QColor& color)
@@ -107,6 +120,9 @@ void FocusHashtags::clear()
 
     if (!mEntries.empty())
     {
+        for (auto* entry : mEntries)
+            delete entry;
+
         mEntries.clear();
         emit entriesChanged();
     }
@@ -123,7 +139,20 @@ void FocusHashtags::addEntry(FocusHashtagEntry* entry)
     const auto& hashtags = entry->getHashtags();
 
     for (const auto& tag : hashtags)
-        mAllHashtags[tag].insert(entry);
+    {
+        const QString normalizedTag = SearchUtils::normalizeText(tag);
+        mAllHashtags[normalizedTag].insert(entry);
+    }
+
+    for (auto it = mEntries.cbegin(); it != mEntries.cend(); ++it)
+    {
+        if ((*it)->getHashtagSet() > entry->getHashtagSet())
+        {
+            mEntries.insert(it, entry);
+            emit entriesChanged();
+            return;
+        }
+    }
 
     mEntries.push_back(entry);
     emit entriesChanged();
@@ -148,10 +177,11 @@ void FocusHashtags::removeEntry(int entryId)
 
             for (const auto& tag : hashtags)
             {
-                mAllHashtags[tag].erase(entry);
+                const QString normalizedTag = SearchUtils::normalizeText(tag);
+                mAllHashtags[normalizedTag].erase(entry);
 
-                if (mAllHashtags[tag].empty())
-                    mAllHashtags.erase(tag);
+                if (mAllHashtags[normalizedTag].empty())
+                    mAllHashtags.erase(normalizedTag);
             }
 
             mEntries.remove(i);
@@ -163,13 +193,36 @@ void FocusHashtags::removeEntry(int entryId)
     }
 }
 
+void FocusHashtags::addHashtagToEntry(FocusHashtagEntry* entry, const QString hashtag)
+{
+    if (entry->addHashtag(hashtag))
+    {
+        const QString normalizedTag = SearchUtils::normalizeText(hashtag);
+        mAllHashtags[normalizedTag].insert(entry);
+    }
+}
+
+void FocusHashtags::removeHashtagFromEntry(FocusHashtagEntry* entry, const QString hashtag)
+{
+    if (entry->removeHashtag(hashtag))
+    {
+        const QString normalizedTag = SearchUtils::normalizeText(hashtag);
+        mAllHashtags[normalizedTag].erase(entry);
+
+        if (entry->empty())
+            removeEntry(entry->getId());
+    }
+}
+
 bool FocusHashtags::match(const NormalizedWordIndex& post) const
 {
     const std::vector<QString> hashtags = post.getHashtags();
 
     for (const auto& tag : hashtags)
     {
-        if (mAllHashtags.contains(tag))
+        const QString normalizedTag = SearchUtils::normalizeText(tag);
+
+        if (mAllHashtags.contains(normalizedTag))
             return true;
     }
 
@@ -182,7 +235,8 @@ QColor FocusHashtags::highlightColor(const NormalizedWordIndex& post) const
 
     for (const auto& tag : hashtags)
     {
-        auto it = mAllHashtags.find(tag);
+        const QString normalizedTag = SearchUtils::normalizeText(tag);
+        auto it = mAllHashtags.find(normalizedTag);
 
         if (it == mAllHashtags.end())
             continue;
@@ -197,6 +251,45 @@ QColor FocusHashtags::highlightColor(const NormalizedWordIndex& post) const
     }
 
     return {};
+}
+
+FocusHashtagEntryList FocusHashtags::getMatchEntries(const NormalizedWordIndex& post) const
+{
+    std::unordered_set<FocusHashtagEntry*> matchEntries;
+    const std::vector<QString> hashtags = post.getHashtags();
+
+    for (const auto& tag : hashtags)
+    {
+        const QString normalizedTag = SearchUtils::normalizeText(tag);
+        auto it = mAllHashtags.find(normalizedTag);
+
+        if (it == mAllHashtags.end())
+            continue;
+
+        const std::unordered_set<FocusHashtagEntry*>& entries = it->second;
+        matchEntries.insert(entries.begin(), entries.end());
+    }
+
+    return FocusHashtagEntryList(matchEntries.begin(), matchEntries.end());
+}
+
+std::set<QString> FocusHashtags::getNormalizedMatchHashtags(const NormalizedWordIndex& post) const
+{
+    std::set<QString> matchHashtags;
+    FocusHashtagEntryList entries = getMatchEntries(post);
+
+    for (auto* entry : entries)
+    {
+        const auto& hashtags = entry->getHashtagSet();
+
+        for (const auto& tag : hashtags)
+        {
+            const QString normalizedTag = SearchUtils::normalizeText(tag);
+            matchHashtags.insert(normalizedTag);
+        }
+    }
+
+    return matchHashtags;
 }
 
 void FocusHashtags::save(const QString& did, UserSettings* settings) const

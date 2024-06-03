@@ -7,10 +7,12 @@
 #include <QJsonObject>
 #include <QObject>
 #include <QString>
+#include <set>
 
 namespace Skywalker {
 
 class UserSettings;
+class FocusHashtags;
 
 class FocusHashtagEntry : public QObject
 {
@@ -28,24 +30,30 @@ public:
 
     QJsonObject toJson() const;
 
-    const QStringList& getHashtags() const { return mHashtags; }
-    Q_INVOKABLE void addHashtag(const QString& hashtag);
-    Q_INVOKABLE void removeHashtag(const QString& hashtag);
+    const std::set<QString>& getHashtagSet() const { return mHashtags; }
+    QStringList getHashtags() const;
 
     int getId() const { return mId; }
     const QColor& getHightlightColor() const { return mHighlightColor; }
     void setHighlightColor(const QColor& color);
+
+    bool empty() const { return mHashtags.empty(); }
 
 signals:
     void hashtagsChanged();
     void highlightColorChanged();
 
 private:
+    bool addHashtag(const QString& hashtag);
+    bool removeHashtag(const QString& hashtag);
+
     int mId;
-    QStringList mHashtags;
+    std::set<QString> mHashtags;
     QColor mHighlightColor{"yellow"};
 
     static int sNextId;
+
+    friend class FocusHashtags;
 };
 
 using FocusHashtagEntryList = QList<FocusHashtagEntry*>;
@@ -69,11 +77,16 @@ public:
     Q_INVOKABLE void addEntry(FocusHashtagEntry* entry);
     Q_INVOKABLE void addEntry(const QString& hashtag);
     Q_INVOKABLE void removeEntry(int entryId);
+    Q_INVOKABLE void addHashtagToEntry(FocusHashtagEntry* entry, const QString hashtag);
+    Q_INVOKABLE void removeHashtagFromEntry(FocusHashtagEntry* entry, const QString hashtag);
 
     bool match(const NormalizedWordIndex& post) const override;
 
     // Returns invalid color when no match is found
     QColor highlightColor(const NormalizedWordIndex& post) const;
+
+    FocusHashtagEntryList getMatchEntries(const NormalizedWordIndex& post) const;
+    std::set<QString> getNormalizedMatchHashtags(const NormalizedWordIndex& post) const;
 
     Q_INVOKABLE void save(const QString& did, UserSettings* settings) const;
     Q_INVOKABLE void load(const QString& did, const UserSettings* settings);

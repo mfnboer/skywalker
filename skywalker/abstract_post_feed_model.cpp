@@ -137,7 +137,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(profileChange ? *profileChange : author);
     }
     case Role::PostText:
-        return post.getFormattedText();
+        return post.getFormattedText(mFocusHashtags.getNormalizedMatchHashtags(post));
     case Role::PostPlainText:
         return post.getText();
     case Role::PostLanguages:

@@ -38,26 +38,7 @@ static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>
 
 QString SearchUtils::normalizeText(const QString& text)
 {
-    QLocale locale;
-    const QString NFKD = text.normalized(QString::NormalizationForm_KD);
-    QString normalized;
-
-    for (const auto ch : NFKD)
-    {
-        switch (ch.category())
-        {
-        case QChar::Mark_NonSpacing:
-        case QChar::Mark_SpacingCombining:
-        case QChar::Mark_Enclosing:
-            continue;
-        default:
-            break;
-        }
-
-        normalized.append(ch);
-    }
-
-    return locale.toLower(normalized);
+    return ATProto::RichTextMaster::normalizeText(text);
 }
 
 std::vector<QString> SearchUtils::getNormalizedWords(const QString& text)

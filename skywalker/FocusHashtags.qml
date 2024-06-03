@@ -59,6 +59,36 @@ ListView {
                     font.pointSize: guiSettings.scaledFont(9/8)
                     color: guiSettings.textColor
                     text: getEntryText(modelData)
+
+                    onLinkActivated: (hashtag) => {
+                        hashtagMenu.selectedTag = hashtag
+                        hashtagMenu.open()
+                    }
+
+                    Menu {
+                        property string selectedTag
+
+                        id: hashtagMenu
+                        modal: true
+
+                        onAboutToShow: root.enablePopupShield(true)
+                        onAboutToHide: root.enablePopupShield(false)
+
+                        CloseMenuItem {
+                            text: qsTr("<b>Hashtag</b>")
+                            Accessible.name: qsTr("close hashtag menu")
+                        }
+                        AccessibleMenuItem {
+                            text: qsTr("Edit")
+                            onTriggered: editHashtagInEntry(modelData, hashtagMenu.selectedTag)
+                            MenuItemSvg { svg: svgOutline.edit }
+                        }
+                        AccessibleMenuItem {
+                            text: qsTr("Delete")
+                            onTriggered: removeHashtagFromEntry(modelData, hashtagMenu.selectedTag)
+                            MenuItemSvg { svg: svgOutline.delete }
+                        }
+                    }
                 }
                 SvgButton {
                     Layout.preferredWidth: 30
@@ -156,7 +186,30 @@ ListView {
             const tag = dialog.getText()
 
             if (tag)
-                entry.addHashtag(tag)
+                skywalker.focusHashtags.addHashtagToEntry(entry, tag)
+
+            dialog.destroy()
+        })
+
+        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.show()
+    }
+
+    function removeHashtagFromEntry(entry, hashtag) {
+        skywalker.focusHashtags.removeHashtagFromEntry(entry, hashtag)
+    }
+
+    function editHashtagInEntry(entry, hashtag) {
+        let component = Qt.createComponent("AddFocusHashtag.qml")
+        let dialog = component.createObject(view, { focusHashtag: hashtag });
+
+        dialog.onAccepted.connect(() => {
+            const tag = dialog.getText()
+
+            if (tag) {
+                skywalker.focusHashtags.removeHashtagFromEntry(entry, hashtag)
+                skywalker.focusHashtags.addHashtagToEntry(entry, tag)
+            }
 
             dialog.destroy()
         })

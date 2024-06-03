@@ -156,7 +156,7 @@ QString Post::getText() const
     return NO_STRING;
 }
 
-QString Post::getFormattedText() const
+QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags) const
 {
     static const QString NO_STRING;
 
@@ -166,7 +166,7 @@ QString Post::getFormattedText() const
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
-        return ATProto::RichTextMaster::getFormattedPostText(*record, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedPostText(*record, UserSettings::getLinkColor(), emphasizeHashtags);
     }
 
     QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;

@@ -2874,6 +2874,7 @@ void Skywalker::signOut()
     mBookmarksModel = nullptr;
     mBookmarks.clear();
     mMutedWords.clear();
+    mFocusHashtags->clear();
     mUserHashtags.clear();
     mSeenHashtags.clear();
     mFavoriteFeeds.clear();

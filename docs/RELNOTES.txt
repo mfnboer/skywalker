@@ -1,9 +1,11 @@
 next
 ====
+* Focus hashtags (highlight posts with specific hashtags)
 * Font selector for message composition
 * Text length counter in message composition
 * Show labels on feeds, lists and labelers
 * Increase timeline capacity to 8000
+* Bug fixes
 
 2.6
 ===
