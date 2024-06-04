@@ -8,6 +8,7 @@
 namespace Skywalker {
 
 static constexpr int MAX_LAST_SEARCHES = 25;
+static constexpr char const* USER_ME = "me";
 
 static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
 {
@@ -274,7 +275,9 @@ QString SearchUtils::preProcessSearchText(const QString& text) const
     return newText;
 }
 
-void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, const QString& author, int maxPages, int minEntries, const QString& cursor)
+void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, const QString& author,
+                              const QString& mentions,
+                              int maxPages, int minEntries, const QString& cursor)
 {
     qDebug() << "Search posts:" << text << "order:" << sortOrder << "author:" << author
              << "cursor:" << cursor << "max pages:"
@@ -290,12 +293,14 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
     }
 
     const auto searchText = preProcessSearchText(text);
-    const auto authorId = (author == "me") ? mSkywalker->getUserDid() : author;
+    const auto authorId = (author == USER_ME) ? mSkywalker->getUserDid() : author;
+    const auto mentionsId = (mentions == USER_ME) ? mSkywalker->getUserDid() : mentions;
 
     setSearchPostsInProgress(sortOrder, true);
     bskyClient()->searchPosts(searchText, {}, Utils::makeOptionalString(cursor),
         Utils::makeOptionalString(sortOrder), Utils::makeOptionalString(authorId),
-        [this, presence=getPresence(), searchText, sortOrder, author, maxPages, minEntries, cursor](auto feed){
+        Utils::makeOptionalString(mentionsId),
+        [this, presence=getPresence(), searchText, sortOrder, author, mentions, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
 
@@ -310,7 +315,7 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
             int entriesToAdd = minEntries - added;
 
             if (entriesToAdd > 0)
-                getNextPageSearchPosts(searchText, sortOrder, author, maxPages - 1, entriesToAdd);
+                getNextPageSearchPosts(searchText, sortOrder, author, mentions, maxPages - 1, entriesToAdd);
         },
         [this, presence=getPresence(), sortOrder](const QString& error, const QString& msg){
             if (!presence)
@@ -322,7 +327,9 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
         });
 }
 
-void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sortOrder, const QString& author, int maxPages, int minEntries)
+void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sortOrder,
+                                         const QString& author, const QString& mentions,
+                                         int maxPages, int minEntries)
 {
     qDebug() << "Get next page search posts:" << text << "order:" << sortOrder << "max pages:" << maxPages
              << "min entries:" << minEntries;
@@ -349,7 +356,7 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sor
         return;
     }
 
-    searchPosts(text, sortOrder, author, maxPages, minEntries, cursor);
+    searchPosts(text, sortOrder, author, mentions, maxPages, minEntries, cursor);
 }
 
 void SearchUtils::searchActors(const QString& text, const QString& cursor)

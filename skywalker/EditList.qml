@@ -165,7 +165,7 @@ Page {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: nameField.height
-                radius: 10
+                radius: 5
                 border.width: 1
                 border.color: guiSettings.borderColor
                 color: "transparent"
@@ -199,7 +199,7 @@ Page {
                 // shrinks back to a single line of text. preferredHeight works.
                 Layout.preferredHeight: descriptionField.height
 
-                radius: 10
+                radius: 5
                 border.width: 1
                 border.color: guiSettings.borderColor
                 color: "transparent"

@@ -17,7 +17,7 @@ Rectangle {
 
     id: skyTextInput
     height: textField.height
-    radius: 10
+    radius: 5
     border.width: 1
     border.color: guiSettings.borderColor
     color: guiSettings.backgroundColor
@@ -47,7 +47,7 @@ Rectangle {
 
         // Cover long text that may scroll underneath the icon
         Rectangle {
-            radius: 10
+            radius: skyTextInput.radius
             x: 1
             y: 2
             width: icon.width - 1

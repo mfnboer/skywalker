@@ -10,7 +10,8 @@ Page {
     property bool isTyping: true
     property bool isHashtagSearch: false
     property bool isPostSearch: true
-    property string postSearchUser // empty, "me", handle
+    property string postAuthorUser // empty, "me", handle
+    property string postMentionsUser // empty, "me", handle
     property string currentText
     property bool firstSearch: true
     readonly property int margin: 10
@@ -141,8 +142,9 @@ Page {
             leftPadding: 5
             rightPadding: 5
             elide: Text.ElideRight
+            wrapMode: Text.Wrap
             color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
-            text: page.isPostSearch ? qsTr(`Posts from ${page.getSearchPostScopeText()}`) : qsTr("Users")
+            text: page.isPostSearch ? qsTr(`Posts from:${page.getSearchPostScopeText()}`) : qsTr("Users")
 
             MouseArea {
                 anchors.fill: parent
@@ -493,23 +495,23 @@ Page {
             if (query.length === 0)
                 return
 
-            searchPosts(query, SearchSortOrder.TOP, postSearchUser)
-            searchPosts(query, SearchSortOrder.LATEST, postSearchUser)
+            searchPosts(query, SearchSortOrder.TOP, postAuthorUser, postMentionsUser)
+            searchPosts(query, SearchSortOrder.LATEST, postAuthorUser, postMentionsUser)
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            getNextPageSearchPosts(header.getDisplayText(), sortOrder, postSearchUser)
+            getNextPageSearchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser)
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
-            searchPosts(header.getDisplayText(), sortOrder, postSearchUser)
+            searchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser)
         }
 
         function suggestUsers() {
-            if (!postSearchUser || postSearchUser === "me")
+            if (!postAuthorUser || postAuthorUser === "me")
                 getSuggestedActors()
             else
-                getSuggestedFollows(postSearchUser)
+                getSuggestedFollows(postAuthorUser)
         }
 
         Component.onDestruction: {
@@ -536,28 +538,47 @@ Page {
     }
 
     function changeSearchPostScope() {
-        let userName = ""
-        let otherHandle = ""
+        let authorName = ""
+        let otherAuthorHandle = ""
+        let mentionsName = ""
+        let otherMentionsHandle = ""
 
-        if (postSearchUser) {
-            if (postSearchUser === "me") {
-                userName = "me"
+        if (postAuthorUser) {
+            if (postAuthorUser === "me") {
+                authorName = "me"
             }
             else {
-                userName = "other"
-                otherHandle = postSearchUser
+                authorName = "other"
+                otherAuthorHandle = postAuthorUser
+            }
+        }
+
+        if (postMentionsUser) {
+            if (postMentionsUser === "me") {
+                mentionsName = "me"
+            }
+            else {
+                authorName = "other"
+                otherMentionsHandle = postMentionsUser
             }
         }
 
         let component = Qt.createComponent("SearchPostScope.qml")
-        let scopePage = component.createObject(page, { userName: userName, otherUserHandle: otherHandle })
+        let scopePage = component.createObject(page, {
+                authorName: authorName,
+                otherAuthorHandle: otherAuthorHandle,
+                mentionsName: mentionsName,
+                otherMentionsHandle: otherMentionsHandle
+        })
         scopePage.onRejected.connect(() => {
-                postSearchUser = scopePage.getUserName()
+                postAuthorUser = scopePage.getAuthorName()
+                postMentionsUser = scopePage.getMentionsName()
                 searchUtils.scopedSearchPosts(page.getSearchText())
                 scopePage.destroy()
         })
         scopePage.onAccepted.connect(() => {
-                postSearchUser = scopePage.getUserName()
+                postAuthorUser = scopePage.getAuthorName()
+                postMentionsUser = scopePage.getMentionsName()
                 searchUtils.scopedSearchPosts(page.getSearchText())
                 scopePage.destroy()
         })
@@ -569,10 +590,25 @@ Page {
     }
 
     function getSearchPostScopeText() {
-        if (postSearchUser === "me")
-            return postSearchUser
+        let scopeText = ""
 
-        return postSearchUser ? `@${postSearchUser}` : "everyone"
+        if (postAuthorUser === "me")
+            scopeText = postAuthorUser
+        else
+            scopeText = postAuthorUser ? `@${postAuthorUser}` : "everyone"
+
+        if (!postMentionsUser)
+            return scopeText
+
+        let mentionsText = ""
+
+        if (postMentionsUser === "me")
+            mentionsText = postMentionsUser
+        else
+            mentionsText = postMentionsUser ? `@${postMentionsUser}` : "everyone"
+
+        scopeText += qsTr(` mentions:${mentionsText}`)
+        return scopeText
     }
 
     function muteWord(word) {
@@ -623,7 +659,7 @@ Page {
 
         if (searchText || searchScope) {
             searchBar.setTopPosts()
-            postSearchUser = searchScope
+            postAuthorUser = searchScope
             header.setSearchText(searchText)
 
             if (searchText)
