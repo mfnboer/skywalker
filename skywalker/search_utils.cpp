@@ -274,9 +274,10 @@ QString SearchUtils::preProcessSearchText(const QString& text) const
     return newText;
 }
 
-void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, int maxPages, int minEntries, const QString& cursor)
+void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, const QString& author, int maxPages, int minEntries, const QString& cursor)
 {
-    qDebug() << "Search posts:" << text << "order:" << sortOrder << "cursor:" << cursor << "max pages:"
+    qDebug() << "Search posts:" << text << "order:" << sortOrder << "author:" << author
+             << "cursor:" << cursor << "max pages:"
              << maxPages << "min entries:" << minEntries;
 
     if (text.isEmpty())
@@ -289,11 +290,12 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, int
     }
 
     const auto searchText = preProcessSearchText(text);
+    const auto authorId = (author == "me") ? mSkywalker->getUserDid() : author;
 
     setSearchPostsInProgress(sortOrder, true);
     bskyClient()->searchPosts(searchText, {}, Utils::makeOptionalString(cursor),
-        Utils::makeOptionalString(sortOrder),
-        [this, presence=getPresence(), searchText, sortOrder, maxPages, minEntries, cursor](auto feed){
+        Utils::makeOptionalString(sortOrder), Utils::makeOptionalString(authorId),
+        [this, presence=getPresence(), searchText, sortOrder, author, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
 
@@ -308,7 +310,7 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, int
             int entriesToAdd = minEntries - added;
 
             if (entriesToAdd > 0)
-                getNextPageSearchPosts(searchText, sortOrder, maxPages - 1, entriesToAdd);
+                getNextPageSearchPosts(searchText, sortOrder, author, maxPages - 1, entriesToAdd);
         },
         [this, presence=getPresence(), sortOrder](const QString& error, const QString& msg){
             if (!presence)
@@ -320,7 +322,7 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, int
         });
 }
 
-void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sortOrder, int maxPages, int minEntries)
+void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sortOrder, const QString& author, int maxPages, int minEntries)
 {
     qDebug() << "Get next page search posts:" << text << "order:" << sortOrder << "max pages:" << maxPages
              << "min entries:" << minEntries;
@@ -347,7 +349,7 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sor
         return;
     }
 
-    searchPosts(text, sortOrder, maxPages, minEntries, cursor);
+    searchPosts(text, sortOrder, author, maxPages, minEntries, cursor);
 }
 
 void SearchUtils::searchActors(const QString& text, const QString& cursor)

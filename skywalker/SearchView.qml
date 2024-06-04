@@ -493,26 +493,16 @@ Page {
             if (query.length === 0)
                 return
 
-            const searchTerm = getPostSearchTerm(query)
-            searchPosts(searchTerm, SearchSortOrder.TOP)
-            searchPosts(searchTerm, SearchSortOrder.LATEST)
+            searchPosts(query, SearchSortOrder.TOP, postSearchUser)
+            searchPosts(query, SearchSortOrder.LATEST, postSearchUser)
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            const searchTerm = getPostSearchTerm(header.getDisplayText())
-            getNextPageSearchPosts(searchTerm, sortOrder)
+            getNextPageSearchPosts(header.getDisplayText(), sortOrder, postSearchUser)
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
-            const searchTerm = getPostSearchTerm(header.getDisplayText())
-            searchPosts(searchTerm, sortOrder)
-        }
-
-        function getPostSearchTerm(query) {
-            if (postSearchUser)
-                return `from:${postSearchUser} ${query}`
-            else
-                return query
+            searchPosts(header.getDisplayText(), sortOrder, postSearchUser)
         }
 
         function suggestUsers() {
