@@ -4,11 +4,12 @@ import QtQuick.Layouts
 import skywalker
 
 Dialog {
-    property string authorName // empty, "me", "other"
+    property string authorName // "all", "me", "other"
     property string otherAuthorHandle
-    property string mentionsName // empty, "me", "other"
+    property string mentionsName // "all", "me", "other"
     property string otherMentionsHandle
     property bool isTyping: false
+    property bool initialized: false
 
     id: searchPostScope
     width: parent.width
@@ -36,13 +37,13 @@ Dialog {
             textRole: "label"
             valueRole: "value"
             model: ListModel {
-                ListElement { label: qsTr("Everyone"); value: "" }
+                ListElement { label: qsTr("Everyone"); value: "all" }
                 ListElement { label: qsTr("Me"); value: "me" }
                 ListElement { label: qsTr("User"); value: "other" }
             }
 
             onCurrentValueChanged: {
-                if (currentIndex >= 0)
+                if (initialized)
                     authorName = currentValue
             }
         }
@@ -82,13 +83,13 @@ Dialog {
             textRole: "label"
             valueRole: "value"
             model: ListModel {
-                ListElement { label: qsTr(""); value: "" }
+                ListElement { label: qsTr(""); value: "all" }
                 ListElement { label: qsTr("Me"); value: "me" }
                 ListElement { label: qsTr("User"); value: "other" }
             }
 
             onCurrentValueChanged: {
-                if (currentIndex >= 0)
+                if (initialized)
                     mentionsName = currentValue
             }
         }
@@ -154,16 +155,24 @@ Dialog {
         id: guiSettings
     }
 
+    function getUserName(userName, otherUserHandle) {
+        if (userName === "all")
+            return ""
+
+        return userName === "other" ? otherUserHandle : userName
+    }
+
     function getAuthorName() {
-        return authorName === "other" ? otherAuthorHandle : authorName
+        return getUserName(authorName, otherAuthorHandle)
     }
 
     function getMentionsName() {
-        return mentionsName === "other" ? otherMentionsHandle : mentionsName
+        return getUserName(mentionsName, otherMentionsHandle)
     }
 
     Component.onCompleted: {
         authorComboBox.currentIndex = authorComboBox.indexOfValue(authorName)
         mentionsComboBox.currentIndex = mentionsComboBox.indexOfValue(mentionsName)
+        initialized = true
     }
 }

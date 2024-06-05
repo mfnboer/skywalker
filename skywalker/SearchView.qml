@@ -144,7 +144,7 @@ Page {
             elide: Text.ElideRight
             wrapMode: Text.Wrap
             color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
-            text: page.isPostSearch ? qsTr(`Posts from:${page.getSearchPostScopeText()}`) : qsTr("Users")
+            text: page.isPostSearch ? page.getSearchPostScopeText() : qsTr("Users")
 
             MouseArea {
                 anchors.fill: parent
@@ -538,9 +538,9 @@ Page {
     }
 
     function changeSearchPostScope() {
-        let authorName = ""
+        let authorName = "all"
         let otherAuthorHandle = ""
-        let mentionsName = ""
+        let mentionsName = "all"
         let otherMentionsHandle = ""
 
         if (postAuthorUser) {
@@ -570,18 +570,16 @@ Page {
                 mentionsName: mentionsName,
                 otherMentionsHandle: otherMentionsHandle
         })
-        scopePage.onRejected.connect(() => {
-                postAuthorUser = scopePage.getAuthorName()
-                postMentionsUser = scopePage.getMentionsName()
-                searchUtils.scopedSearchPosts(page.getSearchText())
-                scopePage.destroy()
-        })
-        scopePage.onAccepted.connect(() => {
-                postAuthorUser = scopePage.getAuthorName()
-                postMentionsUser = scopePage.getMentionsName()
-                searchUtils.scopedSearchPosts(page.getSearchText())
-                scopePage.destroy()
-        })
+
+        let callback = () => {
+            postAuthorUser = scopePage.getAuthorName()
+            postMentionsUser = scopePage.getMentionsName()
+            searchUtils.scopedSearchPosts(page.getSearchText())
+            scopePage.destroy()
+        }
+
+        scopePage.onRejected.connect(callback)
+        scopePage.onAccepted.connect(callback)
         scopePage.open()
     }
 
@@ -592,23 +590,22 @@ Page {
     function getSearchPostScopeText() {
         let scopeText = ""
 
-        if (postAuthorUser === "me")
-            scopeText = postAuthorUser
-        else
-            scopeText = postAuthorUser ? `@${postAuthorUser}` : "everyone"
+        if (postAuthorUser)
+        {
+            const authorText = (postAuthorUser === "me") ? postAuthorUser : `@${postAuthorUser}`
+            scopeText = qsTr(` from:<b>${authorText}</b>`)
+        }
 
-        if (!postMentionsUser)
-            return scopeText
+        if (postMentionsUser)
+        {
+            const mentionsText = (postMentionsUser === "me") ? postMentionsUser : `@${postMentionsUser}`
+            scopeText += qsTr(` mentions:<b>${mentionsText}</b>`)
+        }
 
-        let mentionsText = ""
+        if (scopeText)
+            return qsTr(`Posts${scopeText}`)
 
-        if (postMentionsUser === "me")
-            mentionsText = postMentionsUser
-        else
-            mentionsText = postMentionsUser ? `@${postMentionsUser}` : "everyone"
-
-        scopeText += qsTr(` mentions:${mentionsText}`)
-        return scopeText
+        return "All posts"
     }
 
     function muteWord(word) {
