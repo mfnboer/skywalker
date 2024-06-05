@@ -16,6 +16,7 @@ Page {
     property bool postSetSince: false
     property date postUntil
     property bool postSetUntil: false
+    property string postLanguage
     property string currentText
     property bool firstSearch: true
     readonly property int margin: 10
@@ -500,20 +501,20 @@ Page {
                 return
 
             searchPosts(query, SearchSortOrder.TOP, postAuthorUser, postMentionsUser,
-                        postSince, postSetSince, postUntil, postSetUntil)
+                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
             searchPosts(query, SearchSortOrder.LATEST, postAuthorUser, postMentionsUser,
-                        postSince, postSetSince, postUntil, postSetUntil)
+                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
             getNextPageSearchPosts(header.getDisplayText(), sortOrder, postAuthorUser,
                                    postMentionsUser, postSince, postSetSince,
-                                   postUntil, postSetUntil)
+                                   postUntil, postSetUntil, postLanguage)
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
             searchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser,
-                        postSince, postSetSince, postUntil, postSetUntil)
+                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
         }
 
         function suggestUsers() {
@@ -581,6 +582,7 @@ Page {
                 setSince: postSetSince,
                 untilDate: postUntil,
                 setUntil: postSetUntil,
+                language: postLanguage,
                 otherMentionsHandle: otherMentionsHandle
         })
 
@@ -591,6 +593,7 @@ Page {
             postSetSince = scopePage.setSince
             postUntil = scopePage.untilDate
             postSetUntil = scopePage.setUntil
+            postLanguage = scopePage.language
             searchUtils.scopedSearchPosts(page.getSearchText())
             scopePage.destroy()
         }
@@ -624,6 +627,9 @@ Page {
 
         if (postSetUntil)
             scopeText += qsTr(` until:<b>${postUntil.toLocaleDateString(Qt.locale(), Locale.ShortFormat)}</b>`)
+
+        if (postLanguage)
+            scopeText += qsTr(` language:<b>${postLanguage}</b>`)
 
         if (scopeText)
             return qsTr(`Posts${scopeText}`)

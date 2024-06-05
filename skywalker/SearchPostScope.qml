@@ -12,6 +12,7 @@ Dialog {
     property bool setSince: false
     property date untilDate
     property bool setUntil: false
+    property string language
     property bool isTyping: false
     property bool initialized: false
 
@@ -196,10 +197,38 @@ Dialog {
                 }
             }
         }
+
+        AccessibleText {
+            font.bold: true
+            text: qsTr("Language:")
+        }
+
+        LanguageComboBox {
+            id: languageComboBox
+            Layout.fillWidth: true
+            background.implicitHeight: untilText.height
+            radius: 5
+            color: guiSettings.textColor
+            borderColor: guiSettings.borderColor
+            allLanguages: languageUtils.languages
+            usedLanguages: languageUtils.usedLanguages
+            addAnyLanguage: true
+            initialLanguage: language
+
+            onActivated: (index) => {
+                if (!initialized)
+                    return
+
+                if (index > 0)
+                    language = valueAt(index)
+                else
+                    language = ""
+            }
+        }
     }
 
     SimpleAuthorListView {
-        property var textInput
+        property var textInput: untilText
 
         id: authorTypeaheadView
         anchors.left: parent.left
@@ -228,6 +257,11 @@ Dialog {
 
     SearchUtils {
         id: searchUtils
+        skywalker: root.getSkywalker()
+    }
+
+    LanguageUtils {
+        id: languageUtils
         skywalker: root.getSkywalker()
     }
 
@@ -288,6 +322,7 @@ Dialog {
 
         authorComboBox.currentIndex = authorComboBox.indexOfValue(authorName)
         mentionsComboBox.currentIndex = mentionsComboBox.indexOfValue(mentionsName)
+
         initialized = true
     }
 }

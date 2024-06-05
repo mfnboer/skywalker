@@ -6,6 +6,12 @@ ComboBox {
     property list<language> allLanguages
     property list<language> usedLanguages
     property bool reversedColors: false
+    property int radius: 0
+    property string borderColor: guiSettings.buttonColor
+    property string color: guiSettings.buttonColor
+    property bool addAnyLanguage: false
+    property language anyLanguage
+    property string initialLanguage
 
     id: languageComboBox
     height: 34
@@ -17,9 +23,10 @@ ComboBox {
     background: Rectangle {
         implicitWidth: 46
         implicitHeight: 34
-        border.color: guiSettings.buttonColor
+        radius: languageComboBox.radius
+        border.color: languageComboBox.borderColor
         border.width: 2
-        color: reversedColors ? guiSettings.buttonColor : "transparent"
+        color: reversedColors ? languageComboBox.borderColor : "transparent"
     }
 
     indicator: Item {}
@@ -28,8 +35,8 @@ ComboBox {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
-        color: reversedColors ? "white" : guiSettings.buttonColor
-        text: languageComboBox.displayText
+        color: reversedColors ? "white" : languageComboBox.color
+        text: languageComboBox.displayText ? languageComboBox.displayText : qsTr("Any lanuage")
     }
 
     delegate: ItemDelegate {
@@ -45,16 +52,28 @@ ComboBox {
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             color: delegate.index === languageComboBox.currentIndex ? guiSettings.buttonColor : guiSettings.textColor
-            text: `${delegate.modelData.nativeName} (${delegate.modelData.shortCode})`
+            text: delegate.modelData.shortCode ? `${delegate.modelData.nativeName} (${delegate.modelData.shortCode})` : qsTr("Any language")
         }
 
         background: Rectangle {
             implicitWidth: delegate.width
-            color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length ? guiSettings.postHighLightColor : "transparent")
+            color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length + (addAnyLanguage ? 1 : 0) ? guiSettings.postHighLightColor : "transparent")
         }
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onCompleted: {
+        if (addAnyLanguage) {
+            let langs = model
+            langs.splice(0, 0, anyLanguage)
+            model = langs
+        }
+
+        if (initialLanguage) {
+            currentIndex = find(initialLanguage)
+        }
     }
 }

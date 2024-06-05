@@ -1,3 +1,7 @@
+next
+====
+* Search options: mentions, since, until, language
+
 2.7
 ===
 * Focus hashtags (highlight posts with specific hashtags)

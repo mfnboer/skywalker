@@ -6,6 +6,9 @@ ComboBox {
     property list<language> allLanguages
     property list<language> usedLanguages
     property list<string> checkedLangCodes
+    property int radius: 0
+    property string borderColor: guiSettings.buttonColor
+    property string color: guiSettings.buttonColor
 
     id: languageComboBox
     height: 34
@@ -17,7 +20,8 @@ ComboBox {
     background: Rectangle {
         implicitWidth: 46
         implicitHeight: 34
-        border.color: guiSettings.buttonColor
+        radius: languageComboBox.radius
+        border.color: languageComboBox.borderColor
         border.width: 1
         color: "transparent"
     }
@@ -29,7 +33,7 @@ ComboBox {
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
-        color: guiSettings.buttonColor
+        color: languageComboBox.color
         text: checkedLangCodes.length > 0 ? checkedLangCodes.join(", ") : qsTr("all languages")
     }
 

@@ -39,11 +39,13 @@ public:
                                  const QString& author = "", const QString& mentions = "",
                                  const QDateTime& since = {}, bool setSince = false,
                                  const QDateTime& until = {}, bool setUntil = false,
+                                 const QString& language = {},
                                  int maxPages = 10, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const QString& sortOrder,
                                             const QString& author = "", const QString& mentions = "",
                                             const QDateTime& since = {}, bool setSince = false,
                                             const QDateTime& until = {}, bool setUntil = false,
+                                            const QString& language = {},
                                             int maxPages = 10, int minEntries = 10);
     Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchActors(const QString& text);
