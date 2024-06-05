@@ -375,6 +375,7 @@ qt_add_qml_module(libskywalker
         SOURCES focus_hashtags.cpp
         QML_FILES FocusHashtags.qml
         QML_FILES AddFocusHashtag.qml
+        QML_FILES DatePicker.qml
 )
 
 if (NOT ANDROID)

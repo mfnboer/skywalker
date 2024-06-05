@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <QColor>
+#include <QDateTime>
 #include <QString>
 
 namespace Skywalker::Utils {

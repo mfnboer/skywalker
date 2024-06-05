@@ -12,6 +12,10 @@ Page {
     property bool isPostSearch: true
     property string postAuthorUser // empty, "me", handle
     property string postMentionsUser // empty, "me", handle
+    property date postSince
+    property bool postSetSince: false
+    property date postUntil
+    property bool postSetUntil: false
     property string currentText
     property bool firstSearch: true
     readonly property int margin: 10
@@ -495,16 +499,21 @@ Page {
             if (query.length === 0)
                 return
 
-            searchPosts(query, SearchSortOrder.TOP, postAuthorUser, postMentionsUser)
-            searchPosts(query, SearchSortOrder.LATEST, postAuthorUser, postMentionsUser)
+            searchPosts(query, SearchSortOrder.TOP, postAuthorUser, postMentionsUser,
+                        postSince, postSetSince, postUntil, postSetUntil)
+            searchPosts(query, SearchSortOrder.LATEST, postAuthorUser, postMentionsUser,
+                        postSince, postSetSince, postUntil, postSetUntil)
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            getNextPageSearchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser)
+            getNextPageSearchPosts(header.getDisplayText(), sortOrder, postAuthorUser,
+                                   postMentionsUser, postSince, postSetSince,
+                                   postUntil, postSetUntil)
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
-            searchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser)
+            searchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser,
+                        postSince, postSetSince, postUntil, postSetUntil)
         }
 
         function suggestUsers() {
@@ -558,7 +567,7 @@ Page {
                 mentionsName = "me"
             }
             else {
-                authorName = "other"
+                mentionsName = "other"
                 otherMentionsHandle = postMentionsUser
             }
         }
@@ -568,12 +577,20 @@ Page {
                 authorName: authorName,
                 otherAuthorHandle: otherAuthorHandle,
                 mentionsName: mentionsName,
+                sinceDate: postSince,
+                setSince: postSetSince,
+                untilDate: postUntil,
+                setUntil: postSetUntil,
                 otherMentionsHandle: otherMentionsHandle
         })
 
         let callback = () => {
             postAuthorUser = scopePage.getAuthorName()
             postMentionsUser = scopePage.getMentionsName()
+            postSince = scopePage.sinceDate
+            postSetSince = scopePage.setSince
+            postUntil = scopePage.untilDate
+            postSetUntil = scopePage.setUntil
             searchUtils.scopedSearchPosts(page.getSearchText())
             scopePage.destroy()
         }
@@ -601,6 +618,12 @@ Page {
             const mentionsText = (postMentionsUser === "me") ? postMentionsUser : `@${postMentionsUser}`
             scopeText += qsTr(` mentions:<b>${mentionsText}</b>`)
         }
+
+        if (postSetSince)
+            scopeText += qsTr(` since:<b>${postSince.toLocaleDateString(Qt.locale(), Locale.ShortFormat)}</b>`)
+
+        if (postSetUntil)
+            scopeText += qsTr(` until:<b>${postUntil.toLocaleDateString(Qt.locale(), Locale.ShortFormat)}</b>`)
 
         if (scopeText)
             return qsTr(`Posts${scopeText}`)

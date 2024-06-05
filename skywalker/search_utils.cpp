@@ -276,10 +276,13 @@ QString SearchUtils::preProcessSearchText(const QString& text) const
 }
 
 void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, const QString& author,
-                              const QString& mentions,
+                              const QString& mentions, const QDateTime& since, bool setSince,
+                              const QDateTime& until, bool setUntil,
                               int maxPages, int minEntries, const QString& cursor)
 {
     qDebug() << "Search posts:" << text << "order:" << sortOrder << "author:" << author
+             << "mentions:" << mentions << "since:" << since << "setSince:" << setSince
+             << "until:" << until << "setUntil:" << setUntil
              << "cursor:" << cursor << "max pages:"
              << maxPages << "min entries:" << minEntries;
 
@@ -295,12 +298,15 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
     const auto searchText = preProcessSearchText(text);
     const auto authorId = (author == USER_ME) ? mSkywalker->getUserDid() : author;
     const auto mentionsId = (mentions == USER_ME) ? mSkywalker->getUserDid() : mentions;
+    const std::optional<QDateTime> sinceParam = setSince ? std::optional<QDateTime>{since.toUTC()} : std::optional<QDateTime>{};
+    const std::optional<QDateTime> untilParam = setUntil ? std::optional<QDateTime>{until.toUTC()} : std::optional<QDateTime>{};
 
     setSearchPostsInProgress(sortOrder, true);
     bskyClient()->searchPosts(searchText, {}, Utils::makeOptionalString(cursor),
         Utils::makeOptionalString(sortOrder), Utils::makeOptionalString(authorId),
-        Utils::makeOptionalString(mentionsId),
-        [this, presence=getPresence(), searchText, sortOrder, author, mentions, maxPages, minEntries, cursor](auto feed){
+        Utils::makeOptionalString(mentionsId), sinceParam, untilParam,
+        [this, presence=getPresence(), searchText, sortOrder, author, mentions, since, setSince,
+         until, setUntil, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
 
@@ -315,7 +321,8 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
             int entriesToAdd = minEntries - added;
 
             if (entriesToAdd > 0)
-                getNextPageSearchPosts(searchText, sortOrder, author, mentions, maxPages - 1, entriesToAdd);
+                getNextPageSearchPosts(searchText, sortOrder, author, mentions, since, setSince,
+                                       until, setUntil, maxPages - 1, entriesToAdd);
         },
         [this, presence=getPresence(), sortOrder](const QString& error, const QString& msg){
             if (!presence)
@@ -329,6 +336,8 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
 
 void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sortOrder,
                                          const QString& author, const QString& mentions,
+                                         const QDateTime& since, bool setSince,
+                                         const QDateTime& until, bool setUntil,
                                          int maxPages, int minEntries)
 {
     qDebug() << "Get next page search posts:" << text << "order:" << sortOrder << "max pages:" << maxPages
@@ -356,7 +365,8 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sor
         return;
     }
 
-    searchPosts(text, sortOrder, author, mentions, maxPages, minEntries, cursor);
+    searchPosts(text, sortOrder, author, mentions, since, setSince, until, setUntil,
+                maxPages, minEntries, cursor);
 }
 
 void SearchUtils::searchActors(const QString& text, const QString& cursor)

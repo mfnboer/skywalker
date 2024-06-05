@@ -59,7 +59,7 @@ Rectangle {
             id: icon
             anchors.left: parent.left
             y: height + 5
-            width: height
+            width: visible ? height : 0
             height: parent.height - 10
             color: parent.color
             svg: svgIcon
@@ -86,5 +86,9 @@ Rectangle {
 
     function setFocus() {
         textField.focus = true
+    }
+
+    function clear() {
+        textField.clear()
     }
 }

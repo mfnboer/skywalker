@@ -8,31 +8,33 @@ Dialog {
     property string otherAuthorHandle
     property string mentionsName // "all", "me", "other"
     property string otherMentionsHandle
+    property date sinceDate
+    property bool setSince: false
+    property date untilDate
+    property bool setUntil: false
     property bool isTyping: false
     property bool initialized: false
 
     id: searchPostScope
     width: parent.width
-    contentHeight: scopeGrid.height + (authorTypeaheadView.visible ? authorTypeaheadView.height : 0)
+    contentHeight: Math.max(scopeGrid.height, (authorTypeaheadView.visible ? authorTypeaheadView.y + authorTypeaheadView.height : 0))
     topMargin: guiSettings.headerHeight
-    title: qsTr("Post search scope")
     modal: true
     standardButtons: Dialog.Ok
 
     GridLayout {
         id: scopeGrid
         width: parent.width
-        //height: everyoneButton.height + meButton.height + otherButton.height
         columns: 2
 
         AccessibleText {
-            Layout.columnSpan: 2
             font.bold: true
             text: qsTr("From:")
         }
 
         ComboBox {
             id: authorComboBox
+            Layout.fillWidth: true
             background.implicitHeight: otherAuthorText.height
             textRole: "label"
             valueRole: "value"
@@ -46,6 +48,12 @@ Dialog {
                 if (initialized)
                     authorName = currentValue
             }
+        }
+
+        Rectangle {
+            width: 1
+            height: 1
+            color: "transparent"
         }
 
         SkyTextInput {
@@ -72,18 +80,18 @@ Dialog {
         }
 
         AccessibleText {
-            Layout.columnSpan: 2
             font.bold: true
             text: qsTr("Mentions:")
         }
 
         ComboBox {
             id: mentionsComboBox
+            Layout.fillWidth: true
             background.implicitHeight: otherMentionsText.height
             textRole: "label"
             valueRole: "value"
             model: ListModel {
-                ListElement { label: qsTr(""); value: "all" }
+                ListElement { label: qsTr("-"); value: "all" }
                 ListElement { label: qsTr("Me"); value: "me" }
                 ListElement { label: qsTr("User"); value: "other" }
             }
@@ -92,6 +100,12 @@ Dialog {
                 if (initialized)
                     mentionsName = currentValue
             }
+        }
+
+        Rectangle {
+            width: 1
+            height: 1
+            color: "transparent"
         }
 
         SkyTextInput {
@@ -116,6 +130,72 @@ Dialog {
                 otherMentionsHandle = displayText
             }
         }
+
+        AccessibleText {
+            font.bold: true
+            text: qsTr("Since:")
+        }
+
+        SkyTextInput {
+            id: sinceText
+            Layout.fillWidth: true
+            placeholderText: qsTr("Date")
+            text: setSince ? sinceDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: selectDate(sinceText)
+            }
+
+            SvgButton {
+                width: 40
+                height: width
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                svg: svgOutline.cancel
+                iconColor: guiSettings.textColor
+                Material.background: "transparent"
+                accessibleName: qsTr("clear since date")
+                visible: setSince
+                onClicked: {
+                    setSince = false
+                    sinceText.clear()
+                }
+            }
+        }
+
+        AccessibleText {
+            font.bold: true
+            text: qsTr("Until:")
+        }
+
+        SkyTextInput {
+            id: untilText
+            Layout.fillWidth: true
+            placeholderText: qsTr("Date")
+            text: setUntil ? untilDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: selectDate(untilText)
+            }
+
+            SvgButton {
+                width: 40
+                height: width
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                svg: svgOutline.cancel
+                iconColor: guiSettings.textColor
+                Material.background: "transparent"
+                accessibleName: qsTr("clear until date")
+                visible: setUntil
+                onClicked: {
+                    setUntil = false
+                    untilText.clear()
+                }
+            }
+        }
     }
 
     SimpleAuthorListView {
@@ -124,7 +204,7 @@ Dialog {
         id: authorTypeaheadView
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: scopeGrid.bottom
+        y: textInput.y + textInput.height
         height: 300
         model: searchUtils.authorTypeaheadList
         visible: searchPostScope.isTyping
@@ -155,6 +235,27 @@ Dialog {
         id: guiSettings
     }
 
+    function selectDate(textInput) {
+        let component = Qt.createComponent("DatePicker.qml")
+        let datePicker = component.createObject(parent, { selectedDate: (textInput === sinceText) ? sinceDate : untilDate })
+        datePicker.onRejected.connect(() => datePicker.destroy())
+
+        datePicker.onAccepted.connect(() => {
+            if (textInput === sinceText) {
+                sinceDate = datePicker.selectedDate
+                setSince = true
+            }
+            else {
+                untilDate = datePicker.selectedDate
+                setUntil = true
+            }
+
+            datePicker.destroy()
+        })
+
+        datePicker.open()
+    }
+
     function getUserName(userName, otherUserHandle) {
         if (userName === "all")
             return ""
@@ -170,7 +271,21 @@ Dialog {
         return getUserName(mentionsName, otherMentionsHandle)
     }
 
+    function startOfToday() {
+        let d = new Date()
+        d.setHours(0, 0, 0, 0)
+        return d
+    }
+
     Component.onCompleted: {
+        if (!setSince)
+            sinceDate = startOfToday()
+
+        if (!setUntil) {
+            untilDate = startOfToday()
+            untilDate.setDate(untilDate.getDate() + 1)
+        }
+
         authorComboBox.currentIndex = authorComboBox.indexOfValue(authorName)
         mentionsComboBox.currentIndex = mentionsComboBox.indexOfValue(mentionsName)
         initialized = true
