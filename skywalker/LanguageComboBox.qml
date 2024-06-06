@@ -7,6 +7,7 @@ ComboBox {
     property list<language> usedLanguages
     property bool reversedColors: false
     property int radius: 0
+    property int borderWidth: 2
     property string borderColor: guiSettings.buttonColor
     property string color: guiSettings.buttonColor
     property bool addAnyLanguage: false
@@ -25,7 +26,7 @@ ComboBox {
         implicitHeight: 34
         radius: languageComboBox.radius
         border.color: languageComboBox.borderColor
-        border.width: 2
+        border.width: languageComboBox.borderWidth
         color: reversedColors ? languageComboBox.borderColor : "transparent"
     }
 

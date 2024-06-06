@@ -573,17 +573,19 @@ Page {
             }
         }
 
+        console.debug("AUTHOR:", authorName, otherAuthorHandle)
+
         let component = Qt.createComponent("SearchPostScope.qml")
         let scopePage = component.createObject(page, {
                 authorName: authorName,
                 otherAuthorHandle: otherAuthorHandle,
                 mentionsName: mentionsName,
+                otherMentionsHandle: otherMentionsHandle,
                 sinceDate: postSince,
                 setSince: postSetSince,
                 untilDate: postUntil,
                 setUntil: postSetUntil,
-                language: postLanguage,
-                otherMentionsHandle: otherMentionsHandle
+                language: postLanguage
         })
 
         let callback = () => {

@@ -376,6 +376,7 @@ qt_add_qml_module(libskywalker
         QML_FILES FocusHashtags.qml
         QML_FILES AddFocusHashtag.qml
         QML_FILES DatePicker.qml
+        QML_FILES EditComboBox.qml
 )
 
 if (NOT ANDROID)

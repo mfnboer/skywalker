@@ -33,50 +33,37 @@ Dialog {
             text: qsTr("From:")
         }
 
-        ComboBox {
+        EditComboBox {
             id: authorComboBox
             Layout.fillWidth: true
-            background.implicitHeight: otherAuthorText.height
             textRole: "label"
             valueRole: "value"
             model: ListModel {
                 ListElement { label: qsTr("Everyone"); value: "all" }
                 ListElement { label: qsTr("Me"); value: "me" }
-                ListElement { label: qsTr("User"); value: "other" }
+                ListElement { label: qsTr("Enter user handle"); value: "other" }
             }
+            editableIndex: 2
+            initialEditValue: otherAuthorHandle
 
             onCurrentValueChanged: {
-                if (initialized)
+                if (initialized && currentValue !== undefined)
                     authorName = currentValue
             }
-        }
 
-        Rectangle {
-            width: 1
-            height: 1
-            color: "transparent"
-        }
-
-        SkyTextInput {
-            id: otherAuthorText
-            Layout.fillWidth: true
-            svgIcon: svgOutline.user
-            initialText: otherAuthorHandle
-            placeholderText: qsTr("Enter user handle")
-            enabled: authorName === "other"
-
-            onDisplayTextChanged: {
-                if (displayText !== initialText) {
+            onInputTextChanged: (textInput) => {
+                if (textInput.displayText !== initialEditValue) {
                     searchPostScope.isTyping = true
-                    authorTypeaheadView.textInput = otherAuthorText
+                    authorTypeaheadView.textInputCombo = authorComboBox
                     authorTypeaheadSearchTimer.start()
+                    otherAuthorHandle = textInput.displayText
                 }
             }
 
-            onEditingFinished: {
+            onEditingFinished: (text) => {
                 searchPostScope.isTyping = false
                 authorTypeaheadSearchTimer.stop()
-                otherAuthorHandle = displayText
+                otherAuthorHandle = text
             }
         }
 
@@ -85,50 +72,37 @@ Dialog {
             text: qsTr("Mentions:")
         }
 
-        ComboBox {
+        EditComboBox {
             id: mentionsComboBox
             Layout.fillWidth: true
-            background.implicitHeight: otherMentionsText.height
             textRole: "label"
             valueRole: "value"
             model: ListModel {
                 ListElement { label: qsTr("-"); value: "all" }
                 ListElement { label: qsTr("Me"); value: "me" }
-                ListElement { label: qsTr("User"); value: "other" }
+                ListElement { label: qsTr("Enter user handle"); value: "other" }
             }
+            editableIndex: 2
+            initialEditValue: otherMentionsHandle
 
             onCurrentValueChanged: {
-                if (initialized)
+                if (initialized && currentValue !== undefined)
                     mentionsName = currentValue
             }
-        }
 
-        Rectangle {
-            width: 1
-            height: 1
-            color: "transparent"
-        }
-
-        SkyTextInput {
-            id: otherMentionsText
-            Layout.fillWidth: true
-            svgIcon: svgOutline.atSign
-            initialText: otherMentionsHandle
-            placeholderText: qsTr("Enter user handle")
-            enabled: mentionsName === "other"
-
-            onDisplayTextChanged: {
-                if (displayText !== initialText) {
+            onInputTextChanged: (textInput) => {
+                if (textInput.displayText !== initialEditValue) {
                     searchPostScope.isTyping = true
-                    authorTypeaheadView.textInput = otherMentionsText
+                    authorTypeaheadView.textInputCombo = mentionsComboBox
                     authorTypeaheadSearchTimer.start()
+                    otherMentionsHandle = textInput.displayText
                 }
             }
 
-            onEditingFinished: {
+            onEditingFinished: (text) => {
                 searchPostScope.isTyping = false
                 authorTypeaheadSearchTimer.stop()
-                otherMentionsHandle = displayText
+                otherMentionsHandle = text
             }
         }
 
@@ -210,6 +184,7 @@ Dialog {
             radius: 5
             color: guiSettings.textColor
             borderColor: guiSettings.borderColor
+            borderWidth: 1
             allLanguages: languageUtils.languages
             usedLanguages: languageUtils.usedLanguages
             addAnyLanguage: true
@@ -228,18 +203,18 @@ Dialog {
     }
 
     SimpleAuthorListView {
-        property var textInput: untilText
+        property var textInputCombo: authorComboBox
 
         id: authorTypeaheadView
         anchors.left: parent.left
         anchors.right: parent.right
-        y: textInput.y + textInput.height
+        y: textInputCombo.y + textInputCombo.height
         height: 300
         model: searchUtils.authorTypeaheadList
         visible: searchPostScope.isTyping
 
         onAuthorClicked: (profile) => {
-            textInput.text = profile.handle
+            textInputCombo.contentItem.text = profile.handle
             searchPostScope.isTyping = false
         }
     }
@@ -248,7 +223,7 @@ Dialog {
         id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            const text = authorTypeaheadView.textInput.displayText
+            const text = authorTypeaheadView.textInputCombo.contentItem.displayText
 
             if (text.length > 0)
                 searchUtils.searchAuthorsTypeahead(text)
@@ -294,7 +269,14 @@ Dialog {
         if (userName === "all")
             return ""
 
-        return userName === "other" ? otherUserHandle : userName
+        if (userName === "other") {
+            if (otherUserHandle.startsWith('@'))
+                return otherAuthorHandle.slice(1)
+
+            return otherUserHandle
+        }
+
+        return userName
     }
 
     function getAuthorName() {
@@ -320,8 +302,8 @@ Dialog {
             untilDate.setDate(untilDate.getDate() + 1)
         }
 
-        authorComboBox.currentIndex = authorComboBox.indexOfValue(authorName)
-        mentionsComboBox.currentIndex = mentionsComboBox.indexOfValue(mentionsName)
+        authorComboBox.setSelection(authorName)
+        mentionsComboBox.setSelection(mentionsName)
 
         initialized = true
     }
