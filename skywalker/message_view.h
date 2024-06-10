@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "record_view.h"
 #include <atproto/lib/lexicon/chat_bsky_convo.h>
 
 namespace Skywalker {
@@ -12,6 +13,7 @@ class MessageView
     Q_PROPERTY(QString rev READ getRev FINAL)
     Q_PROPERTY(QString text READ getText FINAL)
     Q_PROPERTY(QString formattedText READ getFormattedText FINAL)
+    Q_PROPERTY(RecordView embed READ getEmbed FINAL)
     Q_PROPERTY(QString senderDid READ getSenderDid FINAL)
     Q_PROPERTY(QDateTime sentAt READ getSentAt FINAL)
     Q_PROPERTY(bool deleted READ isDeleted FINAL)
@@ -27,6 +29,7 @@ public:
     const QString& getRev() const { return mRev; }
     const QString& getText() const { return mText; }
     const QString& getFormattedText() const { return mFormattedText; }
+    const RecordView getEmbed() const;
     const QString& getSenderDid() const { return mSenderDid; }
     const QDateTime getSentAt() const { return mSentAt; }
     bool isDeleted() const { return mDeleted; }
@@ -37,7 +40,7 @@ private:
     QString mRev;
     QString mText;
     QString mFormattedText;
-    // TODO embed
+    ATProto::AppBskyEmbed::RecordView::SharedPtr mEmbed;
     QString mSenderDid;
     QDateTime mSentAt;
     bool mDeleted = false;

@@ -5,6 +5,9 @@ import skywalker
 
 Item {
     property recordview record
+    readonly property int contentHeight: recordColumn.height + 10
+
+    signal opening
 
     width: parent.width
     height: recordColumn.height + 10
@@ -148,6 +151,8 @@ Item {
             root.viewList(record.list)
         else if (record.labelerAvailable)
             skywalker.getDetailedProfile(record.labeler.creator.did)
+
+        opening()
     }
 
     function getSpeech() {

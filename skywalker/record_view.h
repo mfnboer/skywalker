@@ -52,6 +52,7 @@ public:
     RecordView() = default;
     explicit RecordView(const ATProto::AppBskyEmbed::RecordView& view);
 
+    Q_INVOKABLE bool isNull() const { return !mValid; }
     QString getUri() const;
     QString getCid() const;
     QString getText() const override;
@@ -88,6 +89,7 @@ public:
     void setMutedReason(const IMatchWords& mutedWords);
 
 private:
+    bool mValid = false;
     const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;
     const ATProto::AppBskyFeed::GeneratorView* mFeed = nullptr;
     const ATProto::AppBskyGraph::ListView* mList = nullptr;

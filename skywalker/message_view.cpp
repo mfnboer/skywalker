@@ -11,6 +11,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::MessageView& msg) :
     mRev(msg.mRev),
     mText(msg.mText),
     mFormattedText(ATProto::RichTextMaster::getFormattedMessageText(msg, UserSettings::getLinkColor())),
+    mEmbed(msg.mEmbed),
     mSenderDid(msg.mSender->mDid),
     mSentAt(msg.mSentAt)
 {
@@ -42,6 +43,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
         mRev = view->mRev;
         mText = view->mText;
         mFormattedText = ATProto::RichTextMaster::getFormattedMessageText(*view, UserSettings::getLinkColor());
+        mEmbed = view->mEmbed;
         mSenderDid = view->mSender->mDid;
         mSentAt = view->mSentAt;
         return;
@@ -62,6 +64,17 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
 
     Q_ASSERT(false);
     qWarning() << "Should not get here";
+}
+
+const RecordView MessageView::getEmbed() const
+{
+    if (!mEmbed)
+        return {};
+
+    RecordView recordView{*mEmbed};
+    recordView.setContentVisibility(QEnums::CONTENT_VISIBILITY_SHOW);
+    recordView.setContentWarning("");
+    return recordView;
 }
 
 }

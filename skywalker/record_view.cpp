@@ -56,6 +56,8 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         mUnsupportedType = view.mUnsupportedType;
         break;
     }
+
+    mValid = true;
 }
 
 QString RecordView::getUri() const

@@ -13,6 +13,15 @@ Page {
     property var skywalker: root.getSkywalker()
     property bool keyboardVisible: false
     property int textInputToolbarHeight: keyboardVisible || !guiSettings.isAndroid ? 24 : 0
+    property int lastIndex: -1
+
+    StackView.onVisibleChanged: {
+        // For some reason, the list scrolls to some "random" position when an embed is
+        // opened. Immediately scrolling back to that item does not work. With a delay
+        // of 100ms it does work???
+        if (StackView.visible)
+            positionTimer.gotoIndex(lastIndex)
+    }
 
     signal closed
 
@@ -51,10 +60,13 @@ Page {
         onHeightChanged: moveToEnd()
 
         delegate: MessageViewDelegate {
+            required property int index
+
             viewWidth: messagesView.width
             convo: page.convo
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
             onReportMessage: (msg) => page.reportDirectMessage(msg)
+            onOpeningEmbed: page.lastIndex = index + 1
         }
 
         FlickableRefresher {
@@ -172,6 +184,25 @@ Page {
         id: busyIndicator
         anchors.centerIn: parent
         running: false
+    }
+
+    Timer {
+        property int messageIndex: -1
+
+        id: positionTimer
+        interval: 300
+        onTriggered: {
+            if (messageIndex === -1)
+                messagesView.moveToEnd()
+            else
+                messagesView.positionViewAtIndex(messageIndex, ListView.Contain)
+        }
+
+        function gotoIndex(index) {
+            console.debug("GOTO INDEX:", index)
+            messageIndex = index
+            start()
+        }
     }
 
     GuiSettings {
@@ -312,7 +343,8 @@ Page {
     Component.onCompleted: {
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
         maxInputTextHeight = 5 * inputTextHeight + newMessageText.padding + newMessageText.bottomPadding
-        messagesView.moveToEnd()
+        //messagesView.moveToEnd()
+        positionTimer.gotoIndex(-1)
         initHandlers()
         sendButton.forceActiveFocus()
     }

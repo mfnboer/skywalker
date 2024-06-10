@@ -19,6 +19,7 @@ Rectangle {
 
     signal deleteMessage(string messageId)
     signal reportMessage(messageview message)
+    signal openingEmbed
 
     id: view
     width: viewWidth
@@ -52,8 +53,8 @@ Rectangle {
         x: senderIsUser ? viewWidth - margin - width : margin
         anchors.top: messageDateText.bottom;
         anchors.topMargin: 5
-        width: messageText.width
-        height: messageText.height
+        width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0)
+        height: messageText.height + (embed.visible ? embed.height + 10 : 0)
         radius: 10
         color: senderIsUser ? guiSettings.messageUserBackgroundColor : guiSettings.messageOtherBackgroundColor
 
@@ -108,6 +109,18 @@ Rectangle {
             visible: !sameSenderAsNext
         }
 
+        RecordView {
+            id: embed
+            x: 10
+            width: maxTextWidth - 20
+            height: contentHeight
+            anchors.top: messageText.bottom
+            record: message.embed
+            visible: !message.embed.isNull()
+
+            onOpening: openingEmbed()
+        }
+
         MouseArea {
             anchors.fill: parent
             z: -2
@@ -159,7 +172,7 @@ Rectangle {
         anchors.top: messageRect.bottom
         anchors.topMargin: visible ? 5 : 0
         width: messageRect.width
-        height: visible ? implicitHeight : 0
+        height: visible ? contentHeight : 0
         horizontalAlignment: senderIsUser ? Text.AlignRight : Text.AlignLeft
         color: guiSettings.messageTimeColor
         font.pointSize: guiSettings.scaledFont(6/8)
