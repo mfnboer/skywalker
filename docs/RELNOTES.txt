@@ -2,6 +2,7 @@ next
 ====
 * Search options: mentions, since, until, language
 * Focus-hashtag button on search page
+* Move scroll-to-top button to the left
 
 2.7
 ===

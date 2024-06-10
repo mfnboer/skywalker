@@ -31,7 +31,7 @@ Item {
 
     SvgButton {
         id: scrollToTopButton
-        x: (parent.width - width) / 2
+        x: 7
         y: parent.height - height - ((list.footerItem && list.footerItem.visible) ? list.footerItem.height : 0) - 10
         width: 50
         height: width
