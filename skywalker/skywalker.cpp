@@ -75,6 +75,8 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& text){ emit sharedTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
+    connect(&jniCallbackListener, &JNICallbackListener::sharedDmTextReceived, this,
+            [this](const QString& text){ emit sharedDmTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
             [this]{ emit showNotifications(); });
     connect(&jniCallbackListener, &JNICallbackListener::showDirectMessages, this,

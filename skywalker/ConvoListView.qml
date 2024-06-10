@@ -66,13 +66,13 @@ ListView {
         id: guiSettings
     }
 
-    function addConvo() {
+    function addConvo(msg = "") {
         let component = Qt.createComponent("StartConversation.qml")
         let page = component.createObject(conversationsView)
         page.onClosed.connect(() => root.popStack())
 
         page.onSelected.connect((did) => {
-            skywalker.chat.startConvoForMember(did)
+            skywalker.chat.startConvoForMember(did, msg)
             root.popStack()
         })
 

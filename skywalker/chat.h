@@ -31,11 +31,12 @@ public:
     Q_INVOKABLE void getConvos(const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage();
     Q_INVOKABLE void updateConvos();
-    Q_INVOKABLE void startConvoForMembers(const QStringList& dids);
-    Q_INVOKABLE void startConvoForMember(const QString& did);
+    Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
+    Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
     Q_INVOKABLE void leaveConvo(const QString& convoId);
     Q_INVOKABLE void muteConvo(const QString& convoId);
     Q_INVOKABLE void unmuteConvo(const QString& convoId);
+    Q_INVOKABLE BasicProfileList getAllConvoMembers() const { return mConvoListModel.getAllConvoMembers(); }
     Q_INVOKABLE bool convosLoaded() const { return mLoaded; }
 
     ConvoListModel* getConvoListModel() { return &mConvoListModel; }
@@ -68,7 +69,7 @@ public:
 signals:
     void unreadCountChanged();
     void getConvosInProgressChanged();
-    void startConvoForMembersOk(ConvoView convo);
+    void startConvoForMembersOk(ConvoView convo, QString msg);
     void startConvoForMembersFailed(QString error);
     void startConvoInProgressChanged();
     void leaveConvoOk();

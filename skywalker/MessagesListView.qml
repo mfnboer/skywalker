@@ -212,6 +212,12 @@ Page {
         }
     }
 
+    function addMessage(msgText) {
+        Qt.inputMethod.commit()
+        newMessageText.text += msgText
+        newMessageText.forceActiveFocus()
+    }
+
     function sendMessage() {
         Qt.inputMethod.commit()
         isSending = true

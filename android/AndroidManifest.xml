@@ -35,7 +35,7 @@
             <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
             <meta-data android:name="android.app.arguments" android:value="-- %%INSERT_APP_ARGUMENTS%% --"/>
             <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
-            <intent-filter>
+            <intent-filter android:label="Post">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="text/plain"/>
@@ -43,9 +43,20 @@
             </intent-filter>
         </activity>
         <activity
-	    android:name="com.gmail.mfnboer.QPhotoPicker"
-	    android:theme="@style/Theme.AppCompat.Light"
-	    android:exported="false">
+            android:name="com.gmail.mfnboer.DirectMessageActivity"
+	        android:theme="@style/Theme.AppCompat.Light"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter android:label="Direct Message">
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
+        <activity
+	        android:name="com.gmail.mfnboer.QPhotoPicker"
+	        android:theme="@style/Theme.AppCompat.Light"
+	        android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.GET_CONTENT"/>
                 <category android:name="android.intent.category.DEFAULT"/>

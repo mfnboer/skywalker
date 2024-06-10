@@ -220,7 +220,7 @@ void Chat::updateConvos()
         );
 }
 
-void Chat::startConvoForMembers(const QStringList& dids)
+void Chat::startConvoForMembers(const QStringList& dids, const QString& msg)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Start convo for members:" << dids;
@@ -235,13 +235,13 @@ void Chat::startConvoForMembers(const QStringList& dids)
     setStartConvoInProgress(true);
 
     mBsky->getConvoForMembers(members,
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+        [this, presence=*mPresence, msg](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
             if (!presence)
                 return;
 
             setStartConvoInProgress(false);
             const ConvoView convo(*output->mConvo, mUserDid);
-            emit startConvoForMembersOk(convo);
+            emit startConvoForMembersOk(convo, msg);
         },
         [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
@@ -257,10 +257,10 @@ void Chat::startConvoForMembers(const QStringList& dids)
         });
 }
 
-void Chat::startConvoForMember(const QString& did)
+void Chat::startConvoForMember(const QString& did, const QString& msg)
 {
     QStringList dids(did);
-    startConvoForMembers(dids);
+    startConvoForMembers(dids, msg);
 }
 
 void Chat::leaveConvo(const QString& convoId)

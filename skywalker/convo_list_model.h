@@ -31,6 +31,7 @@ public:
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
     QString getLastRev() const;
+    BasicProfileList getAllConvoMembers() const;
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

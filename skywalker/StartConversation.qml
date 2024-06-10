@@ -17,6 +17,21 @@ Page {
         text: qsTr("Start conversation")
         backIsCancel: true
         onBack: closed()
+
+        Avatar {
+            anchors.right: parent.right
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            height: parent.height - 10
+            width: height
+            avatarUrl: skywalker.avatarUrl
+            onClicked: skywalker.showStatusMessage(qsTr("Yes, you're fabulous!"), QEnums.STATUS_LEVEL_INFO)
+            onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really fabulous!"), QEnums.STATUS_LEVEL_INFO)
+
+            Accessible.role: Accessible.Button
+            Accessible.name: qsTr("your avatar")
+            Accessible.onPressAction: clicked()
+        }
     }
 
     SkyTextInput {
@@ -65,7 +80,7 @@ Page {
             if (text.length > 0)
                 searchUtils.searchAuthorsTypeahead(text, 100, true)
             else
-                searchUtils.authorTypeaheadList = []
+                resetAuthorTypeaheadList()
         }
     }
 
@@ -78,7 +93,12 @@ Page {
         id: guiSettings
     }
 
+    function resetAuthorTypeaheadList() {
+        searchUtils.authorTypeaheadList = skywalker.chat.getAllConvoMembers()
+    }
+
     Component.onCompleted: {
+        resetAuthorTypeaheadList()
         searchInput.forceActiveFocus()
     }
 }

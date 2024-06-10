@@ -128,6 +128,31 @@ QString ConvoListModel::getLastRev() const
     return mConvos.front().getRev();
 }
 
+BasicProfileList ConvoListModel::getAllConvoMembers() const
+{
+    std::unordered_set<QString> usedDids;
+    usedDids.insert(mUserDid);
+    BasicProfileList allConvoMembers;
+
+    for (const auto& convo : mConvos)
+    {
+        const ChatBasicProfileList& members = convo.getMembers();
+
+        for (const auto& member : members)
+        {
+            const auto& profile = member.getBasicProfile();
+
+            if (!usedDids.contains(profile.getDid()))
+            {
+                allConvoMembers.push_back(profile);
+                usedDids.insert(profile.getDid());
+            }
+        }
+    }
+
+    return allConvoMembers;
+}
+
 QHash<int, QByteArray> ConvoListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{

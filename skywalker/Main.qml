@@ -232,6 +232,10 @@ ApplicationWindow {
                 composePost(text, source)
         }
 
+        onSharedDmTextReceived: (text) => {
+            startConvo(text)
+        }
+
         onShowNotifications: viewNotifications()
         onShowDirectMessages: viewChat()
 
@@ -904,6 +908,11 @@ ApplicationWindow {
             skywalker.chat.getConvos()
     }
 
+    function startConvo(text) {
+        viewChat()
+        getChatView().addConvo(text)
+    }
+
     function createSearchView() {
         let searchComponent = Qt.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
@@ -1189,6 +1198,10 @@ ApplicationWindow {
         return timelineStack.get(0)
     }
 
+    function getChatView() {
+        return chatStack.get(0)
+    }
+
     function currentStack() {
         return stackLayout.children[stackLayout.currentIndex]
     }
@@ -1250,7 +1263,7 @@ ApplicationWindow {
         return skywalker
     }
 
-    function chatOnStartConvoForMembersOk(convo) {
+    function chatOnStartConvoForMembersOk(convo, msg) {
         let component = Qt.createComponent("MessagesListView.qml")
         let view = component.createObject(root, { chat: skywalker.chat, convo: convo })
 
@@ -1261,6 +1274,9 @@ ApplicationWindow {
 
         skywalker.chat.getMessages(convo.id)
         root.pushStack(view)
+
+        if (msg)
+            view.addMessage(msg)
     }
 
     function chatOnStartConvoForMembersFailed(error) {

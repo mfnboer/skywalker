@@ -245,6 +245,7 @@ signals:
     void getPostThreadInProgressChanged();
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString text); // Shared from another app
+    void sharedDmTextReceived(QString text); // Shared from another app
     void showNotifications(); // Action received from clicking an app notification
     void showDirectMessages(); // Action received from clicking an app notification
     void bskyClientDeleted();

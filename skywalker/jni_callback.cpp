@@ -53,6 +53,16 @@ void _handleSharedImageReceived(JNIEnv* env, jobject, jstring jsFileName, jstrin
         instance->handleSharedImageReceived(fileName, text);
 }
 
+void _handleSharedDmTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
+{
+    QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
+    qDebug() << "Shared DM text received:" << sharedText;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleSharedDmTextReceived(sharedText);
+}
+
 void _handleShowNotifications(JNIEnv*)
 {
     auto& instance = *gTheInstance;
@@ -110,10 +120,11 @@ JNICallbackListener::JNICallbackListener() : QObject()
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
+        { "emitSharedDmTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedDmTextReceived) },
         { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
         { "emitShowDirectMessages", "()V", reinterpret_cast<void *>(_handleShowDirectMessages) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 4);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 5);
 #endif
 }
 
@@ -135,6 +146,11 @@ void JNICallbackListener::handleSharedTextReceived(const QString sharedText)
 void JNICallbackListener::handleSharedImageReceived(const QString fileName, const QString text)
 {
     emit sharedImageReceived(fileName, text);
+}
+
+void JNICallbackListener::handleSharedDmTextReceived(const QString sharedText)
+{
+    emit sharedDmTextReceived(sharedText);
 }
 
 void JNICallbackListener::handleShowNotifications()
