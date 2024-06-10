@@ -5,16 +5,25 @@ import skywalker
 
 Item {
     property recordview record
-    readonly property int contentHeight: recordColumn.height + 10
+    property string backgroundColor: "transparent"
 
     signal opening
 
+    id: recordView
     width: parent.width
     height: recordColumn.height + 10
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()
     Accessible.onPressAction: showRecord()
+
+    Rectangle {
+        anchors.fill: parent
+        border.width: 1
+        border.color: guiSettings.borderColor
+        color: recordView.backgroundColor
+        radius: 10
+    }
 
     Column {
         id: recordColumn
@@ -124,13 +133,6 @@ Item {
 
             Accessible.ignored: true
         }
-    }
-    Rectangle {
-        anchors.fill: parent
-        border.width: 1
-        border.color: guiSettings.borderColor
-        color: "transparent"
-        radius: 10
     }
     MouseArea {
         z: -1 // Let other mouse areas, e.g. images, get on top

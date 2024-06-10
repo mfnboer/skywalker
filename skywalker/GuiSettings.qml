@@ -39,7 +39,7 @@ Item {
     readonly property string messageTimeColor: Material.color(Material.Grey)
     readonly property string messageNewBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
     readonly property string messageNewTextColor: Material.theme === Material.Light ? "black" : "white"
-    readonly property string messageUserBackgroundColor: Material.theme === Material.Light ? "#58a6ff" : "#1a85ff"
+    readonly property string messageUserBackgroundColor: Material.theme === Material.Light ? "#58a6ff" : "#0053b3" //"#1a85ff"
     readonly property string messageUserTextColor: "white"
     readonly property string messageOtherBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
     readonly property string messageOtherTextColor: Material.theme === Material.Light ? "black" : "white"

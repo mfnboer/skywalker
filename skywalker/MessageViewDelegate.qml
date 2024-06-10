@@ -40,7 +40,7 @@ Rectangle {
         id: messageDateText
         y: conversationStartText.y + (conversationStartText.visible ? conversationStartText.height : 0)
         width: viewWidth
-        height: visible ? implicitHeight : 0
+        height: visible ? contentHeight : 0
         padding: 10
         horizontalAlignment: Text.AlignHCenter
         font.bold: true
@@ -113,8 +113,8 @@ Rectangle {
             id: embed
             x: 10
             width: maxTextWidth - 20
-            height: contentHeight
             anchors.top: messageText.bottom
+            backgroundColor: guiSettings.backgroundColor
             record: message.embed
             visible: !message.embed.isNull()
 

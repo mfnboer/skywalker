@@ -66,7 +66,7 @@ Page {
             convo: page.convo
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
             onReportMessage: (msg) => page.reportDirectMessage(msg)
-            onOpeningEmbed: page.lastIndex = index + 1
+            onOpeningEmbed: page.lastIndex = index
         }
 
         FlickableRefresher {
@@ -100,7 +100,7 @@ Page {
 
         id: flick
         width: parent.width
-        height: Math.min(newMessageText.height, maxInputTextHeight) - newMessageText.padding - newMessageText.bottomPadding
+        height: Math.min(newMessageText.height, maxInputTextHeight) - newMessageText.padding - newMessageText.bottomPadding + getQuotedContentHeight()
         anchors.bottom: parent.bottom
         anchors.bottomMargin: newMessageText.bottomPadding
         clip: true
@@ -126,11 +126,17 @@ Page {
         // HACK: to keep margin between the top of the Android keyboard and the bottom
         // of the text input we add extra padding.
         SkyFormattedTextEdit {
+            property basicprofile quoteAuthor
+            property string quoteUri: ""
+            property string quoteCid: ""
+            property string quoteText
+            property date quoteDateTime
+
             id: newMessageText
             x: page.margin
             width: parent.width - sendButton.width - 3 * page.margin
             padding: page.margin
-            bottomPadding: 2 * page.margin + textInputToolbarHeight
+            bottomPadding: 2 * page.margin + textInputToolbarHeight + getQuotedContentHeight()
             parentPage: page
             parentFlick: flick
             color: guiSettings.messageNewTextColor
@@ -138,6 +144,13 @@ Page {
             maxLength: page.maxMessageLength
             enableLinkShortening: false
             fontSelectorCombo: fontSelector
+
+            onFirstPostLinkChanged: {
+                quoteUri = ""
+
+                if (firstPostLink)
+                    postUtils.getQuotePost(firstPostLink)
+            }
         }
     }
 
@@ -157,9 +170,29 @@ Page {
         y: flick.y - newMessageText.padding
         z: -1
         width: newMessageText.width
-        height: flick.height + 2 * newMessageText.padding + textInputToolbarHeight
+        height: flick.height + 2 * newMessageText.padding + textInputToolbarHeight + getQuotedContentHeight()
         radius: 10
         color: guiSettings.messageNewBackgroundColor
+
+        // Quote post
+        Rectangle {
+            anchors.fill: quoteColumn
+            border.width: 2
+            border.color: guiSettings.borderColor
+            color: guiSettings.postHighLightColor
+            visible: quoteColumn.visible
+        }
+        QuotePost {
+            id: quoteColumn
+            x: page.margin
+            width: parent.width - 2 * page.margin
+            anchors.bottom: fontSelector.top
+            //anchors.topMargin: visible ? 5 : 0
+            author: newMessageText.quoteAuthor
+            postText: newMessageText.quoteText
+            postDateTime: newMessageText.quoteDateTime
+            visible: newMessageText.quoteUri
+        }
 
         FontComboBox {
             id: fontSelector
@@ -192,7 +225,7 @@ Page {
         id: positionTimer
         interval: 300
         onTriggered: {
-            if (messageIndex === -1)
+            if (messageIndex === -1 || messageIndex === messagesView.count - 1)
                 messagesView.moveToEnd()
             else
                 messagesView.positionViewAtIndex(messageIndex, ListView.Contain)
@@ -202,6 +235,19 @@ Page {
             console.debug("GOTO INDEX:", index)
             messageIndex = index
             start()
+        }
+    }
+
+    PostUtils {
+        id: postUtils
+        skywalker: page.skywalker
+
+        onQuotePost: (uri, cid, text, author, timestamp) => {
+            newMessageText.quoteUri = uri
+            newMessageText.quoteCid = cid
+            newMessageText.quoteText = text
+            newMessageText.quoteAuthor = author
+            newMessageText.quoteDateTime = timestamp
         }
     }
 
@@ -243,6 +289,10 @@ Page {
         }
     }
 
+    function getQuotedContentHeight() {
+        return quoteColumn.visible ? quoteColumn.height : 0
+    }
+
     function addMessage(msgText) {
         Qt.inputMethod.commit()
         newMessageText.text += msgText
@@ -252,8 +302,8 @@ Page {
     function sendMessage() {
         Qt.inputMethod.commit()
         isSending = true
-        const qUri = ""
-        const qCid = ""
+        const qUri = newMessageText.quoteUri
+        const qCid = newMessageText.quoteCid
         let msgText = newMessageText.text
         console.debug("Send message:", convo.id, msgText)
         chat.sendMessage(convo.id, msgText, qUri, qCid)
@@ -305,8 +355,10 @@ Page {
     }
 
     function rowsInsertedHandler(parent, start, end) {
-        if (end === messagesView.count - 1)
+        if (end === messagesView.count - 1) {
             messagesView.moveToEnd()
+            positionTimer.gotoIndex(-1)
+        }
     }
 
     function initHandlers() {
@@ -343,7 +395,6 @@ Page {
     Component.onCompleted: {
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
         maxInputTextHeight = 5 * inputTextHeight + newMessageText.padding + newMessageText.bottomPadding
-        //messagesView.moveToEnd()
         positionTimer.gotoIndex(-1)
         initHandlers()
         sendButton.forceActiveFocus()
