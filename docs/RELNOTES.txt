@@ -1,6 +1,7 @@
 next
 ====
 * Search options: mentions, since, until, language
+* Focus-hashtag button on search page
 
 2.7
 ===

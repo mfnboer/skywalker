@@ -104,6 +104,38 @@ Page {
         }
     }
 
+    SvgButton {
+        id: blockHashtagButton
+        anchors.right: parent.right
+        anchors.rightMargin: 5
+        imageMargin: 0
+        y: (searchBar.height - height) / 2
+        width: height
+        height: 30
+        iconColor: guiSettings.linkColor
+        Material.background: "transparent"
+        svg: svgOutline.block
+        accessibleName: qsTr(`mute hashtag ${page.getSearchText()}`)
+        visible: isHashtagSearch
+        onClicked: muteWord(page.getSearchText())
+    }
+
+    SvgButton {
+        id: focusHashtagButton
+        anchors.right: blockHashtagButton.left
+        anchors.rightMargin: 5
+        imageMargin: 0
+        y: (searchBar.height - height) / 2
+        width: height
+        height: 30
+        iconColor: guiSettings.linkColor
+        Material.background: "transparent"
+        svg: svgOutline.hashtag
+        accessibleName: qsTr(`set focus on hashtag ${page.getSearchText()}`)
+        visible: isHashtagSearch
+        onClicked: focusHashtag(page.getSearchText())
+    }
+
     Rectangle {
         id: searchBarSeparator
         anchors.top: searchBar.bottom
@@ -127,7 +159,7 @@ Page {
             id: restrictionIcon
             y: height
             width: height
-            height: searchModeText.height
+            height: 20
             color: guiSettings.linkColor
             svg: svgOutline.noReplyRestrictions
             Accessible.ignored: true
@@ -155,23 +187,6 @@ Page {
                 anchors.fill: parent
                 onClicked: page.changeSearchPostScope()
                 enabled: page.isPostSearch
-            }
-        }
-
-        SvgImage {
-            id: blockHashtagButton
-            y: height
-            width: height
-            height: searchModeText.height
-            color: guiSettings.linkColor
-            svg: svgOutline.block
-            visible: isHashtagSearch
-
-            MouseArea {
-                y: -height
-                width: parent.width
-                height: parent.height
-                onClicked: muteWord(page.getSearchText())
             }
         }
     }
@@ -648,6 +663,14 @@ Page {
                         skywalker.saveMutedWords()
                         skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
                     })
+    }
+
+    function focusHashtag(hashtag) {
+        let component = Qt.createComponent("FocusHashtags.qml")
+        let focusPage = component.createObject(page)
+        focusPage.onClosed.connect(() => { root.popStack() })
+        skywalker.focusHashtags.addEntry(hashtag.slice(1)) // strip #-symbol
+        root.pushStack(focusPage)
     }
 
     function clearRecentSearches() {

@@ -160,6 +160,9 @@ void FocusHashtags::addEntry(FocusHashtagEntry* entry)
 
 void FocusHashtags::addEntry(const QString& hashtag, QColor highlightColor)
 {
+    if (mAllHashtags.contains(hashtag))
+        return;
+
     auto* entry = new FocusHashtagEntry(this);
     entry->addHashtag(hashtag);
 
