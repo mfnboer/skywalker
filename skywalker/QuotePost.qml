@@ -7,6 +7,9 @@ Column {
     property string postText
     property date postDateTime
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
+    property bool showCloseButton: false
+
+    signal closeClicked
 
     id: quoteColumn
     padding: 10
@@ -26,7 +29,7 @@ Column {
         Avatar {
             id: avatar
             width: 24
-            Layout.alignment: Qt.AlignTop
+            //Layout.alignment: Qt.AlignTop
             avatarUrl: author.avatarUrl
             isModerator: author.associated.isLabeler
 
@@ -39,6 +42,16 @@ Column {
             authorHandle: author.handle
             postThreadType: QEnums.THREAD_NONE
             postIndexedSecondsAgo: (new Date() - postDateTime) / 1000
+        }
+
+        SvgButton {
+            Layout.preferredWidth: 34
+            Layout.preferredHeight: 34
+            svg: svgOutline.close
+            accessibleName: qsTr("remove quoted post")
+            focusPolicy: Qt.NoFocus
+            visible: showCloseButton
+            onClicked: closeClicked()
         }
     }
 

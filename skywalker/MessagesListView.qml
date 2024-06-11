@@ -13,6 +13,7 @@ Page {
     property var skywalker: root.getSkywalker()
     property bool keyboardVisible: false
     property int textInputToolbarHeight: keyboardVisible || !guiSettings.isAndroid ? 24 : 0
+    property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
 
     StackView.onVisibleChanged: {
@@ -100,7 +101,7 @@ Page {
 
         id: flick
         width: parent.width
-        height: Math.min(newMessageText.height, maxInputTextHeight) - newMessageText.padding - newMessageText.bottomPadding + getQuotedContentHeight()
+        height: Math.min(newMessageText.height - newMessageText.padding - newMessageText.bottomPadding, maxInputTextHeight)
         anchors.bottom: parent.bottom
         anchors.bottomMargin: newMessageText.bottomPadding
         clip: true
@@ -131,6 +132,8 @@ Page {
             property string quoteCid: ""
             property string quoteText
             property date quoteDateTime
+            property string quoteLink
+            property bool quoteFixed: false
             property generatorview nullFeed
             property generatorview quoteFeed
 
@@ -138,7 +141,7 @@ Page {
             x: page.margin
             width: parent.width - sendButton.width - 3 * page.margin
             padding: page.margin
-            bottomPadding: 2 * page.margin + textInputToolbarHeight + getQuotedContentHeight()
+            bottomPadding: 2 * page.margin + textInputToolbarHeight + quotedContentHeight
             parentPage: page
             parentFlick: flick
             color: guiSettings.messageNewTextColor
@@ -148,11 +151,19 @@ Page {
             fontSelectorCombo: fontSelector
 
             onFirstPostLinkChanged: {
+                if (quoteFixed)
+                    return
+
                 quoteUri = ""
                 quoteFeed = nullFeed
 
                 if (firstPostLink)
                     postUtils.getQuotePost(firstPostLink)
+            }
+
+            onCursorInFirstPostLinkChanged: {
+                if (!cursorInFirstPostLink && quoteUri)
+                    fixQuoteLink(true)
             }
 
             onFirstFeedLinkChanged: {
@@ -178,6 +189,19 @@ Page {
 
                 return quoteFeed.cid
             }
+
+            function fixQuoteLink(fix) {
+                quoteFixed = fix
+                quoteLink = fix ? firstPostLink : ""
+
+                if (!fix)
+                    quoteUri = ""
+            }
+
+            function reset() {
+                clear()
+                fixQuoteLink(false)
+            }
         }
     }
 
@@ -197,7 +221,7 @@ Page {
         y: flick.y - newMessageText.padding
         z: -1
         width: newMessageText.width
-        height: flick.height + 2 * newMessageText.padding + textInputToolbarHeight + getQuotedContentHeight()
+        height: flick.height + newMessageText.bottomPadding
         radius: 10
         color: guiSettings.messageNewBackgroundColor
 
@@ -217,7 +241,13 @@ Page {
             author: newMessageText.quoteAuthor
             postText: newMessageText.quoteText
             postDateTime: newMessageText.quoteDateTime
+            showCloseButton: newMessageText.quoteFixed
             visible: newMessageText.quoteUri
+
+            onCloseClicked: {
+                newMessageText.fixQuoteLink(false)
+                newMessageText.forceActiveFocus()
+            }
         }
 
         // Quote feed
@@ -295,6 +325,9 @@ Page {
             newMessageText.quoteText = text
             newMessageText.quoteAuthor = author
             newMessageText.quoteDateTime = timestamp
+
+            if (!newMessageText.cursorInFirstPostLink)
+                newMessageText.fixQuoteLink(true)
         }
 
         // Embedded feeds are not supported
@@ -347,16 +380,6 @@ Page {
         }
     }
 
-    function getQuotedContentHeight() {
-        if (quoteColumn.visible)
-            return quoteColumn.height
-
-        if (quoteFeedColumn.visible)
-            return quoteFeedColumn.height
-
-        return 0
-    }
-
     function addMessage(msgText) {
         Qt.inputMethod.commit()
         newMessageText.text += msgText
@@ -386,7 +409,7 @@ Page {
     function sendMessageOkHandler() {
         isSending = false
         busyIndicator.running = false
-        newMessageText.clear()
+        newMessageText.reset()
         chat.updateMessages(convo.id)
     }
 
@@ -458,7 +481,7 @@ Page {
 
     Component.onCompleted: {
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
-        maxInputTextHeight = 5 * inputTextHeight + newMessageText.padding + newMessageText.bottomPadding
+        maxInputTextHeight = 5 * inputTextHeight
         positionTimer.gotoIndex(-1)
         initHandlers()
         sendButton.forceActiveFocus()

@@ -632,11 +632,35 @@ void PostUtils::setFirstWebLink(const QString& link)
 
 void PostUtils::setFirstPostLink(const QString& link)
 {
-    if (link == mFirstPostLink)
+    if (link != mFirstPostLink)
+    {
+        mFirstPostLink = link;
+        emit firstPostLinkChanged();
+    }
+
+    if (link.isEmpty())
+        setCursorInFirstPostLink(false);
+}
+
+void PostUtils::setFirstPostLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
+{
+    setFirstPostLink(linkMatch.mMatch);
+
+    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+
+    if (inLink != mCursorInFirstPostLink)
+        qDebug() << "INLINK:" << inLink << "CURSOR:" << cursor << "START:" << linkMatch.mStartIndex << "END:" << linkMatch.mEndIndex << linkMatch.mMatch;
+
+    setCursorInFirstPostLink(inLink);
+}
+
+void PostUtils::setCursorInFirstPostLink(bool inLink)
+{
+    if (inLink == mCursorInFirstPostLink)
         return;
 
-    mFirstPostLink = link;
-    emit firstPostLinkChanged();
+    mCursorInFirstPostLink = inLink;
+    emit cursorInFirstPostLinkChanged();
 }
 
 void PostUtils::setFirstFeedLink(const QString& link)
@@ -699,7 +723,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
                 if (!postLinkFound)
                 {
-                    setFirstPostLink(facet.mMatch);
+                    setFirstPostLink(facet, cursor);
                     postLinkFound = true;
                 }
             }

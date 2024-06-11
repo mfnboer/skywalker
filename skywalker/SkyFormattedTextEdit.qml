@@ -15,6 +15,7 @@ TextEdit {
     property bool textChangeInProgress: false
     property string firstWebLink
     property string firstPostLink
+    property bool cursorInFirstPostLink: false
     property string firstFeedLink
     property string firstListLink
 
@@ -230,6 +231,7 @@ TextEdit {
 
         onFirstWebLinkChanged: editText.firstWebLink = firstWebLink
         onFirstPostLinkChanged: editText.firstPostLink = firstPostLink
+        onCursorInFirstPostLinkChanged: editText.cursorInFirstPostLink = cursorInFirstPostLink
         onFirstFeedLinkChanged: editText.firstFeedLink = firstFeedLink
         onFirstListLinkChanged: editText.firstListLink = firstListLink
     }

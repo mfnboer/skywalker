@@ -23,6 +23,7 @@ class PostUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QString editTag READ getEditTag WRITE setEditTag NOTIFY editTagChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
+    Q_PROPERTY(bool cursorInFirstPostLink READ isCursorInFirstPostLink WRITE setCursorInFirstPostLink NOTIFY cursorInFirstPostLinkChanged FINAL)
     Q_PROPERTY(QString firstFeedLink READ getFirstFeedLink WRITE setFirstFeedLink NOTIFY firstFeedLinkChanged FINAL)
     Q_PROPERTY(QString firstListLink READ getFirstListLink WRITE setFirstListLink NOTIFY firstListLinkChanged FINAL)
     QML_ELEMENT
@@ -79,6 +80,9 @@ public:
     void setFirstWebLink(const QString& link);
     const QString& getFirstPostLink() const { return mFirstPostLink; }
     void setFirstPostLink(const QString& link);
+    void setFirstPostLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
+    bool isCursorInFirstPostLink() const { return mCursorInFirstPostLink; }
+    void setCursorInFirstPostLink(bool inLink);
     const QString& getFirstFeedLink() const { return mFirstFeedLink; }
     void setFirstFeedLink(const QString& link);
     const QString& getFirstListLink() const { return mFirstListLink; }
@@ -108,6 +112,7 @@ signals:
     void editTagChanged();
     void firstWebLinkChanged();
     void firstPostLinkChanged();
+    void cursorInFirstPostLinkChanged();
     void firstFeedLinkChanged();
     void firstListLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
@@ -135,6 +140,7 @@ private:
     QString mEditTag; // Tag currently being edited (without #-symbol)
     int mEditTagIndex = 0;
     QString mFirstPostLink; // HTTPS link to a post
+    bool mCursorInFirstPostLink = false;
     QString mFirstFeedLink; // HTTPS link to feed generator
     QString mFirstListLink; // HTTPS link to list ivew
     QString mFirstWebLink;
