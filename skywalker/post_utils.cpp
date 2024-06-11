@@ -645,12 +645,7 @@ void PostUtils::setFirstPostLink(const QString& link)
 void PostUtils::setFirstPostLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
 {
     setFirstPostLink(linkMatch.mMatch);
-
     const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
-
-    if (inLink != mCursorInFirstPostLink)
-        qDebug() << "INLINK:" << inLink << "CURSOR:" << cursor << "START:" << linkMatch.mStartIndex << "END:" << linkMatch.mEndIndex << linkMatch.mMatch;
-
     setCursorInFirstPostLink(inLink);
 }
 
