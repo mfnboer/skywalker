@@ -233,7 +233,12 @@ ApplicationWindow {
         }
 
         onSharedDmTextReceived: (text) => {
-            startConvo(text)
+            let item = currentStackItem()
+
+            if (item instanceof MessagesListView)
+                item.addMessage(text)
+            else
+                startConvo(text)
         }
 
         onShowNotifications: viewNotifications()

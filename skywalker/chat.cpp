@@ -658,6 +658,7 @@ void Chat::continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::M
     if (!mBsky)
         return;
 
+    qDebug() << "Send message:" << message->toJson();
     mBsky->sendMessage(convoId, *message,
         [this, presence=*mPresence](ATProto::ChatBskyConvo::MessageView::Ptr messageView){
             if (!presence)

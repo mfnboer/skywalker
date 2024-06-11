@@ -131,6 +131,8 @@ Page {
             property string quoteCid: ""
             property string quoteText
             property date quoteDateTime
+            property generatorview nullFeed
+            property generatorview quoteFeed
 
             id: newMessageText
             x: page.margin
@@ -147,9 +149,34 @@ Page {
 
             onFirstPostLinkChanged: {
                 quoteUri = ""
+                quoteFeed = nullFeed
 
                 if (firstPostLink)
                     postUtils.getQuotePost(firstPostLink)
+            }
+
+            onFirstFeedLinkChanged: {
+                quoteFeed = nullFeed
+
+                if (firstPostLink)
+                    return
+
+                if (firstFeedLink)
+                    postUtils.getQuoteFeed(firstFeedLink)
+            }
+
+            function getQuoteUri() {
+                if (quoteUri)
+                    return quoteUri
+
+                return quoteFeed.uri
+            }
+
+            function getQuoteCid() {
+                if (quoteCid)
+                    return quoteCid
+
+                return quoteFeed.cid
             }
         }
     }
@@ -187,11 +214,27 @@ Page {
             x: page.margin
             width: parent.width - 2 * page.margin
             anchors.bottom: fontSelector.top
-            //anchors.topMargin: visible ? 5 : 0
             author: newMessageText.quoteAuthor
             postText: newMessageText.quoteText
             postDateTime: newMessageText.quoteDateTime
             visible: newMessageText.quoteUri
+        }
+
+        // Quote feed
+        Rectangle {
+            anchors.fill: quoteFeedColumn
+            border.width: 2
+            border.color: guiSettings.borderColor
+            color: guiSettings.postHighLightColor
+            visible: quoteFeedColumn.visible
+        }
+        QuoteFeed {
+            id: quoteFeedColumn
+            x: page.margin
+            width: parent.width - 2 * page.margin
+            anchors.bottom: fontSelector.top
+            feed: newMessageText.quoteFeed
+            visible: !newMessageText.quoteFeed.isNull()
         }
 
         FontComboBox {
@@ -243,12 +286,27 @@ Page {
         skywalker: page.skywalker
 
         onQuotePost: (uri, cid, text, author, timestamp) => {
+            if (!newMessageText.firstPostLink)
+                return
+
+            newMessageText.quoteFeed = newMessageText.nullFeed
             newMessageText.quoteUri = uri
             newMessageText.quoteCid = cid
             newMessageText.quoteText = text
             newMessageText.quoteAuthor = author
             newMessageText.quoteDateTime = timestamp
         }
+
+        // Embedded feeds are not supported
+        // onQuoteFeed: (feed) => {
+        //     if (!newMessageText.firstFeedLink)
+        //         return
+
+        //     if (newMessageText.firstPostLink)
+        //         return
+
+        //     newMessageText.quoteFeed = feed
+        // }
     }
 
     GuiSettings {
@@ -290,7 +348,13 @@ Page {
     }
 
     function getQuotedContentHeight() {
-        return quoteColumn.visible ? quoteColumn.height : 0
+        if (quoteColumn.visible)
+            return quoteColumn.height
+
+        if (quoteFeedColumn.visible)
+            return quoteFeedColumn.height
+
+        return 0
     }
 
     function addMessage(msgText) {
@@ -302,8 +366,8 @@ Page {
     function sendMessage() {
         Qt.inputMethod.commit()
         isSending = true
-        const qUri = newMessageText.quoteUri
-        const qCid = newMessageText.quoteCid
+        const qUri = newMessageText.getQuoteUri()
+        const qCid = newMessageText.getQuoteCid()
         let msgText = newMessageText.text
         console.debug("Send message:", convo.id, msgText)
         chat.sendMessage(convo.id, msgText, qUri, qCid)
