@@ -68,6 +68,7 @@ public class NewMessageNotifier {
             Log.d(LOGTAG, "Create notification channel: " + id + " name: " + name);
             NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription(description);
+            channel.setShowBadge(true);
             Context context = QtNative.getContext();
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
@@ -90,7 +91,9 @@ public class NewMessageNotifier {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, channelId)
                 .setSmallIcon(iconTypeToResource(iconType))
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
                 .setContentTitle(title)
+                .setNumber(1)
                 .setWhen(when)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
