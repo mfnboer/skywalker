@@ -348,8 +348,8 @@ Rectangle {
 
         // Gap place holder
         Text {
-            width: parent.width
             Layout.columnSpan: 2
+            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             textFormat: Text.StyledText
@@ -367,8 +367,8 @@ Rectangle {
 
         // NOT FOUND place holder
         Text {
-            width: parent.width
             Layout.columnSpan: 2
+            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
@@ -378,8 +378,8 @@ Rectangle {
 
         // BLOCKED place holder
         Text {
-            width: parent.width
             Layout.columnSpan: 2
+            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
@@ -389,8 +389,8 @@ Rectangle {
 
         // NOT SUPPORTED place holder
         Text {
-            width: parent.width
             Layout.columnSpan: 2
+            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
@@ -398,8 +398,8 @@ Rectangle {
             visible: postNotSupported
         }
         Text {
-            width: parent.width
             Layout.columnSpan: 2
+            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             maximumLineCount: 2
@@ -412,8 +412,8 @@ Rectangle {
 
         // Locally deleted
         Text {
-            width: parent.width
             Layout.columnSpan: 2
+            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             color: guiSettings.textColor
