@@ -40,7 +40,7 @@ Rectangle {
         id: messageDateText
         y: conversationStartText.y + (conversationStartText.visible ? conversationStartText.height : 0)
         width: viewWidth
-        height: visible ? contentHeight : 0
+        height: visible ? contentHeight + padding : 0
         padding: 10
         horizontalAlignment: Text.AlignHCenter
         font.bold: true

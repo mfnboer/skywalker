@@ -15,6 +15,7 @@ class LinkUtils : public WrappedSkywalker, public Presence
 public:
     explicit LinkUtils(QObject* parent = nullptr);
 
+    Q_INVOKABLE QString toHttpsLink(const QString& atUri);
     Q_INVOKABLE void openLink(const QString& link);
 
 signals:

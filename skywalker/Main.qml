@@ -497,48 +497,41 @@ ApplicationWindow {
                     onClicked: repostDrawer.close()
                 }
 
-                Button {
+                SkyButton {
                     id: repostButton
                     anchors.horizontalCenter: parent.horizontalCenter
-                    Material.background: guiSettings.buttonColor
-                    contentItem: Text {
-                        color: guiSettings.buttonTextColor
-                        text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
-                    }
+                    text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
                     onClicked: {
-                        if (repostDrawer.repostedAlreadyUri) {
+                        if (repostDrawer.repostedAlreadyUri)
                             postUtils.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
-                        } else {
+                        else
                             postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid)
-                        }
 
                         repostDrawer.close()
                     }
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: contentItem.text
-                    Accessible.onPressAction: clicked()
-
                 }
             }
-            Button {
+            SkyButton {
                 id: quotePostButton
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.buttonColor
-                contentItem: Text {
-                    color: guiSettings.buttonTextColor
-                    text: qsTr("Quote post")
-                }
+                text: qsTr("Quote post")
                 onClicked: {
                     root.composeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
                                       repostDrawer.repostText, repostDrawer.repostDateTime,
                                       repostDrawer.repostAuthor)
                     repostDrawer.close()
                 }
+            }
 
-                Accessible.role: Accessible.Button
-                Accessible.name: contentItem.text
-                Accessible.onPressAction: clicked()
+            SkyButton {
+                id: quoteInMessageButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Quote in direct message")
+                onClicked: {
+                    const link = linkUtils.toHttpsLink(repostDrawer.repostUri)
+                    startConvo(link)
+                    repostDrawer.close()
+                }
             }
         }
 

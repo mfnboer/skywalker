@@ -3,7 +3,7 @@ next
 * Search options: mentions, since, until, language
 * Focus-hashtag button on search page
 * Move scroll-to-top button to the left
-* Share post in a direct message
+* Share post in a direct message (repost menu or more options->share)
 * Share text content from apps to direct message
 
 2.7

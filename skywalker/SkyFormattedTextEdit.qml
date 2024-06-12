@@ -18,6 +18,8 @@ TextEdit {
     property bool cursorInFirstPostLink: false
     property string firstFeedLink
     property string firstListLink
+    property string prevText: ""
+    property int lastDeltaTextLen: 0
 
     id: editText
     width: parentPage.width
@@ -63,6 +65,8 @@ TextEdit {
             return
 
         textChangeInProgress = true
+        lastDeltaTextLen = text.length - prevText.length
+        prevText = text
         highlightFacets()
 
         const added = updateGraphemeLength()
@@ -165,6 +169,32 @@ TextEdit {
             const point = editText.mapFromItem(parentFlick, parentFlick.width / 2, parentFlick.height / 2)
             cursorPosition = positionAt(point.x, point.y)
         }
+    }
+
+    // Cut a link if it was just completely added (paste or share) and sits right
+    // before the cursor.
+    // Returns true if the cut was made.
+    function cutLinkIfJustAdded(link, cbBeforeCut) {
+        if (lastDeltaTextLen < link.length)
+            return false
+
+        if (cursorPosition < link.length)
+            return false
+
+        Qt.inputMethod.commit()
+        const startIndex = cursorPosition - link.length
+        const lastAdded = text.substring(startIndex, cursorPosition)
+
+        if (lastAdded !== link)
+            return false
+
+        cbBeforeCut()
+        const newText = text.slice(0, startIndex) + text.slice(cursorPosition)
+        clear()
+        text = newText
+        cursorPosition = startIndex
+
+        return true
     }
 
     Text {

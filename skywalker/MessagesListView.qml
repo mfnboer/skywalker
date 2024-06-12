@@ -237,10 +237,11 @@ Page {
             id: quoteColumn
             x: page.margin
             width: parent.width - 2 * page.margin
-            anchors.bottom: fontSelector.top
+            anchors.bottom: fontSelector.visible ? fontSelector.top : parent.bottom
             author: newMessageText.quoteAuthor
             postText: newMessageText.quoteText
             postDateTime: newMessageText.quoteDateTime
+            ellipsisBackgroundColor: guiSettings.postHighLightColor
             showCloseButton: newMessageText.quoteFixed
             visible: newMessageText.quoteUri
 
@@ -262,7 +263,7 @@ Page {
             id: quoteFeedColumn
             x: page.margin
             width: parent.width - 2 * page.margin
-            anchors.bottom: fontSelector.top
+            anchors.bottom: fontSelector.visible ? fontSelector.top : parent.bottom
             feed: newMessageText.quoteFeed
             visible: !newMessageText.quoteFeed.isNull()
         }
@@ -328,6 +329,8 @@ Page {
 
             if (!newMessageText.cursorInFirstPostLink)
                 newMessageText.fixQuoteLink(true)
+            else
+                newMessageText.cutLinkIfJustAdded(newMessageText.firstPostLink, () => newMessageText.fixQuoteLink(true))
         }
 
         // Embedded feeds are not supported
@@ -382,7 +385,8 @@ Page {
 
     function addMessage(msgText) {
         Qt.inputMethod.commit()
-        newMessageText.text += msgText
+        newMessageText.insert(newMessageText.length, msgText)
+        newMessageText.cursorPosition = newMessageText.length
         newMessageText.forceActiveFocus()
     }
 

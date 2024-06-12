@@ -243,17 +243,17 @@ void Chat::startConvoForMembers(const QStringList& dids, const QString& msg)
             const ConvoView convo(*output->mConvo, mUserDid);
             emit startConvoForMembersOk(convo, msg);
         },
-        [this, presence=*mPresence](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& errorMsg){
             if (!presence)
                 return;
 
             setStartConvoInProgress(false);
-            qDebug() << "startConvoForMembers FAILED:" << error << " - " << msg;
+            qDebug() << "startConvoForMembers FAILED:" << error << " - " << errorMsg;
 
             if (error == ATProto::ATProtoErrorMsg::INVALID_TOKEN)
                 emit startConvoForMembersFailed(DM_ACCESS_ERROR);
             else
-                emit startConvoForMembersFailed(msg);
+                emit startConvoForMembersFailed(errorMsg);
         });
 }
 

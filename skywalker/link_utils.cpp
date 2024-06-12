@@ -12,6 +12,18 @@ LinkUtils::LinkUtils(QObject* parent) :
 {
 }
 
+QString LinkUtils::toHttpsLink(const QString& atUri)
+{
+    ATProto::ATUri uri(atUri);
+
+    if (!uri.isValid())
+        return {};
+
+    const QString httpsLink = uri.toHttpsUri();
+    Q_ASSERT(!httpsLink.isEmpty());
+    return httpsLink;
+}
+
 void LinkUtils::openLink(const QString& link)
 {
     const auto atUri = getPostUri(link);
