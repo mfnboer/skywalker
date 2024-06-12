@@ -262,6 +262,7 @@ Page {
                     property string quoteCid
                     property string quoteText
                     property date quoteDateTime
+                    property bool quoteFixed: false
                     property generatorview quoteFeed
                     property listview quoteList
                     property bool cwSuggestive: false
@@ -279,6 +280,7 @@ Page {
                         threadPosts.postList[index].quoteCid = quoteCid
                         threadPosts.postList[index].quoteText = quoteText
                         threadPosts.postList[index].quoteDateTime = quoteDateTime
+                        threadPosts.postList[index].quoteFixed = quoteFixed
                         threadPosts.postList[index].quoteFeed = quoteFeed
                         threadPosts.postList[index].quoteList = quoteList
                         threadPosts.postList[index].gif = gifAttachment.gif
@@ -298,6 +300,7 @@ Page {
                         quoteCid = threadPosts.postList[index].quoteCid
                         quoteText = threadPosts.postList[index].quoteText
                         quoteDateTime = threadPosts.postList[index].quoteDateTime
+                        quoteFixed = threadPosts.postList[index].quoteFixed
                         quoteFeed = threadPosts.postList[index].quoteFeed
                         quoteList = threadPosts.postList[index].quoteList
                         linkCard.card = threadPosts.postList[index].card
@@ -348,6 +351,13 @@ Page {
 
                     function isValid() {
                         return postText.graphemeLength <= postText.maxLength
+                    }
+
+                    function fixQuoteLink(fix) {
+                        quoteFixed = fix
+
+                        if (!fix)
+                            quoteUri = ""
                     }
 
                     id: postItem
@@ -442,12 +452,20 @@ Page {
                             if (page.openedAsQuotePost && index === 0)
                                 return
 
+                            if (quoteFixed)
+                                return
+
                             quoteList = page.nullList
                             quoteFeed = page.nullFeed
                             quoteUri = ""
 
                             if (firstPostLink)
                                 postUtils.getQuotePost(firstPostLink)
+                        }
+
+                        onCursorInFirstPostLinkChanged: {
+                            if (!cursorInFirstPostLink && quoteUri)
+                                fixQuoteLink(true)
                         }
 
                         onFirstFeedLinkChanged: {
@@ -631,7 +649,13 @@ Page {
                         postText: postItem.quoteText
                         postDateTime: postItem.quoteDateTime
                         ellipsisBackgroundColor: guiSettings.postHighLightColor
+                        showCloseButton: postItem.quoteFixed
                         visible: postItem.quoteUri
+
+                        onCloseClicked: {
+                            postItem.fixQuoteLink(false)
+                            postItem.getPostText().forceActiveFocus()
+                        }
                     }
 
                     // Quote feed
@@ -1162,8 +1186,9 @@ Page {
 
         onQuotePost: (uri, cid, text, author, timestamp) => {
                 let postItem = currentPostItem()
+                let postText = postItem.getPostText()
 
-                if (!postItem.getPostText().firstPostLink)
+                if (!postText.firstPostLink)
                     return
 
                 postItem.quoteList = page.nullList
@@ -1173,6 +1198,11 @@ Page {
                 postItem.quoteText = text
                 postItem.quoteAuthor = author
                 postItem.quoteDateTime = timestamp
+
+                if (!postText.cursorInFirstPostLink)
+                    postItem.fixQuoteLink(true)
+                else
+                    postText.cutLinkIfJustAdded(postText.firstPostLink, () => postItem.fixQuoteLink(true))
             }
 
         onQuoteFeed: (feed) => {
@@ -1553,7 +1583,8 @@ Page {
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
                                  replyToPostDateTime,
                                  qUri, qCid, postItem.quoteAuthor, unicodeFonts.toPlainText(postItem.quoteText),
-                                 postItem.quoteDateTime, postItem.quoteFeed, postItem.quoteList,
+                                 postItem.quoteDateTime, postItem.quoteFixed,
+                                 postItem.quoteFeed, postItem.quoteList,
                                  postItem.gif, labels, postItem.language,
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
@@ -1572,7 +1603,8 @@ Page {
                                      nullAuthor, "",
                                      new Date(),
                                      qUriItem, qCidItem, threadItem.quoteAuthor, unicodeFonts.toPlainText(threadItem.quoteText),
-                                     threadItem.quoteDateTime, threadItem.quoteFeed, threadItem.quoteList,
+                                     threadItem.quoteDateTime, threadItem.quoteFixed,
+                                     threadItem.quoteFeed, threadItem.quoteList,
                                      threadItem.gif, labelsItem, threadItem.language,
                                      false, false, false,
                                      [])
@@ -1649,6 +1681,7 @@ Page {
             postItem.quoteAuthor = draftData.quoteAuthor
             postItem.quoteText = draftData.quoteText
             postItem.quoteDateTime = draftData.quoteDateTime
+            postItem.quoteFixed = draftData.quoteFixed
             postItem.quoteFeed = draftData.quoteFeed
             postItem.quoteList = draftData.quoteList
 

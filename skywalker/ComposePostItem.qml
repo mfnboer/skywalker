@@ -10,6 +10,7 @@ Item {
     property string quoteCid: ""
     property string quoteText: ""
     property date quoteDateTime: new Date()
+    property bool quoteFixed: false
     property generatorview quoteFeed
     property listview quoteList
     property tenorgif gif

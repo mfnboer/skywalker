@@ -45,7 +45,7 @@ public:
                                            const QDateTime& replyToDateTime,
                                            const QString& quoteUri, const QString& quoteCid,
                                            const BasicProfile& quoteAuthor, const QString& quoteText,
-                                           const QDateTime& quoteDateTime,
+                                           const QDateTime& quoteDateTime, bool quoteFixed,
                                            const GeneratorView& quoteFeed, const ListView& quoteList,
                                            const TenorGif gif, const QStringList& labels,
                                            const QString& language,

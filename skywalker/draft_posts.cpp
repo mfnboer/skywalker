@@ -63,7 +63,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const QDateTime& replyToDateTime,
                                        const QString& quoteUri, const QString& quoteCid,
                                        const BasicProfile& quoteAuthor, const QString& quoteText,
-                                       const QDateTime& quoteDateTime,
+                                       const QDateTime& quoteDateTime, bool quoteFixed,
                                        const GeneratorView& quoteFeed, const ListView& quoteList,
                                        const TenorGif gif, const QStringList& labels,
                                        const QString& language,
@@ -97,6 +97,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
     draft->setQuoteAuthor(quoteAuthor);
     draft->setQuoteText(quoteText);
     draft->setQuoteDateTime(quoteDateTime);
+    draft->setQuoteFixed(quoteFixed);
     draft->setQuoteFeed(quoteFeed);
     draft->setQuoteList(quoteList);
     draft->setGif(gif);
@@ -162,7 +163,8 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
     draft->mReplyToPost = createReplyToPost(draftPost->replyToUri(), draftPost->replyToAuthor(),
                                             draftPost->replyToText(), draftPost->replyToDateTime());
     draft->mQuote = createQuote(draftPost->quoteUri(), draftPost->quoteAuthor(), draftPost->quoteText(),
-                                draftPost->quoteDateTime(), draftPost->quoteFeed(), draftPost->quoteList());
+                                draftPost->quoteDateTime(),
+                                draftPost->quoteFeed(), draftPost->quoteList());
 
     for (int i = 0; i < draftThread.size(); ++i)
     {
@@ -283,14 +285,27 @@ static void setRecordViewData(DraftPostData* data, const RecordView* recordView)
         data->setQuoteAuthor(recordView->getAuthor().nonVolatileCopy());
         data->setQuoteText(recordView->getText());
         data->setQuoteDateTime(recordView->getIndexedAt());
+        data->setQuoteFixed(data->openAsQuotePost());
     }
     else if (recordView->getFeedAvailable())
     {
-        data->setQuoteFeed(recordView->getFeed());
+        const auto feed = recordView->getFeed();
+        const QString uri = feed.getUri();
+        const ATProto::ATUri atUri(uri);
+        const QString httpsUri = atUri.toHttpsUri();
+
+        data->setQuoteFeed(feed);
+        data->setQuoteFixed(!httpsUri.isEmpty() && !feed.getDescription().contains(httpsUri));
     }
     else  if (recordView->getListAvailable())
     {
-        data->setQuoteList(recordView->getList());
+        const auto list = recordView->getList();
+        const QString uri = list.getUri();
+        const ATProto::ATUri atUri(uri);
+        const QString httpsUri = atUri.toHttpsUri();
+
+        data->setQuoteList(list);
+        data->setQuoteFixed(!httpsUri.isEmpty() && !list.getDescription().contains(httpsUri));
     }
 }
 

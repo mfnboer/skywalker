@@ -30,6 +30,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(BasicProfile quoteAuthor READ quoteAuthor WRITE setQuoteAuthor NOTIFY quoteAuthorChanged FINAL)
     Q_PROPERTY(QString quoteText READ quoteText WRITE setQuoteText NOTIFY quoteTextChanged FINAL)
     Q_PROPERTY(QDateTime quoteDateTime READ quoteDateTime WRITE setQuoteDateTime NOTIFY quoteDateTimeChanged FINAL)
+    Q_PROPERTY(bool quoteFixed READ quoteFixed WRITE setQuoteFixed NOTIFY quoteFixedChanged FINAL)
     Q_PROPERTY(GeneratorView quoteFeed READ quoteFeed WRITE setQuoteFeed NOTIFY quoteFeedChanged FINAL)
     Q_PROPERTY(ListView quoteList READ quoteList WRITE setQuoteList NOTIFY quoteListChanged FINAL)
     Q_PROPERTY(TenorGif gif READ gif WRITE setGif NOTIFY gifChanged FINAL)
@@ -77,6 +78,8 @@ public:
     void setQuoteText(const QString &newQuoteText);
     QDateTime quoteDateTime() const;
     void setQuoteDateTime(const QDateTime &newQuoteDateTime);
+    bool quoteFixed() const;
+    void setQuoteFixed(bool quoteFixed);
     GeneratorView quoteFeed() const;
     void setQuoteFeed(const GeneratorView &newQuoteFeed);
     ListView quoteList() const;
@@ -114,6 +117,7 @@ signals:
     void quoteAuthorChanged();
     void quoteTextChanged();
     void quoteDateTimeChanged();
+    void quoteFixedChanged();
     void quoteFeedChanged();
     void quoteListChanged();
     void gifChanged();
@@ -143,6 +147,7 @@ private:
     BasicProfile mQuoteAuthor;
     QString mQuoteText;
     QDateTime mQuoteDateTime;
+    bool mQuoteFixed = false;
     GeneratorView mQuoteFeed;
     ListView mQuoteList;
     TenorGif mGif;
@@ -347,6 +352,19 @@ inline void DraftPostData::setQuoteDateTime(const QDateTime &newQuoteDateTime)
         return;
     mQuoteDateTime = newQuoteDateTime;
     emit quoteDateTimeChanged();
+}
+
+inline bool DraftPostData::quoteFixed() const
+{
+    return mQuoteFixed;
+}
+
+inline void DraftPostData::setQuoteFixed(bool quoteFixed)
+{
+    if (quoteFixed == mQuoteFixed)
+        return;
+    mQuoteFixed = quoteFixed;
+    emit quoteFixedChanged();
 }
 
 inline GeneratorView DraftPostData::quoteFeed() const

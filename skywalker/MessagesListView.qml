@@ -132,7 +132,6 @@ Page {
             property string quoteCid: ""
             property string quoteText
             property date quoteDateTime
-            property string quoteLink
             property bool quoteFixed: false
             property generatorview nullFeed
             property generatorview quoteFeed
@@ -192,7 +191,6 @@ Page {
 
             function fixQuoteLink(fix) {
                 quoteFixed = fix
-                quoteLink = fix ? firstPostLink : ""
 
                 if (!fix)
                     quoteUri = ""
