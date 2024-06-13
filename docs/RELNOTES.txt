@@ -1,7 +1,8 @@
-next
-====
+2.8
+===
 * Search options: mentions, since, until, language
 * Focus-hashtag button on search page
+* Show known followers on profiles
 * Move scroll-to-top button to the left
 * Share post in a direct message (repost menu or more options->share)
 * Share text content from apps to direct message

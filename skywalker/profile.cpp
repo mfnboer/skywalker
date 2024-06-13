@@ -6,13 +6,47 @@
 
 namespace Skywalker {
 
+KnownFollowers::KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* knownFollowers)
+{
+    if (!knownFollowers)
+        return;
+
+    mCount = knownFollowers->mCount;
+    mFollowers.reserve(knownFollowers->mFollowers.size());
+
+    for (const auto& follower : knownFollowers->mFollowers)
+    {
+        auto profile = std::make_shared<BasicProfile>(
+            follower->mDid, follower->mHandle, follower->mDisplayName.value_or(""),
+            follower->mAvatar.value_or(""));
+        mFollowers.push_back(profile);
+
+        // Cap followers to the maximum to be safe in case the networks gives
+        // much more.
+        if (mFollowers.size() >= ATProto::AppBskyActor::KnownFollowers::MAX_COUNT)
+            break;
+    }
+}
+
+QList<BasicProfile> KnownFollowers::getFollowers() const
+{
+    BasicProfileList followers;
+    followers.reserve(mFollowers.size());
+
+    for (const auto& follower : mFollowers)
+        followers.push_back(*follower);
+
+    return followers;
+}
+
 ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState) :
     mValid(true),
     mMuted(viewerState.mMuted),
     mBlockedBy(viewerState.mBlockedBy),
     mBlocking(viewerState.mBlocking.value_or("")),
     mFollowing(viewerState.mFollowing.value_or("")),
-    mFollowedBy(viewerState.mFollowedBy.value_or(""))
+    mFollowedBy(viewerState.mFollowedBy.value_or("")),
+    mKnownFollowers(viewerState.mKnownFollowers.get())
 {
     if (viewerState.mMutedByList)
     {

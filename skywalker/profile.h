@@ -11,6 +11,27 @@
 
 namespace Skywalker {
 
+class BasicProfile;
+
+class KnownFollowers
+{
+    Q_GADGET
+    Q_PROPERTY(int count READ getCount FINAL)
+    Q_PROPERTY(QList<BasicProfile> followers READ getFollowers FINAL)
+    QML_VALUE_TYPE(knownfollowers)
+
+public:
+    KnownFollowers() = default;
+    explicit KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* knownFollowers);
+
+    int getCount() const { return mCount; }
+    QList<BasicProfile> getFollowers() const;
+
+private:
+    int mCount = 0;
+    QList<std::shared_ptr<BasicProfile>> mFollowers;
+};
+
 class ProfileViewerState
 {
     Q_GADGET
@@ -22,6 +43,7 @@ class ProfileViewerState
     Q_PROPERTY(QString followedBy READ getFollowedBy FINAL)
     Q_PROPERTY(ListViewBasic mutedByList READ getMutedByList FINAL)
     Q_PROPERTY(ListViewBasic blockingByList READ getBlockingByList FINAL)
+    Q_PROPERTY(KnownFollowers knownFollowers READ getKnownFollowers FINAL)
     QML_VALUE_TYPE(profileviewerstate)
 
 public:
@@ -36,6 +58,7 @@ public:
     const QString& getFollowedBy() const { return mFollowedBy; }
     const ListViewBasic& getMutedByList() const { return mMutedByList; }
     const ListViewBasic& getBlockingByList() const { return mBlockingByList; }
+    const KnownFollowers& getKnownFollowers() const { return mKnownFollowers; }
 
 private:
     bool mValid = false;
@@ -46,6 +69,7 @@ private:
     QString mFollowedBy;
     ListViewBasic mMutedByList;
     ListViewBasic mBlockingByList;
+    KnownFollowers mKnownFollowers;
 };
 
 class ProfileAssociatedChat
