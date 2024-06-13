@@ -29,7 +29,6 @@ Column {
         Avatar {
             id: avatar
             width: 24
-            //Layout.alignment: Qt.AlignTop
             avatarUrl: author.avatarUrl
             isModerator: author.associated.isLabeler
 

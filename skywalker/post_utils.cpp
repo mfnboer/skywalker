@@ -857,7 +857,8 @@ void PostUtils::getQuotePost(const QString& httpsUri)
                                  author->mHandle,
                                  author->mDisplayName.value_or(""),
                                  author->mAvatar.value_or(""));
-            emit quotePost(uri, cid, post->mText, profile, post->mCreatedAt);
+            const auto formattedText = ATProto::RichTextMaster::getFormattedPostText(*post, UserSettings::getLinkColor());
+            emit quotePost(uri, cid, formattedText, profile, post->mCreatedAt);
         });
 }
 

@@ -9,6 +9,7 @@ Text {
     property bool mustClean: false
     property int intialShowMaxLineCount: maximumLineCount
     property bool isCapped: false
+    property bool isCapping: false
     property int heightBeforeCap
     property int lineCountBeforeCap
     property int capLineCount: intialShowMaxLineCount
@@ -20,7 +21,11 @@ Text {
 
     onPlainTextChanged: determineTextFormat()
     onWidthChanged: resetText()
-    onHeightChanged: capLinesRichText()
+
+    onHeightChanged: {
+        if (!isCapping)
+            capLinesRichText()
+    }
 
     onTextChanged: {
         elideRichText()
@@ -92,10 +97,12 @@ Text {
         if (numLines <= capLineCount)
             return
 
+        isCapping = true
         lineCountBeforeCap = numLines
         heightBeforeCap = height
         height = height * (capLineCount / numLines)
         isCapped = true
+        isCapping = false
     }
 
     function resetText() {
@@ -114,6 +121,7 @@ Text {
         text = plainText
         height = undefined
         isCapped = false
+        capLinesRichText()
 
         if (isRichText())
             return
