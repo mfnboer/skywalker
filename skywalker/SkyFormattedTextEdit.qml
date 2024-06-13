@@ -18,7 +18,7 @@ TextEdit {
     property bool cursorInFirstPostLink: false
     property string firstFeedLink
     property string firstListLink
-    property string prevText: ""
+    property int prevTextLen: 0
     property int lastDeltaTextLen: 0
 
     id: editText
@@ -65,8 +65,12 @@ TextEdit {
             return
 
         textChangeInProgress = true
-        lastDeltaTextLen = text.length - prevText.length
-        prevText = text
+
+        if (text.length !== prevTextLen) {
+            lastDeltaTextLen = text.length - prevTextLen
+            prevTextLen = text.length
+        }
+
         highlightFacets()
 
         const added = updateGraphemeLength()
