@@ -106,6 +106,7 @@ Rectangle {
         StatIcon {
             id: deleteButton
             Layout.alignment: Qt.AlignRight
+            Layout.rightMargin: 10
             Layout.columnSpan: 2
             svg: svgOutline.delete
             onClicked: deleted()
