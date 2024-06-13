@@ -623,11 +623,30 @@ void PostUtils::setEditTag(const QString& tag)
 
 void PostUtils::setFirstWebLink(const QString& link)
 {
-    if (link == mFirstWebLink)
+    if (link != mFirstWebLink)
+    {
+        mFirstWebLink = link;
+        emit firstWebLinkChanged();
+    }
+
+    if (link.isEmpty())
+        setCursorInFirstWebLink(false);
+}
+
+void PostUtils::setFirstWebLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
+{
+    setFirstWebLink(linkMatch.mMatch);
+    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+    setCursorInFirstWebLink(inLink);
+}
+
+void PostUtils::setCursorInFirstWebLink(bool inLink)
+{
+    if (inLink == mCursorInFirstWebLink)
         return;
 
-    mFirstWebLink = link;
-    emit firstWebLinkChanged();
+    mCursorInFirstWebLink = inLink;
+    emit cursorInFirstWebLinkChanged();
 }
 
 void PostUtils::setFirstPostLink(const QString& link)
@@ -792,7 +811,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                     {
                         qDebug() << "Web link:" << facet.mMatch;
 
-                        setFirstWebLink(facet.mMatch);
+                        setFirstWebLink(facet, cursor);
                         webLinkFound = true;
                     }
                 }

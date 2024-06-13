@@ -22,6 +22,7 @@ class PostUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QString editMention READ getEditMention WRITE setEditMention NOTIFY editMentionChanged FINAL)
     Q_PROPERTY(QString editTag READ getEditTag WRITE setEditTag NOTIFY editTagChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
+    Q_PROPERTY(bool cursorInFirstWebLink READ isCursorInFirstWebLink WRITE setCursorInFirstWebLink NOTIFY cursorInFirstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
     Q_PROPERTY(bool cursorInFirstPostLink READ isCursorInFirstPostLink WRITE setCursorInFirstPostLink NOTIFY cursorInFirstPostLinkChanged FINAL)
     Q_PROPERTY(QString firstFeedLink READ getFirstFeedLink WRITE setFirstFeedLink NOTIFY firstFeedLinkChanged FINAL)
@@ -80,6 +81,9 @@ public:
     void setEditTag(const QString& tag);
     const QString& getFirstWebLink() const { return mFirstWebLink; }
     void setFirstWebLink(const QString& link);
+    void setFirstWebLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
+    bool isCursorInFirstWebLink() const { return mCursorInFirstWebLink; }
+    void setCursorInFirstWebLink(bool inLink);
     const QString& getFirstPostLink() const { return mFirstPostLink; }
     void setFirstPostLink(const QString& link);
     void setFirstPostLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
@@ -119,6 +123,7 @@ signals:
     void editMentionChanged();
     void editTagChanged();
     void firstWebLinkChanged();
+    void cursorInFirstWebLinkChanged();
     void firstPostLinkChanged();
     void cursorInFirstPostLinkChanged();
     void firstFeedLinkChanged();
@@ -156,6 +161,7 @@ private:
     QString mFirstListLink; // HTTPS link to list ivew
     bool mCursorInFirstListLink = false;
     QString mFirstWebLink;
+    bool mCursorInFirstWebLink = false;
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;

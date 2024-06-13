@@ -442,6 +442,9 @@ Page {
                             if (linkCard.card && linkCard.card.link === firstWebLink)
                                 return
 
+                            if (linkCard.linkFixed)
+                                return
+
                             linkCard.hide()
 
                             if (firstWebLink) {
@@ -449,6 +452,11 @@ Page {
                             } else {
                                 linkCardTimer.stop()
                             }
+                        }
+
+                        onCursorInFirstWebLinkChanged: {
+                            if (!cursorInFirstWebLink && linkCard.card)
+                                linkCard.linkFixed = true
                         }
 
                         onFirstPostLinkChanged: {
@@ -594,6 +602,7 @@ Page {
 
                         SvgButton {
                             x: parent.width - width
+                            width: 34
                             height: width
                             svg: svgOutline.close
                             accessibleName: qsTr("remove GIF image")
@@ -604,6 +613,7 @@ Page {
                     // Link card attachment
                     LinkCardView {
                         property var card: null
+                        property bool linkFixed: false
 
                         id: linkCard
                         x: page.margin
@@ -639,10 +649,12 @@ Page {
 
                         function hide() {
                             linkCard.card = null
+                            linkCard.linkFixed = false
                         }
 
                         SvgButton {
                             x: parent.width - width
+                            width: 34
                             height: width
                             svg: svgOutline.close
                             accessibleName: qsTr("remove link card")
@@ -1148,8 +1160,16 @@ Page {
 
                         let postItem = threadPosts.itemAt(linkCardTimer.postIndex)
 
-                        if (postItem)
-                            postItem.getLinkCard().show(card)
+                        if (!postItem)
+                            return
+
+                        postItem.getLinkCard().show(card)
+                        let postText = postItem.getPostText()
+
+                        if (!postText.cursorInFirstWebLink)
+                            postItem.getLinkCard().linkFixed = true
+                        else
+                            postText.cutLinkIfJustAdded(postText.firstWebLink, () => postItem.getLinkCard().linkFixed = true)
                     }
     }
 

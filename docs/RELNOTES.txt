@@ -5,6 +5,7 @@ next
 * Move scroll-to-top button to the left
 * Share post in a direct message (repost menu or more options->share)
 * Share text content from apps to direct message
+* Remove link from text when link card is attached
 * Bug fixes
 
 2.7

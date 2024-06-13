@@ -43,6 +43,7 @@ ScrollView {
                 }
 
                 SkyButton {
+                    height: 34
                     flat: imageScroller.hasAltText(index)
                     text: imageScroller.hasAltText(index) ? qsTr("ALT") : qsTr("+ALT", "add alternative text button")
                     onClicked: imageScroller.editAltText(index)
@@ -51,6 +52,7 @@ ScrollView {
 
                 SvgButton {
                     x: parent.width - width
+                    width: 34
                     height: width
                     svg: svgOutline.close
                     accessibleName: qsTr(`remove picture ${(index + 1)}`)

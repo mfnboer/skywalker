@@ -14,6 +14,7 @@ TextEdit {
     property var fontSelectorCombo
     property bool textChangeInProgress: false
     property string firstWebLink
+    property bool cursorInFirstWebLink: false
     property string firstPostLink
     property bool cursorInFirstPostLink: false
     property string firstFeedLink
@@ -266,6 +267,7 @@ TextEdit {
         }
 
         onFirstWebLinkChanged: editText.firstWebLink = firstWebLink
+        onCursorInFirstWebLinkChanged: editText.cursorInFirstWebLink = cursorInFirstWebLink
         onFirstPostLinkChanged: editText.firstPostLink = firstPostLink
         onCursorInFirstPostLinkChanged: editText.cursorInFirstPostLink = cursorInFirstPostLink
         onFirstFeedLinkChanged: editText.firstFeedLink = firstFeedLink
