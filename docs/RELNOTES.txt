@@ -6,6 +6,7 @@ next
 * Share post in a direct message (repost menu or more options->share)
 * Share text content from apps to direct message
 * Remove link from text when link card is attached
+* Scrollable alt-text
 * Bug fixes
 
 2.7

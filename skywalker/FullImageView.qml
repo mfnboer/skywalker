@@ -34,14 +34,25 @@ Page {
                 id: imgRect
                 color: "black"
 
-                SkyCleanedText {
-                    id: altText
-                    width: parent.width
+                Flickable {
                     anchors.bottom: parent.bottom
-                    wrapMode: Text.Wrap
-                    color: "white"
-                    plainText: images[index].alt
-                    visible: images[index].alt && isCurrentItem
+                    width: parent.width
+                    height: Math.min(contentHeight, 6 * 21)
+                    clip: true
+                    contentWidth: parent.width
+                    contentHeight: altText.contentHeight
+                    flickableDirection: Flickable.VerticalFlick
+                    boundsBehavior: Flickable.StopAtBounds
+                    ScrollIndicator.vertical: ScrollIndicator {}
+
+                    SkyCleanedText {
+                        id: altText
+                        width: parent.width - 8
+                        wrapMode: Text.Wrap
+                        color: "white"
+                        plainText: images[index].alt
+                        visible: images[index].alt && isCurrentItem
+                    }
                 }
                 ImageAutoRetry {
                     id: img
@@ -131,7 +142,7 @@ Page {
         Material.background: "black"
         opacity: 0.7
         svg: svgOutline.arrowBack
-        accessibleName: qsTr("more options")
+        accessibleName: qsTr("go back")
         onClicked: page.closed()
     }
 
