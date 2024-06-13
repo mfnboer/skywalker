@@ -25,7 +25,9 @@ class PostUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
     Q_PROPERTY(bool cursorInFirstPostLink READ isCursorInFirstPostLink WRITE setCursorInFirstPostLink NOTIFY cursorInFirstPostLinkChanged FINAL)
     Q_PROPERTY(QString firstFeedLink READ getFirstFeedLink WRITE setFirstFeedLink NOTIFY firstFeedLinkChanged FINAL)
+    Q_PROPERTY(bool cursorInFirstFeedLink READ isCursorInFirstFeedLink WRITE setCursorInFirstFeedLink NOTIFY cursorInFirstFeedLinkChanged FINAL)
     Q_PROPERTY(QString firstListLink READ getFirstListLink WRITE setFirstListLink NOTIFY firstListLinkChanged FINAL)
+    Q_PROPERTY(bool cursorInFirstListLink READ isCursorInFirstListLink WRITE setCursorInFirstListLink NOTIFY cursorInFirstListLinkChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -85,8 +87,14 @@ public:
     void setCursorInFirstPostLink(bool inLink);
     const QString& getFirstFeedLink() const { return mFirstFeedLink; }
     void setFirstFeedLink(const QString& link);
+    void setFirstFeedLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
+    bool isCursorInFirstFeedLink() const { return mCursorInFirstFeedLink; }
+    void setCursorInFirstFeedLink(bool inLink);
     const QString& getFirstListLink() const { return mFirstListLink; }
     void setFirstListLink(const QString& link);
+    void setFirstListLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
+    bool isCursorInFirstListLink() const { return mCursorInFirstListLink; }
+    void setCursorInFirstListLink(bool inLink);
 
 signals:
     void postOk(QString uri, QString cid);
@@ -114,7 +122,9 @@ signals:
     void firstPostLinkChanged();
     void cursorInFirstPostLinkChanged();
     void firstFeedLinkChanged();
+    void cursorInFirstFeedLinkChanged();
     void firstListLinkChanged();
+    void cursorInFirstListLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
     void quoteFeed(GeneratorView feed);
     void quoteList(ListView list);
@@ -142,7 +152,9 @@ private:
     QString mFirstPostLink; // HTTPS link to a post
     bool mCursorInFirstPostLink = false;
     QString mFirstFeedLink; // HTTPS link to feed generator
+    bool mCursorInFirstFeedLink = false;
     QString mFirstListLink; // HTTPS link to list ivew
+    bool mCursorInFirstListLink = false;
     QString mFirstWebLink;
     int mLinkShorteningReduction = 0;
     std::unique_ptr<ImageReader> mImageReader;

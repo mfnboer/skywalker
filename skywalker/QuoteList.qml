@@ -4,6 +4,9 @@ import skywalker
 
 Column {
     property listview list
+    property bool showCloseButton: false
+
+    signal closeClicked
 
     id: quoteColumn
     padding: 10
@@ -45,6 +48,16 @@ Column {
 
                 Accessible.ignored: true
             }
+        }
+
+        SvgButton {
+            Layout.preferredWidth: 34
+            Layout.preferredHeight: 34
+            svg: svgOutline.close
+            accessibleName: qsTr("remove quoted list")
+            focusPolicy: Qt.NoFocus
+            visible: showCloseButton
+            onClicked: closeClicked()
         }
     }
 

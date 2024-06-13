@@ -17,7 +17,9 @@ TextEdit {
     property string firstPostLink
     property bool cursorInFirstPostLink: false
     property string firstFeedLink
+    property bool cursorInFirstFeedLink: false
     property string firstListLink
+    property bool cursorInFirstListLink: false
     property int prevTextLen: 0
     property int lastDeltaTextLen: 0
 
@@ -267,7 +269,9 @@ TextEdit {
         onFirstPostLinkChanged: editText.firstPostLink = firstPostLink
         onCursorInFirstPostLinkChanged: editText.cursorInFirstPostLink = cursorInFirstPostLink
         onFirstFeedLinkChanged: editText.firstFeedLink = firstFeedLink
+        onCursorInFirstFeedLinkChanged: editText.cursorInFirstFeedLink = cursorInFirstFeedLink
         onFirstListLinkChanged: editText.firstListLink = firstListLink
+        onCursorInFirstListLinkChanged: editText.cursorInFirstListLink = cursorInFirstListLink
     }
 
     UnicodeFonts {

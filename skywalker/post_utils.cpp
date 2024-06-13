@@ -660,20 +660,58 @@ void PostUtils::setCursorInFirstPostLink(bool inLink)
 
 void PostUtils::setFirstFeedLink(const QString& link)
 {
-    if (link == mFirstFeedLink)
+    if (link != mFirstFeedLink)
+    {
+        mFirstFeedLink = link;
+        emit firstFeedLinkChanged();
+    }
+
+    if (link.isEmpty())
+        setCursorInFirstFeedLink(false);
+}
+
+void PostUtils::setFirstFeedLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
+{
+    setFirstFeedLink(linkMatch.mMatch);
+    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+    setCursorInFirstFeedLink(inLink);
+}
+
+void PostUtils::setCursorInFirstFeedLink(bool inLink)
+{
+    if (inLink == mCursorInFirstFeedLink)
         return;
 
-    mFirstFeedLink = link;
-    emit firstFeedLinkChanged();
+    mCursorInFirstFeedLink = inLink;
+    emit cursorInFirstFeedLinkChanged();
 }
 
 void PostUtils::setFirstListLink(const QString& link)
 {
-    if (link == mFirstListLink)
+    if (link != mFirstListLink)
+    {
+        mFirstListLink = link;
+        emit firstListLinkChanged();
+    }
+
+    if (link.isEmpty())
+        setCursorInFirstListLink(false);
+}
+
+void PostUtils::setFirstListLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
+{
+    setFirstListLink(linkMatch.mMatch);
+    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+    setCursorInFirstListLink(inLink);
+}
+
+void PostUtils::setCursorInFirstListLink(bool inLink)
+{
+    if (inLink == mCursorInFirstListLink)
         return;
 
-    mFirstListLink = link;
-    emit firstListLinkChanged();
+    mCursorInFirstListLink = inLink;
+    emit cursorInFirstListLinkChanged();
 }
 
 void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
@@ -732,7 +770,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
                     if (!feedLinkFound)
                     {
-                        setFirstFeedLink(facet.mMatch);
+                        setFirstFeedLink(facet, cursor);
                         feedLinkFound = true;
                     }
                 }
@@ -746,7 +784,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
                         if (!listLinkFound)
                         {
-                            setFirstListLink(facet.mMatch);
+                            setFirstListLink(facet, cursor);
                             listLinkFound = true;
                         }
                     }

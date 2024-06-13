@@ -356,8 +356,11 @@ Page {
                     function fixQuoteLink(fix) {
                         quoteFixed = fix
 
-                        if (!fix)
+                        if (!fix) {
                             quoteUri = ""
+                            quoteList = page.nullList
+                            quoteFeed = page.nullFeed
+                        }
                     }
 
                     id: postItem
@@ -472,6 +475,9 @@ Page {
                             if (page.openedAsQuotePost && index === 0)
                                 return
 
+                            if (quoteFixed)
+                                return
+
                             quoteList = page.nullList
                             quoteFeed = page.nullFeed
 
@@ -482,8 +488,16 @@ Page {
                                 postUtils.getQuoteFeed(firstFeedLink)
                         }
 
+                        onCursorInFirstFeedLinkChanged: {
+                            if (!cursorInFirstFeedLink && !quoteFeed.isNull())
+                                fixQuoteLink(true)
+                        }
+
                         onFirstListLinkChanged: {
                             if (page.openedAsQuotePost && index === 0)
+                                return
+
+                            if (quoteFixed)
                                 return
 
                             quoteList = page.nullList
@@ -493,6 +507,11 @@ Page {
 
                             if (firstListLink)
                                 postUtils.getQuoteList(firstListLink)
+                        }
+
+                        onCursorInFirstListLinkChanged: {
+                            if (!cursorInFirstListLink && !quoteList.isNull())
+                                fixQuoteLink(true)
                         }
                     }
 
@@ -673,7 +692,13 @@ Page {
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
                         feed: postItem.quoteFeed
+                        showCloseButton: postItem.quoteFixed
                         visible: !postItem.quoteFeed.isNull()
+
+                        onCloseClicked: {
+                            postItem.fixQuoteLink(false)
+                            postItem.getPostText().forceActiveFocus()
+                        }
                     }
 
                     // Quote list
@@ -691,7 +716,13 @@ Page {
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
                         list: postItem.quoteList
+                        showCloseButton: postItem.quoteFixed
                         visible: !postItem.quoteList.isNull()
+
+                        onCloseClicked: {
+                            postItem.fixQuoteLink(false)
+                            postItem.getPostText().forceActiveFocus()
+                        }
                     }
                 }
 
@@ -1207,27 +1238,39 @@ Page {
 
         onQuoteFeed: (feed) => {
                 let postItem = currentPostItem()
+                let postText = postItem.getPostText()
 
-                if (!postItem.getPostText().firstFeedLink)
+                if (!postText.firstFeedLink)
                     return
 
-                if (postItem.getPostText().firstPostLink)
+                if (postText.firstPostLink)
                     return
 
                 postItem.quoteList = page.nullList
                 postItem.quoteFeed = feed
+
+                if (!postText.cursorInFirstFeedLink)
+                    postItem.fixQuoteLink(true)
+                else
+                    postText.cutLinkIfJustAdded(postText.firstFeedLink, () => postItem.fixQuoteLink(true))
             }
 
         onQuoteList: (list) => {
                 let postItem = currentPostItem()
+                let postText = postItem.getPostText()
 
-                if (!postItem.getPostText().firstListLink)
+                if (!postText.firstListLink)
                     return
 
-                if (postItem.getPostText().firstPostLink || postItem.getPostText().firstFeedLink)
+                if (postText.firstPostLink || postText.firstFeedLink)
                     return
 
                 postItem.quoteList = list
+
+                if (!postText.cursorInFirstListLink)
+                    postItem.fixQuoteLink(true)
+                else
+                    postText.cutLinkIfJustAdded(postText.firstListLink, () => postItem.fixQuoteLink(true))
             }
     }
 
