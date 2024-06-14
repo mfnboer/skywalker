@@ -329,7 +329,8 @@ Page {
                     function hasAttachment() {
                         return imageScroller.images.length > 0 ||
                                 !gifAttachment.gif.isNull() ||
-                                linkCard.card
+                                linkCard.card ||
+                                quoteFixed
                     }
 
                     function calcHeight() {
