@@ -122,7 +122,7 @@ public class SkywalkerActivity extends QtActivity {
     }
 
     private void handleActionSend(Intent intent) {
-        Log.d(LOGTAG, "Handle ACTION_SEND, id: " + intent.getIdentifier());
+        Log.d(LOGTAG, "Handle ACTION_SEND, DM: " + intent.getBooleanExtra(INTENT_EXTRA_DIRECT_MESSAGE, false));
 
         if (intent.getType().equals("text/plain")) {
             handleSharedText(intent);
