@@ -35,6 +35,7 @@ Page {
                 color: "black"
 
                 Flickable {
+                    id: altFlick
                     anchors.bottom: parent.bottom
                     width: parent.width
                     height: Math.min(contentHeight, 6 * 21)
@@ -43,11 +44,19 @@ Page {
                     contentHeight: altText.contentHeight
                     flickableDirection: Flickable.VerticalFlick
                     boundsBehavior: Flickable.StopAtBounds
-                    ScrollIndicator.vertical: ScrollIndicator {}
+                    ScrollBar.vertical: ScrollBar { id: altScrollBar }
+
+                    onHeightChanged: setScrollBarPolicy()
+                    onContentHeightChanged: setScrollBarPolicy()
+
+                    function setScrollBarPolicy() {
+                        altScrollBar.policy = contentHeight > height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+                        altScrollBar.contentItem.color = "#1d3030"
+                    }
 
                     SkyCleanedText {
                         id: altText
-                        width: parent.width - 8
+                        width: parent.width - 15
                         wrapMode: Text.Wrap
                         color: "white"
                         plainText: images[index].alt

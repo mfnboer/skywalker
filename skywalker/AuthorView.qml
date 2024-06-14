@@ -1105,7 +1105,7 @@ Page {
             return ""
 
         if (knownFollowers.followers.length === 0)
-            return knownFollowers.count > 1 ? qsTr(`${knownFollowers.count} others`) : qsTr("1 other")
+            return knownFollowers.count > 1 ? qsTr(`${knownFollowers.count} others you follow`) : qsTr("1 other you follow")
 
         let followersText = unicodeFonts.toCleanedHtml(knownFollowers.followers[0].name)
 

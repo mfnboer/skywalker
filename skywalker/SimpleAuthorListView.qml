@@ -44,7 +44,7 @@ ListView {
                 id: avatar
                 Layout.rowSpan: 2
                 width: 44
-                height: avatarImg.height
+                height: avatarImg.height + rowPadding + 2
                 Layout.fillHeight: true
                 color: "transparent"
 
@@ -52,8 +52,8 @@ ListView {
 
                 Avatar {
                     id: avatarImg
-                    x: parent.x + 8
-                    y: parent.y + rowPadding
+                    x: 8
+                    y: rowPadding + 2
                     width: parent.width - 12
                     height: width
                     avatarUrl: guiSettings.contentVisible(author) ? author.avatarUrl : ""
@@ -84,6 +84,7 @@ ListView {
                 visible: allowDelete && author.did
             }
             Rectangle {
+                Layout.rowSpan: 2
                 visible: !deleteButton.visible
             }
 
@@ -99,16 +100,18 @@ ListView {
                 Accessible.ignored: true
             }
 
+            Item{}
+
             Rectangle {
-                Layout.columnSpan: 3
+                Layout.columnSpan: 2
                 Layout.fillWidth: true
-                height: contentLabels.height + 3
+                height: contentLabels.height + 5
                 color: "transparent"
 
                 ContentLabels {
                     id: contentLabels
                     anchors.left: parent.left
-                    anchors.leftMargin: 8
+                    //anchors.leftMargin: 8
                     anchors.right: undefined
                     contentLabels: author.labels
                     contentAuthorDid: author.did
