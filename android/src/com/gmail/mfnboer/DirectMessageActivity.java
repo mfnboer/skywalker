@@ -31,7 +31,7 @@ public class DirectMessageActivity extends AppCompatActivity {
 
     private void handleIntent(Intent intent) {
         intent.setClass(this, SkywalkerActivity.class);
-        intent.setIdentifier(SkywalkerActivity.INTENT_DIRECT_MESSAGE_ID);
+        intent.putExtra(SkywalkerActivity.INTENT_EXTRA_DIRECT_MESSAGE, true);
         startActivity(intent);
     }
 }

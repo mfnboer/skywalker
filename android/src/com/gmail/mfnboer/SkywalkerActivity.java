@@ -26,7 +26,7 @@ public class SkywalkerActivity extends QtActivity {
     private static final int MAX_TEXT_LEN = 32768;
     public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
     public static final String INTENT_ACTION_SHOW_DIRECT_MESSAGES = "com.gmail.mfnboer.skywalker.showDirectMessages";
-    public static final String INTENT_DIRECT_MESSAGE_ID = "com.gmail.mfnboer.skywalker.directMessage";
+    public static final String INTENT_EXTRA_DIRECT_MESSAGE = "com.gmail.mfnboer.skywalker.directMessage";
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
@@ -149,9 +149,8 @@ public class SkywalkerActivity extends QtActivity {
             sharedText = sharedText.substring(0, MAX_TEXT_LEN);
 
         Log.d(LOGTAG, "Shared text: " + sharedText);
-        String identifier = intent.getIdentifier();
 
-        if (identifier != null && identifier.equals(INTENT_DIRECT_MESSAGE_ID))
+        if (intent.getBooleanExtra(INTENT_EXTRA_DIRECT_MESSAGE, false))
             emitSharedDmTextReceived(sharedText);
         else
             emitSharedTextReceived(sharedText);

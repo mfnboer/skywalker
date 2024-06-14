@@ -400,11 +400,13 @@ Page {
 
             Row {
                 id: knownOthersRow
+                height: Math.max(avatarRow.height, knownFollowersText.height)
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 spacing: 10
 
                 Row {
                     id: avatarRow
+                    y: (knownOthersRow.height - height) / 2
                     topPadding: 10
                     spacing: -20
 
@@ -426,7 +428,8 @@ Page {
 
                 SkyCleanedText {
                     id: knownFollowersText
-                    width: parent.width - avatarRow.width
+                    y: (knownOthersRow.height - height) / 2
+                    width: parent.width - avatarRow.width - parent.spacing
                     topPadding: 10
                     elide: Text.ElideRight
                     wrapMode: Text.Wrap
