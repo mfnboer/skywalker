@@ -509,6 +509,10 @@ Page {
                 scopedSearchPosts(query)
                 searchUtils.searchActors(query)
             }
+            else {
+                currentText = "*"
+                scopedSearchPosts("*")
+            }
         }
 
         function scopedSearchPosts(query) {
