@@ -187,7 +187,7 @@ ApplicationWindow {
 
         onGapFilled: (gapEndIndex) => {
             console.debug("Gap filled, end index:", gapEndIndex)
-            getTimelineView().moveToPost(gapEndIndex, 0, true)
+            getTimelineView().moveToPost(gapEndIndex)
         }
 
         onGetDetailedProfileOK: (profile) => {

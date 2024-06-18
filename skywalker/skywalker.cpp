@@ -33,6 +33,7 @@ static constexpr auto TIMELINE_UPDATE_INTERVAL = 91s;
 static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 29s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
+static constexpr int TIMELINE_GAP_FILL_SIZE = 100;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 static constexpr int FEED_ADD_PAGE_SIZE = 50;
@@ -861,15 +862,19 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
     qDebug() << "Set gap cursor:" << *cur;
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_ADD_PAGE_SIZE, cur,
+    const int pageSize = userInitiated ? TIMELINE_GAP_FILL_SIZE : TIMELINE_ADD_PAGE_SIZE;
+    mBsky->getTimeline(pageSize, cur,
         [this, gapId, autoGapFill, userInitiated](auto feed){
+            mTimelineModel.clearLastInsertedRowIndex();
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
             setGetTimelineInProgress(false);
 
             if (userInitiated)
             {
                 const int gapEndIndex = mTimelineModel.getLastInsertedRowIndex();
-                emit gapFilled(gapEndIndex);
+
+                if (gapEndIndex >= 0)
+                    emit gapFilled(gapEndIndex);
             }
 
             if (newGapId > 0)
@@ -904,7 +909,10 @@ void Skywalker::getTimelineNextPage(int maxPages, int minEntries)
     }
 
     if (mTimelineModel.rowCount() >= PostFeedModel::MAX_TIMELINE_SIZE)
+    {
+        qInfo() << "Time line size:" << mTimelineModel.rowCount() << "remove head posts:" << TIMELINE_ADD_PAGE_SIZE;
         mTimelineModel.removeHeadPosts(TIMELINE_ADD_PAGE_SIZE);
+    }
 
     getTimeline(TIMELINE_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
@@ -2804,7 +2812,7 @@ void Skywalker::resumeApp()
     refreshSession([this]{
         startRefreshTimers();
         startTimelineAutoUpdate();
-        updateTimeline(2, 100);
+        updateTimeline(4, 100);
         mChat->resume();
     });
 }

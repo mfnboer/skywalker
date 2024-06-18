@@ -352,16 +352,13 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
-            textFormat: Text.StyledText
-            text: `<a href=\"showMore\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show more posts") + "</a>"
+            color: guiSettings.linkColor
+            text: qsTr("Show more posts")
             visible: postGapId > 0
-
-            onLinkActivated: getGapPosts()
 
             MouseArea {
                 anchors.fill: parent
-                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                acceptedButtons: Qt.NoButton
+                onClicked: getGapPosts()
             }
         }
 
@@ -508,7 +505,7 @@ Rectangle {
 
     function getGapPosts() {
         if (!skywalker.getTimelineInProgress)
-            skywalker.getTimelineForGap(postGapId)
+            skywalker.getTimelineForGap(postGapId, 3, true)
     }
 
     function performAccessiblePressAction() {

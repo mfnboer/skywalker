@@ -69,6 +69,7 @@ public:
 
     QString getLastCursor() const;
     const Post* getGapPlaceHolder(int gapId) const;
+    void clearLastInsertedRowIndex() { mLastInsertedRowIndex = -1; }
     int getLastInsertedRowIndex() const { return mLastInsertedRowIndex; }
 
     // Get the timestamp of the last post in the feed
