@@ -148,8 +148,8 @@ ListView {
 
     Timer {
         id: syncTimer
-        interval: 100
-        onTriggered: positionViewAtIndex(postEntryIndex, ListView.Center)
+        interval: 300
+        onTriggered: positionViewAtIndex(postEntryIndex, ListView.Contain)
     }
 
     UnicodeFonts {
@@ -180,8 +180,18 @@ ListView {
                           initialText, imageSource)
     }
 
+    function rowsInsertedHandler(parent, start, end) {
+        syncTimer.start()
+    }
+
+    Component.onDestruction: {
+        view.model.onRowsInserted.disconnect(rowsInsertedHandler)
+        skywalker.removePostThreadModel(modelId)
+    }
+
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
+        view.model.onRowsInserted.connect(rowsInsertedHandler)
 
         // As not all entries have the same height, positioning at an index
         // is fickle. By moving to the end and then wait a bit before positioning
@@ -189,5 +199,4 @@ ListView {
         positionViewAtEnd()
         syncTimer.start()
     }
-    Component.onDestruction: skywalker.removePostThreadModel(modelId)
 }
