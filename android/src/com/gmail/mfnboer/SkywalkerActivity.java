@@ -16,10 +16,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowInsetsController;
 
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
@@ -41,11 +43,7 @@ public class SkywalkerActivity extends QtActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOGTAG, "onCreate");
-
-        Window window = this.getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.setStatusBarColor(Color.BLACK);
+        setStatusBarColor();
 
         Intent intent = getIntent();
         if (intent == null)
@@ -182,5 +180,25 @@ public class SkywalkerActivity extends QtActivity {
     public void goToBack() {
         Log.d(LOGTAG, "Moving task to back");
         moveTaskToBack(true);
+    }
+
+    private void setStatusBarColor() {
+        if (Build.VERSION.SDK_INT >= 35) {
+            Log.w(LOGTAG, "Not yet supported: " + Build.VERSION.SDK_INT);
+            return;
+        }
+
+        Window window = this.getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.setStatusBarColor(Color.BLACK);
+        WindowInsetsController insetsController = window.getInsetsController();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (insetsController != null)
+                insetsController.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+            else
+                Log.w(LOGTAG, "Cannot get window insets controller");
+        }
     }
 }
