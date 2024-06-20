@@ -76,7 +76,7 @@ Rectangle {
             id: topLeftSpace
             Layout.leftMargin: 8 + (avatarImg.width - width) / 2
             width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
-            height: postEntry.margin * (postIsReply && !postParentInThread && postType !== QEnums.POST_THREAD ? 2 : 1)
+            height: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ? 2 : 1)
 
             color: {
                 switch (postType) {
@@ -111,7 +111,7 @@ Rectangle {
                 width: parent.width
                 height: 6
                 color: guiSettings.threadMidColor
-                visible: postIsReply && !postParentInThread && postType !== QEnums.POST_THREAD
+                visible: !postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY)
             }
         }
         Rectangle {

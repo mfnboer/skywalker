@@ -53,9 +53,9 @@ Item {
     readonly property string textColor: Material.foreground
     readonly property string textLengthExceededColor: "palevioletred"
     readonly property string threadEndColor: Material.background
-    readonly property string threadEntryColor: Material.theme === Material.Light ? "darkcyan" : "teal"
-    readonly property string threadMidColor: Material.theme === Material.Light ? "lightcyan" : "#000033"
-    readonly property string threadStartColor: Material.theme === Material.Light ? "cyan" : "navy"
+    readonly property string threadEntryColor: Material.theme === Material.Light ? Qt.darker(threadStartColor, 1.2) : Qt.lighter(threadStartColor, 1.2)
+    readonly property string threadMidColor: Material.theme === Material.Light ?  Qt.lighter(threadStartColor, 1.3) : Qt.darker(threadStartColor, 1.3)
+    readonly property string threadStartColor: Material.theme === Material.Light ? "#8080ff" : "#000080"
 
     // Opacity
     readonly property double focusHighlightOpacity: 0.2
