@@ -222,6 +222,13 @@ public:
         ALLOW_INCOMING_CHAT_FOLLOWING = (int)ATProto::AppBskyActor::AllowIncomingType::FOLLOWING
     };
     Q_ENUM(AllowIncomingChat)
+
+    enum ThreadStyle
+    {
+        THREAD_STYLE_BAR,
+        THREAD_STYLE_LINE
+    };
+    Q_ENUM(ThreadStyle)
 };
 
 }

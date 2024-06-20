@@ -251,6 +251,25 @@ QEnums::DisplayMode UserSettings::getDisplayMode() const
     return QEnums::DisplayMode(mode);
 }
 
+void UserSettings::setThreadStyle(QEnums::ThreadStyle threadStyle)
+{
+    const auto oldStyle = getThreadStyle();
+    mSettings.setValue("threadStyle", (int)threadStyle);
+
+    if (oldStyle != threadStyle)
+        emit threadStyleChanged();
+}
+
+QEnums::ThreadStyle UserSettings::getThreadStyle() const
+{
+    const int style = mSettings.value("threadStyle", (int)QEnums::THREAD_STYLE_BAR).toInt();
+
+    if (style < QEnums::THREAD_STYLE_BAR || style > QEnums::THREAD_STYLE_LINE)
+        return QEnums::THREAD_STYLE_BAR;
+
+    return QEnums::ThreadStyle(style);
+}
+
 void UserSettings::setPostButtonRelativeX(double x)
 {
     mSettings.setValue("postButtonRelativeX", x);

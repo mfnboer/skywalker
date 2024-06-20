@@ -10,6 +10,7 @@ Item {
     readonly property int headerZLevel: 10
     readonly property int threadBarWidth: 12 // In 5px units
     readonly property int threadColumnWidth: threadBarWidth * 5
+    readonly property int threadLineWidth: 2
 
     // Colors
     readonly property string accentColor: Material.theme === Material.Light ? "blue" : "#58a6ff"

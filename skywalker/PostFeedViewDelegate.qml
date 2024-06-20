@@ -5,6 +5,7 @@ import skywalker
 
 Rectangle {
     readonly property int margin: 10
+    readonly property int threadStyle: root.getSkywalker().getUserSettings().threadStyle
 
     required property basicprofile author
     required property string postUri
@@ -71,47 +72,46 @@ Rectangle {
 
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
-        RowLayout {
+        Rectangle {
             id: topLeftSpace
-            width: guiSettings.threadColumnWidth
-            height: postEntry.margin * (postIsReply && !postParentInThread ? 2 : 1)
-            spacing: 0
+            Layout.leftMargin: 8 + (avatarImg.width - width) / 2
+            width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
+            height: postEntry.margin * (postIsReply && !postParentInThread && postType !== QEnums.POST_THREAD ? 2 : 1)
 
-            Repeater {
-                model: guiSettings.threadBarWidth
-
-                Rectangle {
-                    required property int index
-
-                    width: guiSettings.threadColumnWidth / guiSettings.threadBarWidth
-                    Layout.preferredHeight: topLeftSpace.height
-                    color: {
-                        switch (postType) {
-                        case QEnums.POST_ROOT:
-                            return guiSettings.threadStartColor
-                        case QEnums.POST_REPLY:
-                        case QEnums.POST_LAST_REPLY:
-                            return !postParentInThread && index % 2 === 0 ? guiSettings.backgroundColor : guiSettings.threadMidColor
-                        case QEnums.POST_THREAD: {
-                            if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
-                                return guiSettings.threadStartColor
-                            } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) ||
-                                       (postThreadType & QEnums.THREAD_ENTRY)){
-                                return guiSettings.threadEntryColor
-                            } else if (postThreadType & QEnums.THREAD_TOP) {
-                                return guiSettings.threadStartColor
-                            } else if (postThreadType & QEnums.THREAD_PARENT) {
-                                return guiSettings.threadStartColor
-                            }
-
-                            return guiSettings.threadMidColor
-                        }
-                        default:
-                            return guiSettings.backgroundColor
-                        }
+            color: {
+                switch (postType) {
+                case QEnums.POST_ROOT:
+                    return postIsReply ? guiSettings.threadStartColor : "transparent"
+                case QEnums.POST_REPLY:
+                case QEnums.POST_LAST_REPLY:
+                    return !postParentInThread ? "transparent" : guiSettings.threadMidColor
+                case QEnums.POST_THREAD: {
+                    if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
+                        return guiSettings.threadStartColor
+                    } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) ||
+                               (postThreadType & QEnums.THREAD_ENTRY)){
+                        return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : guiSettings.threadEntryColor
+                    } else if (postThreadType & QEnums.THREAD_TOP) {
+                        return "transparent"
+                    } else if (postThreadType & QEnums.THREAD_PARENT) {
+                        return guiSettings.threadStartColor
                     }
-                    opacity: avatar.opacity
+
+                    return guiSettings.threadMidColor
                 }
+                default:
+                    return "transparent"
+                }
+            }
+
+            opacity: avatar.opacity
+
+            Rectangle {
+                y: postEntry.margin - (height / 2)
+                width: parent.width
+                height: 6
+                color: guiSettings.threadMidColor
+                visible: postIsReply && !postParentInThread && postType !== QEnums.POST_THREAD
             }
         }
         Rectangle {
@@ -156,57 +156,65 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            width: guiSettings.threadBarWidth * 5
+            width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
+            color: "transparent"
             opacity: 0.9
 
-            // Gradient is used display thread context.
-            gradient: Gradient {
-                GradientStop {
-                    position: 0.0
-                    color: {
-                        switch (postType) {
-                        case QEnums.POST_ROOT:
-                            return guiSettings.threadStartColor
-                        case QEnums.POST_REPLY:
-                        case QEnums.POST_LAST_REPLY:
-                            return guiSettings.threadMidColor
-                        case QEnums.POST_THREAD: {
-                            if (postThreadType & QEnums.THREAD_ENTRY) {
-                                return guiSettings.threadEntryColor
-                            } else if ((postThreadType & QEnums.THREAD_PARENT) ||
-                                    (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
-                                return guiSettings.threadStartColor
-                            }
+            Rectangle {
+                x: avatarImg.x + (avatarImg.width - width) / 2
+                y: ((postType === QEnums.POST_ROOT && !postIsReply) || (postThreadType & QEnums.THREAD_TOP)) ? avatarImg.y + avatarImg.height / 2 : 0
+                width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
+                height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
 
-                            return guiSettings.threadMidColor
-                        }
-                        default:
-                            return guiSettings.backgroundColor
+                // Gradient is used display thread context.
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0.0
+                        color: {
+                            switch (postType) {
+                            case QEnums.POST_ROOT:
+                                return guiSettings.threadStartColor
+                            case QEnums.POST_REPLY:
+                            case QEnums.POST_LAST_REPLY:
+                                return guiSettings.threadMidColor
+                            case QEnums.POST_THREAD: {
+                                if (postThreadType & QEnums.THREAD_ENTRY) {
+                                    return guiSettings.threadEntryColor
+                                } else if ((postThreadType & QEnums.THREAD_PARENT) ||
+                                        (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
+                                    return guiSettings.threadStartColor
+                                }
+
+                                return guiSettings.threadMidColor
+                            }
+                            default:
+                                return guiSettings.backgroundColor
+                            }
                         }
                     }
-                }
-                GradientStop {
-                    position: 1.0
-                    color: {
-                        switch (postType) {
-                        case QEnums.POST_STANDALONE:
-                            return guiSettings.backgroundColor
-                        case QEnums.POST_LAST_REPLY:
-                            return guiSettings.threadEndColor
-                        case QEnums.POST_THREAD: {
-                            if (postThreadType & QEnums.THREAD_ENTRY) {
-                                return guiSettings.threadEntryColor
-                            } else if (postThreadType & QEnums.THREAD_PARENT) {
-                                return guiSettings.threadStartColor
-                            } else if (postThreadType & QEnums.THREAD_LEAF) {
+                    GradientStop {
+                        position: 1.0
+                        color: {
+                            switch (postType) {
+                            case QEnums.POST_STANDALONE:
+                                return guiSettings.backgroundColor
+                            case QEnums.POST_LAST_REPLY:
                                 return guiSettings.threadEndColor
-                            }
+                            case QEnums.POST_THREAD: {
+                                if (postThreadType & QEnums.THREAD_ENTRY) {
+                                    return guiSettings.threadEntryColor
+                                } else if (postThreadType & QEnums.THREAD_PARENT) {
+                                    return guiSettings.threadStartColor
+                                } else if (postThreadType & QEnums.THREAD_LEAF) {
+                                    return guiSettings.threadEndColor
+                                }
 
-                            return guiSettings.threadMidColor
-                        }
-                        default:
-                            return guiSettings.threadMidColor
+                                return guiSettings.threadMidColor
+                            }
+                            default:
+                                return guiSettings.threadMidColor
+                            }
                         }
                     }
                 }
@@ -423,28 +431,37 @@ Rectangle {
         Rectangle {
             width: guiSettings.threadColumnWidth
             height: postEntry.margin
-            color: {
-                switch (postType) {
-                case QEnums.POST_ROOT:
-                case QEnums.POST_REPLY:
-                    return guiSettings.threadMidColor
-                case QEnums.POST_THREAD: {
-                    if (postThreadType & QEnums.THREAD_ENTRY)  {
-                        return guiSettings.threadEntryColor
-                    }
-                    if (postThreadType & QEnums.THREAD_LEAF) {
-                        return guiSettings.backgroundColor
-                    } else if (postThreadType & QEnums.THREAD_PARENT)  {
-                        return guiSettings.threadStartColor
-                    }
+            color: "transparent"
 
-                    return guiSettings.threadMidColor
-                }
-                default:
-                    return guiSettings.backgroundColor
+            Rectangle {
+                x: 8 + (avatarImg.width - width) / 2
+                width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
+                height: parent.height
+                opacity: avatar.opacity
+                visible: !((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF))
+
+                color: {
+                    switch (postType) {
+                    case QEnums.POST_ROOT:
+                    case QEnums.POST_REPLY:
+                        return guiSettings.threadMidColor
+                    case QEnums.POST_THREAD: {
+                        if (postThreadType & QEnums.THREAD_ENTRY)  {
+                            return guiSettings.threadEntryColor
+                        }
+                        if (postThreadType & QEnums.THREAD_LEAF) {
+                            return guiSettings.backgroundColor
+                        } else if (postThreadType & QEnums.THREAD_PARENT)  {
+                            return guiSettings.threadStartColor
+                        }
+
+                        return guiSettings.threadMidColor
+                    }
+                    default:
+                        return guiSettings.backgroundColor
+                    }
                 }
             }
-            opacity: avatar.opacity
         }
         Rectangle {
             width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2

@@ -21,6 +21,8 @@ public:
 class UserSettings : public QObject, public IUserSettings
 {
     Q_OBJECT
+    Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
+
 public:
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
     Q_INVOKABLE static void setActiveDisplayMode(QEnums::DisplayMode mode) { sActiveDisplayMode = mode; }
@@ -80,6 +82,9 @@ public:
 
     void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
+
+    void setThreadStyle(QEnums::ThreadStyle threadStyle);
+    QEnums::ThreadStyle getThreadStyle() const;
 
     Q_INVOKABLE void setPostButtonRelativeX(double x);
     Q_INVOKABLE double getPostButtonRelativeX() const;
@@ -167,6 +172,7 @@ public:
 
 signals:
     void contentLanguageFilterChanged();
+    void threadStyleChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;

@@ -5,6 +5,7 @@ import skywalker
 
 Page {
     required property EditUserPreferences userPrefs
+    property var userSettings: root.getSkywalker().getUserSettings()
 
     id: page
     padding: 10
@@ -326,6 +327,11 @@ Page {
                 text: qsTr("Appearance")
             }
 
+            AccessibleText {
+                Layout.fillWidth: true
+                text: qsTr("Display")
+            }
+
             RowLayout {
                 width: parent.width
                 spacing: -1
@@ -365,6 +371,35 @@ Page {
                 }
             }
 
+            AccessibleText {
+                Layout.fillWidth: true
+                text: qsTr("Post thread visualisation")
+            }
+
+            RowLayout {
+                width: parent.width
+                spacing: -1
+
+                SkyRadioButton {
+                    Layout.fillWidth: true
+                    checked: userSettings.threadStyle === QEnums.THREAD_STYLE_BAR
+                    text: qsTr("Bar");
+                    onCheckedChanged: {
+                        if (checked)
+                            userSettings.threadStyle = QEnums.THREAD_STYLE_BAR
+                    }
+                }
+                SkyRadioButton {
+                    Layout.fillWidth: true
+                    checked: userSettings.threadStyle === QEnums.THREAD_STYLE_LINE
+                    text: qsTr("Line");
+                    onCheckedChanged: {
+                        if (checked)
+                            userSettings.threadStyle = QEnums.THREAD_STYLE_LINE
+                    }
+                }
+            }
+
             AccessibleSwitch {
                 text: qsTr("GIF auto play")
                 checked: userPrefs.gifAutoPlay
@@ -385,7 +420,6 @@ Page {
             AccessibleText {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                color: guiSettings.textColor
                 text: qsTr("Notifications can be enabled/disabled in the app settings of your phone.")
             }
 
