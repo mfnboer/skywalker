@@ -1,5 +1,6 @@
 next
 ====
+* Show full text for posts bridged (by Bridgy Fed) from Mastodon
 * Choose post thread visualisation: bar vs line, color
 * Search field can be left empty, e.g. find all posts that mention you
 * Improve timeline gap filling

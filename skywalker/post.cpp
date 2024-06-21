@@ -149,7 +149,11 @@ QString Post::getText() const
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
-        return record->mText;
+
+        if (record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty())
+            return UnicodeFonts::toPlainText(*record->mBridgyOriginalText);
+        else
+            return record->mText;
     }
 
     qWarning() << "Record type not supported:" << mPost->mRawRecordType;
@@ -166,6 +170,10 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags) const
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+
+        if (record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty())
+            return *record->mBridgyOriginalText;
+
         return ATProto::RichTextMaster::getFormattedPostText(*record, UserSettings::getLinkColor(), emphasizeHashtags);
     }
 
