@@ -165,7 +165,7 @@ Rectangle {
                 x: avatarImg.x + (avatarImg.width - width) / 2
                 y: ((postType === QEnums.POST_ROOT && !postIsReply) || (postThreadType & QEnums.THREAD_TOP)) ? avatarImg.y + avatarImg.height / 2 : 0
                 width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
-                height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
+                height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
 
                 // Gradient is used display thread context.
                 gradient: Gradient {
