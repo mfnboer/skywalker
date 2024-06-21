@@ -56,6 +56,7 @@ Page {
 
                     SkyCleanedText {
                         id: altText
+                        leftPadding: 10
                         width: parent.width - 15
                         wrapMode: Text.Wrap
                         color: "white"
@@ -65,9 +66,9 @@ Page {
                 }
                 ImageAutoRetry {
                     id: img
-                    y: (parent.height - altText.height - height) / 2
+                    y: (parent.height - altFlick.height - height) / 2
                     width: parent.width
-                    height: parent.height - altText.height
+                    height: parent.height - altFlick.height
                     fillMode: Image.PreserveAspectFit
                     source: images[index].fullSizeUrl
                     transform: Translate { id: imgTranslation }
