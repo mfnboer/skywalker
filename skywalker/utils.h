@@ -4,10 +4,18 @@
 #include <QColor>
 #include <QDateTime>
 #include <QString>
+#include <QtQmlIntegration>
 
-namespace Skywalker::Utils {
+namespace Skywalker {
 
-std::optional<QString> makeOptionalString(const QString& str);
-QColor determineForegroundColor(const QColor& background, const QColor& lightColor, const QColor& darkColor);
+class Utils : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+
+public:
+    static std::optional<QString> makeOptionalString(const QString& str);
+    Q_INVOKABLE static QColor determineForegroundColor(const QColor& background, const QColor& lightColor, const QColor& darkColor);
+};
 
 }

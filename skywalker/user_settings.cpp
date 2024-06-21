@@ -38,6 +38,21 @@ QString UserSettings::key(const QString& did, const QString& subkey) const
     return QString("%1/%2").arg(did, subkey);
 }
 
+QString UserSettings::displayKey(const QString& key) const
+{
+    const auto display = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "dark" : "light";
+    return QString("%1/%2").arg(key, display);
+}
+
+void UserSettings::setActiveDisplayMode(QEnums::DisplayMode mode)
+{
+    if (mode != sActiveDisplayMode)
+    {
+        sActiveDisplayMode = mode;
+        emit threadColorChanged();
+    }
+}
+
 QList<BasicProfile> UserSettings::getUserList() const
 {
     const auto didList = getUserDidList();
@@ -268,6 +283,27 @@ QEnums::ThreadStyle UserSettings::getThreadStyle() const
         return QEnums::THREAD_STYLE_BAR;
 
     return QEnums::ThreadStyle(style);
+}
+
+void UserSettings::resetThreadColor()
+{
+    mSettings.remove(displayKey("threadColor"));
+    emit threadColorChanged();
+}
+
+void UserSettings::setThreadColor(const QString& color)
+{
+    if (getThreadColor() != color)
+    {
+        mSettings.setValue(displayKey("threadColor"), color);
+        emit threadColorChanged();
+    }
+}
+
+QString UserSettings::getThreadColor() const
+{
+    const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#000080" : "#8080ff";
+    return mSettings.value(displayKey("threadColor"), defaultColor).toString();
 }
 
 void UserSettings::setPostButtonRelativeX(double x)

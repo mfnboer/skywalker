@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     readonly property int margin: 10
     readonly property int threadStyle: root.getSkywalker().getUserSettings().threadStyle
+    readonly property string threadColor: root.getSkywalker().getUserSettings().threadColor
 
     required property basicprofile author
     required property string postUri
@@ -81,23 +82,23 @@ Rectangle {
             color: {
                 switch (postType) {
                 case QEnums.POST_ROOT:
-                    return postIsReply ? guiSettings.threadStartColor : "transparent"
+                    return postIsReply ? guiSettings.threadStartColor(threadColor) : "transparent"
                 case QEnums.POST_REPLY:
                 case QEnums.POST_LAST_REPLY:
-                    return !postParentInThread ? "transparent" : guiSettings.threadMidColor
+                    return !postParentInThread ? "transparent" : guiSettings.threadMidColor(threadColor)
                 case QEnums.POST_THREAD: {
                     if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
-                        return guiSettings.threadStartColor
+                        return guiSettings.threadStartColor(threadColor)
                     } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) ||
                                (postThreadType & QEnums.THREAD_ENTRY)){
-                        return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : guiSettings.threadEntryColor
+                        return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : guiSettings.threadEntryColor(threadColor)
                     } else if (postThreadType & QEnums.THREAD_TOP) {
                         return "transparent"
                     } else if (postThreadType & QEnums.THREAD_PARENT) {
-                        return guiSettings.threadStartColor
+                        return guiSettings.threadStartColor(threadColor)
                     }
 
-                    return guiSettings.threadMidColor
+                    return guiSettings.threadMidColor(threadColor)
                 }
                 default:
                     return "transparent"
@@ -110,7 +111,7 @@ Rectangle {
                 y: postEntry.margin - (height / 2)
                 width: parent.width
                 height: 6
-                color: guiSettings.threadMidColor
+                color: guiSettings.threadMidColor(threadColor)
                 visible: !postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY)
             }
         }
@@ -174,19 +175,19 @@ Rectangle {
                         color: {
                             switch (postType) {
                             case QEnums.POST_ROOT:
-                                return guiSettings.threadStartColor
+                                return guiSettings.threadStartColor(threadColor)
                             case QEnums.POST_REPLY:
                             case QEnums.POST_LAST_REPLY:
-                                return guiSettings.threadMidColor
+                                return guiSettings.threadMidColor(threadColor)
                             case QEnums.POST_THREAD: {
                                 if (postThreadType & QEnums.THREAD_ENTRY) {
-                                    return guiSettings.threadEntryColor
+                                    return guiSettings.threadEntryColor(threadColor)
                                 } else if ((postThreadType & QEnums.THREAD_PARENT) ||
                                         (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
-                                    return guiSettings.threadStartColor
+                                    return guiSettings.threadStartColor(threadColor)
                                 }
 
-                                return guiSettings.threadMidColor
+                                return guiSettings.threadMidColor(threadColor)
                             }
                             default:
                                 return guiSettings.backgroundColor
@@ -200,20 +201,20 @@ Rectangle {
                             case QEnums.POST_STANDALONE:
                                 return guiSettings.backgroundColor
                             case QEnums.POST_LAST_REPLY:
-                                return guiSettings.threadEndColor
+                                return guiSettings.threadEndColor(threadColor)
                             case QEnums.POST_THREAD: {
                                 if (postThreadType & QEnums.THREAD_ENTRY) {
-                                    return guiSettings.threadEntryColor
+                                    return guiSettings.threadEntryColor(threadColor)
                                 } else if (postThreadType & QEnums.THREAD_PARENT) {
-                                    return guiSettings.threadStartColor
+                                    return guiSettings.threadStartColor(threadColor)
                                 } else if (postThreadType & QEnums.THREAD_LEAF) {
-                                    return guiSettings.threadEndColor
+                                    return guiSettings.threadEndColor(threadColor)
                                 }
 
-                                return guiSettings.threadMidColor
+                                return guiSettings.threadMidColor(threadColor)
                             }
                             default:
-                                return guiSettings.threadMidColor
+                                return guiSettings.threadMidColor(threadColor)
                             }
                         }
                     }
@@ -444,18 +445,18 @@ Rectangle {
                     switch (postType) {
                     case QEnums.POST_ROOT:
                     case QEnums.POST_REPLY:
-                        return guiSettings.threadMidColor
+                        return guiSettings.threadMidColor(threadColor)
                     case QEnums.POST_THREAD: {
                         if (postThreadType & QEnums.THREAD_ENTRY)  {
-                            return guiSettings.threadEntryColor
+                            return guiSettings.threadEntryColor(threadColor)
                         }
                         if (postThreadType & QEnums.THREAD_LEAF) {
                             return guiSettings.backgroundColor
                         } else if (postThreadType & QEnums.THREAD_PARENT)  {
-                            return guiSettings.threadStartColor
+                            return guiSettings.threadStartColor(threadColor)
                         }
 
-                        return guiSettings.threadMidColor
+                        return guiSettings.threadMidColor(threadColor)
                     }
                     default:
                         return guiSettings.backgroundColor

@@ -52,10 +52,6 @@ Item {
     readonly property string statsColor: Material.color(Material.Grey)
     readonly property string textColor: Material.foreground
     readonly property string textLengthExceededColor: "palevioletred"
-    readonly property string threadEndColor: Material.background
-    readonly property string threadEntryColor: Material.theme === Material.Light ? Qt.darker(threadStartColor, 1.2) : Qt.lighter(threadStartColor, 1.2)
-    readonly property string threadMidColor: Material.theme === Material.Light ?  Qt.lighter(threadStartColor, 1.3) : Qt.darker(threadStartColor, 1.3)
-    readonly property string threadStartColor: Material.theme === Material.Light ? "#8080ff" : "#000080"
 
     // Opacity
     readonly property double focusHighlightOpacity: 0.2
@@ -169,5 +165,21 @@ Item {
     {
         let visibility = skywalker.getContentVisibility(author.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
+    }
+
+    function threadStartColor(color) {
+        return color
+    }
+
+    function threadMidColor(color) {
+        return Material.theme === Material.Light ?  Qt.lighter(threadStartColor(color), 1.3) : Qt.darker(threadStartColor(color), 1.3)
+    }
+
+    function threadEndColor(color) {
+        return Material.background
+    }
+
+    function threadEntryColor(color) {
+        return Material.theme === Material.Light ? Qt.darker(threadStartColor(color), 1.2) : Qt.lighter(threadStartColor(color), 1.2)
     }
 }

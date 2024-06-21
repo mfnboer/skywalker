@@ -22,10 +22,11 @@ ListView {
         onBack: view.closed()
 
         Rectangle {
+            id: restrictionRect
             width: parent.width
             height: restrictionRow.height + 5
             anchors.bottom: parent.bottom
-            color: guiSettings.threadStartColor
+            color: guiSettings.threadStartColor(root.getSkywalker().getUserSettings().threadColor)
             border.width: 1
             border.color: guiSettings.headerColor
             visible: model.getReplyRestriction() !== QEnums.REPLY_RESTRICTION_NONE
@@ -45,7 +46,7 @@ ListView {
                     id: restrictionIcon
                     width: 20
                     height: 20
-                    color: guiSettings.textColor
+                    color: utils.determineForegroundColor(restrictionRect.color, "black", "white")
                     svg: svgOutline.replyRestrictions
                 }
                 SkyCleanedText {
@@ -53,7 +54,7 @@ ListView {
                     anchors.left: restrictionIcon.right
                     anchors.right: parent.right
                     leftPadding: 5
-                    color: guiSettings.textColor
+                    color: restrictionIcon.color
                     font.italic: true
                     font.pointSize: guiSettings.scaledFont(7/8)
                     wrapMode: Text.Wrap
@@ -154,6 +155,10 @@ ListView {
 
     UnicodeFonts {
         id: unicodeFonts
+    }
+
+    Utils {
+        id: utils
     }
 
     GuiSettings {

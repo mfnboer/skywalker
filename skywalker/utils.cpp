@@ -3,9 +3,9 @@
 #include "utils.h"
 #include "QDebug"
 
-namespace Skywalker::Utils {
+namespace Skywalker {
 
-std::optional<QString> makeOptionalString(const QString& str)
+std::optional<QString> Utils::makeOptionalString(const QString& str)
 {
     std::optional<QString> optionalString;
     if (!str.isEmpty())
@@ -14,7 +14,7 @@ std::optional<QString> makeOptionalString(const QString& str)
     return optionalString;
 }
 
-QColor determineForegroundColor(const QColor& backgroundColor, const QColor& lightColor, const QColor& darkColor)
+QColor Utils::determineForegroundColor(const QColor& backgroundColor, const QColor& lightColor, const QColor& darkColor)
 {
     const float blackness = backgroundColor.toCmyk().blackF();
     qDebug() << "Blackness:" << blackness;

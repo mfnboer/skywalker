@@ -888,11 +888,11 @@ Page {
             gradient: Gradient {
                 GradientStop {
                     position: 0.0
-                    color: guiSettings.threadStartColor
+                    color: guiSettings.threadStartColor(skywalker.getUserSettings().threadColor)
                 }
                 GradientStop {
                     position: 1.0
-                    color: guiSettings.threadMidColor
+                    color: guiSettings.threadMidColor(skywalker.getUserSettings().threadColor)
                 }
             }
         }

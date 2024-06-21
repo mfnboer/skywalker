@@ -1,6 +1,6 @@
 next
 ====
-* Choose post thread visualisation: bar vs line
+* Choose post thread visualisation: bar vs line, color
 * Search field can be left empty, e.g. find all posts that mention you
 * Improve timeline gap filling
 * Increase maximum labeler subcriptions to 20

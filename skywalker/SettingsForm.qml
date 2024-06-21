@@ -327,75 +327,119 @@ Page {
                 text: qsTr("Appearance")
             }
 
-            AccessibleText {
+            GridLayout {
                 Layout.fillWidth: true
-                text: qsTr("Display")
-            }
+                columns: 2
+                rowSpacing: 5
 
-            RowLayout {
-                width: parent.width
-                spacing: -1
+                AccessibleText {
+                    Layout.preferredWidth: 120
+                    text: qsTr("Display")
+                }
 
-                SkyRadioButton {
+                RowLayout {
                     Layout.fillWidth: true
-                    checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_SYSTEM
-                    text: qsTr("System");
-                    onCheckedChanged: {
-                        if (checked) {
-                            userPrefs.displayMode = QEnums.DISPLAY_MODE_SYSTEM
-                            root.setDisplayMode(userPrefs.displayMode)
+                    spacing: -1
+
+                    SkyRadioButton {
+                        Layout.fillWidth: true
+                        checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_SYSTEM
+                        text: qsTr("System");
+                        onCheckedChanged: {
+                            if (checked) {
+                                userPrefs.displayMode = QEnums.DISPLAY_MODE_SYSTEM
+                                root.setDisplayMode(userPrefs.displayMode)
+                            }
+                        }
+                    }
+                    SkyRadioButton {
+                        Layout.fillWidth: true
+                        checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_LIGHT
+                        text: qsTr("Light");
+                        onCheckedChanged: {
+                            if (checked) {
+                                userPrefs.displayMode = QEnums.DISPLAY_MODE_LIGHT
+                                root.setDisplayMode(userPrefs.displayMode)
+                            }
+                        }
+                    }
+                    SkyRadioButton {
+                        Layout.fillWidth: true
+                        checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_DARK
+                        text: qsTr("Dark");
+                        onCheckedChanged: {
+                            if (checked) {
+                                userPrefs.displayMode = QEnums.DISPLAY_MODE_DARK
+                                root.setDisplayMode(userPrefs.displayMode)
+                            }
                         }
                     }
                 }
-                SkyRadioButton {
+
+                AccessibleText {
+                    Layout.preferredWidth: 120
+                    wrapMode: Text.Wrap
+                    text: qsTr("Post thread visualisation")
+                }
+
+                RowLayout {
                     Layout.fillWidth: true
-                    checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_LIGHT
-                    text: qsTr("Light");
-                    onCheckedChanged: {
-                        if (checked) {
-                            userPrefs.displayMode = QEnums.DISPLAY_MODE_LIGHT
-                            root.setDisplayMode(userPrefs.displayMode)
+                    width: parent.width
+                    spacing: -1
+
+                    SkyRadioButton {
+                        Layout.fillWidth: true
+                        checked: userSettings.threadStyle === QEnums.THREAD_STYLE_BAR
+                        text: qsTr("Bar");
+                        onCheckedChanged: {
+                            if (checked)
+                                userSettings.threadStyle = QEnums.THREAD_STYLE_BAR
+                        }
+                    }
+                    SkyRadioButton {
+                        Layout.fillWidth: true
+                        checked: userSettings.threadStyle === QEnums.THREAD_STYLE_LINE
+                        text: qsTr("Line");
+                        onCheckedChanged: {
+                            if (checked)
+                                userSettings.threadStyle = QEnums.THREAD_STYLE_LINE
                         }
                     }
                 }
-                SkyRadioButton {
-                    Layout.fillWidth: true
-                    checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_DARK
-                    text: qsTr("Dark");
-                    onCheckedChanged: {
-                        if (checked) {
-                            userPrefs.displayMode = QEnums.DISPLAY_MODE_DARK
-                            root.setDisplayMode(userPrefs.displayMode)
-                        }
-                    }
+
+                AccessibleText {
+                    Layout.preferredWidth: 120
+                    wrapMode: Text.Wrap
+                    text: qsTr("Post thread color")
                 }
-            }
 
-            AccessibleText {
-                Layout.fillWidth: true
-                text: qsTr("Post thread visualisation")
-            }
-
-            RowLayout {
-                width: parent.width
-                spacing: -1
-
-                SkyRadioButton {
+                Rectangle {
                     Layout.fillWidth: true
-                    checked: userSettings.threadStyle === QEnums.THREAD_STYLE_BAR
-                    text: qsTr("Bar");
-                    onCheckedChanged: {
-                        if (checked)
-                            userSettings.threadStyle = QEnums.THREAD_STYLE_BAR
+                    height: 30
+                    border.width: 1
+                    border.color: guiSettings.buttonColor
+
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        GradientStop { position: 0.0; color: guiSettings.threadStartColor(userSettings.threadColor) }
+                        GradientStop { position: 0.7; color: guiSettings.threadMidColor(userSettings.threadColor) }
+                        GradientStop { position: 1.0; color: guiSettings.threadEndColor(userSettings.threadColor) }
                     }
-                }
-                SkyRadioButton {
-                    Layout.fillWidth: true
-                    checked: userSettings.threadStyle === QEnums.THREAD_STYLE_LINE
-                    text: qsTr("Line");
-                    onCheckedChanged: {
-                        if (checked)
-                            userSettings.threadStyle = QEnums.THREAD_STYLE_LINE
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: selectThreadColor()
+                    }
+
+                    SvgButton {
+                        y: -2
+                        anchors.right: parent.right
+                        //imageMargin: 8
+                        width: height
+                        height: 34
+                        svg: svgOutline.close
+                        accessibleName: qsTr("reset thread color to default")
+                        onClicked: userSettings.resetThreadColor()
                     }
                 }
             }
@@ -438,6 +482,18 @@ Page {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function selectThreadColor() {
+        let component = Qt.createComponent("ColorSelector.qml")
+        let cs = component.createObject(page)
+        cs.selectedColor = userSettings.threadColor
+        cs.onRejected.connect(() => cs.destroy())
+        cs.onAccepted.connect(() => {
+            userSettings.threadColor = cs.selectedColor
+            cs.destroy()
+        })
+        cs.open()
     }
 
     Component.onDestruction: {
