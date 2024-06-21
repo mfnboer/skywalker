@@ -4,6 +4,7 @@ next
 * Search field can be left empty, e.g. find all posts that mention you
 * Improve timeline gap filling
 * Increase maximum labeler subcriptions to 20
+* Ask for confirmation before deleting post
 * UI style changes
 * Bug fixes
 

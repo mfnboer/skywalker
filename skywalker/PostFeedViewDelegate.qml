@@ -348,7 +348,7 @@ Rectangle {
                 }
 
                 onShare: skywalker.sharePost(postUri)
-                onDeletePost: root.deletePost(postUri, postCid)
+                onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
                 onTranslatePost: root.translateText(postPlainText)
@@ -511,6 +511,13 @@ Rectangle {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function confirmDelete() {
+        guiSettings.askYesNoQuestion(
+                    postEntry,
+                    qsTr("Do you really want to your post?"),
+                    () => root.deletePost(postUri, postCid))
     }
 
     function openPostThread() {
