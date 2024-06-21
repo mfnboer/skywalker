@@ -44,7 +44,8 @@ public:
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
                           const QStringList& labels, const QString& language);
-    Q_INVOKABLE void addThreadgate(const QString& uri, bool allowMention, bool allowFollowing, const QStringList& allowLists);
+    Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const QStringList& allowList);
+    Q_INVOKABLE void undoThreadgate(const QString& threadgateUri, const QString& cid);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
@@ -105,6 +106,8 @@ signals:
     void postFailed(QString error);
     void threadgateOk();
     void threadgateFailed(QString error);
+    void undoThreadgateOk();
+    void undoThreadgateFailed(QString error);
     void postProgress(QString msg);
     void repostOk();
     void repostFailed(QString error);

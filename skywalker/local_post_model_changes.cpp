@@ -51,6 +51,18 @@ void LocalPostModelChanges::updateLikeUri(const QString& cid, const QString& lik
     likeUriChanged();
 }
 
+void LocalPostModelChanges::updateThreadgateUri(const QString& cid, const QString& threadgateUri)
+{
+    mChanges[cid].mThreadgateUri = threadgateUri;
+    threadgateUriChanged();
+}
+
+void LocalPostModelChanges::updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion)
+{
+    mChanges[cid].mReplyRestriction = replyRestricion;
+    replyRestrictionChanged();
+}
+
 void LocalPostModelChanges::updatePostDeleted(const QString& cid)
 {
     mChanges[cid].mPostDeleted = true;

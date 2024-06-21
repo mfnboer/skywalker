@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include <QHashFunctions>
 #include <QString>
 #include <optional>
@@ -22,6 +23,8 @@ public:
         int mReplyCountDelta = 0;
         int mRepostCountDelta = 0;
         std::optional<QString> mRepostUri;
+        std::optional<QString> mThreadgateUri;
+        QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;
 
         bool mPostDeleted = false;
     };
@@ -38,6 +41,8 @@ public:
     void updateRepostUri(const QString& cid, const QString& repostUri);
     void updateLikeCountDelta(const QString& cid, int delta);
     void updateLikeUri(const QString& cid, const QString& likeUri);
+    void updateThreadgateUri(const QString& cid, const QString& threadgateUri);
+    void updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion);
     void updatePostDeleted(const QString& cid);
 
 protected:
@@ -47,6 +52,8 @@ protected:
     virtual void replyCountChanged() = 0;
     virtual void repostCountChanged() = 0;
     virtual void repostUriChanged() = 0;
+    virtual void threadgateUriChanged() = 0;
+    virtual void replyRestrictionChanged() = 0;
     virtual void postDeletedChanged() = 0;
 
 private:

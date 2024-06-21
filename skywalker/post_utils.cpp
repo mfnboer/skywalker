@@ -152,17 +152,23 @@ void PostUtils::post(const QString& text, const LinkCard* card,
         });
 }
 
-void PostUtils::addThreadgate(const QString& uri, bool allowMention, bool allowFollowing, const QStringList& allowLists)
+void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const QStringList& allowList)
 {
     qDebug() << "Add threadgate uri:" << uri << "mention:" << allowMention << "following:" << allowFollowing;
 
     if (!postMaster())
         return;
 
-    mPostMaster->addThreadgate(uri, allowMention, allowFollowing, allowLists,
-        [this, presence=getPresence()]{
+    mPostMaster->addThreadgate(uri, allowMention, allowFollowing, allowList,
+        [this, presence=getPresence(), cid, allowMention, allowFollowing, allowList](const QString& threadgateUri, const QString&){
             if (!presence)
                 return;
+
+            mSkywalker->makeLocalModelChange(
+                [cid, threadgateUri, allowMention, allowFollowing, allowList](LocalPostModelChanges* model){
+                    model->updateThreadgateUri(cid, threadgateUri);
+                    model->updateReplyRestriction(cid, Post::getReplyRestriction(allowMention, allowFollowing, !allowList.empty()));
+                });
 
             emit threadgateOk();
         },
@@ -172,6 +178,33 @@ void PostUtils::addThreadgate(const QString& uri, bool allowMention, bool allowF
 
             qDebug() << "addThreadgate failed:" << error << " - " << msg;
             emit threadgateFailed(msg);
+        });
+}
+
+void PostUtils::undoThreadgate(const QString& threadgateUri, const QString& cid)
+{
+    if (!postMaster())
+        return;
+
+    postMaster()->undo(threadgateUri,
+        [this, presence=getPresence(), cid]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalPostModelChanges* model){
+                    model->updateThreadgateUri(cid, "");
+                    model->updateReplyRestriction(cid, QEnums::REPLY_RESTRICTION_NONE);
+                });
+
+            emit undoThreadgateOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo threadgate failed:" << error << " - " << msg;
+            emit undoThreadgateFailed(msg);
         });
 }
 

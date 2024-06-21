@@ -56,6 +56,7 @@ public:
         NotificationPostRepostUri,
         NotificationPostLikeUri,
         NotificationPostReplyDisabled,
+        NotificationPostThreadgateUri,
         NotificationPostReplyRestriction,
         NotificationPostRepostCount,
         NotificationPostLikeCount,
@@ -103,6 +104,8 @@ protected:
     virtual void replyCountChanged() override;
     virtual void repostCountChanged() override;
     virtual void repostUriChanged() override;
+    virtual void threadgateUriChanged() override;
+    virtual void replyRestrictionChanged() override;
     virtual void postDeletedChanged() override;
 
     QHash<int, QByteArray> roleNames() const override;

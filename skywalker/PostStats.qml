@@ -10,6 +10,8 @@ Column {
     required property string repostUri
     required property string likeUri
     required property bool replyDisabled
+    required property string threadgateUri
+    required property bool isReply
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
@@ -19,6 +21,7 @@ Column {
     signal like()
     signal bookmark()
     signal share()
+    signal threadgate()
     signal deletePost()
     signal copyPostText()
     signal reportPost()
@@ -103,6 +106,13 @@ Column {
                     onTriggered: share()
 
                     MenuItemSvg { svg: svgOutline.share }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Reply restrictions")
+                    visible: authorIsUser && !isReply
+                    onTriggered: threadgate()
+
+                    MenuItemSvg { svg: threadgateUri ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Delete")

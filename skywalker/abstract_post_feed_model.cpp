@@ -240,8 +240,10 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
     case Role::PostReplyDisabled:
         return post.isReplyDisabled();
+    case Role::PostThreadgateUri:
+        return change && change->mThreadgateUri ? *change->mThreadgateUri : post.getThreadgateUri();
     case Role::PostReplyRestriction:
-        return post.getReplyRestriction();
+        return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
     case Role::PostBookmarked:
         return mBookmarks.isBookmarked(post.getUri());
     case Role::PostBookmarkNotFound:
@@ -335,6 +337,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
         { int(Role::PostReplyDisabled), "postReplyDisabled" },
+        { int(Role::PostThreadgateUri), "postThreadgateUri" },
         { int(Role::PostReplyRestriction), "postReplyRestriction" },
         { int(Role::PostBookmarked), "postBookmarked" },
         { int(Role::PostBookmarkNotFound), "postBookmarkNotFound" },
@@ -383,6 +386,16 @@ void AbstractPostFeedModel::repostCountChanged()
 void AbstractPostFeedModel::repostUriChanged()
 {
     changeData({ int(Role::PostRepostUri), int(Role::PostLocallyDeleted) });
+}
+
+void AbstractPostFeedModel::threadgateUriChanged()
+{
+    changeData({ int(Role::PostThreadgateUri) });
+}
+
+void AbstractPostFeedModel::replyRestrictionChanged()
+{
+    changeData({ int(Role::PostReplyRestriction) });
 }
 
 void AbstractPostFeedModel::postDeletedChanged()

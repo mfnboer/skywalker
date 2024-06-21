@@ -511,27 +511,40 @@ bool Post::isReplyDisabled() const
     return mPost->mViewer->mReplyDisabled;
 }
 
-QEnums::ReplyRestriction Post::getReplyRestriction() const
+QString Post::getThreadgateUri() const
 {
-    if (!mPost || !mPost->mThreadgate || !mPost->mThreadgate->mRecord)
-        return QEnums::REPLY_RESTRICTION_NONE;
+    if (!mPost || !mPost->mThreadgate || !mPost->mThreadgate->mUri)
+        return {};
 
-    const auto& threadgate = mPost->mThreadgate->mRecord;
+    return *mPost->mThreadgate->mUri;
+}
+
+QEnums::ReplyRestriction Post::getReplyRestriction(bool allowMention, bool allowFollowing, const bool allowList)
+{
     int restriction = QEnums::REPLY_RESTRICTION_NONE;
 
-    if (threadgate->mAllowMention)
+    if (allowMention)
         restriction |= QEnums::REPLY_RESTRICTION_MENTIONED;
 
-    if (threadgate->mAllowFollowing)
+    if (allowFollowing)
         restriction |= QEnums::REPLY_RESTRICTION_FOLLOWING;
 
-    if (!threadgate->mAllowList.empty())
+    if (allowList)
         restriction |= QEnums::REPLY_RESTRICTION_LIST;
 
     if (restriction != QEnums::REPLY_RESTRICTION_NONE)
         return (QEnums::ReplyRestriction)restriction;
 
     return QEnums::REPLY_RESTRICTION_NOBODY;
+}
+
+QEnums::ReplyRestriction Post::getReplyRestriction() const
+{
+    if (!mPost || !mPost->mThreadgate || !mPost->mThreadgate->mRecord)
+        return QEnums::REPLY_RESTRICTION_NONE;
+
+    const auto& threadgate = mPost->mThreadgate->mRecord;
+    return getReplyRestriction(threadgate->mAllowMention, threadgate->mAllowFollowing, !threadgate->mAllowList.empty());
 }
 
 ListViewBasicList Post::getReplyRestrictionLists() const

@@ -536,8 +536,10 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return change && change->mLikeUri ? *change->mLikeUri : notification.getNotificationPost(mPostCache).getLikeUri();
     case Role::NotificationPostReplyDisabled:
         return notification.getNotificationPost(mPostCache).isReplyDisabled();
+    case Role::NotificationPostThreadgateUri:
+        return change && change->mThreadgateUri ? *change->mThreadgateUri : notification.getNotificationPost(mPostCache).getThreadgateUri();
     case Role::NotificationPostReplyRestriction:
-        return notification.getNotificationPost(mPostCache).getReplyRestriction();
+        return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : notification.getNotificationPost(mPostCache).getReplyRestriction();
     case Role::NotificationPostRepostCount:
         return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:
@@ -628,6 +630,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostRepostUri), "notificationPostRepostUri" },
         { int(Role::NotificationPostLikeUri), "notificationPostLikeUri" },
         { int(Role::NotificationPostReplyDisabled), "notificationPostReplyDisabled" },
+        { int(Role::NotificationPostThreadgateUri), "notificationPostThreadgateUri" },
         { int(Role::NotificationPostReplyRestriction), "notificationPostReplyRestriction" },
         { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
@@ -676,6 +679,16 @@ void NotificationListModel::repostCountChanged()
 void NotificationListModel::repostUriChanged()
 {
     changeData({ int(Role::NotificationPostRepostUri) });
+}
+
+void NotificationListModel::threadgateUriChanged()
+{
+    changeData({ int(Role::NotificationPostThreadgateUri) });
+}
+
+void NotificationListModel::replyRestrictionChanged()
+{
+    changeData({ int(Role::NotificationPostReplyRestriction) });
 }
 
 void NotificationListModel::postDeletedChanged()

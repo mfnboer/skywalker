@@ -547,6 +547,9 @@ ApplicationWindow {
     }
 
     PostUtils {
+        property list<int> allowListIndexes: [0, 1, 2]
+        property list<bool> allowLists: [false, false, false]
+
         id: postUtils
         skywalker: skywalker
 
@@ -555,8 +558,12 @@ ApplicationWindow {
         onRepostProgress: (msg) => statusPopup.show(qsTr("Reposting"), QEnums.STATUS_LEVEL_INFO)
         onUndoRepostOk: statusPopup.show(qsTr("Repost undone"), QEnums.STATUS_LEVEL_INFO, 2)
         onUndoRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onLikeFailed: (error) => cc
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onThreadgateOk: statusPopup.show(qsTr("Reply restrictions set"), QEnums.STATUS_LEVEL_INFO, 2)
+        onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUndoThreadgateOk: statusPopup.show(qsTr("Reply restrictions removed"), QEnums.STATUS_LEVEL_INFO, 2)
+        onUndoThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     FeedUtils {
@@ -849,6 +856,57 @@ ApplicationWindow {
             feedUtils.undoLike(likeUri, cid)
         else
             feedUtils.like(uri, cid)
+    }
+
+    function threadgate(threadgateUri, uri, cid, replyRestriction) {
+        const restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+        skywalker.getListList(restrictionsListModelId)
+
+        let component = Qt.createComponent("AddReplyRestrictions.qml")
+        let restrictionsPage = component.createObject(currentStackItem(), {
+                restrictReply: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE,
+                allowMentioned: replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED,
+                allowFollowing: replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING,
+                allowLists: postUtils.allowLists,
+                allowListIndexes: postUtils.allowListIndexes,
+                allowListUrisFromDraft: [],
+                listModelId: restrictionsListModelId
+        })
+        restrictionsPage.onAccepted.connect(() => {
+                // TODO: check for no change
+                if (threadgateUri && !restrictionsPage.restrictReply) {
+                    postUtils.undoThreadgate(threadgateUri, cid)
+                }
+                else if (restrictionsPage.restrictReply) {
+                    postUtils.addThreadgate(uri, cid,
+                                            restrictionsPage.allowMentioned,
+                                            restrictionsPage.allowFollowing,
+                                            getReplyRestrictionListUris(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes))
+                }
+
+                restrictionsPage.destroy()
+                skywalker.removeListListModel(restrictionsListModelId)
+        })
+        restrictionsPage.onRejected.connect(() => {
+                restrictionsPage.destroy()
+                skywalker.removeListListModel(restrictionsListModelId)
+        })
+        restrictionsPage.open()
+    }
+
+    function getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes) {
+        let uris = []
+
+        for (let i = 0; i < allowLists.length; ++i) {
+            if (allowLists[i]) {
+                let model = skywalker.getListListModel(restrictionsListModelId)
+                const listView = model.getEntry(allowListIndexes[i])
+                uris.push(listView.uri)
+            }
+        }
+
+        console.debug("Restriction lists:", uris)
+        return uris
     }
 
     function deletePost(uri, cid) {

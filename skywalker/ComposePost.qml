@@ -1199,7 +1199,7 @@ Page {
             if (page.sendingThreadPost > -1)
                 sendNextThreadPost(uri, cid)
             else if (page.restrictReply)
-                postUtils.addThreadgate(uri, page.allowReplyMentioned, page.allowReplyFollowing, page.getReplyRestrictionListUris())
+                postUtils.addThreadgate(uri, cid, page.allowReplyMentioned, page.allowReplyFollowing, page.getReplyRestrictionListUris())
             else
                 postDone()
         }
@@ -1612,7 +1612,7 @@ Page {
             threadFirstPostCid = prevCid
 
             if (restrictReply && !threadGateCreated) {
-                postUtils.addThreadgate(prevUri, allowReplyMentioned, allowReplyFollowing,
+                postUtils.addThreadgate(prevUri, prevCid, allowReplyMentioned, allowReplyFollowing,
                                         getReplyRestrictionListUris())
                 return
             }
@@ -1799,18 +1799,21 @@ Page {
         if (allowListUrisFromDraft.length > 0)
             return allowListUrisFromDraft
 
-        let uris = []
+        return root.getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes)
 
-        for (let i = 0; i < allowLists.length; ++i) {
-            if (allowLists[i]) {
-                let model = skywalker.getListListModel(restrictionsListModelId)
-                const listView = model.getEntry(allowListIndexes[i])
-                uris.push(listView.uri)
-            }
-        }
+        // TODO: remove
+        // let uris = []
 
-        console.debug("Restriction lists:", uris)
-        return uris
+        // for (let i = 0; i < allowLists.length; ++i) {
+        //     if (allowLists[i]) {
+        //         let model = skywalker.getListListModel(restrictionsListModelId)
+        //         const listView = model.getEntry(allowListIndexes[i])
+        //         uris.push(listView.uri)
+        //     }
+        // }
+
+        // console.debug("Restriction lists:", uris)
+        // return uris
     }
 
     function addContentWarning() {
