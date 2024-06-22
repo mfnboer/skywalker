@@ -549,6 +549,7 @@ ApplicationWindow {
     PostUtils {
         property list<int> allowListIndexes: [0, 1, 2]
         property list<bool> allowLists: [false, false, false]
+        property list<string> allowListUris: []
 
         id: postUtils
         skywalker: skywalker
@@ -564,6 +565,16 @@ ApplicationWindow {
         onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUndoThreadgateOk: statusPopup.show(qsTr("Reply restrictions removed"), QEnums.STATUS_LEVEL_INFO, 2)
         onUndoThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+        function setAllowListUris(replyRestrictionLists) {
+            allowLists = [false, false, false]
+            allowListUris = []
+
+            for (let i = 0; i < Math.min(replyRestrictionLists.length, 3); ++i) {
+                allowLists[i] = true
+                allowListUris.push(replyRestrictionLists[i].uri)
+            }
+        }
     }
 
     FeedUtils {
@@ -858,9 +869,10 @@ ApplicationWindow {
             feedUtils.like(uri, cid)
     }
 
-    function threadgate(threadgateUri, uri, cid, replyRestriction) {
+    function threadgate(threadgateUri, uri, cid, replyRestriction, replyRestrictionLists) {
         const restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
         skywalker.getListList(restrictionsListModelId)
+        postUtils.setAllowListUris(replyRestrictionLists)
 
         let component = Qt.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(currentStackItem(), {
@@ -869,7 +881,7 @@ ApplicationWindow {
                 allowFollowing: replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING,
                 allowLists: postUtils.allowLists,
                 allowListIndexes: postUtils.allowListIndexes,
-                allowListUrisFromDraft: [],
+                allowListUrisFromDraft: postUtils.allowListUris,
                 listModelId: restrictionsListModelId
         })
         restrictionsPage.onAccepted.connect(() => {

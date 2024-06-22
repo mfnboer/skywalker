@@ -60,6 +60,7 @@ public:
         PostReplyDisabled,
         PostThreadgateUri,
         PostReplyRestriction,
+        PostReplyRestrictionLists,
         PostBookmarked,
         PostBookmarkNotFound,
         PostLabels,
@@ -108,6 +109,7 @@ protected:
     virtual void repostUriChanged() override;
     virtual void threadgateUriChanged() override;
     virtual void replyRestrictionChanged() override;
+    virtual void replyRestrictionListsChanged() override;
     virtual void postDeletedChanged() override;
 
     // LocalProfileChanges

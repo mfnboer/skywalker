@@ -164,10 +164,15 @@ void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allow
             if (!presence)
                 return;
 
+            ListViewBasicList restrictionLists;
+            for (const auto& uri : allowList)
+                restrictionLists.push_back(ListViewBasic(uri, "", uri, ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, ""));
+
             mSkywalker->makeLocalModelChange(
-                [cid, threadgateUri, allowMention, allowFollowing, allowList](LocalPostModelChanges* model){
+                [cid, threadgateUri, allowMention, allowFollowing, allowList, restrictionLists](LocalPostModelChanges* model){
                     model->updateThreadgateUri(cid, threadgateUri);
-                    model->updateReplyRestriction(cid, Post::getReplyRestriction(allowMention, allowFollowing, !allowList.empty()));
+                    model->updateReplyRestriction(cid, Post::makeReplyRestriction(allowMention, allowFollowing, !allowList.empty()));
+                    model->updateReplyRestrictionLists(cid, restrictionLists);
                 });
 
             emit threadgateOk();
@@ -195,6 +200,7 @@ void PostUtils::undoThreadgate(const QString& threadgateUri, const QString& cid)
                 [cid](LocalPostModelChanges* model){
                     model->updateThreadgateUri(cid, "");
                     model->updateReplyRestriction(cid, QEnums::REPLY_RESTRICTION_NONE);
+                    model->updateReplyRestrictionLists(cid, {});
                 });
 
             emit undoThreadgateOk();

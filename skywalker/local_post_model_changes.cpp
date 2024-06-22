@@ -63,6 +63,12 @@ void LocalPostModelChanges::updateReplyRestriction(const QString& cid, const QEn
     replyRestrictionChanged();
 }
 
+void  LocalPostModelChanges::updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists)
+{
+    mChanges[cid].mReplyRestrictionLists = replyRestrictionLists;
+    replyRestrictionListsChanged();
+}
+
 void LocalPostModelChanges::updatePostDeleted(const QString& cid)
 {
     mChanges[cid].mPostDeleted = true;

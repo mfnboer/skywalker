@@ -540,6 +540,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return change && change->mThreadgateUri ? *change->mThreadgateUri : notification.getNotificationPost(mPostCache).getThreadgateUri();
     case Role::NotificationPostReplyRestriction:
         return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : notification.getNotificationPost(mPostCache).getReplyRestriction();
+    case Role::NotificationPostReplyRestrictionLists:
+        return QVariant::fromValue(change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : notification.getNotificationPost(mPostCache).getReplyRestrictionLists());
     case Role::NotificationPostRepostCount:
         return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:
@@ -632,6 +634,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyDisabled), "notificationPostReplyDisabled" },
         { int(Role::NotificationPostThreadgateUri), "notificationPostThreadgateUri" },
         { int(Role::NotificationPostReplyRestriction), "notificationPostReplyRestriction" },
+        { int(Role::NotificationPostReplyRestrictionLists), "notificationPostReplyRestrictionLists" },
         { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
@@ -689,6 +692,11 @@ void NotificationListModel::threadgateUriChanged()
 void NotificationListModel::replyRestrictionChanged()
 {
     changeData({ int(Role::NotificationPostReplyRestriction) });
+}
+
+void NotificationListModel::replyRestrictionListsChanged()
+{
+    changeData({ int(Role::NotificationPostReplyRestrictionLists) });
 }
 
 void NotificationListModel::postDeletedChanged()

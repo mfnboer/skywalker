@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
+#include "list_view_include.h"
 #include <QHashFunctions>
 #include <QString>
 #include <optional>
@@ -25,6 +26,7 @@ public:
         std::optional<QString> mRepostUri;
         std::optional<QString> mThreadgateUri;
         QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;
+        std::optional<ListViewBasicList> mReplyRestrictionLists;
 
         bool mPostDeleted = false;
     };
@@ -43,6 +45,7 @@ public:
     void updateLikeUri(const QString& cid, const QString& likeUri);
     void updateThreadgateUri(const QString& cid, const QString& threadgateUri);
     void updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion);
+    void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
     void updatePostDeleted(const QString& cid);
 
 protected:
@@ -54,6 +57,7 @@ protected:
     virtual void repostUriChanged() = 0;
     virtual void threadgateUriChanged() = 0;
     virtual void replyRestrictionChanged() = 0;
+    virtual void replyRestrictionListsChanged() = 0;
     virtual void postDeletedChanged() = 0;
 
 private:

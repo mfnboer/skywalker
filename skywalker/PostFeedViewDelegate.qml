@@ -41,6 +41,7 @@ Rectangle {
     required property bool postReplyDisabled
     required property string postThreadgateUri
     required property int postReplyRestriction // QEnums::ReplyRestriction flags
+    required property list<listviewbasic> postReplyRestrictionLists
     required property bool postBookmarked
     required property bool postBookmarkNotFound
     required property list<contentlabel> postLabels
@@ -351,7 +352,7 @@ Rectangle {
                 }
 
                 onShare: skywalker.sharePost(postUri)
-                onThreadgate: root.threadgate(postThreadgateUri, postUri, postCid, postReplyRestriction)
+                onThreadgate: root.threadgate(postThreadgateUri, postUri, postCid, postReplyRestriction, postReplyRestrictionLists)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)

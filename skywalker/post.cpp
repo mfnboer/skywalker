@@ -519,7 +519,7 @@ QString Post::getThreadgateUri() const
     return *mPost->mThreadgate->mUri;
 }
 
-QEnums::ReplyRestriction Post::getReplyRestriction(bool allowMention, bool allowFollowing, const bool allowList)
+QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allowFollowing, const bool allowList)
 {
     int restriction = QEnums::REPLY_RESTRICTION_NONE;
 
@@ -544,7 +544,7 @@ QEnums::ReplyRestriction Post::getReplyRestriction() const
         return QEnums::REPLY_RESTRICTION_NONE;
 
     const auto& threadgate = mPost->mThreadgate->mRecord;
-    return getReplyRestriction(threadgate->mAllowMention, threadgate->mAllowFollowing, !threadgate->mAllowList.empty());
+    return makeReplyRestriction(threadgate->mAllowMention, threadgate->mAllowFollowing, !threadgate->mAllowList.empty());
 }
 
 ListViewBasicList Post::getReplyRestrictionLists() const
