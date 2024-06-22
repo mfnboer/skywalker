@@ -886,8 +886,14 @@ ApplicationWindow {
                 listModelId: restrictionsListModelId
         })
         restrictionsPage.onAccepted.connect(() => {
-                // TODO: check for no change
-                if (threadgateUri && !restrictionsPage.restrictReply) {
+                if (restrictionsPage.restrictReply === Boolean(replyRestriction !== QEnums.REPLY_RESTRICTION_NONE) &&
+                    restrictionsPage.allowMentioned === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED) &&
+                    restrictionsPage.allowFollowing === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) &&
+                    !checkRestrictionListsChanged(getReplyRestrictionListUris(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)))
+                {
+                    console.debug("No change!")
+                }
+                else if (threadgateUri && !restrictionsPage.restrictReply) {
                     postUtils.undoThreadgate(threadgateUri, cid)
                 }
                 else if (restrictionsPage.restrictReply) {
@@ -905,6 +911,18 @@ ApplicationWindow {
                 skywalker.removeListListModel(restrictionsListModelId)
         })
         restrictionsPage.open()
+    }
+
+    function checkRestrictionListsChanged(uris) {
+        if (uris.length !== postUtils.allowListUris.length)
+            return true
+
+        for (let i = 0; i < uris.length; ++i) {
+            if (uris[i] !== postUtils.allowListUris[i])
+                return true
+        }
+
+        return false
     }
 
     function getReplyRestrictionLists(restrictionsListModelId, allowLists, allowListIndexes) {
