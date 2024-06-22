@@ -80,7 +80,11 @@ QString RecordView::getText() const
     case ATProto::RecordType::APP_BSKY_FEED_POST:
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
-        return recordValue->mText;
+
+        if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
+            return UnicodeFonts::toPlainText(*recordValue->mBridgyOriginalText);
+        else
+            return recordValue->mText;
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
     {
@@ -114,6 +118,10 @@ QString RecordView::getFormattedText() const
     case ATProto::RecordType::APP_BSKY_FEED_POST:
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mRecord->mValue);
+
+        if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
+            return *recordValue->mBridgyOriginalText;
+
         return ATProto::RichTextMaster::getFormattedPostText(*recordValue, UserSettings::getLinkColor());
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
