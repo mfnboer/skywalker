@@ -419,6 +419,11 @@ ApplicationWindow {
             close()
         }
 
+        onBuyCoffee: {
+            linkUtils.openLink("https://buymeacoffee.com/skywalker.thereforeiam.eu")
+            close()
+        }
+
         function show() {
             user = skywalker.getUser()
             open()

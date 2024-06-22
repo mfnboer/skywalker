@@ -24,6 +24,7 @@ Drawer {
     signal bookmarks()
     signal signOut()
     signal about()
+    signal buyCoffee()
 
     id: drawer
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
@@ -76,12 +77,6 @@ Drawer {
 
                 Accessible.ignored: true
             }
-        }
-
-        Rectangle {
-            width: 20
-            height: width
-            color: "transparent"
         }
 
         SkyMenuItem {
@@ -201,6 +196,25 @@ Drawer {
             icon: svgOutline.info
             text: qsTr("About")
             onClicked: about()
+        }
+
+        Rectangle {
+            width: 10
+            height: width
+            color: "transparent"
+        }
+
+        Image {
+            id: buyMeCoffeeButton
+            x: 30
+            width: parent.width - 60
+            fillMode: Image.PreserveAspectFit
+            source: "/images/buycoffee.png"
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: buyCoffee()
+            }
         }
     }
 
