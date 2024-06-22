@@ -29,7 +29,7 @@ ListView {
             color: guiSettings.threadStartColor(root.getSkywalker().getUserSettings().threadColor)
             border.width: 1
             border.color: guiSettings.headerColor
-            visible: model.getReplyRestriction() !== QEnums.REPLY_RESTRICTION_NONE
+            visible: model.replyRestriction !== QEnums.REPLY_RESTRICTION_NONE
 
             Accessible.role: Accessible.StaticText
             Accessible.name: unicodeFonts.toPlainText(restrictionText.text)
@@ -76,7 +76,7 @@ ListView {
                 }
 
                 function getRestrictionText() {
-                    const replyRestriction = model.getReplyRestriction()
+                    const replyRestriction = model.replyRestriction
 
                     if (replyRestriction === QEnums.REPLY_RESTRICTION_NONE)
                         return ""
@@ -93,12 +93,12 @@ ListView {
                         restrictionList.push(qsTr("mentioned users"))
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) {
-                        const author = model.getReplyRestrictionAuthor()
+                        const author = model.replyRestrictionAuthor
                         restrictionList.push(qsTr(`users followed by <a href="${author.did}" style="color: ${guiSettings.linkColor}; text-decoration: none">@${author.handle}</a>`))
                     }
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST) {
-                        const lists = model.getReplyRestrictionLists()
+                        const lists = model.replyRestrictionLists
                         let listNames = []
 
                         for (let i = 0; i < lists.length; ++i) {

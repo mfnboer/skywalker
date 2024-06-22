@@ -1800,20 +1800,6 @@ Page {
             return allowListUrisFromDraft
 
         return root.getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes)
-
-        // TODO: remove
-        // let uris = []
-
-        // for (let i = 0; i < allowLists.length; ++i) {
-        //     if (allowLists[i]) {
-        //         let model = skywalker.getListListModel(restrictionsListModelId)
-        //         const listView = model.getEntry(allowListIndexes[i])
-        //         uris.push(listView.uri)
-        //     }
-        // }
-
-        // console.debug("Restriction lists:", uris)
-        // return uris
     }
 
     function addContentWarning() {

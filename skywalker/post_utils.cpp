@@ -154,25 +154,36 @@ void PostUtils::post(const QString& text, const LinkCard* card,
 
 void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const QStringList& allowList)
 {
+    ListViewBasicList restrictionLists;
+
+    for (const auto& uri : allowList)
+        restrictionLists.push_back(ListViewBasic(uri, "", uri, ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, ""));
+
+    addThreadgate(uri, cid, allowMention, allowFollowing, restrictionLists);
+}
+
+void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const ListViewBasicList& allowList)
+{
     qDebug() << "Add threadgate uri:" << uri << "mention:" << allowMention << "following:" << allowFollowing;
 
     if (!postMaster())
         return;
 
-    mPostMaster->addThreadgate(uri, allowMention, allowFollowing, allowList,
+    QStringList allowListUris;
+
+    for (const auto& list : allowList)
+        allowListUris.push_back(list.getUri());
+
+    mPostMaster->addThreadgate(uri, allowMention, allowFollowing, allowListUris,
         [this, presence=getPresence(), cid, allowMention, allowFollowing, allowList](const QString& threadgateUri, const QString&){
             if (!presence)
                 return;
 
-            ListViewBasicList restrictionLists;
-            for (const auto& uri : allowList)
-                restrictionLists.push_back(ListViewBasic(uri, "", uri, ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, ""));
-
             mSkywalker->makeLocalModelChange(
-                [cid, threadgateUri, allowMention, allowFollowing, allowList, restrictionLists](LocalPostModelChanges* model){
+                [cid, threadgateUri, allowMention, allowFollowing, allowList](LocalPostModelChanges* model){
                     model->updateThreadgateUri(cid, threadgateUri);
                     model->updateReplyRestriction(cid, Post::makeReplyRestriction(allowMention, allowFollowing, !allowList.empty()));
-                    model->updateReplyRestrictionLists(cid, restrictionLists);
+                    model->updateReplyRestrictionLists(cid, allowList);
                 });
 
             emit threadgateOk();

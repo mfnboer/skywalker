@@ -8,6 +8,10 @@ namespace Skywalker {
 class PostThreadModel : public AbstractPostFeedModel
 {
     Q_OBJECT
+    Q_PROPERTY(QEnums::ReplyRestriction replyRestriction READ getReplyRestriction NOTIFY threadReplyRestrictionChanged FINAL)
+    Q_PROPERTY(BasicProfile replyRestrictionAuthor READ getReplyRestrictionAuthor NOTIFY threadReplyRestrictionChanged FINAL)
+    Q_PROPERTY(ListViewBasicList replyRestrictionLists READ getReplyRestrictionLists NOTIFY threadReplyRestrictionListsChanged FINAL)
+
 public:
     using Ptr = std::unique_ptr<PostThreadModel>;
 
@@ -23,11 +27,19 @@ public:
 
     // May return UNKNOWN if there are reply restrictions. This will happen
     // if the root is not in the thread, but the first post has replies disabled.
-    Q_INVOKABLE QEnums::ReplyRestriction getReplyRestriction() const;
-    Q_INVOKABLE BasicProfile getReplyRestrictionAuthor() const;
-    Q_INVOKABLE ListViewBasicList getReplyRestrictionLists() const;
+    QEnums::ReplyRestriction getReplyRestriction() const;
+    BasicProfile getReplyRestrictionAuthor() const;
+    ListViewBasicList getReplyRestrictionLists() const;
 
     Q_INVOKABLE QVariant getData(int row, AbstractPostFeedModel::Role role);
+
+signals:
+    void threadReplyRestrictionChanged();
+    void threadReplyRestrictionListsChanged();
+
+protected:
+    virtual void replyRestrictionChanged() override;
+    virtual void replyRestrictionListsChanged() override;
 
 private:
     struct Page

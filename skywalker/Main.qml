@@ -550,6 +550,7 @@ ApplicationWindow {
         property list<int> allowListIndexes: [0, 1, 2]
         property list<bool> allowLists: [false, false, false]
         property list<string> allowListUris: []
+        property list<listviewbasic> allowListViews: []
 
         id: postUtils
         skywalker: skywalker
@@ -893,7 +894,7 @@ ApplicationWindow {
                     postUtils.addThreadgate(uri, cid,
                                             restrictionsPage.allowMentioned,
                                             restrictionsPage.allowFollowing,
-                                            getReplyRestrictionListUris(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes))
+                                            getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes))
                 }
 
                 restrictionsPage.destroy()
@@ -904,6 +905,20 @@ ApplicationWindow {
                 skywalker.removeListListModel(restrictionsListModelId)
         })
         restrictionsPage.open()
+    }
+
+    function getReplyRestrictionLists(restrictionsListModelId, allowLists, allowListIndexes) {
+        postUtils.allowListViews = []
+
+        for (let i = 0; i < allowLists.length; ++i) {
+            if (allowLists[i]) {
+                let model = skywalker.getListListModel(restrictionsListModelId)
+                const listView = model.getEntry(allowListIndexes[i])
+                postUtils.allowListViews.push(listView)
+            }
+        }
+
+        return postUtils.allowListViews
     }
 
     function getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes) {

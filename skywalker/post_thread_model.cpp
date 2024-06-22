@@ -49,7 +49,8 @@ QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
         return QEnums::REPLY_RESTRICTION_NONE;
 
     const auto& post = mFeed[0];
-    const auto restriction = post.getReplyRestriction();
+    const auto* change = getLocalChange(post.getCid());
+    const auto restriction = change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
     if (post.isReplyDisabled() && restriction == QEnums::REPLY_RESTRICTION_NONE)
         return QEnums::REPLY_RESTRICTION_UNKNOWN;
@@ -63,7 +64,8 @@ BasicProfile PostThreadModel::getReplyRestrictionAuthor() const
         return {};
 
     const auto& post = mFeed[0];
-    const auto restriction = post.getReplyRestriction();
+    const auto* change = getLocalChange(post.getCid());
+    const auto restriction = change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
     if (restriction == QEnums::REPLY_RESTRICTION_NONE)
         return {};
@@ -77,7 +79,8 @@ ListViewBasicList PostThreadModel::getReplyRestrictionLists() const
         return {};
 
     const auto& post = mFeed[0];
-    return post.getReplyRestrictionLists();
+    const auto* change = getLocalChange(post.getCid());
+    return change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists();
 }
 
 void PostThreadModel::clear()
@@ -308,6 +311,18 @@ QVariant PostThreadModel::getData(int row, AbstractPostFeedModel::Role role)
 {
     auto index = createIndex(row, 0);
     return data(index, (int)role);
+}
+
+void PostThreadModel::replyRestrictionChanged()
+{
+    AbstractPostFeedModel::replyRestrictionChanged();
+    emit threadReplyRestrictionChanged();
+}
+
+void PostThreadModel::replyRestrictionListsChanged()
+{
+    AbstractPostFeedModel::replyRestrictionListsChanged();
+    emit threadReplyRestrictionListsChanged();
 }
 
 }
