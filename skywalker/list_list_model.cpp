@@ -187,7 +187,7 @@ ListView ListListModel::updateEntry(int index, const QString& cid, const QString
         list.setAvatar(avatar);
 
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
-    return list;
+    return list.nonVolatileCopy();
 }
 
 void ListListModel::deleteEntry(int index)
@@ -220,7 +220,7 @@ ListView ListListModel::getEntry(int index) const
         return {};
     }
 
-    return mLists[index];
+    return mLists[index].nonVolatileCopy();
 }
 
 ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListViewList lists) const

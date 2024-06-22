@@ -556,7 +556,7 @@ ListViewBasicList Post::getReplyRestrictionLists() const
 
     for (const auto& l : mPost->mThreadgate->mLists)
     {
-        ListViewBasic view(l.get());
+        ListViewBasic view(l->mUri, l->mCid, l->mName, l->mPurpose, l->mAvatar.value_or(""));
         lists.append(view);
     }
 

@@ -166,6 +166,13 @@ const ATProto::AppBskyGraph::ListViewBasic* ListViewBasic::basicView() const
     return mSharedListViewBasic ? mSharedListViewBasic.get() : mRawListViewBasic;
 }
 
+ListViewBasic ListViewBasic::nonVolatileCopy() const
+{
+    const ListViewBasic view(getUri(), getCid(), getName(), ATProto::AppBskyGraph::ListPurpose(getPurpose()), getAvatar());
+    return view;
+}
+
+
 ListView::ListView(const ATProto::AppBskyGraph::ListView::SharedPtr& view) :
     ListViewBasic(view.get()),
     mSharedListView(view)
@@ -214,6 +221,13 @@ QString ListView::getFormattedDescription() const
         return {};
 
     return ATProto::RichTextMaster::getFormattedListDescription(*view(), UserSettings::getLinkColor());
+}
+
+ListView ListView::nonVolatileCopy() const
+{
+    const ListView view(getUri(), getCid(), getName(), ATProto::AppBskyGraph::ListPurpose(getPurpose()),
+                        getAvatar(), getCreator(), getDescription());
+    return view;
 }
 
 }

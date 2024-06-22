@@ -67,6 +67,8 @@ public:
     // If avatar is a "image://", then the list view takes ownership of the image
     void setAvatar(const QString& avatar);
 
+    ListViewBasic nonVolatileCopy() const;
+
 protected:
     const ATProto::AppBskyGraph::ListView* view() const;
 

@@ -28,6 +28,8 @@ public:
 
     void setDescription(const QString& description) { mDescription = description; };
 
+    ListView nonVolatileCopy() const;
+
 private:
     ATProto::AppBskyGraph::ListView::SharedPtr mSharedListView;
     std::optional<Profile> mCreator;
