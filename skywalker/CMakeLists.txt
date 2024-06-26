@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 include(FetchContent)
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
+find_package(Qt6 6.7 REQUIRED COMPONENTS Core Quick QuickControls2 Svg Multimedia)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
@@ -389,6 +389,7 @@ target_link_libraries(libskywalker
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Svg
+    PRIVATE Qt6::Multimedia
     ${COVERAGE_LIB}
 )
 
