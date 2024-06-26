@@ -33,10 +33,21 @@ public class NewMessageChecker extends Worker {
 
     static {
         try {
+            // Load the QtCore lib first to initialize JNI
+            Log.d(LOGTAG, "Load Qt6Core_arm64-v8a");
+            System.loadLibrary("Qt6Core_arm64-v8a");
+            Log.d(LOGTAG, "Loaded Qt6Core_arm64-v8a");
+            Log.d(LOGTAG, "Load appskywalker_arm64-v8a");
             System.loadLibrary("appskywalker_arm64-v8a");
+            Log.d(LOGTAG, "Loaded appskywalker_arm64-v8a");
         } catch (UnsatisfiedLinkError ule) {
             try {
+                Log.d(LOGTAG, "Load Qt6Core_armeabi-v7a");
+                System.loadLibrary("Qt6Core_armeabi-v7a");
+                Log.d(LOGTAG, "Loaded Qt6Core_armeabi-v7a");
+                Log.d(LOGTAG, "Load appskywalker_armeabi-v7a");
                 System.loadLibrary("appskywalker_armeabi-v7a");
+                Log.d(LOGTAG, "Loaded appskywalker_armeabi-v7a");
             }
             catch (Exception e) {
                 Log.w(LOGTAG, "Cannot load appskywalker_armeabi-v7a lib: " + e.getMessage());
