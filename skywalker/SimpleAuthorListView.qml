@@ -16,7 +16,7 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     clip: true
     flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: maxFlickVelocity
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
 
     Accessible.role: Accessible.List

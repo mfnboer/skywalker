@@ -55,7 +55,7 @@ Page {
             model: skywalker.favoriteFeeds.getSavedListsModel()
             boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 

@@ -13,7 +13,7 @@ ListView {
     model: skywalker.createBookmarksModel()
     clip: true
     flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: maxFlickVelocity
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
     ScrollIndicator.vertical: ScrollIndicator {}
 

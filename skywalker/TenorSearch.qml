@@ -56,7 +56,7 @@ Page {
             boundsBehavior: Flickable.StopAtBounds
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
 
             delegate: Rectangle {
@@ -122,7 +122,7 @@ Page {
             spacing: tenor.spacing
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
 
             delegate: Row {

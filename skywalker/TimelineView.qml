@@ -153,8 +153,4 @@ ListView {
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
     }
-
-    Component.onCompleted: {
-        console.debug("FLICK:", timelineView.maximumFlickVelocity)
-    }
 }

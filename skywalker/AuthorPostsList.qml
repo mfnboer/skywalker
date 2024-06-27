@@ -22,7 +22,7 @@ ListView {
     spacing: 0
     model: modelId >= 0 ? skywalker.getAuthorFeedModel(page.modelId) : null
     flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: maxFlickVelocity
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
     ScrollIndicator.vertical: ScrollIndicator {}
     interactive: !enclosingView.interactive

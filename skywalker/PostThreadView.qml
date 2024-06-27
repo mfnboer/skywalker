@@ -12,7 +12,7 @@ ListView {
     spacing: 0
     model: skywalker.getPostThreadModel(modelId)
     flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: maxFlickVelocity
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
     ScrollIndicator.vertical: ScrollIndicator {}
 

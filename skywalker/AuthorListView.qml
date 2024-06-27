@@ -20,7 +20,7 @@ ListView {
     clip: true
     model: skywalker.getAuthorListModel(modelId)
     flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: maxFlickVelocity
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
     ScrollIndicator.vertical: ScrollIndicator {}
 

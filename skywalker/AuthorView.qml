@@ -129,7 +129,7 @@ Page {
         model: 1
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: guiSettings.flickDeceleration
-        maximumFlickVelocity: maxFlickVelocity
+        maximumFlickVelocity: guiSettings.maxFlickVelocity
         pixelAligned: guiSettings.flickPixelAligned
 
         Accessible.role: Accessible.List
@@ -568,7 +568,7 @@ Page {
                 spacing: 0
                 model: contentGroupListModel
                 flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: maxFlickVelocity
+                maximumFlickVelocity: guiSettings.maxFlickVelocity
                 pixelAligned: guiSettings.flickPixelAligned
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
@@ -689,7 +689,7 @@ Page {
                 spacing: 0
                 model: skywalker.getFeedListModel(feedListModelId)
                 flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: maxFlickVelocity
+                maximumFlickVelocity: guiSettings.maxFlickVelocity
                 pixelAligned: guiSettings.flickPixelAligned
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
@@ -737,7 +737,7 @@ Page {
                 spacing: 0
                 model: skywalker.getListListModel(listListModelId)
                 flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: maxFlickVelocity
+                maximumFlickVelocity: guiSettings.maxFlickVelocity
                 pixelAligned: guiSettings.flickPixelAligned
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive

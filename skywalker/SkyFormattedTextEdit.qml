@@ -97,6 +97,12 @@ TextEdit {
                                        editText.maxLength, guiSettings.textLengthExceededColor)
     }
 
+    Keys.onReleased: (event) => {
+        // Work around for Qt6.7.2 which hides the keyboard on pressing return.
+        if (event.key === Qt.Key_Return)
+            Qt.inputMethod.show()
+    }
+
     // Text can only be changed outside onPreeditTextChanged.
     // This timer makes the call to applyFont async.
     Timer {

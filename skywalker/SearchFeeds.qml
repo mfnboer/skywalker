@@ -73,7 +73,7 @@ Page {
             clip: true
             model: searchUtils.getSearchFeedsModel()
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -111,7 +111,7 @@ Page {
             model: skywalker.favoriteFeeds.getSavedFeedsModel()
             boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 

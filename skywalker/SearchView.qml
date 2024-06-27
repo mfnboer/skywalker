@@ -252,7 +252,7 @@ Page {
             clip: true
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -289,7 +289,7 @@ Page {
             clip: true
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -326,7 +326,7 @@ Page {
             clip: true
             model: searchUtils.getSearchUsersModel()
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -363,7 +363,7 @@ Page {
             clip: true
             model: searchUtils.getSearchSuggestedUsersModel()
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -412,7 +412,7 @@ Page {
             spacing: 0
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: maxFlickVelocity
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
