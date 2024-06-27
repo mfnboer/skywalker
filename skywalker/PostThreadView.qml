@@ -12,6 +12,8 @@ ListView {
     spacing: 0
     model: skywalker.getPostThreadModel(modelId)
     flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
     ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List

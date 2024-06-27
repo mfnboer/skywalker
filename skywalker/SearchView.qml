@@ -252,6 +252,8 @@ Page {
             clip: true
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
@@ -287,6 +289,8 @@ Page {
             clip: true
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
@@ -322,6 +326,8 @@ Page {
             clip: true
             model: searchUtils.getSearchUsersModel()
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
@@ -357,6 +363,8 @@ Page {
             clip: true
             model: searchUtils.getSearchSuggestedUsersModel()
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
@@ -404,6 +412,8 @@ Page {
             spacing: 0
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List

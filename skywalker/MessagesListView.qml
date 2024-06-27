@@ -56,6 +56,8 @@ Page {
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
         flickDeceleration: guiSettings.flickDeceleration
+        maximumFlickVelocity: maxFlickVelocity
+        pixelAligned: guiSettings.flickPixelAligned
         ScrollIndicator.vertical: ScrollIndicator {}
 
         onHeightChanged: moveToEnd()

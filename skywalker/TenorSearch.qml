@@ -56,6 +56,8 @@ Page {
             boundsBehavior: Flickable.StopAtBounds
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
 
             delegate: Rectangle {
                 required property int index
@@ -120,6 +122,8 @@ Page {
             spacing: tenor.spacing
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
 
             delegate: Row {
                 required property list<tenorgif> previewRow

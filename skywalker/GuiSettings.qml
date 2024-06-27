@@ -60,7 +60,9 @@ Item {
     readonly property double labelFontSize: scaledFont(6/8)
 
     // Misc
-    readonly property real flickDeceleration: 1000
+    readonly property real flickDeceleration: 800
+    readonly property real maxFlickVelocity: 4000
+    readonly property bool flickPixelAligned: true
     readonly property bool isAndroid: Qt.platform.os === "android"
 
     // Identity

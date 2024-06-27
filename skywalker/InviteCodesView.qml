@@ -16,6 +16,8 @@ ListView {
     clip: true
     model: codes
     flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
 
     header: SimpleHeader {
         text: qsTr("Invite Codes")

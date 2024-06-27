@@ -14,6 +14,8 @@ ListView {
     model: skywalker.timelineModel
     clip: true
     flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
     ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List
@@ -150,5 +152,9 @@ ListView {
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+    }
+
+    Component.onCompleted: {
+        console.debug("FLICK:", timelineView.maximumFlickVelocity)
     }
 }

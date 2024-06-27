@@ -13,6 +13,8 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     model: skywalker.mutedWords.entries
     flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 

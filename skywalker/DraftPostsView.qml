@@ -12,6 +12,8 @@ ListView {
     spacing: 0
     clip: true
     flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
     boundsBehavior: Flickable.StopAtBounds
     ScrollIndicator.vertical: ScrollIndicator {}
 

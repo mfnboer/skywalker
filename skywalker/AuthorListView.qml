@@ -20,6 +20,8 @@ ListView {
     clip: true
     model: skywalker.getAuthorListModel(modelId)
     flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
     ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List

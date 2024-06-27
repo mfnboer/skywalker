@@ -73,6 +73,8 @@ Page {
             clip: true
             model: searchUtils.getSearchFeedsModel()
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
@@ -109,6 +111,8 @@ Page {
             model: skywalker.favoriteFeeds.getSavedFeedsModel()
             boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
