@@ -14,7 +14,7 @@
         android:smallScreens="true" />
     <application
         android:name="com.gmail.mfnboer.SkywalkerApplication"
-        android:hardwareAccelerated="false"
+        android:hardwareAccelerated="true"
         android:label="Skywalker"
         android:requestLegacyExternalStorage="true"
         android:allowBackup="true"

@@ -1068,7 +1068,7 @@ Page {
         FontComboBox {
             id: fontSelector
             x: addGif.x + addGif.width + 8
-            y: 5 + restrictionRow.height + footerSeparator.height
+            y: 5 + restrictionRow.height + footerSeparator.height + 6
             popup.height: Math.min(page.height - 20, popup.contentHeight)
             focusPolicy: Qt.NoFocus
         }
@@ -1079,7 +1079,7 @@ Page {
             usedLanguages: languageUtils.usedLanguages
             anchors.left: fontSelector.right
             anchors.leftMargin: 8
-            y: 5 + restrictionRow.height + footerSeparator.height
+            y: 5 + restrictionRow.height + footerSeparator.height + 6
             popup.x: Math.max(-x, Math.min(0, page.width - popup.width - x))
             popup.height: Math.min(page.height - 20, popup.contentHeight)
             currentIndex: find(currentPostLanguage())

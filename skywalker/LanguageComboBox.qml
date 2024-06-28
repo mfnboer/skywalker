@@ -15,7 +15,7 @@ ComboBox {
     property string initialLanguage
 
     id: languageComboBox
-    height: 34
+    height: 22
     model: usedLanguages.concat(allLanguages)
     valueRole: "shortCode"
     textRole: "shortCode"
@@ -23,7 +23,6 @@ ComboBox {
 
     background: Rectangle {
         implicitWidth: 46
-        implicitHeight: 34
         radius: languageComboBox.radius
         border.color: languageComboBox.borderColor
         border.width: languageComboBox.borderWidth
