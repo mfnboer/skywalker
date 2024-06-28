@@ -1,3 +1,7 @@
+next
+====
+* Save external link in draft post
+
 2.9.1
 =====
 * Do not set Content-Type header on requests without a body.

@@ -34,6 +34,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(GeneratorView quoteFeed READ quoteFeed WRITE setQuoteFeed NOTIFY quoteFeedChanged FINAL)
     Q_PROPERTY(ListView quoteList READ quoteList WRITE setQuoteList NOTIFY quoteListChanged FINAL)
     Q_PROPERTY(TenorGif gif READ gif WRITE setGif NOTIFY gifChanged FINAL)
+    Q_PROPERTY(QString externalLink READ externalLink WRITE setExternalLink NOTIFY externalLinkChanged FINAL)
     Q_PROPERTY(QStringList labels READ labels WRITE setLabels NOTIFY labelsChanged FINAL)
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged FINAL)
     Q_PROPERTY(bool restrictReplies READ restrictReplies WRITE setRestrictReplies NOTIFY restrictRepliesChanged FINAL)
@@ -86,6 +87,8 @@ public:
     void setQuoteList(const ListView& newQuoteList);
     const TenorGif& gif() const;
     void setGif(const TenorGif &newGif);
+    const QString& externalLink() const;
+    void setExternalLink(const QString& externalLink);
     QStringList labels() const;
     void setLabels(const QStringList &newLabels);
     QString language() const;
@@ -121,6 +124,7 @@ signals:
     void quoteFeedChanged();
     void quoteListChanged();
     void gifChanged();
+    void externalLinkChanged();
     void labelsChanged();
     void languageChanged();
     void restrictRepliesChanged();
@@ -151,6 +155,7 @@ private:
     GeneratorView mQuoteFeed;
     ListView mQuoteList;
     TenorGif mGif;
+    QString mExternalLink;
     QStringList mLabels;
     QString mLanguage;
     bool mRestrictReplies = false;
@@ -402,6 +407,19 @@ inline void DraftPostData::setGif(const TenorGif &newGif)
 {
     mGif = newGif;
     emit gifChanged();
+}
+
+inline const QString& DraftPostData::externalLink() const
+{
+    return mExternalLink;
+}
+
+inline void DraftPostData::setExternalLink(const QString& externalLink)
+{
+    if (mExternalLink == externalLink)
+        return;
+    mExternalLink = externalLink;
+    emit externalLinkChanged();
 }
 
 inline QStringList DraftPostData::labels() const

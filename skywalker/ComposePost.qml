@@ -1154,24 +1154,40 @@ Page {
     }
 
     LinkCardReader {
+        property list<var> linksToGet: []
+
         id: linkCardReader
+
         onLinkCard: (card) => {
                         console.debug("Got card:", card.link, card.title, card.thumb)
                         console.debug(card.description)
 
                         let postItem = threadPosts.itemAt(linkCardTimer.postIndex)
 
-                        if (!postItem)
-                            return
+                        if (postItem) {
+                            postItem.getLinkCard().show(card)
+                            let postText = postItem.getPostText()
 
-                        postItem.getLinkCard().show(card)
-                        let postText = postItem.getPostText()
+                            if (!postText.cursorInFirstWebLink)
+                                postItem.getLinkCard().linkFixed = true
+                            else
+                                postText.cutLinkIfJustAdded(postText.firstWebLink, () => postItem.getLinkCard().linkFixed = true)
+                        }
 
-                        if (!postText.cursorInFirstWebLink)
-                            postItem.getLinkCard().linkFixed = true
-                        else
-                            postText.cutLinkIfJustAdded(postText.firstWebLink, () => postItem.getLinkCard().linkFixed = true)
+                        if (linksToGet.length > 0) {
+                            const link = linksToGet.pop()
+                            getLink(link[0], link[1])
+                        }
                     }
+
+        function getLink(postIndex, webLink) {
+            if (!linkCardTimer.running) {
+                linkCardTimer.startForLink(postIndex, webLink)
+            }
+            else {
+                linksToGet.push([postIndex, webLink])
+            }
+        }
     }
 
     Timer {
@@ -1649,7 +1665,7 @@ Page {
                                  qUri, qCid, postItem.quoteAuthor, unicodeFonts.toPlainText(postItem.quoteText),
                                  postItem.quoteDateTime, postItem.quoteFixed,
                                  postItem.quoteFeed, postItem.quoteList,
-                                 postItem.gif, labels, postItem.language,
+                                 postItem.gif, postItem.card, labels, postItem.language,
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
                                  getReplyRestrictionListUris())
 
@@ -1669,7 +1685,7 @@ Page {
                                      qUriItem, qCidItem, threadItem.quoteAuthor, unicodeFonts.toPlainText(threadItem.quoteText),
                                      threadItem.quoteDateTime, threadItem.quoteFixed,
                                      threadItem.quoteFeed, threadItem.quoteList,
-                                     threadItem.gif, labelsItem, threadItem.language,
+                                     threadItem.gif, threadItem.card, labelsItem, threadItem.language,
                                      false, false, false,
                                      [])
 
@@ -1750,6 +1766,9 @@ Page {
             postItem.quoteList = draftData.quoteList
 
             postItem.gif = draftData.gif
+
+            if (draftData.externalLink)
+                linkCardReader.getLink(j, draftData.externalLink)
 
             postItem.setContentWarnings(draftData.labels)
             postItem.language = draftData.language

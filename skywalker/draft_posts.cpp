@@ -65,7 +65,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const BasicProfile& quoteAuthor, const QString& quoteText,
                                        const QDateTime& quoteDateTime, bool quoteFixed,
                                        const GeneratorView& quoteFeed, const ListView& quoteList,
-                                       const TenorGif gif, const QStringList& labels,
+                                       const TenorGif gif, const LinkCard* card, const QStringList& labels,
                                        const QString& language,
                                        bool restrictReplies, bool allowMention, bool allowFollowing,
                                        const QStringList& allowLists,
@@ -101,6 +101,10 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
     draft->setQuoteFeed(quoteFeed);
     draft->setQuoteList(quoteList);
     draft->setGif(gif);
+
+    if (card)
+        draft->setExternalLink(card->getLink());
+
     draft->setLabels(labels);
     draft->setLanguage(language);
     draft->setRestrictReplies(restrictReplies);
@@ -247,6 +251,8 @@ ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createPost(const DraftPostDa
 
     if (!draftPost->gif().isNull())
         addGifToPost(*post, draftPost->gif());
+    else if (!draftPost->externalLink().isEmpty())
+        addExternalLinkToPost(*post, draftPost->externalLink());
 
     return post;
 }
@@ -330,7 +336,7 @@ static void setImages(DraftPostData* data, const QList<ImageView>& images)
     data->setImages(draftImages);
 }
 
-static void setGif(DraftPostData* data, const ExternalView* externalView)
+static void setExternal(DraftPostData* data, const ExternalView* externalView)
 {
     GifUtils gifUtils;
 
@@ -358,6 +364,9 @@ static void setGif(DraftPostData* data, const ExternalView* externalView)
                      smallUrl, QSize(smallWidth, smallHeight),
                      externalView->getThumbUrl(), QSize(1, 1));
         data->setGif(gif);
+    }
+    else {
+        data->setExternalLink(externalView->getUri());
     }
 }
 
@@ -444,7 +453,7 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
 
         const auto externalView = post.getExternalView();
         if (externalView)
-            setGif(data, externalView.get());
+            setExternal(data, externalView.get());
 
         if (post.hasLanguage())
             data->setLanguage(post.getLanguages().front().getShortCode());
@@ -1364,6 +1373,12 @@ void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const Te
     gifUrl.setQuery(query);
 
     ATProto::PostMaster::addExternalToPost(post, gifUrl.toString(), gif.getDescription(), "", nullptr);
+}
+
+void DraftPosts::addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const
+{
+    Q_ASSERT(!externalLink.isEmpty());
+    ATProto::PostMaster::addExternalToPost(post, externalLink, "", "", nullptr);
 }
 
 void DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,

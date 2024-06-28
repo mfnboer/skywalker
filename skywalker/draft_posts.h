@@ -4,6 +4,7 @@
 #include "draft_post_data.h"
 #include "draft_posts_model.h"
 #include "generator_view.h"
+#include "link_card.h"
 #include "list_view.h"
 #include "presence.h"
 #include "profile.h"
@@ -47,7 +48,7 @@ public:
                                            const BasicProfile& quoteAuthor, const QString& quoteText,
                                            const QDateTime& quoteDateTime, bool quoteFixed,
                                            const GeneratorView& quoteFeed, const ListView& quoteList,
-                                           const TenorGif gif, const QStringList& labels,
+                                           const TenorGif gif, const LinkCard* card, const QStringList& labels,
                                            const QString& language,
                                            bool restrictReplies, bool allowMention, bool allowFollowing,
                                            const QStringList& allowLists,
@@ -116,6 +117,7 @@ private:
         const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::Ptr quote);
 
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
+    void addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const;
 
     // FILE STORAGE
     void loadDraftFeed();
