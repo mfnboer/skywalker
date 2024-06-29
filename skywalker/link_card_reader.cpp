@@ -86,6 +86,7 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     if (!url.isValid())
     {
         qWarning() << "Invalid link:" << link;
+        emit linkCardFailed();
         return;
     }
 
@@ -95,9 +96,14 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
         qDebug() << "Got card from cache:" << card->getLink();
 
         if (!card->isEmpty())
+        {
             emit linkCard(card);
+        }
         else
+        {
             qDebug() << "Card is empty";
+            emit linkCardFailed();
+        }
 
         return;
     }
@@ -245,6 +251,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         {
             mCardCache.insert(url, card.release());
             qDebug() << url << "has no link card.";
+            emit linkCardFailed();
         }
 
         return;
@@ -270,12 +277,14 @@ void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)
     mInProgress = nullptr;
     qDebug() << "Failed to get link:" << reply->request().url();
     qDebug() << "Error:" << errCode << reply->errorString();
+    emit linkCardFailed();
 }
 
 void LinkCardReader::requestSslFailed(QNetworkReply* reply)
 {
     mInProgress = nullptr;
     qDebug() << "SSL error, failed to get link:" << reply->request().url();
+    emit linkCardFailed();
 }
 
 void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)

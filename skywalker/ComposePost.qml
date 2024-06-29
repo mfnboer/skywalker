@@ -1161,6 +1161,7 @@ Page {
         onLinkCard: (card) => {
                         console.debug("Got card:", card.link, card.title, card.thumb)
                         console.debug(card.description)
+                        linkCardTimer.immediateGetInProgress = false
 
                         let postItem = threadPosts.itemAt(linkCardTimer.postIndex)
 
@@ -1174,18 +1175,28 @@ Page {
                                 postText.cutLinkIfJustAdded(postText.firstWebLink, () => postItem.getLinkCard().linkFixed = true)
                         }
 
-                        if (linksToGet.length > 0) {
-                            const link = linksToGet.pop()
-                            getLink(link[0], link[1])
-                        }
+                        getNextLink()
                     }
 
+        onLinkCardFailed: {
+            console.debug("Failed to get link card")
+            linkCardTimer.immediateGetInProgress = false
+            getNextLink()
+        }
+
         function getLink(postIndex, webLink) {
-            if (!linkCardTimer.running) {
-                linkCardTimer.startForLink(postIndex, webLink)
+            if (!linkCardTimer.immediateGetInProgress) {
+                linkCardTimer.getLinkImmediate(postIndex, webLink)
             }
             else {
                 linksToGet.push([postIndex, webLink])
+            }
+        }
+
+        function getNextLink() {
+            if (linksToGet.length > 0) {
+                const link = linksToGet.pop()
+                getLink(link[0], link[1])
             }
         }
     }
@@ -1193,15 +1204,29 @@ Page {
     Timer {
         property int postIndex
         property string webLink
+        property bool immediateGetInProgress: false
 
         id: linkCardTimer
         interval: 1000
         onTriggered: linkCardReader.getLinkCard(webLink)
 
         function startForLink(postIndex, webLink) {
+            if (immediateGetInProgress) {
+                console.debug("Immedate get in progress:", webLink)
+                return
+            }
+
             linkCardTimer.postIndex = postIndex
             linkCardTimer.webLink = webLink
             start()
+        }
+
+        function getLinkImmediate(postIndex, webLink) {
+            stop()
+            linkCardTimer.postIndex = postIndex
+            linkCardTimer.webLink = webLink
+            immediateGetInProgress = true
+            linkCardReader.getLinkCard(webLink)
         }
     }
 

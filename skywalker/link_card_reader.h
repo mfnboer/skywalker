@@ -24,6 +24,7 @@ public:
 
 signals:
     void linkCard(LinkCard*);
+    void linkCardFailed();
 
 private:
     QString toPlainText(const QString& text);
