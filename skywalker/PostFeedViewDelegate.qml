@@ -38,6 +38,7 @@ Rectangle {
     required property int postLikeCount
     required property string postRepostUri
     required property string postLikeUri
+    required property bool postThreadMuted
     required property bool postReplyDisabled
     required property string postThreadgateUri
     required property int postReplyRestriction // QEnums::ReplyRestriction flags
@@ -318,9 +319,11 @@ Rectangle {
                 likeCount: postLikeCount
                 repostUri: postRepostUri
                 likeUri: postLikeUri
+                threadMuted: postThreadMuted
                 replyDisabled: postReplyDisabled
                 threadgateUri: postThreadgateUri
                 isReply: postIsReply
+                replyRootUri: postReplyRootUri
                 authorIsUser: isUser(author)
                 isBookmarked: postBookmarked
                 bookmarkNotFound: postBookmarkNotFound
@@ -351,6 +354,7 @@ Rectangle {
                 }
 
                 onShare: skywalker.sharePost(postUri)
+                onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
                 onThreadgate: root.threadgate(postThreadgateUri, postUri, postCid, postReplyRestriction, postReplyRestrictionLists)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)

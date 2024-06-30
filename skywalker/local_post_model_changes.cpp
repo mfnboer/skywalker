@@ -10,9 +10,16 @@ const LocalPostModelChanges::Change* LocalPostModelChanges::getLocalChange(const
     return it != mChanges.end() ? &it->second : nullptr;
 }
 
+const LocalPostModelChanges::Change* LocalPostModelChanges::getLocalUriChange(const QString& uri) const
+{
+    auto it = mUriChanges.find(uri);
+    return it != mUriChanges.end() ? &it->second : nullptr;
+}
+
 void LocalPostModelChanges::clearLocalChanges()
 {
     mChanges.clear();
+    mUriChanges.clear();
 }
 
 void LocalPostModelChanges::updatePostIndexTimestamps()
@@ -63,10 +70,16 @@ void LocalPostModelChanges::updateReplyRestriction(const QString& cid, const QEn
     replyRestrictionChanged();
 }
 
-void  LocalPostModelChanges::updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists)
+void LocalPostModelChanges::updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists)
 {
     mChanges[cid].mReplyRestrictionLists = replyRestrictionLists;
     replyRestrictionListsChanged();
+}
+
+void LocalPostModelChanges::updateThreadMuted(const QString& uri, bool muted)
+{
+    mUriChanges[uri].mThreadMuted = muted;
+    threadMutedChanged();
 }
 
 void LocalPostModelChanges::updatePostDeleted(const QString& cid)

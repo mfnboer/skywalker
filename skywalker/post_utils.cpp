@@ -545,6 +545,58 @@ void PostUtils::undoLike(const QString& likeUri, const QString& cid)
         });
 }
 
+void PostUtils::muteThread(const QString& uri)
+{
+    if (!bskyClient())
+        return;
+
+    bskyClient()->muteThread(uri,
+        [this, presence=getPresence(), uri]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [uri](LocalPostModelChanges* model){
+                    model->updateThreadMuted(uri, true);
+                });
+
+            emit muteThreadOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Mute thread failed:" << error << " - " << msg;
+            emit muteThreadFailed(msg);
+        });
+}
+
+void PostUtils::unmuteThread(const QString& uri)
+{
+    if (!bskyClient())
+        return;
+
+    bskyClient()->unmuteThread(uri,
+        [this, presence=getPresence(), uri]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [uri](LocalPostModelChanges* model){
+                    model->updateThreadMuted(uri, false);
+                });
+
+            emit unmuteThreadOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Unute thread failed:" << error << " - " << msg;
+            emit unmuteThreadFailed(msg);
+        });
+}
+
 void PostUtils::deletePost(const QString& postUri, const QString& cid)
 {
     if (!postMaster())

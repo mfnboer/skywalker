@@ -9,9 +9,11 @@ Column {
     required property int likeCount
     required property string repostUri
     required property string likeUri
+    required property bool threadMuted
     required property bool replyDisabled
     required property string threadgateUri
     required property bool isReply
+    required property string replyRootUri
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
@@ -19,6 +21,7 @@ Column {
     signal reply()
     signal repost()
     signal like()
+    signal muteThread()
     signal bookmark()
     signal share()
     signal threadgate()
@@ -107,6 +110,14 @@ Column {
 
                     MenuItemSvg { svg: svgOutline.share }
                 }
+                AccessibleMenuItem {
+                    text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")
+                    visible: !isReply || replyRootUri
+                    onTriggered: muteThread()
+
+                    MenuItemSvg { svg: threadMuted ? svgOutline.notifications : svgOutline.notificationsOff }
+                }
+
                 AccessibleMenuItem {
                     text: qsTr("Reply restrictions")
                     visible: authorIsUser && !isReply

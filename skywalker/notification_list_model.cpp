@@ -536,6 +536,12 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : notification.getNotificationPost(mPostCache).getRepostUri();
     case Role::NotificationPostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : notification.getNotificationPost(mPostCache).getLikeUri();
+    case Role::NotificationPostThreadMuted:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        const auto* uriChange = getLocalUriChange(post.isReply() ? post.getReplyRootUri() : post.getUri());
+        return uriChange && uriChange->mThreadMuted ? *uriChange->mThreadMuted : post.isThreadMuted();
+    }
     case Role::NotificationPostReplyDisabled:
         return notification.getNotificationPost(mPostCache).isReplyDisabled();
     case Role::NotificationPostThreadgateUri:
@@ -634,6 +640,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyRootCid), "notificationPostReplyRootCid" },
         { int(Role::NotificationPostRepostUri), "notificationPostRepostUri" },
         { int(Role::NotificationPostLikeUri), "notificationPostLikeUri" },
+        { int(Role::NotificationPostThreadMuted), "notificationPostThreadMuted" },
         { int(Role::NotificationPostReplyDisabled), "notificationPostReplyDisabled" },
         { int(Role::NotificationPostThreadgateUri), "notificationPostThreadgateUri" },
         { int(Role::NotificationPostReplyRestriction), "notificationPostReplyRestriction" },
@@ -700,6 +707,11 @@ void NotificationListModel::replyRestrictionChanged()
 void NotificationListModel::replyRestrictionListsChanged()
 {
     changeData({ int(Role::NotificationPostReplyRestrictionLists) });
+}
+
+void NotificationListModel::threadMutedChanged()
+{
+    changeData({ int(Role::NotificationPostThreadMuted) });
 }
 
 void NotificationListModel::postDeletedChanged()

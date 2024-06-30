@@ -238,6 +238,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
     case Role::PostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
+    case Role::PostThreadMuted:
+    {
+        const auto* uriChange = getLocalUriChange(post.isReply() ? post.getReplyRootUri() : post.getUri());
+        return uriChange && uriChange->mThreadMuted ? *uriChange->mThreadMuted : post.isThreadMuted();
+    }
     case Role::PostReplyDisabled:
         return post.isReplyDisabled();
     case Role::PostThreadgateUri:
@@ -338,6 +343,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLikeCount), "postLikeCount" },
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
+        { int(Role::PostThreadMuted), "postThreadMuted" },
         { int(Role::PostReplyDisabled), "postReplyDisabled" },
         { int(Role::PostThreadgateUri), "postThreadgateUri" },
         { int(Role::PostReplyRestriction), "postReplyRestriction" },
@@ -404,6 +410,11 @@ void AbstractPostFeedModel::replyRestrictionChanged()
 void AbstractPostFeedModel::replyRestrictionListsChanged()
 {
     changeData({ int(Role::PostReplyRestrictionLists) });
+}
+
+void AbstractPostFeedModel::threadMutedChanged()
+{
+    changeData({ int(Role::PostThreadMuted) });
 }
 
 void AbstractPostFeedModel::postDeletedChanged()

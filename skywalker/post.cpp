@@ -504,6 +504,14 @@ QString Post::getLikeUri() const
     return like ? *like : QString();
 }
 
+bool Post::isThreadMuted() const
+{
+    if (!mPost || !mPost->mViewer)
+        return false;
+
+    return mPost->mViewer->mThreadMuted;
+}
+
 bool Post::isReplyDisabled() const
 {
     if (!mPost || !mPost->mViewer)

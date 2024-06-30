@@ -77,6 +77,7 @@ public:
     int getLikeCount() const;
     QString getRepostUri() const;
     QString getLikeUri() const;
+    bool isThreadMuted() const;
     bool isReplyDisabled() const;
     QString getThreadgateUri() const;
     QString getRootThreadateUri() const;

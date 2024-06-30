@@ -27,6 +27,7 @@ public:
         std::optional<QString> mThreadgateUri;
         QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;
         std::optional<ListViewBasicList> mReplyRestrictionLists;
+        std::optional<bool> mThreadMuted;
 
         bool mPostDeleted = false;
     };
@@ -35,6 +36,7 @@ public:
     virtual ~LocalPostModelChanges() = default;
 
     const Change* getLocalChange(const QString& cid) const;
+    const Change* getLocalUriChange(const QString& uri) const;
     void clearLocalChanges();
 
     void updatePostIndexTimestamps();
@@ -46,6 +48,7 @@ public:
     void updateThreadgateUri(const QString& cid, const QString& threadgateUri);
     void updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion);
     void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
+    void updateThreadMuted(const QString& uri, bool muted);
     void updatePostDeleted(const QString& cid);
 
 protected:
@@ -58,11 +61,15 @@ protected:
     virtual void threadgateUriChanged() = 0;
     virtual void replyRestrictionChanged() = 0;
     virtual void replyRestrictionListsChanged() = 0;
+    virtual void threadMutedChanged() = 0;
     virtual void postDeletedChanged() = 0;
 
 private:
     // Mapping from post CID to change
     std::unordered_map<QString, Change> mChanges;
+
+    // Mapping from post URI to change
+    std::unordered_map<QString, Change> mUriChanges;
 };
 
 }

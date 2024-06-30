@@ -565,8 +565,12 @@ ApplicationWindow {
         onRepostProgress: (msg) => statusPopup.show(qsTr("Reposting"), QEnums.STATUS_LEVEL_INFO)
         onUndoRepostOk: statusPopup.show(qsTr("Repost undone"), QEnums.STATUS_LEVEL_INFO, 2)
         onUndoRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onLikeFailed: (error) => cc
+        onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteThreadOk: statusPopup.show(qsTr("You will no longer receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 2);
+        onMuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteThreadOk: statusPopup.show(qsTr("You will receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 2);
+        onUnmuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onThreadgateOk: statusPopup.show(qsTr("Reply restrictions set"), QEnums.STATUS_LEVEL_INFO, 2)
         onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUndoThreadgateOk: statusPopup.show(qsTr("Reply restrictions removed"), QEnums.STATUS_LEVEL_INFO, 2)
@@ -873,6 +877,18 @@ ApplicationWindow {
             feedUtils.undoLike(likeUri, cid)
         else
             feedUtils.like(uri, cid)
+    }
+
+    function muteThread(uri, threadMuted) {
+        if (!uri) {
+            console.warn("Cannot mute thread, empty uri")
+            return
+        }
+
+        if (threadMuted)
+            postUtils.unmuteThread(uri)
+        else
+            postUtils.muteThread(uri)
     }
 
     function threadgate(threadgateUri, uri, cid, replyRestriction, replyRestrictionLists) {

@@ -51,6 +51,8 @@ public:
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
+    Q_INVOKABLE void muteThread(const QString& uri);
+    Q_INVOKABLE void unmuteThread(const QString& uri);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
     Q_INVOKABLE void batchDeletePosts(const QStringList& postUris);
     Q_INVOKABLE bool pickPhoto();
@@ -119,6 +121,10 @@ signals:
     void likeFailed(QString error);
     void undoLikeOk();
     void undoLikeFailed(QString error);
+    void muteThreadOk();
+    void muteThreadFailed(QString error);
+    void unmuteThreadOk();
+    void unmuteThreadFailed(QString error);
     void postDeletedOk();
     void postDeletedFailed(QString error);
     void photoPicked(QString imgSource);
