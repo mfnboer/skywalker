@@ -143,15 +143,14 @@ Rectangle {
             }
         }
 
-        AccessibleText {
+        SkyCleanedText {
             rightPadding: 10
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
             wrapMode: Text.Wrap
-            textFormat: Text.RichText
             color: guiSettings.textColor
-            text: author.description
+            plainText: author.description
             visible: showAuthor
         }
 
