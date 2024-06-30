@@ -149,7 +149,7 @@ QString RecordView::getFormattedText() const
 
 BasicProfile RecordView::getAuthor() const
 {
-    return mRecord ? BasicProfile(mRecord->mAuthor.get()) : BasicProfile();
+    return mRecord ? BasicProfile(mRecord->mAuthor.get()).nonVolatileCopy() : BasicProfile();
 }
 
 QDateTime RecordView::getIndexedAt() const
@@ -207,6 +207,14 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& RecordView::getLabels()
         return NO_LABELS;
 
     return mRecord->mLabels;
+}
+
+ContentLabelList RecordView::getLabelsIncludingAuthorLabels() const
+{
+    const auto author = getAuthor();
+    ContentLabelList contentLabels = author.getContentLabels();
+    ContentFilter::addContentLabels(contentLabels, getLabels());
+    return contentLabels;
 }
 
 bool RecordView::isReply() const

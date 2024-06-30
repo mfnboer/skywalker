@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post.h"
 #include "author_cache.h"
+#include "content_filter.h"
 #include "user_settings.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/rich_text_master.h>
@@ -183,7 +184,7 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags) const
 
 BasicProfile Post::getAuthor() const
 {
-    return mPost ? BasicProfile(mPost->mAuthor.get()) : BasicProfile();
+    return mPost ? BasicProfile(mPost->mAuthor.get()).nonVolatileCopy() : BasicProfile();
 }
 
 QDateTime Post::getIndexedAt() const
@@ -567,6 +568,14 @@ const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
 {
     static const std::vector<ATProto::ComATProtoLabel::Label::Ptr> NO_LABELS;
     return mPost ? mPost->mLabels : NO_LABELS;
+}
+
+ContentLabelList Post::getLabelsIncludingAuthorLabels() const
+{
+    const auto author = getAuthor();
+    ContentLabelList contentLabels = author.getContentLabels();
+    ContentFilter::addContentLabels(contentLabels, getLabels());
+    return contentLabels;
 }
 
 const LanguageList& Post::getLanguages() const

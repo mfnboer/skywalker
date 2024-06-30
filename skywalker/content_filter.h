@@ -12,6 +12,7 @@ class IContentFilter
 public:
     virtual ~IContentFilter() = default;
     virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const = 0;
+    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const = 0;
 };
 
 class ContentFilter : public QObject, public IContentFilter
@@ -35,6 +36,7 @@ public:
 
     // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
     static ContentLabelList getContentLabels(const LabelList& labels);
+    static void addContentLabels(ContentLabelList& contentLabels, const LabelList& labels);
 
     explicit ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent = nullptr);
 
@@ -51,7 +53,7 @@ public:
     QString getWarning(const ContentLabel& label) const;
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const override;
-    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const;
+    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels) const override;
 
     bool isSubscribedToLabeler(const QString& did) const;
     std::unordered_set<QString> getSubscribedLabelerDids() const;
@@ -80,6 +82,11 @@ class ContentFilterShowAll : public IContentFilter
 {
 public:
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList&) const override
+    {
+        return {QEnums::CONTENT_VISIBILITY_SHOW, ""};
+    }
+
+    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList&) const override
     {
         return {QEnums::CONTENT_VISIBILITY_SHOW, ""};
     }

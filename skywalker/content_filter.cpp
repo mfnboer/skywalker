@@ -150,7 +150,12 @@ const ContentGroup* ContentFilter::getContentGroup(const QString& did, const QSt
 ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
 {
     ContentLabelList contentLabels;
+    addContentLabels(contentLabels, labels);
+    return contentLabels;
+}
 
+void ContentFilter::addContentLabels(ContentLabelList& contentLabels, const LabelList& labels)
+{
     for (const auto& label : labels)
     {
         const ContentLabel contentLabel(label->mSrc, label->mUri, label->mCid.value_or(""),
@@ -167,8 +172,6 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
             });
         }
     }
-
-    return contentLabels;
 }
 
 QEnums::ContentPrefVisibility ContentFilter::getGroupPrefVisibility(const ContentGroup& group) const

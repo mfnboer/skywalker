@@ -1,5 +1,6 @@
 next
 ====
+* Show account labels on post
 * Align label settings with bluesky app
 * Save external link in draft post
 

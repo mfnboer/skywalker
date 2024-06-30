@@ -63,6 +63,7 @@ public:
     QVariant getExternal() const;
     ContentLabelList getContentLabels() const;
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    ContentLabelList getLabelsIncludingAuthorLabels() const;
     bool isReply() const;
     BasicProfile getReplyToAuthor() const;
     const LanguageList& getLanguages() const;

@@ -5,8 +5,6 @@ import skywalker
 
 GridLayout {
     required property basicprofile author
-    //required property string authorName
-    //required property string authorHandle
     required property int postIndexedSecondsAgo
     required property int postThreadType
 
@@ -46,7 +44,7 @@ GridLayout {
     Rectangle {
         Layout.columnSpan: 2
         Layout.fillWidth: true
-        height: contentLabels.height
+        height: author.labels ? contentLabels.height + 5 : 0
         color: "transparent"
 
         ContentLabels {

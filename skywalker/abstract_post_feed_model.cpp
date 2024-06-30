@@ -83,7 +83,7 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
         return true;
     }
 
-    const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+    const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
 
     if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
     {
@@ -171,7 +171,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
         if (record)
         {
-            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
+            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
             record->setMutedReason(mMutedWords);
@@ -188,7 +188,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return QVariant();
 
         auto& record = recordWithMedia->getRecord();
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
+        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
         record.setMutedReason(mMutedWords);
@@ -254,12 +254,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(ContentFilter::getContentLabels(post.getLabels()));
     case Role::PostContentVisibility:
     {
-        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
         return visibility;
     }
     case Role::PostContentWarning:
     {
-        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabels());
+        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
         return warning;
     }
     case Role::PostMutedReason:

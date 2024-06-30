@@ -28,6 +28,7 @@ Rectangle {
     required property bool notificationIsRead
     required property string notificationPostUri
     required property string notificationCid
+    required property basicprofile notificationPostAuthor
     required property string notificationPostText
     required property string notificationPostPlainText
     required property date notificationPostTimestamp
@@ -152,7 +153,7 @@ Rectangle {
                 id: postHeader
                 width: parent.width
                 Layout.fillWidth: true
-                author: notificationAuthor
+                author: notificationPostAuthor
                 postThreadType: QEnums.THREAD_NONE
                 postIndexedSecondsAgo: (new Date() - notificationTimestamp) / 1000
             }

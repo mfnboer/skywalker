@@ -98,6 +98,7 @@ public:
     const QString& getUnsupportedType() const { return mUnsupportedType; }
 
     const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    ContentLabelList getLabelsIncludingAuthorLabels() const;
 
     const LanguageList& getLanguages() const;
     bool hasLanguage() const;

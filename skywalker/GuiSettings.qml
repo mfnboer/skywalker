@@ -24,7 +24,7 @@ Item {
     readonly property string buttonColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string buttonNeutralColor: Material.theme === Material.Light ? Material.background : "darkslategrey"
     readonly property string buttonTextColor: "white"
-    readonly property string contentLabelColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
+    readonly property string contentLabelColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030" // "lightgrey" : "darkslategrey"
     readonly property string contentUserLabelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
     readonly property string disabledColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string errorColor: Material.theme === Material.Light ? "darkred" : "palevioletred"

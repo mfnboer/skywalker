@@ -43,6 +43,7 @@ public:
         NotificationIsRead,
         NotificationPostUri,
         NotificationCid,
+        NotificationPostAuthor,
         NotificationPostText,
         NotificationPostPlainText,
         NotificationPostLanguages,
