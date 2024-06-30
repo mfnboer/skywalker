@@ -151,7 +151,7 @@ Rectangle {
             wrapMode: Text.Wrap
             color: guiSettings.textColor
             plainText: author.description
-            visible: showAuthor
+            visible: showAuthor && author.description
         }
 
         Rectangle {

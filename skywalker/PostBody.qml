@@ -41,7 +41,7 @@ Column {
         font.pointSize: getPostFontSize()
         plainText: postText
         bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
-        visible: postVisible()
+        visible: postVisible() && postText
 
         onLinkActivated: (link) => root.openLink(link)
 
