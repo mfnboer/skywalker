@@ -4,8 +4,9 @@ import QtQuick.Layouts
 import skywalker
 
 GridLayout {
-    required property string authorName
-    required property string authorHandle
+    required property basicprofile author
+    //required property string authorName
+    //required property string authorHandle
     required property int postIndexedSecondsAgo
     required property int postThreadType
 
@@ -15,7 +16,7 @@ GridLayout {
     SkyCleanedText {
         Layout.fillWidth: true
         elide: Text.ElideRight
-        plainText: authorName
+        plainText: author.name
         font.bold: true
         color: guiSettings.textColor
 
@@ -31,14 +32,30 @@ GridLayout {
 
     Text {
         Layout.columnSpan: 2
+        Layout.fillWidth: true
         bottomPadding: 5
         elide: Text.ElideRight
-        text: "@" + authorHandle
+        text: "@" + author.handle
         font.pointSize: guiSettings.scaledFont(7/8)
         color: guiSettings.handleColor
         visible: postThreadType & QEnums.THREAD_ENTRY
 
         Accessible.ignored: true
+    }
+
+    Rectangle {
+        Layout.columnSpan: 2
+        Layout.fillWidth: true
+        height: contentLabels.height
+        color: "transparent"
+
+        ContentLabels {
+            id: contentLabels
+            anchors.left: parent.left
+            anchors.right: undefined
+            contentLabels: author.labels
+            contentAuthorDid: author.did
+        }
     }
 
     GuiSettings {

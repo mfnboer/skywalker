@@ -3,10 +3,10 @@ import QtQuick.Controls
 import skywalker
 
 ScrollView {
+    property var skywalker: root.getSkywalker()
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
-    readonly property list<contentlabel> nonSystemLabels: filterSystemLabels()
-    property var skywalker: root.getSkywalker()
+    readonly property list<contentlabel> labelsToShow: filterLabelsToShow()
 
     id: labelView
     width: Math.min(parent.width, labelRow.width)
@@ -14,7 +14,7 @@ ScrollView {
     anchors.right: parent.right
     contentWidth: labelRow.width
     contentHeight: height
-    visible: nonSystemLabels.length > 0
+    visible: labelsToShow.length > 0
 
     // To make the MouseArea below work
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -26,7 +26,7 @@ ScrollView {
         spacing: 5
 
         Repeater {
-            model: nonSystemLabels
+            model: labelsToShow
 
             SkyLabel {
                 required property contentlabel modelData
@@ -57,12 +57,15 @@ ScrollView {
         return contentGroup.titleWithSeverity
     }
 
-    function filterSystemLabels() {
+    function filterLabelsToShow() {
+        let contentFilter = skywalker.getContentFilter()
         let labels = []
 
         for (let i = 0; i < contentLabels.length; ++i) {
-            if (!contentLabels[i].isSystemLabel())
-                labels.push(contentLabels[i])
+            const label = contentLabels[i]
+
+            if (!label.isSystemLabel() && contentFilter.mustShowBadge(label))
+                labels.push(label)
         }
 
         return labels

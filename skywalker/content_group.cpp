@@ -3,6 +3,7 @@
 #include "content_group.h"
 #include "definitions.h"
 #include "language_utils.h"
+#include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
 
@@ -33,6 +34,8 @@ ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition&
                            const QString& labelerDid) :
     mLabelId(labelDef.mIdentifier),
     mAdult(labelDef.mAdultOnly),
+    mIsBadge(labelDef.mBlurs == ATProto::ComATProtoLabel::LabelValueDefinition::Blurs::NONE &&
+               labelDef.mSeverity !=  ATProto::ComATProtoLabel::LabelValueDefinition::Severity::ALERT),
     mLabelerDid(labelerDid)
 {
     switch (labelDef.mBlurs)
@@ -97,6 +100,8 @@ ContentGroup::ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition&
         mTitle = labelDef.mLocales.front()->mLang;
         mDescription = labelDef.mLocales.front()->mDescription;
     }
+
+    qDebug() << "Label:" << mLabelId << "target:" << mLabelTarget << "severity:" << mSeverity << "default:" << mDefaultVisibility << "def:" << labelDef.mRawBlurs << labelDef.mRawSeverity << labelDef.mRawDefaultSetting;
 }
 
 QString ContentGroup::getTitleWithSeverity() const
@@ -109,6 +114,76 @@ QString ContentGroup::getTitleWithSeverity() const
     default:
         return mTitle;
     }
+}
+
+QString ContentGroup::getFormattedDescription() const
+{
+    return ATProto::RichTextMaster::plainToHtml(mDescription);
+}
+
+QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const
+{
+    // For a badge label, warn means show labels and content, hide means show label and warn
+    // before showing content.
+    switch (visibility)
+    {
+    case ATProto::UserPreferences::LabelVisibility::SHOW:
+        return QEnums::CONTENT_VISIBILITY_SHOW;
+    case ATProto::UserPreferences::LabelVisibility::WARN:
+        if (mIsBadge)
+            return QEnums::CONTENT_VISIBILITY_SHOW;
+        else
+            return isPostLevel() ? QEnums::CONTENT_VISIBILITY_WARN_POST : QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
+    case ATProto::UserPreferences::LabelVisibility::HIDE:
+        if (mIsBadge)
+            return isPostLevel() ? QEnums::CONTENT_VISIBILITY_WARN_POST : QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
+        else
+            return isPostLevel() ? QEnums::CONTENT_VISIBILITY_HIDE_POST : QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+    case ATProto::UserPreferences::LabelVisibility::UNKNOWN:
+        Q_ASSERT(false);
+        return QEnums::CONTENT_VISIBILITY_SHOW;
+    }
+
+    Q_ASSERT(false);
+    return QEnums::CONTENT_VISIBILITY_SHOW;
+}
+
+QEnums::ContentVisibility ContentGroup::getDefaultVisibility() const
+{
+    if (!mIsBadge)
+        return mDefaultVisibility;
+
+    // For a badge label, warn means show labels and content, hide means show label and warn
+    // before showing content.
+    switch (mDefaultVisibility)
+    {
+    case QEnums::CONTENT_VISIBILITY_SHOW:
+    case QEnums::CONTENT_VISIBILITY_WARN_MEDIA:
+    case QEnums::CONTENT_VISIBILITY_WARN_POST:
+        return QEnums::CONTENT_VISIBILITY_SHOW;
+    case QEnums::CONTENT_VISIBILITY_HIDE_MEDIA:
+        return QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
+    case QEnums::CONTENT_VISIBILITY_HIDE_POST:
+        return QEnums::CONTENT_VISIBILITY_WARN_POST;
+    }
+
+    Q_ASSERT(false);
+    return mDefaultVisibility;
+}
+
+bool ContentGroup::mustShowBadge(ATProto::UserPreferences::LabelVisibility visibility) const
+{
+    if (!mIsBadge)
+        return true;
+
+    // If visibility is "show" for a badge label, then only show content, no badge
+    if (visibility == ATProto::UserPreferences::LabelVisibility::SHOW)
+        return false;
+
+    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN && mDefaultVisibility == QEnums::CONTENT_VISIBILITY_SHOW)
+        return false;
+
+    return true;
 }
 
 }

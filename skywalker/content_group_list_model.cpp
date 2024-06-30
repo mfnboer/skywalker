@@ -87,7 +87,7 @@ QVariant ContentGroupListModel::data(const QModelIndex& index, int role) const
         if (it != mChangedVisibility.end())
             return it->second;
 
-        return QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group));
+        return mContentFilter.getGroupPrefVisibility(group);
     }
     }
 
@@ -107,7 +107,7 @@ bool ContentGroupListModel::setData(const QModelIndex &index, const QVariant &va
     case Role::ContentPrefVisibility:
     {
         const auto visibility = QEnums::ContentPrefVisibility(value.toInt());
-        const auto origVisibility = QEnums::toContentPrefVisibility(mContentFilter.getGroupVisibility(group));
+        const auto origVisibility = mContentFilter.getGroupPrefVisibility(group);
 
         if (visibility != origVisibility)
             mChangedVisibility[index.row()] = visibility;

@@ -152,8 +152,7 @@ Rectangle {
                 id: postHeader
                 width: parent.width
                 Layout.fillWidth: true
-                authorName: notificationAuthor.name
-                authorHandle: notificationAuthor.handle
+                author: notificationAuthor
                 postThreadType: QEnums.THREAD_NONE
                 postIndexedSecondsAgo: (new Date() - notificationTimestamp) / 1000
             }

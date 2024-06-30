@@ -43,8 +43,10 @@ public:
 
     bool getAdultContent() const { return mUserPreferences.getAdultContent(); }
 
+    QEnums::ContentPrefVisibility getGroupPrefVisibility(const ContentGroup& group) const;
     QEnums::ContentVisibility getGroupVisibility(const ContentGroup& group) const;
     QEnums::ContentVisibility getVisibility(const ContentLabel& label) const;
+    Q_INVOKABLE bool mustShowBadge(const ContentLabel& label) const;
     QString getGroupWarning(const ContentGroup& group) const;
     QString getWarning(const ContentLabel& label) const;
 

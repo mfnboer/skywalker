@@ -250,8 +250,7 @@ Rectangle {
             PostHeader {
                 id: postHeader
                 width: parent.width
-                authorName: author.name
-                authorHandle: author.handle
+                author: postEntry.author
                 postThreadType: postEntry.postThreadType
                 postIndexedSecondsAgo: (new Date() - postEntry.postIndexedDateTime) / 1000
             }

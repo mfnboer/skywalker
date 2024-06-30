@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "content_filter.h"
-#include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
 
@@ -121,30 +120,6 @@ bool ContentFilter::isGlobalLabel(const QString& labelId)
     return getGlobalContentGroup(labelId) != nullptr;
 }
 
-QString ContentGroup::getFormattedDescription() const
-{
-    return ATProto::RichTextMaster::plainToHtml(mDescription);
-}
-
-QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const
-{
-    switch (visibility)
-    {
-    case ATProto::UserPreferences::LabelVisibility::SHOW:
-        return QEnums::CONTENT_VISIBILITY_SHOW;
-    case ATProto::UserPreferences::LabelVisibility::WARN:
-        return isPostLevel() ? QEnums::CONTENT_VISIBILITY_WARN_POST : QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
-    case ATProto::UserPreferences::LabelVisibility::HIDE:
-        return isPostLevel() ? QEnums::CONTENT_VISIBILITY_HIDE_POST : QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
-    case ATProto::UserPreferences::LabelVisibility::UNKNOWN:
-        Q_ASSERT(false);
-        return QEnums::CONTENT_VISIBILITY_SHOW;
-    }
-
-    Q_ASSERT(false);
-    return QEnums::CONTENT_VISIBILITY_SHOW;
-}
-
 ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent) :
     QObject(parent),
     mUserPreferences(userPreferences)
@@ -196,6 +171,30 @@ ContentLabelList ContentFilter::getContentLabels(const LabelList& labels)
     return contentLabels;
 }
 
+QEnums::ContentPrefVisibility ContentFilter::getGroupPrefVisibility(const ContentGroup& group) const
+{
+    if (group.isAdult() && !getAdultContent())
+        return QEnums::CONTENT_PREF_VISIBILITY_HIDE;
+
+    auto visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), group.getLabelId());
+
+    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+    {
+        for (const auto& legacyId : group.getLegacyLabelIds())
+        {
+            visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), legacyId);
+
+            if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+                break;
+        }
+    }
+
+    if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+        return QEnums::ContentPrefVisibility(visibility);
+
+    return QEnums::toContentPrefVisibility(group.getUnconditionalDefaultVisibility());
+}
+
 QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& group) const
 {
     if (group.isAdult() && !getAdultContent())
@@ -229,6 +228,17 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label
 
     qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QEnums::CONTENT_VISIBILITY_SHOW;
+}
+
+bool ContentFilter::mustShowBadge(const ContentLabel& label) const
+{
+    const auto* group = getContentGroup(label.getDid(), label.getLabelId());
+
+    if (!group || !group->isBadge())
+        return true;
+
+    auto visibility = mUserPreferences.getLabelVisibility(group->getLabelerDid(), group->getLabelId());
+    return group->mustShowBadge(visibility);
 }
 
 QString ContentFilter::getGroupWarning(const ContentGroup& group) const

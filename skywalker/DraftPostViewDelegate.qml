@@ -70,8 +70,7 @@ Rectangle {
                 id: postHeader
                 width: parent.width
                 Layout.fillWidth: true
-                authorName: author.name
-                authorHandle: author.handle
+                author: draftPostView.author
                 postThreadType: QEnums.THREAD_NONE
                 postIndexedSecondsAgo: (new Date() - postIndexedDateTime) / 1000
             }

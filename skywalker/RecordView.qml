@@ -46,8 +46,7 @@ Item {
 
             PostHeader {
                 Layout.fillWidth: true
-                authorName: record.author.name
-                authorHandle: record.author.handle
+                author: record.author
                 postThreadType: QEnums.THREAD_NONE
                 postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
             }

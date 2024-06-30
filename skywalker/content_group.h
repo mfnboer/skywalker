@@ -17,6 +17,7 @@ class ContentGroup
     Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
     Q_PROPERTY(QString formattedDescription READ getFormattedDescription CONSTANT FINAL)
     Q_PROPERTY(bool isAdult MEMBER mAdult CONSTANT FINAL)
+    Q_PROPERTY(bool isBadge MEMBER mIsBadge CONSTANT FINAL)
     Q_PROPERTY(QEnums::LabelTarget target MEMBER mLabelTarget CONSTANT FINAL)
     Q_PROPERTY(QEnums::LabelSeverity severity MEMBER mSeverity CONSTANT FINAL)
     QML_VALUE_TYPE(contentgroup)
@@ -36,11 +37,14 @@ public:
     QString getTitleWithSeverity() const;
     const QStringList& getLegacyLabelIds() const { return mLegacyLabelIds; }
     bool isAdult() const { return mAdult; }
-    QEnums::ContentVisibility getDefaultVisibility() const { return mDefaultVisibility; }
+    QEnums::ContentVisibility getDefaultVisibility() const;
+    QEnums::ContentVisibility getUnconditionalDefaultVisibility() const { return mDefaultVisibility; }
+    bool isBadge() const { return mIsBadge; }
 
     bool isPostLevel() const { return mLabelTarget == QEnums::LABEL_TARGET_CONTENT; }
     QString getFormattedDescription() const;
     QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
+    bool mustShowBadge(ATProto::UserPreferences::LabelVisibility visibility) const;
     const QString& getLabelerDid() const { return mLabelerDid; }
     bool isGlobal() const { return mLabelerDid.isEmpty(); }
 
@@ -53,6 +57,7 @@ private:
     QEnums::ContentVisibility mDefaultVisibility = QEnums::ContentVisibility::CONTENT_VISIBILITY_SHOW;
     QEnums::LabelTarget mLabelTarget = QEnums::LabelTarget::LABEL_TARGET_CONTENT;
     QEnums::LabelSeverity mSeverity = QEnums::LabelSeverity::LABEL_SEVERITY_NONE;
+    bool mIsBadge = false;
     QString mLabelerDid; // empty means global
 };
 

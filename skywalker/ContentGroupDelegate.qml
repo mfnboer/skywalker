@@ -35,6 +35,8 @@ ColumnLayout {
             accessibleName: qsTr("target of the label")
             iconColor: guiSettings.textColor
             Material.background: "transparent"
+            visible: !contentGroup.isBadge
+
             onClicked: {
                 if (contentGroup.target === QEnums.LABEL_TARGET_CONTENT)
                     root.getSkywalker().showStatusMessage(qsTr("Label targets full content"), QEnums.STATUS_LEVEL_INFO)
@@ -67,27 +69,27 @@ ColumnLayout {
             Layout.fillWidth: true
             checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW
             horizontalAlignment: Qt.AlignHCenter
-            text: qsTr("Show");
+            text: contentGroup.isBadge ? qsTr("Off") : qsTr("Show");
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
                     setContentPrefVisibility(QEnums.CONTENT_PREF_VISIBILITY_SHOW)
             }
 
-            Accessible.name: qsTr(`show ${contentGroup.text}`)
+            Accessible.name: contentGroup.isBadge ? qsTr(`disable badge for ${contentGroup.text}`) : qsTr(`show ${contentGroup.text}`)
         }
         SkyRadioButton {
             Layout.fillWidth: true
             checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_WARN
             horizontalAlignment: Qt.AlignHCenter
-            text: qsTr("Warn");
+            text: contentGroup.isBadge ? qsTr("Show badge") : qsTr("Warn");
             visible: !contentGroup.isAdult || adultContent
             onCheckedChanged: {
                 if (checked)
                     setContentPrefVisibility(QEnums.CONTENT_PREF_VISIBILITY_WARN)
             }
 
-            Accessible.name: qsTr(`warn for ${contentGroup.text}`)
+            Accessible.name: contentGroup.isBadge ? qsTr(`show badge for ${contentGroup.text}`) :  qsTr(`warn for ${contentGroup.text}`)
         }
         SkyRadioButton {
             Layout.rightMargin: contentGroupView.margin
