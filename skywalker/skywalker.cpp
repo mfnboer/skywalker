@@ -110,17 +110,23 @@ Skywalker::~Skywalker()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString user, QString password, const QString host, const QString authFactorToken)
+void Skywalker::login(const QString user, QString password, const QString host, bool rememberPassword, const QString authFactorToken)
 {
     qDebug() << "Login:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
+
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
-        [this, host, user]{
+        [this, host, user, password, rememberPassword]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
             updateUser(session->mDid, host);
             saveSession(*session);
+            mUserSettings.setRememberPassword(session->mDid, rememberPassword);
+
+            if (rememberPassword)
+                mUserSettings.savePassword(session->mDid, password);
+
             emit loginOk();
             startRefreshTimers();
         },
@@ -129,6 +135,43 @@ void Skywalker::login(const QString user, QString password, const QString host, 
             mUserSettings.setActiveUserDid({});
             emit loginFailed(error, msg, host, user, password);
         });
+}
+
+bool Skywalker::autoLogin()
+{
+    qDebug() << "Auto login";
+    const QString did = mUserSettings.getActiveUserDid();
+
+    if (did.isEmpty())
+    {
+        qDebug() << "No active user";
+        return false;
+    }
+
+    if (!mUserSettings.getRememberPassword(did))
+    {
+        qDebug() << "Remember password not enabled";
+        return false;
+    }
+
+    const QString host = mUserSettings.getHost(did);
+
+    if (host.isEmpty())
+    {
+        qDebug() << "No host";
+        return false;
+    }
+
+    ATProto::ComATProtoServer::Session session = mUserSettings.getSession(did);
+
+    if (session.mEmailAuthFactor)
+    {
+        qDebug() << "2FA active";
+        return false;
+    }
+
+    login(did, mUserSettings.getPassword(did), host, true, {});
+    return true;
 }
 
 bool Skywalker::resumeSession(bool retry)
@@ -142,6 +185,8 @@ bool Skywalker::resumeSession(bool retry)
         qDebug() << "No saved session";
         return false;
     }
+
+    qInfo() << "Session:" << session.mDid << session.mAccessJwt << session.mRefreshJwt;
 
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
@@ -163,7 +208,8 @@ bool Skywalker::resumeSession(bool retry)
                     },
                     [this](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearCredentials(mUserDid);
+                        mUserSettings.clearTokens(mUserDid);
+                        mBsky->clearSession();
                         emit resumeSessionFailed(msg);
                     });
             }
@@ -187,7 +233,8 @@ bool Skywalker::resumeSession(bool retry)
                     },
                     [this, did=session.mDid](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearCredentials(did);
+                        mUserSettings.clearTokens(did);
+                        mBsky->clearSession();
                         emit resumeSessionFailed(msg);
                     });
             }
@@ -204,7 +251,28 @@ void Skywalker::deleteSession()
 {
     Q_ASSERT(mBsky);
     qDebug() << "Delete session";
-    mBsky->deleteSession({}, {});
+    auto* session = mBsky->getSession();
+
+    if (!session)
+    {
+        qWarning() << "No session to delete";
+        return;
+    }
+
+    const QString did = session->mDid;
+
+    mBsky->deleteSession(
+        [this, did]{
+            qDebug() << "Session deleted:" << did;
+            mUserSettings.clearTokens(did);
+            emit sessionDeleted();
+        },
+        [this, did](const QString& error, const QString& msg){
+            qDebug() << "Session could not be deleted:" << did << error << " - " << msg;
+            mUserSettings.clearTokens(did);
+            mBsky->clearSession();
+            emit sessionDeleted();
+        });
 }
 
 void Skywalker::switchUser(const QString& did)
@@ -2730,12 +2798,6 @@ void Skywalker::restoreDebugLogging()
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
 {
     emit statusMessage(msg, level);
-}
-
-void Skywalker::clearPassword()
-{
-    if (!mUserDid.isEmpty())
-        mUserSettings.clearCredentials(mUserDid);
 }
 
 void Skywalker::handleAppStateChange(Qt::ApplicationState state)

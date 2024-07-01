@@ -51,8 +51,10 @@ public:
 
     Q_INVOKABLE QString getHost(const QString& did) const;
 
-    // Deprecated
-    void savePassword(const QString& did, const QString& password);
+    Q_INVOKABLE void setRememberPassword(const QString& did, bool enable);
+    Q_INVOKABLE bool getRememberPassword(const QString& did) const;
+
+    Q_INVOKABLE void savePassword(const QString& did, const QString& password);
     Q_INVOKABLE QString getPassword(const QString& did) const;
 
     QString getHandle(const QString& did) const;
@@ -66,6 +68,7 @@ public:
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     ATProto::ComATProtoServer::Session getSession(const QString& did) const;
 
+    void clearTokens(const QString& did);
     void clearCredentials(const QString& did);
 
     void saveSyncTimestamp(const QString& did, QDateTime timestamp);

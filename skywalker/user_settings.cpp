@@ -139,16 +139,41 @@ QString UserSettings::getHost(const QString& did) const
     return mSettings.value(key(did, "host")).toString();
 }
 
+void UserSettings::setRememberPassword(const QString& did, bool enable)
+{
+    mSettings.setValue(key(did, "rememberPassword"), enable);
+
+    if (!enable)
+        mSettings.remove(key(did, "password"));
+
+    sync();
+}
+
+bool UserSettings::getRememberPassword(const QString& did) const
+{
+    return mSettings.value(key(did, "rememberPassword"), false).toBool();
+}
+
 void UserSettings::savePassword(const QString& did, const QString& password)
 {
-    Q_ASSERT(false);
+    if (!getRememberPassword(did))
+    {
+        qWarning() << "Password saving is not enabled";
+        return;
+    }
+
     const QByteArray encryptedPassword = mEncryption.encrypt(password, KEY_ALIAS_PASSWORD);
     mSettings.setValue(key(did, "password"), encryptedPassword);
 }
 
 QString UserSettings::getPassword(const QString& did) const
 {
-    Q_ASSERT(false);
+    if (!getRememberPassword(did))
+    {
+        qWarning() << "Password saving is not enabled";
+        return {};
+    }
+
     const QByteArray encryptedPassword = mSettings.value(key(did, "password")).toByteArray();
 
     if (encryptedPassword.isEmpty())
@@ -184,10 +209,11 @@ QString UserSettings::getAvatar(const QString& did) const
 
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
+    qDebug() << "Save session";
     mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
-    mSettings.remove(key(session.mDid, "password"));
+    mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
     mSettings.sync();
 }
 
@@ -198,15 +224,24 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) 
     session.mHandle = mSettings.value(key(did, "handle")).toString();
     session.mAccessJwt = mSettings.value(key(did, "access")).toString();
     session.mRefreshJwt = mSettings.value(key(did, "refresh")).toString();
+    session.mEmailAuthFactor = mSettings.value(key(did, "2FA"), false).toBool();
     return session;
+}
+
+void UserSettings::clearTokens(const QString& did)
+{
+    qDebug() << "Clear tokens:" << did;
+    mSettings.remove(key(did, "access"));
+    mSettings.remove(key(did, "refresh"));
+    mSettings.sync();
 }
 
 void UserSettings::clearCredentials(const QString& did)
 {
     qDebug() << "Clear credentials:" << did;
+    setRememberPassword(did, false);
     mSettings.remove(key(did, "password"));
-    mSettings.setValue(key(did, "access"), {});
-    mSettings.setValue(key(did, "refresh"), {});
+    clearTokens(did);
 }
 
 void UserSettings::saveSyncTimestamp(const QString& did, QDateTime timestamp)

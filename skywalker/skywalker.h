@@ -66,7 +66,8 @@ public:
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
 
-    Q_INVOKABLE void login(const QString user, QString password, const QString host, const QString authFactorToken);
+    Q_INVOKABLE void login(const QString user, QString password, const QString host, bool rememberPassword, const QString authFactorToken);
+    Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeSession(bool retry = false);
     Q_INVOKABLE void deleteSession();
     Q_INVOKABLE void switchUser(const QString& did);
@@ -168,7 +169,6 @@ public:
     Q_INVOKABLE bool sendAppToBackground();
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
-    Q_INVOKABLE void clearPassword();
     Q_INVOKABLE void signOut();
 
     void makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update);
@@ -216,6 +216,7 @@ signals:
     void loginFailed(QString error, QString msg, QString host, QString handle, QString password);
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
+    void sessionDeleted();
     void timelineSyncOK(int index);
     void timelineSyncFailed();
     void timelineRefreshed(int prevTopPostIndex);

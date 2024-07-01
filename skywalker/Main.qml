@@ -112,6 +112,11 @@ ApplicationWindow {
         onResumeSessionFailed: (error) => {
             closeStartupStatus()
 
+            if (skywalker.autoLogin()) {
+                showStartupStatus()
+                return
+            }
+
             if (error)
                 statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
 
@@ -122,6 +127,11 @@ ApplicationWindow {
         onSessionExpired: (error) => {
             closeStartupStatus()
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            signOutCurrentUser()
+            signIn()
+        }
+
+        onSessionDeleted: {
             signOutCurrentUser()
             signIn()
         }
@@ -408,9 +418,6 @@ ApplicationWindow {
 
         onSignOut: {
             skywalker.deleteSession()
-            skywalker.clearPassword()
-            signOutCurrentUser()
-            signIn()
             close()
         }
 
@@ -450,8 +457,12 @@ ApplicationWindow {
                 signOutCurrentUser()
                 skywalker.switchUser(profile.did)
 
-                if (skywalker.resumeSession())
+                if (skywalker.resumeSession()) {
                     showStartupStatus()
+                }
+                else if (skywalker.autoLogin()) {
+                    showStartupStatus()
+                }
                 else {
                     const userSettings = skywalker.getUserSettings()
                     const host = userSettings.getHost(profile.did)
@@ -715,7 +726,7 @@ ApplicationWindow {
         let page = component.createObject(root, {
                 host: host,
                 user: handle,
-                did:did,
+                did: did,
                 errorCode: error,
                 errorMsg: msg,
                 password: password
@@ -724,10 +735,10 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, authFactorToken) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken) => {
                 popStack()
                 const user = did ? did : handle
-                skywalkerLogin(user, password, host, authFactorToken)
+                skywalkerLogin(user, password, host, rememberPassword, authFactorToken)
         })
         pushStack(page)
     }
@@ -739,9 +750,9 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword) => {
                 popStack()
-                skywalkerLogin(handle, password, host)
+                skywalkerLogin(handle, password, host, rememberPassword)
         })
 
         pushStack(page)
@@ -779,7 +790,14 @@ ApplicationWindow {
                 }
                 else {
                     const host = userSettings.getHost(profile.did)
-                    loginUser(host, profile.handle, profile.did)
+
+                    if (userSettings.getRememberPassword(profile.did)) {
+                        const password = userSettings.getPassword(profile.did)
+                        skywalkerLogin(profile.did, password, host, true)
+                    }
+                    else {
+                        loginUser(host, profile.handle, profile.did)
+                    }
                 }
         })
         page.onDeletedUser.connect((profile) => {
@@ -799,9 +817,9 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(user, password, host, authFactorToken) {
+    function skywalkerLogin(user, password, host, rememberPassword, authFactorToken) {
         showStartupStatus()
-        skywalker.login(user, password, host, authFactorToken)
+        skywalker.login(user, password, host, rememberPassword, authFactorToken)
     }
 
     function signOutCurrentUser() {
@@ -1438,6 +1456,8 @@ ApplicationWindow {
 
         // Try to resume the previous session. If that fails, then ask the user to login.
         if (skywalker.resumeSession())
+            showStartupStatus()
+        else if (skywalker.autoLogin())
             showStartupStatus()
         else
             signIn()

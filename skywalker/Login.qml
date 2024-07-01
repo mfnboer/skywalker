@@ -11,8 +11,9 @@ Page {
     property string errorCode
     property string errorMsg
     property string password
+    property var userSettings: root.getSkywalker().getUserSettings()
 
-    signal accepted(string host, string handle, string password, string did, string authFactorTokenField)
+    signal accepted(string host, string handle, string password, string did, bool rememberPassword, string authFactorTokenField)
     signal canceled
 
     id: loginPage
@@ -101,6 +102,16 @@ Page {
                 maximumLength: 255
             }
 
+            AccessibleSwitch {
+                id: rememberPasswordSwitch
+                text: qsTr("Remember password")
+                checked: !isNewAccount() && userSettings.getRememberPassword(did)
+                onCheckedChanged: {
+                    if (!isNewAccount())
+                        userSettings.setRememberPassword(did)
+                }
+            }
+
             AccessibleText {
                 Layout.fillWidth: true
                 topPadding: 10
@@ -158,7 +169,7 @@ Page {
             enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
             onClicked: {
                 const handle = autoCompleteHandle(userField.text, hostField.editText)
-                loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did, authFactorTokenField.text)
+                loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did, rememberPasswordSwitch.checked, authFactorTokenField.text)
             }
         }
     }
