@@ -46,7 +46,8 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
-    mContentFilter(mUserPreferences, this),
+    mUserSettings(this),
+    mContentFilter(mUserPreferences, &mUserSettings, this),
     mBookmarks(this),
     mMutedWords(this),
     mFocusHashtags(new FocusHashtags(this)),
@@ -55,7 +56,6 @@ Skywalker::Skywalker(QObject* parent) :
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
-    mUserSettings(this),
     mAnniversary(mUserDid, mUserSettings, this),
     mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                    mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,

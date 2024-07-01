@@ -16,7 +16,8 @@ class ContentGroupListModel : public QAbstractListModel
 public:
     enum class Role {
         ContentGroup = Qt::UserRole + 1,
-        ContentPrefVisibility
+        ContentPrefVisibility,
+        IsNewLabel
     };
 
     using Ptr = std::unique_ptr<ContentGroupListModel>;
@@ -61,6 +62,7 @@ private:
     bool mSubscribed = false;
     std::vector<ContentGroup> mContentGroupList;
     std::unordered_map<int, QEnums::ContentPrefVisibility> mChangedVisibility;
+    std::unordered_set<QString> mNewLabelIds;
 };
 
 }

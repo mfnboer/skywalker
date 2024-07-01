@@ -7,6 +7,8 @@
 
 namespace Skywalker {
 
+class UserSettings;
+
 class IContentFilter
 {
 public:
@@ -38,7 +40,7 @@ public:
     static ContentLabelList getContentLabels(const LabelList& labels);
     static void addContentLabels(ContentLabelList& contentLabels, const LabelList& labels);
 
-    explicit ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent = nullptr);
+    explicit ContentFilter(const ATProto::UserPreferences& userPreferences, UserSettings* userSettings, QObject* parent = nullptr);
 
     // Returns a global content group if the labelId is a global label
     const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const;
@@ -59,10 +61,16 @@ public:
     std::unordered_set<QString> getSubscribedLabelerDids() const;
     std::vector<QString> getSubscribedLabelerDidsOrdered() const;
     size_t numLabelers() const;
+    QStringList getLabelIds(const QString& labelerDid) const;
 
     void addContentGroupMap(const QString& did, const ContentGroupMap& contentGroupMap);
     void addContentGroups(const QString& did, const std::vector<ContentGroup>& contentGroups);
     void removeContentGroups(const QString& did);
+
+    Q_INVOKABLE void saveLabelIdsToSettings(const QString& labelerDid);
+    void removeLabelIdsFromSettings(const QString &labelerDid);
+    std::unordered_set<QString> checkNewLabelIds(const QString& labelerDid) const;
+    Q_INVOKABLE bool hasNewLabels(const QString& labelerDid) const;
 
     static bool isFixedLabelerSubscription(const QString& did);
 
@@ -75,6 +83,7 @@ private:
     static void initContentGroups();
 
     const ATProto::UserPreferences& mUserPreferences;
+    UserSettings* mUserSettings;
     std::unordered_map<QString, ContentGroupMap> mLabelerGroupMap; // labeler DID -> group map
 };
 

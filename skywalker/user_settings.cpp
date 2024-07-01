@@ -649,6 +649,43 @@ void UserSettings::setFocusHashtags(const QString& did, const QJsonDocument& jso
     mSettings.setValue(key(did, "focusHashtags"), jsonHashtags);
 }
 
+QVariantHash UserSettings::getLabelMap(const QString& did) const
+{
+    return mSettings.value(key(did, "labelMap")).toHash();
+}
+
+void UserSettings::setLabelMap(const QString& did, const QVariantHash& labelMap)
+{
+    mSettings.setValue(key(did, "labelMap"), labelMap);
+}
+
+QStringList UserSettings::getLabels(const QString& did, const QString& labelerDid) const
+{
+    const QVariantHash labelMap = getLabelMap(did);
+    const QVariant& labels = labelMap[labelerDid];
+    return labels.toStringList();
+}
+
+void UserSettings::addLabels(const QString& did, const QString& labelerDid, const QStringList labels)
+{
+    QVariantHash labelMap = getLabelMap(did);
+    labelMap[labelerDid] = labels;
+    setLabelMap(did, labelMap);
+}
+
+void UserSettings::removeLabels(const QString& did, const QString& labelerDid)
+{
+    QVariantHash labelMap = getLabelMap(did);
+    labelMap.remove(labelerDid);
+    setLabelMap(did, labelMap);
+}
+
+bool UserSettings::containsLabeler(const QString& did, const QString& labelerDid) const
+{
+    const QVariantHash labelMap = getLabelMap(did);
+    return labelMap.contains(labelerDid);
+}
+
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
 {
     mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);

@@ -26,6 +26,9 @@ void ContentGroupListModel::init()
 {
     mAdultContent = mContentFilter.getAdultContent();
 
+    if (mSubscribed && !mLabelerDid.isEmpty())
+        mNewLabelIds = mContentFilter.checkNewLabelIds(mLabelerDid);
+
     connect(&mContentFilter, &ContentFilter::contentGroupsChanged, this, [this]{
         mAdultContent = mContentFilter.getAdultContent();
         mChangedVisibility.clear();
@@ -89,6 +92,8 @@ QVariant ContentGroupListModel::data(const QModelIndex& index, int role) const
 
         return mContentFilter.getGroupPrefVisibility(group);
     }
+    case Role::IsNewLabel:
+        return mNewLabelIds.contains(group.getLabelId());
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -128,7 +133,8 @@ QHash<int, QByteArray> ContentGroupListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::ContentGroup), "contentGroup" },
-        { int(Role::ContentPrefVisibility), "contentPrefVisibility" }
+        { int(Role::ContentPrefVisibility), "contentPrefVisibility" },
+        { int(Role::IsNewLabel), "isNewLabel" }
     };
 
     return roles;

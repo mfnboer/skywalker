@@ -7,6 +7,7 @@ Page {
     required property var globalLabelModel
     required property int labelerAuthorListModelId
     property var skywalker: root.getSkywalker()
+    property var contentFilter: skywalker.getContentFilter()
     property int margin: 10
 
     signal closed()
@@ -88,6 +89,7 @@ Page {
 
             delegate: AuthorViewDelegate {
                 width: labelerListView.width - 20
+                highlight: contentFilter.hasNewLabels(author.did)
 
                 SvgImage {
                     height: 40
@@ -103,6 +105,7 @@ Page {
                     onClicked: {
                         skywalker.saveGlobalContentFilterPreferences();
                         skywalker.getDetailedProfile(author.did)
+                        parent.highlight = false
                     }
                 }
             }
@@ -118,7 +121,6 @@ Page {
     }
 
     Component.onDestruction: {
-        let contentFilter = skywalker.getContentFilter()
         contentFilter.onSubscribedLabelersChanged.disconnect(reloadSubscribedLabelers)
 
         skywalker.saveGlobalContentFilterPreferences();
@@ -126,7 +128,6 @@ Page {
     }
 
     Component.onCompleted: {
-        let contentFilter = skywalker.getContentFilter()
         contentFilter.onSubscribedLabelersChanged.connect(reloadSubscribedLabelers)
     }
 }

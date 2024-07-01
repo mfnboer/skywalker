@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "content_filter.h"
+#include "user_settings.h"
 
 namespace Skywalker {
 
@@ -120,9 +121,10 @@ bool ContentFilter::isGlobalLabel(const QString& labelId)
     return getGlobalContentGroup(labelId) != nullptr;
 }
 
-ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences, QObject* parent) :
+ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences, UserSettings* userSettings, QObject* parent) :
     QObject(parent),
-    mUserPreferences(userPreferences)
+    mUserPreferences(userPreferences),
+    mUserSettings(userSettings)
 {
 }
 
@@ -324,6 +326,20 @@ size_t ContentFilter::numLabelers() const
     return mUserPreferences.numLabelers() + 1; // +1 for Bluesky labeler
 }
 
+QStringList ContentFilter::getLabelIds(const QString& labelerDid) const
+{
+    if (!mLabelerGroupMap.contains(labelerDid))
+        return {};
+
+    QStringList labelIds;
+    const ContentGroupMap& contentGroups = mLabelerGroupMap.at(labelerDid);
+
+    for (const auto& [labelId, _] : contentGroups)
+        labelIds.push_back(labelId);
+
+    return labelIds;
+}
+
 bool ContentFilter::isFixedLabelerSubscription(const QString& did)
 {
     return did == BLUESKY_MODERATOR_DID;
@@ -344,12 +360,83 @@ void ContentFilter::addContentGroups(const QString& did, const std::vector<Conte
 
     for (const auto& group : contentGroups)
         groupMap[group.getLabelId()] = group;
+
+    saveLabelIdsToSettings(did);
 }
 
 void ContentFilter::removeContentGroups(const QString& did)
 {
     Q_ASSERT(!did.isEmpty());
     mLabelerGroupMap.erase(did);
+    removeLabelIdsFromSettings(did);
+}
+
+void ContentFilter::saveLabelIdsToSettings(const QString& labelerDid)
+{
+    qDebug() << "Save label ids:" << labelerDid;
+    const QString did = mUserSettings->getActiveUserDid();
+    Q_ASSERT(!did.isEmpty());
+
+    if (did.isEmpty())
+    {
+        qWarning() << "No DID";
+        return;
+    }
+
+    const auto labels = getLabelIds(labelerDid);
+    mUserSettings->addLabels(did, labelerDid, labels);
+}
+
+void ContentFilter::removeLabelIdsFromSettings(const QString &labelerDid)
+{
+    qDebug() << "Remove label ids:" << labelerDid;
+    const QString did = mUserSettings->getActiveUserDid();
+    Q_ASSERT(!did.isEmpty());
+
+    if (did.isEmpty())
+    {
+        qWarning() << "No DID";
+        return;
+    }
+
+    mUserSettings->removeLabels(did, labelerDid);
+}
+
+std::unordered_set<QString> ContentFilter::checkNewLabelIds(const QString& labelerDid) const
+{
+    const QString did = mUserSettings->getActiveUserDid();
+    Q_ASSERT(!did.isEmpty());
+
+    if (did.isEmpty())
+    {
+        qWarning() << "No DID";
+        return {};
+    }
+
+    if (!mUserSettings->containsLabeler(did, labelerDid))
+    {
+        qDebug() << "No labels saved for:" << labelerDid;
+        return {};
+    }
+
+    std::unordered_set<QString> newLabels;
+    const QStringList savedLabels = mUserSettings->getLabels(did, labelerDid); // TODO store as set?
+    std::unordered_set<QString> savedLabelSet(savedLabels.begin(), savedLabels.end());
+    const QStringList labels = getLabelIds(labelerDid);
+
+    for (const auto& label : labels)
+    {
+        if (!savedLabelSet.contains(label))
+            newLabels.insert(label);
+    }
+
+    return newLabels;
+}
+
+bool ContentFilter::hasNewLabels(const QString& labelerDid) const
+{
+    const auto newLabels = checkNewLabelIds(labelerDid);
+    return !newLabels.empty();
 }
 
 }

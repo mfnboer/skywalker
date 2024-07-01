@@ -128,7 +128,7 @@ const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNE
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp) :
     mBackgroundApp(backgroundApp),
     mUserSettings(settingsFileName),
-    mContentFilter(mUserPreferences),
+    mContentFilter(mUserPreferences, &mUserSettings),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
     mNotificationListModel.enableRetrieveNotificationPosts(false);
@@ -137,7 +137,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop) :
     mEventLoop(eventLoop),
     mUserSettings(settingsFileName),
-    mContentFilter(mUserPreferences),
+    mContentFilter(mUserPreferences, &mUserSettings),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
     mNotificationListModel.enableRetrieveNotificationPosts(false);

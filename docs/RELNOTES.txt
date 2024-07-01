@@ -3,6 +3,7 @@ next
 * Mute post thread
 * Show account labels on post
 * Align label settings with bluesky app
+* Notification when a subscribed-to labeler has new labels
 * Option to remember password
 * Save external link in draft post
 * Bug fixes

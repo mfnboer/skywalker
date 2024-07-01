@@ -601,8 +601,11 @@ Page {
                         visible: !page.isSubscribed
                     }
 
-                    SeparatorLine {
+                    Rectangle {
                         Layout.fillWidth: true
+                        Layout.topMargin: 10
+                        height: 1
+                        color: guiSettings.separatorColor
                     }
                 }
 
@@ -1141,6 +1144,7 @@ Page {
         skywalker.removeListListModel(listListModelId)
 
         if (contentGroupListModelId > -1) {
+            skywalker.getContentFilter().saveLabelIdsToSettings(author.did)
             skywalker.saveContentFilterPreferences(contentGroupListModel)
             skywalker.removeContentGroupListModel(contentGroupListModelId)
         }

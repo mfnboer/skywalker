@@ -311,6 +311,7 @@ private:
     ATProto::UserPreferences mUserPreferences;
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
+    UserSettings mUserSettings;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;
@@ -353,7 +354,6 @@ private:
     HashtagIndex mUserHashtags;
     HashtagIndex mSeenHashtags;
     FavoriteFeeds mFavoriteFeeds;
-    UserSettings mUserSettings;
     Anniversary mAnniversary;
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;

@@ -439,8 +439,8 @@ private:
     ProfileStore mFollowing;
     ProfileStore mMutedReposts;
     ATProto::UserPreferences mUserPreferences;
-    ContentFilter mContentFilter{mUserPreferences};
     UserSettings mUserSettings;
+    ContentFilter mContentFilter{mUserPreferences, &mUserSettings};
     Bookmarks mBookmarks;
     MutedWords mMutedWords;
     FocusHashtags mFocusHashtags;

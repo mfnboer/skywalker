@@ -14,6 +14,7 @@ Rectangle {
     property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
     property bool showFollow: true
+    property bool highlight: false
     readonly property int margin: 10
 
     signal follow(basicprofile profile)
@@ -22,7 +23,7 @@ Rectangle {
 
     id: authorRect
     height: grid.height
-    color: guiSettings.backgroundColor
+    color: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
 
     Accessible.role: Accessible.Button
     Accessible.name: author.name

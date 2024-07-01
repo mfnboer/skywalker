@@ -44,7 +44,7 @@ GridLayout {
     Rectangle {
         Layout.columnSpan: 2
         Layout.fillWidth: true
-        height: author.labels ? contentLabels.height + 5 : 0
+        Layout.preferredHeight: author.labels ? contentLabels.height + 5 : 0
         color: "transparent"
 
         ContentLabels {
