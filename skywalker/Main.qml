@@ -578,9 +578,9 @@ ApplicationWindow {
         onUndoRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onMuteThreadOk: statusPopup.show(qsTr("You will no longer receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 2);
+        onMuteThreadOk: statusPopup.show(qsTr("You will no longer receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 5);
         onMuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUnmuteThreadOk: statusPopup.show(qsTr("You will receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 2);
+        onUnmuteThreadOk: statusPopup.show(qsTr("You will receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 5);
         onUnmuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onThreadgateOk: statusPopup.show(qsTr("Reply restrictions set"), QEnums.STATUS_LEVEL_INFO, 2)
         onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)

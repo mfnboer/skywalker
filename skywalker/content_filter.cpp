@@ -384,7 +384,7 @@ void ContentFilter::saveLabelIdsToSettings(const QString& labelerDid)
     }
 
     const auto labels = getLabelIds(labelerDid);
-    mUserSettings->addLabels(did, labelerDid, labels);
+    mUserSettings->setLabels(did, labelerDid, labels);
 }
 
 void ContentFilter::removeLabelIdsFromSettings(const QString &labelerDid)
@@ -420,8 +420,8 @@ std::unordered_set<QString> ContentFilter::checkNewLabelIds(const QString& label
     }
 
     std::unordered_set<QString> newLabels;
-    const QStringList savedLabels = mUserSettings->getLabels(did, labelerDid); // TODO store as set?
-    std::unordered_set<QString> savedLabelSet(savedLabels.begin(), savedLabels.end());
+    const QStringList savedLabels = mUserSettings->getLabels(did, labelerDid);
+    const std::unordered_set<QString> savedLabelSet(savedLabels.begin(), savedLabels.end());
     const QStringList labels = getLabelIds(labelerDid);
 
     for (const auto& label : labels)

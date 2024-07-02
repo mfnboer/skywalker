@@ -173,7 +173,7 @@ public:
     void setFocusHashtags(const QString& did, const QJsonDocument& jsonHashtags);
 
     QStringList getLabels(const QString& did, const QString& labelerDid) const;
-    void addLabels(const QString& did, const QString& labelerDid, const QStringList labels);
+    void setLabels(const QString& did, const QString& labelerDid, const QStringList labels);
     void removeLabels(const QString& did, const QString& labelerDid);
     bool containsLabeler(const QString& did, const QString& labelerDid) const;
 
@@ -191,10 +191,8 @@ signals:
 private:
     QString key(const QString& did, const QString& subkey) const;
     QString displayKey(const QString& key) const;
+    QString labelsKey(const QString& did, const QString& labelerDid) const;
     void cleanup();
-
-    QVariantHash getLabelMap(const QString& did) const;
-    void setLabelMap(const QString& did, const QVariantHash& labelMap);
 
     QSettings mSettings;
     PasswordEncryption mEncryption;
