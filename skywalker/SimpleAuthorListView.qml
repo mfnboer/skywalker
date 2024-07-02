@@ -113,7 +113,6 @@ ListView {
                 ContentLabels {
                     id: contentLabels
                     anchors.left: parent.left
-                    //anchors.leftMargin: 8
                     anchors.right: undefined
                     contentLabels: author.labels
                     contentAuthorDid: author.did

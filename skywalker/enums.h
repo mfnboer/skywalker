@@ -3,6 +3,7 @@
 #pragma once
 #include <atproto/lib/lexicon/app_bsky_actor.h>
 #include <atproto/lib/lexicon/app_bsky_graph.h>
+#include <atproto/lib/lexicon/app_bsky_notification.h>
 #include <atproto/lib/lexicon/com_atproto_moderation.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -67,14 +68,19 @@ public:
 
     enum NotificationReason
     {
-        NOTIFICATION_REASON_LIKE = 0,
-        NOTIFICATION_REASON_REPOST,
-        NOTIFICATION_REASON_FOLLOW,
-        NOTIFICATION_REASON_MENTION,
-        NOTIFICATION_REASON_REPLY,
-        NOTIFICATION_REASON_QUOTE,
+        // Must match ATProto::AppBskyNotification::NotificationReason
+        NOTIFICATION_REASON_LIKE = int(ATProto::AppBskyNotification::NotificationReason::LIKE),
+        NOTIFICATION_REASON_REPOST = int(ATProto::AppBskyNotification::NotificationReason::REPOST),
+        NOTIFICATION_REASON_FOLLOW = int(ATProto::AppBskyNotification::NotificationReason::FOLLOW),
+        NOTIFICATION_REASON_MENTION = int(ATProto::AppBskyNotification::NotificationReason::MENTION),
+        NOTIFICATION_REASON_REPLY = int(ATProto::AppBskyNotification::NotificationReason::REPLY),
+        NOTIFICATION_REASON_QUOTE = int(ATProto::AppBskyNotification::NotificationReason::QUOTE),
+        NOTIFICATION_REASON_UNKNOWN = int(ATProto::AppBskyNotification::NotificationReason::UNKNOWN),
+
+        // Additional reasons
         NOTIFICATION_REASON_INVITE_CODE_USED,
-        NOTIFICATION_REASON_UNKNOWN
+        NOTIFICATION_REASON_DIRECT_MESSAGE,
+        NOTIFICATION_REASON_NEW_LABELS
     };
     Q_ENUM(NotificationReason)
 

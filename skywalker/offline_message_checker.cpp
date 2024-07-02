@@ -520,7 +520,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
 
     switch (notification.getReason())
     {
-    case ATProto::AppBskyNotification::NotificationReason::LIKE:
+    case Notification::Reason::NOTIFICATION_REASON_LIKE:
     {
         channelId = CHANNEL_LIKE;
         iconType = IconType::LIKE;
@@ -533,7 +533,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
 
         break;
     }
-    case ATProto::AppBskyNotification::NotificationReason::REPOST:
+    case Notification::Reason::NOTIFICATION_REASON_REPOST:
     {
         channelId = CHANNEL_REPOST;
         iconType = IconType::REPOST;
@@ -546,25 +546,26 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
 
         break;
     }
-    case ATProto::AppBskyNotification::NotificationReason::FOLLOW:
+    case Notification::Reason::NOTIFICATION_REASON_FOLLOW:
         channelId = CHANNEL_FOLLOW;
         iconType = IconType::FOLLOW;
         msg = QObject::tr("<b>Follows you</b>");
         break;
-    case ATProto::AppBskyNotification::NotificationReason::MENTION:
+    case Notification::Reason::NOTIFICATION_REASON_MENTION:
         iconType = IconType::MENTION;
         break;
-    case ATProto::AppBskyNotification::NotificationReason::REPLY:
+    case Notification::Reason::NOTIFICATION_REASON_REPLY:
         break;
-    case ATProto::AppBskyNotification::NotificationReason::QUOTE:
+    case Notification::Reason::NOTIFICATION_REASON_QUOTE:
         break;
-    case ATProto::AppBskyNotification::NotificationReason::DIRECT_MESSAGE:
+    case Notification::Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
         channelId = CHANNEL_CHAT;
         iconType = IconType::CHAT;
         msg = notification.getDirectMessage().getFormattedText();
         break;
-    case ATProto::AppBskyNotification::NotificationReason::INVITE_CODE_USED:
-    case ATProto::AppBskyNotification::NotificationReason::UNKNOWN:
+    case Notification::Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
+    case Notification::Reason::NOTIFICATION_REASON_NEW_LABELS:
+    case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:
         return;
     }
 

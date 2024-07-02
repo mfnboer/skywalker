@@ -371,7 +371,7 @@ void ContentFilter::removeContentGroups(const QString& did)
     removeLabelIdsFromSettings(did);
 }
 
-void ContentFilter::saveLabelIdsToSettings(const QString& labelerDid)
+void ContentFilter::saveLabelIdsToSettings(const QString& labelerDid) const
 {
     qDebug() << "Save label ids:" << labelerDid;
     const QString did = mUserSettings->getActiveUserDid();
@@ -387,7 +387,7 @@ void ContentFilter::saveLabelIdsToSettings(const QString& labelerDid)
     mUserSettings->setLabels(did, labelerDid, labels);
 }
 
-void ContentFilter::removeLabelIdsFromSettings(const QString &labelerDid)
+void ContentFilter::removeLabelIdsFromSettings(const QString &labelerDid) const
 {
     qDebug() << "Remove label ids:" << labelerDid;
     const QString did = mUserSettings->getActiveUserDid();
@@ -402,7 +402,7 @@ void ContentFilter::removeLabelIdsFromSettings(const QString &labelerDid)
     mUserSettings->removeLabels(did, labelerDid);
 }
 
-std::unordered_set<QString> ContentFilter::checkNewLabelIds(const QString& labelerDid) const
+std::unordered_set<QString> ContentFilter::getNewLabelIds(const QString& labelerDid) const
 {
     const QString did = mUserSettings->getActiveUserDid();
     Q_ASSERT(!did.isEmpty());
@@ -413,18 +413,25 @@ std::unordered_set<QString> ContentFilter::checkNewLabelIds(const QString& label
         return {};
     }
 
+    if (!mLabelerGroupMap.contains(labelerDid))
+    {
+        qWarning() << "Unknown labeler:" << labelerDid;
+        return {};
+    }
+
     if (!mUserSettings->containsLabeler(did, labelerDid))
     {
         qDebug() << "No labels saved for:" << labelerDid;
+        saveLabelIdsToSettings(labelerDid);
         return {};
     }
 
     std::unordered_set<QString> newLabels;
     const QStringList savedLabels = mUserSettings->getLabels(did, labelerDid);
     const std::unordered_set<QString> savedLabelSet(savedLabels.begin(), savedLabels.end());
-    const QStringList labels = getLabelIds(labelerDid);
+    const ContentGroupMap& labelMap = mLabelerGroupMap.at(labelerDid);
 
-    for (const auto& label : labels)
+    for (const auto& [label, _] : labelMap)
     {
         if (!savedLabelSet.contains(label))
             newLabels.insert(label);
@@ -435,8 +442,21 @@ std::unordered_set<QString> ContentFilter::checkNewLabelIds(const QString& label
 
 bool ContentFilter::hasNewLabels(const QString& labelerDid) const
 {
-    const auto newLabels = checkNewLabelIds(labelerDid);
+    const auto newLabels = getNewLabelIds(labelerDid);
     return !newLabels.empty();
+}
+
+std::unordered_set<QString> ContentFilter::getLabelerDidsWithNewLabels() const
+{
+    std::unordered_set<QString> labelers;
+
+    for (const auto& [labelerDid, _] : mLabelerGroupMap)
+    {
+        if (hasNewLabels(labelerDid))
+            labelers.insert(labelerDid);
+    }
+
+    return labelers;
 }
 
 }

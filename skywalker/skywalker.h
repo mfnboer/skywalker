@@ -202,6 +202,7 @@ public:
     const QString getAvatarUrl() const { return mUserProfile.getAvatarUrl(); }
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
+    void addToUnreadNotificationCount(int addUnread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }

@@ -9,16 +9,18 @@
 
 namespace Skywalker {
 
+class ContentFilter;
 class PostCache;
 
 class Notification
 {
 public:
-    using Reason = ATProto::AppBskyNotification::NotificationReason;
+    using Reason = QEnums::NotificationReason;
 
     explicit Notification(const ATProto::AppBskyNotification::Notification* notification);
     Notification(const QString& inviteCode, const BasicProfile& usedBy);
     Notification(const MessageView& messageView, const BasicProfile& messageSender);
+    explicit Notification(const BasicProfileList& labelersWithLabels);
 
     QString getUri() const;
     QString getCid() const;
@@ -26,11 +28,13 @@ public:
     QString getReasonSubjectUri() const;
     BasicProfile getAuthor() const;
     const BasicProfileList& getOtherAuthors() const { return mOtherAuthors; }
+    BasicProfileList getAllAuthors() const;
     PostRecord getPostRecord() const;
     Post getReasonPost(const PostCache&) const;
     Post getNotificationPost(const PostCache&) const;
     bool isRead() const;
-    QDateTime getTimestamp() const;
+    void setIsRead(bool isRead) { mIsRead = isRead; }
+    QDateTime getTimestamp() const;    
     bool isEndOfList() const { return mEndOfList; }
     void setEndOfList(bool endOfFeed) { mEndOfList = endOfFeed; }
 
@@ -44,6 +48,8 @@ public:
     void addOtherAuthor(const BasicProfile& author);
     const MessageView& getDirectMessage() const { return mDirectMessage; }
 
+    bool updateNewLabels(const ContentFilter* contentFilter);
+
 private:
     Post getPost(const PostCache& cache, const QString& uri) const;
 
@@ -53,6 +59,8 @@ private:
     BasicProfile mInviteCodeUsedBy;
     MessageView mDirectMessage;
     BasicProfile mMessageSender;
+    BasicProfile mLabelerWithNewLabels;
+    bool mIsRead = false;
     bool mEndOfList = false;
 };
 

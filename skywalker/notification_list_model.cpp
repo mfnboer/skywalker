@@ -26,6 +26,8 @@ void NotificationListModel::clear()
     clearRows();
     clearLocalState();
     mInviteCodeUsedNotifications.clear();
+    mNewLabelsNotifications.clear();
+    mNotificationsSeen = false;
 }
 
 void NotificationListModel::clearLocalState()
@@ -58,6 +60,31 @@ void NotificationListModel::addInviteCodeUsageNotificationRows()
     endInsertRows();
 }
 
+void NotificationListModel::addNewLabelsNotificationRows()
+{
+    updateNewLabelsNotifications();
+
+    if (mNewLabelsNotifications.empty())
+        return;
+
+    beginInsertRows({}, mList.size(), mList.size() + mNewLabelsNotifications.size() - 1);
+
+    for (const auto& notification : mNewLabelsNotifications)
+        mList.push_back(notification);
+
+    endInsertRows();
+}
+
+void NotificationListModel::updateNewLabelsNotifications()
+{
+    for (auto it = mNewLabelsNotifications.begin(); it != mNewLabelsNotifications.end(); )
+    {
+        if (!it->updateNewLabels(&mContentFilter))
+            it = mNewLabelsNotifications.erase(it);
+        else
+            ++it;
+    }
+}
 
 bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
                                              ATProto::Client& bsky, bool clearFirst,
@@ -83,6 +110,7 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
         {
             clearRows();
             addInviteCodeUsageNotificationRows();
+            addNewLabelsNotificationRows();
         }
 
         if (isEndOfList() && !mList.empty())
@@ -190,6 +218,7 @@ void NotificationListModel::addNotificationList(const NotificationList& list, bo
     {
         clearRows();
         addInviteCodeUsageNotificationRows();
+        addNewLabelsNotificationRows();
     }
 
     const size_t newRowCount = mList.size() + list.size();
@@ -216,9 +245,9 @@ NotificationListModel::NotificationList NotificationListModel::createNotificatio
 
         switch (notification.getReason())
         {
-        case Notification::Reason::LIKE:
-        case Notification::Reason::FOLLOW:
-        case Notification::Reason::REPOST:
+        case Notification::Reason::NOTIFICATION_REASON_LIKE:
+        case Notification::Reason::NOTIFICATION_REASON_FOLLOW:
+        case Notification::Reason::NOTIFICATION_REASON_REPOST:
         {
             const auto& uri = notification.getReasonSubjectUri();
             auto& aggregateMap = aggregate[notification.getReason()];
@@ -257,8 +286,8 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
     {
         switch (notification.getReason())
         {
-        case Notification::Reason::LIKE:
-        case Notification::Reason::REPOST:
+        case Notification::Reason::NOTIFICATION_REASON_LIKE:
+        case Notification::Reason::NOTIFICATION_REASON_REPOST:
         {
             const auto& uri = notification.getReasonSubjectUri();
 
@@ -267,9 +296,9 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
 
             break;
         }
-        case Notification::Reason::REPLY:
-        case Notification::Reason::MENTION:
-        case Notification::Reason::QUOTE:
+        case Notification::Reason::NOTIFICATION_REASON_REPLY:
+        case Notification::Reason::NOTIFICATION_REASON_MENTION:
+        case Notification::Reason::NOTIFICATION_REASON_QUOTE:
             if (mRetrieveNotificationPosts)
             {
                 const auto& uri = notification.getUri();
@@ -378,6 +407,56 @@ void NotificationListModel::dismissInviteCodeUsageNotification(int index)
     endRemoveRows();
 }
 
+int NotificationListModel::addNewLabelsNotifications(const std::unordered_map<QString, BasicProfile>& labelerProfiles)
+{
+    const std::unordered_set<QString>& labelerDids = mContentFilter.getLabelerDidsWithNewLabels();
+
+    if (labelerDids.empty())
+        return 0;
+
+    BasicProfileList labelers;
+    labelers.reserve(labelerDids.size());
+
+    for (const QString& labelerDid : labelerDids)
+    {
+        Q_ASSERT(labelerProfiles.contains(labelerDid));
+        if (!labelerProfiles.contains(labelerDid))
+        {
+            qWarning() << "Profile for labeler missing:" << labelerDid;
+            continue;
+        }
+
+        labelers.push_back(labelerProfiles.at(labelerDid));
+    }
+
+    if (!labelers.empty())
+    {
+        const Notification notification(labelers);
+        mNewLabelsNotifications.push_back(notification);
+        return 1;
+    }
+
+    return 0;
+}
+
+int NotificationListModel::getUnreadCount() const
+{
+    return getInviteCodeUsageNotificationCount() + (mNotificationsSeen ? 0 : getNewLabelsNotificationCount());
+}
+
+void NotificationListModel::setNotificationsSeen(bool seen)
+{
+    mNotificationsSeen = seen;
+}
+
+void NotificationListModel::updateRead()
+{
+    for (auto& notification : mNewLabelsNotifications)
+        notification.setIsRead(true);
+
+    changeData({ int(Role::NotificationIsRead) });
+}
+
 int NotificationListModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
@@ -399,8 +478,10 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(notification.getAuthor());
     case Role::NotificationOtherAuthors:
         return QVariant::fromValue(notification.getOtherAuthors());
+    case Role::NotificationAllAuthors:
+        return QVariant::fromValue(notification.getAllAuthors());
     case Role::NotificationReason:
-        return static_cast<QEnums::NotificationReason>(int(notification.getReason()));
+        return notification.getReason();
     case Role::NotificationReasonSubjectUri:
         return notification.getReasonSubjectUri();
     case Role::NotificationReasonSubjectCid:
@@ -607,6 +688,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
     static const QHash<int, QByteArray> roles{
         { int(Role::NotificationAuthor), "notificationAuthor" },
         { int(Role::NotificationOtherAuthors), "notificationOtherAuthors" },
+        { int(Role::NotificationAllAuthors), "notificationAllAuthors" },
         { int(Role::NotificationReason), "notificationReason" },
         { int(Role::NotificationReasonSubjectUri), "notificationReasonSubjectUri" },
         { int(Role::NotificationReasonSubjectCid), "notificationReasonSubjectCid" },

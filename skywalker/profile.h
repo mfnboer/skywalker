@@ -223,6 +223,8 @@ private:
     QString mDescription;
 };
 
+using ProfileList = QList<Profile>;
+
 class DetailedProfile : public Profile
 {
     Q_GADGET

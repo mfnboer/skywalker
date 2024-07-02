@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "notification.h"
+#include "content_filter.h"
 #include "post_cache.h"
 
 namespace Skywalker {
@@ -23,6 +24,15 @@ Notification::Notification(const MessageView& messageView, const BasicProfile& m
 {
 }
 
+Notification::Notification(const BasicProfileList& labelersWithNewLabels) :
+    mLabelerWithNewLabels(labelersWithNewLabels.front())
+{
+    mOtherAuthors.reserve(labelersWithNewLabels.size() - 1);
+
+    for (auto it = labelersWithNewLabels.begin() + 1; it != labelersWithNewLabels.end(); ++it)
+        mOtherAuthors.push_back(*it);
+}
+
 QString Notification::getUri() const
 {
     return mNotification ? mNotification->mUri : QString();
@@ -36,15 +46,18 @@ QString Notification::getCid() const
 Notification::Reason Notification::getReason() const
 {
     if (mNotification)
-        return mNotification->mReason;
-
-    if (!mInviteCode.isEmpty())
-        return Reason::INVITE_CODE_USED;
+        return static_cast<Reason>(mNotification->mReason);
 
     if (!mDirectMessage.isNull())
-        return Reason::DIRECT_MESSAGE;
+        return Reason::NOTIFICATION_REASON_DIRECT_MESSAGE;
 
-    return Reason::UNKNOWN;
+    if (!mLabelerWithNewLabels.isNull())
+        return Reason::NOTIFICATION_REASON_NEW_LABELS;
+
+    if (!mInviteCode.isEmpty())
+        return Reason::NOTIFICATION_REASON_INVITE_CODE_USED;
+
+    return Reason::NOTIFICATION_REASON_UNKNOWN;
 }
 
 QString Notification::getReasonSubjectUri() const
@@ -60,7 +73,25 @@ BasicProfile Notification::getAuthor() const
     if (!mMessageSender.isNull())
         return mMessageSender;
 
+    if (!mLabelerWithNewLabels.isNull())
+        return mLabelerWithNewLabels;
+
     return {};
+}
+
+BasicProfileList Notification::getAllAuthors() const
+{
+    const BasicProfile mainAuthor = getAuthor();
+
+    if (mainAuthor.isNull())
+        return {};
+
+    BasicProfileList authors;
+    authors.reserve(mOtherAuthors.size() + 1);
+    authors.push_back(mainAuthor);
+    authors.append(mOtherAuthors);
+
+    return authors;
 }
 
 PostRecord Notification::getPostRecord() const
@@ -106,7 +137,7 @@ Post Notification::getPost(const PostCache& cache, const QString& uri) const
 
 bool Notification::isRead() const
 {
-    return mNotification ? mNotification->mIsRead : false;
+    return mNotification ? mNotification->mIsRead : mIsRead;
 }
 
 QDateTime Notification::getTimestamp() const
@@ -117,6 +148,9 @@ QDateTime Notification::getTimestamp() const
     if (!mDirectMessage.isNull())
         return mDirectMessage.getSentAt();
 
+    if (!mLabelerWithNewLabels.isNull())
+        return QDateTime::currentDateTime();
+
     return {};
 }
 
@@ -124,21 +158,19 @@ QString Notification::getPostUri() const
 {
     switch (getReason())
     {
-    case Reason::LIKE:
-    case Reason::FOLLOW:
-    case Reason::REPOST:
+    case Reason::NOTIFICATION_REASON_LIKE:
+    case Reason::NOTIFICATION_REASON_FOLLOW:
+    case Reason::NOTIFICATION_REASON_REPOST:
         return getReasonSubjectUri();
-        break;
-    case Reason::REPLY:
-    case Reason::MENTION:
-    case Reason::QUOTE:
+    case Reason::NOTIFICATION_REASON_REPLY:
+    case Reason::NOTIFICATION_REASON_MENTION:
+    case Reason::NOTIFICATION_REASON_QUOTE:
         return getUri();
-        break;
-    case Reason::INVITE_CODE_USED:
-    case Reason::DIRECT_MESSAGE:
-    case Reason::UNKNOWN:
-        return getUri();
-        break;
+    case Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
+    case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
+    case Reason::NOTIFICATION_REASON_NEW_LABELS:
+    case Reason::NOTIFICATION_REASON_UNKNOWN:
+        return {};
     }
 
     qWarning() << "Invalid reason:" << (int)getReason();
@@ -148,6 +180,31 @@ QString Notification::getPostUri() const
 void Notification::addOtherAuthor(const BasicProfile& author)
 {
     mOtherAuthors.push_back(author);
+}
+
+bool Notification::updateNewLabels(const ContentFilter* contentFilter)
+{
+    Q_ASSERT(contentFilter);
+    Q_ASSERT(!mLabelerWithNewLabels.isNull());
+
+    for (auto it = mOtherAuthors.begin(); it != mOtherAuthors.end(); )
+    {
+        if (!contentFilter->hasNewLabels(it->getDid()))
+            it = mOtherAuthors.erase(it);
+        else
+            ++it;
+    }
+
+    if (!contentFilter->hasNewLabels(mLabelerWithNewLabels.getDid()))
+    {
+        if (mOtherAuthors.empty())
+            return false;
+
+        mLabelerWithNewLabels = mOtherAuthors.back();
+        mOtherAuthors.pop_back();
+    }
+
+    return true;
 }
 
 }

@@ -27,7 +27,7 @@ void ContentGroupListModel::init()
     mAdultContent = mContentFilter.getAdultContent();
 
     if (mSubscribed && !mLabelerDid.isEmpty())
-        mNewLabelIds = mContentFilter.checkNewLabelIds(mLabelerDid);
+        mNewLabelIds = mContentFilter.getNewLabelIds(mLabelerDid);
 
     connect(&mContentFilter, &ContentFilter::contentGroupsChanged, this, [this]{
         mAdultContent = mContentFilter.getAdultContent();

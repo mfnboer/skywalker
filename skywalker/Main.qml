@@ -273,10 +273,18 @@ ApplicationWindow {
         readonly property int searchIndex: 2
         readonly property int feedsIndex: 3
         readonly property int chatIndex: 4
+        property int prevIndex: timelineIndex
 
         id: stackLayout
         anchors.fill: parent
         currentIndex: timelineIndex
+
+        onCurrentIndexChanged: {
+            if (prevIndex === notificationIndex)
+                skywalker.notificationListModel.updateRead()
+
+            prevIndex = currentIndex
+        }
 
         StackView {
             id: timelineStack
@@ -1223,6 +1231,16 @@ ApplicationWindow {
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
         skywalker.getAuthorList(modelId)
+    }
+
+    function viewSimpleAuthorList(title, profiles) {
+        let component = Qt.createComponent("SimpleAuthorListPage.qml")
+        let view = component.createObject(root, {
+                title: title,
+                model: profiles
+        })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
     }
 
     function viewUserLists(modelId) {

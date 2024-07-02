@@ -23,6 +23,7 @@ public:
     enum class Role {
         NotificationAuthor = Qt::UserRole + 1,
         NotificationOtherAuthors,
+        NotificationAllAuthors,
         NotificationReason,
         NotificationReasonSubjectUri,
         NotificationReasonSubjectCid,
@@ -93,9 +94,18 @@ public:
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
     Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
+
     Q_INVOKABLE void addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore);
     Q_INVOKABLE void dismissInviteCodeUsageNotification(int index);
     int getInviteCodeUsageNotificationCount() const { return (int)mInviteCodeUsedNotifications.size(); }
+
+    int addNewLabelsNotifications(const std::unordered_map<QString, BasicProfile>& labelerProfiles);
+    int getNewLabelsNotificationCount() const { return (int)mNewLabelsNotifications.size(); }
+
+    int getUnreadCount() const;
+    void setNotificationsSeen(bool seen);
+    Q_INVOKABLE void updateRead();
+
     const NotificationList& getNotifications() const { return mList; }
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
     void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }
@@ -129,6 +139,8 @@ private:
     void clearLocalState();
     void clearRows();
     void addInviteCodeUsageNotificationRows();
+    void addNewLabelsNotificationRows();
+    void updateNewLabelsNotifications();
     void updateInviteCodeUser(const BasicProfile& profile);
 
     const ContentFilter& mContentFilter;
@@ -148,6 +160,8 @@ private:
     PostCache mReasonPostCache;
 
     NotificationList mInviteCodeUsedNotifications;
+    NotificationList mNewLabelsNotifications;
+    bool mNotificationsSeen = false;
 };
 
 }

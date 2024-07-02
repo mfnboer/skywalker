@@ -631,6 +631,7 @@ void Skywalker::loadLabelSettings()
     mBsky->getServices(dids, true,
         [this, labelerDids](auto output){
             auto remainingDids = labelerDids;
+            std::unordered_map<QString, BasicProfile> labelerProfiles;
 
             for (const auto& v : output->mViews)
             {
@@ -648,6 +649,7 @@ void Skywalker::loadLabelSettings()
                 qDebug() << "Add label policies for:" << did << view.getCreator().getHandle();
                 mContentFilter.addContentGroupMap(did, groupMap);
                 remainingDids.erase(did);
+                labelerProfiles[did] = view.getCreator();
             }
 
             if (!remainingDids.empty())
@@ -656,6 +658,8 @@ void Skywalker::loadLabelSettings()
                 removeLabelerSubscriptions(remainingDids);
             }
 
+            const int notificationCount = mNotificationListModel.addNewLabelsNotifications(labelerProfiles);
+            addToUnreadNotificationCount(notificationCount);
             loadMutedReposts();
         },
         [this](const QString& error, const QString& msg){
@@ -675,6 +679,7 @@ void Skywalker::removeLabelerSubscriptions(const std::unordered_set<QString>& di
         ATProto::AppBskyActor::LabelerPrefItem item;
         item.mDid = did;
         labelersPref.mLabelers.erase(item);
+        mUserSettings.removeLabels(mUserDid, did);
     }
 
     userPrefs.setLabelersPref(labelersPref);
@@ -1217,11 +1222,20 @@ void Skywalker::setGetListListInProgress(bool inProgress)
 
 void Skywalker::setUnreadNotificationCount(int unread)
 {
-    const int totalUnread = unread + mNotificationListModel.getInviteCodeUsageNotificationCount();
+    const int totalUnread = unread + mNotificationListModel.getUnreadCount();
 
     if (totalUnread != mUnreadNotificationCount)
     {
         mUnreadNotificationCount = totalUnread;
+        emit unreadNotificationCountChanged();
+    }
+}
+
+void Skywalker::addToUnreadNotificationCount(int addUnread)
+{
+    if (addUnread != 0)
+    {
+        mUnreadNotificationCount += addUnread;
         emit unreadNotificationCountChanged();
     }
 }
@@ -1399,7 +1413,10 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
         updateSeen);
 
     if (updateSeen)
+    {
+        mNotificationListModel.setNotificationsSeen(true);
         setUnreadNotificationCount(0);
+    }
 }
 
 void Skywalker::getNotificationsNextPage()

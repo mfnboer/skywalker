@@ -44,6 +44,7 @@ Item {
     readonly property string messageUserTextColor: "white"
     readonly property string messageOtherBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
     readonly property string messageOtherTextColor: Material.theme === Material.Light ? "black" : "white"
+    readonly property string moderatorIconColor: "lightgrey"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
     readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "#1d3030"
     readonly property string selectionColor: Material.theme === Material.Light ? "blue" : "#58a6ff"

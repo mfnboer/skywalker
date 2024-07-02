@@ -67,10 +67,11 @@ public:
     void addContentGroups(const QString& did, const std::vector<ContentGroup>& contentGroups);
     void removeContentGroups(const QString& did);
 
-    Q_INVOKABLE void saveLabelIdsToSettings(const QString& labelerDid);
-    void removeLabelIdsFromSettings(const QString &labelerDid);
-    std::unordered_set<QString> checkNewLabelIds(const QString& labelerDid) const;
+    Q_INVOKABLE void saveLabelIdsToSettings(const QString& labelerDid) const;
+    void removeLabelIdsFromSettings(const QString &labelerDid) const;
+    std::unordered_set<QString> getNewLabelIds(const QString& labelerDid) const;
     Q_INVOKABLE bool hasNewLabels(const QString& labelerDid) const;
+    std::unordered_set<QString> getLabelerDidsWithNewLabels() const;
 
     static bool isFixedLabelerSubscription(const QString& did);
 

@@ -8,6 +8,7 @@ Rectangle {
     required property int index
     required property basicprofile notificationAuthor
     required property list<basicprofile> notificationOtherAuthors
+    required property list<basicprofile> notificationAllAuthors
     required property int notificationReason // QEnums::NotificationReason
     required property string notificationReasonSubjectUri
     required property string notificationReasonSubjectCid
@@ -81,6 +82,12 @@ Rectangle {
             Layout.fillHeight: true
             color: "transparent"
 
+            MouseArea {
+                anchors.fill: parent
+                onClicked: showAuthorList()
+                enabled: isAggregatableReason()
+            }
+
             Avatar {
                 id: avatarImg
                 x: parent.x + 8
@@ -123,6 +130,15 @@ Rectangle {
                 color: guiSettings.textColor
                 svg: svgOutline.inviteCode
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
+            }
+            SvgImage {
+                x: parent.x + 14
+                y: height + 5
+                width: parent.width - 19
+                height: width
+                color: guiSettings.moderatorIconColor
+                svg: svgFilled.moderator
+                visible: notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS
             }
             Rectangle {
                 x: parent.x + 14
@@ -283,6 +299,11 @@ Rectangle {
                     color: guiSettings.textColor
                     text: `+${(notificationOtherAuthors.length - 4)}`
                     visible: notificationOtherAuthors.length > 4
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: showAuthorList()
+                    }
                 }
             }
 
@@ -426,6 +447,29 @@ Rectangle {
             skywalker.getPostThread(notificationPostUri)
         else if (notificationInviteCode)
             skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
+        else if (isAggregatableReason)
+            showAuthorList()
+    }
+
+    function showAuthorList() {
+        let title = "Users:"
+
+        switch (notificationReason) {
+        case QEnums.NOTIFICATION_REASON_LIKE:
+            title = qsTr("Liked by")
+            break
+        case QEnums.NOTIFICATION_REASON_FOLLOW:
+            title = qsTr("New followers")
+            break
+        case QEnums.NOTIFICATION_REASON_REPOST:
+            title = qsTr("Reposted by")
+            break
+        case QEnums.NOTIFICATION_REASON_NEW_LABELS:
+            title = qsTr("Labelers")
+            break
+        }
+
+        root.viewSimpleAuthorList(title, notificationAllAuthors)
     }
 
     function showPost() {
@@ -438,7 +482,8 @@ Rectangle {
     function isAggregatableReason() {
         let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
                        QEnums.NOTIFICATION_REASON_FOLLOW,
-                       QEnums.NOTIFICATION_REASON_REPOST]
+                       QEnums.NOTIFICATION_REASON_REPOST,
+                       QEnums.NOTIFICATION_REASON_NEW_LABELS]
         return reasons.includes(notificationReason)
     }
 
@@ -462,6 +507,8 @@ Rectangle {
             return qsTr("replied to you")
         case QEnums.NOTIFICATION_REASON_QUOTE:
             return qsTr("quoted you")
+        case QEnums.NOTIFICATION_REASON_NEW_LABELS:
+            return qsTr("published new labels. Visit the labeler profiles to see which labels are new.")
         default:
             return "UNKNOW REASON: " + notificationReason
         }
