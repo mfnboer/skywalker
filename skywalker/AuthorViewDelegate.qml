@@ -15,6 +15,7 @@ Rectangle {
     property bool showAuthor: authorVisible()
     property bool showFollow: true
     property bool highlight: false
+    property int maximumDescriptionLineCount: 25
     readonly property int margin: 10
 
     signal follow(basicprofile profile)
@@ -150,6 +151,8 @@ Rectangle {
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
             wrapMode: Text.Wrap
+            elide: Text.ElideRight
+            maximumLineCount: authorRect.maximumDescriptionLineCount
             color: guiSettings.textColor
             plainText: author.description
             visible: showAuthor && author.description

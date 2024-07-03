@@ -137,6 +137,7 @@ Rectangle {
                 width: parent.width - 19
                 height: width
                 color: guiSettings.moderatorIconColor
+                outlineColor: guiSettings.textColor
                 svg: svgFilled.moderator
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS
             }

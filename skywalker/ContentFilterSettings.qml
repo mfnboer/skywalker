@@ -90,6 +90,7 @@ Page {
             delegate: AuthorViewDelegate {
                 width: labelerListView.width - 20
                 highlight: contentFilter.hasNewLabels(author.did)
+                maximumDescriptionLineCount: 3
 
                 SvgImage {
                     height: 40

@@ -30,201 +30,208 @@ Drawer {
     width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
     padding: 20
 
-    Column {
-        id: userColumn
-        anchors.top: parent.top
-        width: Math.max(profileItem.width, moderationItem.width, settingsItem.width) + 70
-        spacing: 5
+    Flickable {
+        anchors.fill: parent
+        clip: true
+        contentHeight: userColumn.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
 
         Column {
-            width: parent.width
+            id: userColumn
+            width: Math.max(profileItem.width, moderationItem.width, settingsItem.width) + 70
             spacing: 5
 
-            Accessible.role: Accessible.StaticText
-            Accessible.name: `${user.name} @${user.handle}`
+            Column {
+                width: parent.width
+                spacing: 5
 
-            Avatar {
-                id: avatar
-                width: 60
-                height: width
-                avatarUrl: user.avatarUrl
+                Accessible.role: Accessible.StaticText
+                Accessible.name: `${user.name} @${user.handle}`
+
+                Avatar {
+                    id: avatar
+                    width: 60
+                    height: width
+                    avatarUrl: user.avatarUrl
+                    onClicked: profile()
+
+                    Accessible.ignored: true
+                }
+
+                SkyCleanedText {
+                    id: nameText
+                    width: parent.width
+                    wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    maximumLineCount: 2
+                    font.bold: true
+                    color: guiSettings.textColor
+                    ellipsisBackgroundColor: Material.dialogColor
+                    plainText: user.name
+
+                    Accessible.ignored: true
+                }
+
+                Text {
+                    id: handleText
+                    width: parent.width
+                    elide: Text.ElideRight
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    color: guiSettings.handleColor
+                    text: `@${user.handle}`
+
+                    Accessible.ignored: true
+                }
+            }
+
+            SkyMenuItem {
+                id: profileItem
+                icon: svgOutline.user
+                text: qsTr("Profile")
                 onClicked: profile()
-
-                Accessible.ignored: true
             }
 
-            SkyCleanedText {
-                id: nameText
-                width: parent.width
-                wrapMode: Text.Wrap
-                elide: Text.ElideRight
-                maximumLineCount: 2
-                font.bold: true
-                color: guiSettings.textColor
-                ellipsisBackgroundColor: Material.dialogColor
-                plainText: user.name
+            // Bluesky does not use invite codes anymore. New atproto providers may
+            // SkyMenuItem {
+            //     id: inviteCodesItem
+            //     icon: svgOutline.inviteCode
+            //     text: qsTr("Invite Codes") + ` (${inviteCodeCount})`
+            //     onClicked: inviteCodes()
+            // }
 
-                Accessible.ignored: true
+            SkyMenuItem {
+                id: bookmarksItem
+                icon: svgOutline.bookmark
+                text: qsTr("Bookmarks")
+                onClicked: bookmarks()
             }
 
-            Text {
-                id: handleText
-                width: parent.width
-                elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
-                text: `@${user.handle}`
+            SkyMenuItem {
+                id: moderationItem
+                icon: svgOutline.moderation
+                text: qsTr("Moderation")
+                onClicked: moderationMenu.open()
 
-                Accessible.ignored: true
+                Menu {
+                    id: moderationMenu
+                    modal: true
+
+                    onAboutToShow: enableSettingsPopupShield(true)
+                    onAboutToHide: enableSettingsPopupShield(false)
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Moderation</b>")
+                        Accessible.name: qsTr("close moderation menu")
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Content Filtering")
+                        onTriggered: contentFiltering()
+
+                        MenuItemSvg { svg: svgOutline.visibility }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Blocked Accounts")
+                        onTriggered: blockedAccounts()
+
+                        MenuItemSvg { svg: svgOutline.block }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Muted Accounts")
+                        onTriggered: mutedAccounts()
+
+                        MenuItemSvg { svg: svgOutline.mute }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Muted Reposts")
+                        onTriggered: mutedReposts()
+
+                        MenuItemSvg { svg: svgOutline.repost }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Moderation Lists")
+                        onTriggered: modLists()
+
+                        MenuItemSvg { svg: svgOutline.list }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Muted Words")
+                        onTriggered: mutedWords()
+
+                        MenuItemSvg { svg: svgOutline.mutedWords }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Focus Hashtags")
+                        onTriggered: focusHashtags()
+
+                        MenuItemSvg { svg: svgOutline.hashtag }
+                    }
+                }
+            }
+
+            SkyMenuItem {
+                id: userListsItem
+                icon: svgOutline.list
+                text: qsTr("User Lists")
+                onClicked: userLists()
+            }
+
+            SkyMenuItem {
+                id: settingsItem
+                icon: svgOutline.settings
+                text: qsTr("Settings")
+                onClicked: settings()
+            }
+
+            SkyMenuItem {
+                id: switchAccountItem
+                icon: svgOutline.group
+                text: qsTr("Switch Account")
+                onClicked: switchAccount()
+            }
+
+            SkyMenuItem {
+                id: signOutItem
+                icon: svgOutline.signOut
+                text: qsTr("Sign Out")
+                onClicked: signOut()
+            }
+
+            SkyMenuItem {
+                id: aboutItem
+                icon: svgOutline.info
+                text: qsTr("About")
+                onClicked: about()
+            }
+
+            Rectangle {
+                width: 10
+                height: width
+                color: "transparent"
+            }
+
+            Image {
+                id: buyMeCoffeeButton
+                x: 30
+                width: parent.width - 60
+                fillMode: Image.PreserveAspectFit
+                source: "/images/buycoffee.png"
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: buyCoffee()
+                }
             }
         }
 
-        SkyMenuItem {
-            id: profileItem
-            icon: svgOutline.user
-            text: qsTr("Profile")
-            onClicked: profile()
+        SvgButton {
+            id: closeButton
+            anchors.right: userColumn.right
+            anchors.top: userColumn.top
+            svg: svgOutline.close
+            accessibleName: qsTr("close menu")
+            onClicked: drawer.close()
         }
-
-        // Bluesky does not use invite codes anymore. New atproto providers may
-        // SkyMenuItem {
-        //     id: inviteCodesItem
-        //     icon: svgOutline.inviteCode
-        //     text: qsTr("Invite Codes") + ` (${inviteCodeCount})`
-        //     onClicked: inviteCodes()
-        // }
-
-        SkyMenuItem {
-            id: bookmarksItem
-            icon: svgOutline.bookmark
-            text: qsTr("Bookmarks")
-            onClicked: bookmarks()
-        }
-
-        SkyMenuItem {
-            id: moderationItem
-            icon: svgOutline.moderation
-            text: qsTr("Moderation")
-            onClicked: moderationMenu.open()
-
-            Menu {
-                id: moderationMenu
-                modal: true
-
-                onAboutToShow: enableSettingsPopupShield(true)
-                onAboutToHide: enableSettingsPopupShield(false)
-
-                CloseMenuItem {
-                    text: qsTr("<b>Moderation</b>")
-                    Accessible.name: qsTr("close moderation menu")
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Content Filtering")
-                    onTriggered: contentFiltering()
-
-                    MenuItemSvg { svg: svgOutline.visibility }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Blocked Accounts")
-                    onTriggered: blockedAccounts()
-
-                    MenuItemSvg { svg: svgOutline.block }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Muted Accounts")
-                    onTriggered: mutedAccounts()
-
-                    MenuItemSvg { svg: svgOutline.mute }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Muted Reposts")
-                    onTriggered: mutedReposts()
-
-                    MenuItemSvg { svg: svgOutline.repost }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Moderation Lists")
-                    onTriggered: modLists()
-
-                    MenuItemSvg { svg: svgOutline.list }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Muted Words")
-                    onTriggered: mutedWords()
-
-                    MenuItemSvg { svg: svgOutline.mutedWords }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Focus Hashtags")
-                    onTriggered: focusHashtags()
-
-                    MenuItemSvg { svg: svgOutline.hashtag }
-                }
-            }
-        }
-
-        SkyMenuItem {
-            id: userListsItem
-            icon: svgOutline.list
-            text: qsTr("User Lists")
-            onClicked: userLists()
-        }
-
-        SkyMenuItem {
-            id: settingsItem
-            icon: svgOutline.settings
-            text: qsTr("Settings")
-            onClicked: settings()
-        }
-
-        SkyMenuItem {
-            id: switchAccountItem
-            icon: svgOutline.group
-            text: qsTr("Switch Account")
-            onClicked: switchAccount()
-        }
-
-        SkyMenuItem {
-            id: signOutItem
-            icon: svgOutline.signOut
-            text: qsTr("Sign Out")
-            onClicked: signOut()
-        }
-
-        SkyMenuItem {
-            id: aboutItem
-            icon: svgOutline.info
-            text: qsTr("About")
-            onClicked: about()
-        }
-
-        Rectangle {
-            width: 10
-            height: width
-            color: "transparent"
-        }
-
-        Image {
-            id: buyMeCoffeeButton
-            x: 30
-            width: parent.width - 60
-            fillMode: Image.PreserveAspectFit
-            source: "/images/buycoffee.png"
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: buyCoffee()
-            }
-        }
-    }
-
-    SvgButton {
-        id: closeButton
-        anchors.right: userColumn.right
-        anchors.top: userColumn.top
-        svg: svgOutline.close
-        accessibleName: qsTr("close menu")
-        onClicked: drawer.close()
     }
 
     Rectangle {
