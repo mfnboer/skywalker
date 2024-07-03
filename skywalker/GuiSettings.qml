@@ -159,6 +159,8 @@ Item {
             return qsTr("Moderation List")
         case QEnums.LIST_PURPOSE_CURATE:
             return qsTr("User List")
+        case QEnums.LIST_PURPOSE_REFERENCE:
+            return qsTr("Reference List")
         default:
             return qsTr("List")
         }

@@ -170,6 +170,7 @@ public:
     {
         LIST_PURPOSE_MOD = (int)ATProto::AppBskyGraph::ListPurpose::MOD_LIST,
         LIST_PURPOSE_CURATE = (int)ATProto::AppBskyGraph::ListPurpose::CURATE_LIST,
+        LIST_PURPOSE_REFERENCE = (int)ATProto::AppBskyGraph::ListPurpose::REFERENCE_LIST,
         LIST_PURPOSE_UNKNOWN = (int)ATProto::AppBskyGraph::ListPurpose::UNKNOWN
     };
     Q_ENUM(ListPurpose)
