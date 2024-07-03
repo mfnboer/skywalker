@@ -117,6 +117,9 @@ TextEdit {
         }
 
         function set(num) {
+            if (!fontSelectorCombo || fontSelectorCombo.currentIndex === QEnums.FONT_NORMAL)
+                return
+
             numChars = num
             start()
         }
