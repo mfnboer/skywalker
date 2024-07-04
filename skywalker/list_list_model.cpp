@@ -232,6 +232,14 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
         if (mExcludeInternalLists && mGraphUtils.isInternalList(listView->mUri))
             continue;
 
+        if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN &&
+            listView->mPurpose == ATProto::AppBskyGraph::ListPurpose::REFERENCE_LIST)
+        {
+            // Filter out reference lists as those are used as internal lists by bsky, e.g.
+            // for starter packs
+            continue;
+        }
+
         if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN ||
             listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mPurpose))
         {
