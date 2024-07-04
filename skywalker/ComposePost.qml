@@ -141,6 +141,7 @@ Page {
 
             Menu {
                 id: moreMenu
+                width: numberPrefixItem.width + 10
                 modal: true
 
                 onAboutToShow: root.enablePopupShield(true)
@@ -161,6 +162,7 @@ Page {
                     }
                 }
                 AccessibleMenuItem {
+                    id: autoNumberItem
                     text: qsTr("Auto number")
                     checkable: true
                     checked: skywalker.getUserSettings().getThreadAutoNumber()
@@ -169,6 +171,12 @@ Page {
                         threadAutoNumber = checked
                         skywalker.getUserSettings().setThreadAutoNumber(checked)
                     }
+                }
+                AccessibleMenuItem {
+                    id: numberPrefixItem
+                    text: qsTr("Prefix number with 🧵")
+                    checkable: true
+                    enabled: autoNumberItem.checked
                 }
                 AccessibleMenuItem {
                     text: qsTr("Auto split")
