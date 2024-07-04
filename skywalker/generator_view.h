@@ -69,6 +69,8 @@ private:
     const ATProto::AppBskyFeed::GeneratorView* mRawGeneratorView = nullptr;
 };
 
+using GeneratorViewList = QList<GeneratorView>;
+
 }
 
 Q_DECLARE_METATYPE(::Skywalker::GeneratorViewerState)

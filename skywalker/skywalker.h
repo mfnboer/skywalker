@@ -22,6 +22,7 @@
 #include "post_thread_model.h"
 #include "profile_store.h"
 #include "search_post_feed_model.h"
+#include "starter_pack_list_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
 #include <atproto/lib/plc_directory_client.h>
@@ -54,6 +55,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
+    Q_PROPERTY(bool getStarterPackListInProgress READ isGetStarterPackListInProgress NOTIFY getStarterPackListInProgressChanged FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     Q_PROPERTY(FavoriteFeeds* favoriteFeeds READ getFavoriteFeeds CONSTANT FINAL)
@@ -107,6 +109,7 @@ public:
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
     Q_INVOKABLE void getFeedGenerator(const QString& feedUri, bool viewPosts = false);
+    Q_INVOKABLE void getStarterPackView(const QString& starterPackUri);
     Q_INVOKABLE int createSearchPostFeedModel();
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
@@ -115,8 +118,14 @@ public:
     Q_INVOKABLE int createFeedListModel();
     Q_INVOKABLE FeedListModel* getFeedListModel(int id) const;
     Q_INVOKABLE void removeFeedListModel(int id);
+    Q_INVOKABLE void getAuthorStarterPackList(const QString& did, int id, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorStarterPackListNextPage(const QString& did, int id);
+    Q_INVOKABLE int createStarterPackListModel();
+    Q_INVOKABLE StarterPackListModel* getStarterPackListModel(int id) const;
+    Q_INVOKABLE void removeStarterPackListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListView& listView);
+    Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit = 50, const QString& cursor = {});
@@ -199,6 +208,8 @@ public:
     bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
     void setGetListListInProgress(bool inProgress);
     bool isGetListListInProgress() const { return mGetListListInProgress; }
+    void setGetStarterPackListInProgress(bool inProgress);
+    bool isGetStarterPackListInProgress() const { return mGetStarterPackListInProgress; }
     const QString getAvatarUrl() const { return mUserProfile.getAvatarUrl(); }
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
@@ -243,7 +254,9 @@ signals:
     void getAuthorFeedInProgressChanged();
     void getAuthorListInProgressChanged();
     void getListListInProgressChanged();
+    void getStarterPackListInProgressChanged();
     void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
+    void getStarterPackViewOk(StarterPackView starterPack);
     void getPostThreadInProgressChanged();
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString text); // Shared from another app
@@ -325,11 +338,12 @@ private:
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
-    bool mGetFeedInProgress = false; // for feeds and listFeeds and feedList
+    bool mGetFeedInProgress = false; // for feeds and listFeeds and feedList and starterPackList
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;
     bool mGetListListInProgress = false;
+    bool mGetStarterPackListInProgress = false;
     bool mSignOutInProgress = false;
 
     QTimer mRefreshTimer;
@@ -344,6 +358,7 @@ private:
     ItemStore<AuthorListModel::Ptr> mAuthorListModels;
     ItemStore<ListListModel::Ptr> mListListModels;
     ItemStore<FeedListModel::Ptr> mFeedListModels;
+    ItemStore<StarterPackListModel::Ptr> mStarterPackListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
     NotificationListModel mNotificationListModel;

@@ -71,6 +71,7 @@ ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::Profil
 ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated& associated) :
     mLists(associated.mLists),
     mFeeds(associated.mFeeds),
+    mStarterPacks(associated.mStarterPacks),
     mLabeler(associated.mLabeler)
 {
     if (associated.mChat)

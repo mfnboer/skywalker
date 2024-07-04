@@ -215,6 +215,8 @@ ApplicationWindow {
                 viewFeedDescription(generatorView)
         }
 
+        onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack)
+
         onSharedTextReceived: (text) => {
             let item = currentStackItem()
 
@@ -1208,6 +1210,13 @@ ApplicationWindow {
         skywalker.getListFeed(modelId)
         let component = Qt.createComponent("PostListFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
+        view.onClosed.connect(() => { popStack() })
+        root.pushStack(view)
+    }
+
+    function viewStarterPack(starterPack) {
+        let component = Qt.createComponent("StarterPackView.qml")
+        let view = component.createObject(root, { starterPack: starterPack })
         view.onClosed.connect(() => { popStack() })
         root.pushStack(view)
     }

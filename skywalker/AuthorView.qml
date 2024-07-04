@@ -27,6 +27,8 @@ Page {
     readonly property int feedListModelId: skywalker.createFeedListModel()
     readonly property bool hasLists: author.associated.lists > 0
     readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
+    readonly property bool hasStarterPacks: author.associated.starterPacks > 0
+    readonly property int starterPackListModelId: skywalker.createStarterPackListModel()
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
     property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
@@ -527,6 +529,11 @@ Page {
                     width: hasFeeds ? implicitWidth : 0
                 }
                 AccessibleTabButton {
+                    text: qsTr("Starter packs")
+                    visible: hasStarterPacks
+                    width: hasStarterPacks ? implicitWidth : 0
+                }
+                AccessibleTabButton {
                     text: qsTr("Lists")
                     visible: hasLists
                     width: hasLists ? implicitWidth : 0
@@ -724,6 +731,54 @@ Page {
 
                 function refresh() {
                     getFeedList(feedListModelId)
+                }
+
+                function clear() {
+                    model.clear()
+                }
+            }
+
+            // Starter packs
+            ListView {
+                id: authorStarterPackList
+                width: parent.width
+                height: parent.height
+                clip: true
+                spacing: 0
+                model: skywalker.getStarterPackListModel(starterPackListModelId)
+                flickDeceleration: guiSettings.flickDeceleration
+                maximumFlickVelocity: guiSettings.maxFlickVelocity
+                pixelAligned: guiSettings.flickPixelAligned
+                ScrollIndicator.vertical: ScrollIndicator {}
+                interactive: !authorFeedView.interactive
+
+                onVerticalOvershootChanged: {
+                    if (verticalOvershoot < 0)
+                        authorFeedView.interactive = true
+                }
+
+                delegate: StarterPackViewDelegate {
+                    width: authorFeedView.width
+                }
+
+                FlickableRefresher {
+                    inProgress: skywalker.getStarterPackListInProgress
+                    bottomOvershootFun: () => getStarterPackListNextPage(starterPackListModelId)
+                }
+
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: skywalker.getStarterPackListInProgress
+                }
+
+                EmptyListIndication {
+                    svg: svgOutline.noLists
+                    text: qsTr("No starter packs")
+                    list: authorStarterPackList
+                }
+
+                function refresh() {
+                    getStarterPackList(starterPackListModelId)
                 }
 
                 function clear() {
@@ -1025,6 +1080,16 @@ Page {
             skywalker.getListListNextPage(modelId)
     }
 
+    function getStarterPackList(modelId) {
+        if (mustGetFeed())
+            skywalker.getAuthorStarterPackList(author.did, modelId)
+    }
+
+    function getStarterPackListNextPage(modelId) {
+        if (mustGetFeed())
+            skywalker.getAuthorStarterPackListNextPage(author.did, modelId)
+    }
+
     function updateLists() {
         let listModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, skywalker.getUserDid())
         let listModel = skywalker.getListListModel(listModelId)
@@ -1142,6 +1207,7 @@ Page {
         setAuthorBanner("")
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
+        skywalker.removeStarterPackListModel(starterPackListModelId)
 
         if (contentGroupListModelId > -1) {
             skywalker.getContentFilter().saveLabelIdsToSettings(author.did)
@@ -1169,6 +1235,9 @@ Page {
 
         if (hasLists)
             getListList(listListModelId)
+
+        if (hasStarterPacks)
+            getStarterPackList(starterPackListModelId)
 
         if (isLabeler)
             profileUtils.getLabelerViewDetailed(author.did)

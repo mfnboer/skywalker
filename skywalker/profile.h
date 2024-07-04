@@ -94,6 +94,7 @@ class ProfileAssociated
     Q_GADGET
     Q_PROPERTY(int lists READ getLists FINAL)
     Q_PROPERTY(int feeds READ getFeeds FINAL)
+    Q_PROPERTY(int starterPacks READ getStarterPacks FINAL)
     Q_PROPERTY(int isLabeler READ isLabeler FINAL)
     Q_PROPERTY(ProfileAssociatedChat chat READ getChat FINAL)
     QML_VALUE_TYPE(profileassociated)
@@ -104,12 +105,14 @@ public:
 
     int getLists() const { return mLists; }
     int getFeeds() const { return mFeeds; }
+    int getStarterPacks() const { return mStarterPacks; }
     bool isLabeler() const { return mLabeler; }
     const ProfileAssociatedChat& getChat() const { return mChat; }
 
 private:
     int mLists = 0;
     int mFeeds = 0;
+    int mStarterPacks = 0;
     bool mLabeler = false;
     ProfileAssociatedChat mChat;
 };

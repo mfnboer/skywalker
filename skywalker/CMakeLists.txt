@@ -378,6 +378,14 @@ qt_add_qml_module(libskywalker
         QML_FILES DatePicker.qml
         QML_FILES EditComboBox.qml
         QML_FILES SimpleAuthorListPage.qml
+        SOURCES starter_pack.h
+        SOURCES starter_pack.cpp
+        SOURCES starter_pack_list_model.h
+        SOURCES starter_pack_list_model.cpp
+        QML_FILES
+        QML_FILES StarterPackViewDelegate.qml
+        QML_FILES StarterPackView.qml
+        QML_FILES SkyListView.qml
 )
 
 if (NOT ANDROID)

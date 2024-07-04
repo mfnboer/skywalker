@@ -40,8 +40,8 @@ public:
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
 
-    Q_INVOKABLE const ListView getListView() const { return mListView; }
-    void setListView(const ListView& view) { mListView = view; }
+    Q_INVOKABLE const ListViewBasic getListView() const { return mListView; }
+    void setListView(const ListViewBasic& view) { mListView = view.nonVolatileCopy(); }
 
     bool isLanguageFilterConfigured() const;
     void enableLanguageFilter(bool enabled);
@@ -154,7 +154,7 @@ private:
     int mLastInsertedRowIndex = -1;
     QString mFeedName;
     GeneratorView mGeneratorView;
-    ListView mListView;
+    ListViewBasic mListView;
 };
 
 }

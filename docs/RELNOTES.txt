@@ -1,5 +1,6 @@
 next
 ====
+* View starter packs
 * Mute post thread
 * Show account labels on post
 * Align label settings with bluesky app

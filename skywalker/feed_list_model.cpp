@@ -99,7 +99,7 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, cons
     qDebug() << "New feeds size:" << mFeeds.size();
 }
 
-void FeedListModel::addFeeds(const QList<GeneratorView>& feeds)
+void FeedListModel::addFeeds(const GeneratorViewList& feeds)
 {
     qDebug() << "Add feeds:" << feeds.size();
     if (feeds.empty())

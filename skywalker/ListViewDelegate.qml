@@ -201,8 +201,6 @@ Rectangle {
 
             Accessible.role: Accessible.StaticText
             Accessible.name: list.description
-
-
         }
 
         Rectangle {

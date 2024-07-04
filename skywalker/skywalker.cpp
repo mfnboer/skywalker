@@ -106,6 +106,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mAuthorListModels.empty());
     Q_ASSERT(mListListModels.empty());
     Q_ASSERT(mFeedListModels.empty());
+    Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mContentGroupListModels.empty());
 }
 
@@ -1220,6 +1221,12 @@ void Skywalker::setGetListListInProgress(bool inProgress)
     emit getListListInProgressChanged();
 }
 
+void Skywalker::setGetStarterPackListInProgress(bool inProgress)
+{
+    mGetStarterPackListInProgress = inProgress;
+    emit getStarterPackListInProgressChanged();
+}
+
 void Skywalker::setUnreadNotificationCount(int unread)
 {
     const int totalUnread = unread + mNotificationListModel.getUnreadCount();
@@ -1487,7 +1494,7 @@ void Skywalker::updateUserProfile(const QString& displayName, const QString& des
     emit avatarUrlChanged();
 }
 
-Q_INVOKABLE void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
+void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get feed generator:" << feedUri;
@@ -1499,6 +1506,22 @@ Q_INVOKABLE void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPo
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getFeedGenerator failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getStarterPackView(const QString& starterPackUri)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get starter pack view:" << starterPackUri;
+
+    mBsky->getStarterPack(starterPackUri,
+        [this](auto starterPackView){
+            auto shared = ATProto::AppBskyGraph::StarterPackView::SharedPtr(starterPackView.release());
+            emit getStarterPackViewOk(StarterPackView(shared));
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "getStarterPackView failed:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -1842,6 +1865,97 @@ void Skywalker::removeFeedListModel(int id)
     mFeedListModels.remove(id);
 }
 
+void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get author starter pack list:" << id << "did:" << did << "cursor:" << cursor;
+
+    if (mGetStarterPackListInProgress)
+    {
+        qDebug() << "Get author starter pack list still in progress";
+        return;
+    }
+
+    const auto* model = mStarterPackListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    setGetStarterPackListInProgress(true);
+    mBsky->getActorStarterPacks(did, {}, Utils::makeOptionalString(cursor),
+        [this, id, cursor](auto output){
+            setGetStarterPackListInProgress(false);
+            const auto* model = mStarterPackListModels.get(id);
+
+            if (!model)
+                return; // user has closed the view
+
+            if (cursor.isEmpty())
+                (*model)->clear();
+
+            (*model)->addStarterPacks(std::move(output->mStarterPacks), output->mCursor.value_or(""));
+        },
+        [this](const QString& error, const QString& msg){
+            setGetStarterPackListInProgress(false);
+            qDebug() << "getActorStarterPacks failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getAuthorStarterPackListNextPage(const QString& did, int id)
+{
+    qDebug() << "Get author starter pack list next page:" << id << "did:" << did;
+
+    if (mGetStarterPackListInProgress)
+    {
+        qDebug() << "Get author feed list still in progress";
+        return;
+    }
+
+    const auto* model = mStarterPackListModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    const auto& cursor = (*model)->getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    getAuthorStarterPackList(did, id, cursor);
+}
+
+int Skywalker::createStarterPackListModel()
+{
+    auto model = std::make_unique<StarterPackListModel>(this);
+    const int id = mStarterPackListModels.put(std::move(model));
+    return id;
+}
+
+StarterPackListModel* Skywalker::getStarterPackListModel(int id) const
+{
+    qDebug() << "Get model:" << id;
+    auto* model = mStarterPackListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeStarterPackListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mStarterPackListModels.remove(id);
+}
+
 int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
@@ -1853,16 +1967,21 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
     return id;
 }
 
-int Skywalker::createPostFeedModel(const ListView& listView)
+int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 {
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
                                                  mUserDid, mUserFollows, mMutedReposts,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
-    model->setListView(listView);
+    model->setListView(listView.nonVolatileCopy());
     model->enableLanguageFilter(true);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
+}
+
+int Skywalker::createPostFeedModel(const ListView& listView)
+{
+    return createPostFeedModel(ListViewBasic(listView.nonVolatileCopy()));
 }
 
 PostFeedModel* Skywalker::getPostFeedModel(int id) const
@@ -2953,6 +3072,8 @@ void Skywalker::signOut()
     Q_ASSERT(mSearchPostFeedModels.empty());
     Q_ASSERT(mAuthorListModels.empty());
     Q_ASSERT(mListListModels.empty());
+    Q_ASSERT(mFeedListModels.empty());
+    Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mPostFeedModels.empty());
 
     qDebug() << "Logout:" << mUserDid;
@@ -2967,6 +3088,10 @@ void Skywalker::signOut()
     mSearchPostFeedModels.clear();
     mAuthorListModels.clear();
     mListListModels.clear();
+    mFeedListModels.clear();
+    mStarterPackListModels.clear();
+    mPostFeedModels.clear();
+    mContentGroupListModels.clear();
     mNotificationListModel.clear();
     mChat->reset();
     mUserPreferences = ATProto::UserPreferences();
