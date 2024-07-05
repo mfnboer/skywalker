@@ -392,6 +392,16 @@ bool UserSettings::getThreadAutoNumber() const
     return mSettings.value("threadAutoNumber", true).toBool();
 }
 
+void UserSettings::setThreadPrefix(QString prefix)
+{
+    mSettings.setValue("threadPrefix", prefix);
+}
+
+QString UserSettings::getThreadPrefix() const
+{
+    return mSettings.value("threadPrefix", "🧵").toString();
+}
+
 void UserSettings::setThreadAutoSplit(bool autoSplit)
 {
     mSettings.setValue("threadAutoSplit", autoSplit);

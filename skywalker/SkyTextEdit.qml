@@ -8,6 +8,7 @@ TextEdit {
     property bool singleLine: false
     property int graphemeLength: 0
     property int maxLength: -1
+    property bool strictMax: false
 
     id: skyTextEdit
     width: page.width
@@ -44,6 +45,13 @@ TextEdit {
     function updateGraphemeLength() {
         graphemeLength = unicodeFonts.graphemeLength(skyTextEdit.text) +
                 unicodeFonts.graphemeLength(preeditText)
+
+        if (strictMax && maxLength > -1 && graphemeLength > maxLength) {
+            Qt.inputMethod.commit()
+            const graphemeInfo = unicodeFonts.getGraphemeInfo(text)
+            text = graphemeInfo.sliced(text, 0, maxLength)
+            cursorPosition = text.length
+        }
     }
 
     Text {

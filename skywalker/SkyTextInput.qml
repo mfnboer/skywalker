@@ -9,6 +9,9 @@ Rectangle {
     property alias echoMode: textField.echoMode
     property alias inputMethodHints: textField.inputMethodHints
     property alias maximumLength: textField.maximumLength
+    property int graphemeLength: 0
+    property int maximumGraphemeLength: -1
+    property bool strictGraphemeMax: false
     property alias validator: textField.validator
     property alias text: textField.text
     property alias displayText: textField.displayText
@@ -42,6 +45,20 @@ Rectangle {
         Accessible.description: Accessible.name
         Accessible.editable: true
         Accessible.passwordEdit: echoMode === TextInput.Password
+
+        onTextChanged: updateGraphemeLength()
+        onPreeditTextChanged: updateGraphemeLength()
+
+        function updateGraphemeLength() {
+            graphemeLength = unicodeFonts.graphemeLength(text) +
+                    unicodeFonts.graphemeLength(preeditText)
+
+            if (strictGraphemeMax && maximumGraphemeLength > -1 && graphemeLength > maximumGraphemeLength) {
+                Qt.inputMethod.commit()
+                const graphemeInfo = unicodeFonts.getGraphemeInfo(text)
+                text = graphemeInfo.sliced(text, 0, maximumGraphemeLength)
+            }
+        }
 
         onEditingFinished: skyTextInput.editingFinished()
 
@@ -78,6 +95,14 @@ Rectangle {
             visible: parent.displayText.length === 0
             Accessible.ignored: true
         }
+    }
+
+    function maxGraphemeLengthExceeded() {
+        return maximumGraphemeLength > -1 && graphemeLength > maximumGraphemeLength
+    }
+
+    UnicodeFonts {
+        id: unicodeFonts
     }
 
     GuiSettings {

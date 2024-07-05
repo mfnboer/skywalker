@@ -386,6 +386,7 @@ qt_add_qml_module(libskywalker
         QML_FILES StarterPackViewDelegate.qml
         QML_FILES StarterPackView.qml
         QML_FILES SkyListView.qml
+        QML_FILES EditThreadPrefix.qml
 )
 
 if (NOT ANDROID)

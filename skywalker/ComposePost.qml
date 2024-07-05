@@ -51,6 +51,7 @@ Page {
     readonly property string userDid: skywalker.getUserDid()
     property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
     property bool threadAutoNumber: skywalker.getUserSettings().getThreadAutoNumber()
+    property string threadPrefix: skywalker.getUserSettings().getThreadPrefix()
     property bool threadAutoSplit: skywalker.getUserSettings().getThreadAutoSplit()
 
     property int currentPostIndex: 0
@@ -141,7 +142,7 @@ Page {
 
             Menu {
                 id: moreMenu
-                width: numberPrefixItem.width + 10
+                width: Math.max(altItem.width, numberPrefixItem.width)
                 modal: true
 
                 onAboutToShow: root.enablePopupShield(true)
@@ -152,6 +153,7 @@ Page {
                     Accessible.name: qsTr("close more options menu")
                 }
                 AccessibleMenuItem {
+                    id: altItem
                     text: qsTr("Require ALT text")
                     checkable: true
                     checked: skywalker.getUserSettings().getRequireAltText(userDid)
@@ -174,9 +176,12 @@ Page {
                 }
                 AccessibleMenuItem {
                     id: numberPrefixItem
-                    text: qsTr("Prefix number with 🧵")
-                    checkable: true
+                    contentItem: AccessibleText {
+                        textFormat: Text.RichText
+                        text: qsTr(`Number prefix: ${(threadPrefix ? unicodeFonts.toCleanedHtml(threadPrefix) : qsTr("<i>&lt;none&gt;</i>"))}`)
+                    }
                     enabled: autoNumberItem.checked
+                    onTriggered: editThreadPrefix()
                 }
                 AccessibleMenuItem {
                     text: qsTr("Auto split")
@@ -551,6 +556,7 @@ Page {
                         leftPadding: page.margin
                         rightPadding: page.margin
                         anchors.top: postText.bottom
+                        textFormat: Text.RichText
                         text: getPostCountText(index, threadPosts.count)
                         visible: threadPosts.count > 1 && threadAutoNumber
 
@@ -1597,7 +1603,21 @@ Page {
     }
 
     function getPostCountText(postIndex, postCount) {
-        return `🧵${(postIndex + 1)}/${postCount}`
+        return `${unicodeFonts.toCleanedHtml(threadPrefix)}${(postIndex + 1)}/${postCount}`
+    }
+
+    function editThreadPrefix() {
+        let component = Qt.createComponent("EditThreadPrefix.qml")
+        let dialog = component.createObject(page, { prefix: threadPrefix })
+
+        dialog.onAccepted.connect(() => {
+            threadPrefix = dialog.getPrefix()
+            skywalker.getUserSettings().setThreadPrefix(threadPrefix)
+            dialog.destroy()
+        })
+
+        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.open()
     }
 
     function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {

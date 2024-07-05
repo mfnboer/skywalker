@@ -89,7 +89,7 @@ ListView {
 
     function addWord() {
         let component = Qt.createComponent("AddMutedWord.qml")
-        let dialog = component.createObject(view);
+        let dialog = component.createObject(view)
 
         dialog.onAccepted.connect(() => {
             const word = dialog.getText()
@@ -106,7 +106,7 @@ ListView {
 
     function editWord(oldWord) {
         let component = Qt.createComponent("AddMutedWord.qml")
-        let dialog = component.createObject(view, { editWord: oldWord });
+        let dialog = component.createObject(view, { editWord: oldWord })
 
         dialog.onAccepted.connect(() => {
             const word = dialog.getText()

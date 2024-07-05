@@ -106,6 +106,9 @@ public:
     Q_INVOKABLE void setThreadAutoNumber(bool autoNumber);
     Q_INVOKABLE bool getThreadAutoNumber() const;
 
+    Q_INVOKABLE void setThreadPrefix(QString prefix);
+    Q_INVOKABLE QString getThreadPrefix() const;
+
     Q_INVOKABLE void setThreadAutoSplit(bool autoSplit);
     Q_INVOKABLE bool getThreadAutoSplit() const;
 

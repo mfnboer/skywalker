@@ -1,11 +1,12 @@
-next
+2.10
 ====
-* View starter packs
+* View starter packs on profile page
 * Mute post thread
 * Show account labels on post
 * Align label settings with bluesky app
 * Notification when a subscribed-to labeler has new labels
 * Option to remember password
+* Option to change thread post number prefix
 * Save external link in draft post
 * Bug fixes
 
