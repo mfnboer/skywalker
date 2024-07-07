@@ -38,7 +38,7 @@ signals:
 private:
     void addPosts(const std::vector<QString>& postUris);
     void getAuthorsDeletedPosts(const std::vector<QString>& postUris, ATProto::Client& bsky);
-    ATProto::AppBskyFeed::PostView* getDeletedPost(const QString& atUri);
+    ATProto::AppBskyFeed::PostView::SharedPtr getDeletedPost(const QString& atUri);
 
     PostCache mPostCache;
     bool mInProgress = false;

@@ -247,7 +247,7 @@ void Bookmarks::deleteRecords()
             continue;
         }
 
-        auto deleteRecord = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesDelete>();
+        auto deleteRecord = std::make_shared<ATProto::ComATProtoRepo::ApplyWritesDelete>();
         deleteRecord->mCollection = Lexicon::COLLECTION_BOOKMARK;
         deleteRecord->mRKey = atUri.getRkey();
         writes.push_back(std::move(deleteRecord));
@@ -322,7 +322,7 @@ void Bookmarks::createRecords(const QStringList& postUris, const std::function<v
     {
         Bookmark::Bookmark record;
         record.mUri = uri;
-        auto create = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesCreate>();
+        auto create = std::make_shared<ATProto::ComATProtoRepo::ApplyWritesCreate>();
         create->mCollection = Lexicon::COLLECTION_BOOKMARK;
         create->mValue = record.toJson();
         writes.push_back(std::move(create));

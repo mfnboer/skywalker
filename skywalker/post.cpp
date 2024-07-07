@@ -50,7 +50,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement)
         const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(threadElement.mPost).get();
         Q_ASSERT(threadPost);
         Q_ASSERT(threadPost->mPost);
-        return Post(threadPost->mPost.get(), -1);
+        return Post(threadPost->mPost, -1);
     }
     case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
         return Post::createNotFound();
@@ -72,7 +72,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, in
     {
     case ATProto::AppBskyFeed::PostElementType::POST_VIEW:
     {
-        const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(replyElement.mPost).get();
+        const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(replyElement.mPost);
         Q_ASSERT(postView);
         return Post(postView, rawIndex);
     }
@@ -90,7 +90,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, in
     return Post::createNotSupported(QString("Unexpected type: %1").arg(int(replyElement.mType)));
 }
 
-Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost, int rawIndex) :
+Post::Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost, int rawIndex) :
     mFeedViewPost(feedViewPost),
     mRawIndex(rawIndex)
 {
@@ -98,7 +98,7 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost, int rawIndex)
 
     if (feedViewPost)
     {
-        mPost = feedViewPost->mPost.get();
+        mPost = feedViewPost->mPost;
 
         // Cache authors to minimize network requests for authors later.
         const BasicProfile profile = getAuthor();
@@ -117,7 +117,7 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost, int rawIndex)
     }
 }
 
-Post::Post(const ATProto::AppBskyFeed::PostView* postView, int rawIndex) :
+Post::Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView, int rawIndex) :
     mPost(postView),
     mRawIndex(rawIndex)
 {
@@ -292,8 +292,8 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyToRef() const
     {
         if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost).get();
-            auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
+            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost);
+            auto ref = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
             return ref;
@@ -311,7 +311,7 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyToRef() const
     if (!record->mReply)
         return nullptr;
 
-    return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*record->mReply->mParent);
+    return std::make_shared<ATProto::ComATProtoRepo::StrongRef>(*record->mReply->mParent);
 }
 
 QString Post::getReplyToCid() const
@@ -372,8 +372,8 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyRootRef() const
     {
         if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost).get();
-            auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
+            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost);
+            auto ref = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
             return ref;
@@ -391,7 +391,7 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyRootRef() const
     if (!record->mReply)
         return nullptr;
 
-    return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*record->mReply->mRoot);
+    return std::make_shared<ATProto::ComATProtoRepo::StrongRef>(*record->mReply->mRoot);
 }
 
 QString Post::getReplyRootCid() const

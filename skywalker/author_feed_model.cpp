@@ -91,7 +91,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
 
         if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
-            Post post(feedEntry.get(), i);
+            Post post(feedEntry, i);
 
             if (!mustShow(post))
                 continue;

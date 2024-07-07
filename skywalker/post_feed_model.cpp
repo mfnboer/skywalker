@@ -628,7 +628,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
         if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
-            Post post(feedEntry.get(), i);
+            Post post(feedEntry, i);
 
             // Due to reposting a post can show up multiple times in the feed.
             // Also overlapping pages can come in as we look for new posts.

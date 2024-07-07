@@ -3,7 +3,6 @@
 #pragma once
 #include "abstract_post_feed_model.h"
 #include "generator_view.h"
-#include "list_view.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
 #include <unordered_map>

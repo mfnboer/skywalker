@@ -640,7 +640,7 @@ void PostUtils::batchDeletePosts(const QStringList& postUris)
             continue;
         }
 
-        auto deleteRecord = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesDelete>();
+        auto deleteRecord = std::make_shared<ATProto::ComATProtoRepo::ApplyWritesDelete>();
         deleteRecord->mCollection = atUri.getCollection();
         deleteRecord->mRKey = atUri.getRkey();
         writes.push_back(std::move(deleteRecord));

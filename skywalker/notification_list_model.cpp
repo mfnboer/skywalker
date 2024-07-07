@@ -345,9 +345,9 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
             {
                 // Store post view in both caches. The post cache will be cleared
                 // on refresh.
-                Post post(postView.get(), -1);
-                mPostCache.put(postView, post);
-                mReasonPostCache.put(postView, post);
+                Post post(postView, -1);
+                mPostCache.put(post);
+                mReasonPostCache.put(post);
             }
 
             getPosts(bsky, uris, cb);

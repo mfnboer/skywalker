@@ -225,7 +225,7 @@ bool Skywalker::resumeSession(bool retry)
 
             if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
             {
-                mBsky->setSession(std::make_unique<ATProto::ComATProtoServer::Session>(session));
+                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(session));
                 mBsky->refreshSession(
                     [this]{
                         qDebug() << "Session refreshed";
