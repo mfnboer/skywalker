@@ -81,8 +81,7 @@ void FavoriteFeeds::addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::
 {
     for (auto& gen : generators)
     {
-        ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
-        GeneratorView view(sharedRaw);
+        GeneratorView view(gen);
         auto it = std::lower_bound(feeds.cbegin(), feeds.cend(), view, feedNameCompare);
         feeds.insert(it, view);
     }
@@ -92,8 +91,7 @@ void FavoriteFeeds::addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFee
 {
     for (auto& gen : generators)
     {
-        ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(gen.release());
-        GeneratorView generatorView(sharedRaw);
+        GeneratorView generatorView(gen);
         FavoriteFeedView view(generatorView);
         auto it = std::lower_bound(feeds.cbegin(), feeds.cend(), view, favoriteFeedNameCompare);
         feeds.insert(it, view);
@@ -348,7 +346,7 @@ void FavoriteFeeds::updateSavedGeneratorViews()
     setUpdateSavedFeedsModelInProgress(true);
 
     mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
-        [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
+        [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::SharedPtr output){
             setUpdateSavedFeedsModelInProgress(false);
             addSavedFeeds(std::move(output->mFeeds));
         },
@@ -382,19 +380,17 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
     listUris.pop_back();
 
     mSkywalker->getBskyClient()->getList(uri, 1, {},
-        [this, listUris](auto output){
-            ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
-
-            if (sharedListView->mCreator->mDid != mSkywalker->getUserDid())
+        [this, listUris](auto output){\
+            if (output->mList->mCreator->mDid != mSkywalker->getUserDid())
             {
-                qDebug() << "Add saved list:" << sharedListView->mName;
-                ListView view(sharedListView);
+                qDebug() << "Add saved list:" << output->mList->mName;
+                ListView view(output->mList);
                 auto it = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), view, listNameCompare);
                 mSavedLists.insert(it, view);
             }
             else
             {
-                qDebug() << "Own list:" << sharedListView->mName;
+                qDebug() << "Own list:" << output->mList->mName;
             }
 
             updateSavedListViews(std::move(listUris));
@@ -425,7 +421,7 @@ void FavoriteFeeds::updatePinnedGeneratorViews()
         return;
 
     mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
-        [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::Ptr output){
+        [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::SharedPtr output){
             addPinnedFeeds(std::move(output->mFeeds));
         },
         [this](const QString& error, const QString& msg){
@@ -450,8 +446,7 @@ void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
 
     mSkywalker->getBskyClient()->getList(uri, 1, {},
         [this, listUris](auto output){
-            ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
-            addPinnedFeed(sharedListView);
+            addPinnedFeed(output->mList);
             updatePinnedListViews(std::move(listUris));
         },
         [this, listUris, uri](const QString& error, const QString& msg){

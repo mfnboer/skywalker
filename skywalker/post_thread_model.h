@@ -23,7 +23,7 @@ public:
                              QObject* parent = nullptr);
 
     // Returns index of the entry post
-    int setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
+    int setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread);
 
     // May return UNKNOWN if there are reply restrictions. This will happen
     // if the root is not in the thread, but the first post has replies disabled.
@@ -49,7 +49,7 @@ private:
         explicit Page(PostThreadModel& postFeedModel) : mPostFeedModel(postFeedModel) {}
 
         std::deque<Post> mFeed;
-        ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
+        ATProto::AppBskyFeed::PostThread::SharedPtr mRawThread;
         int mEntryPostIndex = 0;
         PostThreadModel& mPostFeedModel;
 
@@ -60,11 +60,11 @@ private:
 
     void clear();
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
-    Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread);
+    Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
     // This must be kept alive as long as there are posts in the feed dependend on it
-    ATProto::AppBskyFeed::PostThread::Ptr mRawThread;
+    ATProto::AppBskyFeed::PostThread::SharedPtr mRawThread;
 };
 
 }

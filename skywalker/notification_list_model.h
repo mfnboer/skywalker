@@ -85,10 +85,10 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void clear();
-    bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
+    bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications,
                           ATProto::Client& bsky, bool clearFirst = false,
                           const std::function<void()>& doneCb = nullptr);
-    QString addNotifications(ATProto::ChatBskyConvo::ConvoListOutput::Ptr convoListOutput,
+    QString addNotifications(ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput,
                           const QString& lastRev, const QString& userDid);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
@@ -148,7 +148,7 @@ private:
     const MutedWords& mMutedWords;
 
     NotificationList mList;
-    std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::Ptr> mRawNotifications;
+    std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr> mRawNotifications;
     QString mCursor;
 
     // This cache must be emptied when the notifications are refreshed, because

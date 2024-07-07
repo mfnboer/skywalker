@@ -1028,8 +1028,7 @@ void PostUtils::getQuoteFeed(const QString& httpsUri)
 
     postMaster()->getFeed(httpsUri,
         [this](auto feed){
-            ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedFeed(feed.release());
-            GeneratorView view(sharedFeed);
+            GeneratorView view(feed);
             emit quoteFeed(view);
         });
 }
@@ -1041,8 +1040,7 @@ void PostUtils::getQuoteList(const QString& httpsUri)
 
     postMaster()->getList(httpsUri,
                           [this](auto list){
-                              ATProto::AppBskyGraph::ListView::SharedPtr sharedList(list.release());
-                              ListView view(sharedList);
+                              ListView view(list);
                               emit quoteList(view);
                           });
 }

@@ -47,7 +47,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement)
     {
     case ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST:
     {
-        const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(threadElement.mPost).get();
+        const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(threadElement.mPost).get();
         Q_ASSERT(threadPost);
         Q_ASSERT(threadPost->mPost);
         return Post(threadPost->mPost.get(), -1);
@@ -72,7 +72,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, in
     {
     case ATProto::AppBskyFeed::PostElementType::POST_VIEW:
     {
-        const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(replyElement.mPost).get();
+        const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(replyElement.mPost).get();
         Q_ASSERT(postView);
         return Post(postView, rawIndex);
     }
@@ -149,7 +149,7 @@ QString Post::getText() const
 
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
-        const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+        const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
         if (record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty())
             return UnicodeFonts::toPlainText(*record->mBridgyOriginalText);
@@ -170,7 +170,7 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags) const
 
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
-        const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+        const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
         if (record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty())
             return *record->mBridgyOriginalText;
@@ -232,7 +232,7 @@ bool Post::isReply() const
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return false;
 
-    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     return record->mReply.get();
 }
 
@@ -265,7 +265,7 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
         Q_ASSERT(mFeedViewPost->mReply->mParent);
         if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost).get();
             return BasicProfile(postView->mAuthor.get());
         }
         else
@@ -286,13 +286,13 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
     return mReplyToAuthor;
 }
 
-ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyToRef() const
+ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyToRef() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
         if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost).get();
             auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
@@ -306,7 +306,7 @@ ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyToRef() const
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return nullptr;
 
-    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
     if (!record->mReply)
         return nullptr;
@@ -332,7 +332,7 @@ QString Post::getReplyToAuthorDid() const
     {
         if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mParent->mPost).get();
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost).get();
             return postView->mAuthor->mDid;
         }
         else
@@ -347,7 +347,7 @@ QString Post::getReplyToAuthorDid() const
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
 
-    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
     if (!record->mReply)
         return {};
@@ -366,13 +366,13 @@ QString Post::getReplyToAuthorDid() const
     return did;
 }
 
-ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyRootRef() const
+ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyRootRef() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
         if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::Ptr>(mFeedViewPost->mReply->mRoot->mPost).get();
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost).get();
             auto ref = std::make_unique<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
@@ -386,7 +386,7 @@ ATProto::ComATProtoRepo::StrongRef::Ptr Post::getReplyRootRef() const
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return nullptr;
 
-    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
     if (!record->mReply)
         return nullptr;
@@ -414,7 +414,7 @@ QList<ImageView> Post::getImages() const
     if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
         return {};
 
-    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::Ptr>(mPost->mEmbed->mEmbed);
+    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(mPost->mEmbed->mEmbed);
     QList<ImageView> images;
 
     for (const auto& img : imagesView->mImages)
@@ -431,7 +431,7 @@ ExternalView::Ptr Post::getExternalView() const
     if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 
-    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::Ptr>(mPost->mEmbed->mEmbed)->mExternal;
+    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(mPost->mEmbed->mEmbed)->mExternal;
     return std::make_unique<ExternalView>(external.get());
 }
 
@@ -443,7 +443,7 @@ RecordView::Ptr Post::getRecordView() const
     if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW)
         return {};
 
-    const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordView::Ptr>(mPost->mEmbed->mEmbed);
+    const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(mPost->mEmbed->mEmbed);
     return std::make_unique<RecordView>(*recordView);
 }
 
@@ -455,7 +455,7 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
     if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW)
         return {};
 
-    const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::Ptr>(mPost->mEmbed->mEmbed);
+    const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(mPost->mEmbed->mEmbed);
     return std::make_unique<RecordWithMediaView>(recordView.get());
 }
 
@@ -572,9 +572,9 @@ ListViewBasicList Post::getReplyRestrictionLists() const
     return lists;
 }
 
-const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& Post::getLabels() const
+const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& Post::getLabels() const
 {
-    static const std::vector<ATProto::ComATProtoLabel::Label::Ptr> NO_LABELS;
+    static const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr> NO_LABELS;
     return mPost ? mPost->mLabels : NO_LABELS;
 }
 
@@ -597,7 +597,7 @@ const LanguageList& Post::getLanguages() const
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return mLanguages;
 
-    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     const_cast<Post*>(this)->mLanguages = LanguageUtils::getLanguages(record->mLanguages);
     return mLanguages;
 }
@@ -615,7 +615,7 @@ std::vector<QString> Post::getHashtags() const
     if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
 
-    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mPost->mRecord);
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     return ATProto::RichTextMaster::getFacetTags(*record);
 }
 

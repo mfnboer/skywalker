@@ -51,17 +51,17 @@ public:
 
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
-    int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
-    void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    void addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
     // Returns gap id if prepending created a gap in the feed.
     // Returns 0 otherwise.
-    int prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    int prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
     // Returns new gap id if the gap was not fully filled, i.e. there is a new gap.
     // Returns 0 otherwise.
-    int gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId);
+    int gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int gapId);
 
     void removeTailPosts(int size);
     void removeHeadPosts(int size);
@@ -112,11 +112,11 @@ private:
     bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     bool mustShowQuotePost(const Post& post) const;
-    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
     // Returns gap id if insertion created a gap in the feed.
-    int insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex);
+    int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex);
 
     // Returns an index in the page feed
     std::optional<size_t> findOverlapStart(const Page& page, size_t feedIndex) const;

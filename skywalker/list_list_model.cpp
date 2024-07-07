@@ -243,8 +243,7 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
         if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN ||
             listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mPurpose))
         {
-            ATProto::AppBskyGraph::ListView::SharedPtr sharedRaw(listView.release());
-            filtered.emplace_back(sharedRaw);
+            filtered.emplace_back(listView);
         }
     }
 

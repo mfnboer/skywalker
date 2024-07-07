@@ -241,7 +241,7 @@ void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& na
 }
 
 void GraphUtils::continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
-                        const QString& description, ATProto::Blob::Ptr blob)
+                        const QString& description, ATProto::Blob::SharedPtr blob)
 {
     emit createListProgress(tr("Creating list"));
 
@@ -303,7 +303,7 @@ void GraphUtils::updateList(const QString& listUri, const QString& name,
 }
 
 void GraphUtils::continueUpdateList(const QString& listUri, const QString& name,
-                        const QString& description, ATProto::Blob::Ptr blob, bool updateAvatar)
+                        const QString& description, ATProto::Blob::SharedPtr blob, bool updateAvatar)
 {
     emit updateListProgress(tr("Updating list"));
 
@@ -361,8 +361,7 @@ void GraphUtils::getListView(const QString& listUri, bool viewPosts)
             if (!presence)
                 return;
 
-            ATProto::AppBskyGraph::ListView::SharedPtr sharedListView(output->mList.release());
-            emit getListOk(ListView(sharedListView), viewPosts);
+            emit getListOk(ListView(output->mList), viewPosts);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

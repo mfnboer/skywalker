@@ -51,18 +51,18 @@ signals:
 
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
-                               ATProto::Blob::Ptr avatarBlob, bool updateAvatar,
+                               ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
                                const QString& bannerImgSource, bool updateBanner);
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
-                               ATProto::Blob::Ptr avatarBlob, bool updateAvatar,
-                               ATProto::Blob::Ptr bannerBlob, bool updateBanner);
+                               ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
+                               ATProto::Blob::SharedPtr bannerBlob, bool updateBanner);
 
     ATProto::ProfileMaster* profileMaster();
     ATProto::PostMaster* postMaster();
 
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
-    std::unordered_map<QString, ATProto::Blob::Ptr> mDidAvatarBlobMap;
+    std::unordered_map<QString, ATProto::Blob::SharedPtr> mDidAvatarBlobMap;
 };
 
 }

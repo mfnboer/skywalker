@@ -50,7 +50,7 @@ void Chat::initSettings()
         return;
 
     chatMaster()->getDeclaration(mUserDid,
-        [this, presence=*mPresence](ATProto::ChatBskyActor::Declaration::Ptr declaration){
+        [this, presence=*mPresence](ATProto::ChatBskyActor::Declaration::SharedPtr declaration){
             if (!presence)
                 return;
 
@@ -141,7 +141,7 @@ void Chat::getConvos(const QString& cursor)
 
     setConvosInProgress(true);
     mBsky->listConvos({}, Utils::makeOptionalString(cursor),
-        [this, presence=*mPresence, cursor](ATProto::ChatBskyConvo::ConvoListOutput::Ptr output){
+        [this, presence=*mPresence, cursor](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -190,7 +190,7 @@ void Chat::updateConvos()
     qDebug() << "Update convos";
 
     mBsky->listConvos({}, {},
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoListOutput::Ptr output){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -235,7 +235,7 @@ void Chat::startConvoForMembers(const QStringList& dids, const QString& msg)
     setStartConvoInProgress(true);
 
     mBsky->getConvoForMembers(members,
-        [this, presence=*mPresence, msg](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+        [this, presence=*mPresence, msg](ATProto::ChatBskyConvo::ConvoOuput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -269,7 +269,7 @@ void Chat::leaveConvo(const QString& convoId)
     qDebug() << "Leave convo:" << convoId;
 
     mBsky->leaveConvo(convoId,
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::LeaveConvoOutput::Ptr output){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::LeaveConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -291,7 +291,7 @@ void Chat::muteConvo(const QString& convoId)
     qDebug() << "Mute convo:" << convoId;
 
     mBsky->muteConvo(convoId,
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -312,7 +312,7 @@ void Chat::unmuteConvo(const QString& convoId)
     qDebug() << "Unmute convo:" << convoId;
 
     mBsky->unmuteConvo(convoId,
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOuput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -419,7 +419,7 @@ void Chat::getMessages(const QString& convoId, const QString& cursor)
 
     setMessagesInProgress(true);
     mBsky->getMessages(convoId, {}, Utils::makeOptionalString(cursor),
-        [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyConvo::GetMessagesOutput::Ptr output){
+        [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyConvo::GetMessagesOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -486,7 +486,7 @@ void Chat::updateMessages(const QString& convoId)
     setMessagesUpdating(convoId, true);
 
     mBsky->getMessages(convoId, {}, {},
-        [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::GetMessagesOutput::Ptr output){
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::GetMessagesOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -539,7 +539,7 @@ void Chat::updateRead(const QString& convoId)
     const int oldUnreadCount = convo->getUnreadCount();
 
     mBsky->updateRead(convoId, lastReadMessageId,
-        [this, presence=*mPresence, oldUnreadCount](ATProto::ChatBskyConvo::ConvoOuput::Ptr output){
+        [this, presence=*mPresence, oldUnreadCount](ATProto::ChatBskyConvo::ConvoOuput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -660,7 +660,7 @@ void Chat::continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::M
 
     qDebug() << "Send message:" << message->toJson();
     mBsky->sendMessage(convoId, *message,
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::MessageView::Ptr messageView){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::MessageView::SharedPtr messageView){
             if (!presence)
                 return;
 
@@ -684,7 +684,7 @@ void Chat::deleteMessage(const QString& convoId, const QString& messageId)
         return;
 
     mBsky->deleteMessageForSelf(convoId, messageId,
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::DeletedMessageView::Ptr deletedView){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::DeletedMessageView::SharedPtr deletedView){
             if (!presence)
                 return;
 

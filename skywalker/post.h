@@ -58,11 +58,11 @@ public:
     bool isReply() const;
     std::optional<PostReplyRef> getViewPostReplyRef() const;
     std::optional<BasicProfile> getReplyToAuthor() const;
-    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyToRef() const;
+    ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyToRef() const;
     QString getReplyToCid() const;
     QString getReplyToUri() const;
     QString getReplyToAuthorDid() const;
-    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyRootRef() const;
+    ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyRootRef() const;
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
 
@@ -98,7 +98,7 @@ public:
     bool isNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
 
-    const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
     ContentLabelList getLabelsIncludingAuthorLabels() const;
 
     const LanguageList& getLanguages() const;

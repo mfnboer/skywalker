@@ -51,19 +51,19 @@ bool PostFeedModel::showPostWithMissingLanguage() const
     return mUserSettings.getShowUnknownContentLanguage(mUserDid);
 }
 
-int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (mFeed.empty())
     {
         mPrependPostCount = 0;
-        addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+        addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
         return -1;
     }
 
     const QString topCid = mFeed.front().getCid();
     setTopNCids();
     clear();
-    addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     int prevTopIndex = -1;
 
@@ -83,28 +83,28 @@ int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     return prevTopIndex;
 }
 
-int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (feed->mFeed.empty())
         return 0;
 
     if (mFeed.empty())
     {
-        setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+        setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
         mPrependPostCount = mFeed.size();
         qDebug() << "Prepended post count:" << mPrependPostCount;
         return 0;
     }
 
     const size_t prevSize = mFeed.size();
-    const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), 0);
+    const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), 0);
     mPrependPostCount += mFeed.size() - prevSize;
     qDebug() << "Prepended post count:" << mPrependPostCount;
 
     return gapId;
 }
 
-int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId)
+int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int gapId)
 {
     qDebug() << "Fill gap:" << gapId;
 
@@ -134,7 +134,7 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int
     qDebug() << "Removed place holder post:" << gapIndex;
     logIndices();
 
-    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), gapIndex);
+    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex);
 }
 
 void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -151,9 +151,9 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
     cleanupStoredCids();
 }
 
-int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex)
+int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex)
 {
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     if (page->mFeed.empty())
     {
@@ -248,10 +248,10 @@ void PostFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     if (!page->mFeed.empty())
     {
@@ -616,7 +616,7 @@ bool PostFeedModel::mustShowQuotePost(const Post& post) const
     return true;
 }
 
-PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
     auto page = std::make_unique<Page>();

@@ -281,7 +281,7 @@ private:
     void getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
-    void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr user);
+    void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();

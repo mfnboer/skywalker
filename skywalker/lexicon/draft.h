@@ -10,26 +10,26 @@ namespace Skywalker::Draft {
 
 struct ReplyToPost
 {
-    ATProto::AppBskyActor::ProfileViewBasic::Ptr mAuthor;
+    ATProto::AppBskyActor::ProfileViewBasic::SharedPtr mAuthor;
     QString mText;
     QDateTime mDateTime;
 
     QJsonObject toJson() const;
 
-    using Ptr = std::unique_ptr<ReplyToPost>;
-    static Ptr fromJson(const QJsonObject& json);
+    using SharedPtr = std::shared_ptr<ReplyToPost>;
+    static SharedPtr fromJson(const QJsonObject& json);
 };
 
 struct QuotePost
 {
-    ATProto::AppBskyActor::ProfileViewBasic::Ptr mAuthor;
+    ATProto::AppBskyActor::ProfileViewBasic::SharedPtr mAuthor;
     QString mText;
     QDateTime mDateTime;
 
     QJsonObject toJson() const;
 
-    using Ptr = std::unique_ptr<QuotePost>;
-    static Ptr fromJson(const QJsonObject& json);
+    using SharedPtr = std::shared_ptr<QuotePost>;
+    static SharedPtr fromJson(const QJsonObject& json);
 };
 
 struct Quote
@@ -47,31 +47,31 @@ struct Quote
 
     RecordType mRecordType;
 
-    std::variant<QuotePost::Ptr,
-                 ATProto::AppBskyFeed::GeneratorView::Ptr,
-                 ATProto::AppBskyGraph::ListView::Ptr,
-                 ATProto::AppBskyLabeler::LabelerView::Ptr> mRecord;
+    std::variant<QuotePost::SharedPtr,
+                 ATProto::AppBskyFeed::GeneratorView::SharedPtr,
+                 ATProto::AppBskyGraph::ListView::SharedPtr,
+                 ATProto::AppBskyLabeler::LabelerView::SharedPtr> mRecord;
 
     QJsonObject toJson() const;
 
-    using Ptr = std::unique_ptr<Quote>;
-    static Ptr fromJson(const QJsonObject& json);
+    using SharedPtr = std::shared_ptr<Quote>;
+    static SharedPtr fromJson(const QJsonObject& json);
 };
 
 struct Draft
 {
-    ATProto::AppBskyFeed::Record::Post::Ptr mPost;
-    ReplyToPost::Ptr mReplyToPost;
-    Quote::Ptr mQuote;
-    ATProto::AppBskyFeed::Threadgate::Ptr mThreadgate;
-    std::vector<ATProto::AppBskyFeed::Record::Post::Ptr> mThreadPosts;
+    ATProto::AppBskyFeed::Record::Post::SharedPtr mPost;
+    ReplyToPost::SharedPtr mReplyToPost;
+    Quote::SharedPtr mQuote;
+    ATProto::AppBskyFeed::Threadgate::SharedPtr mThreadgate;
+    std::vector<ATProto::AppBskyFeed::Record::Post::SharedPtr> mThreadPosts;
 
     QJsonObject toJson() const;
 
-    using Ptr = std::unique_ptr<Draft>;
-    static Ptr fromJson(const QJsonObject& json);
+    using SharedPtr = std::shared_ptr<Draft>;
+    static SharedPtr fromJson(const QJsonObject& json);
 };
 
-using DraftList = std::vector<Draft::Ptr>;
+using DraftList = std::vector<Draft::SharedPtr>;
 
 }

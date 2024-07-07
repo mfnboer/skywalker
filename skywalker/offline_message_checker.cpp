@@ -425,7 +425,7 @@ void OffLineMessageChecker::getChatNotifications()
     }
 
     mBsky->listConvos({}, {},
-        [this](ATProto::ChatBskyConvo::ConvoListOutput::Ptr output){
+        [this](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             const QString lastRev = mUserSettings.getOffLineChatCheckRev(mUserDid);
             const QString rev = mNotificationListModel.addNotifications(std::move(output), lastRev, mUserDid);
 

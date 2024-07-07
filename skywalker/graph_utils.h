@@ -96,9 +96,9 @@ signals:
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
-                            const QString& description, ATProto::Blob::Ptr blob);
+                            const QString& description, ATProto::Blob::SharedPtr blob);
     void continueUpdateList(const QString& listUri, const QString& name,
-                            const QString& description, ATProto::Blob::Ptr blob, bool updateAvatar);
+                            const QString& description, ATProto::Blob::SharedPtr blob, bool updateAvatar);
 
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;

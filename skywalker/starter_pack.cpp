@@ -87,11 +87,16 @@ ContentLabelList StarterPackViewBasic::getContentLabels() const
 
 const ATProto::AppBskyGraph::StarterPack* StarterPackViewBasic::getStarterPack() const
 {
-    if (mBasicView)
-        return std::get<ATProto::AppBskyGraph::StarterPack::Ptr>(mBasicView->mRecord).get();
+    try {
+        if (mBasicView)
+            return std::get<ATProto::AppBskyGraph::StarterPack::SharedPtr>(mBasicView->mRecord).get();
 
-    if (mView)
-        return std::get<ATProto::AppBskyGraph::StarterPack::Ptr>(mView->mRecord).get();
+        if (mView)
+            return std::get<ATProto::AppBskyGraph::StarterPack::SharedPtr>(mView->mRecord).get();
+    } catch (const std::bad_variant_access&) {
+        qWarning() << "Unknown record type";
+        return nullptr;
+    }
 
     return nullptr;
 }

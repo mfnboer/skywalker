@@ -61,8 +61,7 @@ void BookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto:
             for (auto& postView : postViewList)
             {
                 Post post(postView.get(), -1);
-                ATProto::AppBskyFeed::PostView::SharedPtr sharedRaw(postView.release());
-                mPostCache.put(sharedRaw, post);
+                mPostCache.put(postView, post);
             }
 
             getAuthorsDeletedPosts(postUris, bsky);

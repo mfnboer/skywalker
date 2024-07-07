@@ -28,18 +28,18 @@ void SearchPostFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
+int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)
 {
     if (!mFeed.empty())
         clear();
 
-    return addFeed(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::Ptr>(feed));
+    return addFeed(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr>(feed));
 }
 
-int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
+int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mPosts.size();
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr>(feed));
 
     mCursorNextPage = feed->mCursor.value_or("");
 
@@ -80,7 +80,7 @@ void SearchPostFeedModel::Page::addPost(const Post& post)
     mFeed.push_back(post);
 }
 
-SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
+SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)
 {
     auto page = std::make_unique<Page>();
 

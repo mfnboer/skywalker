@@ -206,7 +206,7 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
     return true;
 }
 
-ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createPost(const DraftPostData* draftPost, const QString& picBaseName)
+ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createPost(const DraftPostData* draftPost, const QString& picBaseName)
 {
     QString draftsPath;
     QString picDraftsPath;
@@ -233,7 +233,7 @@ ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createPost(const DraftPostDa
         }
     }
 
-    ATProto::AppBskyFeed::PostReplyRef::Ptr replyRef = draftPost->replyToUri().isEmpty() ? nullptr :
+    ATProto::AppBskyFeed::PostReplyRef::SharedPtr replyRef = draftPost->replyToUri().isEmpty() ? nullptr :
             ATProto::PostMaster::createReplyRef(draftPost->replyToUri(), draftPost->replyToCid(),
                                                 draftPost->replyRootUri(), draftPost->replyRootCid());
 
@@ -559,12 +559,12 @@ QString DraftPosts::getBaseNameFromPostFileName(const QString& fileName) const
     return parts[0];
 }
 
-ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(const BasicProfile& author)
+ATProto::AppBskyActor::ProfileViewBasic::SharedPtr DraftPosts::createProfileViewBasic(const BasicProfile& author)
 {
     if (author.isNull())
         return nullptr;
 
-    auto view = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
+    auto view = std::make_shared<ATProto::AppBskyActor::ProfileViewBasic>();
     view->mDid = author.getDid();
     view->mHandle = author.getHandle();
     view->mDisplayName = author.getDisplayName();
@@ -573,12 +573,12 @@ ATProto::AppBskyActor::ProfileViewBasic::Ptr DraftPosts::createProfileViewBasic(
     return view;
 }
 
-ATProto::AppBskyActor::ProfileView::Ptr DraftPosts::createProfileView(const Profile& author)
+ATProto::AppBskyActor::ProfileView::SharedPtr DraftPosts::createProfileView(const Profile& author)
 {
     if (author.isNull())
         return nullptr;
 
-    auto view = std::make_unique<ATProto::AppBskyActor::ProfileView>();
+    auto view = std::make_shared<ATProto::AppBskyActor::ProfileView>();
     view->mDid = author.getDid();
     view->mHandle = author.getHandle();
     view->mDisplayName = author.getDisplayName();
@@ -587,20 +587,20 @@ ATProto::AppBskyActor::ProfileView::Ptr DraftPosts::createProfileView(const Prof
     return view;
 }
 
-Draft::ReplyToPost::Ptr DraftPosts::createReplyToPost(const QString& replyToUri, const BasicProfile& author,
+Draft::ReplyToPost::SharedPtr DraftPosts::createReplyToPost(const QString& replyToUri, const BasicProfile& author,
                                                const QString& text, const QDateTime& dateTime) const
 {
     if (replyToUri.isEmpty())
         return nullptr;
 
-    auto replyToPost = std::make_unique<Draft::ReplyToPost>();
+    auto replyToPost = std::make_shared<Draft::ReplyToPost>();
     replyToPost->mAuthor = createProfileViewBasic(author);
     replyToPost->mText = text;
     replyToPost->mDateTime = dateTime;
     return replyToPost;
 }
 
-Draft::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const BasicProfile& quoteAuthor,
+Draft::Quote::SharedPtr DraftPosts::createQuote(const QString& quoteUri, const BasicProfile& quoteAuthor,
                                    const QString& quoteText, const QDateTime& quoteDateTime,
                                    const GeneratorView& quoteFeed, const ListView& quoteList) const
 {
@@ -615,7 +615,7 @@ Draft::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const BasicPr
         return nullptr;
     }
 
-    auto quote = std::make_unique<Draft::Quote>();
+    auto quote = std::make_shared<Draft::Quote>();
 
     if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_POST)
     {
@@ -641,19 +641,19 @@ Draft::Quote::Ptr DraftPosts::createQuote(const QString& quoteUri, const BasicPr
     return quote;
 }
 
-Draft::QuotePost::Ptr DraftPosts::createQuotePost(const BasicProfile& author,
+Draft::QuotePost::SharedPtr DraftPosts::createQuotePost(const BasicProfile& author,
                                            const QString& text, const QDateTime& dateTime) const
 {
-    auto quotePost = std::make_unique<Draft::QuotePost>();
+    auto quotePost = std::make_shared<Draft::QuotePost>();
     quotePost->mAuthor = createProfileViewBasic(author);
     quotePost->mText = text;
     quotePost->mDateTime = dateTime;
     return quotePost;
 }
 
-ATProto::AppBskyFeed::GeneratorView::Ptr DraftPosts::createQuoteFeed(const GeneratorView& feed) const
+ATProto::AppBskyFeed::GeneratorView::SharedPtr DraftPosts::createQuoteFeed(const GeneratorView& feed) const
 {
-    auto view = std::make_unique<ATProto::AppBskyFeed::GeneratorView>();
+    auto view = std::make_shared<ATProto::AppBskyFeed::GeneratorView>();
     view->mUri = feed.getUri();
     view->mCid = feed.getCid();
     view->mDid = feed.getDid();
@@ -665,9 +665,9 @@ ATProto::AppBskyFeed::GeneratorView::Ptr DraftPosts::createQuoteFeed(const Gener
     return view;
 }
 
-ATProto::AppBskyGraph::ListView::Ptr DraftPosts::createQuoteList(const ListView& list) const
+ATProto::AppBskyGraph::ListView::SharedPtr DraftPosts::createQuoteList(const ListView& list) const
 {
-    auto view = std::make_unique<ATProto::AppBskyGraph::ListView>();
+    auto view = std::make_shared<ATProto::AppBskyGraph::ListView>();
     view->mUri = list.getUri();
     view->mCid = list.getCid();
     view->mCreator = createProfileView(list.getCreator());
@@ -681,7 +681,7 @@ ATProto::AppBskyGraph::ListView::Ptr DraftPosts::createQuoteList(const ListView&
 ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(Draft::Draft& draft, const QString& recordUri)
 {
     ATProto::AppBskyFeed::PostFeed postFeed;
-    auto feedView = std::make_unique<ATProto::AppBskyFeed::FeedViewPost>();
+    auto feedView = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
     feedView->mReply = createReplyRef(draft);
     feedView->mPost = convertDraftToPostView(draft, recordUri);
     postFeed.push_back(std::move(feedView));
@@ -690,7 +690,7 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(Draft::Dra
     {
         Draft::Draft threadPostDraft;
         threadPostDraft.mPost = std::move(threadPost);
-        auto view = std::make_unique<ATProto::AppBskyFeed::FeedViewPost>();
+        auto view = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
         view->mPost = convertDraftToPostView(threadPostDraft, recordUri);
         postFeed.push_back(std::move(view));
     }
@@ -698,9 +698,9 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(Draft::Dra
     return postFeed;
 }
 
-ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft::Draft& draft, const QString& recordUri)
+ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(Draft::Draft& draft, const QString& recordUri)
 {
-    auto postView = std::make_unique<ATProto::AppBskyFeed::PostView>();
+    auto postView = std::make_shared<ATProto::AppBskyFeed::PostView>();
     postView->mUri = recordUri;
     postView->mAuthor = createProfileViewBasic(mSkywalker->getUser());
     postView->mIndexedAt = draft.mPost->mCreatedAt;
@@ -713,17 +713,17 @@ ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertDraftToPostView(Draft::Dr
     return postView;
 }
 
-ATProto::AppBskyFeed::ThreadgateView::Ptr DraftPosts::createThreadgateView(Draft::Draft& draft) const
+ATProto::AppBskyFeed::ThreadgateView::SharedPtr DraftPosts::createThreadgateView(Draft::Draft& draft) const
 {
     if (!draft.mThreadgate)
         return nullptr;
 
-    auto view = std::make_unique<ATProto::AppBskyFeed::ThreadgateView>();
+    auto view = std::make_shared<ATProto::AppBskyFeed::ThreadgateView>();
     view->mRecord = std::move(draft.mThreadgate);
 
     for (const auto& list : view->mRecord->mAllowList)
     {
-        auto listView = std::make_unique<ATProto::AppBskyGraph::ListViewBasic>();
+        auto listView = std::make_shared<ATProto::AppBskyGraph::ListViewBasic>();
         listView->mUri = list->mList;
         listView->mName = list->mList;
         view->mLists.push_back(std::move(listView));
@@ -732,18 +732,18 @@ ATProto::AppBskyFeed::ThreadgateView::Ptr DraftPosts::createThreadgateView(Draft
     return view;
 }
 
-ATProto::AppBskyFeed::Record::Post::Ptr DraftPosts::createReplyToPost(const Draft::Draft& draft) const
+ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createReplyToPost(const Draft::Draft& draft) const
 {
     if (!draft.mReplyToPost)
         return nullptr;
 
-    auto post = std::make_unique<ATProto::AppBskyFeed::Record::Post>();
+    auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
     post->mText = draft.mReplyToPost->mText;
     post->mCreatedAt = draft.mReplyToPost->mDateTime;
     return post;
 }
 
-ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertReplyToPostView(Draft::Draft& draft) const
+ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertReplyToPostView(Draft::Draft& draft) const
 {
     if (!draft.mReplyToPost)
         return nullptr;
@@ -757,7 +757,7 @@ ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertReplyToPostView(Draft::Dr
         return nullptr;
     }
 
-    auto view = std::make_unique<ATProto::AppBskyFeed::PostView>();
+    auto view = std::make_shared<ATProto::AppBskyFeed::PostView>();
     view->mUri = draft.mPost->mReply->mParent->mUri;
     view->mCid = draft.mPost->mReply->mParent->mCid;
     view->mAuthor = std::move(draft.mReplyToPost->mAuthor);
@@ -767,7 +767,7 @@ ATProto::AppBskyFeed::PostView::Ptr DraftPosts::convertReplyToPostView(Draft::Dr
     return view;
 }
 
-ATProto::AppBskyFeed::ReplyRef::Ptr DraftPosts::createReplyRef(Draft::Draft& draft) const
+ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(Draft::Draft& draft) const
 {
     if (!draft.mReplyToPost)
         return nullptr;
@@ -781,17 +781,17 @@ ATProto::AppBskyFeed::ReplyRef::Ptr DraftPosts::createReplyRef(Draft::Draft& dra
         return nullptr;
     }
 
-    auto replyRef = std::make_unique<ATProto::AppBskyFeed::ReplyRef>();
+    auto replyRef = std::make_shared<ATProto::AppBskyFeed::ReplyRef>();
 
-    replyRef->mParent = std::make_unique<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mParent = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
     replyRef->mParent->mType = ATProto::AppBskyFeed::PostElementType::POST_VIEW;
     replyRef->mParent->mPost = convertReplyToPostView(draft);
 
     // We did not save the root post in the draft. Set it to NOT FOUND. The post composer
     // does not need it.
-    replyRef->mRoot = std::make_unique<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mRoot = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
     replyRef->mRoot->mType = ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST;
-    auto notFound = std::make_unique<ATProto::AppBskyFeed::NotFoundPost>();
+    auto notFound = std::make_shared<ATProto::AppBskyFeed::NotFoundPost>();
     notFound->mUri = draft.mPost->mReply->mRoot->mUri;
     replyRef->mRoot->mPost = std::move(notFound);
 
@@ -808,7 +808,7 @@ ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProt
 
     for (const auto& selfLabel : post.mLabels->mValues)
     {
-        auto label = std::make_unique<ATProto::ComATProtoLabel::Label>();
+        auto label = std::make_shared<ATProto::ComATProtoLabel::Label>();
         label->mVal = selfLabel->mVal;
         label->mSrc = userDid;
         label->mUri = recordUri;
@@ -819,31 +819,31 @@ ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProt
     return labels;
 }
 
-ATProto::AppBskyEmbed::EmbedView::Ptr DraftPosts::createEmbedView(
-    const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::Ptr quote)
+ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(
+    const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::SharedPtr quote)
 {
     if (!embed)
         return nullptr;
 
-    auto view = std::make_unique<ATProto::AppBskyEmbed::EmbedView>();
+    auto view = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
 
     switch (embed->mType)
     {
     case ATProto::AppBskyEmbed::EmbedType::IMAGES:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
-        view->mEmbed = createImagesView(std::get<ATProto::AppBskyEmbed::Images::Ptr>(embed->mEmbed).get());
+        view->mEmbed = createImagesView(std::get<ATProto::AppBskyEmbed::Images::SharedPtr>(embed->mEmbed).get());
         break;
     case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
-        view->mEmbed = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(embed->mEmbed).get());
+        view->mEmbed = createExternalView(std::get<ATProto::AppBskyEmbed::External::SharedPtr>(embed->mEmbed).get());
         break;
     case ATProto::AppBskyEmbed::EmbedType::RECORD:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
-        view->mEmbed = createRecordView(std::get<ATProto::AppBskyEmbed::Record::Ptr>(embed->mEmbed).get(), std::move(quote));
+        view->mEmbed = createRecordView(std::get<ATProto::AppBskyEmbed::Record::SharedPtr>(embed->mEmbed).get(), std::move(quote));
         break;
     case ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
-        view->mEmbed = createRecordWithMediaView(std::get<ATProto::AppBskyEmbed::RecordWithMedia::Ptr>(embed->mEmbed).get(), std::move(quote));
+        view->mEmbed = createRecordWithMediaView(std::get<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(embed->mEmbed).get(), std::move(quote));
         break;
     case ATProto::AppBskyEmbed::EmbedType::UNKNOWN:
         qWarning() << "Unknown embed type";
@@ -853,7 +853,7 @@ ATProto::AppBskyEmbed::EmbedView::Ptr DraftPosts::createEmbedView(
     return view;
 }
 
-ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(const ATProto::AppBskyEmbed::Images* images)
+ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const ATProto::AppBskyEmbed::Images* images)
 {
     if (!images || images->mImages.empty())
         return nullptr;
@@ -871,7 +871,7 @@ ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(const ATProt
     auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
     const QString host = bskyClient()->getHost();
     const QString did = mSkywalker->getUserDid();
-    auto view = std::make_unique<ATProto::AppBskyEmbed::ImagesView>();
+    auto view = std::make_shared<ATProto::AppBskyEmbed::ImagesView>();
 
     for (const auto& image : images->mImages)
     {
@@ -893,7 +893,7 @@ ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(const ATProt
         }
         }
 
-        auto imgView = std::make_unique<ATProto::AppBskyEmbed::ImagesViewImage>();
+        auto imgView = std::make_shared<ATProto::AppBskyEmbed::ImagesViewImage>();
         imgView->mThumb = imgSource;
         imgView->mFullSize = imgSource;
         imgView->mAlt = image->mAlt;
@@ -903,14 +903,14 @@ ATProto::AppBskyEmbed::ImagesView::Ptr DraftPosts::createImagesView(const ATProt
     return view;
 }
 
-ATProto::AppBskyEmbed::ExternalView::Ptr DraftPosts::createExternalView(
+ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(
     const ATProto::AppBskyEmbed::External* external) const
 {
     if (!external || !external->mExternal)
         return nullptr;
 
-    auto view = std::make_unique<ATProto::AppBskyEmbed::ExternalView>();
-    view->mExternal = std::make_unique<ATProto::AppBskyEmbed::ExternalViewExternal>();
+    auto view = std::make_shared<ATProto::AppBskyEmbed::ExternalView>();
+    view->mExternal = std::make_shared<ATProto::AppBskyEmbed::ExternalViewExternal>();
     // NOTE: the small gif size and url are encoded as URL params to this uri.
     view->mExternal->mUri = external->mExternal->mUri;
     view->mExternal->mTitle = external->mExternal->mTitle;
@@ -923,24 +923,24 @@ ATProto::AppBskyEmbed::ExternalView::Ptr DraftPosts::createExternalView(
     return view;
 }
 
-ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
-    const ATProto::AppBskyEmbed::Record* record, Draft::Quote::Ptr quote) const
+ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
+    const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const
 {
     if (!record || !quote)
         return nullptr;
 
-    auto view = std::make_unique<ATProto::AppBskyEmbed::RecordView>();
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordView>();
 
     switch (quote->mRecordType)
     {
     case Draft::Quote::RecordType::QUOTE_POST:
     {
-        auto& quotePost = std::get<Draft::QuotePost::Ptr>(quote->mRecord);
-        auto post = std::make_unique<ATProto::AppBskyFeed::Record::Post>();
+        auto& quotePost = std::get<Draft::QuotePost::SharedPtr>(quote->mRecord);
+        auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
         post->mText = quotePost->mText;
         post->mCreatedAt = quotePost->mDateTime;
 
-        auto viewRecord = std::make_unique<ATProto::AppBskyEmbed::RecordViewRecord>();
+        auto viewRecord = std::make_shared<ATProto::AppBskyEmbed::RecordViewRecord>();
         viewRecord->mUri = record->mRecord->mUri;
         viewRecord->mCid = record->mRecord->mCid;
         viewRecord->mAuthor = std::move(quotePost->mAuthor);
@@ -954,11 +954,11 @@ ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
     }
     case Draft::Quote::RecordType::QUOTE_FEED:
         view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW;
-        view->mRecord = std::move(std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(quote->mRecord));
+        view->mRecord = std::move(std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(quote->mRecord));
         break;
     case Draft::Quote::RecordType::QUOTE_LIST:
         view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW;
-        view->mRecord = std::move(std::get<ATProto::AppBskyGraph::ListView::Ptr>(quote->mRecord));
+        view->mRecord = std::move(std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(quote->mRecord));
         break;
     default:
         qWarning() << "Unknown record type" << (int)quote->mRecordType;
@@ -968,24 +968,24 @@ ATProto::AppBskyEmbed::RecordView::Ptr DraftPosts::createRecordView(
     return view;
 }
 
-ATProto::AppBskyEmbed::RecordWithMediaView::Ptr DraftPosts::createRecordWithMediaView(
-    const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::Ptr quote)
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(
+    const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::SharedPtr quote)
 {
     if (!record || !quote)
         return nullptr;
 
-    auto view = std::make_unique<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
     view->mRecord = createRecordView(record->mRecord.get(), std::move(quote));
 
     switch (record->mMediaType)
     {
     case ATProto::AppBskyEmbed::EmbedType::IMAGES:
         view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
-        view->mMedia = createImagesView(std::get<ATProto::AppBskyEmbed::Images::Ptr>(record->mMedia).get());
+        view->mMedia = createImagesView(std::get<ATProto::AppBskyEmbed::Images::SharedPtr>(record->mMedia).get());
         break;
     case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
         view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
-        view->mMedia = createExternalView(std::get<ATProto::AppBskyEmbed::External::Ptr>(record->mMedia).get());
+        view->mMedia = createExternalView(std::get<ATProto::AppBskyEmbed::External::SharedPtr>(record->mMedia).get());
         break;
     default:
         qWarning() << "Invalid media type:" << (int)record->mMediaType;
@@ -1040,7 +1040,7 @@ QStringList DraftPosts::getDraftPostFiles(const QString& draftsPath) const
     return dir.entryList({"SWP_*.json"}, QDir::Files, QDir::Time);
 }
 
-Draft::Draft::Ptr DraftPosts::loadDraft(const QString& fileName, const QString& draftsPath) const
+Draft::Draft::SharedPtr DraftPosts::loadDraft(const QString& fileName, const QString& draftsPath) const
 {
     Q_ASSERT(mStorageType == STORAGE_FILE);
     QDir dir(draftsPath);
@@ -1136,7 +1136,7 @@ bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
     return true;
 }
 
-ATProto::Blob::Ptr DraftPosts::saveImage(const QString& imgName, const QString& draftsPath,
+ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName, const QString& draftsPath,
                                          const QString& baseName, int seq)
 {
     Q_ASSERT(mStorageType == STORAGE_FILE);
@@ -1167,7 +1167,7 @@ ATProto::Blob::Ptr DraftPosts::saveImage(const QString& imgName, const QString& 
         return nullptr;
     }
 
-    auto blob = std::make_unique<ATProto::Blob>();
+    auto blob = std::make_shared<ATProto::Blob>();
     blob->mRefLink = imgFileName;
     blob->mMimeType = "image/jpeg";
     blob->mSize = img.sizeInBytes();

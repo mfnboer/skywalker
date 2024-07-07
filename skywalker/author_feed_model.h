@@ -22,8 +22,8 @@ public:
     void setFilter(QEnums::AuthorFeedFilter filter) { mFilter = filter; }
 
     // Returns how many entries have been added.
-    int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
-    int addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
+    int addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     void clear();
 
     const BasicProfile& getAuthor() const { return mAuthor; }
@@ -37,13 +37,13 @@ private:
         void addPost(const Post& post);
     };
 
-    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     bool mustShow(const Post& post) const;
 
     BasicProfile mAuthor;
 
     // This must be kept alive as long as there are posts in the feed dependend on it
-    std::vector<ATProto::AppBskyFeed::OutputFeed::Ptr> mRawFeed;
+    std::vector<ATProto::AppBskyFeed::OutputFeed::SharedPtr> mRawFeed;
 
     QString mCursorNextPage;
     QEnums::AuthorFeedFilter mFilter = QEnums::AUTHOR_FEED_FILTER_POSTS;

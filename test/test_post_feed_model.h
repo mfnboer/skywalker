@@ -402,7 +402,7 @@ private:
 
     const QDateTime TEST_DATE = QDateTime::fromString("2023-11-20T18:46:00.000Z", Qt::ISODateWithMs);
 
-    ATProto::AppBskyFeed::OutputFeed::Ptr getFeed(int numPosts, QDateTime startTime, const std::optional<QString>& cursor = {})
+    ATProto::AppBskyFeed::OutputFeed::SharedPtr getFeed(int numPosts, QDateTime startTime, const std::optional<QString>& cursor = {})
     {
         QString feedData = R"###({ "feed": [)###";
 
@@ -422,7 +422,7 @@ private:
         return getFeed(feedData.toUtf8(), cursor);
     }
 
-    ATProto::AppBskyFeed::OutputFeed::Ptr getFeed(const char* data, const std::optional<QString>& cursor)
+    ATProto::AppBskyFeed::OutputFeed::SharedPtr getFeed(const char* data, const std::optional<QString>& cursor)
     {
         QJsonParseError error;
         auto json = QJsonDocument::fromJson(data, &error);

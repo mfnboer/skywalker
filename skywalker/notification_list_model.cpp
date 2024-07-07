@@ -86,7 +86,7 @@ void NotificationListModel::updateNewLabelsNotifications()
     }
 }
 
-bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::Ptr notifications,
+bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications,
                                              ATProto::Client& bsky, bool clearFirst,
                                              const std::function<void()>& doneCb)
 {
@@ -139,7 +139,7 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
 }
 
 QString NotificationListModel::addNotifications(
-    ATProto::ChatBskyConvo::ConvoListOutput::Ptr convoListOutput, const QString& lastRev, const QString& userDid)
+    ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput, const QString& lastRev, const QString& userDid)
 {
     qDebug() << "Add chat notifications:" << convoListOutput->mConvos.size();
 
@@ -346,9 +346,8 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
                 // Store post view in both caches. The post cache will be cleared
                 // on refresh.
                 Post post(postView.get(), -1);
-                ATProto::AppBskyFeed::PostView::SharedPtr sharedRaw(postView.release());
-                mPostCache.put(sharedRaw, post);
-                mReasonPostCache.put(sharedRaw, post);
+                mPostCache.put(postView, post);
+                mReasonPostCache.put(postView, post);
             }
 
             getPosts(bsky, uris, cb);

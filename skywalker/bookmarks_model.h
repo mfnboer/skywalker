@@ -42,7 +42,7 @@ private:
 
     PostCache mPostCache;
     bool mInProgress = false;
-    std::unordered_map<QString, ATProto::AppBskyFeed::PostView::Ptr> mDeletedPosts;
+    std::unordered_map<QString, ATProto::AppBskyFeed::PostView::SharedPtr> mDeletedPosts;
 };
 
 }

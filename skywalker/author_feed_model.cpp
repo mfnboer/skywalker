@@ -29,18 +29,18 @@ void AuthorFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (!mFeed.empty())
         clear();
 
-    return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 }
 
-int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     mCursorNextPage = feed->mCursor.value_or("");
 
@@ -81,7 +81,7 @@ void AuthorFeedModel::Page::addPost(const Post& post)
     mFeed.push_back(post);
 }
 
-AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     auto page = std::make_unique<Page>();
 
