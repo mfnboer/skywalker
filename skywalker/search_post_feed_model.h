@@ -36,9 +36,6 @@ private:
 
     Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
 
-    // This must be kept alive as long as there are posts in the feed dependend on it
-    std::vector<ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr> mRawFeed;
-
     QString mCursorNextPage;
 };
 

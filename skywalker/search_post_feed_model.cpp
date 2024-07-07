@@ -20,7 +20,6 @@ void SearchPostFeedModel::clear()
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
         clearFeed();
-        mRawFeed.clear();
         endRemoveRows();
     }
 
@@ -64,7 +63,6 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
 
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
     mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
-    mRawFeed.push_back(std::move(feed));
 
     if (mCursorNextPage.isEmpty())
         mFeed.back().setEndOfFeed(true);

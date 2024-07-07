@@ -124,7 +124,6 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
     }
 
     auto notificationList = createNotificationList(notifications->mNotifications);
-    mRawNotifications.push_back(std::move(notifications));
 
     getPosts(bsky, notificationList, [this, notificationList, clearFirst, doneCb]{
         auto list = std::move(notificationList);
@@ -241,7 +240,7 @@ NotificationListModel::NotificationList NotificationListModel::createNotificatio
 
     for (const auto& rawNotification : rawList)
     {
-        Notification notification(rawNotification.get());
+        Notification notification(rawNotification);
 
         switch (notification.getReason())
         {

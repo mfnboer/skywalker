@@ -42,9 +42,6 @@ private:
 
     BasicProfile mAuthor;
 
-    // This must be kept alive as long as there are posts in the feed dependend on it
-    std::vector<ATProto::AppBskyFeed::OutputFeed::SharedPtr> mRawFeed;
-
     QString mCursorNextPage;
     QEnums::AuthorFeedFilter mFilter = QEnums::AUTHOR_FEED_FILTER_POSTS;
 };

@@ -36,7 +36,6 @@ int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&&
 
     beginInsertRows({}, 0, newRowCount - 1);
     insertPage(mFeed.end(), *page, newRowCount);
-    mRawThread = std::move(page->mRawThread);
     endInsertRows();
 
     qDebug() << "New feed size:" << mFeed.size();
@@ -89,7 +88,6 @@ void PostThreadModel::clear()
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
         clearFeed();
-        mRawThread = nullptr;
         endRemoveRows();
     }
     qDebug() << "All posts removed";

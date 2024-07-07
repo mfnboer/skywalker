@@ -148,7 +148,6 @@ private:
     const MutedWords& mMutedWords;
 
     NotificationList mList;
-    std::vector<ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr> mRawNotifications;
     QString mCursor;
 
     // This cache must be emptied when the notifications are refreshed, because

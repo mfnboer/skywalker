@@ -17,7 +17,7 @@ class Notification
 public:
     using Reason = QEnums::NotificationReason;
 
-    explicit Notification(const ATProto::AppBskyNotification::Notification* notification);
+    explicit Notification(const ATProto::AppBskyNotification::Notification::SharedPtr& notification);
     Notification(const QString& inviteCode, const BasicProfile& usedBy);
     Notification(const MessageView& messageView, const BasicProfile& messageSender);
     explicit Notification(const BasicProfileList& labelersWithLabels);
@@ -53,7 +53,7 @@ public:
 private:
     Post getPost(const PostCache& cache, const QString& uri) const;
 
-    const ATProto::AppBskyNotification::Notification* mNotification = nullptr;
+    ATProto::AppBskyNotification::Notification::SharedPtr mNotification;
     BasicProfileList mOtherAuthors;
     QString mInviteCode;
     BasicProfile mInviteCodeUsedBy;
