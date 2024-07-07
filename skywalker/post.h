@@ -26,15 +26,14 @@ public:
     static Post createBlocked();
     static Post createNotSupported(const QString& unsupportedType);
     static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement);
-    static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, int rawIndex);
+    static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
 
-    explicit Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost = nullptr, int rawIndex = -1);
-    Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView, int rawIndex);
+    explicit Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost = nullptr);
+    explicit Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView);
 
     const ATProto::AppBskyFeed::PostView* getPostView() const { return mPost.get(); }
     bool isPlaceHolder() const { return !mPost; }
     bool isGap() const { return !mPost && mGapId > 0; }
-    int getRawIndex() const { return mRawIndex; }
     bool isEndOfFeed() const { return mEndOfFeed; }
     int getGapId() const { return mGapId; }
     const QString& getGapCursor() const { return mGapCursor; }
@@ -115,9 +114,6 @@ private:
 
     // null if the post represents a reply ref.
     ATProto::AppBskyFeed::FeedViewPost::SharedPtr mFeedViewPost;
-
-    // Index in the vector of raw feed view posts (only for timeline)
-    int mRawIndex = -1;
 
     int mGapId = 0;
 

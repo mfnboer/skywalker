@@ -60,7 +60,7 @@ void BookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto:
 
             for (auto& postView : postViewList)
             {
-                Post post(postView, -1);
+                Post post(postView);
                 mPostCache.put(post);
             }
 
@@ -95,7 +95,7 @@ void BookmarksModel::addPosts(const std::vector<QString>& postUris)
         else
         {
             qWarning() << "Bookmarked post not found:" << uri;
-            Post deletedPost(getDeletedPost(uri), -1);
+            Post deletedPost(getDeletedPost(uri));
             deletedPost.setBookmarkNotFound(true);
             mFeed.push_back(deletedPost);
         }

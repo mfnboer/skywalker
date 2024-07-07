@@ -208,6 +208,6 @@ private:
             postView->mAuthor = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
         });
 
-        return Post(postView, 0);
+        return Post(postView);
     }
 };

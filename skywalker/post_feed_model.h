@@ -96,7 +96,6 @@ private:
     {
         using Ptr = std::unique_ptr<Page>;
         std::vector<Post> mFeed;
-        ATProto::AppBskyFeed::PostFeed mRawFeed;
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
@@ -135,11 +134,6 @@ private:
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.
     std::map<size_t, QString> mIndexCursorMap; // cursor to post at next index
-
-    // The index of the last post that depends on the raw PostFeed. All posts from the previous
-    // index in this map till this one depend on it. The raw PostFeed must be kept alive as
-    // long it has dependend posts.
-    std::map<size_t, ATProto::AppBskyFeed::PostFeed> mIndexRawFeedMap;
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;

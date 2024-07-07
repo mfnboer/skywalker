@@ -50,7 +50,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement)
         const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(threadElement.mPost).get();
         Q_ASSERT(threadPost);
         Q_ASSERT(threadPost->mPost);
-        return Post(threadPost->mPost, -1);
+        return Post(threadPost->mPost);
     }
     case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
         return Post::createNotFound();
@@ -66,7 +66,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement)
     return Post::createNotSupported(QString("Unexpected type: %1").arg(int(threadElement.mType)));
 }
 
-Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, int rawIndex)
+Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement)
 {
     switch (replyElement.mType)
     {
@@ -74,7 +74,7 @@ Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, in
     {
         const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(replyElement.mPost);
         Q_ASSERT(postView);
-        return Post(postView, rawIndex);
+        return Post(postView);
     }
     case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
         return Post::createNotFound();
@@ -90,12 +90,9 @@ Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, in
     return Post::createNotSupported(QString("Unexpected type: %1").arg(int(replyElement.mType)));
 }
 
-Post::Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost, int rawIndex) :
-    mFeedViewPost(feedViewPost),
-    mRawIndex(rawIndex)
+Post::Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost) :
+    mFeedViewPost(feedViewPost)
 {
-    Q_ASSERT((feedViewPost && rawIndex >= 0) || (!feedViewPost && rawIndex == -1));
-
     if (feedViewPost)
     {
         mPost = feedViewPost->mPost;
@@ -117,9 +114,8 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost, int
     }
 }
 
-Post::Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView, int rawIndex) :
-    mPost(postView),
-    mRawIndex(rawIndex)
+Post::Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView) :
+    mPost(postView)
 {
     Q_ASSERT(postView);
     const BasicProfile profile = getAuthor();
@@ -244,8 +240,8 @@ std::optional<PostReplyRef> Post::getViewPostReplyRef() const
 
     const auto& reply = *mFeedViewPost->mReply;
     PostReplyRef replyRef;
-    replyRef.mRoot = Post::createPost(*reply.mRoot, mRawIndex);
-    replyRef.mParent = Post::createPost(*reply.mParent, mRawIndex);
+    replyRef.mRoot = Post::createPost(*reply.mRoot);
+    replyRef.mParent = Post::createPost(*reply.mParent);
 
     // Set the reference timestamp to the timestap of this reply post.
     // They show up together with this reply post.

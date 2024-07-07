@@ -49,7 +49,7 @@ void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed)
 
     for (int i = 0; i < (int)mRawFeed.size(); ++i)
     {
-        Post post(mRawFeed[i][0], i);
+        Post post(mRawFeed[i][0]);
         mFeed.push_back(post);
     }
 
@@ -90,7 +90,7 @@ std::vector<Post> DraftPostsModel::getThread(int index) const
     for (int i = 0; i < (int)mRawFeed[index].size(); ++i)
     {
         const auto& feedViewPost = mRawFeed[index][i];
-        Post post(feedViewPost, i);
+        Post post(feedViewPost);
         thread.push_back(post);
     }
 

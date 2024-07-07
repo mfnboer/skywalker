@@ -209,6 +209,6 @@ private:
             postView->mAuthor = std::make_shared<ATProto::AppBskyActor::ProfileViewBasic>();
         });
 
-        return Post(postView, 0);
+        return Post(postView);
     }
 };

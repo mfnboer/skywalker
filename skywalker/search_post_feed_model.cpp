@@ -90,7 +90,7 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
 
         if (feedEntry->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
-            Post post(feedEntry, i);
+            Post post(feedEntry);
 
             if (mustHideContent(post))
                 continue;
