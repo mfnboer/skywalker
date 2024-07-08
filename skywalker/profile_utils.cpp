@@ -75,7 +75,7 @@ void ProfileUtils::getHandle(const QString& did)
             if (!presence)
                 return;
 
-            AuthorCache::instance().put(BasicProfile(profile.get()));
+            AuthorCache::instance().put(BasicProfile(profile));
             emit handle(profile->mHandle, profile->mDisplayName.value_or(""), profile->mDid);
         },
         [](const QString& error, const QString& msg){

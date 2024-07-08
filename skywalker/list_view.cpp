@@ -198,7 +198,7 @@ Profile ListView::getCreator() const
     if (mCreator)
         return *mCreator;
 
-    return view() ? Profile(view()->mCreator.get()) : Profile{};
+    return view() ? Profile(view()->mCreator) : Profile{};
 }
 
 QString ListView::getDescription() const

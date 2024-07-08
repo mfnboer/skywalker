@@ -158,7 +158,7 @@ void BookmarksModel::getAuthorsDeletedPosts(const std::vector<QString>& postUris
 
             for (auto& profileViewDetailed : profilesViewDetailedList)
             {
-                BasicProfile profile(profileViewDetailed.get());
+                BasicProfile profile(profileViewDetailed);
                 AuthorCache::instance().put(profile);
             }
 

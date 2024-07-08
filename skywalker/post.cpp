@@ -107,7 +107,7 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost) :
         {
             if (feedViewPost->mReply->mGrandparentAuthor)
             {
-                BasicProfile grandparent(feedViewPost->mReply->mGrandparentAuthor.get());
+                BasicProfile grandparent(feedViewPost->mReply->mGrandparentAuthor);
                 AuthorCache::instance().put(grandparent);
             }
         }
@@ -180,7 +180,7 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags) const
 
 BasicProfile Post::getAuthor() const
 {
-    return mPost ? BasicProfile(mPost->mAuthor.get()).nonVolatileCopy() : BasicProfile();
+    return mPost ? BasicProfile(mPost->mAuthor).nonVolatileCopy() : BasicProfile();
 }
 
 QDateTime Post::getIndexedAt() const
@@ -214,7 +214,7 @@ std::optional<BasicProfile> Post::getRepostedBy() const
     if (!isRepost())
         return {};
 
-    return BasicProfile(mFeedViewPost->mReason->mBy.get());
+    return BasicProfile(mFeedViewPost->mReason->mBy);
 }
 
 bool Post::isReply() const
@@ -262,7 +262,7 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
         if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
         {
             const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost).get();
-            return BasicProfile(postView->mAuthor.get());
+            return BasicProfile(postView->mAuthor);
         }
         else
         {

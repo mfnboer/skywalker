@@ -364,7 +364,7 @@ void Skywalker::getUserProfileAndFollows()
     mBsky->getFollows(session->mDid, 100, {},
         [this](auto follows){
             for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(*profile));
+                mUserFollows.add(BasicProfile(profile));
 
             const auto& nextCursor = follows->mCursor;
             if (!nextCursor->isEmpty())
@@ -397,7 +397,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
     mBsky->getFollows(session->mDid, 100, cursor,
         [this, maxPages](auto follows){
             for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(*profile));
+                mUserFollows.add(BasicProfile(profile));
 
             const auto& nextCursor = follows->mCursor;
 
@@ -426,7 +426,7 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Share
 {
     //Q_ASSERT(mUserDid == user->mDid);
     qDebug() << "Got user:" << user->mHandle << "#follows:" << mUserFollows.size();
-    AuthorCache::instance().setUser(BasicProfile(*user));
+    AuthorCache::instance().setUser(BasicProfile(user));
     mUserSettings.saveDisplayName(mUserDid, user->mDisplayName.value_or(""));
     const auto avatar = user->mAvatar ? *user->mAvatar : QString();
     mUserSettings.saveAvatar(mUserDid, avatar);
@@ -580,7 +580,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 
             for (const auto& item : output->mItems)
             {
-                const BasicProfile profile(item->mSubject.get());
+                const BasicProfile profile(item->mSubject);
                 mMutedReposts.add(profile, item->mUri);
             }
 

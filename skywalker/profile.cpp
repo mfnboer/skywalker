@@ -34,11 +34,12 @@ QList<BasicProfile> KnownFollowers::getFollowers() const
     followers.reserve(mFollowers.size());
 
     for (const auto& follower : mFollowers)
-        followers.push_back(*follower);
+        followers.emplace_back(*follower);
 
     return followers;
 }
 
+// TODO: store shared pointer?
 ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState) :
     mValid(true),
     mMuted(viewerState.mMuted),
@@ -63,34 +64,36 @@ ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState&
     }
 }
 
-ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat& associated) :
-    mAllowIncoming((QEnums::AllowIncomingChat)associated.mAllowIncoming)
+ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr& associated) :
+    mAssociated(associated)
 {
 }
 
-ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated& associated) :
-    mLists(associated.mLists),
-    mFeeds(associated.mFeeds),
-    mStarterPacks(associated.mStarterPacks),
-    mLabeler(associated.mLabeler)
+QEnums::AllowIncomingChat ProfileAssociatedChat::getAllowIncoming() const
 {
-    if (associated.mChat)
-        mChat = ProfileAssociatedChat(*associated.mChat);
+    // Default bsky setting is following
+    return mAssociated ? (QEnums::AllowIncomingChat)mAssociated->mAllowIncoming : QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 }
 
-BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile) :
+
+ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated::SharedPtr& associated) :
+    mAssociated(associated)
+{
+}
+
+BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic::SharedPtr& profile) :
     mProfileBasicView(profile)
 {
     Q_ASSERT(mProfileBasicView);
 }
 
-BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView* profile) :
+BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile) :
     mProfileView(profile)
 {
     Q_ASSERT(mProfileView);
 }
 
-BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* profile) :
+BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
     mProfileDetailedView(profile)
 {
     Q_ASSERT(mProfileDetailedView);
@@ -110,14 +113,6 @@ BasicProfile::BasicProfile(const QString& did, const QString& handle, const QStr
 {
 }
 
-BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView& profile) :
-    mDid(profile.mDid),
-    mHandle(profile.mHandle),
-    mDisplayName(profile.mDisplayName.value_or(QString())),
-    mAvatarUrl(profile.mAvatar.value_or(QString()))
-{
-}
-
 bool BasicProfile::isNull() const
 {
     return getDid().isEmpty();
@@ -125,6 +120,9 @@ bool BasicProfile::isNull() const
 
 QString BasicProfile::getDid() const
 {
+    if (mDid)
+        return *mDid;
+
     if (mProfileBasicView)
         return mProfileBasicView->mDid;
 
@@ -134,7 +132,7 @@ QString BasicProfile::getDid() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mDid;
 
-    return mDid;
+    return {};
 }
 
 static QString createName(const QString& handle, const QString& displayName)
@@ -155,6 +153,9 @@ QString BasicProfile::getName() const
 
 QString BasicProfile::getDisplayName() const
 {
+    if (mDisplayName)
+        return *mDisplayName;
+
     if (mProfileBasicView)
         return mProfileBasicView->mDisplayName.value_or("");
 
@@ -164,11 +165,14 @@ QString BasicProfile::getDisplayName() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mDisplayName.value_or("");
 
-    return mDisplayName;
+    return {};
 }
 
 QString BasicProfile::getHandle() const
 {
+    if (mHandle)
+        return *mHandle;
+
     if (mProfileBasicView)
         return mProfileBasicView->mHandle;
 
@@ -178,7 +182,7 @@ QString BasicProfile::getHandle() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mHandle;
 
-    return mHandle;
+    return {};
 }
 
 bool BasicProfile::hasInvalidHandle() const
@@ -198,6 +202,9 @@ QString BasicProfile::getHandleOrDid() const
 
 QString BasicProfile::getAvatarUrl() const
 {
+    if (mAvatarUrl)
+        return *mAvatarUrl;
+
     if (mProfileBasicView)
         return mProfileBasicView->mAvatar.value_or("");
 
@@ -207,7 +214,7 @@ QString BasicProfile::getAvatarUrl() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mAvatar.value_or("");
 
-    return mAvatarUrl;
+    return {};
 }
 
 ImageView BasicProfile::getImageView() const
@@ -217,20 +224,26 @@ ImageView BasicProfile::getImageView() const
 
 ProfileAssociated BasicProfile::getAssociated() const
 {
+    if (mAssociated)
+        return *mAssociated;
+
     if (mProfileBasicView)
-        return mProfileBasicView->mAssociated ? ProfileAssociated(*mProfileBasicView->mAssociated) : ProfileAssociated{};
+        return mProfileBasicView->mAssociated ? ProfileAssociated(mProfileBasicView->mAssociated) : ProfileAssociated{};
 
     if (mProfileView)
-        return mProfileView->mAssociated ? ProfileAssociated(*mProfileView->mAssociated) : ProfileAssociated{};
+        return mProfileView->mAssociated ? ProfileAssociated(mProfileView->mAssociated) : ProfileAssociated{};
 
     if (mProfileDetailedView)
-        return mProfileDetailedView->mAssociated ? ProfileAssociated(*mProfileDetailedView->mAssociated) : ProfileAssociated{};
+        return mProfileDetailedView->mAssociated ? ProfileAssociated(mProfileDetailedView->mAssociated) : ProfileAssociated{};
 
-    return mAssociated;
+    return {};
 }
 
 ProfileViewerState BasicProfile::getViewer() const
 {
+    if (mViewer)
+        return *mViewer;
+
     if (mProfileBasicView)
         return mProfileBasicView->mViewer ? ProfileViewerState(*mProfileBasicView->mViewer) : ProfileViewerState{};
 
@@ -240,11 +253,14 @@ ProfileViewerState BasicProfile::getViewer() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mViewer ? ProfileViewerState(*mProfileDetailedView->mViewer) : ProfileViewerState{};
 
-    return mViewer;
+    return {};
 }
 
 ContentLabelList BasicProfile::getContentLabels() const
 {
+    if (mContentLabels)
+        return *mContentLabels;
+
     const ContentFilter::LabelList* labels = nullptr;
 
     if (mProfileBasicView)
@@ -255,14 +271,9 @@ ContentLabelList BasicProfile::getContentLabels() const
         labels = &mProfileDetailedView->mLabels;
 
     if (!labels)
-        return mContentLabels;
+        return {};
 
     return ContentFilter::getContentLabels(*labels);
-}
-
-bool BasicProfile::isVolatile() const
-{
-    return mProfileBasicView || mProfileView || mProfileDetailedView;
 }
 
 BasicProfile BasicProfile::nonVolatileCopy() const
@@ -316,25 +327,13 @@ bool BasicProfile::isBlocked() const
     return viewer.isBlockedBy() || !viewer.getBlocking().isEmpty() || !viewer.getBlockingByList().isNull();
 }
 
-Profile::Profile(const ATProto::AppBskyActor::ProfileView* profile) :
-    BasicProfile(profile)
-{
-}
-
-Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile) :
-    BasicProfile(profile)
-{
-}
-
 Profile::Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile) :
-    BasicProfile(profile.get()),
-    mProfile(profile)
+    BasicProfile(profile)
 {
 }
 
 Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
-    BasicProfile(profile.get()),
-    mDetailedProfile(profile)
+    BasicProfile(profile)
 {
 }
 
@@ -366,8 +365,7 @@ Profile Profile::nonVolatileCopy() const
 }
 
 DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
-    Profile(profile.get()),
-    mDetailedProfile(profile)
+    Profile(profile)
 {
 }
 

@@ -101,7 +101,7 @@ static void cacheAuthor(const Post& post)
         const auto& author = postView->mAuthor;
         if (author)
         {
-            const BasicProfile authorProfile(author.get());
+            const BasicProfile authorProfile(author);
             AuthorCache::instance().put(authorProfile);
         }
     }

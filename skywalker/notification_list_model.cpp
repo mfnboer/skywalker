@@ -270,7 +270,7 @@ NotificationListModel::NotificationList NotificationListModel::createNotificatio
             break;
         }
 
-        const BasicProfile author(rawNotification->mAuthor.get());
+        const BasicProfile author(rawNotification->mAuthor);
         AuthorCache::instance().put(author);
     }
 

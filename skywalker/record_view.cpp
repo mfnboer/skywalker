@@ -149,7 +149,7 @@ QString RecordView::getFormattedText() const
 
 BasicProfile RecordView::getAuthor() const
 {
-    return mRecord ? BasicProfile(mRecord->mAuthor.get()).nonVolatileCopy() : BasicProfile();
+    return mRecord ? BasicProfile(mRecord->mAuthor) : BasicProfile();
 }
 
 QDateTime RecordView::getIndexedAt() const

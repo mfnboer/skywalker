@@ -68,7 +68,7 @@ QString Notification::getReasonSubjectUri() const
 BasicProfile Notification::getAuthor() const
 {
     if (mNotification)
-        return BasicProfile(mNotification->mAuthor.get()).nonVolatileCopy();
+        return BasicProfile(mNotification->mAuthor);
 
     if (!mMessageSender.isNull())
         return mMessageSender;

@@ -44,10 +44,10 @@ QString StarterPackViewBasic::getCid() const
 BasicProfile StarterPackViewBasic::getCreator() const
 {
     if (mBasicView)
-        return BasicProfile(mBasicView->mCreator.get()).nonVolatileCopy();
+        return BasicProfile(mBasicView->mCreator);
 
     if (mView)
-        return BasicProfile(mView->mCreator.get()).nonVolatileCopy();
+        return BasicProfile(mView->mCreator);
 
     return {};
 }

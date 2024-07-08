@@ -41,7 +41,7 @@ QString GeneratorView::getDid() const
 
 Profile GeneratorView::getCreator() const
 {
-    return view() ? Profile(view()->mCreator.get()) : Profile();
+    return view() ? Profile(view()->mCreator) : Profile();
 }
 
 QString GeneratorView::getDisplayName() const
