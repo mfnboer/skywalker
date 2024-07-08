@@ -7,7 +7,7 @@ namespace Skywalker {
 std::unique_ptr<AuthorCache> AuthorCache::sInstance;
 
 AuthorCache::Entry::Entry(const BasicProfile& profile) :
-    mAuthor(profile.nonVolatileCopy())
+    mAuthor(profile)
 {
 }
 

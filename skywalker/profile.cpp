@@ -16,9 +16,7 @@ KnownFollowers::KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* know
 
     for (const auto& follower : knownFollowers->mFollowers)
     {
-        auto profile = std::make_shared<BasicProfile>(
-            follower->mDid, follower->mHandle, follower->mDisplayName.value_or(""),
-            follower->mAvatar.value_or(""));
+        auto profile = std::make_shared<BasicProfile>(follower);
         mFollowers.push_back(profile);
 
         // Cap followers to the maximum to be safe in case the networks gives
@@ -276,13 +274,6 @@ ContentLabelList BasicProfile::getContentLabels() const
     return ContentFilter::getContentLabels(*labels);
 }
 
-BasicProfile BasicProfile::nonVolatileCopy() const
-{
-    BasicProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl(),
-                         getAssociated(), getViewer(), getContentLabels());
-    return profile;
-}
-
 void BasicProfile::setAvatarUrl(const QString& avatarUrl)
 {
     mAvatarUrl = avatarUrl;
@@ -337,31 +328,18 @@ Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& pr
 {
 }
 
-Profile::Profile(const QString& did, const QString& handle, const QString& displayName,
-                 const QString& avatarUrl, const ProfileAssociated& associated,
-                 const ProfileViewerState& viewer,
-                 const ContentLabelList& contentLabels, const QString& description) :
-    BasicProfile(did, handle, displayName, avatarUrl, associated, viewer, contentLabels),
-    mDescription(description)
-{
-}
-
 QString Profile::getDescription() const
 {
+    if (mDescription)
+        return *mDescription;
+
     if (mProfileView)
         return mProfileView->mDescription.value_or("");
 
     if (mProfileDetailedView)
         return mProfileDetailedView->mDescription.value_or("");
 
-    return mDescription;
-}
-
-Profile Profile::nonVolatileCopy() const
-{
-    Profile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl(), getAssociated(),
-                    getViewer(), getContentLabels(), getDescription());
-    return profile;
+    return {};
 }
 
 DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
@@ -369,44 +347,24 @@ DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetaile
 {
 }
 
-DetailedProfile:: DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
-                const QString& avatarUrl, const ProfileAssociated& associated, const ProfileViewerState& viewer,
-                const ContentLabelList& contentLabels, const QString& description,
-                const QString& banner, int followersCount, int followsCount, int postsCount) :
-    Profile(did, handle, displayName, avatarUrl, associated, viewer, contentLabels, description),
-    mBanner(banner),
-    mFollowersCount(followersCount),
-    mFollowsCount(followsCount),
-    mPostsCount(postsCount)
-{
-}
-
 QString DetailedProfile::getBanner() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : mBanner;
+    return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : "";
 }
 
 int DetailedProfile::getFollowersCount() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mFollowersCount : mFollowersCount;
+    return mProfileDetailedView ? mProfileDetailedView->mFollowersCount : 0;
 }
 
 int DetailedProfile::getFollowsCount() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mFollowsCount : mFollowsCount;
+    return mProfileDetailedView ? mProfileDetailedView->mFollowsCount : 0;
 }
 
 int DetailedProfile::getPostsCount() const
 {
-    return mProfileDetailedView ? mProfileDetailedView->mPostsCount : mPostsCount;
-}
-
-DetailedProfile DetailedProfile::nonVolatileCopy() const
-{
-    DetailedProfile profile(getDid(), getHandle(), getDisplayName(), getAvatarUrl(), getAssociated(),
-                            getViewer(), getContentLabels(), getDescription(), getBanner(),
-                            getFollowersCount(), getFollowsCount(), getPostsCount());
-    return profile;
+    return mProfileDetailedView ? mProfileDetailedView->mPostsCount : 0;
 }
 
 }

@@ -1012,10 +1012,7 @@ void PostUtils::getQuotePost(const QString& httpsUri)
 
     postMaster()->getPost(httpsUri,
         [this](const auto& uri, const auto& cid, auto post, auto author){
-            BasicProfile profile(author->mDid,
-                                 author->mHandle,
-                                 author->mDisplayName.value_or(""),
-                                 author->mAvatar.value_or(""));
+            BasicProfile profile(author);
             const auto formattedText = ATProto::RichTextMaster::getFormattedPostText(*post, UserSettings::getLinkColor());
             emit quotePost(uri, cid, formattedText, profile, post->mCreatedAt);
         });

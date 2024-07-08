@@ -1480,7 +1480,6 @@ void Skywalker::getDetailedProfile(const QString& author)
 void Skywalker::updateUserProfile(const QString& displayName, const QString& description,
                                   const QString& avatar)
 {
-    mUserProfile = mUserProfile.nonVolatileCopy();
     mUserProfile.setDisplayName(displayName);
     mUserProfile.setDescription(description);
     mUserProfile.setAvatarUrl(avatar);

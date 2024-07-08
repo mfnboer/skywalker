@@ -11,7 +11,7 @@ AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& user
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent),
-    mAuthor(author.nonVolatileCopy())
+    mAuthor(author)
 {
 }
 

@@ -20,7 +20,7 @@ public:
         const BasicProfile& getAuthor() const { return mAuthor; }
 
     private:
-        BasicProfile mAuthor; // non-volatile profile
+        BasicProfile mAuthor;
     };
 
     static AuthorCache& instance();

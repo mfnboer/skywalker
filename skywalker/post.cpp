@@ -180,7 +180,7 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags) const
 
 BasicProfile Post::getAuthor() const
 {
-    return mPost ? BasicProfile(mPost->mAuthor).nonVolatileCopy() : BasicProfile();
+    return mPost ? BasicProfile(mPost->mAuthor) : BasicProfile();
 }
 
 QDateTime Post::getIndexedAt() const

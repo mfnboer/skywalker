@@ -288,7 +288,7 @@ static void setRecordViewData(DraftPostData* data, const RecordView* recordView)
 
         data->setQuoteUri(uri);
         data->setQuoteCid(recordView->getCid());
-        data->setQuoteAuthor(recordView->getAuthor().nonVolatileCopy());
+        data->setQuoteAuthor(recordView->getAuthor());
         data->setQuoteText(recordView->getText());
         data->setQuoteDateTime(recordView->getIndexedAt());
         data->setQuoteFixed(data->openAsQuotePost());
@@ -430,8 +430,9 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
         data->setReplyRootUri(post.getReplyRootUri());
         data->setReplyRootCid(post.getReplyRootCid());
 
-        if (post.getReplyToAuthor())
-            data->setReplyToAuthor(post.getReplyToAuthor()->nonVolatileCopy());
+        const auto replyToAuthor = post.getReplyToAuthor();
+        if (replyToAuthor)
+            data->setReplyToAuthor(*replyToAuthor);
 
         const auto replyView = post.getViewPostReplyRef();
         if (replyView)

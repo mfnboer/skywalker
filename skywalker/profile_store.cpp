@@ -24,7 +24,7 @@ void ProfileStore::add(const BasicProfile& profile)
     if (did.isEmpty())
         return;
 
-    mDidProfileMap[did] = profile.nonVolatileCopy();
+    mDidProfileMap[did] = profile;
 }
 
 void ProfileStore::remove(const QString& did)

@@ -137,7 +137,6 @@ public:
                  const QString& avatarUrl, const ProfileAssociated& associated = {},
                  const ProfileViewerState& viewer = {},
                  const ContentLabelList& contentLabels = {});
-    //explicit BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
 
     BasicProfile& operator=(const BasicProfile&) = default;
 
@@ -156,8 +155,6 @@ public:
 
     // Get the handle, but if it is invalid then get the DID
     QString getHandleOrDid() const;
-
-    BasicProfile nonVolatileCopy() const;
 
     void setDisplayName(const QString& displayName) { mDisplayName = displayName; }
 
@@ -200,19 +197,12 @@ public:
     Profile() = default;
     explicit Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
-    Profile(const QString& did, const QString& handle, const QString& displayName,
-            const QString& avatarUrl, const ProfileAssociated& associated,
-            const ProfileViewerState& viewer,
-            const ContentLabelList& contentLabels, const QString& description);
 
     QString getDescription() const;
-
-    Profile nonVolatileCopy() const;
-
     void setDescription(const QString& description) { mDescription = description; }
 
 private:
-    QString mDescription;
+    std::optional<QString> mDescription;
 };
 
 using ProfileList = QList<Profile>;
@@ -229,26 +219,11 @@ class DetailedProfile : public Profile
 public:
     DetailedProfile() = default;
     explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
-    DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
-                    const QString& avatarUrl, const ProfileAssociated& associated,
-                    const ProfileViewerState& viewer,
-                    const ContentLabelList& contentLabels, const QString& description,
-                    const QString& banner, int followersCount, int followsCount, int postsCount);
 
     QString getBanner() const;
     int getFollowersCount() const;
     int getFollowsCount() const;
     int getPostsCount() const;
-
-    DetailedProfile nonVolatileCopy() const;
-
-    void setBanner(const QString& banner) { mBanner = banner; }
-
-private:
-    QString mBanner;
-    int mFollowersCount = 0;
-    int mFollowsCount = 0;
-    int mPostsCount = 0;
 };
 
 }
