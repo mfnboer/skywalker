@@ -236,7 +236,7 @@ void ProfileUtils::getLabelerViewDetailed(const QString& did)
                 return;
             }
 
-            const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(outputView->mView));
+            const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(outputView->mView));
             emit getLabelerViewDetailedOk(view);
         },
         [this](const QString& error, const QString& msg){

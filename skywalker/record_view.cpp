@@ -310,7 +310,7 @@ LabelerView RecordView::getLabeler() const
     if (!mLabeler)
         return {};
 
-    return LabelerView(*mLabeler);
+    return LabelerView(mLabeler);
 }
 
 }

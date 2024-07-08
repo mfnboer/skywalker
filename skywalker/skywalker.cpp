@@ -642,7 +642,7 @@ void Skywalker::loadLabelSettings()
                     return;
                 }
 
-                const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(v->mView));
+                const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(v->mView));
                 const auto& policies = view.getPolicies();
                 const auto& groupMap = policies.getLabelContentGroupMap();
                 const auto& did = view.getCreator().getDid();

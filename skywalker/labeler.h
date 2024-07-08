@@ -16,12 +16,12 @@ class LabelerViewerState
 
 public:
     LabelerViewerState() = default;
-    explicit LabelerViewerState(const ATProto::AppBskyLabeler::LabelerViewerState& viewerState);
+    explicit LabelerViewerState(const ATProto::AppBskyLabeler::LabelerViewerState::SharedPtr& viewerState);
 
-    const QString& getLike() const { return mLike; }
+    QString getLike() const;
 
 private:
-    QString mLike;
+    ATProto::AppBskyLabeler::LabelerViewerState::SharedPtr mViewerState;
 };
 
 class LabelerPolicies
@@ -59,25 +59,22 @@ class LabelerView
 
 public:
     LabelerView() = default;
-    explicit LabelerView(const ATProto::AppBskyLabeler::LabelerView& view);
-    explicit LabelerView(const ATProto::AppBskyLabeler::LabelerViewDetailed& view);
+    explicit LabelerView(const ATProto::AppBskyLabeler::LabelerView::SharedPtr& view);
+    explicit LabelerView(const ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr& view);
 
-    const QString& getUri() const { return mUri; }
-    const QString& getCid() const { return mCid; }
-    const Profile& getCreator() const { return mCreator; }
-    int getLikeCount() const { return mLikeCount; }
-    const LabelerViewerState& getViewer() const { return mViewer; }
-    const QDateTime& getIndexedAt() const { return mIndexedAt; }
-    const ContentLabelList& getContentLabels() const { return mContentLabels; }
+    QString getUri() const;
+    QString getCid() const;
+    Profile getCreator() const;
+    int getLikeCount() const;
+    LabelerViewerState getViewer() const;
+    QDateTime getIndexedAt() const;
+    ContentLabelList getContentLabels() const;
+
+protected:
+    ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr mViewDetailed;
 
 private:
-    QString mUri;
-    QString mCid;
-    Profile mCreator;
-    int mLikeCount;
-    LabelerViewerState mViewer;
-    QDateTime mIndexedAt;
-    ContentLabelList mContentLabels;
+    ATProto::AppBskyLabeler::LabelerView::SharedPtr mView;
 };
 
 class LabelerViewDetailed : public LabelerView
@@ -88,12 +85,9 @@ class LabelerViewDetailed : public LabelerView
 
 public:
     LabelerViewDetailed() = default;
-    explicit LabelerViewDetailed(const ATProto::AppBskyLabeler::LabelerViewDetailed& view);
+    explicit LabelerViewDetailed(const ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr& view);
 
-    const LabelerPolicies& getPolicies() const { return mPolicies; }
-
-private:
-    LabelerPolicies mPolicies;
+    LabelerPolicies getPolicies() const;
 };
 
 }
