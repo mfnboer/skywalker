@@ -11,7 +11,7 @@ ChatBasicProfile::ChatBasicProfile(const ATProto::ChatBskyActor::ProfileViewBasi
                     profile.mDisplayName.value_or(""),
                     profile.mAvatar.value_or(""),
                     profile.mAssociated ? ProfileAssociated{profile.mAssociated} : ProfileAssociated{},
-                    profile.mViewer ? ProfileViewerState{*profile.mViewer} : ProfileViewerState{},
+                    profile.mViewer ? ProfileViewerState{profile.mViewer} : ProfileViewerState{},
                     ContentFilter::getContentLabels(profile.mLabels)),
     mChatDisabled(profile.mChatDisabled)
 {

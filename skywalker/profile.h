@@ -48,28 +48,21 @@ class ProfileViewerState
 
 public:
     ProfileViewerState() = default;
-    explicit ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState);
+    explicit ProfileViewerState(const ATProto::AppBskyActor::ViewerState::SharedPtr& viewerState);
 
-    bool isValid() const { return mValid; }
-    bool isMuted() const { return mMuted; }
-    bool isBlockedBy() const { return mBlockedBy; }
-    const QString& getBlocking() const { return mBlocking; }
-    const QString& getFollowing() const { return mFollowing; }
-    const QString& getFollowedBy() const { return mFollowedBy; }
-    const ListViewBasic& getMutedByList() const { return mMutedByList; }
-    const ListViewBasic& getBlockingByList() const { return mBlockingByList; }
-    const KnownFollowers& getKnownFollowers() const { return mKnownFollowers; }
+    bool isValid() const;
+    bool isMuted() const;
+    bool isBlockedBy() const;
+    QString getBlocking() const;
+    QString getFollowing() const;
+    QString getFollowedBy() const;
+    ListViewBasic getMutedByList() const;
+    ListViewBasic getBlockingByList() const;
+    KnownFollowers getKnownFollowers() const;
 
 private:
+    ATProto::AppBskyActor::ViewerState::SharedPtr mViewerState;
     bool mValid = false;
-    bool mMuted = false;
-    bool mBlockedBy = false;
-    QString mBlocking;
-    QString mFollowing;
-    QString mFollowedBy;
-    ListViewBasic mMutedByList;
-    ListViewBasic mBlockingByList;
-    KnownFollowers mKnownFollowers;
 };
 
 class ProfileAssociatedChat

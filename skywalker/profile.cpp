@@ -38,28 +38,61 @@ QList<BasicProfile> KnownFollowers::getFollowers() const
 }
 
 // TODO: store shared pointer?
-ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState) :
-    mValid(true),
-    mMuted(viewerState.mMuted),
-    mBlockedBy(viewerState.mBlockedBy),
-    mBlocking(viewerState.mBlocking.value_or("")),
-    mFollowing(viewerState.mFollowing.value_or("")),
-    mFollowedBy(viewerState.mFollowedBy.value_or("")),
-    mKnownFollowers(viewerState.mKnownFollowers.get())
+ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState::SharedPtr& viewerState) :
+    mViewerState(viewerState),
+    mValid(true)
 {
-    if (viewerState.mMutedByList)
-    {
-        const auto& l = *viewerState.mMutedByList;
-        mMutedByList = ListViewBasic(l.mUri, l.mCid, l.mName, l.mPurpose,
-                                      l.mAvatar.value_or(""));
-    }
+}
 
-    if (viewerState.mBlockingByList)
-    {
-        const auto& l = *viewerState.mBlockingByList;
-        mBlockingByList = ListViewBasic(l.mUri, l.mCid, l.mName, l.mPurpose,
-                                        l.mAvatar.value_or(""));
-    }
+bool ProfileViewerState::isValid() const
+{
+    return mValid;
+}
+
+bool ProfileViewerState::isMuted() const
+{
+    return mViewerState ? mViewerState->mMuted : false;
+}
+
+bool ProfileViewerState::isBlockedBy() const
+{
+    return mViewerState ? mViewerState->mBlockedBy : false;
+}
+
+QString ProfileViewerState::getBlocking() const
+{
+    return mViewerState ? mViewerState->mBlocking.value_or("") : "";
+}
+
+QString ProfileViewerState::getFollowing() const
+{
+    return mViewerState ? mViewerState->mFollowing.value_or("") : "";
+}
+
+QString ProfileViewerState::getFollowedBy() const
+{
+    return mViewerState ? mViewerState->mFollowedBy.value_or("") : "";
+}
+
+ListViewBasic ProfileViewerState::getMutedByList() const
+{
+    if (mViewerState && mViewerState->mMutedByList)
+        return ListViewBasic(mViewerState->mMutedByList);
+
+    return {};
+}
+
+ListViewBasic ProfileViewerState::getBlockingByList() const
+{
+    if (mViewerState && mViewerState->mBlockingByList)
+        return ListViewBasic(mViewerState->mBlockingByList);
+
+    return {};
+}
+
+KnownFollowers ProfileViewerState::getKnownFollowers() const
+{
+    return mViewerState ? KnownFollowers(mViewerState->mKnownFollowers.get()) : KnownFollowers{};
 }
 
 ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr& associated) :
@@ -243,13 +276,13 @@ ProfileViewerState BasicProfile::getViewer() const
         return *mViewer;
 
     if (mProfileBasicView)
-        return mProfileBasicView->mViewer ? ProfileViewerState(*mProfileBasicView->mViewer) : ProfileViewerState{};
+        return mProfileBasicView->mViewer ? ProfileViewerState(mProfileBasicView->mViewer) : ProfileViewerState{};
 
     if (mProfileView)
-        return mProfileView->mViewer ? ProfileViewerState(*mProfileView->mViewer) : ProfileViewerState{};
+        return mProfileView->mViewer ? ProfileViewerState(mProfileView->mViewer) : ProfileViewerState{};
 
     if (mProfileDetailedView)
-        return mProfileDetailedView->mViewer ? ProfileViewerState(*mProfileDetailedView->mViewer) : ProfileViewerState{};
+        return mProfileDetailedView->mViewer ? ProfileViewerState(mProfileDetailedView->mViewer) : ProfileViewerState{};
 
     return {};
 }
