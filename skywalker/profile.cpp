@@ -37,16 +37,14 @@ QList<BasicProfile> KnownFollowers::getFollowers() const
     return followers;
 }
 
-// TODO: store shared pointer?
 ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState::SharedPtr& viewerState) :
-    mViewerState(viewerState),
-    mValid(true)
+    mViewerState(viewerState)
 {
 }
 
 bool ProfileViewerState::isValid() const
 {
-    return mValid;
+    return mViewerState != nullptr;
 }
 
 bool ProfileViewerState::isMuted() const

@@ -62,7 +62,6 @@ public:
 
 private:
     ATProto::AppBskyActor::ViewerState::SharedPtr mViewerState;
-    bool mValid = false;
 };
 
 class ProfileAssociatedChat

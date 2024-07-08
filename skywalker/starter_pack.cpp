@@ -120,7 +120,7 @@ GeneratorViewList StarterPackView::getFeeds() const
     GeneratorViewList feedList;
 
     for (const auto& feed : mView->mFeeds)
-        feedList.emplaceBack(feed.get());
+        feedList.emplaceBack(feed);
 
     return feedList;
 }
