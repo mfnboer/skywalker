@@ -28,26 +28,22 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
     }
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD:
     {
-        const auto& record = std::get<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord);
-        mRecord = record.get();
+        mRecord = std::get<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
     {
-        const auto& record = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(view.mRecord);
-        mFeed = record.get();
+        mFeed = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(view.mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
     {
-        const auto& record = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(view.mRecord);
-        mList = record.get();
+        mList = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(view.mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
     {
-        const auto& record = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(view.mRecord);
-        mLabeler = record.get();
+        mLabeler = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(view.mRecord);
         break;
     }
     default:

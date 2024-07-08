@@ -124,7 +124,6 @@ public:
     Q_INVOKABLE StarterPackListModel* getStarterPackListModel(int id) const;
     Q_INVOKABLE void removeStarterPackListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
-    Q_INVOKABLE int createPostFeedModel(const ListView& listView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);

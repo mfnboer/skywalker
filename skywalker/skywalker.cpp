@@ -1968,15 +1968,10 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
                                                  mUserDid, mUserFollows, mMutedReposts,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
-    model->setListView(listView.nonVolatileCopy());
+    model->setListView(listView);
     model->enableLanguageFilter(true);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
-}
-
-int Skywalker::createPostFeedModel(const ListView& listView)
-{
-    return createPostFeedModel(ListViewBasic(listView.nonVolatileCopy()));
 }
 
 PostFeedModel* Skywalker::getPostFeedModel(int id) const

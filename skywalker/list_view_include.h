@@ -20,14 +20,13 @@ class ListViewerState
 
 public:
     ListViewerState() = default;
-    explicit ListViewerState(const ATProto::AppBskyGraph::ListViewerState& viewerState);
+    explicit ListViewerState(const ATProto::AppBskyGraph::ListViewerState::SharedPtr& viewerState);
 
-    bool getMuted() const { return mMuted; }
-    const QString& getBlocked() const { return mBlocked; }
+    bool getMuted() const;
+    QString getBlocked() const;
 
 private:
-    bool mMuted = false;
-    QString mBlocked;
+    ATProto::AppBskyGraph::ListViewerState::SharedPtr mViewerState;
 };
 
 class ListViewBasic
@@ -46,8 +45,7 @@ class ListViewBasic
 public:
     ListViewBasic() = default;
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic::SharedPtr& view);
-    explicit ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic* view);
-    explicit ListViewBasic(const ATProto::AppBskyGraph::ListView* view);
+    explicit ListViewBasic(const ATProto::AppBskyGraph::ListView::SharedPtr& view);
     ListViewBasic(const QString& uri, const QString& cid, const QString& name,
                   ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar);
 
@@ -67,22 +65,15 @@ public:
     // If avatar is a "image://", then the list view takes ownership of the image
     void setAvatar(const QString& avatar);
 
-    ListViewBasic nonVolatileCopy() const;
-
 protected:
-    const ATProto::AppBskyGraph::ListView* view() const;
-
-    const ATProto::AppBskyGraph::ListView* mRawListView = nullptr;
+    ATProto::AppBskyGraph::ListView::SharedPtr mListView;
 
 private:
-    const ATProto::AppBskyGraph::ListViewBasic* basicView() const;
+    ATProto::AppBskyGraph::ListViewBasic::SharedPtr mListViewBasic;
 
-    ATProto::AppBskyGraph::ListViewBasic::SharedPtr mSharedListViewBasic;
-    const ATProto::AppBskyGraph::ListViewBasic* mRawListViewBasic = nullptr;
-
-    QString mUri;
-    QString mCid;
-    QString mName;
+    std::optional<QString> mUri;
+    std::optional<QString> mCid;
+    std::optional<QString> mName;
     ATProto::AppBskyGraph::ListPurpose mPurpose = ATProto::AppBskyGraph::ListPurpose::UNKNOWN;
     std::optional<QString> mAvatar;
     SharedImageSource::SharedPtr mAvatarSource;

@@ -109,7 +109,7 @@ StarterPackView::StarterPackView(const ATProto::AppBskyGraph::StarterPackView::S
 
 ListViewBasic StarterPackView::getList() const
 {
-    return mView ? ListViewBasic(mView->mList.get()).nonVolatileCopy() : ListViewBasic();
+    return mView ? ListViewBasic(mView->mList) : ListViewBasic();
 }
 
 GeneratorViewList StarterPackView::getFeeds() const

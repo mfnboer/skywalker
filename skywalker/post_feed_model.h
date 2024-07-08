@@ -40,7 +40,7 @@ public:
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
 
     Q_INVOKABLE const ListViewBasic getListView() const { return mListView; }
-    void setListView(const ListViewBasic& view) { mListView = view.nonVolatileCopy(); }
+    void setListView(const ListViewBasic& view) { mListView = view; }
 
     bool isLanguageFilterConfigured() const;
     void enableLanguageFilter(bool enabled);

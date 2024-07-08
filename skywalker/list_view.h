@@ -17,7 +17,6 @@ class ListView : public ListViewBasic
 public:
     ListView() = default;
     explicit ListView(const ATProto::AppBskyGraph::ListView::SharedPtr& view);
-    explicit ListView(const ATProto::AppBskyGraph::ListView* view);
     ListView(const QString& uri, const QString& cid, const QString& name,
              ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar,
              const Profile& creator, const QString& description);
@@ -28,10 +27,7 @@ public:
 
     void setDescription(const QString& description) { mDescription = description; };
 
-    ListView nonVolatileCopy() const;
-
 private:
-    ATProto::AppBskyGraph::ListView::SharedPtr mSharedListView;
     std::optional<Profile> mCreator;
     std::optional<QString> mDescription;
 };
