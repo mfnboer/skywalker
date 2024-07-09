@@ -5,7 +5,7 @@
 
 namespace Skywalker {
 
-RecordWithMediaView::RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView* view) :
+RecordWithMediaView::RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr& view) :
     mView(view)
 {}
 

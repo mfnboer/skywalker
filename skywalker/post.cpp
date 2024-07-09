@@ -452,7 +452,7 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
         return {};
 
     const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(mPost->mEmbed->mEmbed);
-    return std::make_unique<RecordWithMediaView>(recordView.get());
+    return std::make_unique<RecordWithMediaView>(recordView);
 }
 
 bool Post::isQuotePost() const
