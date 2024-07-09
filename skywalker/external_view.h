@@ -20,18 +20,15 @@ public:
     using Ptr = std::unique_ptr<ExternalView>;
 
     ExternalView() = default;
-    explicit ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal* external);
+    explicit ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr& external);
 
-    QString getUri() const { return mUri; }
-    QString getTitle() const { return mTitle; }
-    QString getDescription() const { return mDescription; }
-    QString getThumbUrl() const { return mThumbUrl; }
+    QString getUri() const;
+    QString getTitle() const;
+    QString getDescription() const;
+    QString getThumbUrl() const;
 
 private:
-    QString mUri;
-    QString mTitle;
-    QString mDescription;
-    QString mThumbUrl;
+    ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr mExternal;
 };
 
 }

@@ -43,7 +43,7 @@ QVariant RecordWithMediaView::getExternal() const
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(mView->mMedia)->mExternal;
-    return QVariant::fromValue(ExternalView(external.get()));
+    return QVariant::fromValue(ExternalView(external));
 }
 
 }

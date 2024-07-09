@@ -185,7 +185,7 @@ QVariant RecordView::getExternal() const
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mEmbed)->mExternal;
-    return QVariant::fromValue(ExternalView(external.get()));
+    return QVariant::fromValue(ExternalView(external));
 }
 
 ContentLabelList RecordView::getContentLabels() const

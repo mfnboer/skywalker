@@ -428,7 +428,7 @@ ExternalView::Ptr Post::getExternalView() const
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(mPost->mEmbed->mEmbed)->mExternal;
-    return std::make_unique<ExternalView>(external.get());
+    return std::make_unique<ExternalView>(external);
 }
 
 RecordView::Ptr Post::getRecordView() const
