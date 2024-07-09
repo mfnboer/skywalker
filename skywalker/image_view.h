@@ -22,7 +22,7 @@ public:
 
     ImageView() = default;
     ImageView(const QString& fullSizeUrl, const QString& alt) : mFullSizeUrl(fullSizeUrl), mAlt(alt) {}
-    ImageView(const ATProto::AppBskyEmbed::ImagesViewImage* viewImage) :
+    ImageView(const ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr& viewImage) :
         mViewImage(viewImage)
     {}
 
@@ -34,7 +34,7 @@ public:
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
 
 private:
-    const ATProto::AppBskyEmbed::ImagesViewImage* mViewImage = nullptr;
+    ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr mViewImage;
 
     QString mFullSizeUrl;
     QString mAlt;

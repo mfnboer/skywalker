@@ -169,7 +169,7 @@ QList<ImageView> RecordView::getImages() const
     QList<ImageView> images;
 
     for (const auto& img : imagesView->mImages)
-        images.append(ImageView(img.get()));
+        images.append(ImageView(img));
 
     return images;
 }

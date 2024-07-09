@@ -414,7 +414,7 @@ QList<ImageView> Post::getImages() const
     QList<ImageView> images;
 
     for (const auto& img : imagesView->mImages)
-        images.push_back(ImageView(img.get()));
+        images.push_back(ImageView(img));
 
     return images;
 }
