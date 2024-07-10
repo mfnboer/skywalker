@@ -118,7 +118,6 @@ ScrollView {
             imgSource: images[index]
         })
         memePage.onMeme.connect((source) => {
-            console.debug("MEME SOURCE:", source)
             postUtils.dropPhoto(images[index])
             images[index] = source
             root.popStack()
