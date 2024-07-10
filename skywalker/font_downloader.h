@@ -14,6 +14,9 @@ public:
     static float getFontScale();
     static QString getEmojiFontFamily();
     static QFont getEmojiFont();
+
+private:
+    static void addFont(const QString& fontFileName);
 };
 
 }

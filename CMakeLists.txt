@@ -45,6 +45,7 @@ qt_add_qml_module(appskywalker
     NO_RESOURCE_TARGET_PATH
     RESOURCES
         qtquickcontrols2.conf
+        fonts/unicode.impact.ttf
         fonts/NotoSansMath-Regular.ttf
         images/skywalker.png
         images/PB_tenor_logo_blue_horizontal.svg

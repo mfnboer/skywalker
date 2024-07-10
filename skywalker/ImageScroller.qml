@@ -50,6 +50,13 @@ ScrollView {
                     Accessible.name: imageScroller.hasAltText(index) ? qsTr(`edit alt text for picture ${(index + 1)}`) : qsTr(`add alt text to picture ${(index + 1)}`)
                 }
 
+                SkyButton {
+                    y: parent.height - height
+                    height: 34
+                    text: qsTr("+MEME")
+                    onClicked: imageScroller.editMeme(index)
+                }
+
                 SvgButton {
                     x: parent.width - width
                     width: 34
@@ -96,12 +103,27 @@ ScrollView {
     function editAltText(index) {
         let component = Qt.createComponent("AltTextEditor.qml")
         let altPage = component.createObject(page, {
-                imgSource: images[index],
-                text: altTexts[index] })
+            imgSource: images[index],
+            text: altTexts[index] })
         altPage.onAltTextChanged.connect((text) => {
-                altTexts[index] = text
-                root.popStack()
+            altTexts[index] = text
+            root.popStack()
         })
         root.pushStack(altPage)
+    }
+
+    function editMeme(index) {
+        let component = Qt.createComponent("MemeEditor.qml")
+        let memePage = component.createObject(page, {
+            imgSource: images[index]
+        })
+        memePage.onMeme.connect((source) => {
+            console.debug("MEME SOURCE:", source)
+            postUtils.dropPhoto(images[index])
+            images[index] = source
+            root.popStack()
+        })
+        memePage.onCancel.connect(() => root.popStack())
+        root.pushStack(memePage)
     }
 }
