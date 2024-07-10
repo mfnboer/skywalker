@@ -20,10 +20,10 @@ QJsonObject ReplyToPost::toJson() const
     return json;
 }
 
-ReplyToPost::Ptr ReplyToPost::fromJson(const QJsonObject& json)
+ReplyToPost::SharedPtr ReplyToPost::fromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject xjson(json);
-    auto replyToPost = std::make_unique<ReplyToPost>();
+    auto replyToPost = std::make_shared<ReplyToPost>();
     replyToPost->mAuthor = xjson.getRequiredObject<ATProto::AppBskyActor::ProfileViewBasic>("author");
     replyToPost->mText = xjson.getRequiredString("text");
     replyToPost->mDateTime = xjson.getRequiredDateTime("date");
@@ -44,10 +44,10 @@ QJsonObject QuotePost::toJson() const
     return json;
 }
 
-QuotePost::Ptr QuotePost::fromJson(const QJsonObject& json)
+QuotePost::SharedPtr QuotePost::fromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject xjson(json);
-    auto quotePost = std::make_unique<QuotePost>();
+    auto quotePost = std::make_shared<QuotePost>();
     quotePost->mAuthor = xjson.getRequiredObject<ATProto::AppBskyActor::ProfileViewBasic>("author");
     quotePost->mText = xjson.getRequiredString("text");
     quotePost->mDateTime = xjson.getRequiredDateTime("date");
@@ -78,16 +78,16 @@ QJsonObject Quote::toJson() const
     switch (mRecordType)
     {
     case RecordType::QUOTE_POST:
-        json.insert("record", std::get<QuotePost::Ptr>(mRecord)->toJson());
+        json.insert("record", std::get<QuotePost::SharedPtr>(mRecord)->toJson());
         break;
     case RecordType::QUOTE_FEED:
-        json.insert("record", std::get<ATProto::AppBskyFeed::GeneratorView::Ptr>(mRecord)->toJson());
+        json.insert("record", std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mRecord)->toJson());
         break;
     case RecordType::QUOTE_LIST:
-        json.insert("record", std::get<ATProto::AppBskyGraph::ListView::Ptr>(mRecord)->toJson());
+        json.insert("record", std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mRecord)->toJson());
         break;
     case RecordType::QUOTE_LABELER:
-        json.insert("record", std::get<ATProto::AppBskyLabeler::LabelerView::Ptr>(mRecord)->toJson());
+        json.insert("record", std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mRecord)->toJson());
         break;
     case RecordType::UNKNOWN:
         qWarning() << "Unknown record type:" << (int)mRecordType;
@@ -98,10 +98,10 @@ QJsonObject Quote::toJson() const
     return json;
 }
 
-Quote::Ptr Quote::fromJson(const QJsonObject& json)
+Quote::SharedPtr Quote::fromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject xjson(json);
-    auto quote = std::make_unique<Quote>();
+    auto quote = std::make_shared<Quote>();
     const auto recordJson = xjson.getRequiredJsonObject("record");
     const ATProto::XJsonObject recordXJson(recordJson);
     const QString rawRecordType = recordXJson.getRequiredString("$type");
@@ -141,10 +141,10 @@ QJsonObject Draft::toJson() const
     return json;
 }
 
-Draft::Ptr Draft::fromJson(const QJsonObject& json)
+Draft::SharedPtr Draft::fromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject xjson(json);
-    auto draft = std::make_unique<Draft>();
+    auto draft = std::make_shared<Draft>();
     draft->mPost = xjson.getRequiredObject<ATProto::AppBskyFeed::Record::Post>("post");
     draft->mReplyToPost = xjson.getOptionalObject<ReplyToPost>("replyToPost");
     draft->mQuote = xjson.getOptionalObject<Quote>("quote");

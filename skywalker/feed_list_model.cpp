@@ -91,8 +91,7 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, cons
     for (auto& view : feeds)
     {
         qDebug() << view->mDisplayName;
-        ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedRaw(view.release());
-        mFeeds.emplace_back(sharedRaw);
+        mFeeds.emplace_back(view);
     }
 
     endInsertRows();

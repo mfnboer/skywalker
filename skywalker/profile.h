@@ -48,28 +48,20 @@ class ProfileViewerState
 
 public:
     ProfileViewerState() = default;
-    explicit ProfileViewerState(const ATProto::AppBskyActor::ViewerState& viewerState);
+    explicit ProfileViewerState(const ATProto::AppBskyActor::ViewerState::SharedPtr& viewerState);
 
-    bool isValid() const { return mValid; }
-    bool isMuted() const { return mMuted; }
-    bool isBlockedBy() const { return mBlockedBy; }
-    const QString& getBlocking() const { return mBlocking; }
-    const QString& getFollowing() const { return mFollowing; }
-    const QString& getFollowedBy() const { return mFollowedBy; }
-    const ListViewBasic& getMutedByList() const { return mMutedByList; }
-    const ListViewBasic& getBlockingByList() const { return mBlockingByList; }
-    const KnownFollowers& getKnownFollowers() const { return mKnownFollowers; }
+    bool isValid() const;
+    bool isMuted() const;
+    bool isBlockedBy() const;
+    QString getBlocking() const;
+    QString getFollowing() const;
+    QString getFollowedBy() const;
+    ListViewBasic getMutedByList() const;
+    ListViewBasic getBlockingByList() const;
+    KnownFollowers getKnownFollowers() const;
 
 private:
-    bool mValid = false;
-    bool mMuted = false;
-    bool mBlockedBy = false;
-    QString mBlocking;
-    QString mFollowing;
-    QString mFollowedBy;
-    ListViewBasic mMutedByList;
-    ListViewBasic mBlockingByList;
-    KnownFollowers mKnownFollowers;
+    ATProto::AppBskyActor::ViewerState::SharedPtr mViewerState;
 };
 
 class ProfileAssociatedChat
@@ -80,13 +72,12 @@ class ProfileAssociatedChat
 
 public:
     ProfileAssociatedChat() = default;
-    explicit ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat& associated);
+    explicit ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr& associated);
 
-    QEnums::AllowIncomingChat getAllowIncoming() const { return mAllowIncoming; }
+    QEnums::AllowIncomingChat getAllowIncoming() const;
 
 private:
-    // Default bsky setting is following
-    QEnums::AllowIncomingChat mAllowIncoming = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+    ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr mAssociated;
 };
 
 class ProfileAssociated
@@ -101,20 +92,16 @@ class ProfileAssociated
 
 public:
     ProfileAssociated() = default;
-    explicit ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated& associated);
+    explicit ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated::SharedPtr& associated);
 
-    int getLists() const { return mLists; }
-    int getFeeds() const { return mFeeds; }
-    int getStarterPacks() const { return mStarterPacks; }
-    bool isLabeler() const { return mLabeler; }
-    const ProfileAssociatedChat& getChat() const { return mChat; }
+    int getLists() const { return mAssociated ? mAssociated->mLists : 0; }
+    int getFeeds() const { return mAssociated ? mAssociated->mFeeds : 0; }
+    int getStarterPacks() const { return mAssociated ? mAssociated->mStarterPacks : 0; }
+    bool isLabeler() const { return mAssociated ? mAssociated->mLabeler : false; }
+    ProfileAssociatedChat getChat() const { return ProfileAssociatedChat(mAssociated->mChat); }
 
 private:
-    int mLists = 0;
-    int mFeeds = 0;
-    int mStarterPacks = 0;
-    bool mLabeler = false;
-    ProfileAssociatedChat mChat;
+    ATProto::AppBskyActor::ProfileAssociated::SharedPtr mAssociated;
 };
 
 class BasicProfile
@@ -134,14 +121,16 @@ class BasicProfile
 
 public:
     BasicProfile() = default;
-    explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic* profile);
-    explicit BasicProfile(const ATProto::AppBskyActor::ProfileView* profile);
-    explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
+    BasicProfile(const BasicProfile&) = default;
+    explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic::SharedPtr& profile);
+    explicit BasicProfile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
+    explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
     BasicProfile(const QString& did, const QString& handle, const QString& displayName,
                  const QString& avatarUrl, const ProfileAssociated& associated = {},
                  const ProfileViewerState& viewer = {},
                  const ContentLabelList& contentLabels = {});
-    explicit BasicProfile(const ATProto::AppBskyActor::ProfileView& profile);
+
+    BasicProfile& operator=(const BasicProfile&) = default;
 
     Q_INVOKABLE bool isNull() const;
     QString getDid() const;
@@ -159,12 +148,6 @@ public:
     // Get the handle, but if it is invalid then get the DID
     QString getHandleOrDid() const;
 
-    // The profile is volatile if it depends on pointers to the raw data.
-    bool isVolatile() const;
-
-    BasicProfile nonVolatileCopy() const;
-
-    // Setting only makes sense for a non-volatile instance
     void setDisplayName(const QString& displayName) { mDisplayName = displayName; }
 
     // If avatarUrl is a "image://", then the profile takes ownership of the image
@@ -178,20 +161,20 @@ public:
     Q_INVOKABLE bool isBlocked() const;
 
 protected:
-    const ATProto::AppBskyActor::ProfileViewDetailed* mProfileDetailedView = nullptr;
-    const ATProto::AppBskyActor::ProfileView* mProfileView = nullptr;
+    ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mProfileDetailedView;
+    ATProto::AppBskyActor::ProfileView::SharedPtr mProfileView;
 
 private:
-    const ATProto::AppBskyActor::ProfileViewBasic* mProfileBasicView = nullptr;
+    ATProto::AppBskyActor::ProfileViewBasic::SharedPtr mProfileBasicView;
 
-    QString mDid;
-    QString mHandle;
-    QString mDisplayName;
-    QString mAvatarUrl;
+    std::optional<QString> mDid;
+    std::optional<QString> mHandle;
+    std::optional<QString> mDisplayName;
+    std::optional<QString> mAvatarUrl;
     SharedImageSource::SharedPtr mAvatarSource;
-    ProfileAssociated mAssociated;
-    ProfileViewerState mViewer;
-    ContentLabelList mContentLabels;
+    std::optional<ProfileAssociated> mAssociated;
+    std::optional<ProfileViewerState> mViewer;
+    std::optional<ContentLabelList> mContentLabels;
 };
 
 using BasicProfileList = QList<BasicProfile>;
@@ -204,26 +187,14 @@ class Profile : public BasicProfile
 
 public:
     Profile() = default;
-    explicit Profile(const ATProto::AppBskyActor::ProfileView* profile);
-    explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed* profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
-    Profile(const QString& did, const QString& handle, const QString& displayName,
-            const QString& avatarUrl, const ProfileAssociated& associated,
-            const ProfileViewerState& viewer,
-            const ContentLabelList& contentLabels, const QString& description);
 
     QString getDescription() const;
-
-    Profile nonVolatileCopy() const;
-
     void setDescription(const QString& description) { mDescription = description; }
 
 private:
-    ATProto::AppBskyActor::ProfileView::SharedPtr mProfile;
-    ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mDetailedProfile;
-
-    QString mDescription;
+    std::optional<QString> mDescription;
 };
 
 using ProfileList = QList<Profile>;
@@ -240,28 +211,11 @@ class DetailedProfile : public Profile
 public:
     DetailedProfile() = default;
     explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
-    DetailedProfile(const QString& did, const QString& handle, const QString& displayName,
-                    const QString& avatarUrl, const ProfileAssociated& associated,
-                    const ProfileViewerState& viewer,
-                    const ContentLabelList& contentLabels, const QString& description,
-                    const QString& banner, int followersCount, int followsCount, int postsCount);
 
     QString getBanner() const;
     int getFollowersCount() const;
     int getFollowsCount() const;
     int getPostsCount() const;
-
-    DetailedProfile nonVolatileCopy() const;
-
-    void setBanner(const QString& banner) { mBanner = banner; }
-
-private:
-    ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mDetailedProfile;
-
-    QString mBanner;
-    int mFollowersCount = 0;
-    int mFollowsCount = 0;
-    int mPostsCount = 0;
 };
 
 }

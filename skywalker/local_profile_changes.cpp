@@ -17,7 +17,7 @@ void LocalProfileChanges::clearLocalProfileChanges()
 
 void LocalProfileChanges::updateProfile(const Profile& profile)
 {
-    mChanges[profile.getDid()] = profile.nonVolatileCopy();
+    mChanges[profile.getDid()] = profile;
     profileChanged();
 }
 

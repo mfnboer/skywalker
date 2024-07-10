@@ -18,14 +18,14 @@ public:
     using Ptr = std::unique_ptr<RecordWithMediaView>;
 
     RecordWithMediaView() = default;
-    RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView* view);
+    RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr& view);
 
     RecordView& getRecord() const;
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
 
 private:
-    const ATProto::AppBskyEmbed::RecordWithMediaView* mView = nullptr;
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr mView;
     std::shared_ptr<RecordView> mRecordView;
 };
 

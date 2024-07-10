@@ -199,15 +199,15 @@ private:
     {
         ATProto::Client client(nullptr);
         ATProto::PostMaster pm(client);
-        pm.createPost(text, "", nullptr, [this](auto&& postRecord){
+        auto postView = std::make_shared<ATProto::AppBskyFeed::PostView>();
+
+        pm.createPost(text, "", nullptr, [postView](auto&& postRecord){
             const auto json = postRecord->toJson();
-            mPostView.mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
-            mPostView.mRecord = ATProto::AppBskyFeed::Record::Post::fromJson(json);
-            mPostView.mAuthor = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
+            postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+            postView->mRecord = ATProto::AppBskyFeed::Record::Post::fromJson(json);
+            postView->mAuthor = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
         });
 
-        return Post(&mPostView, 0);
+        return Post(postView);
     }
-
-    ATProto::AppBskyFeed::PostView mPostView;
 };

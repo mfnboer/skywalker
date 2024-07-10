@@ -75,7 +75,7 @@ void ProfileUtils::getHandle(const QString& did)
             if (!presence)
                 return;
 
-            AuthorCache::instance().put(BasicProfile(profile.get()));
+            AuthorCache::instance().put(BasicProfile(profile));
             emit handle(profile->mHandle, profile->mDisplayName.value_or(""), profile->mDid);
         },
         [](const QString& error, const QString& msg){
@@ -93,8 +93,7 @@ void ProfileUtils::getProfileView(const QString& atId, const QString& token)
             if (!presence)
                 return;
 
-            auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
-            emit profileViewOk(Profile(shared), token);
+            emit profileViewOk(Profile(profile), token);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getProfileView failed:" << error << " - " << msg;
@@ -140,13 +139,13 @@ void ProfileUtils::updateProfile(const QString& did, const QString& name, const 
     else
     {
         continueUpdateProfile(did, name, description,
-                              ATProto::Blob::Ptr(nullptr), updateAvatar,
+                              ATProto::Blob::SharedPtr(nullptr), updateAvatar,
                               bannerImgSource, updateBanner);
     }
 }
 
 void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name, const QString& description,
-                                         ATProto::Blob::Ptr avatarBlob, bool updateAvatar,
+                                         ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
                                          const QString& bannerImgSource, bool updateBanner)
 {
     if (updateBanner && !bannerImgSource.isEmpty())
@@ -185,13 +184,13 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
     {
         continueUpdateProfile(did, name, description,
                               std::move(avatarBlob), updateAvatar,
-                              ATProto::Blob::Ptr(nullptr), updateBanner);
+                              ATProto::Blob::SharedPtr(nullptr), updateBanner);
     }
 }
 
 void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name, const QString& description,
-                                         ATProto::Blob::Ptr avatarBlob, bool updateAvatar,
-                                         ATProto::Blob::Ptr bannerBlob, bool updateBanner)
+                                         ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
+                                         ATProto::Blob::SharedPtr bannerBlob, bool updateBanner)
 {
     emit updateProfileProgress(tr("Updating profile"));
 
@@ -237,7 +236,7 @@ void ProfileUtils::getLabelerViewDetailed(const QString& did)
                 return;
             }
 
-            const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::Ptr>(outputView->mView));
+            const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(outputView->mView));
             emit getLabelerViewDetailedOk(view);
         },
         [this](const QString& error, const QString& msg){

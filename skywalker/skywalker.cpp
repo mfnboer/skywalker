@@ -225,7 +225,7 @@ bool Skywalker::resumeSession(bool retry)
 
             if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
             {
-                mBsky->setSession(std::make_unique<ATProto::ComATProtoServer::Session>(session));
+                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(session));
                 mBsky->refreshSession(
                     [this]{
                         qDebug() << "Session refreshed";
@@ -364,7 +364,7 @@ void Skywalker::getUserProfileAndFollows()
     mBsky->getFollows(session->mDid, 100, {},
         [this](auto follows){
             for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(*profile));
+                mUserFollows.add(BasicProfile(profile));
 
             const auto& nextCursor = follows->mCursor;
             if (!nextCursor->isEmpty())
@@ -397,7 +397,7 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
     mBsky->getFollows(session->mDid, 100, cursor,
         [this, maxPages](auto follows){
             for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(*profile));
+                mUserFollows.add(BasicProfile(profile));
 
             const auto& nextCursor = follows->mCursor;
 
@@ -422,17 +422,16 @@ void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxP
         });
 }
 
-void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr user)
+void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user)
 {
     //Q_ASSERT(mUserDid == user->mDid);
     qDebug() << "Got user:" << user->mHandle << "#follows:" << mUserFollows.size();
-    AuthorCache::instance().setUser(BasicProfile(*user));
+    AuthorCache::instance().setUser(BasicProfile(user));
     mUserSettings.saveDisplayName(mUserDid, user->mDisplayName.value_or(""));
     const auto avatar = user->mAvatar ? *user->mAvatar : QString();
     mUserSettings.saveAvatar(mUserDid, avatar);
     mLoggedOutVisibility = ATProto::ProfileMaster::getLoggedOutVisibility(*user);
-    auto sharedUser = ATProto::AppBskyActor::ProfileView::SharedPtr(user.release());
-    mUserProfile = Profile(sharedUser);
+    mUserProfile = Profile(user);
 
     emit avatarUrlChanged();
     emit getUserProfileOK();
@@ -581,7 +580,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 
             for (const auto& item : output->mItems)
             {
-                const BasicProfile profile(item->mSubject.get());
+                const BasicProfile profile(item->mSubject);
                 mMutedReposts.add(profile, item->mUri);
             }
 
@@ -643,7 +642,7 @@ void Skywalker::loadLabelSettings()
                     return;
                 }
 
-                const LabelerViewDetailed view(*std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::Ptr>(v->mView));
+                const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(v->mView));
                 const auto& policies = view.getPolicies();
                 const auto& groupMap = policies.getLabelContentGroupMap();
                 const auto& did = view.getCreator().getDid();
@@ -1468,8 +1467,7 @@ void Skywalker::getDetailedProfile(const QString& author)
 
     mBsky->getProfile(author,
         [this](auto profile){
-            auto shared = ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr(profile.release());
-            const DetailedProfile detailedProfile(shared);
+            const DetailedProfile detailedProfile(profile);
             AuthorCache::instance().put(detailedProfile);
             emit getDetailedProfileOK(detailedProfile);
         },
@@ -1482,7 +1480,6 @@ void Skywalker::getDetailedProfile(const QString& author)
 void Skywalker::updateUserProfile(const QString& displayName, const QString& description,
                                   const QString& avatar)
 {
-    mUserProfile = mUserProfile.nonVolatileCopy();
     mUserProfile.setDisplayName(displayName);
     mUserProfile.setDescription(description);
     mUserProfile.setAvatarUrl(avatar);
@@ -1501,8 +1498,7 @@ void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
 
     mBsky->getFeedGenerator(feedUri,
         [this, viewPosts](auto output){
-            auto shared = ATProto::AppBskyFeed::GeneratorView::SharedPtr(output->mView.release());
-            emit getFeedGeneratorOK(GeneratorView(shared), viewPosts);
+            emit getFeedGeneratorOK(GeneratorView(output->mView), viewPosts);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getFeedGenerator failed:" << error << " - " << msg;
@@ -1517,8 +1513,7 @@ void Skywalker::getStarterPackView(const QString& starterPackUri)
 
     mBsky->getStarterPack(starterPackUri,
         [this](auto starterPackView){
-            auto shared = ATProto::AppBskyGraph::StarterPackView::SharedPtr(starterPackView.release());
-            emit getStarterPackViewOk(StarterPackView(shared));
+            emit getStarterPackViewOk(StarterPackView(starterPackView));
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getStarterPackView failed:" << error << " - " << msg;
@@ -1973,15 +1968,10 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
                                                  mUserDid, mUserFollows, mMutedReposts,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
-    model->setListView(listView.nonVolatileCopy());
+    model->setListView(listView);
     model->enableLanguageFilter(true);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
-}
-
-int Skywalker::createPostFeedModel(const ListView& listView)
-{
-    return createPostFeedModel(ListViewBasic(listView.nonVolatileCopy()));
 }
 
 PostFeedModel* Skywalker::getPostFeedModel(int id) const

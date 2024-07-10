@@ -81,7 +81,7 @@ void InviteCodeStore::retrieveUsedByProfile(InviteCode& code)
 
     bskyClient()->getProfile(code.getUsedByDid(),
         [&code](auto profile){
-            code.setUsedBy(BasicProfile(profile.get()));
+            code.setUsedBy(BasicProfile(profile));
             code.setRetrievingUsedByProfile(false);
             AuthorCache::instance().put(code.getUsedBy());
         },

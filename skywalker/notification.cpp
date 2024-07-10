@@ -6,7 +6,7 @@
 
 namespace Skywalker {
 
-Notification::Notification(const ATProto::AppBskyNotification::Notification* notification) :
+Notification::Notification(const ATProto::AppBskyNotification::Notification::SharedPtr& notification) :
     mNotification(notification)
 {
     Q_ASSERT(notification);
@@ -68,7 +68,7 @@ QString Notification::getReasonSubjectUri() const
 BasicProfile Notification::getAuthor() const
 {
     if (mNotification)
-        return BasicProfile(mNotification->mAuthor.get());
+        return BasicProfile(mNotification->mAuthor);
 
     if (!mMessageSender.isNull())
         return mMessageSender;
@@ -102,7 +102,7 @@ PostRecord Notification::getPostRecord() const
     ATProto::AppBskyFeed::Record::Post* rawRecord = nullptr;
 
     try {
-        rawRecord = std::get<ATProto::AppBskyFeed::Record::Post::Ptr>(mNotification->mRecord).get();
+        rawRecord = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mNotification->mRecord).get();
     } catch (const std::bad_variant_access&) {
         return {};
     }

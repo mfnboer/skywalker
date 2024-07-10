@@ -60,7 +60,7 @@ const BasicProfile& InviteCode::getUsedBy()
 
 void InviteCode::setUsedBy(const BasicProfile& profile)
 {
-    mUsedBy = profile.nonVolatileCopy();
+    mUsedBy = profile;
     emit usedByChanged();
 }
 

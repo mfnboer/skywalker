@@ -38,11 +38,11 @@ signals:
 private:
     void addPosts(const std::vector<QString>& postUris);
     void getAuthorsDeletedPosts(const std::vector<QString>& postUris, ATProto::Client& bsky);
-    ATProto::AppBskyFeed::PostView* getDeletedPost(const QString& atUri);
+    ATProto::AppBskyFeed::PostView::SharedPtr getDeletedPost(const QString& atUri);
 
     PostCache mPostCache;
     bool mInProgress = false;
-    std::unordered_map<QString, ATProto::AppBskyFeed::PostView::Ptr> mDeletedPosts;
+    std::unordered_map<QString, ATProto::AppBskyFeed::PostView::SharedPtr> mDeletedPosts;
 };
 
 }

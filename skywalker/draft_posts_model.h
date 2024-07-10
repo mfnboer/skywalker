@@ -28,7 +28,6 @@ public:
     QVariant data(const QModelIndex& index, int role) const;
 
 private:
-    // This must be kept alive as long as there are posts in the feed dependend on it
     std::vector<ATProto::AppBskyFeed::PostFeed> mRawFeed;
 };
 

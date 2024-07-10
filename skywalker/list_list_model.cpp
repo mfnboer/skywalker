@@ -187,7 +187,7 @@ ListView ListListModel::updateEntry(int index, const QString& cid, const QString
         list.setAvatar(avatar);
 
     emit dataChanged(createIndex(index, 0), createIndex(index, 0));
-    return list.nonVolatileCopy();
+    return list;
 }
 
 void ListListModel::deleteEntry(int index)
@@ -220,7 +220,7 @@ ListView ListListModel::getEntry(int index) const
         return {};
     }
 
-    return mLists[index].nonVolatileCopy();
+    return mLists[index];
 }
 
 ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListViewList lists) const
@@ -243,8 +243,7 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
         if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN ||
             listView->mPurpose == ATProto::AppBskyGraph::ListPurpose(mPurpose))
         {
-            ATProto::AppBskyGraph::ListView::SharedPtr sharedRaw(listView.release());
-            filtered.emplace_back(sharedRaw);
+            filtered.emplace_back(listView);
         }
     }
 

@@ -44,10 +44,10 @@ QString StarterPackViewBasic::getCid() const
 BasicProfile StarterPackViewBasic::getCreator() const
 {
     if (mBasicView)
-        return BasicProfile(mBasicView->mCreator.get()).nonVolatileCopy();
+        return BasicProfile(mBasicView->mCreator);
 
     if (mView)
-        return BasicProfile(mView->mCreator.get()).nonVolatileCopy();
+        return BasicProfile(mView->mCreator);
 
     return {};
 }
@@ -87,11 +87,16 @@ ContentLabelList StarterPackViewBasic::getContentLabels() const
 
 const ATProto::AppBskyGraph::StarterPack* StarterPackViewBasic::getStarterPack() const
 {
-    if (mBasicView)
-        return std::get<ATProto::AppBskyGraph::StarterPack::Ptr>(mBasicView->mRecord).get();
+    try {
+        if (mBasicView)
+            return std::get<ATProto::AppBskyGraph::StarterPack::SharedPtr>(mBasicView->mRecord).get();
 
-    if (mView)
-        return std::get<ATProto::AppBskyGraph::StarterPack::Ptr>(mView->mRecord).get();
+        if (mView)
+            return std::get<ATProto::AppBskyGraph::StarterPack::SharedPtr>(mView->mRecord).get();
+    } catch (const std::bad_variant_access&) {
+        qWarning() << "Unknown record type";
+        return nullptr;
+    }
 
     return nullptr;
 }
@@ -104,7 +109,7 @@ StarterPackView::StarterPackView(const ATProto::AppBskyGraph::StarterPackView::S
 
 ListViewBasic StarterPackView::getList() const
 {
-    return mView ? ListViewBasic(mView->mList.get()).nonVolatileCopy() : ListViewBasic();
+    return mView ? ListViewBasic(mView->mList) : ListViewBasic();
 }
 
 GeneratorViewList StarterPackView::getFeeds() const
@@ -115,7 +120,7 @@ GeneratorViewList StarterPackView::getFeeds() const
     GeneratorViewList feedList;
 
     for (const auto& feed : mView->mFeeds)
-        feedList.emplaceBack(feed.get());
+        feedList.emplaceBack(feed);
 
     return feedList;
 }

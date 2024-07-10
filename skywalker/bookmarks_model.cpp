@@ -60,9 +60,8 @@ void BookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto:
 
             for (auto& postView : postViewList)
             {
-                Post post(postView.get(), -1);
-                ATProto::AppBskyFeed::PostView::SharedPtr sharedRaw(postView.release());
-                mPostCache.put(sharedRaw, post);
+                Post post(postView);
+                mPostCache.put(post);
             }
 
             getAuthorsDeletedPosts(postUris, bsky);
@@ -96,7 +95,7 @@ void BookmarksModel::addPosts(const std::vector<QString>& postUris)
         else
         {
             qWarning() << "Bookmarked post not found:" << uri;
-            Post deletedPost(getDeletedPost(uri), -1);
+            Post deletedPost(getDeletedPost(uri));
             deletedPost.setBookmarkNotFound(true);
             mFeed.push_back(deletedPost);
         }
@@ -159,7 +158,7 @@ void BookmarksModel::getAuthorsDeletedPosts(const std::vector<QString>& postUris
 
             for (auto& profileViewDetailed : profilesViewDetailedList)
             {
-                BasicProfile profile(profileViewDetailed.get());
+                BasicProfile profile(profileViewDetailed);
                 AuthorCache::instance().put(profile);
             }
 
@@ -176,19 +175,19 @@ void BookmarksModel::getAuthorsDeletedPosts(const std::vector<QString>& postUris
         });
 }
 
-ATProto::AppBskyFeed::PostView* BookmarksModel::getDeletedPost(const QString& atUri)
+ATProto::AppBskyFeed::PostView::SharedPtr BookmarksModel::getDeletedPost(const QString& atUri)
 {
     const auto it = mDeletedPosts.find(atUri);
 
     if (it != mDeletedPosts.end())
-        return it->second.get();
+        return it->second;
 
     ATProto::ATUri uri(atUri);
     auto& deletedPost = mDeletedPosts[atUri];
 
-    deletedPost = std::make_unique<ATProto::AppBskyFeed::PostView>();
+    deletedPost = std::make_shared<ATProto::AppBskyFeed::PostView>();
     deletedPost->mUri = atUri;
-    deletedPost->mAuthor = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
+    deletedPost->mAuthor = std::make_shared<ATProto::AppBskyActor::ProfileViewBasic>();
     deletedPost->mAuthor->mDid = uri.getAuthority();
 
     const auto* author = AuthorCache::instance().get(uri.getAuthority());
@@ -212,12 +211,12 @@ ATProto::AppBskyFeed::PostView* BookmarksModel::getDeletedPost(const QString& at
 
     deletedPost->mIndexedAt = QDateTime::currentDateTime();
     deletedPost->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
-    auto postRecord = std::make_unique<ATProto::AppBskyFeed::Record::Post>();
+    auto postRecord = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
     postRecord->mText = tr("POST NOT FOUND");
     postRecord->mCreatedAt = deletedPost->mIndexedAt;
     deletedPost->mRecord = std::move(postRecord);
 
-    return deletedPost.get();
+    return deletedPost;
 }
 
 }

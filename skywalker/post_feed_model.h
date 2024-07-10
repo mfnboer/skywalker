@@ -3,7 +3,6 @@
 #pragma once
 #include "abstract_post_feed_model.h"
 #include "generator_view.h"
-#include "list_view.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
 #include <unordered_map>
@@ -41,7 +40,7 @@ public:
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
 
     Q_INVOKABLE const ListViewBasic getListView() const { return mListView; }
-    void setListView(const ListViewBasic& view) { mListView = view.nonVolatileCopy(); }
+    void setListView(const ListViewBasic& view) { mListView = view; }
 
     bool isLanguageFilterConfigured() const;
     void enableLanguageFilter(bool enabled);
@@ -51,17 +50,17 @@ public:
 
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
-    int setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
-    void addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    void addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
     // Returns gap id if prepending created a gap in the feed.
     // Returns 0 otherwise.
-    int prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    int prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
     // Returns new gap id if the gap was not fully filled, i.e. there is a new gap.
     // Returns 0 otherwise.
-    int gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId);
+    int gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int gapId);
 
     void removeTailPosts(int size);
     void removeHeadPosts(int size);
@@ -97,7 +96,6 @@ private:
     {
         using Ptr = std::unique_ptr<Page>;
         std::vector<Post> mFeed;
-        ATProto::AppBskyFeed::PostFeed mRawFeed;
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
@@ -112,11 +110,11 @@ private:
     bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     bool mustShowQuotePost(const Post& post) const;
-    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed);
+    Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
 
     // Returns gap id if insertion created a gap in the feed.
-    int insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex);
+    int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex);
 
     // Returns an index in the page feed
     std::optional<size_t> findOverlapStart(const Page& page, size_t feedIndex) const;
@@ -136,11 +134,6 @@ private:
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.
     std::map<size_t, QString> mIndexCursorMap; // cursor to post at next index
-
-    // The index of the last post that depends on the raw PostFeed. All posts from the previous
-    // index in this map till this one depend on it. The raw PostFeed must be kept alive as
-    // long it has dependend posts.
-    std::map<size_t, ATProto::AppBskyFeed::PostFeed> mIndexRawFeedMap;
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;

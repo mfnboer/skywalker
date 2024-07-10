@@ -98,7 +98,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailedList 
 
     for (const auto& author : authors)
     {
-        const ListEntry entry(Profile(author.get()));
+        const ListEntry entry{Profile{author}};
         AuthorCache::instance().put(entry.mProfile);
         list.push_back(entry);
     }
@@ -123,7 +123,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listIte
 
     for (const auto& item : listItems)
     {
-        ListEntry entry(Profile(item->mSubject.get()), item->mUri);
+        ListEntry entry(Profile(item->mSubject), item->mUri);
         AuthorCache::instance().put(entry.mProfile);
         mList.push_back(entry);
     }
@@ -181,7 +181,7 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
             continue;
         }
 
-        const ListEntry entry(Profile(author.get()));
+        const ListEntry entry{Profile{author}};
         AuthorCache::instance().put(entry.mProfile);
         list.push_back(entry);
     }

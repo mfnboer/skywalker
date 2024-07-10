@@ -20,8 +20,8 @@ public:
                         QObject* parent = nullptr);
 
     // Returns how many entries have been added.
-    int setFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed);
-    int addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed);
+    int setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
+    int addFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
     void clear();
 
     const QString& getCursorNextPage() const { return mCursorNextPage; }
@@ -34,10 +34,7 @@ private:
         void addPost(const Post& post);
     };
 
-    Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed);
-
-    // This must be kept alive as long as there are posts in the feed dependend on it
-    std::vector<ATProto::AppBskyFeed::SearchPostsOutput::Ptr> mRawFeed;
+    Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
 
     QString mCursorNextPage;
 };

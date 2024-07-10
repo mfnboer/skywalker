@@ -11,7 +11,7 @@ AuthorFeedModel::AuthorFeedModel(const BasicProfile& author, const QString& user
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent),
-    mAuthor(author.nonVolatileCopy())
+    mAuthor(author)
 {
 }
 
@@ -21,7 +21,6 @@ void AuthorFeedModel::clear()
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
         clearFeed();
-        mRawFeed.clear();
         endRemoveRows();
     }
 
@@ -29,18 +28,18 @@ void AuthorFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (!mFeed.empty())
         clear();
 
-    return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 }
 
-int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     mCursorNextPage = feed->mCursor.value_or("");
 
@@ -65,7 +64,6 @@ int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
     mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
-    mRawFeed.push_back(std::move(feed));
 
     if (mCursorNextPage.isEmpty())
         mFeed.back().setEndOfFeed(true);
@@ -81,7 +79,7 @@ void AuthorFeedModel::Page::addPost(const Post& post)
     mFeed.push_back(post);
 }
 
-AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     auto page = std::make_unique<Page>();
 
@@ -91,7 +89,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
 
         if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
-            Post post(feedEntry.get(), i);
+            Post post(feedEntry);
 
             if (!mustShow(post))
                 continue;

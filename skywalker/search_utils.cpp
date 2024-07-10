@@ -191,10 +191,10 @@ void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileVie
         if (alreadyFoundDids.count(profile->mDid))
             continue;
 
-        BasicProfile basicProfile(profile.get());
+        BasicProfile basicProfile(profile);
 
         if (matcher.match(basicProfile))
-            mAuthorTypeaheadList.append(basicProfile.nonVolatileCopy());
+            mAuthorTypeaheadList.append(basicProfile);
     }
 
     emit authorTypeaheadListChanged();

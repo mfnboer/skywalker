@@ -5,9 +5,14 @@
 
 namespace Skywalker {
 
-LabelerViewerState::LabelerViewerState(const ATProto::AppBskyLabeler::LabelerViewerState& viewerState) :
-    mLike(viewerState.mLike.value_or(""))
+LabelerViewerState::LabelerViewerState(const ATProto::AppBskyLabeler::LabelerViewerState::SharedPtr& viewerState) :
+    mViewerState(viewerState)
 {
+}
+
+QString LabelerViewerState::getLike() const
+{
+    return mViewerState ? mViewerState->mLike.value_or("") : "";
 }
 
 LabelerPolicies::LabelerPolicies(const ATProto::AppBskyLabeler::LabelerPolicies& policies, const QString& did) :
@@ -62,32 +67,101 @@ std::vector<ContentGroup> LabelerPolicies::getContentGroupList() const
     return groupList;
 }
 
-LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerView& view) :
-    mUri(view.mUri),
-    mCid(view.mCid),
-    mCreator(Profile(view.mCreator.get()).nonVolatileCopy()),
-    mLikeCount(view.mLikeCount),
-    mViewer(*view.mViewer),
-    mIndexedAt(view.mIndexedAt),
-    mContentLabels(ContentFilter::getContentLabels(view.mLabels))
+LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerView::SharedPtr& view) :
+    mView(view)
 {
 }
 
-LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerViewDetailed& view) :
-    mUri(view.mUri),
-    mCid(view.mCid),
-    mCreator(Profile(view.mCreator.get()).nonVolatileCopy()),
-    mLikeCount(view.mLikeCount),
-    mViewer(*view.mViewer),
-    mIndexedAt(view.mIndexedAt),
-    mContentLabels(ContentFilter::getContentLabels(view.mLabels))
+LabelerView::LabelerView(const ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr& view) :
+    mViewDetailed(view)
 {
 }
 
-LabelerViewDetailed::LabelerViewDetailed(const ATProto::AppBskyLabeler::LabelerViewDetailed& view) :
-    LabelerView(view),
-    mPolicies(*view.mPolicies, getCreator().getDid())
+QString LabelerView::getUri() const
 {
+    if (mView)
+        return mView->mUri;
+
+    if (mViewDetailed)
+        return mViewDetailed->mUri;
+
+    return {};
+}
+
+QString LabelerView::getCid() const
+{
+    if (mView)
+        return mView->mCid;
+
+    if (mViewDetailed)
+        return mViewDetailed->mCid;
+
+    return {};
+}
+
+Profile LabelerView::getCreator() const
+{
+    if (mView)
+        return Profile(mView->mCreator);
+
+    if (mViewDetailed)
+        return Profile(mViewDetailed->mCreator);
+
+    return {};
+}
+
+int LabelerView::getLikeCount() const
+{
+    if (mView)
+        return mView->mLikeCount;
+
+    if (mViewDetailed)
+        return mViewDetailed->mLikeCount;
+
+    return 0;
+}
+
+LabelerViewerState LabelerView::getViewer() const
+{
+    if (mView)
+        return LabelerViewerState(mView->mViewer);
+
+    if (mViewDetailed)
+        return LabelerViewerState(mViewDetailed->mViewer);
+
+    return {};
+}
+
+QDateTime LabelerView::getIndexedAt() const
+{
+    if (mView)
+        return mView->mIndexedAt;
+
+    if (mViewDetailed)
+        return mViewDetailed->mIndexedAt;
+
+    return {};
+}
+
+ContentLabelList LabelerView::getContentLabels() const
+{
+    if (mView)
+        return ContentFilter::getContentLabels(mView->mLabels);
+
+    if (mViewDetailed)
+        return ContentFilter::getContentLabels(mViewDetailed->mLabels);
+
+    return {};
+}
+
+LabelerViewDetailed::LabelerViewDetailed(const ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr& view) :
+    LabelerView(view)
+{
+}
+
+LabelerPolicies LabelerViewDetailed::getPolicies() const
+{
+    return mViewDetailed ? LabelerPolicies(*mViewDetailed->mPolicies, getCreator().getDid()) : LabelerPolicies{};
 }
 
 }

@@ -124,7 +124,6 @@ public:
     Q_INVOKABLE StarterPackListModel* getStarterPackListModel(int id) const;
     Q_INVOKABLE void removeStarterPackListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
-    Q_INVOKABLE int createPostFeedModel(const ListView& listView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
@@ -281,7 +280,7 @@ private:
     void getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
-    void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Ptr user);
+    void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user);
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();

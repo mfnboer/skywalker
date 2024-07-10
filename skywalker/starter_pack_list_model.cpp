@@ -62,10 +62,7 @@ void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackVie
     beginInsertRows({}, mStarterPacks.size(), newRowCount - 1);
 
     for (auto& starterPack : starterPacks)
-    {
-        ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr sharedRaw(starterPack.release());
-        mStarterPacks.emplace_back(sharedRaw);
-    }
+        mStarterPacks.emplace_back(starterPack);
 
     endInsertRows();
     qDebug() << "New starter packs size:" << mStarterPacks.size();

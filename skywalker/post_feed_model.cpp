@@ -51,19 +51,19 @@ bool PostFeedModel::showPostWithMissingLanguage() const
     return mUserSettings.getShowUnknownContentLanguage(mUserDid);
 }
 
-int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (mFeed.empty())
     {
         mPrependPostCount = 0;
-        addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+        addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
         return -1;
     }
 
     const QString topCid = mFeed.front().getCid();
     setTopNCids();
     clear();
-    addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     int prevTopIndex = -1;
 
@@ -83,28 +83,28 @@ int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
     return prevTopIndex;
 }
 
-int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (feed->mFeed.empty())
         return 0;
 
     if (mFeed.empty())
     {
-        setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+        setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
         mPrependPostCount = mFeed.size();
         qDebug() << "Prepended post count:" << mPrependPostCount;
         return 0;
     }
 
     const size_t prevSize = mFeed.size();
-    const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), 0);
+    const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), 0);
     mPrependPostCount += mFeed.size() - prevSize;
     qDebug() << "Prepended post count:" << mPrependPostCount;
 
     return gapId;
 }
 
-int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int gapId)
+int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int gapId)
 {
     qDebug() << "Fill gap:" << gapId;
 
@@ -134,7 +134,7 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int
     qDebug() << "Removed place holder post:" << gapIndex;
     logIndices();
 
-    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed), gapIndex);
+    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex);
 }
 
 void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -151,9 +151,9 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
     cleanupStoredCids();
 }
 
-int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int insertIndex)
+int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex)
 {
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     if (page->mFeed.empty())
     {
@@ -190,7 +190,6 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
         if (!page->mCursorNextPage.isEmpty())
             mIndexCursorMap[lastInsertIndex - indexOffset] = page->mCursorNextPage;
 
-        mIndexRawFeedMap[lastInsertIndex - indexOffset] = std::move(page->mRawFeed);
         endInsertRows();
 
         mLastInsertedRowIndex = (int)lastInsertIndex;
@@ -214,17 +213,6 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed, int 
     if (!page->mCursorNextPage.isEmpty() && overlapEnd)
         mIndexCursorMap[*overlapStart + *overlapEnd] = page->mCursorNextPage;
 
-    // Remove unused overlap
-    int firstUnusedRawIndex = -1;
-
-    for (size_t i = 0; i < *overlapStart; ++i)
-        firstUnusedRawIndex = std::max(firstUnusedRawIndex, page->mFeed[i].getRawIndex());
-
-    Q_ASSERT(firstUnusedRawIndex >= 0);
-    Q_ASSERT(firstUnusedRawIndex < (int)page->mRawFeed.size());
-    page->mRawFeed.erase(page->mRawFeed.begin() + firstUnusedRawIndex + 1, page->mRawFeed.end());
-
-    mIndexRawFeedMap[insertIndex + *overlapStart - 1] = std::move(page->mRawFeed);
     endInsertRows();
 
     mLastInsertedRowIndex = insertIndex + *overlapStart - 1;
@@ -240,7 +228,6 @@ void PostFeedModel::clear()
         beginRemoveRows({}, 0, mFeed.size() - 1);
         clearFeed();
         mIndexCursorMap.clear();
-        mIndexRawFeedMap.clear();
         mGapIdIndexMap.clear();
         endRemoveRows();
     }
@@ -248,10 +235,10 @@ void PostFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     if (!page->mFeed.empty())
     {
@@ -259,7 +246,6 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
 
         beginInsertRows({}, mFeed.size(), newRowCount - 1);
         insertPage(mFeed.end(), *page, page->mFeed.size());
-        mIndexRawFeedMap[mFeed.size() - 1] = std::move(page->mRawFeed);
         endInsertRows();
 
         mLastInsertedRowIndex = newRowCount - 1;
@@ -313,12 +299,9 @@ void PostFeedModel::removeTailPosts(int size)
         return;
     }
 
-    const auto removeIndexRawFeedIt = mIndexRawFeedMap.lower_bound(removeIndex);
-
     beginRemoveRows({}, removeIndex, mFeed.size() - 1);
     removePosts(removeIndex, mFeed.size() - removeIndex);
     mIndexCursorMap.erase(std::next(removeIndexCursorIt), mIndexCursorMap.end());
-    mIndexRawFeedMap.erase(removeIndexRawFeedIt, mIndexRawFeedMap.end());
 
     for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
     {
@@ -352,14 +335,12 @@ void PostFeedModel::removeHeadPosts(int size)
     }
 
     const auto removeEndIndexCursorIt = mIndexCursorMap.upper_bound(removeEndIndex);
-    const auto removeEndIndexRawFeedIt = mIndexRawFeedMap.upper_bound(removeEndIndex);
     const size_t removeSize = removeEndIndex + 1;
 
     beginRemoveRows({}, 0, removeEndIndex);
     removePosts(0, removeSize);
     Q_ASSERT(!mFeed.front().isGap());
     mIndexCursorMap.erase(mIndexCursorMap.begin(), removeEndIndexCursorIt);
-    mIndexRawFeedMap.erase(mIndexRawFeedMap.begin(), removeEndIndexRawFeedIt);
 
     for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
     {
@@ -616,19 +597,18 @@ bool PostFeedModel::mustShowQuotePost(const Post& post) const
     return true;
 }
 
-PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::Ptr&& feed)
+PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
     auto page = std::make_unique<Page>();
-    page->mRawFeed = std::forward<ATProto::AppBskyFeed::PostFeed>(feed->mFeed);
 
-    for (size_t i = 0; i < page->mRawFeed.size(); ++i)
+    for (size_t i = 0; i < feed->mFeed.size(); ++i)
     {
-        const auto& feedEntry = page->mRawFeed[i];
+        const auto& feedEntry = feed->mFeed[i];
 
         if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
-            Post post(feedEntry.get(), i);
+            Post post(feedEntry);
 
             // Due to reposting a post can show up multiple times in the feed.
             // Also overlapping pages can come in as we look for new posts.
@@ -848,17 +828,6 @@ void PostFeedModel::addToIndices(size_t offset, size_t startAtIndex)
 
     mIndexCursorMap = std::move(newCursorMap);
 
-    std::map<size_t, ATProto::AppBskyFeed::PostFeed> newRawFeedMap;
-    for (auto& [index, rawFeed] : mIndexRawFeedMap)
-    {
-        if (index >= startAtIndex)
-            newRawFeedMap[index + offset] = std::move(rawFeed);
-        else
-            newRawFeedMap[index] = std::move(rawFeed);
-    }
-
-    mIndexRawFeedMap = std::move(newRawFeedMap);
-
     for (auto& [gapId, index] : mGapIdIndexMap)
     {
         if (index >= startAtIndex)
@@ -871,15 +840,6 @@ void PostFeedModel::logIndices() const
     qDebug() << "INDEX CURSOR MAP:";
     for (const auto& [index, cursor] : mIndexCursorMap)
         qDebug() << "Index:" << index << "Cursor:" << cursor;
-
-    qDebug() << "INDEX RAW FEED MAP:";
-    for (const auto& [index, rawFeed] : mIndexRawFeedMap)
-    {
-        Q_ASSERT(!rawFeed.empty());
-        qDebug() << "Index:" << index << "cid:" << rawFeed.front()->mPost->mCid
-                 << "indexedAt:" << rawFeed.front()->mPost->mIndexedAt
-                 << "size:" << rawFeed.size();
-    }
 
     qDebug() << "GAP INDEX MAP:";
     for (const auto& [gapId, index] : mGapIdIndexMap)

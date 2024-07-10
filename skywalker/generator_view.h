@@ -17,12 +17,12 @@ class GeneratorViewerState
 
 public:
     GeneratorViewerState() = default;
-    explicit GeneratorViewerState(const ATProto::AppBskyFeed::GeneratorViewerState& viewerState);
+    explicit GeneratorViewerState(const ATProto::AppBskyFeed::GeneratorViewerState::SharedPtr& viewerState);
 
-    const QString& getLike() const { return mLike; }
+    QString getLike() const;
 
 private:
-    QString mLike;
+    ATProto::AppBskyFeed::GeneratorViewerState::SharedPtr mViewerState;
 };
 
 class GeneratorView
@@ -45,9 +45,8 @@ class GeneratorView
 public:
     GeneratorView() = default;
     explicit GeneratorView(const ATProto::AppBskyFeed::GeneratorView::SharedPtr& view);
-    explicit GeneratorView(const ATProto::AppBskyFeed::GeneratorView* view);
 
-    Q_INVOKABLE bool isNull() const { return view() == nullptr; }
+    Q_INVOKABLE bool isNull() const { return mGeneratorView == nullptr; }
     QString getUri() const;
     QString getCid() const;
     QString getDid() const;
@@ -63,10 +62,7 @@ public:
     GeneratorViewerState getViewer() const;
 
 private:
-    const ATProto::AppBskyFeed::GeneratorView* view() const;
-
-    ATProto::AppBskyFeed::GeneratorView::SharedPtr mSharedGeneratorView;
-    const ATProto::AppBskyFeed::GeneratorView* mRawGeneratorView = nullptr;
+    ATProto::AppBskyFeed::GeneratorView::SharedPtr mGeneratorView;
 };
 
 using GeneratorViewList = QList<GeneratorView>;

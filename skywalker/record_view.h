@@ -62,7 +62,7 @@ public:
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
     ContentLabelList getContentLabels() const;
-    const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
     ContentLabelList getLabelsIncludingAuthorLabels() const;
     bool isReply() const;
     BasicProfile getReplyToAuthor() const;
@@ -91,10 +91,10 @@ public:
 
 private:
     bool mValid = false;
-    const ATProto::AppBskyEmbed::RecordViewRecord* mRecord = nullptr;
-    const ATProto::AppBskyFeed::GeneratorView* mFeed = nullptr;
-    const ATProto::AppBskyGraph::ListView* mList = nullptr;
-    const ATProto::AppBskyLabeler::LabelerView* mLabeler = nullptr;
+    ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr mRecord;
+    ATProto::AppBskyFeed::GeneratorView::SharedPtr mFeed;
+    ATProto::AppBskyGraph::ListView::SharedPtr mList;
+    ATProto::AppBskyLabeler::LabelerView::SharedPtr mLabeler;
     bool mNotFound = false;
     bool mBlocked = false;
     bool mNotSupported = false;

@@ -26,15 +26,14 @@ public:
     static Post createBlocked();
     static Post createNotSupported(const QString& unsupportedType);
     static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement);
-    static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement, int rawIndex);
+    static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
 
-    explicit Post(const ATProto::AppBskyFeed::FeedViewPost* feedViewPost = nullptr, int rawIndex = -1);
-    Post(const ATProto::AppBskyFeed::PostView* postView, int rawIndex);
+    explicit Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost = nullptr);
+    explicit Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView);
 
-    const ATProto::AppBskyFeed::PostView* getPostView() const { return mPost; }
+    const ATProto::AppBskyFeed::PostView* getPostView() const { return mPost.get(); }
     bool isPlaceHolder() const { return !mPost; }
     bool isGap() const { return !mPost && mGapId > 0; }
-    int getRawIndex() const { return mRawIndex; }
     bool isEndOfFeed() const { return mEndOfFeed; }
     int getGapId() const { return mGapId; }
     const QString& getGapCursor() const { return mGapCursor; }
@@ -58,11 +57,11 @@ public:
     bool isReply() const;
     std::optional<PostReplyRef> getViewPostReplyRef() const;
     std::optional<BasicProfile> getReplyToAuthor() const;
-    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyToRef() const;
+    ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyToRef() const;
     QString getReplyToCid() const;
     QString getReplyToUri() const;
     QString getReplyToAuthorDid() const;
-    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyRootRef() const;
+    ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyRootRef() const;
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
 
@@ -98,7 +97,7 @@ public:
     bool isNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
 
-    const std::vector<ATProto::ComATProtoLabel::Label::Ptr>& getLabels() const;
+    const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
     ContentLabelList getLabelsIncludingAuthorLabels() const;
 
     const LanguageList& getLanguages() const;
@@ -111,13 +110,10 @@ public:
 
 private:
     // null is place holder for more posts (gap)
-    const ATProto::AppBskyFeed::PostView* mPost = nullptr;
+    ATProto::AppBskyFeed::PostView::SharedPtr mPost;
 
     // null if the post represents a reply ref.
-    const ATProto::AppBskyFeed::FeedViewPost* mFeedViewPost = nullptr;
-
-    // Index in the vector of raw feed view posts (only for timeline)
-    int mRawIndex = -1;
+    ATProto::AppBskyFeed::FeedViewPost::SharedPtr mFeedViewPost;
 
     int mGapId = 0;
 

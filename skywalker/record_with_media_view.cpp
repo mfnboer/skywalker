@@ -5,7 +5,7 @@
 
 namespace Skywalker {
 
-RecordWithMediaView::RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView* view) :
+RecordWithMediaView::RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr& view) :
     mView(view)
 {}
 
@@ -28,11 +28,11 @@ QList<ImageView> RecordWithMediaView::getImages() const
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
         return {};
 
-    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::Ptr>(mView->mMedia);
+    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(mView->mMedia);
     QList<ImageView> images;
 
     for (const auto& img : imagesView->mImages)
-        images.append(ImageView(img.get()));
+        images.append(ImageView(img));
 
     return images;
 }
@@ -42,8 +42,8 @@ QVariant RecordWithMediaView::getExternal() const
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 
-    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::Ptr>(mView->mMedia)->mExternal;
-    return QVariant::fromValue(ExternalView(external.get()));
+    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(mView->mMedia)->mExternal;
+    return QVariant::fromValue(ExternalView(external));
 }
 
 }

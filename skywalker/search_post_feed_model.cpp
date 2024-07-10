@@ -20,7 +20,6 @@ void SearchPostFeedModel::clear()
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
         clearFeed();
-        mRawFeed.clear();
         endRemoveRows();
     }
 
@@ -28,18 +27,18 @@ void SearchPostFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
+int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)
 {
     if (!mFeed.empty())
         clear();
 
-    return addFeed(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::Ptr>(feed));
+    return addFeed(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr>(feed));
 }
 
-int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
+int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mPosts.size();
-    auto page = createPage(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::Ptr>(feed));
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr>(feed));
 
     mCursorNextPage = feed->mCursor.value_or("");
 
@@ -64,7 +63,6 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& 
 
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
     mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
-    mRawFeed.push_back(std::move(feed));
 
     if (mCursorNextPage.isEmpty())
         mFeed.back().setEndOfFeed(true);
@@ -80,7 +78,7 @@ void SearchPostFeedModel::Page::addPost(const Post& post)
     mFeed.push_back(post);
 }
 
-SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyFeed::SearchPostsOutput::Ptr&& feed)
+SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)
 {
     auto page = std::make_unique<Page>();
 
@@ -90,7 +88,7 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
 
         if (feedEntry->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
-            Post post(feedEntry.get(), i);
+            Post post(feedEntry);
 
             if (mustHideContent(post))
                 continue;

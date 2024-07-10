@@ -19,7 +19,7 @@ void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, con
     mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
 }
 
-int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& thread)
+int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread)
 {
     if (!mFeed.empty())
         clear();
@@ -36,7 +36,6 @@ int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::Ptr&& threa
 
     beginInsertRows({}, 0, newRowCount - 1);
     insertPage(mFeed.end(), *page, newRowCount);
-    mRawThread = std::move(page->mRawThread);
     endInsertRows();
 
     qDebug() << "New feed size:" << mFeed.size();
@@ -89,7 +88,6 @@ void PostThreadModel::clear()
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
         clearFeed();
-        mRawThread = nullptr;
         endRemoveRows();
     }
     qDebug() << "All posts removed";
@@ -103,7 +101,7 @@ static void cacheAuthor(const Post& post)
         const auto& author = postView->mAuthor;
         if (author)
         {
-            const BasicProfile authorProfile(author.get());
+            const BasicProfile authorProfile(author);
             AuthorCache::instance().put(authorProfile);
         }
     }
@@ -149,7 +147,7 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
 
     if (!threadPost.isPlaceHolder())
     {
-        const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(reply.mPost));
+        const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply.mPost));
         if (!post->mReplies.empty())
         {
             mPostFeedModel.sortReplies(post.get());
@@ -176,7 +174,7 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
 void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const
 {
     std::sort(viewPost->mReplies.begin(), viewPost->mReplies.end(),
-        [this, viewPost](const ATProto::AppBskyFeed::ThreadElement::Ptr& lhs, const ATProto::AppBskyFeed::ThreadElement::Ptr& rhs) {
+        [this, viewPost](const ATProto::AppBskyFeed::ThreadElement::SharedPtr& lhs, const ATProto::AppBskyFeed::ThreadElement::SharedPtr& rhs) {
             // THREAD_VIEW_POST before others
             if (lhs->mType != rhs->mType)
             {
@@ -195,8 +193,8 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             Q_ASSERT(lhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
             Q_ASSERT(rhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
 
-            const auto& lhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(lhs->mPost)->mPost;
-            const auto& rhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(rhs->mPost)->mPost;
+            const auto& lhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(lhs->mPost)->mPost;
+            const auto& rhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(rhs->mPost)->mPost;
             const auto& lhsDid = lhsPost->mAuthor->mDid;
             const auto& rhsDid = rhsPost->mAuthor->mDid;
 
@@ -232,7 +230,7 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
         });
 }
 
-PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::PostThread::Ptr&& thread)
+PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread)
 {
     auto page = std::make_unique<Page>(*this);
     page->mRawThread = std::move(thread);
@@ -244,7 +242,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
 
     if (!post.isPlaceHolder())
     {
-        viewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(postThread->mPost).get();
+        viewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(postThread->mPost).get();
 
         if (!viewPost->mParent)
             post.addThreadType(QEnums::THREAD_TOP);
@@ -272,7 +270,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
 
             if (!parentPost.isPlaceHolder())
             {
-                const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::Ptr>(parent->mPost).get();
+                const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(parent->mPost).get();
                 parent = threadPost->mParent.get();
 
                 if (!parent)

@@ -34,7 +34,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
         return;
     }
 
-    const auto* messageView = std::get_if<ATProto::ChatBskyConvo::MessageView::Ptr>(&msg);
+    const auto* messageView = std::get_if<ATProto::ChatBskyConvo::MessageView::SharedPtr>(&msg);
 
     if (messageView)
     {
@@ -49,7 +49,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
         return;
     }
 
-    const auto* deletedMessageView = std::get_if<ATProto::ChatBskyConvo::DeletedMessageView::Ptr>(&msg);
+    const auto* deletedMessageView = std::get_if<ATProto::ChatBskyConvo::DeletedMessageView::SharedPtr>(&msg);
 
     if (deletedMessageView)
     {

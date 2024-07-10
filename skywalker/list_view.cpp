@@ -7,28 +7,29 @@
 
 namespace Skywalker {
 
-ListViewerState::ListViewerState(const ATProto::AppBskyGraph::ListViewerState& viewerState) :
-    mMuted(viewerState.mMuted),
-    mBlocked(viewerState.mBlocked.value_or(""))
+ListViewerState::ListViewerState(const ATProto::AppBskyGraph::ListViewerState::SharedPtr& viewerState) :
+    mViewerState(viewerState)
 {
+}
+
+bool ListViewerState::getMuted() const
+{
+    return mViewerState ? mViewerState->mMuted : false;
+}
+
+QString ListViewerState::getBlocked() const
+{
+    return mViewerState ? mViewerState->mBlocked.value_or("") : "";
 }
 
 ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic::SharedPtr& view) :
-    mSharedListViewBasic(view)
+    mListViewBasic(view)
 {
-    Q_ASSERT(mSharedListViewBasic);
 }
 
-ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListView* view) :
-    mRawListView(view)
+ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListView::SharedPtr& view) :
+    mListView(view)
 {
-    Q_ASSERT(mRawListView);
-}
-
-ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic* view) :
-    mRawListViewBasic(view)
-{
-    Q_ASSERT(mRawListViewBasic);
 }
 
 ListViewBasic::ListViewBasic(const QString& uri, const QString& cid, const QString& name,
@@ -43,42 +44,42 @@ ListViewBasic::ListViewBasic(const QString& uri, const QString& cid, const QStri
 
 QString ListViewBasic::getUri() const
 {
-    if (!mUri.isEmpty())
-        return mUri;
+    if (mUri)
+        return *mUri;
 
-    if (basicView())
-        return basicView()->mUri;
+    if (mListViewBasic)
+        return mListViewBasic->mUri;
 
-    if (view())
-        return view()->mUri;
+    if (mListView)
+        return mListView->mUri;
 
     return {};
 }
 
 QString ListViewBasic::getCid() const
 {
-    if (!mCid.isEmpty())
-        return mCid;
+    if (mCid)
+        return *mCid;
 
-    if (basicView())
-        return basicView()->mCid;
+    if (mListViewBasic)
+        return mListViewBasic->mCid;
 
-    if (view())
-        return view()->mCid;
+    if (mListView)
+        return mListView->mCid;
 
     return {};
 }
 
 QString ListViewBasic::getName() const
 {
-    if (!mName.isEmpty())
-        return mName;
+    if (mName)
+        return *mName;
 
-    if (basicView())
-        return basicView()->mName;
+    if (mListViewBasic)
+        return mListViewBasic->mName;
 
-    if (view())
-        return view()->mName;
+    if (mListView)
+        return mListView->mName;
 
     return {};
 }
@@ -88,11 +89,11 @@ QEnums::ListPurpose ListViewBasic::getPurpose() const
     if (mPurpose != ATProto::AppBskyGraph::ListPurpose::UNKNOWN)
         return QEnums::ListPurpose(mPurpose);
 
-    if (basicView())
-        return QEnums::ListPurpose(basicView()->mPurpose);
+    if (mListViewBasic)
+        return QEnums::ListPurpose(mListViewBasic->mPurpose);
 
-    if (view())
-        return QEnums::ListPurpose(view()->mPurpose);
+    if (mListView)
+        return QEnums::ListPurpose(mListView->mPurpose);
 
     return QEnums::LIST_PURPOSE_UNKNOWN;
 }
@@ -102,11 +103,11 @@ QString ListViewBasic::getAvatar() const
     if (mAvatar)
         return *mAvatar;
 
-    if (basicView())
-        return basicView()->mAvatar.value_or("");
+    if (mListViewBasic)
+        return mListViewBasic->mAvatar.value_or("");
 
-    if (view())
-        return view()->mAvatar.value_or("");
+    if (mListView)
+        return mListView->mAvatar.value_or("");
 
     return {};
 }
@@ -118,11 +119,11 @@ ImageView ListViewBasic::getImageView() const
 
 ContentLabelList ListViewBasic::getContentLabels() const
 {
-    if (basicView())
-        return ContentFilter::getContentLabels(basicView()->mLabels);
+    if (mListViewBasic)
+        return ContentFilter::getContentLabels(mListViewBasic->mLabels);
 
-    if (view())
-        return ContentFilter::getContentLabels(view()->mLabels);
+    if (mListView)
+        return ContentFilter::getContentLabels(mListView->mLabels);
 
     return {};
 }
@@ -132,11 +133,11 @@ ListViewerState ListViewBasic::getViewer() const
     if (mViewer)
         return *mViewer;
 
-    if (basicView())
-        return basicView()->mViewer ? ListViewerState(*basicView()->mViewer) : ListViewerState{};
+    if (mListViewBasic)
+        return mListViewBasic->mViewer ? ListViewerState(mListViewBasic->mViewer) : ListViewerState{};
 
-    if (view())
-        return view()->mViewer ? ListViewerState(*view()->mViewer) : ListViewerState{};
+    if (mListView)
+        return mListView->mViewer ? ListViewerState(mListView->mViewer) : ListViewerState{};
 
     return {};
 }
@@ -156,30 +157,8 @@ void ListViewBasic::setAvatar(const QString& avatar)
     }
 }
 
-const ATProto::AppBskyGraph::ListView* ListViewBasic::view() const
-{
-    return mRawListView;
-}
-
-const ATProto::AppBskyGraph::ListViewBasic* ListViewBasic::basicView() const
-{
-    return mSharedListViewBasic ? mSharedListViewBasic.get() : mRawListViewBasic;
-}
-
-ListViewBasic ListViewBasic::nonVolatileCopy() const
-{
-    const ListViewBasic view(getUri(), getCid(), getName(), ATProto::AppBskyGraph::ListPurpose(getPurpose()), getAvatar());
-    return view;
-}
-
 
 ListView::ListView(const ATProto::AppBskyGraph::ListView::SharedPtr& view) :
-    ListViewBasic(view.get()),
-    mSharedListView(view)
-{
-}
-
-ListView::ListView(const ATProto::AppBskyGraph::ListView* view) :
     ListViewBasic(view)
 {
 }
@@ -198,7 +177,7 @@ Profile ListView::getCreator() const
     if (mCreator)
         return *mCreator;
 
-    return view() ? Profile(view()->mCreator.get()) : Profile{};
+    return mListView ? Profile(mListView->mCreator) : Profile{};
 }
 
 QString ListView::getDescription() const
@@ -206,10 +185,10 @@ QString ListView::getDescription() const
     if (mDescription)
         return *mDescription;
 
-    if (!view() || !view()->mDescription)
+    if (!mListView || !mListView->mDescription)
         return {};
 
-    return *view()->mDescription;
+    return *mListView->mDescription;
 }
 
 QString ListView::getFormattedDescription() const
@@ -217,17 +196,10 @@ QString ListView::getFormattedDescription() const
     if (mDescription)
         return ATProto::RichTextMaster::linkiFy(*mDescription, UserSettings::getLinkColor());
 
-    if (!view() || !view()->mDescription)
+    if (!mListView || !mListView->mDescription)
         return {};
 
-    return ATProto::RichTextMaster::getFormattedListDescription(*view(), UserSettings::getLinkColor());
-}
-
-ListView ListView::nonVolatileCopy() const
-{
-    const ListView view(getUri(), getCid(), getName(), ATProto::AppBskyGraph::ListPurpose(getPurpose()),
-                        getAvatar(), getCreator(), getDescription());
-    return view;
+    return ATProto::RichTextMaster::getFormattedListDescription(*mListView, UserSettings::getLinkColor());
 }
 
 }

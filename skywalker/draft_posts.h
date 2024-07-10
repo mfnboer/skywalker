@@ -74,7 +74,7 @@ signals:
     void storageTypeChanged();
 
 private:
-    using UploadImageSuccessCb = std::function<void(ATProto::Blob::Ptr)>;
+    using UploadImageSuccessCb = std::function<void(ATProto::Blob::SharedPtr)>;
     using SuccessCb = std::function<void()>;
     using DoneCb = std::function<void()>;
     using ErrorCb = std::function<void(const QString& error, const QString& message)>;
@@ -86,35 +86,35 @@ private:
     QString createDraftImageFileName(const QString& baseName, int seq) const;
     QString getBaseNameFromPostFileName(const QString& fileName) const;
 
-    static ATProto::AppBskyActor::ProfileViewBasic::Ptr createProfileViewBasic(const BasicProfile& author);
-    static ATProto::AppBskyActor::ProfileView::Ptr createProfileView(const Profile& author);
+    static ATProto::AppBskyActor::ProfileViewBasic::SharedPtr createProfileViewBasic(const BasicProfile& author);
+    static ATProto::AppBskyActor::ProfileView::SharedPtr createProfileView(const Profile& author);
 
-    ATProto::AppBskyFeed::Record::Post::Ptr createPost(const DraftPostData* draftPost, const QString& picBaseName);
-    Draft::ReplyToPost::Ptr createReplyToPost(const QString& replyToUri, const BasicProfile& author,
+    ATProto::AppBskyFeed::Record::Post::SharedPtr createPost(const DraftPostData* draftPost, const QString& picBaseName);
+    Draft::ReplyToPost::SharedPtr createReplyToPost(const QString& replyToUri, const BasicProfile& author,
                                        const QString& text, const QDateTime& dateTime) const;
 
-    Draft::Quote::Ptr createQuote(const QString& quoteUri, const BasicProfile& quoteAuthor,
+    Draft::Quote::SharedPtr createQuote(const QString& quoteUri, const BasicProfile& quoteAuthor,
                            const QString& quoteText, const QDateTime& quoteDateTime,
                            const GeneratorView& quoteFeed, const ListView& quoteList) const;
 
-    Draft::QuotePost::Ptr createQuotePost(const BasicProfile& author, const QString& text, const QDateTime& dateTime) const;
-    ATProto::AppBskyFeed::GeneratorView::Ptr createQuoteFeed(const GeneratorView& feed) const;
-    ATProto::AppBskyGraph::ListView::Ptr createQuoteList(const ListView& list) const;
+    Draft::QuotePost::SharedPtr createQuotePost(const BasicProfile& author, const QString& text, const QDateTime& dateTime) const;
+    ATProto::AppBskyFeed::GeneratorView::SharedPtr createQuoteFeed(const GeneratorView& feed) const;
+    ATProto::AppBskyGraph::ListView::SharedPtr createQuoteList(const ListView& list) const;
 
     ATProto::AppBskyFeed::PostFeed convertDraftToFeedViewPost(Draft::Draft& draft, const QString& recordUri);
-    ATProto::AppBskyFeed::PostView::Ptr convertDraftToPostView(Draft::Draft& draft, const QString& recordUri);
-    ATProto::AppBskyFeed::ThreadgateView::Ptr createThreadgateView(Draft::Draft& draft) const;
-    ATProto::AppBskyFeed::Record::Post::Ptr createReplyToPost(const Draft::Draft& draft) const;
-    ATProto::AppBskyFeed::PostView::Ptr convertReplyToPostView(Draft::Draft& draft) const;
-    ATProto::AppBskyFeed::ReplyRef::Ptr createReplyRef(Draft::Draft& draft) const;
+    ATProto::AppBskyFeed::PostView::SharedPtr convertDraftToPostView(Draft::Draft& draft, const QString& recordUri);
+    ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(Draft::Draft& draft) const;
+    ATProto::AppBskyFeed::Record::Post::SharedPtr createReplyToPost(const Draft::Draft& draft) const;
+    ATProto::AppBskyFeed::PostView::SharedPtr convertReplyToPostView(Draft::Draft& draft) const;
+    ATProto::AppBskyFeed::ReplyRef::SharedPtr createReplyRef(Draft::Draft& draft) const;
     ATProto::ComATProtoLabel::LabelList createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
-    ATProto::AppBskyEmbed::EmbedView::Ptr createEmbedView(
-        const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::Ptr quote);
-    ATProto::AppBskyEmbed::ImagesView::Ptr createImagesView(const ATProto::AppBskyEmbed::Images* images);
-    ATProto::AppBskyEmbed::ExternalView::Ptr createExternalView(const ATProto::AppBskyEmbed::External* external) const;
-    ATProto::AppBskyEmbed::RecordView::Ptr createRecordView(const ATProto::AppBskyEmbed::Record* record, Draft::Quote::Ptr quote) const;
-    ATProto::AppBskyEmbed::RecordWithMediaView::Ptr createRecordWithMediaView(
-        const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::Ptr quote);
+    ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(
+        const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::SharedPtr quote);
+    ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyEmbed::Images* images);
+    ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyEmbed::External* external) const;
+    ATProto::AppBskyEmbed::RecordView::SharedPtr createRecordView(const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(
+        const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::SharedPtr quote);
 
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
     void addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const;
@@ -122,12 +122,12 @@ private:
     // FILE STORAGE
     void loadDraftFeed();
     QStringList getDraftPostFiles(const QString& draftsPath) const;
-    Draft::Draft::Ptr loadDraft(const QString& fileName, const QString& draftsPath) const;
+    Draft::Draft::SharedPtr loadDraft(const QString& fileName, const QString& draftsPath) const;
     bool save(const Draft::Draft& draft, const QString& draftsPath, const QString& baseName);
     bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
                          const QList<ImageView>& images,
                          const QString& draftsPath, const QString& baseName);
-    ATProto::Blob::Ptr saveImage(const QString& imgName, const QString& draftsPath,
+    ATProto::Blob::SharedPtr saveImage(const QString& imgName, const QString& draftsPath,
                                  const QString& baseName, int seq);
     void dropImages(const QString& draftsPath, const QString& baseName, int count) const;
     void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;

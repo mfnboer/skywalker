@@ -16,8 +16,8 @@ public:
     bool isNull() const;
     QString getText() const;
     QString getFormattedText() const;
-    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyToRef() const;
-    ATProto::ComATProtoRepo::StrongRef::Ptr getReplyRootRef() const;
+    ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyToRef() const;
+    ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyRootRef() const;
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
     BasicProfile getReplyToAuthor() const;

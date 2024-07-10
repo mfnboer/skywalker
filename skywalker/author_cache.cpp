@@ -7,9 +7,8 @@ namespace Skywalker {
 std::unique_ptr<AuthorCache> AuthorCache::sInstance;
 
 AuthorCache::Entry::Entry(const BasicProfile& profile) :
-    mAuthor(profile.nonVolatileCopy())
+    mAuthor(profile)
 {
-    Q_ASSERT(!mAuthor.isVolatile());
 }
 
 AuthorCache::AuthorCache() :
@@ -61,7 +60,7 @@ bool AuthorCache::contains(const QString& did) const
 
 void AuthorCache::setUser(const BasicProfile& user)
 {
-    mUser = user.nonVolatileCopy();
+    mUser = user;
 }
 
 void AuthorCache::addProfileStore(const IProfileStore* store)

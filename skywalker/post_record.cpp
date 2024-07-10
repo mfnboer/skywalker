@@ -32,20 +32,20 @@ QString PostRecord::getFormattedText() const
     return ATProto::RichTextMaster::getFormattedPostText(*mRecord, UserSettings::getLinkColor());
 }
 
-ATProto::ComATProtoRepo::StrongRef::Ptr PostRecord::getReplyToRef() const
+ATProto::ComATProtoRepo::StrongRef::SharedPtr PostRecord::getReplyToRef() const
 {
     if (!mRecord || !mRecord->mReply)
         return nullptr;
 
-    return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*mRecord->mReply->mParent);
+    return std::make_shared<ATProto::ComATProtoRepo::StrongRef>(*mRecord->mReply->mParent);
 }
 
-ATProto::ComATProtoRepo::StrongRef::Ptr PostRecord::getReplyRootRef() const
+ATProto::ComATProtoRepo::StrongRef::SharedPtr PostRecord::getReplyRootRef() const
 {
     if (!mRecord || !mRecord->mReply)
         return nullptr;
 
-    return std::make_unique<ATProto::ComATProtoRepo::StrongRef>(*mRecord->mReply->mRoot);
+    return std::make_shared<ATProto::ComATProtoRepo::StrongRef>(*mRecord->mReply->mRoot);
 }
 
 QString PostRecord::getReplyRootCid() const

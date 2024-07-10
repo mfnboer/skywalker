@@ -22,7 +22,7 @@ class ContentFilter : public QObject, public IContentFilter
     Q_OBJECT
 
 public:
-    using LabelList = std::vector<ATProto::ComATProtoLabel::Label::Ptr>;
+    using LabelList = std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>;
     using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
 
     // System labels have a hard coded setting.

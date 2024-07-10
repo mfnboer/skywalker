@@ -640,7 +640,7 @@ void PostUtils::batchDeletePosts(const QStringList& postUris)
             continue;
         }
 
-        auto deleteRecord = std::make_unique<ATProto::ComATProtoRepo::ApplyWritesDelete>();
+        auto deleteRecord = std::make_shared<ATProto::ComATProtoRepo::ApplyWritesDelete>();
         deleteRecord->mCollection = atUri.getCollection();
         deleteRecord->mRKey = atUri.getRkey();
         writes.push_back(std::move(deleteRecord));
@@ -1012,10 +1012,7 @@ void PostUtils::getQuotePost(const QString& httpsUri)
 
     postMaster()->getPost(httpsUri,
         [this](const auto& uri, const auto& cid, auto post, auto author){
-            BasicProfile profile(author->mDid,
-                                 author->mHandle,
-                                 author->mDisplayName.value_or(""),
-                                 author->mAvatar.value_or(""));
+            BasicProfile profile(author);
             const auto formattedText = ATProto::RichTextMaster::getFormattedPostText(*post, UserSettings::getLinkColor());
             emit quotePost(uri, cid, formattedText, profile, post->mCreatedAt);
         });
@@ -1028,8 +1025,7 @@ void PostUtils::getQuoteFeed(const QString& httpsUri)
 
     postMaster()->getFeed(httpsUri,
         [this](auto feed){
-            ATProto::AppBskyFeed::GeneratorView::SharedPtr sharedFeed(feed.release());
-            GeneratorView view(sharedFeed);
+            GeneratorView view(feed);
             emit quoteFeed(view);
         });
 }
@@ -1041,8 +1037,7 @@ void PostUtils::getQuoteList(const QString& httpsUri)
 
     postMaster()->getList(httpsUri,
                           [this](auto list){
-                              ATProto::AppBskyGraph::ListView::SharedPtr sharedList(list.release());
-                              ListView view(sharedList);
+                              ListView view(list);
                               emit quoteList(view);
                           });
 }
