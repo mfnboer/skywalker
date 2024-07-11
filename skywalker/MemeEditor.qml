@@ -32,37 +32,46 @@ Page {
         }
     }
 
-    SkyTextInput {
-        id: topText
-        x: margin
-        width: parent.width - 2 * margin
-        initialText: memeTopText
-        placeholderText: qsTr("Top text")
+    Flickable {
+        anchors.fill: parent
+        clip: true
+        contentWidth: parent.width
+        contentHeight: memeImage.y + memeImage.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
 
-        onDisplayTextChanged: memeMaker.topText = displayText
-    }
+        SkyTextInput {
+            id: topText
+            x: margin
+            width: parent.width - 2 * margin
+            initialText: memeTopText
+            placeholderText: qsTr("Top text")
 
-    SkyTextInput {
-        id: bottomText
-        anchors.top: topText.bottom
-        anchors.topMargin: 10
-        x: margin
-        width: parent.width - 2 * margin
-        initialText: memeBottomText
-        placeholderText: qsTr("Bottom text")
+            onDisplayTextChanged: memeMaker.topText = displayText
+        }
 
-        onDisplayTextChanged: memeMaker.bottomText = displayText
-    }
+        SkyTextInput {
+            id: bottomText
+            anchors.top: topText.bottom
+            anchors.topMargin: 10
+            x: margin
+            width: parent.width - 2 * margin
+            initialText: memeBottomText
+            placeholderText: qsTr("Bottom text")
 
-    Image {
-        id: memeImage
-        x: margin
-        width: parent.width - 2 * margin
-        anchors.top: bottomText.bottom
-        anchors.topMargin: 10
-        fillMode: Image.PreserveAspectFit
-        autoTransform: true
-        source: memeMaker.memeImgSource
+            onDisplayTextChanged: memeMaker.bottomText = displayText
+        }
+
+        Image {
+            id: memeImage
+            x: margin
+            width: parent.width - 2 * margin
+            anchors.top: bottomText.bottom
+            anchors.topMargin: 10
+            fillMode: Image.PreserveAspectFit
+            autoTransform: true
+            source: memeMaker.memeImgSource
+        }
     }
 
     MemeMaker {
@@ -82,5 +91,6 @@ Page {
 
         memeMaker.topText = memeTopText
         memeMaker.bottomText = memeBottomText
+        topText.setFocus()
     }
 }
