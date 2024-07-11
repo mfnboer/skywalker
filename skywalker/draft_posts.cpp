@@ -331,7 +331,7 @@ static void setImages(DraftPostData* data, const QList<ImageView>& images)
         if (!img.isNull())
         {
             const QString imgSource = imgProvider->addImage(img);
-            ImageView draftImg(imgSource, imgView.getAlt(), imgView.getMemeTopText(), imgView.getMemeTopText());
+            ImageView draftImg(imgSource, imgView.getAlt(), imgView.getMemeTopText(), imgView.getMemeBottomText());
             draftImages.push_back(draftImg);
         }
     }
@@ -899,7 +899,7 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
 
         const ATProto::XJsonObject xjson(image->mImage->mJson);
         const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
-        const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+        const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
 
         auto imgView = std::make_shared<ATProto::AppBskyEmbed::ImagesViewImage>();
         imgView->mThumb = imgSource;

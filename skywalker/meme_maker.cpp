@@ -9,10 +9,15 @@
 
 namespace Skywalker {
 
-constexpr int FONT_MAX_PX = 32;
-constexpr int FONT_MIN_PX = 20;
+constexpr int FONT_MAX_PX = 38;
+constexpr int FONT_MIN_PX = 24;
 constexpr int MARGIN = 10;
 constexpr int MAX_TEXT_PATHS = 4;
+
+// This is the width on a Galaxy S22. Scaling font size to this width
+// makes the text size independent from the device creating the meme and
+// gives a decent text size on various devices.
+constexpr int MOBILE_SCREEN_WIDTH = 340;
 
 MemeMaker::MemeMaker(QObject* parent) :
     QObject(parent)
@@ -31,15 +36,6 @@ bool MemeMaker::setOrigImage(const QString& imgSource)
     setTopText("");
     setBottomText("");
     return true;
-}
-
-void MemeMaker::setScreenWidth(int width)
-{
-    if (width == mScreenWidth)
-        return;
-
-    mScreenWidth = width;
-    emit screenWidthChanged();
 }
 
 QString MemeMaker::getMemeImgSource() const
@@ -78,9 +74,14 @@ void MemeMaker::setBottomText(const QString& text)
     emit bottomTextChanged();
 }
 
-double MemeMaker::sizeRatio() const
+double MemeMaker::fontSizeRatio() const
 {
-    return mOrigImage.width() / (float)mScreenWidth;
+    return mOrigImage.width() / (float)MOBILE_SCREEN_WIDTH;
+}
+
+int MemeMaker::marginSize() const
+{
+    return MARGIN * fontSizeRatio();
 }
 
 void MemeMaker::center(int maxWidth, QPainterPath& path) const
@@ -93,7 +94,7 @@ QPainterPath MemeMaker::createTextPath(int x, int y, const QString& text, int ma
 {
     QFont font;
     font.setFamily("Impact");
-    font.setPixelSize(fontPx * sizeRatio());
+    font.setPixelSize(fontPx * fontSizeRatio());
     font.setWeight(QFont::Black);
 
     QPainterPath path;
@@ -103,7 +104,7 @@ QPainterPath MemeMaker::createTextPath(int x, int y, const QString& text, int ma
     while (path.boundingRect().width() > maxWidth && fontPx > FONT_MIN_PX)
     {
         --fontPx;
-        font.setPixelSize(fontPx * sizeRatio());
+        font.setPixelSize(fontPx * fontSizeRatio());
         path.clear();
         path.addText(x, y + font.pixelSize(), font, text);
     }
@@ -203,7 +204,7 @@ static int calcHeight(const std::vector<QPainterPath>& paths)
 void MemeMaker::moveToBottom(std::vector<QPainterPath>& paths) const
 {
     const int height = calcHeight(paths);
-    const int dy = mOrigImage.height() - height - MARGIN * sizeRatio();
+    const int dy = mOrigImage.height() - height - marginSize();
 
     for (auto& p : paths)
         p.translate(0, dy);
@@ -211,8 +212,8 @@ void MemeMaker::moveToBottom(std::vector<QPainterPath>& paths) const
 
 void MemeMaker::addText()
 {
-    const int x = sizeRatio() * MARGIN;
-    const int maxWidth = (mScreenWidth - 2 * MARGIN) * sizeRatio();
+    const int x = marginSize();
+    const int maxWidth = mOrigImage.width() - 2 * marginSize();
     const auto topPaths = createTextPathList(x, 0, mTopText, maxWidth);
     auto bottomPaths = createTextPathList(x, 0, mBottomText, maxWidth);
     moveToBottom(bottomPaths);
@@ -227,7 +228,7 @@ void MemeMaker::addText()
     }
 
     QPen pen(Qt::black);
-    pen.setWidth(std::max(1.0, sizeRatio()));
+    pen.setWidth(std::max(1.0, fontSizeRatio()));
     painter.setPen(pen);
     painter.setBrush(Qt::white);
 

@@ -67,7 +67,6 @@ Page {
 
     MemeMaker {
         id: memeMaker
-        screenWidth: page.width - 2 * margin
     }
 
     GuiSettings {

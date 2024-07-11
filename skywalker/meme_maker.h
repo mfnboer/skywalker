@@ -11,7 +11,6 @@ namespace Skywalker {
 class MemeMaker : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int screenWidth READ getScreenWidth WRITE setScreenWidth NOTIFY screenWidthChanged FINAL)
     Q_PROPERTY(QString memeImgSource READ getMemeImgSource NOTIFY memeImgSourceChanged FINAL)
     Q_PROPERTY(QString topText READ getTopText WRITE setTopText NOTIFY topTextChanged FINAL)
     Q_PROPERTY(QString bottomText READ getBottomText WRITE setBottomText NOTIFY bottomTextChanged FINAL)
@@ -21,9 +20,6 @@ public:
     explicit MemeMaker(QObject* parent = nullptr);
 
     Q_INVOKABLE bool setOrigImage(const QString& imgSource);
-
-    int getScreenWidth() const { return mScreenWidth; }
-    void setScreenWidth(int width);
 
     QString getMemeImgSource() const;
     void setMemeImgSource(const QString& source, SharedImageProvider* provider);
@@ -35,13 +31,13 @@ public:
     void setBottomText(const QString& text);
 
 signals:
-    void screenWidthChanged();
     void memeImgSourceChanged();
     void topTextChanged();
     void bottomTextChanged();
 
 private:
-    double sizeRatio() const;
+    double fontSizeRatio() const;
+    int marginSize() const;
     QPainterPath createTextPath(int x, int y, const QString& text, int maxWidth, int& fontPx) const;
     std::vector<QPainterPath> createTextMultiPathList(int x, int y, const QString& text, int maxWidth, int pathCount) const;
     std::vector<QPainterPath> createTextPathList(int x, int y, const QString& text, int maxWidth) const;
@@ -49,7 +45,6 @@ private:
     void center(int maxWidth, QPainterPath& path) const;
     void addText();
 
-    int mScreenWidth;
     QImage mOrigImage;
     SharedImageSource::Ptr mMemeImgSource;
     QString mTopText;
