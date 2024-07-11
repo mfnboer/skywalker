@@ -109,7 +109,7 @@ void FocusHashtags::setEntries(const QJsonDocument& json)
 
     for (const auto entryJson : entryArray)
     {
-        auto* entry = FocusHashtagEntry::fromJson(entryJson.toObject());
+        auto* entry = FocusHashtagEntry::fromJson(entryJson.toObject(), this);
         addEntry(entry);
     }
 }
