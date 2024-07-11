@@ -1,5 +1,5 @@
-next
-====
+3.0
+===
 * Make your own memes
 * Bug fixes
 
