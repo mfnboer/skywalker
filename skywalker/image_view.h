@@ -33,7 +33,7 @@ public:
         mViewImage(viewImage)
     {}
 
-    QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : QString(); }
+    QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : mFullSizeUrl; }
     QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : mFullSizeUrl; }
     QString getAlt() const { return mViewImage ? mViewImage->mAlt : mAlt; }
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mViewImage ? mViewImage->mAspectRatio.get() : nullptr; }

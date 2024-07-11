@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "shared_image_provider.h"
 
 namespace Skywalker {
 
@@ -25,10 +26,14 @@ public:
     void deleteDraft(int index);
     std::vector<Post> getThread(int index) const;
 
-    QVariant data(const QModelIndex& index, int role) const;
+    QVariant data(const QModelIndex& index, int role) const override;
 
 private:
+    QList<ImageView> createDraftImages(const Post& post) const;
+
     std::vector<ATProto::AppBskyFeed::PostFeed> mRawFeed;
+    std::unordered_map<QString, QList<ImageView>> mPostUriDraftImagesMap;
+    std::vector<SharedImageSource::Ptr> mMemeSources;
 };
 
 }

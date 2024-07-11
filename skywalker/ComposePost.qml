@@ -1645,7 +1645,12 @@ Page {
 
         for (let i = 0; i < postItem.images.length; ++i) {
             if (postItem.imageHasMeme(i)) {
-                memeMaker.setOrigImage(postItem.images[i])
+                if (!memeMaker.setOrigImage(postItem.images[i])) {
+                    console.warn("Cannot load image:", postItem.images[i])
+                    images.push(postItem.images[i])
+                    continue
+                }
+
                 memeMaker.topText = postItem.memeTopTexts[i]
                 memeMaker.bottomText = postItem.memeBottomTexts[i]
                 images.push(memeMaker.memeImgSource)
