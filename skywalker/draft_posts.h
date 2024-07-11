@@ -40,6 +40,7 @@ public:
 
     Q_INVOKABLE DraftPostData* createDraft(const QString& text,
                                            const QStringList& imageFileNames, const QStringList& altTexts,
+                                           const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
                                            const QString& replyToUri, const QString& replyToCid,
                                            const QString& replyRootUri, const QString& replyRootCid,
                                            const BasicProfile& replyToAuthor, const QString& replyToText,
@@ -127,8 +128,9 @@ private:
     bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
                          const QList<ImageView>& images,
                          const QString& draftsPath, const QString& baseName);
-    ATProto::Blob::SharedPtr saveImage(const QString& imgName, const QString& draftsPath,
-                                 const QString& baseName, int seq);
+    ATProto::Blob::SharedPtr saveImage(const QString& imgName,
+                                       const QString& memeTopText, const QString& memeBottomText,
+                                       const QString& draftsPath, const QString& baseName, int seq);
     void dropImages(const QString& draftsPath, const QString& baseName, int count) const;
     void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;
     void dropDraftPostFiles(const QString& draftsPath, const QString& fileName);

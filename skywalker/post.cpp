@@ -4,7 +4,9 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "user_settings.h"
+#include "lexicon/lexicon.h"
 #include <atproto/lib/at_uri.h>
+#include <atproto/lib/xjson.h>
 #include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
@@ -418,6 +420,32 @@ QList<ImageView> Post::getImages() const
 
     return images;
 }
+
+QList<ImageView> Post::getDraftImages() const
+{
+    if (!mPost)
+        return {};
+
+    if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
+        return {};
+
+    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(mPost->mEmbed->mEmbed);
+    QList<ImageView> images;
+
+    for (const auto& img : imagesView->mImages)
+    {
+        ImageView view(img);
+        const ATProto::XJsonObject xjson(img->mJson);
+        const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+        const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
+        view.setMemeTopText(memeTopText);
+        view.setMemeBottomText(memeBottomText);
+        images.push_back(view);
+    }
+
+    return images;
+}
+
 
 ExternalView::Ptr Post::getExternalView() const
 {

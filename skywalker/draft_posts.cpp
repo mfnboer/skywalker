@@ -57,6 +57,7 @@ bool DraftPosts::canSaveDraft() const
 
 DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const QStringList& imageFileNames, const QStringList& altTexts,
+                                       const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
                                        const QString& replyToUri, const QString& replyToCid,
                                        const QString& replyRootUri, const QString& replyRootCid,
                                        const BasicProfile& replyToAuthor, const QString& replyToText,
@@ -76,10 +77,12 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
 
     QList<ImageView> images;
     Q_ASSERT(imageFileNames.size() == altTexts.size());
+    Q_ASSERT(imageFileNames.size() == memeTopTexts.size());
+    Q_ASSERT(imageFileNames.size() == memeBottomTexts.size());
 
     for (int i = 0; i < imageFileNames.size(); ++i)
     {
-        ImageView view(imageFileNames[i], altTexts[i]);
+        ImageView view(imageFileNames[i], altTexts[i], memeTopTexts[i], memeBottomTexts[i]);
         images.push_back(view);
     }
 
@@ -328,7 +331,7 @@ static void setImages(DraftPostData* data, const QList<ImageView>& images)
         if (!img.isNull())
         {
             const QString imgSource = imgProvider->addImage(img);
-            ImageView draftImg(imgSource, imgView.getAlt());
+            ImageView draftImg(imgSource, imgView.getAlt(), imgView.getMemeTopText(), imgView.getMemeTopText());
             draftImages.push_back(draftImg);
         }
     }
@@ -423,7 +426,7 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
     {
         auto* data = new DraftPostData(this);
         data->setText(post.getText());
-        setImages(data, post.getImages());
+        setImages(data, post.getDraftImages());
         data->setIndexedAt(post.getIndexedAt());
         data->setReplyToUri(post.getReplyToUri());
         data->setReplyToCid(post.getReplyToCid());
@@ -894,10 +897,16 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
         }
         }
 
+        const ATProto::XJsonObject xjson(image->mImage->mJson);
+        const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+        const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+
         auto imgView = std::make_shared<ATProto::AppBskyEmbed::ImagesViewImage>();
         imgView->mThumb = imgSource;
         imgView->mFullSize = imgSource;
         imgView->mAlt = image->mAlt;
+        imgView->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+        imgView->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
         view->mImages.push_back(std::move(imgView));
     }
 
@@ -1122,7 +1131,9 @@ bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
     for (int i = 0; i < images.size(); ++i)
     {
         const QString& imgName = images[i].getFullSizeUrl();
-        auto blob = saveImage(imgName, draftsPath, baseName, i);
+        const QString& memeTopText = images[i].getMemeTopText();
+        const QString& memeBottomText = images[i].getMemeBottomText();
+        auto blob = saveImage(imgName, memeTopText, memeBottomText, draftsPath, baseName, i);
 
         if (!blob)
         {
@@ -1137,8 +1148,9 @@ bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
     return true;
 }
 
-ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName, const QString& draftsPath,
-                                         const QString& baseName, int seq)
+ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName,
+                                               const QString& memeTopText, const QString& memeBottomText,
+                                               const QString& draftsPath, const QString& baseName, int seq)
 {
     Q_ASSERT(mStorageType == STORAGE_FILE);
     qDebug() << "Save image:" << seq << imgName << "path:" << draftsPath << "base:" << baseName;
@@ -1172,6 +1184,9 @@ ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName, const QSt
     blob->mRefLink = imgFileName;
     blob->mMimeType = "image/jpeg";
     blob->mSize = img.sizeInBytes();
+    blob->mJson = blob->toJson();
+    blob->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+    blob->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
     return blob;
 }
 

@@ -66,6 +66,7 @@ public:
     QString getReplyRootUri() const;
 
     QList<ImageView> getImages() const;
+    QList<ImageView> getDraftImages() const;
     ExternalView::Ptr getExternalView() const;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;

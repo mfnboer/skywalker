@@ -1753,7 +1753,9 @@ Page {
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
 
-        const draft = draftPosts.createDraft(postItem.text, postItem.images, postItem.altTexts,
+        const draft = draftPosts.createDraft(postItem.text,
+                                 postItem.images, postItem.altTexts,
+                                 postItem.memeTopTexts, postItem.memeBottomTexts,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
@@ -1773,7 +1775,9 @@ Page {
             const qCidItem = threadItem.getQuoteCid()
             const labelsItem = threadItem.getContentLabels()
 
-            const draftItem = draftPosts.createDraft(threadItem.text, threadItem.images, threadItem.altTexts,
+            const draftItem = draftPosts.createDraft(threadItem.text,
+                                     threadItem.images, threadItem.altTexts,
+                                     threadItem.memeTopTexts, threadItem.memeBottomTexts,
                                      "", "",
                                      "", "",
                                      nullAuthor, "",
@@ -1831,8 +1835,8 @@ Page {
             for (let i = 0; i < draftData.images.length; ++i) {
                 postItem.images.push(draftData.images[i].fullSizeUrl)
                 postItem.altTexts.push(draftData.images[i].alt)
-                postItem.memeTopTexts.push("")
-                postItem.memeBottomTexts.push("")
+                postItem.memeTopTexts.push(draftData.images[i].memeTopText)
+                postItem.memeBottomTexts.push(draftData.images[i].memeBottomText)
             }
 
             if (j === 0) {
