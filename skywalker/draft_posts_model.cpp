@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "draft_posts_model.h"
 #include "draft_posts.h"
+#include "meme_maker.h"
 
 namespace Skywalker {
 
@@ -102,6 +103,16 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
     if (index.row() < 0 || index.row() >= (int)mFeed.size())
         return {};
 
+    const auto& post = mFeed[index.row()];
+
+    switch (Role(role))
+    {
+    case Role::PostImages:
+        return QVariant::fromValue(createDraftImages(post));
+    default:
+        break;
+    }
+
     QVariant result = AbstractPostFeedModel::data(index, role);
     const int threadLength = mRawFeed[index.row()].size();
 
@@ -127,6 +138,51 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
     }
 
     return result;
+}
+
+QList<ImageView> DraftPostsModel::createDraftImages(const Post& post) const
+{
+    QList<ImageView> imageViews = post.getDraftImages();
+
+    if (imageViews.empty())
+        return {};
+
+    if (mPostUriDraftImagesMap.contains(post.getUri()))
+        return mPostUriDraftImagesMap.at(post.getUri());
+
+    QList<ImageView> draftViews;
+
+    for (const auto& view : imageViews)
+    {
+        if (view.getMemeTopText().isEmpty() && view.getMemeBottomText().isEmpty())
+        {
+            draftViews.push_back(view);
+        }
+        else
+        {
+            MemeMaker memeMaker;
+
+            if (!memeMaker.setOrigImage(view.getFullSizeUrl()))
+            {
+                qWarning() << "Cannot load image:" << view.getFullSizeUrl();
+                draftViews.push_back(view);
+                continue;
+            }
+
+            auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+            memeMaker.setTopText(view.getMemeTopText());
+            memeMaker.setBottomText(view.getMemeBottomText());
+            ImageView draftView(memeMaker.getMemeImgSource(), view.getAlt(), view.getMemeTopText(), view.getMemeBottomText());
+            draftViews.push_back(draftView);
+            auto source = std::make_unique<SharedImageSource>(memeMaker.getMemeImgSource(), imgProvider);
+            const_cast<DraftPostsModel*>(this)->mMemeSources.emplace_back(std::move(source));
+            memeMaker.releaseMemeOwnership();
+        }
+    }
+
+    Q_ASSERT(draftViews.size() == imageViews.size());
+    const_cast<DraftPostsModel*>(this)->mPostUriDraftImagesMap[post.getUri()] = draftViews;
+    return draftViews;
 }
 
 }

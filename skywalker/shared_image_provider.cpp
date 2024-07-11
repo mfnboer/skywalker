@@ -138,7 +138,14 @@ SharedImageSource::SharedImageSource(const QString& source, SharedImageProvider*
 
 SharedImageSource::~SharedImageSource()
 {
-    mProvider->removeImage(mSource);
+    if (mProvider && !mSource.isEmpty())
+        mProvider->removeImage(mSource);
+}
+
+void SharedImageSource::clear()
+{
+    mProvider = nullptr;
+    mSource.clear();
 }
 
 }

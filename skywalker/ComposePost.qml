@@ -69,6 +69,9 @@ Page {
 
     property bool isAnniversary: skywalker.getAnniversary().isAnniversary()
 
+    // Cache
+    property list<string> tmpImages: []
+
     signal closed
 
     id: page
@@ -270,6 +273,8 @@ Page {
                     property string text
                     property list<string> images
                     property list<string> altTexts
+                    property list<string> memeTopTexts
+                    property list<string> memeBottomTexts
                     property basicprofile quoteAuthor
                     property string quoteUri
                     property string quoteCid
@@ -288,6 +293,8 @@ Page {
                         threadPosts.postList[index].text = text
                         threadPosts.postList[index].images = images
                         threadPosts.postList[index].altTexts = altTexts
+                        threadPosts.postList[index].memeTopTexts = memeTopTexts
+                        threadPosts.postList[index].memeBottomTexts = memeBottomTexts
                         threadPosts.postList[index].quoteAuthor = quoteAuthor
                         threadPosts.postList[index].quoteUri = quoteUri
                         threadPosts.postList[index].quoteCid = quoteCid
@@ -308,6 +315,8 @@ Page {
                     function copyFromPostList() {
                         images = threadPosts.postList[index].images
                         altTexts = threadPosts.postList[index].altTexts
+                        memeTopTexts = threadPosts.postList[index].memeTopTexts
+                        memeBottomTexts = threadPosts.postList[index].memeBottomTexts
                         quoteAuthor = threadPosts.postList[index].quoteAuthor
                         quoteUri = threadPosts.postList[index].quoteUri
                         quoteCid = threadPosts.postList[index].quoteCid
@@ -578,6 +587,8 @@ Page {
                     ImageScroller {
                         property alias images: postItem.images
                         property alias altTexts: postItem.altTexts
+                        property alias memeTopTexts: postItem.memeTopTexts
+                        property alias memeBottomTexts: postItem.memeBottomTexts
 
                         id: imageScroller
                         width: page.width
@@ -779,6 +790,9 @@ Page {
                         console.warn("Cannot remove last post")
                         return
                     }
+
+                    let item = itemAt(i)
+                    item.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
 
                     copyPostItemsToPostList()
 
@@ -1379,6 +1393,10 @@ Page {
         skywalker: page.skywalker
     }
 
+    MemeMaker {
+        id: memeMaker
+    }
+
     Timer {
         property string text
         property int index
@@ -1506,6 +1524,8 @@ Page {
 
         postItem.altTexts.push(altText)
         postItem.images.push(source)
+        postItem.memeTopTexts.push("")
+        postItem.memeBottomTexts.push("")
         let scrollBar = postItem.getImageScroller().ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
     }
@@ -1620,6 +1640,31 @@ Page {
         dialog.open()
     }
 
+    function getImagesToSend(postItem) {
+        let images = []
+
+        for (let i = 0; i < postItem.images.length; ++i) {
+            if (postItem.imageHasMeme(i)) {
+                if (!memeMaker.setOrigImage(postItem.images[i])) {
+                    console.warn("Cannot load image:", postItem.images[i])
+                    images.push(postItem.images[i])
+                    continue
+                }
+
+                memeMaker.topText = postItem.memeTopTexts[i]
+                memeMaker.bottomText = postItem.memeBottomTexts[i]
+                images.push(memeMaker.memeImgSource)
+                page.tmpImages.push(memeMaker.memeImgSource)
+                memeMaker.releaseMemeOwnership()
+            }
+            else {
+                images.push(postItem.images[i])
+            }
+        }
+
+        return images
+    }
+
     function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {
         const qUri = postItem.getQuoteUri()
         const qCid = postItem.getQuoteCid()
@@ -1652,7 +1697,9 @@ Page {
                            rootUri, rootCid,
                            qUri, qCid, labels, postItem.language)
         } else {
-            postUtils.post(postText, postItem.images, postItem.altTexts,
+            const images = getImagesToSend(postItem)
+
+            postUtils.post(postText, images, postItem.altTexts,
                            parentUri, parentCid,
                            rootUri, rootCid,
                            qUri, qCid, labels, postItem.language);
@@ -1710,7 +1757,9 @@ Page {
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
 
-        const draft = draftPosts.createDraft(postItem.text, postItem.images, postItem.altTexts,
+        const draft = draftPosts.createDraft(postItem.text,
+                                 postItem.images, postItem.altTexts,
+                                 postItem.memeTopTexts, postItem.memeBottomTexts,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
@@ -1730,7 +1779,9 @@ Page {
             const qCidItem = threadItem.getQuoteCid()
             const labelsItem = threadItem.getContentLabels()
 
-            const draftItem = draftPosts.createDraft(threadItem.text, threadItem.images, threadItem.altTexts,
+            const draftItem = draftPosts.createDraft(threadItem.text,
+                                     threadItem.images, threadItem.altTexts,
+                                     threadItem.memeTopTexts, threadItem.memeBottomTexts,
                                      "", "",
                                      "", "",
                                      nullAuthor, "",
@@ -1788,6 +1839,8 @@ Page {
             for (let i = 0; i < draftData.images.length; ++i) {
                 postItem.images.push(draftData.images[i].fullSizeUrl)
                 postItem.altTexts.push(draftData.images[i].alt)
+                postItem.memeTopTexts.push(draftData.images[i].memeTopText)
+                postItem.memeBottomTexts.push(draftData.images[i].memeBottomText)
             }
 
             if (j === 0) {
@@ -1959,6 +2012,8 @@ Page {
             let postItem = threadPosts.itemAt(i)
             postItem.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
         }
+
+        page.tmpImages.forEach((value, index, array) => { postUtils.dropPhoto(value); })
 
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)

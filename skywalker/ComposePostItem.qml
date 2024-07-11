@@ -5,6 +5,8 @@ Item {
     property string text: ""
     property list<string> images: []
     property list<string> altTexts: []
+    property list<string> memeTopTexts: []
+    property list<string> memeBottomTexts: []
     property basicprofile quoteAuthor
     property string quoteUri: ""
     property string quoteCid: ""
@@ -45,6 +47,10 @@ Item {
 
     function hasImageContent() {
         return gif || (card && card.thumb) || images.length > 0
+    }
+
+    function imageHasMeme(index) {
+        return index < images.length && (memeTopTexts[index].length > 0 || memeBottomTexts[index].length > 0)
     }
 
     function getContentLabels() {

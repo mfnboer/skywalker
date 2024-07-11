@@ -387,6 +387,9 @@ qt_add_qml_module(libskywalker
         QML_FILES StarterPackView.qml
         QML_FILES SkyListView.qml
         QML_FILES EditThreadPrefix.qml
+        SOURCES meme_maker.h
+        SOURCES meme_maker.cpp
+        QML_FILES MemeEditor.qml
 )
 
 if (NOT ANDROID)

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(appskywalker VERSION 2.10 LANGUAGES CXX)
-set(VERSION_CODE 38)
+project(appskywalker VERSION 3.0 LANGUAGES CXX)
+set(VERSION_CODE 39)
 set(APP_VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 20)
@@ -45,6 +45,7 @@ qt_add_qml_module(appskywalker
     NO_RESOURCE_TARGET_PATH
     RESOURCES
         qtquickcontrols2.conf
+        fonts/unicode.impact.ttf
         fonts/NotoSansMath-Regular.ttf
         images/skywalker.png
         images/PB_tenor_logo_blue_horizontal.svg

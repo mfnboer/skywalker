@@ -39,10 +39,17 @@ private:
 class SharedImageSource
 {
 public:
+    using Ptr = std::unique_ptr<SharedImageSource>;
     using SharedPtr = std::shared_ptr<SharedImageSource>;
 
     SharedImageSource(const QString& source, SharedImageProvider* provider);
     ~SharedImageSource();
+
+    void clear();
+    const QString& getSource() const { return mSource; }
+    SharedImageProvider* getProvider() const { return mProvider; }
+    QImage getImage() { return mProvider->getImage(mSource); }
+    void replaceImage(const QImage& image) { mProvider->replaceImage(mSource, image); }
 
 private:
     QString mSource;

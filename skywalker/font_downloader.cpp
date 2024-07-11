@@ -57,17 +57,23 @@ void FontDownloader::initAppFonts()
     ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
 }
 
-void FontDownloader::addApplicationFonts()
+void FontDownloader::addFont(const QString& fontFileName)
 {
-    // The Noto Sans Math font has the math symbols, i.e. the bold, italic, wide unicode
-    // characters that people often use in posts.
-    const int fontId = QFontDatabase::addApplicationFont(QStringLiteral(":/fonts/NotoSansMath-Regular.ttf"));
-    qDebug() << "NotoSansMath font:" << fontId;
+    const int fontId = QFontDatabase::addApplicationFont(fontFileName);
+    qDebug() << fontFileName << "fontId:" << fontId;
 
     if (fontId >= 0)
         qDebug() << "FONT FAMILIES:" << QFontDatabase::applicationFontFamilies(fontId);
     else
-        qWarning() << "Failed to add NotoSansMath-Regular.ttf";
+        qWarning() << "Failed to add:" << fontFileName;
+}
+
+void FontDownloader::addApplicationFonts()
+{
+    // The Noto Sans Math font has the math symbols, i.e. the bold, italic, wide unicode
+    // characters that people often use in posts.
+    addFont(QStringLiteral(":/fonts/NotoSansMath-Regular.ttf"));
+    addFont(QStringLiteral(":/fonts/unicode.impact.ttf"));
 }
 
 void FontDownloader::downloadEmojiFont()
