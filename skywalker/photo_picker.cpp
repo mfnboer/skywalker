@@ -27,7 +27,7 @@ constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
 }
 
 namespace Skywalker::PhotoPicker {
-
+;
 std::tuple<QImage, QString> readImageFd(int fd)
 {
     if (fd < 0)

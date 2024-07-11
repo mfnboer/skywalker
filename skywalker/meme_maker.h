@@ -39,8 +39,8 @@ private:
     double fontSizeRatio() const;
     int marginSize() const;
     QPainterPath createTextPath(int x, int y, const QString& text, int maxWidth, int& fontPx) const;
-    std::vector<QPainterPath> createTextMultiPathList(int x, int y, const QString& text, int maxWidth, int pathCount) const;
-    std::vector<QPainterPath> createTextPathList(int x, int y, const QString& text, int maxWidth) const;
+    std::vector<QPainterPath> createTextMultiPathList(int x, int y, const QString& text, int maxWidth, int pathCount, int& fontPx) const;
+    std::vector<QPainterPath> createTextPathList(int x, int y, const QString& text, int maxWidth, int& fontPx) const;
     void moveToBottom(std::vector<QPainterPath>& paths) const;
     void center(int maxWidth, QPainterPath& path) const;
     void addText();

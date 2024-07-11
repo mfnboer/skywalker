@@ -113,16 +113,14 @@ QPainterPath MemeMaker::createTextPath(int x, int y, const QString& text, int ma
     return path;
 }
 
-std::vector<QPainterPath> MemeMaker::createTextMultiPathList(int x, int y, const QString& text, int maxWidth, int pathCount) const
+std::vector<QPainterPath> MemeMaker::createTextMultiPathList(int x, int y, const QString& text, int maxWidth, int pathCount, int& fontPx) const
 {
-    int fontPx = FONT_MAX_PX;
     std::vector<QPainterPath> paths;
     const int maxLength = text.length() / pathCount + 1;
     const auto textList = UnicodeFonts::splitText(text, maxLength, 1, pathCount);
     int lineY = y;
-    fontPx = FONT_MAX_PX;
     int firstLineFontPx = 0;
-    int smallestFontPx = FONT_MAX_PX;
+    int smallestFontPx = fontPx;
 
     for (const auto& line : textList)
     {
@@ -145,10 +143,11 @@ std::vector<QPainterPath> MemeMaker::createTextMultiPathList(int x, int y, const
     {
         paths.clear();
         lineY = y;
+        fontPx = smallestFontPx;
 
         for (const auto& line : textList)
         {
-            const auto linePath = createTextPath(x, lineY, line, maxWidth, smallestFontPx);
+            const auto linePath = createTextPath(x, lineY, line, maxWidth, fontPx);
             paths.push_back(linePath);
             lineY += linePath.boundingRect().height();
         }
@@ -157,9 +156,9 @@ std::vector<QPainterPath> MemeMaker::createTextMultiPathList(int x, int y, const
     return paths;
 }
 
-std::vector<QPainterPath> MemeMaker::createTextPathList(int x, int y, const QString& text, int maxWidth) const
+std::vector<QPainterPath> MemeMaker::createTextPathList(int x, int y, const QString& text, int maxWidth, int& fontPx) const
 {
-    int fontPx = FONT_MAX_PX;
+    const int maxFontPx = fontPx;
     std::vector<QPainterPath> paths;
     const auto path = createTextPath(x, y, text, maxWidth, fontPx);
 
@@ -174,7 +173,8 @@ std::vector<QPainterPath> MemeMaker::createTextPathList(int x, int y, const QStr
 
     while (!done && pathCount <= MAX_TEXT_PATHS)
     {
-        paths = createTextMultiPathList(x, y, text, maxWidth, pathCount);
+        fontPx = maxFontPx;
+        paths = createTextMultiPathList(x, y, text, maxWidth, pathCount, fontPx);
         done = true;
 
         for (const auto& p : paths)
@@ -214,8 +214,18 @@ void MemeMaker::addText()
 {
     const int x = marginSize();
     const int maxWidth = mOrigImage.width() - 2 * marginSize();
-    const auto topPaths = createTextPathList(x, 0, mTopText, maxWidth);
-    auto bottomPaths = createTextPathList(x, 0, mBottomText, maxWidth);
+    int topFontPx = FONT_MAX_PX;
+    auto topPaths = createTextPathList(x, 0, mTopText, maxWidth, topFontPx);
+    int bottomFontPx = topFontPx;
+    auto bottomPaths = createTextPathList(x, 0, mBottomText, maxWidth, bottomFontPx);
+
+    // Make the font size of top and bottom text equal for esthetics.
+    if (!topPaths.empty() && !bottomPaths.empty() && bottomFontPx < topFontPx)
+    {
+        topFontPx = bottomFontPx;
+        topPaths = createTextPathList(x, 0, mTopText, maxWidth, topFontPx);
+    }
+
     moveToBottom(bottomPaths);
 
     QImage memeImage = mOrigImage;
