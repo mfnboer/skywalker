@@ -53,6 +53,11 @@ void MemeMaker::setMemeImgSource(const QString& source, SharedImageProvider* pro
     emit memeImgSourceChanged();
 }
 
+void MemeMaker::releaseMemeOwnership()
+{
+    mMemeImgSource->clear();
+}
+
 void MemeMaker::setTopText(const QString& text)
 {
     if (text == mTopText)

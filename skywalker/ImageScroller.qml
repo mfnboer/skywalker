@@ -53,8 +53,10 @@ ScrollView {
                 SkyButton {
                     y: parent.height - height
                     height: 34
-                    text: qsTr("+MEME")
+                    flat: imageScroller.hasMeme(index)
+                    text: imageScroller.hasMeme(index) ? qsTr("MEME") : qsTr("+MEME")
                     onClicked: imageScroller.editMeme(index)
+                    Accessible.name: imageScroller.hasMeme(index) ? qsTr(`edit meme text for picture ${(index + 1)}`) : qsTr(`add meme text to picture ${(index + 1)}`)
                 }
 
                 SvgButton {
@@ -91,6 +93,8 @@ ScrollView {
         postUtils.dropPhoto(images[index])
         altTexts.splice(index, 1)
         images.splice(index, 1)
+        memeTopTexts.splice(index, 1)
+        memeBottomTexts.splice(index, 1)
     }
 
     function hasAltText(index) {
@@ -98,6 +102,13 @@ ScrollView {
             return false
 
         return altTexts[index].length > 0
+    }
+
+    function hasMeme(index) {
+        if (index >= memeTopTexts.length || index >= memeBottomTexts.length)
+            return false
+
+        return memeTopTexts[index].length > 0 || memeBottomTexts[index].length > 0
     }
 
     function editAltText(index) {
@@ -112,14 +123,30 @@ ScrollView {
         root.pushStack(altPage)
     }
 
+    function makeMemeAltText(topText, bottomText) {
+        let altText = topText
+
+        if (bottomText) {
+            if (altText)
+                altText += '\n'
+
+            altText += bottomText
+        }
+
+        return altText
+    }
+
     function editMeme(index) {
         let component = Qt.createComponent("MemeEditor.qml")
         let memePage = component.createObject(page, {
-            imgSource: images[index]
+            imgSource: images[index],
+            memeTopText: memeTopTexts[index],
+            memeBottomText: memeBottomTexts[index]
         })
-        memePage.onMeme.connect((source) => {
-            postUtils.dropPhoto(images[index])
-            images[index] = source
+        memePage.onMeme.connect((topText, bottomText) => {
+            memeTopTexts[index] = topText
+            memeBottomTexts[index] = bottomText
+            altTexts[index] = makeMemeAltText(topText, bottomText)
             root.popStack()
         })
         memePage.onCancel.connect(() => root.popStack())

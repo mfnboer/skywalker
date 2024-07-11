@@ -45,6 +45,7 @@ public:
     SharedImageSource(const QString& source, SharedImageProvider* provider);
     ~SharedImageSource();
 
+    void clear();
     const QString& getSource() const { return mSource; }
     SharedImageProvider* getProvider() const { return mProvider; }
     QImage getImage() { return mProvider->getImage(mSource); }

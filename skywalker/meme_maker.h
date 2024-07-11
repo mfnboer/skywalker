@@ -27,7 +27,7 @@ public:
 
     QString getMemeImgSource() const;
     void setMemeImgSource(const QString& source, SharedImageProvider* provider);
-    Q_INVOKABLE void releaseMemeOwnership() { mMemeImgSource.release(); }
+    Q_INVOKABLE void releaseMemeOwnership();
 
     const QString& getTopText() const { return mTopText; }
     void setTopText(const QString& text);

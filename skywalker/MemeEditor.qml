@@ -5,10 +5,12 @@ import skywalker
 
 Page {
     required property string imgSource
+    required property string memeTopText
+    required property string memeBottomText
     readonly property int margin: 10
 
     signal cancel
-    signal meme(string source)
+    signal meme(string topText, string bottomText)
 
     id: page
     width: parent.width
@@ -26,11 +28,7 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.check
             accessibleName: qsTr("add meme")
-            onClicked: {
-                const source = memeMaker.memeImgSource
-                memeMaker.releaseMemeOwnership()
-                page.meme(source)
-            }
+            onClicked: page.meme(memeMaker.topText, memeMaker.bottomText)
         }
     }
 
@@ -38,6 +36,7 @@ Page {
         id: topText
         x: margin
         width: parent.width - 2 * margin
+        initialText: memeTopText
         placeholderText: qsTr("Top text")
 
         onDisplayTextChanged: memeMaker.topText = displayText
@@ -49,6 +48,7 @@ Page {
         anchors.topMargin: 10
         x: margin
         width: parent.width - 2 * margin
+        initialText: memeBottomText
         placeholderText: qsTr("Bottom text")
 
         onDisplayTextChanged: memeMaker.bottomText = displayText
@@ -75,7 +75,13 @@ Page {
     }
 
     Component.onCompleted: {
-        // TODO: handle error
-        memeMaker.setOrigImage(imgSource)
+        if (!memeMaker.setOrigImage(imgSource)) {
+            root.getSkywalker().showStatusMessage(qsTr("Failed to load image"))
+            cancel()
+            return
+        }
+
+        memeMaker.topText = memeTopText
+        memeMaker.bottomText = memeBottomText
     }
 }
