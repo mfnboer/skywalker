@@ -255,6 +255,8 @@ Page {
                         text: initialText ? initialText : ""
                         images: initialImage ? [initialImage] : []
                         altTexts: initialImage ? [""] : []
+                        memeTopTexts: initialImage ? [""] : []
+                        memeBottomTexts: initialImage ? [""] : []
                         quoteAuthor: page.quoteAuthor
                         quoteUri: page.quoteUri
                         quoteCid: page.quoteCid

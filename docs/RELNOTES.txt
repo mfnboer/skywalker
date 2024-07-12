@@ -1,3 +1,7 @@
+3.0.1
+=====
+* Bug fix for sharing pictures from other apps
+
 3.0
 ===
 * Make your own memes

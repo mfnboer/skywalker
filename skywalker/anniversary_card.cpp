@@ -90,13 +90,16 @@ void AnniversaryCard::initCard()
     svgRenderer.render(&painter);
 
     painter.setPen(QPen(mAgeColor));
-    painter.setFont(QFont("Times", 128, QFont::Black));
+    painter.setFont(QFont("Impact", 128, QFont::Black));
     painter.drawText(cardImage.rect().adjusted(0, 130, 0, 0), Qt::AlignCenter,
                      QString::number(mYears));
 
     painter.setViewport(cardImage.rect());
     painter.setPen(QPen(Utils::determineForegroundColor(mBackgroundColor, "black", "white")));
-    painter.setFont(QFont("Times", 18, -1, true));
+    QFont font;
+    font.setPointSize(18);
+    font.setItalic(true);
+    painter.setFont(font);
     painter.drawText(cardImage.rect().adjusted(0, 0, -10, -5), Qt::AlignRight | Qt::AlignBottom,
                      QString("sent with %1").arg(SKYWALKER_HANDLE));
     painter.end();
