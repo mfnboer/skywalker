@@ -42,6 +42,8 @@ public:
 
     explicit ContentFilter(const ATProto::UserPreferences& userPreferences, UserSettings* userSettings, QObject* parent = nullptr);
 
+    void clear();
+
     // Returns a global content group if the labelId is a global label
     const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const;
 

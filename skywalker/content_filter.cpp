@@ -128,6 +128,11 @@ ContentFilter::ContentFilter(const ATProto::UserPreferences& userPreferences, Us
 {
 }
 
+void ContentFilter::clear()
+{
+    mLabelerGroupMap.clear();
+}
+
 const ContentGroup* ContentFilter::getContentGroup(const QString& did, const QString& labelId) const
 {
     auto* group = getGlobalContentGroup(labelId);
