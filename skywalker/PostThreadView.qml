@@ -14,6 +14,7 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
+    reuseItems: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List

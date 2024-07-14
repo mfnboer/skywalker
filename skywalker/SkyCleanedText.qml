@@ -77,32 +77,33 @@ Text {
     }
 
     function capLinesRichText() {
-        if (!isRichText())
-            return
+        // TODO: capping on new lines
+        // if (!isRichText())
+        //     return
 
-        if (elide !== Text.ElideRight)
-            return
+        // if (elide !== Text.ElideRight)
+        //     return
 
-        if (wrapMode === Text.NoWrap)
-            return
+        // if (wrapMode === Text.NoWrap)
+        //     return
 
-        if (isCapped)
-            return
+        // if (isCapped)
+        //     return
 
-        if (fontMetrics.height <= 0)
-            return
+        // if (fontMetrics.height <= 0)
+        //     return
 
-        const numLines = Math.floor(height / fontMetrics.height)
+        // const numLines = Math.floor(height / fontMetrics.height)
 
-        if (numLines <= capLineCount)
-            return
+        // if (numLines <= capLineCount)
+        //     return
 
-        isCapping = true
-        lineCountBeforeCap = numLines
-        heightBeforeCap = height
-        height = height * (capLineCount / numLines)
-        isCapped = true
-        isCapping = false
+        // isCapping = true
+        // lineCountBeforeCap = numLines
+        // heightBeforeCap = height
+        // height = height * (capLineCount / numLines)
+        // isCapped = true
+        // isCapping = false
     }
 
     function resetText() {
@@ -119,7 +120,7 @@ Text {
 
     function determineTextFormat() {
         text = plainText
-        height = undefined
+        //height = undefined
         isCapped = false
         capLinesRichText()
 

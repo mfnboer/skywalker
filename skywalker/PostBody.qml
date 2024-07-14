@@ -25,6 +25,10 @@ Column {
     property bool attachmentsInitialized: false
     property string postHighlightColor: "transparent"
 
+    // Dynamic objects
+    property list<var> dynamicObjects: []
+    property bool isPooled: false
+
     id: postBody
 
     SkyCleanedText {
@@ -199,53 +203,83 @@ Column {
     function showPostAttachements() {
         if (postLanguageLabels.length > 0 && mustShowLangaugess()) {
             let component = Qt.createComponent("LanguageLabels.qml")
-            component.createObject(postBody, {languageLabels: postLanguageLabels})
+            let obj = component.createObject(postBody, {languageLabels: postLanguageLabels})
+            dynamicObjects.push(obj)
         }
 
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             let component = Qt.createComponent(qmlFile)
-            component.createObject(postBody, {images: postImages,
+            let obj = component.createObject(postBody, {images: postImages,
                                               contentVisibility: postContentVisibility,
                                               contentWarning: postContentWarning})
+            dynamicObjects.push(obj)
         }
 
         if (postExternal) {
             let component = Qt.createComponent("ExternalView.qml")
-            component.createObject(postBody, {postExternal: postBody.postExternal,
+            let obj = component.createObject(postBody, {postExternal: postBody.postExternal,
                                               contentVisibility: postContentVisibility,
                                               contentWarning: postContentWarning})
+            dynamicObjects.push(obj)
         }
 
         if (postContentLabels.length > 0) {
             let component = Qt.createComponent("ContentLabels.qml")
-            component.createObject(postBody, {contentLabels: postContentLabels, contentAuthorDid: postAuthor.did})
+            let obj = component.createObject(postBody, {contentLabels: postContentLabels, contentAuthorDid: postAuthor.did})
+            dynamicObjects.push(obj)
         }
 
         if (postRecord) {
             let component = Qt.createComponent("RecordView.qml")
-            component.createObject(postBody, {record: postRecord})
+            let obj = component.createObject(postBody, {record: postRecord})
+            dynamicObjects.push(obj)
         }
 
         if (postRecordWithMedia) {
             let component = Qt.createComponent("RecordWithMediaView.qml")
-            component.createObject(postBody, {record: postRecordWithMedia,
+            let obj = component.createObject(postBody, {record: postRecordWithMedia,
                                               contentVisibility: postContentVisibility,
                                               contentWarning: postContentWarning})
+            dynamicObjects.push(obj)
         }
     }
 
     onVisibleChanged: {
+        if (isPooled)
+            return
+
         if (postBody.visible && !postBody.attachmentsInitialized)
             initAttachments()
     }
 
+    function pooled() {
+        dynamicObjects.forEach((value, index, array) => { value.destroy() })
+        dynamicObjects = []
+        attachmentsInitialized = false
+
+        showWarnedPost = false
+        isPooled = true
+    }
+
+    function reused() {
+        isPooled = false
+        initAttachments()
+    }
+
     function initAttachments() {
+        if (isPooled) {
+            console.debug("IS POOLED!!!")
+            return
+        }
+
         if (postVisible())
             showPostAttachements()
 
-        if (detailedView)
-            dateTimeComp.createObject(postBody)
+        if (detailedView) {
+            let obj = dateTimeComp.createObject(postBody)
+            dynamicObjects.push(obj)
+        }
 
         postBody.attachmentsInitialized = true
     }

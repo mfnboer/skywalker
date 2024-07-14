@@ -6,6 +6,7 @@ Row {
     required property string authorName
 
     id: row
+    width: parent.width
 
     SvgImage {
         id: replyImg
@@ -17,8 +18,8 @@ Row {
 
     SkyCleanedText {
         id: replyToText
+        width: parent.width - implicitHeight
         anchors.verticalCenter: parent.verticalCenter
-        width: parent.width - replyImg.width
         elide: Text.ElideRight
         color: Material.color(Material.Grey)
         font.pointSize: guiSettings.scaledFont(7/8)
