@@ -19,7 +19,7 @@ Column {
 
         ListAvatar {
             id: avatar
-            width: 34
+            Layout.preferredWidth: 34
             Layout.alignment: Qt.AlignTop
             avatarUrl: list.avatar
 

@@ -3,21 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property int modelId
     required property int postEntryIndex
     signal closed
 
     id: view
-    spacing: 0
     model: skywalker.getPostThreadModel(modelId)
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
     reuseItems: true
-    ScrollIndicator.vertical: ScrollIndicator {}
-
-    Accessible.role: Accessible.List
 
     header: SimpleHeader {
         height: restrictionRow.visible ? guiSettings.headerHeight + restrictionRow.height : guiSettings.headerHeight

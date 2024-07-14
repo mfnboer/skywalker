@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property detailedprofile author
     required property var enclosingView
     required property var getFeed
@@ -18,13 +18,8 @@ ListView {
     id: authorPostsList
     width: parent.width
     height: parent.height
-    clip: true
-    spacing: 0
     model: modelId >= 0 ? skywalker.getAuthorFeedModel(page.modelId) : null
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
-    ScrollIndicator.vertical: ScrollIndicator {}
+    reuseItems: true
     interactive: !enclosingView.interactive
 
     StackLayout.onIsCurrentItemChanged: {

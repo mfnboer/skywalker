@@ -69,6 +69,16 @@ Rectangle {
     Accessible.name: getSpeech()
     Accessible.onPressAction: openNotification()
 
+    ListView.onPooled: {
+        postBody.pooled()
+        reasonPostBody.pooled()
+    }
+
+    ListView.onReused: {
+        postBody.reused()
+        reasonPostBody.reused()
+    }
+
     GridLayout {
         id: grid
         columns: 2
@@ -78,7 +88,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            width: guiSettings.threadColumnWidth
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -163,7 +173,7 @@ Rectangle {
 
         Column {
             id: postColumn
-            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             visible: showPost()
             topPadding: 5
 
@@ -258,7 +268,7 @@ Rectangle {
             }
         }
         Column {
-            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             topPadding: 5
             visible: isAggregatableReason()
 
@@ -334,6 +344,7 @@ Rectangle {
             }
 
             PostBody {
+                id: reasonPostBody
                 topPadding: 5
                 width: parent.width
                 postAuthor: skywalker.getUser()
@@ -362,7 +373,7 @@ Rectangle {
             }
         }
         Column {
-            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             topPadding: 5
             visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
 
@@ -405,8 +416,8 @@ Rectangle {
 
         // Separator
         Rectangle {
-            width: parent.width
-            height: 1
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: 1
             Layout.columnSpan: 2
             color: guiSettings.separatorColor
         }

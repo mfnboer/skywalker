@@ -36,7 +36,7 @@ Item {
 
             Avatar {
                 id: avatar
-                width: 24
+                Layout.preferredWidth: 24
                 Layout.alignment: Qt.AlignTop
                 avatarUrl: record.author.avatarUrl
                 isModerator: record.author.associated.isLabeler
