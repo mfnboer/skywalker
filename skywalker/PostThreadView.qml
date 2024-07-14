@@ -9,6 +9,7 @@ SkyListView {
     signal closed
 
     id: view
+    width: parent.width
     model: skywalker.getPostThreadModel(modelId)
     reuseItems: true
 
