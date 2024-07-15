@@ -88,24 +88,6 @@ SkyListView {
         id: guiSettings
     }
 
-    // Wait for the list view to fully render before jumping to a particular entry
-    Timer {
-        property int postIndex
-
-        id: moveTimer
-        interval: 300
-
-        onTriggered: {
-            positionViewAtIndex(Math.max(postIndex, 0), ListView.Beginning)
-            updateUnreadPosts(postIndex)
-        }
-
-        function goTo(index) {
-            postIndex = index
-            start()
-        }
-    }
-
     function getFirstVisibleIndex() {
         let firstVisibleIndex = indexAt(0, contentY)
 
@@ -129,7 +111,8 @@ SkyListView {
     }
 
     function moveToPost(index) {
-        moveTimer.goTo(index)
+        positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
+        updateUnreadPosts(index)
     }
 
     function rowsInsertedHandler(parent, start, end) {

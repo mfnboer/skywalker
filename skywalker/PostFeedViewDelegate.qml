@@ -87,7 +87,7 @@ Rectangle {
         Rectangle {
             id: topLeftSpace
             Layout.leftMargin: 8 + (avatarImg.width - width) / 2
-            Layout.preferredWidth: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
+            width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
             Layout.preferredHeight: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ? 2 : 1)
 
             color: {
@@ -127,14 +127,14 @@ Rectangle {
             }
         }
         Rectangle {
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: topLeftSpace.height
             color: "transparent"
         }
 
         // Repost information
         Rectangle {
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: guiSettings.backgroundColor
             visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
@@ -168,7 +168,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
             opacity: 0.9
@@ -253,7 +253,7 @@ Rectangle {
             // Change from width to Layout.preferredWidth seems to solve the issue
             // where posts sometimes are too wide (like landscape mode) but makes
             // things very slow :-(
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             visible: !postIsPlaceHolder && !postLocallyDeleted
 
             PostHeader {
@@ -446,7 +446,7 @@ Rectangle {
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Rectangle {
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            width: guiSettings.threadColumnWidth
             height: postEntry.margin
             color: "transparent"
 
@@ -481,14 +481,14 @@ Rectangle {
             }
         }
         Rectangle {
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
-            Layout.preferredHeight: postEntry.margin
+            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            height: postEntry.margin
             color: "transparent"
         }
 
         // Post/Thread separator
         Rectangle {
-            Layout.preferredWidth: parent.width
+            width: parent.width
             Layout.columnSpan: 2
             Layout.preferredHeight: 1
             color: guiSettings.separatorColor

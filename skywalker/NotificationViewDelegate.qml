@@ -90,7 +90,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -175,7 +175,7 @@ Rectangle {
 
         Loader {
             id: postLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: showPost()
             visible: status == Loader.Ready
             sourceComponent: Column {
@@ -277,7 +277,7 @@ Rectangle {
 
         Loader {
             id: aggregatableLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: isAggregatableReason()
             visible: status == Loader.Ready
             sourceComponent: Column {
@@ -390,7 +390,7 @@ Rectangle {
 
         Loader {
             id: inviteCodeLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
             visible: status == Loader.Ready
             sourceComponent: Column {
@@ -437,7 +437,7 @@ Rectangle {
 
         // Separator
         Rectangle {
-            Layout.preferredWidth: parent.width
+            width: parent.width
             Layout.preferredHeight: 1
             Layout.columnSpan: 2
             color: guiSettings.separatorColor
