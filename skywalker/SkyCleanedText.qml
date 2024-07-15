@@ -19,17 +19,15 @@ Text {
     color: guiSettings.textColor
     text: plainText
 
-    onPlainTextChanged: determineTextFormat()
+    onPlainTextChanged: {
+        determineTextFormat()
+    }
+
     onWidthChanged: resetText()
 
     onHeightChanged: {
         if (!isCapping)
             capLinesRichText()
-    }
-
-    onTextChanged: {
-        elideRichText()
-        capLinesRichText()
     }
 
     Accessible.role: Accessible.StaticText
@@ -77,33 +75,35 @@ Text {
     }
 
     function capLinesRichText() {
-        // TODO: capping on new lines
-        // if (!isRichText())
-        //     return
+        if (!isRichText())
+            return
 
-        // if (elide !== Text.ElideRight)
-        //     return
+        if (elide !== Text.ElideRight)
+            return
 
-        // if (wrapMode === Text.NoWrap)
-        //     return
+        if (wrapMode === Text.NoWrap)
+            return
 
-        // if (isCapped)
-        //     return
+        if (isCapped)
+            return
 
-        // if (fontMetrics.height <= 0)
-        //     return
+        if (fontMetrics.height <= 0)
+            return
 
-        // const numLines = Math.floor(height / fontMetrics.height)
+        if (width <= 0)
+            return
 
-        // if (numLines <= capLineCount)
-        //     return
+        const numLines = Math.floor(height / fontMetrics.height)
 
-        // isCapping = true
-        // lineCountBeforeCap = numLines
-        // heightBeforeCap = height
-        // height = height * (capLineCount / numLines)
-        // isCapped = true
-        // isCapping = false
+        if (numLines <= capLineCount)
+            return
+
+        isCapping = true
+        lineCountBeforeCap = numLines
+        heightBeforeCap = height
+        height = height * (capLineCount / numLines)
+        isCapped = true
+        isCapping = false
     }
 
     function resetText() {
@@ -120,8 +120,9 @@ Text {
 
     function determineTextFormat() {
         text = plainText
-        //height = undefined
+        height = undefined
         isCapped = false
+        elideRichText()
         capLinesRichText()
 
         if (isRichText())

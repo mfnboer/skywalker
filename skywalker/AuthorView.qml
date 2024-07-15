@@ -1052,7 +1052,7 @@ Page {
 
     function getFeed(modelId) {
         if (mustGetFeed())
-            skywalker.getAuthorFeed(modelId, 100)
+            skywalker.getAuthorFeed(modelId, 50)
     }
 
     function getFeedNextPage(modelId) {

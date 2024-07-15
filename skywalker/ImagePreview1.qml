@@ -33,7 +33,7 @@ RoundedFrame {
 
             if (image.width > 0 && image.height > 0) {
                 const newWidth = Math.min(image.width, frame.parent.width)
-                const newHeight = (image.height / image.width) * newWidth
+                let newHeight = (image.height / image.width) * newWidth
 
                 if (newHeight > maxHeight) {
                     fillMode = Image.PreserveAspectCrop
