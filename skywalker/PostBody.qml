@@ -26,7 +26,6 @@ Column {
     property string postHighlightColor: "transparent"
 
     // Dynamic objects
-    property list<var> dynamicObjects: []
     property bool isPooled: false
 
     id: postBody
@@ -143,9 +142,48 @@ Column {
         }
     }
 
-    Component {
-        id: dateTimeComp
-        Text {
+    Loader {
+        id: languageLabelsLoader
+        anchors.right: parent.right
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: imageLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: externalLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: contentLabelsLoader
+        anchors.right: parent.right
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: recordLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: recordWithMediaLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: dateTimeLoader
+        width: parent.width
+        active: detailedView
+        visible: status == Loader.Ready
+        sourceComponent: Text {
             width: parent.width
             topPadding: 10
             Layout.fillWidth: true
@@ -202,46 +240,41 @@ Column {
 
     function showPostAttachements() {
         if (postLanguageLabels.length > 0 && mustShowLangaugess()) {
-            let component = Qt.createComponent("LanguageLabels.qml")
-            let obj = component.createObject(postBody, {languageLabels: postLanguageLabels})
-            dynamicObjects.push(obj)
+            languageLabelsLoader.setSource("LanguageLabels.qml", {
+                                               languageLabels: postLanguageLabels,
+                                               parentWidth: parent.width })
         }
 
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
-            let component = Qt.createComponent(qmlFile)
-            let obj = component.createObject(postBody, {images: postImages,
-                                              contentVisibility: postContentVisibility,
-                                              contentWarning: postContentWarning})
-            dynamicObjects.push(obj)
+            imageLoader.setSource(qmlFile, {
+                                      images: postImages,
+                                      contentVisibility: postContentVisibility,
+                                      contentWarning: postContentWarning })
         }
 
         if (postExternal) {
-            let component = Qt.createComponent("ExternalView.qml")
-            let obj = component.createObject(postBody, {postExternal: postBody.postExternal,
-                                              contentVisibility: postContentVisibility,
-                                              contentWarning: postContentWarning})
-            dynamicObjects.push(obj)
+            externalLoader.setSource("ExternalView.qml", {
+                                        postExternal: postBody.postExternal,
+                                        contentVisibility: postContentVisibility,
+                                        contentWarning: postContentWarning })
         }
 
         if (postContentLabels.length > 0) {
-            let component = Qt.createComponent("ContentLabels.qml")
-            let obj = component.createObject(postBody, {contentLabels: postContentLabels, contentAuthorDid: postAuthor.did})
-            dynamicObjects.push(obj)
+            contentLabelsLoader.setSource("ContentLabels.qml", {
+                                        contentLabels: postContentLabels,
+                                        contentAuthorDid: postAuthor.did,
+                                        parentWidth: parent.width})
         }
 
-        if (postRecord) {
-            let component = Qt.createComponent("RecordView.qml")
-            let obj = component.createObject(postBody, {record: postRecord})
-            dynamicObjects.push(obj)
-        }
+        if (postRecord)
+            recordLoader.setSource("RecordView.qml", {record: postRecord})
 
         if (postRecordWithMedia) {
-            let component = Qt.createComponent("RecordWithMediaView.qml")
-            let obj = component.createObject(postBody, {record: postRecordWithMedia,
-                                              contentVisibility: postContentVisibility,
-                                              contentWarning: postContentWarning})
-            dynamicObjects.push(obj)
+            recordWithMediaLoader.setSource("RecordWithMediaView.qml", {
+                                                record: postRecordWithMedia,
+                                                contentVisibility: postContentVisibility,
+                                                contentWarning: postContentWarning })
         }
     }
 
@@ -254,8 +287,12 @@ Column {
     }
 
     function pooled() {
-        dynamicObjects.forEach((value, index, array) => { value.destroy() })
-        dynamicObjects = []
+        languageLabelsLoader.source = ""
+        imageLoader.source = ""
+        externalLoader.source = ""
+        contentLabelsLoader.source = ""
+        recordLoader.source = ""
+        recordWithMediaLoader.source = ""
         attachmentsInitialized = false
 
         showWarnedPost = false
@@ -275,11 +312,6 @@ Column {
 
         if (postVisible())
             showPostAttachements()
-
-        if (detailedView) {
-            let obj = dateTimeComp.createObject(postBody)
-            dynamicObjects.push(obj)
-        }
 
         postBody.attachmentsInitialized = true
     }
