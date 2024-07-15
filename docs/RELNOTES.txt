@@ -2,6 +2,7 @@ next
 ====
 * Scrolling performance improvements
 * Support sending instagram link card
+* Set image size in post
 
 3.0.1
 =====

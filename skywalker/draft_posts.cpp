@@ -1133,7 +1133,7 @@ bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
         const QString& imgName = images[i].getFullSizeUrl();
         const QString& memeTopText = images[i].getMemeTopText();
         const QString& memeBottomText = images[i].getMemeBottomText();
-        auto blob = saveImage(imgName, memeTopText, memeBottomText, draftsPath, baseName, i);
+        auto [blob, imgSize] = saveImage(imgName, memeTopText, memeBottomText, draftsPath, baseName, i);
 
         if (!blob)
         {
@@ -1142,13 +1142,13 @@ bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
         }
 
         const QString& altText = images[i].getAlt();
-        ATProto::PostMaster::addImageToPost(post, std::move(blob), altText);
+        ATProto::PostMaster::addImageToPost(post, std::move(blob), imgSize.width(), imgSize.height(), altText);
     }
 
     return true;
 }
 
-ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName,
+std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString& imgName,
                                                const QString& memeTopText, const QString& memeBottomText,
                                                const QString& draftsPath, const QString& baseName, int seq)
 {
@@ -1160,7 +1160,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName,
     {
         qWarning() << "Could not load image:" << seq << imgName;
         emit saveDraftPostFailed(tr("Could not load image #%1: %2").arg(seq + 1).arg(imgName));
-        return nullptr;
+        return { nullptr, QSize{} };
     }
 
     const QString imgFileName = createDraftImageFileName(baseName, seq);
@@ -1170,14 +1170,14 @@ ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName,
     if (!FileUtils::checkWriteMediaPermission())
     {
         qWarning() << "No permission to write media:" << fileName;
-        return nullptr;
+        return { nullptr, QSize{} };
     }
 
     if (!img.save(fileName))
     {
         qWarning() << "Failed to save image:" << fileName;
         emit saveDraftPostFailed(tr("Failed to save image #%1: %2").arg(seq + 1).arg(fileName));
-        return nullptr;
+        return { nullptr, QSize{} };
     }
 
     auto blob = std::make_shared<ATProto::Blob>();
@@ -1187,7 +1187,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveImage(const QString& imgName,
     blob->mJson = blob->toJson();
     blob->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
     blob->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
-    return blob;
+    return { blob, img.size() };
 }
 
 void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count) const
@@ -1348,7 +1348,7 @@ bool DraftPosts::uploadImage(const QString& imageName, const UploadImageSuccessC
     Q_ASSERT(errorCb);
 
     QByteArray imgData;
-    const QString mimeType = PhotoPicker::createBlob(imgData, imageName);
+    const auto [mimeType, imgSize] = PhotoPicker::createBlob(imgData, imageName);
 
     if (imgData.isEmpty())
     {
@@ -1357,11 +1357,11 @@ bool DraftPosts::uploadImage(const QString& imageName, const UploadImageSuccessC
     }
 
     bskyClient()->uploadBlob(imgData, mimeType,
-        [presence=getPresence(), successCb](auto blob){
+        [presence=getPresence(), imgSize, successCb](auto blob){
             if (!presence)
                 return;
 
-            successCb(std::move(blob));
+            successCb(std::move(blob), imgSize);
         },
         [presence=getPresence(), errorCb](const QString& error, const QString& msg){
             if (!presence)
@@ -1416,11 +1416,11 @@ void DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
     const auto remainingImages = images.mid(1);
 
     uploadImage(imgName,
-        [this, presence=getPresence(), &post, altText, remainingImages, continueCb, imgSeq](auto blob){
+        [this, presence=getPresence(), &post, altText, remainingImages, continueCb, imgSeq](auto blob, QSize imgSize){
             if (!presence)
                 return;
 
-            ATProto::PostMaster::addImageToPost(post, std::move(blob), altText);
+            ATProto::PostMaster::addImageToPost(post, std::move(blob), imgSize.width(), imgSize.height(), altText);
             addImagesToPost(post, remainingImages, continueCb, imgSeq + 1);
         },
         [this, presence=getPresence()](const QString&, const QString& msg){
