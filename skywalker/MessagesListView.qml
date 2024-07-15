@@ -47,18 +47,13 @@ Page {
         page.header.y = 0
     }
 
-    ListView {
+    SkyListView {
         id: messagesView
         width: parent.width
         height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding
-        spacing: 0
-        clip: true
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
-        flickDeceleration: guiSettings.flickDeceleration
-        maximumFlickVelocity: guiSettings.maxFlickVelocity
-        pixelAligned: guiSettings.flickPixelAligned
-        ScrollIndicator.vertical: ScrollIndicator {}
+        reuseItems: false
 
         onHeightChanged: moveToEnd()
 

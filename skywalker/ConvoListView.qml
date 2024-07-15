@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property var chat
     property var skywalker: root.getSkywalker()
 
@@ -11,12 +11,8 @@ ListView {
 
     id: conversationsView
     spacing: 15
-    clip: true
+    reuseItems: false
     model: chat.convoListModel
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
-    ScrollIndicator.vertical: ScrollIndicator {}
 
     header: SimpleHeader {
         text: qsTr("Conversations")

@@ -1,3 +1,8 @@
+next
+====
+* Scrolling performance improvements
+* Support sending instagram link card
+
 3.0.1
 =====
 * Bug fix for sharing pictures from other apps
