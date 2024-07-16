@@ -239,6 +239,7 @@ ApplicationWindow {
         onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack)
 
         onSharedTextReceived: (text) => {
+            closeStartupStatus() // close startup status if sharing started the app
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
@@ -253,6 +254,7 @@ ApplicationWindow {
 
         // "file://" or "image://" source
         onSharedImageReceived: (source, text) => {
+            closeStartupStatus() // close startup status if sharing started the app
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
@@ -266,6 +268,7 @@ ApplicationWindow {
         }
 
         onSharedDmTextReceived: (text) => {
+            closeStartupStatus() // close startup status if sharing started the app
             let item = currentStackItem()
 
             if (item instanceof MessagesListView)
