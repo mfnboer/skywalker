@@ -12,7 +12,7 @@ Text {
 
     id: theText
     height: textFormat === Text.RichText && elide === Text.ElideRight && wrapMode !== Text.NoWrap ?
-                Math.min(contentHeight, capLineCount * fontMetrics.height) : undefined
+                Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     clip: true
     color: guiSettings.textColor
     text: plainText
