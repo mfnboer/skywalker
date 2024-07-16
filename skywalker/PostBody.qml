@@ -35,7 +35,7 @@ Column {
         width: parent.width
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        intialShowMaxLineCount: Math.min(maxTextLines, 25)
+        initialShowMaxLineCount: Math.min(maxTextLines, 25)
         maximumLineCount: maxTextLines
         ellipsisBackgroundColor: postBody.ellipsisBackgroundColor
         elide: Text.ElideRight
@@ -296,6 +296,7 @@ Column {
         attachmentsInitialized = false
 
         showWarnedPost = false
+        bodyText.capLineCount = bodyText.initialShowMaxLineCount
         isPooled = true
     }
 

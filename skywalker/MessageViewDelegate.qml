@@ -70,7 +70,7 @@ Rectangle {
             topPadding: 5
             bottomPadding: 5
             wrapMode: Text.Wrap
-            intialShowMaxLineCount: Math.min(maxTextLines, 25)
+            initialShowMaxLineCount: Math.min(maxTextLines, 25)
             maximumLineCount: maxTextLines
             ellipsisBackgroundColor: messageRect.color
             elide: Text.ElideRight
