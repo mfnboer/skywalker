@@ -219,6 +219,8 @@ Page {
         height: flick.height + newMessageText.bottomPadding
         radius: 10
         color: guiSettings.messageNewBackgroundColor
+        border.width: newMessageText.activeFocus ? 1 : 0
+        border.color: guiSettings.buttonColor
 
         // Quote post
         Rectangle {
@@ -266,6 +268,7 @@ Page {
         FontComboBox {
             id: fontSelector
             x: page.margin
+            anchors.bottomMargin: 5
             anchors.bottom: parent.bottom
             popup.height: page.height - (page.header.y + page.header.height)
             focusPolicy: Qt.NoFocus
