@@ -1,5 +1,5 @@
-next
-====
+3.0.2
+=====
 * Scrolling performance improvements
 * Support sending instagram link card
 * Set image size in post
