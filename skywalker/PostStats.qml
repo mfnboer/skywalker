@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Column {
+Item {
     required property int replyCount
     required property int repostCount
     required property int likeCount
@@ -17,6 +17,7 @@ Column {
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
+    property int topPadding: 0
 
     signal reply()
     signal repost()
@@ -30,62 +31,85 @@ Column {
     signal reportPost()
     signal translatePost()
 
-    Row {
-        width: parent.width
+    height: replyIcon.height
 
-        StatIcon {
-            width: parent.width / 5
-            iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
-            svg: svgOutline.reply
-            statistic: replyCount
-            visible: !bookmarkNotFound
-            enabled: !replyDisabled
-            onClicked: reply()
+    StatIcon {
+        id: replyIcon
+        width: parent.width / 5
+        iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
+        svg: svgOutline.reply
+        statistic: replyCount
+        visible: !bookmarkNotFound
+        enabled: !replyDisabled
+        onClicked: reply()
 
-            Accessible.name: (replyDisabled ? qsTr("reply not allowed") : qsTr("reply")) + statSpeech(replyCount, "reply", "replies")
-        }
-        StatIcon {
-            width: parent.width / 5
-            iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
-            svg: svgOutline.repost
-            statistic: repostCount
-            visible: !bookmarkNotFound
-            onClicked: repost()
+        Accessible.name: (replyDisabled ? qsTr("reply not allowed") : qsTr("reply")) + statSpeech(replyCount, "reply", "replies")
+    }
+    StatIcon {
+        id: repostIcon
+        anchors.left: replyIcon.right
+        width: parent.width / 5
+        iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
+        svg: svgOutline.repost
+        statistic: repostCount
+        visible: !bookmarkNotFound
+        onClicked: repost()
 
-            Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
-        }
-        StatIcon {
-            width: parent.width / 5
-            iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
-            svg: likeUri ? svgFilled.like : svgOutline.like
-            statistic: likeCount
-            visible: !bookmarkNotFound
-            onClicked: like()
+        Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
+    }
+    StatIcon {
+        id: likeIcon
+        anchors.left: repostIcon.right
+        width: parent.width / 5
+        iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
+        svg: likeUri ? svgFilled.like : svgOutline.like
+        statistic: likeCount
+        visible: !bookmarkNotFound
+        onClicked: like()
 
-            Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
-        }
-        StatIcon {
-            width: parent.width / 5
-            iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
-            svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
-            onClicked: bookmark()
+        Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
+    }
+    StatIcon {
+        id: bookmarkIcon
+        anchors.left: likeIcon.right
+        width: parent.width / 5
+        iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
+        svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
+        onClicked: bookmark()
 
-            Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
-        }
-        StatIcon {
-            width: parent.width / 5
-            svg: svgOutline.moreVert
-            visible: !bookmarkNotFound
-            onClicked: moreMenu.open()
+        Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
+    }
+    StatIcon {
+        id: moreIcon
+        anchors.left: bookmarkIcon.right
+        width: parent.width / 5
+        svg: svgOutline.moreVert
+        visible: !bookmarkNotFound
+        onClicked: moreMenuLoader.open()
 
-            Accessible.name: qsTr("more options")
+        Accessible.name: qsTr("more options")
 
-            Menu {
+        // PostStats is part of list item delegates.
+        // Dynamicly loading the menu on demand improves list scrolling performance
+        Loader {
+            id: moreMenuLoader
+            active: false
+
+            function open() {
+                active = true
+            }
+
+            onStatusChanged: {
+                if (status == Loader.Ready)
+                    item.open()
+            }
+
+            sourceComponent: Menu {
                 id: moreMenu
                 modal: true
 
                 onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
+                onAboutToHide: { root.enablePopupShield(false); parent.active = false }
 
                 CloseMenuItem {
                     text: qsTr("<b>Post</b>")

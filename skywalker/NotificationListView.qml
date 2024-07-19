@@ -3,23 +3,15 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property var skywalker
     required property var timeline
 
     signal closed
 
     id: notificationListView
-    spacing: 0
     model: skywalker.notificationListModel
-    clip: true
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
     reuseItems: true
-    ScrollIndicator.vertical: ScrollIndicator {}
-
-    Accessible.role: Accessible.List
 
     header: SimpleHeader {
         text: qsTr("Notifications")

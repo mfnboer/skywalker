@@ -7,60 +7,48 @@ Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property externalview postExternal
+    readonly property bool isGif: gifUtils.isGif(postExternal.uri)
 
     id: view
     width: parent.width
-    height: gifUtils.isGif(postExternal.uri) ?
-                Math.max(gifImage.height + tenorAttribution.height + 5, gifLoadingIndicator.height) :
-                card.columnHeight
+    height: isGif ? gifLoader.height : cardLoader.cardHeight
 
     Accessible.role: Accessible.Link
     Accessible.name: getSpeech()
     Accessible.onPressAction: if (isLinkEnabled()) openExternalLink()
 
-    LinkCardView {
-        id: card
-        anchors.fill: parent
-        uri: postExternal.uri
-        title: postExternal.title
-        description: postExternal.description
-        thumbUrl: postExternal.thumbUrl
-        contentVisibility: view.contentVisibility
-        contentWarning: view.contentWarning
-        visible: !gifUtils.isGif(postExternal.uri)
+    Loader {
+        readonly property int cardHeight: status == Loader.Ready ? item.columnHeight : 0
+
+        id: cardLoader
+        width: parent.width
+        active: !isGif
+        visible: status == Loader.Ready
+
+        sourceComponent: LinkCardView {
+            anchors.fill: parent
+            uri: postExternal.uri
+            title: postExternal.title
+            description: postExternal.description
+            thumbUrl: postExternal.thumbUrl
+            contentVisibility: view.contentVisibility
+            contentWarning: view.contentWarning
+        }
     }
-    AnimatedImagePreview {
-        id: gifImage
-        url: gifUtils.getGifUrl(postExternal.uri)
-        title: url ? postExternal.title : ""
-        contentVisibility: view.contentVisibility
-        contentWarning: view.contentWarning
-        visible: url
-    }
-    BusyIndicator {
-        id: gifLoadingIndicator
-        anchors.centerIn: parent
-        running: gifImage.status === Image.Loading
-    }
-    Image {
-        id: tenorAttribution
-        anchors.right: gifImage.right
-        anchors.top: gifImage.bottom
-        anchors.topMargin: 5
-        width: 50
-        fillMode: Image.PreserveAspectFit
-        source: "/images/via_tenor_logo_blue.svg"
-        visible: gifImage.visible && gifUtils.isTenorLink(postExternal.uri) && gifImage.status === Image.Ready
-    }
-    Image {
-        id: giphyAttribution
-        anchors.right: gifImage.right
-        anchors.top: gifImage.bottom
-        anchors.topMargin: 5
-        width: 50
-        fillMode: Image.PreserveAspectFit
-        source: "/images/giphy_logo.png"
-        visible: gifImage.visible && gifUtils.isGiphyLink(postExternal.uri) && gifImage.status === Image.Ready
+
+    Loader {
+        id: gifLoader
+        width: parent.width
+        active: isGif
+        visible: status == Loader.Ready
+
+        sourceComponent: GifView {
+            width: parent.width
+            uri: postExternal.uri
+            title: postExternal.title
+            contentVisibility: view.contentVisibility
+            contentWarning: view.contentWarning
+        }
     }
 
     MouseArea {
@@ -76,7 +64,7 @@ Item {
     }
 
     function isLinkEnabled() {
-        return !gifUtils.isGif(postExternal.uri)
+        return !isGif
     }
 
     function openExternalLink() {
@@ -84,7 +72,7 @@ Item {
     }
 
     function getSpeech() {
-        if (gifUtils.isGif(postExternal.uri))
+        if (isGif)
             return qsTr(`GIF image: ${postExternal.title}`)
 
         const hostname = new URL(postExternal.uri).hostname
