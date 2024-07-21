@@ -59,6 +59,7 @@ Column {
         }
     }
 
+    // TODO: wrap in loader as it is only shown when the post is hidden
     Row {
         width: parent.width
         spacing: 10

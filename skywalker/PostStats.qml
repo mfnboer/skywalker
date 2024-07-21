@@ -31,10 +31,11 @@ Item {
     signal reportPost()
     signal translatePost()
 
-    height: replyIcon.height
+    height: replyIcon.height + topPadding
 
     StatIcon {
         id: replyIcon
+        y: topPadding
         width: parent.width / 5
         iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
         svg: svgOutline.reply
@@ -47,6 +48,7 @@ Item {
     }
     StatIcon {
         id: repostIcon
+        y: topPadding
         anchors.left: replyIcon.right
         width: parent.width / 5
         iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
@@ -59,6 +61,7 @@ Item {
     }
     StatIcon {
         id: likeIcon
+        y: topPadding
         anchors.left: repostIcon.right
         width: parent.width / 5
         iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
@@ -71,6 +74,7 @@ Item {
     }
     StatIcon {
         id: bookmarkIcon
+        y: topPadding
         anchors.left: likeIcon.right
         width: parent.width / 5
         iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
@@ -81,6 +85,7 @@ Item {
     }
     StatIcon {
         id: moreIcon
+        y: topPadding
         anchors.left: bookmarkIcon.right
         width: parent.width / 5
         svg: svgOutline.moreVert

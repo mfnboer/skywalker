@@ -387,6 +387,7 @@ Rectangle {
             }
         }
 
+        // TODO: use a single Text item with variable text
         // NOT FOUND place holder
         Text {
             Layout.columnSpan: 2
