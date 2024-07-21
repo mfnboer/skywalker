@@ -1,3 +1,13 @@
+next
+====
+* Scrolling performance improvements
+
+3.0.2
+=====
+* Scrolling performance improvements
+* Support sending instagram link card
+* Set image size in post
+
 3.0.1
 =====
 * Bug fix for sharing pictures from other apps

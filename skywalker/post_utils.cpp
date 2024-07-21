@@ -268,7 +268,7 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
 
     const auto& fileName = imageFileNames[imgIndex];
     QByteArray blob;
-    const QString mimeType = PhotoPicker::createBlob(blob, fileName);
+    const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, fileName);
 
     if (blob.isEmpty())
     {
@@ -277,11 +277,11 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
     }
 
     bskyClient()->uploadBlob(blob, mimeType,
-        [this, presence=getPresence(), imageFileNames, altTexts, post, imgIndex](auto blob){
+        [this, presence=getPresence(), imgSize, imageFileNames, altTexts, post, imgIndex](auto blob){
             if (!presence)
                 return;
 
-            postMaster()->addImageToPost(*post, std::move(blob), altTexts[imgIndex]);
+            postMaster()->addImageToPost(*post, std::move(blob), imgSize.width(), imgSize.height(), altTexts[imgIndex]);
             continuePost(imageFileNames, altTexts, post, imgIndex + 1);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -356,7 +356,10 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
     QString mimeType;
 
     if (!thumb.isNull())
-        mimeType = PhotoPicker::createBlob(blob, thumb, card->getThumb());
+    {
+        const auto [imgMime, imgSize] = PhotoPicker::createBlob(blob, thumb, card->getThumb());
+        mimeType = imgMime;
+    }
 
     if (blob.isEmpty())
     {

@@ -75,7 +75,7 @@ signals:
     void storageTypeChanged();
 
 private:
-    using UploadImageSuccessCb = std::function<void(ATProto::Blob::SharedPtr)>;
+    using UploadImageSuccessCb = std::function<void(ATProto::Blob::SharedPtr, QSize)>;
     using SuccessCb = std::function<void()>;
     using DoneCb = std::function<void()>;
     using ErrorCb = std::function<void(const QString& error, const QString& message)>;
@@ -128,7 +128,7 @@ private:
     bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
                          const QList<ImageView>& images,
                          const QString& draftsPath, const QString& baseName);
-    ATProto::Blob::SharedPtr saveImage(const QString& imgName,
+    std::tuple<ATProto::Blob::SharedPtr, QSize> saveImage(const QString& imgName,
                                        const QString& memeTopText, const QString& memeBottomText,
                                        const QString& draftsPath, const QString& baseName, int seq);
     void dropImages(const QString& draftsPath, const QString& baseName, int count) const;

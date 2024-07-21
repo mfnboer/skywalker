@@ -63,7 +63,7 @@ Item {
     // Misc
     readonly property real flickDeceleration: 800
     readonly property real maxFlickVelocity: 4000
-    readonly property bool flickPixelAligned: true
+    readonly property bool flickPixelAligned: false
     readonly property bool isAndroid: Qt.platform.os === "android"
 
     // Identity

@@ -7,30 +7,21 @@ Text {
     property string elidedText
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
-    property int intialShowMaxLineCount: maximumLineCount
-    property bool isCapped: false
-    property bool isCapping: false
-    property int heightBeforeCap
-    property int lineCountBeforeCap
-    property int capLineCount: intialShowMaxLineCount
+    property int initialShowMaxLineCount: maximumLineCount
+    property int capLineCount: initialShowMaxLineCount
 
     id: theText
+    height: textFormat === Text.RichText && elide === Text.ElideRight && wrapMode !== Text.NoWrap ?
+                Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     clip: true
     color: guiSettings.textColor
     text: plainText
 
-    onPlainTextChanged: determineTextFormat()
+    onPlainTextChanged: {
+        determineTextFormat()
+    }
+
     onWidthChanged: resetText()
-
-    onHeightChanged: {
-        if (!isCapping)
-            capLinesRichText()
-    }
-
-    onTextChanged: {
-        elideRichText()
-        capLinesRichText()
-    }
 
     Accessible.role: Accessible.StaticText
     Accessible.name: plainText
@@ -76,35 +67,6 @@ Text {
         setElidedText()
     }
 
-    function capLinesRichText() {
-        if (!isRichText())
-            return
-
-        if (elide !== Text.ElideRight)
-            return
-
-        if (wrapMode === Text.NoWrap)
-            return
-
-        if (isCapped)
-            return
-
-        if (fontMetrics.height <= 0)
-            return
-
-        const numLines = Math.floor(height / fontMetrics.height)
-
-        if (numLines <= capLineCount)
-            return
-
-        isCapping = true
-        lineCountBeforeCap = numLines
-        heightBeforeCap = height
-        height = height * (capLineCount / numLines)
-        isCapped = true
-        isCapping = false
-    }
-
     function resetText() {
         if (!isRichText())
             return
@@ -119,9 +81,7 @@ Text {
 
     function determineTextFormat() {
         text = plainText
-        height = undefined
-        isCapped = false
-        capLinesRichText()
+        elideRichText()
 
         if (isRichText())
             return
@@ -142,7 +102,7 @@ Text {
         color: theText.color
         background: Rectangle { color: ellipsisBackgroundColor }
         text: "…"
-        visible: isCapped
+        visible: theText.height < theText.contentHeight
     }
 
     Label {
@@ -152,14 +112,14 @@ Text {
         anchors.bottom: parent.bottom
         leftPadding: theText.leftPadding
         background: Rectangle { color: ellipsisBackgroundColor }
-        text: qsTr(`<a href="show"style="color: ${guiSettings.linkColor}">Show ${(lineCountBeforeCap - capLineCount + 1)} lines more</a>`)
-        visible: isCapped && capLineCount < theText.maximumLineCount
+        text: qsTr(`<a href="show"style="color: ${guiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
+        visible: theText.height < theText.contentHeight && capLineCount < theText.maximumLineCount
 
-        onLinkActivated: {
-            isCapped = false
-            capLineCount = theText.maximumLineCount
-            theText.height = heightBeforeCap
-        }
+        onLinkActivated:  capLineCount = theText.maximumLineCount
+    }
+
+    function numLinesHidden() {
+        return Math.floor((contentHeight - height) / fontMetrics.height + 1)
     }
 
     FontMetrics {

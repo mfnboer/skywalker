@@ -25,6 +25,9 @@ Column {
     property bool attachmentsInitialized: false
     property string postHighlightColor: "transparent"
 
+    // Dynamic objects
+    property bool isPooled: false
+
     id: postBody
 
     SkyCleanedText {
@@ -32,7 +35,7 @@ Column {
         width: parent.width
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        intialShowMaxLineCount: Math.min(maxTextLines, 25)
+        initialShowMaxLineCount: Math.min(maxTextLines, 25)
         maximumLineCount: maxTextLines
         ellipsisBackgroundColor: postBody.ellipsisBackgroundColor
         elide: Text.ElideRight
@@ -56,6 +59,7 @@ Column {
         }
     }
 
+    // TODO: wrap in loader as it is only shown when the post is hidden
     Row {
         width: parent.width
         spacing: 10
@@ -139,9 +143,48 @@ Column {
         }
     }
 
-    Component {
-        id: dateTimeComp
-        Text {
+    Loader {
+        id: languageLabelsLoader
+        anchors.right: parent.right
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: imageLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: externalLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: contentLabelsLoader
+        anchors.right: parent.right
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: recordLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: recordWithMediaLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
+        id: dateTimeLoader
+        width: parent.width
+        active: detailedView
+        visible: status == Loader.Ready
+        sourceComponent: Text {
             width: parent.width
             topPadding: 10
             Layout.fillWidth: true
@@ -198,54 +241,79 @@ Column {
 
     function showPostAttachements() {
         if (postLanguageLabels.length > 0 && mustShowLangaugess()) {
-            let component = Qt.createComponent("LanguageLabels.qml")
-            component.createObject(postBody, {languageLabels: postLanguageLabels})
+            languageLabelsLoader.setSource("LanguageLabels.qml", {
+                                               languageLabels: postLanguageLabels,
+                                               parentWidth: parent.width })
         }
 
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
-            let component = Qt.createComponent(qmlFile)
-            component.createObject(postBody, {images: postImages,
-                                              contentVisibility: postContentVisibility,
-                                              contentWarning: postContentWarning})
+            imageLoader.setSource(qmlFile, {
+                                      images: postImages,
+                                      contentVisibility: postContentVisibility,
+                                      contentWarning: postContentWarning })
         }
 
         if (postExternal) {
-            let component = Qt.createComponent("ExternalView.qml")
-            component.createObject(postBody, {postExternal: postBody.postExternal,
-                                              contentVisibility: postContentVisibility,
-                                              contentWarning: postContentWarning})
+            externalLoader.setSource("ExternalView.qml", {
+                                        postExternal: postBody.postExternal,
+                                        contentVisibility: postContentVisibility,
+                                        contentWarning: postContentWarning })
         }
 
         if (postContentLabels.length > 0) {
-            let component = Qt.createComponent("ContentLabels.qml")
-            component.createObject(postBody, {contentLabels: postContentLabels, contentAuthorDid: postAuthor.did})
+            contentLabelsLoader.setSource("ContentLabels.qml", {
+                                        contentLabels: postContentLabels,
+                                        contentAuthorDid: postAuthor.did,
+                                        parentWidth: parent.width})
         }
 
-        if (postRecord) {
-            let component = Qt.createComponent("RecordView.qml")
-            component.createObject(postBody, {record: postRecord})
-        }
+        if (postRecord)
+            recordLoader.setSource("RecordView.qml", {record: postRecord})
 
         if (postRecordWithMedia) {
-            let component = Qt.createComponent("RecordWithMediaView.qml")
-            component.createObject(postBody, {record: postRecordWithMedia,
-                                              contentVisibility: postContentVisibility,
-                                              contentWarning: postContentWarning})
+            recordWithMediaLoader.setSource("RecordWithMediaView.qml", {
+                                                record: postRecordWithMedia,
+                                                contentVisibility: postContentVisibility,
+                                                contentWarning: postContentWarning })
         }
     }
 
     onVisibleChanged: {
+        if (isPooled)
+            return
+
         if (postBody.visible && !postBody.attachmentsInitialized)
             initAttachments()
     }
 
+    function pooled() {
+        languageLabelsLoader.source = ""
+        imageLoader.source = ""
+        externalLoader.source = ""
+        contentLabelsLoader.source = ""
+        recordLoader.source = ""
+        recordWithMediaLoader.source = ""
+        attachmentsInitialized = false
+
+        showWarnedPost = false
+        bodyText.capLineCount = bodyText.initialShowMaxLineCount
+        isPooled = true
+    }
+
+    function reused() {
+        isPooled = false
+        initAttachments()
+    }
+
     function initAttachments() {
+        if (isPooled) {
+            console.debug("IS POOLED!!!")
+            return
+        }
+
         if (postVisible())
             showPostAttachements()
-
-        if (detailedView)
-            dateTimeComp.createObject(postBody)
 
         postBody.attachmentsInitialized = true
     }

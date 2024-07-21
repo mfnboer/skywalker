@@ -8,6 +8,7 @@ RoundedFrame {
     required property string contentWarning
     property list<imageview> images
     readonly property int maxHeight: 1200
+    property bool settingSize: false
 
     id: frame
     objectToRound: img
@@ -21,13 +22,18 @@ RoundedFrame {
         fillMode: Image.PreserveAspectFit
         imageView: filter.getImage(0)
 
-        onWidthChanged: setHeight()
+        onWidthChanged: setSize()
 
-        function setHeight() {
+        function setSize() {
+            if (settingSize)
+                return
+
+            settingSize = true
             const image = images[0]
 
             if (image.width > 0 && image.height > 0) {
-                const newHeight = image.height / image.width * width
+                const newWidth = Math.min(image.width, frame.parent.width)
+                let newHeight = (image.height / image.width) * newWidth
 
                 if (newHeight > maxHeight) {
                     fillMode = Image.PreserveAspectCrop
@@ -35,7 +41,10 @@ RoundedFrame {
                 }
 
                 height = newHeight
+                width = newWidth
             }
+
+            settingSize = false
         }
     }
     MouseArea {
@@ -60,6 +69,6 @@ RoundedFrame {
     }
 
     Component.onCompleted: {
-        img.setHeight()
+        img.setSize()
     }
 }

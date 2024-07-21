@@ -3,21 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     signal closed
     signal selected(int index)
     signal deleted(int index)
 
     id: view
-    spacing: 0
-    clip: true
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
-    boundsBehavior: Flickable.StopAtBounds
-    ScrollIndicator.vertical: ScrollIndicator {}
-
-    Accessible.role: Accessible.List
+    reuseItems: true
+    boundsBehavior: Flickable.StopAtBoundss
 
     header: SimpleHeader {
         text: qsTr(`Drafts ${view.count} / ${view.model.getMaxDrafts()}`)

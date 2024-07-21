@@ -7,9 +7,10 @@ ScrollView {
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
     readonly property list<contentlabel> labelsToShow: filterLabelsToShow()
+    property int parentWidth: parent.width
 
     id: labelView
-    width: Math.min(parent.width, labelRow.width)
+    width: Math.min(parentWidth, labelRow.width)
     height: visible ? labelRow.height : 0
     anchors.right: parent.right
     contentWidth: labelRow.width

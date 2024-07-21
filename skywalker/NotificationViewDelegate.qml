@@ -69,6 +69,18 @@ Rectangle {
     Accessible.name: getSpeech()
     Accessible.onPressAction: openNotification()
 
+    ListView.onPooled: {
+        postLoader.active = false
+        aggregatableLoader.active = false
+        inviteCodeLoader.active = false
+    }
+
+    ListView.onReused: {
+        postLoader.active = showPost()
+        aggregatableLoader.active = isAggregatableReason()
+        inviteCodeLoader.active = notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
+    }
+
     GridLayout {
         id: grid
         columns: 2
@@ -90,8 +102,8 @@ Rectangle {
 
             Avatar {
                 id: avatarImg
-                x: parent.x + 8
-                y: postHeader.y + 5
+                x: 8
+                y: 10
                 width: parent.width - 13
                 height: width
                 avatarUrl: authorVisible(notificationAuthor) ? notificationAuthor.avatarUrl : ""
@@ -161,244 +173,264 @@ Rectangle {
             }
         }
 
-        Column {
-            id: postColumn
+        Loader {
+            id: postLoader
             width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
-            visible: showPost()
-            topPadding: 5
-
-            PostHeader {
-                id: postHeader
+            active: showPost()
+            visible: status == Loader.Ready
+            sourceComponent: Column {
+                id: postColumn
                 width: parent.width
-                Layout.fillWidth: true
-                author: notificationPostAuthor
-                postThreadType: QEnums.THREAD_NONE
-                postIndexedSecondsAgo: (new Date() - notificationTimestamp) / 1000
-            }
+                topPadding: 5
 
-            // Reply to
-            ReplyToRow {
-                width: parent.width
-                authorName: replyToAuthor.name
-                visible: notificationPostIsReply
-            }
-
-            PostBody {
-                id: postBody
-                width: parent.width
-                Layout.fillWidth: true
-                postAuthor: notificationAuthor
-                postText: notificationPostText
-                postPlainText: notificationPostPlainText
-                postImages: notificationPostImages
-                postLanguageLabels: notificationPostLanguages
-                postContentLabels: notificationPostLabels
-                postContentVisibility: notificationPostContentVisibility
-                postContentWarning: notificationPostContentWarning
-                postMuted: notificationPostMutedReason
-                postExternal: notificationPostExternal
-                postRecord: notificationPostRecord
-                postRecordWithMedia: notificationPostRecordWithMedia
-                postDateTime: notificationPostTimestamp
-                ellipsisBackgroundColor: notification.color
-            }
-
-            PostStats {
-                width: parent.width
-                topPadding: 10
-                replyCount: notificationPostReplyCount
-                repostCount: notificationPostRepostCount
-                likeCount: notificationPostLikeCount
-                repostUri: notificationPostRepostUri
-                likeUri: notificationPostLikeUri
-                threadMuted: notificationPostThreadMuted
-                replyDisabled: notificationPostReplyDisabled
-                threadgateUri: notificationPostThreadgateUri
-                isReply: notificationPostIsReply
-                replyRootUri: notificationPostReplyRootUri
-                visible: !notificationPostNotFound
-                authorIsUser: false
-                isBookmarked: notificationPostBookmarked
-                bookmarkNotFound: false
-
-                onReply: {
-                    const lang = notificationPostLanguages.length > 0 ?
-                                   notificationPostLanguages[0].shortCode : ""
-
-                    root.composeReply(notificationPostUri, notificationCid, notificationPostText,
-                                      notificationPostTimestamp, notificationAuthor,
-                                      notificationPostReplyRootUri, notificationPostReplyRootCid,
-                                      lang)
+                PostHeader {
+                    id: postHeader
+                    width: parent.width
+                    Layout.fillWidth: true
+                    author: notificationPostAuthor
+                    postThreadType: QEnums.THREAD_NONE
+                    postIndexedSecondsAgo: (new Date() - notificationTimestamp) / 1000
                 }
 
-                onRepost: {
-                    root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
-                                notificationPostText, notificationPostTimestamp,
-                                notificationAuthor)
+                // Reply to
+                ReplyToRow {
+                    width: parent.width
+                    authorName: replyToAuthor.name
+                    visible: notificationPostIsReply
                 }
 
-                onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
+                PostBody {
+                    id: postBody
+                    width: parent.width
+                    Layout.fillWidth: true
+                    postAuthor: notificationAuthor
+                    postText: notificationPostText
+                    postPlainText: notificationPostPlainText
+                    postImages: notificationPostImages
+                    postLanguageLabels: notificationPostLanguages
+                    postContentLabels: notificationPostLabels
+                    postContentVisibility: notificationPostContentVisibility
+                    postContentWarning: notificationPostContentWarning
+                    postMuted: notificationPostMutedReason
+                    postExternal: notificationPostExternal
+                    postRecord: notificationPostRecord
+                    postRecordWithMedia: notificationPostRecordWithMedia
+                    postDateTime: notificationPostTimestamp
+                    ellipsisBackgroundColor: notification.color
+                }
 
-                onBookmark: {
-                    if (isBookmarked) {
-                        skywalker.bookmarks.removeBookmark(notificationPostUri)
+                PostStats {
+                    width: parent.width
+                    topPadding: 10
+                    replyCount: notificationPostReplyCount
+                    repostCount: notificationPostRepostCount
+                    likeCount: notificationPostLikeCount
+                    repostUri: notificationPostRepostUri
+                    likeUri: notificationPostLikeUri
+                    threadMuted: notificationPostThreadMuted
+                    replyDisabled: notificationPostReplyDisabled
+                    threadgateUri: notificationPostThreadgateUri
+                    isReply: notificationPostIsReply
+                    replyRootUri: notificationPostReplyRootUri
+                    visible: !notificationPostNotFound
+                    authorIsUser: false
+                    isBookmarked: notificationPostBookmarked
+                    bookmarkNotFound: false
+
+                    onReply: {
+                        const lang = notificationPostLanguages.length > 0 ?
+                                       notificationPostLanguages[0].shortCode : ""
+
+                        root.composeReply(notificationPostUri, notificationCid, notificationPostText,
+                                          notificationPostTimestamp, notificationAuthor,
+                                          notificationPostReplyRootUri, notificationPostReplyRootCid,
+                                          lang)
                     }
-                    else {
-                        const bookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
 
-                        if (!bookmarked)
-                            skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                    onRepost: {
+                        root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
+                                    notificationPostText, notificationPostTimestamp,
+                                    notificationAuthor)
                     }
-                }
 
-                onShare: skywalker.sharePost(notificationPostUri)
-                onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
-                onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
-                onTranslatePost: root.translateText(notificationPostPlainText)
+                    onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
+
+                    onBookmark: {
+                        if (isBookmarked) {
+                            skywalker.bookmarks.removeBookmark(notificationPostUri)
+                        }
+                        else {
+                            const bookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
+
+                            if (!bookmarked)
+                                skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                        }
+                    }
+
+                    onShare: skywalker.sharePost(notificationPostUri)
+                    onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
+                    onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
+                    onTranslatePost: root.translateText(notificationPostPlainText)
+                }
             }
         }
-        Column {
+
+        Loader {
+            id: aggregatableLoader
             width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
-            topPadding: 5
-            visible: isAggregatableReason()
+            active: isAggregatableReason()
+            visible: status == Loader.Ready
+            sourceComponent: Column {
+                width: parent.width
+                topPadding: 5
 
-            Row {
-                spacing: 5
-                Avatar {
-                    id: authorAvatar
-                    width: 34
-                    height: width
-                    avatarUrl: authorVisible(notificationAuthor) ? notificationAuthor.avatarUrl : ""
-                    isModerator: notificationAuthor.associated.isLabeler
-
-                    onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr(`show profile of ${notificationAuthor.name}`)
-                    Accessible.onPressAction: clicked()
-                }
-                Repeater {
-                    model: Math.min(notificationOtherAuthors.length, 4)
+                Row {
+                    width: parent.width
+                    spacing: 5
 
                     Avatar {
-                        required property int index
-
-                        width: authorAvatar.width
+                        id: authorAvatar
+                        width: 34
                         height: width
-                        avatarUrl: authorVisible(notificationOtherAuthors[index]) ? notificationOtherAuthors[index].avatarUrl : ""
-                        isModerator: notificationOtherAuthors[index].associated.isLabeler
+                        avatarUrl: authorVisible(notificationAuthor) ? notificationAuthor.avatarUrl : ""
+                        isModerator: notificationAuthor.associated.isLabeler
 
-                        onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
+                        onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
 
                         Accessible.role: Accessible.Button
-                        Accessible.name: qsTr(`show profile of ${notificationOtherAuthors[index].name}`)
+                        Accessible.name: qsTr(`show profile of ${notificationAuthor.name}`)
                         Accessible.onPressAction: clicked()
                     }
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: guiSettings.textColor
-                    text: `+${(notificationOtherAuthors.length - 4)}`
-                    visible: notificationOtherAuthors.length > 4
+                    Repeater {
+                        model: Math.min(notificationOtherAuthors.length, 4)
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: showAuthorList()
+                        Avatar {
+                            required property int index
+
+                            width: authorAvatar.width
+                            height: width
+                            avatarUrl: authorVisible(notificationOtherAuthors[index]) ? notificationOtherAuthors[index].avatarUrl : ""
+                            isModerator: notificationOtherAuthors[index].associated.isLabeler
+
+                            onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr(`show profile of ${notificationOtherAuthors[index].name}`)
+                            Accessible.onPressAction: clicked()
+                        }
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: guiSettings.textColor
+                        text: `+${(notificationOtherAuthors.length - 4)}`
+                        visible: notificationOtherAuthors.length > 4
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: showAuthorList()
+                        }
                     }
                 }
-            }
 
-            RowLayout {
+                RowLayout {
+                    width: parent.width
+
+                    Text {
+                        Layout.fillWidth: true
+                        textFormat: Text.RichText
+                        wrapMode: Text.Wrap
+                        color: guiSettings.textColor
+                        text: authorsAndReasonText()
+                    }
+                    Text {
+                        Layout.fillHeight: true
+                        text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
+                        font.pointSize: guiSettings.scaledFont(7/8)
+                        color: Material.color(Material.Grey)
+                    }
+                }
+
+                // Reply to
+                ReplyToRow {
+                    width: parent.width
+                    authorName: notificationReasonPostReplyToAuthor.name
+                    visible: showPostForAggregatableReason() && notificationReasonPostIsReply
+                }
+
+                PostBody {
+                    id: reasonPostBody
+                    topPadding: 5
+                    width: parent.width
+                    postAuthor: skywalker.getUser()
+                    postText: {
+                        if (notificationReasonPostLocallyDeleted)
+                            return "DELETED"
+                        else if (notificationReasonPostNotFound)
+                            return "NOT FOUND"
+
+                        return notificationReasonPostText
+                    }
+                    postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
+                                       notificationReasonPostPlainText : ""
+                    postImages: notificationReasonPostImages
+                    postLanguageLabels: notificationReasonPostLanguages
+                    postContentLabels: notificationReasonPostLabels
+                    postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
+                    postContentWarning: ""
+                    postMuted: QEnums.MUTED_POST_NONE
+                    postDateTime: notificationReasonPostTimestamp
+                    postExternal: notificationReasonPostExternal
+                    postRecord: notificationReasonPostRecord
+                    postRecordWithMedia: notificationReasonPostRecordWithMedia
+                    ellipsisBackgroundColor: notification.color
+                    visible: showPostForAggregatableReason()
+                }
+            }
+        }
+
+        Loader {
+            id: inviteCodeLoader
+            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            active: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
+            visible: status == Loader.Ready
+            sourceComponent: Column {
                 width: parent.width
+                topPadding: 5
+
+                RowLayout {
+                    width: parent.width
+                    Avatar {
+                        id: usedByAvatar
+                        width: 34
+                        height: width
+                        avatarUrl: authorVisible(notificationInviteCodeUsedBy) ? notificationInviteCodeUsedBy.avatarUrl : ""
+
+                        onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr(`show profile of ${notificationInviteCodeUsedBy.name}`)
+                        Accessible.onPressAction: clicked()
+                    }
+
+                    SkyButton {
+                        Layout.alignment: Qt.AlignRight
+                        text: qsTr("Dismiss")
+                        onClicked: {
+                            console.debug("DISMISS:", index)
+                            skywalker.notificationListModel.dismissInviteCodeUsageNotification(index)
+                        }
+                    }
+                }
 
                 Text {
-                    Layout.fillWidth: true
+                    width: parent.width
                     textFormat: Text.RichText
                     wrapMode: Text.Wrap
                     color: guiSettings.textColor
-                    text: authorsAndReasonText()
-                }
-                Text {
-                    Layout.fillHeight: true
-                    text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    color: Material.color(Material.Grey)
-                }
-            }
-
-            // Reply to
-            ReplyToRow {
-                width: parent.width
-                authorName: notificationReasonPostReplyToAuthor.name
-                visible: showPostForAggregatableReason() && notificationReasonPostIsReply
-            }
-
-            PostBody {
-                topPadding: 5
-                width: parent.width
-                postAuthor: skywalker.getUser()
-                postText: {
-                    if (notificationReasonPostLocallyDeleted)
-                        return "DELETED"
-                    else if (notificationReasonPostNotFound)
-                        return "NOT FOUND"
-
-                    return notificationReasonPostText
-                }
-                postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
-                                   notificationReasonPostPlainText : ""
-                postImages: notificationReasonPostImages
-                postLanguageLabels: notificationReasonPostLanguages
-                postContentLabels: notificationReasonPostLabels
-                postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
-                postContentWarning: ""
-                postMuted: QEnums.MUTED_POST_NONE
-                postDateTime: notificationReasonPostTimestamp
-                postExternal: notificationReasonPostExternal
-                postRecord: notificationReasonPostRecord
-                postRecordWithMedia: notificationReasonPostRecordWithMedia
-                ellipsisBackgroundColor: notification.color
-                visible: showPostForAggregatableReason()
-            }
-        }
-        Column {
-            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
-            topPadding: 5
-            visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
-
-            RowLayout {
-                width: parent.width
-                Avatar {
-                    id: usedByAvatar
-                    width: 34
-                    height: width
-                    avatarUrl: authorVisible(notificationInviteCodeUsedBy) ? notificationInviteCodeUsedBy.avatarUrl : ""
-
-                    onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr(`show profile of ${notificationInviteCodeUsedBy.name}`)
-                    Accessible.onPressAction: clicked()
-                }
-
-                SkyButton {
-                    Layout.alignment: Qt.AlignRight
-                    text: qsTr("Dismiss")
-                    onClicked: {
-                        console.debug("DISMISS:", index)
-                        skywalker.notificationListModel.dismissInviteCodeUsageNotification(index)
+                    text: {
+                        `<b>${(unicodeFonts.toCleanedHtml(notificationInviteCodeUsedBy.name))}</b> ` +
+                        qsTr("used your invite code") + ": " + notificationInviteCode
                     }
-                }
-            }
-
-            Text {
-                width: parent.width
-                textFormat: Text.RichText
-                wrapMode: Text.Wrap
-                color: guiSettings.textColor
-                text: {
-                    `<b>${(unicodeFonts.toCleanedHtml(notificationInviteCodeUsedBy.name))}</b> ` +
-                    qsTr("used your invite code") + ": " + notificationInviteCode
                 }
             }
         }
@@ -406,7 +438,7 @@ Rectangle {
         // Separator
         Rectangle {
             width: parent.width
-            height: 1
+            Layout.preferredHeight: 1
             Layout.columnSpan: 2
             color: guiSettings.separatorColor
         }

@@ -56,7 +56,8 @@ Rectangle {
         width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0)
         height: messageText.height + (embed.visible ? embed.height + 10 : 0)
         radius: 10
-        color: senderIsUser ? guiSettings.messageUserBackgroundColor : guiSettings.messageOtherBackgroundColor
+        color: senderIsUser ? guiSettings.messageUserBackgroundColor :
+                              guiSettings.messageOtherBackgroundColor
 
         // TODO: show ava/name for multi-person chat
         SkyCleanedText {
@@ -70,7 +71,7 @@ Rectangle {
             topPadding: 5
             bottomPadding: 5
             wrapMode: Text.Wrap
-            intialShowMaxLineCount: Math.min(maxTextLines, 25)
+            initialShowMaxLineCount: Math.min(maxTextLines, 25)
             maximumLineCount: maxTextLines
             ellipsisBackgroundColor: messageRect.color
             elide: Text.ElideRight

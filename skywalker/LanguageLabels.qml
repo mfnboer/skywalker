@@ -4,9 +4,10 @@ import skywalker
 
 ScrollView {
     required property list<language> languageLabels
+    property int parentWidth: parent.width
 
     id: labelView
-    width: Math.min(parent.width, labelRow.width)
+    width: Math.min(parentWidth, labelRow.width)
     height: visible ? labelRow.height + 2 : 0
     anchors.right: parent.right
     contentWidth: labelRow.width

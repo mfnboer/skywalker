@@ -68,6 +68,14 @@ Rectangle {
     Accessible.name: getSpeech()
     Accessible.onPressAction: performAccessiblePressAction()
 
+    ListView.onPooled: {
+        postBody.pooled()
+    }
+
+    ListView.onReused: {
+        postBody.reused()
+    }
+
     GridLayout {
         id: grid
         columns: 2
@@ -80,7 +88,7 @@ Rectangle {
             id: topLeftSpace
             Layout.leftMargin: 8 + (avatarImg.width - width) / 2
             width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
-            height: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ? 2 : 1)
+            Layout.preferredHeight: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ? 2 : 1)
 
             color: {
                 switch (postType) {
@@ -260,7 +268,7 @@ Rectangle {
             ReplyToRow {
                 width: parent.width
                 authorName: postReplyToAuthor.name
-                visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT)
+                visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && postType !== QEnums.POST_THREAD
             }
 
             PostBody {
@@ -379,6 +387,7 @@ Rectangle {
             }
         }
 
+        // TODO: use a single Text item with variable text
         // NOT FOUND place holder
         Text {
             Layout.columnSpan: 2

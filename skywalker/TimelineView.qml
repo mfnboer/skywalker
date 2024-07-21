@@ -3,22 +3,16 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property var skywalker
     property bool inSync: false
     property int unreadPosts: 0
     property int topIndexBeforeInsert: -1
 
     id: timelineView
-    spacing: 0
     model: skywalker.timelineModel
-    clip: true
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
-    ScrollIndicator.vertical: ScrollIndicator {}
+    reuseItems: true
 
-    Accessible.role: Accessible.List
     Accessible.name: qsTr("Home feed")
 
     header: PostFeedHeader {

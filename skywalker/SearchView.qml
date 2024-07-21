@@ -244,19 +244,13 @@ Page {
                 recentSearchesView.model = searchUtils.getLastSearches()
         }
 
-        ListView {
+        SkyListView {
             id: postsViewTop
             width: parent.width
             height: parent.height
-            spacing: 0
-            clip: true
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
             pixelAligned: guiSettings.flickPixelAligned
-            ScrollIndicator.vertical: ScrollIndicator {}
-
-            Accessible.role: Accessible.List
+            reuseItems: true
 
             delegate: PostFeedViewDelegate {
                 width: postsViewTop.width
@@ -281,19 +275,12 @@ Page {
             }
         }
 
-        ListView {
+        SkyListView {
             id: postsViewLatest
             width: parent.width
             height: parent.height
-            spacing: 0
-            clip: true
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
-            ScrollIndicator.vertical: ScrollIndicator {}
-
-            Accessible.role: Accessible.List
+            reuseItems: true
 
             delegate: PostFeedViewDelegate {
                 width: postsViewLatest.width

@@ -18,25 +18,37 @@ Item {
         anchors.centerIn: parent
         spacing: 5
 
+        Loader {
+            id: imageLoader
+            width: parent.width
+            visible: status == Loader.Ready
+        }
+
+        Loader {
+            id: externalLoader
+            width: parent.width
+            visible: status == Loader.Ready
+        }
+
+        RecordView {
+            record: recordItem.record.record
+        }
+
         Component.onCompleted: {
             if (record.images.length > 0) {
                 let qmlFile = `ImagePreview${(record.images.length)}.qml`
-                let component = Qt.createComponent(qmlFile)
-
-                component.createObject(recordColumn, {images: record.images,
-                                                      contentVisibility: recordItem.contentVisibility,
-                                                      contentWarning: recordItem.contentWarning})
+                imageLoader.setSource(qmlFile, {
+                                          images: record.images,
+                                          contentVisibility: recordItem.contentVisibility,
+                                          contentWarning: recordItem.contentWarning })
             }
 
             if (record.external) {
-                let component = Qt.createComponent("ExternalView.qml")
-                component.createObject(recordColumn, {postExternal: record.external,
-                                                      contentVisibility: recordItem.contentVisibility,
-                                                      contentWarning: recordItem.contentWarning})
+                externalLoader.setSource("ExternalView.qml", {
+                                            postExternal: record.external,
+                                            contentVisibility: recordItem.contentVisibility,
+                                            contentWarning: recordItem.contentVisibility })
             }
-
-            let component = Qt.createComponent("RecordView.qml")
-            component.createObject(recordColumn, {record: record.record})
         }
     }
     Rectangle {
@@ -45,5 +57,9 @@ Item {
         border.color: guiSettings.borderColor
         color: "transparent"
         radius: 10
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

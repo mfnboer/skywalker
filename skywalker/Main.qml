@@ -86,6 +86,25 @@ ApplicationWindow {
         y: guiSettings.headerHeight
     }
 
+    // Wait for the list view to fully render before jumping to a particular entry
+    Timer {
+        property int postIndex
+
+        id: timelineSyncTimer
+        interval: 200
+
+        function sync(index) {
+            postIndex = index
+            start()
+        }
+
+        onTriggered: {
+            closeStartupStatus()
+            getTimelineView().setInSync(postIndex)
+            skywalker.startTimelineAutoUpdate()
+        }
+    }
+
     Skywalker {
         signal authorFeedOk(int modelId)
         signal authorFeedError(int modelId, string error, string msg)
@@ -177,15 +196,17 @@ ApplicationWindow {
         }
 
         onTimelineSyncOK: (index) => {
-            closeStartupStatus()
-            getTimelineView().setInSync(index)
-            skywalker.startTimelineAutoUpdate()
+            timelineSyncTimer.sync(index)
+            // closeStartupStatus()
+            // getTimelineView().setInSync(index)
+            // skywalker.startTimelineAutoUpdate()
         }
 
         onTimelineSyncFailed: {
             console.warn("SYNC FAILED")
-            closeStartupStatus()
-            getTimelineView().setInSync(0)
+            timelineSyncTimer.sync(0)
+            // closeStartupStatus()
+            // getTimelineView().setInSync(0)
         }
 
         onTimelineRefreshed: (prevTopPostIndex) => {
@@ -218,6 +239,7 @@ ApplicationWindow {
         onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack)
 
         onSharedTextReceived: (text) => {
+            closeStartupStatus() // close startup status if sharing started the app
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
@@ -232,6 +254,7 @@ ApplicationWindow {
 
         // "file://" or "image://" source
         onSharedImageReceived: (source, text) => {
+            closeStartupStatus() // close startup status if sharing started the app
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
@@ -245,6 +268,7 @@ ApplicationWindow {
         }
 
         onSharedDmTextReceived: (text) => {
+            closeStartupStatus() // close startup status if sharing started the app
             let item = currentStackItem()
 
             if (item instanceof MessagesListView)

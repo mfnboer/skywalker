@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property var skywalker
     required property int modelId
     property bool showAsHome: false
@@ -12,15 +12,9 @@ ListView {
     signal closed
 
     id: postFeedView
-    spacing: 0
     model: skywalker.getPostFeedModel(modelId)
-    clip: true
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
-    ScrollIndicator.vertical: ScrollIndicator {}
+    reuseItems: true
 
-    Accessible.role: Accessible.List
     Accessible.name: postFeedView.model.feedName
 
     header: PostFeedHeader {

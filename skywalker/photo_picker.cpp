@@ -120,7 +120,7 @@ QImage cutRect(const QString& imgName, const QRect& rect)
     return img.copy(rect);
 }
 
-QString createBlob(QByteArray& blob, const QString& imgName)
+std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName)
 {
     QImage img = loadImage(imgName);
 
@@ -130,7 +130,7 @@ QString createBlob(QByteArray& blob, const QString& imgName)
     return createBlob(blob, img, imgName);
 }
 
-QString createBlob(QByteArray& blob, QImage img, const QString& name)
+std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QString& name)
 {
     qDebug() << "Original image:" << name << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
 
@@ -189,7 +189,7 @@ QString createBlob(QByteArray& blob, QImage img, const QString& name)
         break;
     }
 
-    return mimeType;
+    return { mimeType, img.size() };
 }
 
 static void scanMediaFile(const QString& fileName)

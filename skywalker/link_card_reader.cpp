@@ -210,11 +210,19 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     if (!description.isEmpty())
         card->setDescription(toPlainText(description));
 
-    const QString imgUrlString = matchRegexes(ogImageREs, data, "image");
+    QString imgUrlString = matchRegexes(ogImageREs, data, "image");
+    qDebug() << "img url:" << imgUrlString;
     const auto& url = reply->request().url();
 
     if (!imgUrlString.isEmpty())
     {
+        // URL's from Instagram seem to be HTML encoded and contain &amp; instead of just &
+        if (imgUrlString.contains("&amp;"))
+        {
+            imgUrlString = toPlainText(imgUrlString);
+            qDebug() << "plain text img url:" << imgUrlString;
+        }
+
         QUrl imgUrl(imgUrlString);
 
         if (imgUrl.isRelative())

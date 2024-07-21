@@ -47,18 +47,13 @@ Page {
         page.header.y = 0
     }
 
-    ListView {
+    SkyListView {
         id: messagesView
         width: parent.width
         height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding
-        spacing: 0
-        clip: true
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
-        flickDeceleration: guiSettings.flickDeceleration
-        maximumFlickVelocity: guiSettings.maxFlickVelocity
-        pixelAligned: guiSettings.flickPixelAligned
-        ScrollIndicator.vertical: ScrollIndicator {}
+        reuseItems: false
 
         onHeightChanged: moveToEnd()
 
@@ -224,6 +219,8 @@ Page {
         height: flick.height + newMessageText.bottomPadding
         radius: 10
         color: guiSettings.messageNewBackgroundColor
+        border.width: newMessageText.activeFocus ? 1 : 0
+        border.color: guiSettings.buttonColor
 
         // Quote post
         Rectangle {
@@ -271,6 +268,7 @@ Page {
         FontComboBox {
             id: fontSelector
             x: page.margin
+            anchors.bottomMargin: 5
             anchors.bottom: parent.bottom
             popup.height: page.height - (page.header.y + page.header.height)
             focusPolicy: Qt.NoFocus

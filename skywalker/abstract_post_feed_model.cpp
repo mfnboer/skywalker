@@ -160,7 +160,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const auto& repostedBy = post.getRepostedBy();
 
         if (!repostedBy)
-            return {};
+            return QVariant::fromValue(BasicProfile{});
 
         const BasicProfile* profileChange = getProfileChange(repostedBy->getDid());
         return QVariant::fromValue(profileChange ? *profileChange : *repostedBy);

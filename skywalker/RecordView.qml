@@ -59,41 +59,55 @@ Item {
             visible: record.postIsReply
         }
 
-        PostBody {
+        Loader {
             width: parent.width
-            postAuthor: record.author
-            postText: record.postTextFormatted
-            postImages: record.images
-            postLanguageLabels: record.languages
-            postContentLabels: record.contentLabels
-            postContentVisibility: record.contentVisibility
-            postContentWarning: record.contentWarning
-            postMuted: record.mutedReason
-            postExternal: record.external
-            postDateTime: record.postDateTime
-            visible: record.available
+            active: record.available
+
+            sourceComponent: PostBody {
+                width: parent.width
+                postAuthor: record.author
+                postText: record.postTextFormatted
+                postImages: record.images
+                postLanguageLabels: record.languages
+                postContentLabels: record.contentLabels
+                postContentVisibility: record.contentVisibility
+                postContentWarning: record.contentWarning
+                postMuted: record.mutedReason
+                postExternal: record.external
+                postDateTime: record.postDateTime
+            }
         }
 
-        QuoteFeed {
+        Loader {
             width: parent.width
-            feed: record.feed
-            visible: record.feedAvailable
+            active: record.feedAvailable
 
-            Accessible.ignored: true
+            sourceComponent: QuoteFeed {
+                width: parent.width
+                feed: record.feed
+                Accessible.ignored: true
+            }
         }
 
-        QuoteList {
+        Loader {
             width: parent.width
-            list: record.list
-            visible: record.listAvailable
+            active: record.listAvailable
 
-            Accessible.ignored: true
+            sourceComponent: QuoteList {
+                width: parent.width
+                list: record.list
+                Accessible.ignored: true
+            }
         }
 
-        QuoteLabeler {
+        Loader {
             width: parent.width
-            labeler: record.labeler
-            visible: record.labelerAvailable
+            active: record.labelerAvailable
+
+            sourceComponent: QuoteLabeler {
+                width: parent.width
+                labeler: record.labeler
+            }
         }
 
         Text {

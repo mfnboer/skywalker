@@ -3,21 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property var skywalker
 
     signal closed
 
     id: bookmarksView
-    spacing: 0
     model: skywalker.createBookmarksModel()
-    clip: true
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
-    ScrollIndicator.vertical: ScrollIndicator {}
-
-    Accessible.role: Accessible.List
+    reuseItems: true
 
     header: SimpleHeader {
         text: qsTr("Bookmarks") + ` (${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize})`
