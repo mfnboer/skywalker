@@ -59,87 +59,90 @@ Column {
         }
     }
 
-    // TODO: wrap in loader as it is only shown when the post is hidden
-    Row {
+    Loader {
         width: parent.width
-        spacing: 10
+        active: !postVisible()
+        visible: status == Loader.Ready
+        sourceComponent: Row {
+            width: parent.width
+            spacing: 10
 
-        SvgImage {
-            id: imgIcon
-            width: 30
-            height: width
-            color: Material.color(Material.Grey)
-            svg: getIcon()
-            visible: !postVisible()
+            SvgImage {
+                id: imgIcon
+                width: 30
+                height: width
+                color: Material.color(Material.Grey)
+                svg: getIcon()
 
-            function getIcon() {
-                if (!mutePost)
+                function getIcon() {
+                    if (!mutePost)
+                        return svgOutline.hideVisibility
+
+                    switch (postMuted) {
+                    case QEnums.MUTED_POST_AUTHOR:
+                        return svgOutline.mute
+                    case QEnums.MUTED_POST_WORDS:
+                        return svgOutline.mutedWords
+                    }
+
                     return svgOutline.hideVisibility
-
-                switch (postMuted) {
-                case QEnums.MUTED_POST_AUTHOR:
-                    return svgOutline.mute
-                case QEnums.MUTED_POST_WORDS:
-                    return svgOutline.mutedWords
                 }
-
-                return svgOutline.hideVisibility
             }
-        }
 
-        // The content warning is shown when the post is not muted
-        Text {
-            id: warnText
-            width: parent.width
-            Layout.fillWidth: true
-            anchors.verticalCenter: parent.verticalCenter
-            wrapMode: Text.Wrap
-            elide: Text.ElideRight
-            textFormat: Text.RichText
-            color: Material.color(Material.Grey)
-            text: postContentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
-            visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
-            onLinkActivated: {
-                showWarnedPost = true
+            // The content warning is shown when the post is not muted
+            Text {
+                id: warnText
+                width: parent.width
+                Layout.fillWidth: true
+                anchors.verticalCenter: parent.verticalCenter
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                textFormat: Text.RichText
+                color: Material.color(Material.Grey)
+                text: postContentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
+                onLinkActivated: {
+                    showWarnedPost = true
 
-                if (postVisible())
-                    showPostAttachements()
+                    if (postVisible())
+                        showPostAttachements()
+                }
             }
-        }
 
-        // If the post is muted, then this takes precendence over the content warning
-        Text {
-            id: mutedText
-            width: parent.width
-            Layout.fillWidth: true
-            anchors.verticalCenter: parent.verticalCenter
-            wrapMode: Text.Wrap
-            elide: Text.ElideRight
-            textFormat: Text.RichText
-            color: Material.color(Material.Grey)
-            text: getMuteText() + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
-            visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
-            onLinkActivated: {
-                mutePost = false
+            // If the post is muted, then this takes precendence over the content warning
+            Text {
+                id: mutedText
+                width: parent.width
+                Layout.fillWidth: true
+                anchors.verticalCenter: parent.verticalCenter
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                textFormat: Text.RichText
+                color: Material.color(Material.Grey)
+                text: getMuteText() + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
+                onLinkActivated: {
+                    mutePost = false
 
-                // The post may still not be visible due to content filtering
-                if (postVisible())
-                    showPostAttachements()
+                    // The post may still not be visible due to content filtering
+                    if (postVisible())
+                        showPostAttachements()
+                }
             }
-        }
 
-        // If a post is hidden then this text will show no matter whether the post is muted
-        Text {
-            id: hideText
-            width: parent.width
-            Layout.fillWidth: true
-            anchors.verticalCenter: parent.verticalCenter
-            wrapMode: Text.Wrap
-            elide: Text.ElideRight
-            textFormat: Text.RichText
-            color: Material.color(Material.Grey)
-            text: postContentWarning
-            visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
+            // If a post is hidden then this text will show no matter whether the post is muted
+            Text {
+                id: hideText
+                width: parent.width
+                Layout.fillWidth: true
+                anchors.verticalCenter: parent.verticalCenter
+                wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                textFormat: Text.RichText
+                color: Material.color(Material.Grey)
+                text: postContentWarning
+                visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
+            }
         }
     }
 
