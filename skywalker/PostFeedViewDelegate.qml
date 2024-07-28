@@ -133,35 +133,43 @@ Rectangle {
         }
 
         // Repost information
-        Rectangle {
+        Loader {
             width: guiSettings.threadColumnWidth
             Layout.fillHeight: true
-            color: guiSettings.backgroundColor
-            visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+            active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+            visible: status == Loader.Ready
+            sourceComponent: Rectangle {
+                width: parent.width
+                height: parent.height
+                color: guiSettings.backgroundColor
 
-            SvgImage {
-                anchors.right: parent.right
-                width: repostedByText.height
-                height: repostedByText.height
-                color: Material.color(Material.Grey)
-                svg: svgOutline.repost
+                SvgImage {
+                    anchors.right: parent.right
+                    width: 18
+                    height: width
+                    color: Material.color(Material.Grey)
+                    svg: svgOutline.repost
+                }
             }
         }
-        SkyCleanedText {
-            id: repostedByText
+        Loader {
             Layout.fillWidth: true
-            elide: Text.ElideRight
-            plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
-            color: Material.color(Material.Grey)
-            font.bold: true
-            font.pointSize: guiSettings.scaledFont(7/8)
-            visible: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+            active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+            visible: status == Loader.Ready
+            sourceComponent: SkyCleanedText {
+                id: repostedByText
+                width: parent.width
+                elide: Text.ElideRight
+                plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
+                color: Material.color(Material.Grey)
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(7/8)
+                Accessible.ignored: true
 
-            Accessible.ignored: true
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: skywalker.getDetailedProfile(postRepostedByAuthor.did)
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: skywalker.getDetailedProfile(postRepostedByAuthor.did)
+                }
             }
         }
 
@@ -265,10 +273,14 @@ Rectangle {
             }
 
             // Reply to
-            ReplyToRow {
+            Loader {
                 width: parent.width
-                authorName: postReplyToAuthor.name
-                visible: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && postType !== QEnums.POST_THREAD
+                active: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && postType !== QEnums.POST_THREAD
+                visible: status == Loader.Ready
+                sourceComponent: ReplyToRow {
+                    width: parent.width
+                    authorName: postReplyToAuthor.name
+                }
             }
 
             PostBody {
@@ -293,28 +305,32 @@ Rectangle {
             }
 
             // Reposts and likes in detailed view of post entry in thread view
-            Row {
+            Loader {
                 width: parent.width
-                topPadding: 10
-                bottomPadding: 5
-                visible: postThreadType & QEnums.THREAD_ENTRY
+                active: postThreadType & QEnums.THREAD_ENTRY
+                visible: status == Loader.Ready
+                sourceComponent: Row {
+                    width: parent.width
+                    topPadding: 10
+                    bottomPadding: 5
 
-                StatAuthors {
-                    rightPadding: 30
-                    atUri: postUri
-                    count: postRepostCount
-                    nameSingular: qsTr("repost")
-                    namePlural: qsTr("reposts")
-                    authorListType: QEnums.AUTHOR_LIST_REPOSTS
-                    authorListHeader: qsTr("Reposted by")
-                }
-                StatAuthors {
-                    atUri: postUri
-                    count: postLikeCount
-                    nameSingular: qsTr("like")
-                    namePlural: qsTr("likes")
-                    authorListType: QEnums.AUTHOR_LIST_LIKES
-                    authorListHeader: qsTr("Liked by")
+                    StatAuthors {
+                        rightPadding: 30
+                        atUri: postUri
+                        count: postRepostCount
+                        nameSingular: qsTr("repost")
+                        namePlural: qsTr("reposts")
+                        authorListType: QEnums.AUTHOR_LIST_REPOSTS
+                        authorListHeader: qsTr("Reposted by")
+                    }
+                    StatAuthors {
+                        atUri: postUri
+                        count: postLikeCount
+                        nameSingular: qsTr("like")
+                        namePlural: qsTr("likes")
+                        authorListType: QEnums.AUTHOR_LIST_LIKES
+                        authorListHeader: qsTr("Liked by")
+                    }
                 }
             }
 
@@ -372,76 +388,66 @@ Rectangle {
         }
 
         // Gap place holder
-        Text {
+        Loader {
             Layout.columnSpan: 2
             Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            color: guiSettings.linkColor
-            text: qsTr("Show more posts")
-            visible: postGapId > 0
+            active: postGapId > 0
+            visible: status == Loader.Ready
+            sourceComponent: Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                color: guiSettings.linkColor
+                text: qsTr("Show more posts")
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: getGapPosts()
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: getGapPosts()
+                }
             }
         }
 
-        // TODO: use a single Text item with variable text
-        // NOT FOUND place holder
-        Text {
+        // Place holder for NOT FOUND, BLOCKED, NOT SUPPORTED, DELETED posts
+        Loader {
             Layout.columnSpan: 2
             Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            color: guiSettings.textColor
-            text: qsTr("NOT FOUND")
-            visible: postNotFound
+            active: postNotFound || postBlocked || postNotSupported || postLocallyDeleted
+            visible: status == Loader.Ready
+            sourceComponent: Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                color: guiSettings.textColor
+                text: {
+                    if (postNotFound)
+                        return qsTr("NOT FOUND")
+                    else if (postBlocked)
+                        return qsTr("BLOCKED")
+                    else if (postNotSupported)
+                        return qsTr("BLOCKED")
+                    else if (postLocallyDeleted)
+                        return qsTr("DELETED")
+                    else
+                        return "ERROR"
+                }
+            }
         }
 
-        // BLOCKED place holder
-        Text {
+        Loader {
             Layout.columnSpan: 2
             Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            color: guiSettings.textColor
-            text: qsTr("BLOCKED")
-            visible: postBlocked
-        }
-
-        // NOT SUPPORTED place holder
-        Text {
-            Layout.columnSpan: 2
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            color: guiSettings.textColor
-            text: qsTr("NOT SUPPORTED")
-            visible: postNotSupported
-        }
-        Text {
-            Layout.columnSpan: 2
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
-            maximumLineCount: 2
-            elide: Text.ElideRight
-            color: Material.color(Material.Grey)
-            font.pointSize: guiSettings.scaledFont(7/8)
-            text: postUnsupportedType
-            visible: postNotSupported
-        }
-
-        // Locally deleted
-        Text {
-            Layout.columnSpan: 2
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            color: guiSettings.textColor
-            text: qsTr("DELETED")
-            visible: postLocallyDeleted
+            active: postNotSupported
+            visible: status == Loader.Ready
+            sourceComponent: Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                maximumLineCount: 2
+                elide: Text.ElideRight
+                color: Material.color(Material.Grey)
+                font.pointSize: guiSettings.scaledFont(7/8)
+                text: postUnsupportedType
+            }
         }
 
         // Instead of using row spacing, these empty rectangles are used for white space.
@@ -498,16 +504,20 @@ Rectangle {
         }
 
         // End of feed indication
-        Text {
+        Loader {
             Layout.columnSpan: 2
             Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            topPadding: 10
-            elide: Text.ElideRight
-            color: guiSettings.textColor
-            text: qsTr("End of feed")
-            font.italic: true
-            visible: endOfFeed
+            active: endOfFeed
+            visible: status == Loader.Ready
+            sourceComponent: Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                topPadding: 10
+                elide: Text.ElideRight
+                color: guiSettings.textColor
+                text: qsTr("End of feed")
+                font.italic: true
+            }
         }
     }
 
