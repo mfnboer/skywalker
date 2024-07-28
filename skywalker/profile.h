@@ -98,7 +98,7 @@ public:
     int getFeeds() const { return mAssociated ? mAssociated->mFeeds : 0; }
     int getStarterPacks() const { return mAssociated ? mAssociated->mStarterPacks : 0; }
     bool isLabeler() const { return mAssociated ? mAssociated->mLabeler : false; }
-    ProfileAssociatedChat getChat() const { return ProfileAssociatedChat(mAssociated->mChat); }
+    ProfileAssociatedChat getChat() const { return mAssociated ? ProfileAssociatedChat(mAssociated->mChat) : ProfileAssociatedChat{}; }
 
 private:
     ATProto::AppBskyActor::ProfileAssociated::SharedPtr mAssociated;
