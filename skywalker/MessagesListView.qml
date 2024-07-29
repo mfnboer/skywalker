@@ -53,7 +53,6 @@ Page {
         height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
-        reuseItems: false
 
         onHeightChanged: moveToEnd()
 

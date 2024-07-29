@@ -19,7 +19,6 @@ SkyListView {
     width: parent.width
     height: parent.height
     model: modelId >= 0 ? skywalker.getAuthorFeedModel(page.modelId) : null
-    reuseItems: true
     interactive: !enclosingView.interactive
 
     StackLayout.onIsCurrentItemChanged: {

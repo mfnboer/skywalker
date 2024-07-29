@@ -11,7 +11,6 @@ SkyListView {
 
     id: conversationsView
     spacing: 15
-    reuseItems: false
     model: chat.convoListModel
 
     header: SimpleHeader {

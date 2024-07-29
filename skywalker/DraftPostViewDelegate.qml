@@ -54,8 +54,7 @@ Rectangle {
                 y: postHeader.y + 5
                 width: parent.width - 13
                 height: width
-                avatarUrl: author.avatarUrl
-                isModerator: author.associated.isLabeler
+                author: draftPostView.author
 
                 onClicked: selectDraft()
             }

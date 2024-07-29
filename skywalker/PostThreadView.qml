@@ -11,7 +11,6 @@ SkyListView {
     id: view
     width: parent.width
     model: skywalker.getPostThreadModel(modelId)
-    reuseItems: true
 
     header: SimpleHeader {
         height: restrictionRow.visible ? guiSettings.headerHeight + restrictionRow.height : guiSettings.headerHeight

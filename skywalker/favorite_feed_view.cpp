@@ -29,4 +29,9 @@ QString FavoriteFeedView::getAvatar() const
     return isGeneratorView() ? mGeneratorView.getAvatar() : mListView.getAvatar();
 }
 
+QString FavoriteFeedView::getAvatarThumb() const
+{
+    return ATProto::createAvatarThumbUrl(getAvatar());
+}
+
 }

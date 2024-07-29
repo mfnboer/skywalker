@@ -53,8 +53,7 @@ Rectangle {
                 y: parent.y + 5
                 width: parent.width - 13
                 height: width
-                avatarUrl: showAuthor ? author.avatarUrl : ""
-                isModerator: author.associated.isLabeler
+                author: authorRect.author
                 onClicked: skywalker.getDetailedProfile(author.did)
             }
         }

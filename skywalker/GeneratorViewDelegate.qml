@@ -38,7 +38,7 @@ Rectangle {
             x: 8
             y: 5
             width: guiSettings.threadBarWidth * 5
-            avatarUrl: showFeed ? feed.avatar : ""
+            avatarUrl: showFeed ? feed.avatarThumb : ""
 
             onClicked: feedClicked(feed)
 

@@ -202,7 +202,7 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
     jint jIconType = (int)iconType;
 
     jbyteArray jAvatar = nullptr;
-    const auto avatarUrl = author.getAvatarUrl();
+    const auto avatarUrl = author.getAvatarThumbUrl();
 
     if (!avatarUrl.isEmpty() && mAvatars.count(avatarUrl))
     {
@@ -454,7 +454,7 @@ void OffLineMessageChecker::getAvatars()
 
     for (const auto& notification : notifications)
     {
-        const QString url = notification.getAuthor().getAvatarUrl();
+        const QString url = notification.getAuthor().getAvatarThumbUrl();
 
         if (!url.isEmpty())
             avatarUrls.insert(url);

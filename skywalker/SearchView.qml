@@ -250,7 +250,6 @@ Page {
             height: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
             pixelAligned: guiSettings.flickPixelAligned
-            reuseItems: true
 
             delegate: PostFeedViewDelegate {
                 width: postsViewTop.width
@@ -280,7 +279,6 @@ Page {
             width: parent.width
             height: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
-            reuseItems: true
 
             delegate: PostFeedViewDelegate {
                 width: postsViewLatest.width

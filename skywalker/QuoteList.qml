@@ -21,7 +21,7 @@ Column {
             id: avatar
             width: 34
             Layout.alignment: Qt.AlignTop
-            avatarUrl: list.avatar
+            avatarUrl: list.avatarThumb
 
             onClicked: root.viewListByUri(list.uri, false)
         }

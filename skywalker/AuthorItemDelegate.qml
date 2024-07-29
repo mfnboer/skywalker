@@ -5,6 +5,7 @@ import skywalker
 RowLayout {
     required property profile author
 
+    id: authorItem
     width: parent.width
     spacing: 10
 
@@ -19,8 +20,7 @@ RowLayout {
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width - 13
             height: width
-            avatarUrl: author.avatarUrl
-            isModerator: author.associated.isLabeler
+            author: authorItem.author
         }
     }
 

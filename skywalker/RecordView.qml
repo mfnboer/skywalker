@@ -38,8 +38,7 @@ Item {
                 id: avatar
                 width: 24
                 Layout.alignment: Qt.AlignTop
-                avatarUrl: record.author.avatarUrl
-                isModerator: record.author.associated.isLabeler
+                author: record.author
 
                 onClicked: skywalker.getDetailedProfile(record.author.did)
             }

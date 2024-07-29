@@ -246,6 +246,11 @@ QString BasicProfile::getAvatarUrl() const
     return {};
 }
 
+QString BasicProfile::getAvatarThumbUrl() const
+{
+    return ATProto::createAvatarThumbUrl(getAvatarUrl());
+}
+
 ImageView BasicProfile::getImageView() const
 {
     return ImageView(getAvatarUrl(), getName());

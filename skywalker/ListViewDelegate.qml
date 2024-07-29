@@ -47,7 +47,7 @@ Rectangle {
             y: 5
             width: guiSettings.threadBarWidth * 5
             Layout.alignment: Qt.AlignTop
-            avatarUrl: showList ? list.avatar : ""
+            avatarUrl: showList ? list.avatarThumb : ""
 
             onClicked: listClicked(list)
 

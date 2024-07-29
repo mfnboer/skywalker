@@ -53,7 +53,7 @@ Drawer {
                     id: avatar
                     width: 60
                     height: width
-                    avatarUrl: user.avatarUrl
+                    author: user
                     onClicked: profile()
 
                     Accessible.ignored: true

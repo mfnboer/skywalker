@@ -106,8 +106,7 @@ Rectangle {
                 y: 10
                 width: parent.width - 13
                 height: width
-                avatarUrl: authorVisible(notificationAuthor) ? notificationAuthor.avatarUrl : ""
-                isModerator: notificationAuthor.associated.isLabeler
+                author: notificationAuthor
                 visible: showPost()
 
                 onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
@@ -292,8 +291,7 @@ Rectangle {
                         id: authorAvatar
                         width: 34
                         height: width
-                        avatarUrl: authorVisible(notificationAuthor) ? notificationAuthor.avatarUrl : ""
-                        isModerator: notificationAuthor.associated.isLabeler
+                        author: notificationAuthor
 
                         onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
 
@@ -309,8 +307,7 @@ Rectangle {
 
                             width: authorAvatar.width
                             height: width
-                            avatarUrl: authorVisible(notificationOtherAuthors[index]) ? notificationOtherAuthors[index].avatarUrl : ""
-                            isModerator: notificationOtherAuthors[index].associated.isLabeler
+                            author: notificationOtherAuthors[index]
 
                             onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
 
@@ -403,7 +400,7 @@ Rectangle {
                         id: usedByAvatar
                         width: 34
                         height: width
-                        avatarUrl: authorVisible(notificationInviteCodeUsedBy) ? notificationInviteCodeUsedBy.avatarUrl : ""
+                        author: notificationInviteCodeUsedBy
 
                         onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
 
@@ -604,9 +601,5 @@ Rectangle {
 
         if (showPost())
             return getPostSpeech()
-    }
-
-    function authorVisible(author) {
-        return guiSettings.contentVisible(author)
     }
 }

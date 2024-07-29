@@ -130,7 +130,7 @@ Rectangle {
                 id: avatar
                 width: parent.width
                 height: parent.height
-                avatarUrl: skywalker.avatarUrl
+                author: skywalker.user
                 onClicked: root.showSettingsDrawer()
                 onPressAndHold: root.showSwitchUserDrawer()
 

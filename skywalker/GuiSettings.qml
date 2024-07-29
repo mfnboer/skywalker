@@ -168,6 +168,9 @@ Item {
 
     function contentVisible(author)
     {
+        if (author.viewer.blockedBy)
+            return false
+
         let visibility = skywalker.getContentVisibility(author.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }

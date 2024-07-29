@@ -112,6 +112,11 @@ QString ListViewBasic::getAvatar() const
     return {};
 }
 
+QString ListViewBasic::getAvatarThumb() const
+{
+    return ATProto::createAvatarThumbUrl(getAvatar());
+}
+
 ImageView ListViewBasic::getImageView() const
 {
     return ImageView(getAvatar(), getName());

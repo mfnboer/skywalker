@@ -1,6 +1,7 @@
 next
 ====
 * Scrolling performance improvements
+* Load avatar thumbnails to reduce data usage
 * Bug fixes
 
 3.0.2

@@ -56,7 +56,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
     Q_PROPERTY(bool getStarterPackListInProgress READ isGetStarterPackListInProgress NOTIFY getStarterPackListInProgressChanged FINAL)
-    Q_PROPERTY(QString avatarUrl READ getAvatarUrl NOTIFY avatarUrlChanged FINAL)
+    Q_PROPERTY(BasicProfile user READ getUser NOTIFY userChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     Q_PROPERTY(FavoriteFeeds* favoriteFeeds READ getFavoriteFeeds CONSTANT FINAL)
     QML_ELEMENT
@@ -247,7 +247,7 @@ signals:
     void getAuthorFeedFailed(int modelId, QString error, QString msg);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO);
     void postThreadOk(int id, int postEntryIndex);
-    void avatarUrlChanged();
+    void userChanged();
     void unreadNotificationCountChanged();
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorFeedInProgressChanged();

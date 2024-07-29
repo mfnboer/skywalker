@@ -10,7 +10,6 @@ SkyListView {
 
     id: bookmarksView
     model: skywalker.createBookmarksModel()
-    reuseItems: true
 
     header: SimpleHeader {
         text: qsTr("Bookmarks") + ` (${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize})`

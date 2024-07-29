@@ -29,8 +29,7 @@ Column {
         Avatar {
             id: avatar
             width: 24
-            avatarUrl: author.avatarUrl
-            isModerator: author.associated.isLabeler
+            author: quoteColumn.author
 
             onClicked: skywalker.getDetailedProfile(author.did)
         }

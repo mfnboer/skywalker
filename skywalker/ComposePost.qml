@@ -99,7 +99,7 @@ Page {
             anchors.centerIn: parent
             height: parent.height - 10
             width: height
-            avatarUrl: skywalker.avatarUrl
+            author: skywalker.user
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
 

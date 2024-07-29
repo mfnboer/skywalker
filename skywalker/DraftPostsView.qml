@@ -9,7 +9,6 @@ SkyListView {
     signal deleted(int index)
 
     id: view
-    reuseItems: true
     boundsBehavior: Flickable.StopAtBoundss
 
     header: SimpleHeader {

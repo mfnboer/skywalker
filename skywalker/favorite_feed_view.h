@@ -13,6 +13,7 @@ class FavoriteFeedView
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
+    Q_PROPERTY(QString avatarThumb READ getAvatarThumb FINAL)
     Q_PROPERTY(GeneratorView generatorView READ getGeneratorView FINAL)
     Q_PROPERTY(ListView listView READ getListView FINAL)
     QML_VALUE_TYPE(favoritefeedview)
@@ -26,6 +27,7 @@ public:
     QString getUri() const;
     QString getName() const;
     QString getAvatar() const;
+    QString getAvatarThumb() const;
     const GeneratorView& getGeneratorView() const { return mGeneratorView; }
     const ListView& getListView() const { return mListView; }
 

@@ -58,8 +58,7 @@ ListView {
                     y: rowPadding + 2
                     width: parent.width - 12
                     height: width
-                    avatarUrl: guiSettings.contentVisible(author) ? author.avatarUrl : ""
-                    isModerator: author.associated.isLabeler
+                    author: authorEntry.author
                     onClicked: authorClicked(author)
                 }
             }

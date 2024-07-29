@@ -13,14 +13,13 @@ SkyListView {
 
     id: postFeedView
     model: skywalker.getPostFeedModel(modelId)
-    reuseItems: true
 
     Accessible.name: postFeedView.model.feedName
 
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: postFeedView.model.feedName
-        feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatar : ""
+        feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
         showAsHome: postFeedView.showAsHome
         showLanguageFilter: postFeedView.model.languageFilterConfigured
         languageFilterEnabled: postFeedView.model.languageFilterEnabled

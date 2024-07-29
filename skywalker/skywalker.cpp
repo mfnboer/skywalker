@@ -433,7 +433,7 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Share
     mLoggedOutVisibility = ATProto::ProfileMaster::getLoggedOutVisibility(*user);
     mUserProfile = Profile(user);
 
-    emit avatarUrlChanged();
+    emit userChanged();
     emit getUserProfileOK();
 }
 
@@ -1488,7 +1488,7 @@ void Skywalker::updateUserProfile(const QString& displayName, const QString& des
     makeLocalModelChange(
         [this](LocalProfileChanges* model){ model->updateProfile(mUserProfile); });
 
-    emit avatarUrlChanged();
+    emit userChanged();
 }
 
 void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)

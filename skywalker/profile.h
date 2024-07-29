@@ -113,6 +113,7 @@ class BasicProfile
     Q_PROPERTY(QString displayName READ getDisplayName FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
+    Q_PROPERTY(QString avatarThumbUrl READ getAvatarThumbUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(ProfileAssociated associated READ getAssociated FINAL)
     Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
@@ -138,6 +139,7 @@ public:
     QString getDisplayName() const;
     QString getHandle() const;
     QString getAvatarUrl() const;
+    QString getAvatarThumbUrl() const;
     ImageView getImageView() const;
     ProfileAssociated getAssociated() const;
     ProfileViewerState getViewer() const;

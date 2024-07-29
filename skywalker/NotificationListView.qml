@@ -11,7 +11,6 @@ SkyListView {
 
     id: notificationListView
     model: skywalker.notificationListModel
-    reuseItems: true
 
     header: SimpleHeader {
         text: qsTr("Notifications")

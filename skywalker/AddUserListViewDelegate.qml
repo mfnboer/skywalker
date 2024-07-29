@@ -40,7 +40,7 @@ Rectangle {
             y: 5
             width: 44
             Layout.alignment: Qt.AlignTop
-            avatarUrl: list.avatar
+            avatarUrl: list.avatarThumb
         }
 
         Column {

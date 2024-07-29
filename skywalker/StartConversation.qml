@@ -24,7 +24,7 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             height: parent.height - 10
             width: height
-            avatarUrl: skywalker.avatarUrl
+            author: skywalker.user
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're fabulous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really fabulous!"), QEnums.STATUS_LEVEL_INFO)
 

@@ -4,10 +4,13 @@ import QtQuick.Controls
 import skywalker
 
 Item {
-    property string avatarUrl
-    property bool isModerator: false
+    property basicprofile author
     property int radius: width / 2
     property svgimage unknownSvg: svgFilled.unknownAvatar
+    readonly property int contentVisibility: root.getSkywalker().getContentVisibility(author.labels)
+    property bool showWarnedMedia: false
+    readonly property bool showThumb: width < 90 // from bsky client code
+    property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
 
     signal clicked
     signal pressAndHold
@@ -21,12 +24,12 @@ Item {
         width: parent.width
         height: parent.height
         radius: parent.radius
-        visible: avatarItem.avatarUrl && avatarImg.status === Image.Ready
+        visible: avatarUrl && avatarImg.status === Image.Ready
 
         ImageAutoRetry {
             id: avatarImg
             width: parent.width
-            source: avatarItem.avatarUrl
+            source: avatarUrl
             fillMode: Image.PreserveAspectFit
             maxRetry: 60
         }
@@ -42,7 +45,7 @@ Item {
             width: parent.width
             height: parent.height
             color: "white"
-            svg: isModerator ? svgFilled.moderator : avatarItem.unknownSvg
+            svg: author.associated.isLabeler ? svgFilled.moderator : avatarItem.unknownSvg
         }
     }
     MouseArea {
@@ -59,10 +62,14 @@ Item {
 
     ModeratorIcon {
         width: parent.width * 0.6
-        visible: isModerator
+        visible: author.associated.isLabeler
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function contentVisible() {
+        return showWarnedMedia || guiSettings.contentVisible(author)
     }
 }

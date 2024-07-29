@@ -68,6 +68,11 @@ QString GeneratorView::getAvatar() const
     return mGeneratorView ? mGeneratorView->mAvatar.value_or("") : "";
 }
 
+QString GeneratorView::getAvatarThumb() const
+{
+    return ATProto::createAvatarThumbUrl(getAvatar());
+}
+
 ImageView GeneratorView::getImageView() const
 {
     return ImageView(getAvatar(), getDisplayName());

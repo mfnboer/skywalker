@@ -11,7 +11,6 @@ SkyListView {
 
     id: timelineView
     model: skywalker.timelineModel
-    reuseItems: true
 
     Accessible.name: qsTr("Home feed")
 

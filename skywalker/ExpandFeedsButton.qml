@@ -70,7 +70,7 @@ SvgButton {
                     anchors.right: parent.right
                     width: height
                     height: parent.height - 10
-                    avatarUrl: modelData.avatar
+                    avatarUrl: modelData.avatarThumb
                     unknownSvg: modelData.isGeneratorView ? svgFilled.feed : svgFilled.list
                     onClicked: parent.triggered()
                 }

@@ -18,8 +18,7 @@ Column {
             id: avatar
             width: 34
             Layout.alignment: Qt.AlignTop
-            avatarUrl: labeler.creator.avatarUrl
-            isModerator: true
+            author: labeler.creator
 
             onClicked: skywalker.getDetailedProfile(labeler.creator.did)
         }

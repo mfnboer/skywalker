@@ -13,7 +13,6 @@ SkyListView {
 
     id: postListFeedView
     model: skywalker.getPostFeedModel(modelId)
-    reuseItems: true
 
     Accessible.name: postListFeedView.model.feedName
 
@@ -21,7 +20,7 @@ SkyListView {
         skywalker: postListFeedView.skywalker
         feedName: postListFeedView.model.feedName
         isList: true
-        feedAvatar: postListFeedView.model.getListView().avatar
+        feedAvatar: postListFeedView.model.getListView().avatarThumb
         showAsHome: postListFeedView.showAsHome
         showLanguageFilter: postListFeedView.model.languageFilterConfigured
         languageFilterEnabled: postListFeedView.model.languageFilterEnabled

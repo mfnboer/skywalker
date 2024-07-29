@@ -245,8 +245,7 @@ Rectangle {
                 x: avatar.x + 8
                 y: postHeader.y + 5 // For some reason "avatar.y + 5" does not work when it is a repost
                 width: parent.width - 13
-                avatarUrl: author.avatarUrl
-                isModerator: author.associated.isLabeler
+                author: postEntry.author
                 visible: !postIsPlaceHolder && !postLocallyDeleted
 
                 onClicked: skywalker.getDetailedProfile(author.did)

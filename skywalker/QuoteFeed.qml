@@ -21,7 +21,7 @@ Column {
             id: avatar
             width: 34
             Layout.alignment: Qt.AlignTop
-            avatarUrl: feed.avatar
+            avatarUrl: feed.avatarThumb
 
             onClicked: skywalker.getFeedGenerator(feed.uri)
         }

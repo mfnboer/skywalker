@@ -91,8 +91,8 @@ Page {
                 anchors.centerIn: parent
                 width: parent.width - 4
                 height: parent.height - 4
-                avatarUrl: !contentVisible() ? "" : authorAvatar
-                isModerator: isLabeler
+                author: page.author
+                showWarnedMedia: page.showWarnedMedia
                 onClicked:  {
                     if (authorAvatar)
                         root.viewFullImage([author.imageView], 0)
@@ -417,12 +417,12 @@ Page {
 
                         Avatar {
                             required property int index
-                            required property var model
+                            required property basicprofile modelData
 
                             z: 5 - index
                             width: 34
                             height: width
-                            avatarUrl: model.avatarUrl
+                            author: modelData
                             onClicked: knownOthersRow.showKnownFollowers()
                         }
                     }
@@ -1104,10 +1104,7 @@ Page {
     }
 
     function contentVisible() {
-        if (author.viewer.blockedBy)
-            return false
-
-        return contentVisibility === QEnums.CONTENT_VISIBILITY_SHOW || showWarnedMedia
+        return showWarnedMedia || guiSettings.contentVisible(author)
     }
 
     function contentVisibilityIsWarning() {

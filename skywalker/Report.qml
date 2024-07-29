@@ -133,8 +133,7 @@ Page {
                         y: 10
                         width: 40
                         height: width
-                        avatarUrl: author.avatarUrl
-                        isModerator: author.associated.isLabeler
+                        author: page.author
                     }
                 }
                 Column {

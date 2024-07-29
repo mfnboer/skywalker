@@ -132,7 +132,6 @@ Page {
             Layout.fillWidth: true
             Layout.fillHeight: true
             model: skywalker.getPostFeedModel(postFeedModelId)
-            reuseItems: true
 
             delegate: PostFeedViewDelegate {
                 width: postListView.width

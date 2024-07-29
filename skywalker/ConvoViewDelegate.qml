@@ -39,8 +39,7 @@ Rectangle {
                 y: parent.y + 5
                 width: parent.width - 13
                 height: width
-                avatarUrl: guiSettings.contentVisible(firstMember) ? firstMember.avatarUrl : ""
-                isModerator: firstMember.associated.isLabeler
+                author: firstMember
                 onClicked: skywalker.getDetailedProfile(firstMember.did)
 
                 BadgeCounter {
@@ -113,8 +112,7 @@ Rectangle {
 
                                 width: 25
                                 height: width
-                                avatarUrl: guiSettings.contentVisible(modelData.basicProfile) ? modelData.basicProfile.avatarUrl : ""
-                                isModerator: modelData.basicProfile.associated.isLabeler
+                                author: modelData.basicProfile
                                 onClicked: viewConvo(convo)
                             }
                         }

@@ -90,7 +90,7 @@ ListView {
                     y: parent.y + 10
                     width: parent.width - 12
                     height: width
-                    avatarUrl: modelData.usedBy.avatarUrl
+                    author: modelData.usedBy
                     onClicked: authorClicked(modelData.usedByDid)
                 }
             }
