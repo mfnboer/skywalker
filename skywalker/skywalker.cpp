@@ -323,6 +323,7 @@ void Skywalker::refreshSession(const std::function<void()>& cbOk)
         return;
     }
 
+    // TODO: would be nicer to have session refreshment done by the atproto stack
     mBsky->refreshSession(
         [this, cbOk]{
             qDebug() << "Session refreshed";
@@ -333,8 +334,26 @@ void Skywalker::refreshSession(const std::function<void()>& cbOk)
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-            emit sessionExpired(msg);
-            stopRefreshTimers();
+
+            if (error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
+            {
+                qWarning() << "Token expired, need to login again";
+                emit sessionExpired(msg);
+                stopRefreshTimers();
+            }
+            else if (error == ATProto::ATProtoErrorMsg::XRPC_TIMEOUT)
+            {
+                // Maybe the token got refreshed, but the response never reached us.
+                // With the old token we can send one more request, so let's retry.
+                // NOTE: this is not fool proof; ideally no other requests should be sent
+                // during refresh.
+                qDebug() << "Request timed out, retry";
+                refreshSession();
+            }
+            else
+            {
+                qDebug() << "Refresh failed, wait for the next interval to refresh.";
+            }
         });
 }
 
