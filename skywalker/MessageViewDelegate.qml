@@ -61,7 +61,9 @@ Rectangle {
 
         // TODO: show ava/name for multi-person chat
         SkyCleanedText {
-            readonly property alias textWidth: textMetrics.boundingRect.width
+            // Note: textMetrics.boundingRect.width gave a wrong width when the text
+            // ended with an emoji VARIATION SELECTOR-16 (U+FE0F)
+            readonly property alias textWidth: textMetrics.advanceWidth
             readonly property string deletedText: qsTr("message deleted")
 
             id: messageText
