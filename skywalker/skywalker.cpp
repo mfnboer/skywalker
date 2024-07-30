@@ -362,7 +362,7 @@ void Skywalker::refreshNotificationCount()
     Q_ASSERT(mBsky);
     qDebug() << "Refresh notification count";
 
-    mBsky->getUnreadNotificationCount({},
+    mBsky->getUnreadNotificationCount({}, false,
         [this](int unread){
             qDebug() << "Unread notification count:" << unread;
             setUnreadNotificationCount(unread);
@@ -1424,7 +1424,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
     }
 
     setGetNotificationsInProgress(true);
-    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {},
+    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, false,
         [this, cursor](auto list){
             const bool clearFirst = cursor.isEmpty();
             mNotificationListModel.addNotifications(std::move(list), *mBsky, clearFirst);
