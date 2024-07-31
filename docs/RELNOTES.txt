@@ -1,7 +1,8 @@
-next
-====
+3.1
+===
 * Scrolling performance improvements
 * Load avatar thumbnails to reduce data usage
+* Priority notifications filter
 * Bug fixes
 
 3.0.2
