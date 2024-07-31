@@ -362,7 +362,7 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
     const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
     qDebug() << "Check unread notification count, last unread:" << prevUnread;
 
-    mBsky->getUnreadNotificationCount({}, false,
+    mBsky->getUnreadNotificationCount({}, {},
         [this, prevUnread](int unread){
             qDebug() << "Unread notification count:" << unread;
             int newCount = unread - prevUnread;

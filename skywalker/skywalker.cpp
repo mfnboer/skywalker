@@ -362,7 +362,7 @@ void Skywalker::refreshNotificationCount()
     Q_ASSERT(mBsky);
     qDebug() << "Refresh notification count";
 
-    mBsky->getUnreadNotificationCount({}, false,
+    mBsky->getUnreadNotificationCount({}, {},
         [this](int unread){
             qDebug() << "Unread notification count:" << unread;
             setUnreadNotificationCount(unread);
@@ -1412,6 +1412,21 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalListModelChan
         update(model.get());
 }
 
+void Skywalker::updateNotificationPreferences(bool priority)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Update notification prefereces, priorty:" << priority;
+
+    mBsky->putNotificationPreferences(priority,
+        [this]{
+            getNotifications();
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "updateNotificationPreferences FAILED:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getNotifications(int limit, bool updateSeen, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -1424,10 +1439,10 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
     }
 
     setGetNotificationsInProgress(true);
-    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, false,
-        [this, cursor](auto list){
+    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {},
+        [this, cursor](auto ouput){
             const bool clearFirst = cursor.isEmpty();
-            mNotificationListModel.addNotifications(std::move(list), *mBsky, clearFirst);
+            mNotificationListModel.addNotifications(std::move(ouput), *mBsky, clearFirst);
             setGetNotificationsInProgress(false);
         },
         [this](const QString& error, const QString& msg){

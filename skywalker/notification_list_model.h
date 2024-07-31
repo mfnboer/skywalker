@@ -17,6 +17,8 @@ class InviteCodeStore;
 class NotificationListModel : public QAbstractListModel, public LocalPostModelChanges
 {
     Q_OBJECT
+    Q_PROPERTY(bool priority READ getPriority NOTIFY priorityChanged FINAL)
+
 public:
     using NotificationList = std::deque<Notification>;
 
@@ -91,6 +93,8 @@ public:
     QString addNotifications(ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput,
                           const QString& lastRev, const QString& userDid);
     const QString& getCursor() const { return mCursor; }
+    bool getPriority() const { return mPriority; }
+    void setPriority(bool priority);
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
     Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
@@ -109,6 +113,9 @@ public:
     const NotificationList& getNotifications() const { return mList; }
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
     void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }
+
+signals:
+    void priorityChanged();
 
 protected:
     virtual void postIndexTimestampChanged() override;
@@ -149,6 +156,7 @@ private:
 
     NotificationList mList;
     QString mCursor;
+    bool mPriority = false;
 
     // This cache must be emptied when the notifications are refreshed, because
     // the counts (like, reposts, replies) will change over time and are displayed.

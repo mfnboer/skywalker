@@ -140,7 +140,7 @@ Page {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.moreVert
-            accessibleName: qsTr("more options")
+            accessibleName: qsTr("post options")
             onClicked: moreMenu.open()
 
             Menu {
@@ -153,7 +153,7 @@ Page {
 
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")
-                    Accessible.name: qsTr("close more options menu")
+                    Accessible.name: qsTr("close options menu")
                 }
                 AccessibleMenuItem {
                     id: altItem

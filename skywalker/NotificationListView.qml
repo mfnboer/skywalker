@@ -13,8 +13,40 @@ SkyListView {
     model: skywalker.notificationListModel
 
     header: SimpleHeader {
-        text: qsTr("Notifications")
+        text: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
         onBack: notificationListView.closed()
+
+        SvgButton {
+            id: moreOptions
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            svg: svgOutline.moreVert
+            accessibleName: qsTr("notification options")
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>Options</b>")
+                    Accessible.name: qsTr("close options menu")
+                }
+                MenuWithInfoItem {
+                    text: qsTr("Priority only")
+                    info: qsTr("When priority only is enabled, replies and quotes from users you do not follow will not be shown.")
+                    checkable: true
+                    checked: skywalker.notificationListModel.priority
+
+                    onToggled:{
+                        skywalker.updateNotificationPreferences(checked)
+                    }
+                }
+            }
+        }
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -44,7 +76,7 @@ SkyListView {
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: svgOutline.noPosts
-        text: qsTr("No notifications")
+        text: skywalker.notificationListModel.priority ? qsTr("No priority notifications") : qsTr("No notifications")
         list: notificationListView
     }
 

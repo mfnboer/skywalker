@@ -391,6 +391,7 @@ qt_add_qml_module(libskywalker
         SOURCES meme_maker.cpp
         QML_FILES MemeEditor.qml
         QML_FILES GifView.qml
+        QML_FILES MenuWithInfoItem.qml
 )
 
 if (NOT ANDROID)
