@@ -15,6 +15,7 @@ Dialog {
     topMargin: guiSettings.headerHeight + 10
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
+    Material.background: guiSettings.backgroundColor
 
     ComboBox {
         id: monthComboBox

@@ -19,6 +19,7 @@ Page {
     width: parent.width
     height: parent.height
     padding: pageMargin
+    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 

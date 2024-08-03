@@ -15,6 +15,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
+    Material.background: guiSettings.backgroundColor
 
     signal appeal(contentgroup group, string labelerHandle)
 

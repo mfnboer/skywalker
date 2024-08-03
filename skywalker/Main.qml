@@ -14,6 +14,7 @@ ApplicationWindow {
     height: 960
     visible: true
     title: "Skywalker"
+    Material.background: guiSettings.backgroundColor
 
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()

@@ -16,6 +16,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
+    Material.background: guiSettings.backgroundColor
 
     Flickable {
         anchors.fill: parent

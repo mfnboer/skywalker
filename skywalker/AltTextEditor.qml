@@ -13,6 +13,7 @@ Page {
 
     id: page
     width: parent.width
+    Material.background: guiSettings.backgroundColor
     topPadding: 10
     bottomPadding: 10
 

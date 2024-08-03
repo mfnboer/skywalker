@@ -25,6 +25,7 @@ Page {
     width: parent.width
     height: parent.height
     contentHeight: flick.height
+    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 

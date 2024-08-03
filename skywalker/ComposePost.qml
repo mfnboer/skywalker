@@ -80,6 +80,7 @@ Page {
     contentHeight: flick.height
     topPadding: 0
     bottomPadding: 10
+    Material.background: guiSettings.backgroundColor
 
     header: Rectangle {
         width: parent.width

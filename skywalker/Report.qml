@@ -25,6 +25,7 @@ Page {
     height: parent.height
     topPadding: 10
     bottomPadding: 10
+    Material.background: guiSettings.backgroundColor
 
     header: Rectangle {
         width: parent.width

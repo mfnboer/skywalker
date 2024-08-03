@@ -14,6 +14,7 @@ Dialog {
     topMargin: guiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
+    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Dialog
 

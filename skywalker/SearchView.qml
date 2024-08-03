@@ -25,6 +25,7 @@ Page {
 
     id: page
     clip: true
+    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 
@@ -78,6 +79,7 @@ Page {
     TabBar {
         id: searchBar
         width: parent.width
+        Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
 
@@ -149,6 +151,7 @@ Page {
         anchors.top: searchBarSeparator.bottom
         width: parent.width
         height: page.isPostSearch ? implicitHeight : 0
+        Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
         topPadding: 5
@@ -180,8 +183,8 @@ Page {
             rightPadding: 5
             elide: Text.ElideRight
             wrapMode: Text.Wrap
-            color: page.isPostSearch ? guiSettings.linkColor : guiSettings.textColor
-            text: page.isPostSearch ? page.getSearchPostScopeText() : qsTr("Users")
+            color: guiSettings.linkColor
+            text: page.getSearchPostScopeText()
 
             MouseArea {
                 anchors.fill: parent

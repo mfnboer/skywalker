@@ -22,6 +22,7 @@ Dialog {
     topMargin: guiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok
+    Material.background: guiSettings.backgroundColor
 
     GridLayout {
         id: scopeGrid

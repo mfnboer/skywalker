@@ -12,6 +12,7 @@ Page {
     width: parent.width
     topPadding: 10
     bottomPadding: 10
+    Material.background: guiSettings.backgroundColor
 
     header: SimpleButtonHeader {
         title: qsTr("Report details")

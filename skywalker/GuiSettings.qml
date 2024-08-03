@@ -16,7 +16,7 @@ Item {
     readonly property string accentColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string avatarDefaultColor: "blue"
     readonly property string backgroundColor: Material.background
-    readonly property string badgeBorderColor: Material.background
+    readonly property string badgeBorderColor: backgroundColor
     readonly property string badgeColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string badgeTextColor: "white"
     readonly property string bannerDefaultColor: "blue"
@@ -29,7 +29,7 @@ Item {
     readonly property string disabledColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string errorColor: Material.theme === Material.Light ? "darkred" : "palevioletred"
     readonly property string favoriteColor: "gold"
-    readonly property string footerColor: Material.background
+    readonly property string footerColor: backgroundColor
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: "black"
     readonly property string headerHighLightColor: Material.theme === Material.Light ? "lightblue" : "darkslategrey"
