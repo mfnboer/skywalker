@@ -1,3 +1,7 @@
+next
+====
+* More rounded corners
+
 3.1
 ===
 * Scrolling performance improvements

@@ -6,7 +6,7 @@ ComboBox {
     property list<language> allLanguages
     property list<language> usedLanguages
     property bool reversedColors: false
-    property int radius: 0
+    property int radius: 3
     property int borderWidth: 2
     property string borderColor: guiSettings.buttonColor
     property string color: guiSettings.buttonColor

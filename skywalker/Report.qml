@@ -96,8 +96,9 @@ Page {
             z: guiSettings.headerZLevel
             width: parent.width
             height: calcHeight()
+            radius: 3
             color: guiSettings.postHighLightColor
-            border.width: 2
+            border.width: 1
             border.color: guiSettings.borderColor
 
             function calcHeight() {

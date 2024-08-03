@@ -39,8 +39,8 @@ ComboBox {
         implicitHeight: 40
         color: backgroundColor
         border.color: contentItem.color
-        border.width: 2
-        radius: 2
+        border.width: 1
+        radius: 3
     }
 
     onCountChanged: {

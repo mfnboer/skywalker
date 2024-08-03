@@ -8,6 +8,7 @@ ComboBox {
     popup.width: 130
 
     background: Rectangle {
+        radius: 3
         implicitWidth: 120
         border.color: guiSettings.buttonColor
         border.width: 2

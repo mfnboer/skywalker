@@ -226,8 +226,9 @@ Page {
 
         // Reply-to
         Rectangle {
+            radius: 10
             anchors.fill: replyToColumn
-            border.width: 2
+            border.width: 1
             border.color: guiSettings.borderColor
             color: guiSettings.postHighLightColor
             visible: replyToColumn.visible
@@ -692,8 +693,9 @@ Page {
 
                     // Quote post
                     Rectangle {
+                        radius: 10
                         anchors.fill: quoteColumn
-                        border.width: 2
+                        border.width: 1
                         border.color: guiSettings.borderColor
                         color: guiSettings.postHighLightColor
                         visible: quoteColumn.visible
@@ -719,8 +721,9 @@ Page {
 
                     // Quote feed
                     Rectangle {
+                        radius: 10
                         anchors.fill: quoteFeedColumn
-                        border.width: 2
+                        border.width: 1
                         border.color: guiSettings.borderColor
                         color: guiSettings.postHighLightColor
                         visible: quoteFeedColumn.visible
@@ -743,8 +746,9 @@ Page {
 
                     // Quote list
                     Rectangle {
+                        radius: 10
                         anchors.fill: quoteListColumn
-                        border.width: 2
+                        border.width: 1
                         border.color: guiSettings.borderColor
                         color: guiSettings.postHighLightColor
                         visible: quoteListColumn.visible

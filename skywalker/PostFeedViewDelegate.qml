@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
@@ -61,7 +61,7 @@ Rectangle {
         else
             return guiSettings.backgroundColor
     }
-    border.width: postThreadType & QEnums.THREAD_ENTRY ? 2 : 0
+    border.width: postThreadType & QEnums.THREAD_ENTRY ? 1 : 0
     border.color: guiSettings.borderColor
 
     Accessible.role: Accessible.Button
