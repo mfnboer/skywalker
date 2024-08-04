@@ -14,7 +14,7 @@ ApplicationWindow {
     height: 960
     visible: true
     title: "Skywalker"
-    Material.background: guiSettings.backgroundColor
+    color: guiSettings.backgroundColor
 
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
@@ -1448,6 +1448,7 @@ ApplicationWindow {
         root.Material.accent = guiSettings.accentColor
         let userSettings = skywalker.getUserSettings()
         userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
+        userSettings.setDefaultBackgroundColor(Material.background)
         userSettings.setLinkColor(guiSettings.linkColor)
     }
 

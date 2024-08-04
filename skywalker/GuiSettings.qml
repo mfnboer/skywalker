@@ -3,6 +3,8 @@ import QtQuick.Controls
 import skywalker
 
 Item {
+    readonly property var userSettings: root.getSkywalker().getUserSettings()
+
     // Geometry
     readonly property int footerHeight: 50
     readonly property int footerZLevel: 10
@@ -15,7 +17,7 @@ Item {
     // Colors
     readonly property string accentColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string avatarDefaultColor: "blue"
-    readonly property string backgroundColor: Material.background
+    readonly property string backgroundColor: userSettings.backgroundColor
     readonly property string badgeBorderColor: backgroundColor
     readonly property string badgeColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string badgeTextColor: "white"
@@ -46,7 +48,7 @@ Item {
     readonly property string messageOtherTextColor: Material.theme === Material.Light ? "black" : "white"
     readonly property string moderatorIconColor: "lightgrey"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
-    readonly property string postHighLightColor: Material.theme === Material.Light ? "aliceblue" : "#1d3030"
+    readonly property string postHighLightColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string selectionColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string separatorColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string skywalkerLogoColor: "#0387c7"
@@ -189,5 +191,22 @@ Item {
 
     function threadEntryColor(color) {
         return Material.theme === Material.Light ? Qt.darker(threadStartColor(color), 1.2) : Qt.lighter(threadStartColor(color), 1.2)
+    }
+
+    function allowedBackgroundColors() {
+        return [textColor,
+                badgeColor,
+                borderColor,
+                buttonColor,
+                contentLabelColor,
+                contentUserLabelColor,
+                handleColor,
+                likeColor,
+                linkColor,
+                messageNewBackgroundColor,
+                messageUserBackgroundColor,
+                messageOtherBackgroundColor,
+                separatorColor,
+                statsColor]
     }
 }

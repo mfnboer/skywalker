@@ -21,4 +21,9 @@ QColor Utils::determineForegroundColor(const QColor& backgroundColor, const QCol
     return blackness < 0.3 ? lightColor : darkColor;
 }
 
+bool Utils::similarColors(const QColor& lhs, const QColor& rhs)
+{
+    return std::abs(lhs.red() - rhs.red()) < 32 && std::abs(lhs.green() - rhs.green()) < 32 && std::abs(lhs.blue() - rhs.blue()) < 32;
+}
+
 }

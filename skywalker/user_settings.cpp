@@ -14,6 +14,7 @@ static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
 static constexpr int MAX_ATTEMPTS_DRAFT_MIGRATION = 10;
 
 QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
+QString UserSettings::sDefaultBackgroundColor("white");
 QString UserSettings::sLinkColor("blue");
 
 UserSettings::UserSettings(QObject* parent) :
@@ -304,6 +305,26 @@ QEnums::DisplayMode UserSettings::getDisplayMode() const
         return QEnums::DISPLAY_MODE_SYSTEM;
 
     return QEnums::DisplayMode(mode);
+}
+
+void UserSettings::resetBackgroundColor()
+{
+    mSettings.remove(displayKey("backgroundColor"));
+    emit backgroundColorChanged();
+}
+
+void UserSettings::setBackgroundColor(const QString& color)
+{
+    if (getBackgroundColor() != color)
+    {
+        mSettings.setValue(displayKey("backgroundColor"), color);
+        emit backgroundColorChanged();
+    }
+}
+
+QString UserSettings::getBackgroundColor() const
+{
+    return mSettings.value(displayKey("backgroundColor"), getDefaultBackgroundColor()).toString();
 }
 
 void UserSettings::setThreadStyle(QEnums::ThreadStyle threadStyle)

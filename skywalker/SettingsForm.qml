@@ -380,6 +380,35 @@ Page {
                 AccessibleText {
                     Layout.preferredWidth: 120
                     wrapMode: Text.Wrap
+                    text: qsTr("Background color")
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 30
+                    border.width: 1
+                    border.color: guiSettings.buttonColor
+                    color: guiSettings.backgroundColor
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: selectBackgroundColor()
+                    }
+
+                    SvgButton {
+                        y: -2
+                        anchors.right: parent.right
+                        width: height
+                        height: 34
+                        svg: svgOutline.close
+                        accessibleName: qsTr("reset background color to default")
+                        onClicked: userSettings.resetBackgroundColor()
+                    }
+                }
+
+                AccessibleText {
+                    Layout.preferredWidth: 120
+                    wrapMode: Text.Wrap
                     text: qsTr("Post thread visualisation")
                 }
 
@@ -435,7 +464,6 @@ Page {
                     SvgButton {
                         y: -2
                         anchors.right: parent.right
-                        //imageMargin: 8
                         width: height
                         height: 34
                         svg: svgOutline.close
@@ -481,6 +509,10 @@ Page {
         skywalker: root.getSkywalker()
     }
 
+    Utils {
+        id: utils
+    }
+
     GuiSettings {
         id: guiSettings
     }
@@ -495,6 +527,33 @@ Page {
             cs.destroy()
         })
         cs.open()
+    }
+
+    function selectBackgroundColor() {
+        let component = Qt.createComponent("ColorSelector.qml")
+        let cs = component.createObject(page)
+        cs.selectedColor = userSettings.backgroundColor
+        cs.onRejected.connect(() => cs.destroy())
+        cs.onAccepted.connect(() => {
+            if (checkBackgroundColor(cs.selectedColor))
+                userSettings.backgroundColor = cs.selectedColor
+            else
+                skywalker.showStatusMessage(qsTr("This color would make parts of the app invisible. Pick another color"), QEnums.STATUS_LEVEL_ERROR)
+            cs.destroy()
+        })
+        cs.open()
+    }
+
+    function checkBackgroundColor(color) {
+        const allowed = guiSettings.allowedBackgroundColors()
+
+        for (let i = 0; i < allowed.length; ++i)
+        {
+            if (utils.similarColors(color, allowed[i]))
+                return false
+        }
+
+        return true
     }
 
     Component.onDestruction: {

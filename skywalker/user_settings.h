@@ -21,12 +21,16 @@ public:
 class UserSettings : public QObject, public IUserSettings
 {
     Q_OBJECT
+    Q_PROPERTY(QString backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
 
 public:
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
     Q_INVOKABLE void setActiveDisplayMode(QEnums::DisplayMode mode);
+
+    static QString getDefaultBackgroundColor() { return sDefaultBackgroundColor; }
+    Q_INVOKABLE static void setDefaultBackgroundColor(const QString& color) { sDefaultBackgroundColor = color; }
 
     static QString getLinkColor() { return sLinkColor; }
     Q_INVOKABLE static void setLinkColor(const QString& color) { sLinkColor = color; }
@@ -86,6 +90,10 @@ public:
 
     void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
+
+    Q_INVOKABLE void resetBackgroundColor();
+    void setBackgroundColor(const QString& color);
+    QString getBackgroundColor() const;
 
     void setThreadStyle(QEnums::ThreadStyle threadStyle);
     QEnums::ThreadStyle getThreadStyle() const;
@@ -188,6 +196,7 @@ public:
 
 signals:
     void contentLanguageFilterChanged();
+    void backgroundColorChanged();
     void threadStyleChanged();
     void threadColorChanged();
 
@@ -202,6 +211,7 @@ private:
 
     // Derived from display mode
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK
+    static QString sDefaultBackgroundColor;
     static QString sLinkColor;
 };
 

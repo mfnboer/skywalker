@@ -16,6 +16,7 @@ class Utils : public QObject
 public:
     static std::optional<QString> makeOptionalString(const QString& str);
     Q_INVOKABLE static QColor determineForegroundColor(const QColor& background, const QColor& lightColor, const QColor& darkColor);
+    Q_INVOKABLE static bool similarColors(const QColor& lhs, const QColor& rhs);
 };
 
 }
