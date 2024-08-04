@@ -56,6 +56,7 @@ void UserSettings::setActiveDisplayMode(QEnums::DisplayMode mode)
     {
         sActiveDisplayMode = mode;
         emit threadColorChanged();
+        emit backgroundColorChanged();
     }
 }
 

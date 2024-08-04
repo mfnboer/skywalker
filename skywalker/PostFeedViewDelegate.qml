@@ -55,12 +55,7 @@ Rectangle {
 
     id: postEntry
     height: grid.height
-    color: {
-        if (postThreadType & QEnums.THREAD_ENTRY)
-            return guiSettings.postHighLightColor
-        else
-            return guiSettings.backgroundColor
-    }
+    color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 1 : 0
     border.color: guiSettings.borderColor
 

@@ -1445,11 +1445,11 @@ ApplicationWindow {
         }
 
         console.debug("Theme set to:", root.Material.theme)
-        root.Material.accent = guiSettings.accentColor
         let userSettings = skywalker.getUserSettings()
-        userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
         userSettings.setDefaultBackgroundColor(Material.background)
+        userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
         userSettings.setLinkColor(guiSettings.linkColor)
+        root.Material.accent = guiSettings.accentColor
     }
 
     function getSkywalker() {
