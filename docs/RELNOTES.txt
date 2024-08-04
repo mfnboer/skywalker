@@ -2,6 +2,7 @@ next
 ====
 * Choose your own background color
 * More rounded corners
+* Bug fixes
 
 3.1
 ===
