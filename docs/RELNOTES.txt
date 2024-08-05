@@ -2,6 +2,7 @@ next
 ====
 * Choose your own background color
 * Option to disable giant emoji
+* Always show reply-to author on replies
 * More rounded corners
 * Bug fixes
 

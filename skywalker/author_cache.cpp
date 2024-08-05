@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "author_cache.h"
+#include "skywalker.h"
 
 namespace Skywalker {
 
@@ -11,7 +12,8 @@ AuthorCache::Entry::Entry(const BasicProfile& profile) :
 {
 }
 
-AuthorCache::AuthorCache() :
+AuthorCache::AuthorCache(QObject* parent) :
+    WrappedSkywalker(parent),
     mCache(1000)
 {
 }
@@ -38,6 +40,45 @@ void AuthorCache::put(const BasicProfile& author)
     auto* entry = new Entry(author);
     mCache.insert(did, entry);
     qDebug() << "Cached:" << did << "size:" << mCache.size();
+}
+
+void AuthorCache::putProfile(const QString& did)
+{
+    if (contains(did))
+    {
+        qDebug() << "Profile already in cache:" << did;
+        return;
+    }
+
+    if (mFetchingDids.contains(did))
+        return;
+
+    if (!bskyClient())
+        return;
+
+    mFetchingDids.insert(did);
+
+    bskyClient()->getProfile(did,
+        [this](auto profile){
+            mFetchingDids.erase(profile->mDid);
+            mFailedDids.erase(profile->mDid);
+            put(BasicProfile(profile));
+            emit profileAdded(profile->mDid);
+        },
+        [this, did](const QString& error, const QString& msg){
+            qDebug() << "putProfile failed:" << did << error << " - " << msg;
+
+            if (!mFailedDids.contains(did))
+            {
+                mFetchingDids.erase(did);
+                mFailedDids.insert(did);
+            }
+            else
+            {
+                qWarning() << "Failed to get DID for the second time:" << did << error << " - " << msg;
+                // Do not remove from mFetchingDids, so we will not try to get it again
+            }
+        });
 }
 
 const BasicProfile* AuthorCache::get(const QString& did) const

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "abstract_post_feed_model.h"
+#include "author_cache.h"
 #include "content_filter.h"
 #include "focus_hashtags.h"
 #include <atproto/lib/post_master.h>
@@ -26,6 +27,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mHashtags(hashtags)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
+    connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this, [this]{ changeData({ int(Role::PostReplyToAuthor) }); });
 }
 
 void AbstractPostFeedModel::clearFeed()
@@ -216,10 +218,20 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.isParentInThread();
     case Role::PostReplyToAuthor:
     {
+        if (!post.isReply())
+            return {};
+
         const auto author = post.getReplyToAuthor();
 
         if (!author)
+        {
+            const QString did = post.getReplyToAuthorDid();
+
+            if (!did.isEmpty())
+                AuthorCache::instance().putProfile(did);
+
             return {};
+        }
 
         const BasicProfile* profileChange = getProfileChange(author->getDid());
         return QVariant::fromValue(profileChange ? *profileChange : *author);
