@@ -193,6 +193,9 @@ Rectangle {
     }
 
     function getMessageFontSize() {
+        if (!root.getSkywalker().getUserSettings().giantEmojis)
+            return guiSettings.scaledFont(1)
+
         return onlyEmojisMessage() ?
                     guiSettings.scaledFont(unicodeFonts.graphemeLength(message.text) === 1 ? 9 : 3) :
                     guiSettings.scaledFont(1)

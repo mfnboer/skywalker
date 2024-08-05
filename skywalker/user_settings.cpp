@@ -388,6 +388,20 @@ bool UserSettings::getGifAutoPlay() const
     return mSettings.value("gifAutoPlay", true).toBool();
 }
 
+void UserSettings::setGiantEmojis(bool giantEmojis)
+{
+    if (giantEmojis == getGiantEmojis())
+        return;
+
+    mSettings.setValue("giantEmojis", giantEmojis);
+    emit giantEmojisChanged();
+}
+
+bool UserSettings::getGiantEmojis() const
+{
+    return mSettings.value("giantEmojis", true).toBool();
+}
+
 void UserSettings::setRequireAltText(const QString& did, bool require)
 {
     mSettings.setValue(key(did, "requireAltText"), require);

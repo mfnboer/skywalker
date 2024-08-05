@@ -223,6 +223,9 @@ Column {
     }
 
     function getPostFontSize() {
+        if (!root.getSkywalker().getUserSettings().giantEmojis)
+            return guiSettings.scaledFont(1)
+
         return onlyEmojisPost() ?
                     guiSettings.scaledFont(unicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
                     guiSettings.scaledFont(1)

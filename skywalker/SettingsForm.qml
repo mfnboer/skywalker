@@ -474,6 +474,12 @@ Page {
             }
 
             AccessibleSwitch {
+                text: qsTr("Giant emoji")
+                checked: userSettings.giantEmojis
+                onCheckedChanged: userSettings.giantEmojis = checked
+            }
+
+            AccessibleSwitch {
                 text: qsTr("GIF auto play")
                 checked: userPrefs.gifAutoPlay
                 onCheckedChanged: userPrefs.gifAutoPlay = checked

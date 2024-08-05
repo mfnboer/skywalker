@@ -24,6 +24,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QString backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
+    Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
 
 public:
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
@@ -107,6 +108,9 @@ public:
 
     void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
+
+    void setGiantEmojis(bool giantEmojis);
+    bool getGiantEmojis() const;
 
     Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
@@ -199,6 +203,7 @@ signals:
     void backgroundColorChanged();
     void threadStyleChanged();
     void threadColorChanged();
+    void giantEmojisChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;

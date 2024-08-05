@@ -1,6 +1,7 @@
 next
 ====
 * Choose your own background color
+* Option to disable giant emoji
 * More rounded corners
 * Bug fixes
 
