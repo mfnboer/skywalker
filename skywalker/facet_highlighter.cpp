@@ -35,6 +35,7 @@ void FacetHighlighter::highlightBlock(const QString& text)
             addFormat(facet.mStartIndex, facetLength, mHighlightFormat);
             break;
         }
+        case ATProto::RichTextMaster::ParsedMatch::Type::BLUE_MOJI:
         case ATProto::RichTextMaster::ParsedMatch::Type::PARTIAL_MENTION:
         case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
             break;

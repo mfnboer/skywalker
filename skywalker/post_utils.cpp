@@ -970,6 +970,7 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                 editTagFound = true;
             }
             break;
+        case ATProto::RichTextMaster::ParsedMatch::Type::BLUE_MOJI:
         case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
             break;
         }
