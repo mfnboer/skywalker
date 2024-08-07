@@ -57,17 +57,6 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         ""
     },
     {
-        "nudity",
-        QObject::tr("Non-sexual Nudity"),
-        QObject::tr("E.g. artistic nudes"),
-        {},
-        true,
-        QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
-        QEnums::LABEL_TARGET_MEDIA,
-        QEnums::LABEL_SEVERITY_NONE,
-        ""
-    },
-    {
         "graphic-media",
         QObject::tr("Graphic Media"),
         QObject::tr("Explicit or potentially disturbing media"),
@@ -76,6 +65,17 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_HIDE_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
         QEnums::LABEL_SEVERITY_ALERT,
+        ""
+    },
+    {
+        "nudity",
+        QObject::tr("Non-sexual Nudity"),
+        QObject::tr("E.g. artistic nudes"),
+        {},
+        false,
+        QEnums::CONTENT_VISIBILITY_SHOW,
+        QEnums::LABEL_TARGET_MEDIA,
+        QEnums::LABEL_SEVERITY_NONE,
         ""
     }
 };
