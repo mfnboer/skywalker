@@ -8,6 +8,7 @@ Page {
     required property generatorview feed
     property int feedLikeCount: feed.likeCount
     property string feedLikeUri: feed.viewer.like
+    property bool feedLikeTransient: false
     property bool isSavedFeed: skywalker.favoriteFeeds.isSavedFeed(feed.uri)
     property bool isPinnedFeed: skywalker.favoriteFeeds.isPinnedFeed(feed.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
@@ -231,6 +232,11 @@ Page {
                 svg: feedLikeUri ? svgFilled.like : svgOutline.like
                 onClicked: likeFeed(feedLikeUri, feed.uri, feed.cid)
                 Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, qsTr("like"), qsTr("likes"))
+
+                BlinkingOpacity {
+                    target: likeIcon
+                    running: feedLikeTransient
+                }
             }
 
             StatAuthors {
@@ -254,13 +260,22 @@ Page {
         onLikeOk: (likeUri) => {
             feedLikeCount++
             feedLikeUri = likeUri
+            feedLikeTransient = false
         }
-        onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onLikeFailed: (error) => {
+            feedLikeTransient = false
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        }
+
         onUndoLikeOk: {
             feedLikeCount--
             feedLikeUri = ""
+            feedLikeTransient = false
         }
-        onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUndoLikeFailed: (error) => {
+            feedLikeTransient = false
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        }
     }
 
     AccessibilityUtils {
@@ -272,6 +287,8 @@ Page {
     }
 
     function likeFeed(likeUri, uri, cid) {
+        feedLikeTransient = true
+
         if (likeUri)
             feedUtils.undoLike(likeUri, cid)
         else

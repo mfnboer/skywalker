@@ -38,6 +38,7 @@ Rectangle {
     required property int postLikeCount
     required property string postRepostUri
     required property string postLikeUri
+    required property bool postLikeTransient
     required property bool postThreadMuted
     required property bool postReplyDisabled
     required property string postThreadgateUri
@@ -337,6 +338,7 @@ Rectangle {
                 likeCount: postLikeCount
                 repostUri: postRepostUri
                 likeUri: postLikeUri
+                likeTransient: postLikeTransient
                 threadMuted: postThreadMuted
                 replyDisabled: postReplyDisabled
                 threadgateUri: postThreadgateUri

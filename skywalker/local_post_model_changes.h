@@ -20,6 +20,7 @@ public:
         // Not-set means not changed.
         // Empty means like removed.
         std::optional<QString> mLikeUri;
+        bool mLikeTransient = false;
 
         int mReplyCountDelta = 0;
         int mRepostCountDelta = 0;
@@ -45,6 +46,7 @@ public:
     void updateRepostUri(const QString& cid, const QString& repostUri);
     void updateLikeCountDelta(const QString& cid, int delta);
     void updateLikeUri(const QString& cid, const QString& likeUri);
+    void updateLikeTransient(const QString& cid, bool transient);
     void updateThreadgateUri(const QString& cid, const QString& threadgateUri);
     void updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion);
     void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
@@ -55,6 +57,7 @@ protected:
     virtual void postIndexTimestampChanged() = 0;
     virtual void likeCountChanged() = 0;
     virtual void likeUriChanged() = 0;
+    virtual void likeTransientChanged() = 0;
     virtual void replyCountChanged() = 0;
     virtual void repostCountChanged() = 0;
     virtual void repostUriChanged() = 0;

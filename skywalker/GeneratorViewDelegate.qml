@@ -8,6 +8,7 @@ Rectangle {
     required property generatorview feed
     required property int feedLikeCount
     required property string feedLikeUri
+    required property bool feedLikeTransient
     required property profile feedCreator
     required property bool feedSaved
     required property bool feedPinned
@@ -189,6 +190,11 @@ Rectangle {
                 svg: feedLikeUri ? svgFilled.like : svgOutline.like
                 statistic: feedLikeCount
                 onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid)
+
+                BlinkingOpacity {
+                    target: likeIcon
+                    running: feedLikeTransient
+                }
 
                 Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, qsTr("like"), qsTr("likes"))
             }

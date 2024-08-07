@@ -22,6 +22,7 @@ public:
         FeedCreator,
         FeedLikeCount,
         FeedLikeUri,
+        FeedLikeTransient,
         FeedSaved,
         FeedPinned,
         EndOfFeed
@@ -46,6 +47,7 @@ protected:
     // LocalFeedModelChanges
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
+    virtual void likeTransientChanged() override;
 
     // LocalProfileChanges
     virtual void profileChanged() override;

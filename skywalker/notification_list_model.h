@@ -59,6 +59,7 @@ public:
         NotificationPostReplyRootCid,
         NotificationPostRepostUri,
         NotificationPostLikeUri,
+        NotificationPostLikeTransient,
         NotificationPostThreadMuted,
         NotificationPostReplyDisabled,
         NotificationPostThreadgateUri,
@@ -121,6 +122,7 @@ protected:
     virtual void postIndexTimestampChanged() override;
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
+    virtual void likeTransientChanged() override;
     virtual void replyCountChanged() override;
     virtual void repostCountChanged() override;
     virtual void repostUriChanged() override;

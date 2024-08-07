@@ -36,6 +36,7 @@ Page {
     property labelerviewdetailed labeler
     property string labelerLikeUri: ""
     property int labelerLikeCount: 0
+    property bool labelerLikeTransient: false
     property string firstAppearanceDate: "unknown"
 
     signal closed
@@ -482,6 +483,11 @@ Page {
                     svg: labelerLikeUri ? svgFilled.like : svgOutline.like
                     onClicked: likeLabeler(labelerLikeUri, labeler.uri, labeler.cid)
                     Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(labelerLikeCount, qsTr("like"), qsTr("likes"))
+
+                    BlinkingOpacity {
+                        target: likeIcon
+                        running: labelerLikeTransient
+                    }
                 }
 
                 StatAuthors {
@@ -975,11 +981,23 @@ Page {
         onLikeLabelerOk: (likeUri) => {
             labelerLikeUri = likeUri
             ++labelerLikeCount
+            labelerLikeTransient = false
+        }
+
+        onLikeLabelerFailed: (error) => {
+            labelerLikeTransient = false
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onUndoLikeLabelerOk: {
             labelerLikeUri = ""
             --labelerLikeCount
+            labelerLikeTransient = false
+        }
+
+        onUndoLikeLabelerFailed: (error) => {
+            labelerLikeTransient = false
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onFirstAppearanceOk: (did, appearance) => {
@@ -1163,6 +1181,8 @@ Page {
     }
 
     function likeLabeler(likeUri, uri, cid) {
+        labelerLikeTransient = true
+
         if (likeUri)
             profileUtils.undoLikeLabeler(likeUri, cid)
         else

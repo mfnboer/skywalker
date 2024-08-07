@@ -27,4 +27,10 @@ void LocalFeedModelChanges::updateLikeUri(const QString& cid, const QString& lik
     likeUriChanged();
 }
 
+void LocalFeedModelChanges::updateLikeTransient(const QString& cid, bool transient)
+{
+    mChanges[cid].mLikeTransient = transient;
+    likeTransientChanged();
+}
+
 }

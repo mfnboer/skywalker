@@ -392,6 +392,7 @@ qt_add_qml_module(libskywalker
         QML_FILES MemeEditor.qml
         QML_FILES GifView.qml
         QML_FILES MenuWithInfoItem.qml
+        QML_FILES BlinkingOpacity.qml
 )
 
 if (NOT ANDROID)

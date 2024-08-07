@@ -8,7 +8,7 @@
 
 namespace Skywalker {
 
-class  LocalFeedModelChanges
+class LocalFeedModelChanges
 {
 public:
     struct Change
@@ -18,6 +18,7 @@ public:
         // Not-set means not changed.
         // Empty means like removed.
         std::optional<QString> mLikeUri;
+        bool mLikeTransient = false;
     };
 
     LocalFeedModelChanges() = default;
@@ -28,10 +29,12 @@ public:
 
     void updateLikeCountDelta(const QString& cid, int delta);
     void updateLikeUri(const QString& cid, const QString& likeUri);
+    void updateLikeTransient(const QString& cid, bool transient);
 
 protected:
     virtual void likeCountChanged() = 0;
     virtual void likeUriChanged() = 0;
+    virtual void likeTransientChanged() = 0;
 
 private:
     // CID to change

@@ -1,5 +1,6 @@
 next
 ====
+* Blink like icon while liking is in progress
 * Non-sexual nudity is not adult content
 
 3.2

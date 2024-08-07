@@ -250,6 +250,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
     case Role::PostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : post.getLikeUri();
+    case Role::PostLikeTransient:
+        return change ? change->mLikeTransient : false;
     case Role::PostThreadMuted:
     {
         const auto* uriChange = getLocalUriChange(post.isReply() ? post.getReplyRootUri() : post.getUri());
@@ -355,6 +357,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLikeCount), "postLikeCount" },
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
+        { int(Role::PostLikeTransient), "postLikeTransient" },
         { int(Role::PostThreadMuted), "postThreadMuted" },
         { int(Role::PostReplyDisabled), "postReplyDisabled" },
         { int(Role::PostThreadgateUri), "postThreadgateUri" },
@@ -392,6 +395,11 @@ void AbstractPostFeedModel::likeCountChanged()
 void AbstractPostFeedModel::likeUriChanged()
 {
     changeData({ int(Role::PostLikeUri) });
+}
+
+void AbstractPostFeedModel::likeTransientChanged()
+{
+    changeData({ int(Role::PostLikeTransient) });
 }
 
 void AbstractPostFeedModel::replyCountChanged()

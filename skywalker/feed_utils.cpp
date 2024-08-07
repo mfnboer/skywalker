@@ -42,6 +42,11 @@ void FeedUtils::like(const QString& uri, const QString& cid)
     if (!postMaster())
         return;
 
+    mSkywalker->makeLocalModelChange(
+        [cid](LocalFeedModelChanges* model){
+            model->updateLikeTransient(cid, true);
+        });
+
     postMaster()->like(uri, cid,
         [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
             if (!presence)
@@ -51,15 +56,22 @@ void FeedUtils::like(const QString& uri, const QString& cid)
                 [cid, likeUri](LocalFeedModelChanges* model){
                     model->updateLikeCountDelta(cid, 1);
                     model->updateLikeUri(cid, likeUri);
+                    model->updateLikeTransient(cid, false);
                 });
 
             emit likeOk(likeUri);
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), cid](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Like failed:" << error << " - " << msg;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalFeedModelChanges* model){
+                    model->updateLikeTransient(cid, false);
+                });
+
             emit likeFailed(msg);
         });
 }
@@ -68,6 +80,11 @@ void FeedUtils::undoLike(const QString& likeUri, const QString& cid)
 {
     if (!postMaster())
         return;
+
+    mSkywalker->makeLocalModelChange(
+        [cid](LocalFeedModelChanges* model){
+            model->updateLikeTransient(cid, true);
+        });
 
     postMaster()->undo(likeUri,
         [this, presence=getPresence(), cid]{
@@ -78,15 +95,22 @@ void FeedUtils::undoLike(const QString& likeUri, const QString& cid)
                 [cid](LocalFeedModelChanges* model){
                     model->updateLikeCountDelta(cid, -1);
                     model->updateLikeUri(cid, "");
+                    model->updateLikeTransient(cid, false);
                 });
 
             emit undoLikeOk();
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), cid](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Undo like failed:" << error << " - " << msg;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalFeedModelChanges* model){
+                    model->updateLikeTransient(cid, false);
+                });
+
             emit undoLikeFailed(msg);
         });
 }

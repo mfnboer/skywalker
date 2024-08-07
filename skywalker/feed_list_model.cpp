@@ -35,6 +35,8 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
         return feed.getLikeCount() + (change ? change->mLikeCountDelta : 0);
     case Role::FeedLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : feed.getViewer().getLike();
+    case Role::FeedLikeTransient:
+        return change ? change->mLikeTransient : false;
     case Role::FeedCreator:
     {
         auto creator = feed.getCreator();
@@ -126,6 +128,7 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
         { int(Role::Feed), "feed" },
         { int(Role::FeedLikeCount), "feedLikeCount" },
         { int(Role::FeedLikeUri), "feedLikeUri" },
+        { int(Role::FeedLikeTransient), "feedLikeTransient" },
         { int(Role::FeedCreator), "feedCreator" },
         { int(Role::FeedSaved), "feedSaved" },
         { int(Role::FeedPinned), "feedPinned" },
@@ -143,6 +146,11 @@ void FeedListModel::likeCountChanged()
 void FeedListModel::likeUriChanged()
 {
     changeData({ int(Role::FeedLikeUri) });
+}
+
+void FeedListModel::likeTransientChanged()
+{
+    changeData({ int(Role::FeedLikeTransient) });
 }
 
 void FeedListModel::profileChanged()

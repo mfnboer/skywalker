@@ -58,6 +58,12 @@ void LocalPostModelChanges::updateLikeUri(const QString& cid, const QString& lik
     likeUriChanged();
 }
 
+void LocalPostModelChanges::updateLikeTransient(const QString& cid, bool transient)
+{
+    mChanges[cid].mLikeTransient = transient;
+    likeTransientChanged();
+}
+
 void LocalPostModelChanges::updateThreadgateUri(const QString& cid, const QString& threadgateUri)
 {
     mChanges[cid].mThreadgateUri = threadgateUri;

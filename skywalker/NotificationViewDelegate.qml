@@ -41,6 +41,7 @@ Rectangle {
     required property string notificationPostReplyRootCid
     required property string notificationPostRepostUri
     required property string notificationPostLikeUri
+    required property bool notificationPostLikeTransient
     required property bool notificationPostThreadMuted
     required property bool notificationPostReplyDisabled
     required property string notificationPostThreadgateUri
@@ -226,6 +227,7 @@ Rectangle {
                     likeCount: notificationPostLikeCount
                     repostUri: notificationPostRepostUri
                     likeUri: notificationPostLikeUri
+                    likeTransient: notificationPostLikeTransient
                     threadMuted: notificationPostThreadMuted
                     replyDisabled: notificationPostReplyDisabled
                     threadgateUri: notificationPostThreadgateUri

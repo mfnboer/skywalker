@@ -626,6 +626,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return change && change->mRepostUri ? *change->mRepostUri : notification.getNotificationPost(mPostCache).getRepostUri();
     case Role::NotificationPostLikeUri:
         return change && change->mLikeUri ? *change->mLikeUri : notification.getNotificationPost(mPostCache).getLikeUri();
+    case Role::NotificationPostLikeTransient:
+        return change ? change->mLikeTransient : false;
     case Role::NotificationPostThreadMuted:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
@@ -731,6 +733,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyRootCid), "notificationPostReplyRootCid" },
         { int(Role::NotificationPostRepostUri), "notificationPostRepostUri" },
         { int(Role::NotificationPostLikeUri), "notificationPostLikeUri" },
+        { int(Role::NotificationPostLikeTransient), "notificationPostLikeTransient" },
         { int(Role::NotificationPostThreadMuted), "notificationPostThreadMuted" },
         { int(Role::NotificationPostReplyDisabled), "notificationPostReplyDisabled" },
         { int(Role::NotificationPostThreadgateUri), "notificationPostThreadgateUri" },
@@ -768,6 +771,11 @@ void NotificationListModel::likeCountChanged()
 void NotificationListModel::likeUriChanged()
 {
     changeData({ int(Role::NotificationPostLikeUri) });
+}
+
+void NotificationListModel::likeTransientChanged()
+{
+    changeData({ int(Role::NotificationPostLikeTransient) });
 }
 
 void NotificationListModel::replyCountChanged()

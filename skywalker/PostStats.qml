@@ -9,6 +9,7 @@ Item {
     required property int likeCount
     required property string repostUri
     required property string likeUri
+    required property bool likeTransient
     required property bool threadMuted
     required property bool replyDisabled
     required property string threadgateUri
@@ -71,6 +72,11 @@ Item {
         onClicked: like()
 
         Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
+
+        BlinkingOpacity {
+            target: likeIcon
+            running: likeTransient
+        }
     }
     StatIcon {
         id: bookmarkIcon
