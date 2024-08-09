@@ -2,7 +2,7 @@ import QtQuick
 
 SequentialAnimation {
     required property var target
-    property int duration: 1000
+    property int duration: 500
 
     id: blinking
     loops: Animation.Infinite

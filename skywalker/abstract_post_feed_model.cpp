@@ -27,7 +27,8 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mHashtags(hashtags)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
-    connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this, [this]{ changeData({ int(Role::PostReplyToAuthor) }); });
+    connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
+            [this]{ changeData({ int(Role::PostReplyToAuthor), int(Role::PostRecord) }); });
 }
 
 void AbstractPostFeedModel::clearFeed()
@@ -173,6 +174,14 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
         if (record)
         {
+            if (record->isReply())
+            {
+                const QString did = record->getReplyToAuthorDid();
+
+                if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                    AuthorCache::instance().putProfile(did);
+            }
+
             const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
@@ -190,6 +199,15 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return QVariant();
 
         auto& record = recordWithMedia->getRecord();
+
+        if (record.isReply())
+        {
+            const QString did = record.getReplyToAuthorDid();
+
+            if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                AuthorCache::instance().putProfile(did);
+        }
+
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);

@@ -3,6 +3,7 @@ next
 * Blink like icon while liking is in progress
 * Non-sexual nudity is not adult content
 * Smaller ALT indicator
+* Always show reply-to author on quoted replies
 
 3.2
 ===

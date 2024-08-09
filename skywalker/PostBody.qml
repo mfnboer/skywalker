@@ -285,6 +285,11 @@ Column {
         }
     }
 
+    onPostRecordChanged: {
+        if (postRecord)
+            recordLoader.setSource("RecordView.qml", {record: postRecord})
+    }
+
     onVisibleChanged: {
         if (isPooled)
             return

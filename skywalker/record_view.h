@@ -65,6 +65,7 @@ public:
     const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
     ContentLabelList getLabelsIncludingAuthorLabels() const;
     bool isReply() const;
+    QString getReplyToAuthorDid() const;
     BasicProfile getReplyToAuthor() const;
     const LanguageList& getLanguages() const;
     std::vector<QString> getHashtags() const override;

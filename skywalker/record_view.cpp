@@ -225,7 +225,7 @@ bool RecordView::isReply() const
     return post->mReply != nullptr;
 }
 
-BasicProfile RecordView::getReplyToAuthor() const
+QString RecordView::getReplyToAuthorDid() const
 {
     if (!mRecord)
         return {};
@@ -246,7 +246,16 @@ BasicProfile RecordView::getReplyToAuthor() const
     if (atUri.authorityIsHandle())
         return {};
 
-    const auto did = atUri.getAuthority();
+    return atUri.getAuthority();
+}
+
+BasicProfile RecordView::getReplyToAuthor() const
+{   
+    const auto did = getReplyToAuthorDid();
+
+    if (did.isEmpty())
+        return {};
+
     auto* profile = AuthorCache::instance().get(did);
     return profile ? *profile : BasicProfile();
 }
