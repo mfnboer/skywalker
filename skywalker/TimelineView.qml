@@ -88,7 +88,7 @@ SkyListView {
     }
 
     function getFirstVisibleIndex() {
-        let firstVisibleIndex = indexAt(0, contentY)
+        let firstVisibleIndex = indexAt(0, contentY + headerItem.height)
 
         if (firstVisibleIndex < 0 && count > 0)
             return 0
@@ -116,6 +116,7 @@ SkyListView {
 
     function rowsInsertedHandler(parent, start, end) {
         console.debug("ROWS INSERTED:", start, end, "Count:", count, "First visible:", getFirstVisibleIndex())
+        console.debug("contentY:", contentY, "originY:", originY, "contentHeight", contentHeight)
 
         if (topIndexBeforeInsert === 0 && start === 0) {
             if (count > end + 1) {
@@ -132,6 +133,7 @@ SkyListView {
     function rowsAboutToBeInsertedHandler(parent, start, end) {
         topIndexBeforeInsert = getFirstVisibleIndex()
         console.debug("Top index before insert:", topIndexBeforeInsert, "Count:", count)
+        console.debug("contentY:", contentY, "originY:", originY, "contentHeight", contentHeight)
     }
 
     function setInSync(index) {

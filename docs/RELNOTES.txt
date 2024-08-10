@@ -4,6 +4,7 @@ next
 * Non-sexual nudity is not adult content
 * Smaller ALT indicator
 * Always show reply-to author on quoted replies
+* Bug fix: delete post from thread was broken
 
 3.2
 ===

@@ -198,16 +198,11 @@ ApplicationWindow {
 
         onTimelineSyncOK: (index) => {
             timelineSyncTimer.sync(index)
-            // closeStartupStatus()
-            // getTimelineView().setInSync(index)
-            // skywalker.startTimelineAutoUpdate()
         }
 
         onTimelineSyncFailed: {
             console.warn("SYNC FAILED")
             timelineSyncTimer.sync(0)
-            // closeStartupStatus()
-            // getTimelineView().setInSync(0)
         }
 
         onTimelineRefreshed: (prevTopPostIndex) => {
