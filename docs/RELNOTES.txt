@@ -1,10 +1,11 @@
 next
 ====
+* Prevent timeline from scrolling down when new posts come in
 * Blink like icon while liking is in progress
 * Non-sexual nudity is not adult content
 * Smaller ALT indicator
 * Always show reply-to author on quoted replies
-* Bug fix: delete post from thread was broken
+* Bug fix: delete post from thread composition was broken
 
 3.2
 ===

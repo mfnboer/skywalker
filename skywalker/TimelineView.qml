@@ -7,7 +7,8 @@ SkyListView {
     required property var skywalker
     property bool inSync: false
     property int unreadPosts: 0
-    property int topIndexBeforeInsert: -1
+    property var anchorItem // item used to calibrate list position on insert of new posts
+    property int calibrationDy: 0
 
     id: timelineView
     model: skywalker.timelineModel
@@ -36,6 +37,15 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: timelineView.width
+
+        onCalibratedPosition: (dy) => {
+            calibrationDy += dy
+
+            // Delay the positioning. Immediate positioning caused some
+            // elements not to reposition causing empty space in the visible
+            // area of the list view.
+            Qt.callLater(calibratePosition)
+        }
     }
 
     onCountChanged: {
@@ -105,35 +115,47 @@ SkyListView {
         return lastVisibleIndex
     }
 
+    function calibratePosition() {
+        timelineView.contentY += calibrationDy
+        calibrationDy = 0
+        calibrateUnreadPosts()
+    }
+
     function updateUnreadPosts(firstIndex) {
         timelineView.unreadPosts = Math.max(firstIndex, 0)
     }
 
+    function setAnchorItem(index) {
+        if (anchorItem)
+            anchorItem.isAnchorItem = false
+
+        if (index < 0)
+            anchorItem = null
+        else
+            anchorItem = itemAtIndex(index)
+
+        if (anchorItem)
+            anchorItem.isAnchorItem = true
+    }
+
     function moveToPost(index) {
         positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
+        setAnchorItem(index)
         updateUnreadPosts(index)
     }
 
-    function rowsInsertedHandler(parent, start, end) {
-        console.debug("ROWS INSERTED:", start, end, "Count:", count, "First visible:", getFirstVisibleIndex())
-        console.debug("contentY:", contentY, "originY:", originY, "contentHeight", contentHeight)
-
-        if (topIndexBeforeInsert === 0 && start === 0) {
-            if (count > end + 1) {
-                // Stay at the current item instead of scrolling to the new top
-                console.debug("Position at:", end + 1)
-                positionViewAtIndex(end + 1, ListView.Beginning)
-            }
-        }
-
+    function calibrateUnreadPosts() {
         const firstVisibleIndex = getFirstVisibleIndex()
         updateUnreadPosts(firstVisibleIndex)
     }
 
+    function rowsInsertedHandler(parent, start, end) {
+        calibrateUnreadPosts()
+    }
+
     function rowsAboutToBeInsertedHandler(parent, start, end) {
-        topIndexBeforeInsert = getFirstVisibleIndex()
-        console.debug("Top index before insert:", topIndexBeforeInsert, "Count:", count)
-        console.debug("contentY:", contentY, "originY:", originY, "contentHeight", contentHeight)
+        const firstVisibleIndex = getFirstVisibleIndex()
+        setAnchorItem(firstVisibleIndex)
     }
 
     function setInSync(index) {

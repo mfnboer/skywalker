@@ -54,6 +54,11 @@ Rectangle {
     required property bool postLocallyDeleted
     required property bool endOfFeed
 
+    property int prevY: 0
+    property bool isAnchorItem: false
+
+    signal calibratedPosition(int dy)
+
     id: postEntry
     height: grid.height
     color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.postHighLightColor : guiSettings.backgroundColor
@@ -64,12 +69,21 @@ Rectangle {
     Accessible.name: getSpeech()
     Accessible.onPressAction: performAccessiblePressAction()
 
-    ListView.onPooled: {
-        postBody.pooled()
-    }
+    onIsAnchorItemChanged: prevY = y
 
-    ListView.onReused: {
-        postBody.reused()
+    // New items added at the top of the list sometimes push all items below downwards,
+    // causing the list to scroll. To prevent that, we detect the downward movement and
+    // scroll back (ideally Qt should not do push down)
+    onYChanged: {
+        if (!isAnchorItem)
+            return
+
+        const dy = y - prevY
+
+        if (dy != 0) {
+            prevY = y
+            calibratedPosition(dy)
+        }
     }
 
     GridLayout {
@@ -266,6 +280,13 @@ Rectangle {
                 postThreadType: postEntry.postThreadType
                 postIndexedSecondsAgo: (new Date() - postEntry.postIndexedDateTime) / 1000
             }
+
+            // TODO TEST
+            // Text {
+            //     width: parent.width
+            //     font.bold: isAnchorItem
+            //     text: `Y=${postEntry.y}, H=${postEntry.height}`
+            // }
 
             // Reply to
             Loader {

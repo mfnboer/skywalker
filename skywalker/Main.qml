@@ -87,23 +87,10 @@ ApplicationWindow {
         y: guiSettings.headerHeight
     }
 
-    // Wait for the list view to fully render before jumping to a particular entry
-    Timer {
-        property int postIndex
-
-        id: timelineSyncTimer
-        interval: 200
-
-        function sync(index) {
-            postIndex = index
-            start()
-        }
-
-        onTriggered: {
-            closeStartupStatus()
-            getTimelineView().setInSync(postIndex)
-            skywalker.startTimelineAutoUpdate()
-        }
+    function syncTimelineToPost(postIndex) {
+        closeStartupStatus()
+        getTimelineView().setInSync(postIndex)
+        skywalker.startTimelineAutoUpdate()
     }
 
     Skywalker {
@@ -197,12 +184,12 @@ ApplicationWindow {
         }
 
         onTimelineSyncOK: (index) => {
-            timelineSyncTimer.sync(index)
+            syncTimelineToPost(index)
         }
 
         onTimelineSyncFailed: {
             console.warn("SYNC FAILED")
-            timelineSyncTimer.sync(0)
+            syncTimelineToPost(0)
         }
 
         onTimelineRefreshed: (prevTopPostIndex) => {

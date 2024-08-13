@@ -25,9 +25,6 @@ Column {
     property bool attachmentsInitialized: false
     property string postHighlightColor: "transparent"
 
-    // Dynamic objects
-    property bool isPooled: false
-
     id: postBody
 
     SkyCleanedText {
@@ -291,38 +288,11 @@ Column {
     }
 
     onVisibleChanged: {
-        if (isPooled)
-            return
-
         if (postBody.visible && !postBody.attachmentsInitialized)
             initAttachments()
     }
 
-    function pooled() {
-        languageLabelsLoader.source = ""
-        imageLoader.source = ""
-        externalLoader.source = ""
-        contentLabelsLoader.source = ""
-        recordLoader.source = ""
-        recordWithMediaLoader.source = ""
-        attachmentsInitialized = false
-
-        showWarnedPost = false
-        bodyText.capLineCount = bodyText.initialShowMaxLineCount
-        isPooled = true
-    }
-
-    function reused() {
-        isPooled = false
-        initAttachments()
-    }
-
     function initAttachments() {
-        if (isPooled) {
-            console.debug("IS POOLED!!!")
-            return
-        }
-
         if (postVisible())
             showPostAttachements()
 

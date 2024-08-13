@@ -6,6 +6,8 @@ import skywalker
 SkyListView {
     required property int modelId
     required property int postEntryIndex
+    property int calibrationDy: 0
+
     signal closed
 
     id: view
@@ -120,7 +122,6 @@ SkyListView {
     }
     headerPositioning: ListView.OverlayHeader
 
-
     footer: Rectangle {
         width: parent.width
         z: guiSettings.footerZLevel
@@ -139,15 +140,14 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: view.width
+
+        onCalibratedPosition: (dy) => {
+            calibrationDy += dy
+            Qt.callLater(calibratePosition)
+        }
     }
 
     FlickableRefresher {}
-
-    Timer {
-        id: syncTimer
-        interval: 300
-        onTriggered: positionViewAtIndex(postEntryIndex, ListView.Contain)
-    }
 
     UnicodeFonts {
         id: unicodeFonts
@@ -181,8 +181,22 @@ SkyListView {
                           initialText, imageSource)
     }
 
+    function calibratePosition() {
+        view.contentY += calibrationDy
+        calibrationDy = 0
+    }
+
+    function sync() {
+        const anchorItem = itemAtIndex(postEntryIndex)
+
+        if (anchorItem)
+            anchorItem.isAnchorItem = true
+
+        positionViewAtIndex(postEntryIndex, ListView.Contain)
+    }
+
     function rowsInsertedHandler(parent, start, end) {
-        syncTimer.start()
+        sync()
     }
 
     Component.onDestruction: {
@@ -193,11 +207,6 @@ SkyListView {
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
         view.model.onRowsInserted.connect(rowsInsertedHandler)
-
-        // As not all entries have the same height, positioning at an index
-        // is fickle. By moving to the end and then wait a bit before positioning
-        // at the index entry, it seems to work.
-        positionViewAtEnd()
-        syncTimer.start()
+        sync()
     }
 }
