@@ -7,9 +7,9 @@
 #include "labeler.h"
 #include "language_utils.h"
 #include "list_view.h"
-#include "muted_words.h"
 #include "normalized_word_index.h"
 #include "profile.h"
+#include "starter_pack.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
 
@@ -44,6 +44,8 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(ListView list READ getList FINAL)
     Q_PROPERTY(bool labelerAvailable READ getLabelerAvailable FINAL)
     Q_PROPERTY(LabelerView labeler READ getLabeler FINAL)
+    Q_PROPERTY(bool starterPackAvailable READ getStarterPackAvailable FINAL)
+    Q_PROPERTY(StarterPackViewBasic starterPack READ getStarterPack FINAL)
     QML_VALUE_TYPE(recordview)
 
 public:
@@ -84,6 +86,8 @@ public:
     ListView getList() const;
     bool getLabelerAvailable() const { return mLabeler != nullptr; }
     LabelerView getLabeler() const;
+    bool getStarterPackAvailable() const { return mStarterPack != nullptr; }
+    StarterPackViewBasic getStarterPack() const;
 
     void setContentVisibility(QEnums::ContentVisibility visibility) { mContentVisibility = visibility; }
     void setContentWarning(const QString& warning) { mContentWarning = warning; }
@@ -96,6 +100,7 @@ private:
     ATProto::AppBskyFeed::GeneratorView::SharedPtr mFeed;
     ATProto::AppBskyGraph::ListView::SharedPtr mList;
     ATProto::AppBskyLabeler::LabelerView::SharedPtr mLabeler;
+    ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr mStarterPack;
     bool mNotFound = false;
     bool mBlocked = false;
     bool mNotSupported = false;

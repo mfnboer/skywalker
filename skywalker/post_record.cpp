@@ -60,7 +60,7 @@ QString PostRecord::getReplyRootUri() const
     return ref ? ref->mUri : QString();
 }
 
-BasicProfile PostRecord::getReplyToAuthor() const
+QString PostRecord::getReplyToAuthorDid() const
 {
     const auto replyToRef = getReplyToRef();
     if (!replyToRef)
@@ -74,6 +74,16 @@ BasicProfile PostRecord::getReplyToAuthor() const
     }
 
     const auto did = atUri.getAuthority();
+    return did;
+}
+
+BasicProfile PostRecord::getReplyToAuthor() const
+{
+    const auto did = getReplyToAuthorDid();
+
+    if (did.isEmpty())
+        return {};
+
     auto* author = AuthorCache::instance().get(did);
 
     if (!author)

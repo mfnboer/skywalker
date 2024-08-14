@@ -3,6 +3,7 @@
 #pragma once
 #include "abstract_post_feed_model.h"
 #include "enums.h"
+#include "muted_words.h"
 
 namespace Skywalker {
 

@@ -92,6 +92,11 @@ Item {
         return speech
     }
 
+    function getStarterPackSpeech(starterPack) {
+        let speech = qsTr(`starter pack: ${starterPack.name} by ${starterPack.creator.name}\n\n${starterPack.description}`)
+        return speech
+    }
+
     function getContentPrefVisibilitySpeech(pref) {
         switch (pref) {
         case QEnums.CONTENT_PREF_VISIBILITY_HIDE:

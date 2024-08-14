@@ -109,6 +109,16 @@ Item {
             }
         }
 
+        Loader {
+            width: parent.width
+            active: record.starterPackAvailable
+
+            sourceComponent: QuoteStarterPack {
+                width: parent.width
+                starterPack: record.starterPack
+            }
+        }
+
         Text {
             width: parent.width
             color: guiSettings.textColor
@@ -165,6 +175,8 @@ Item {
             root.viewList(record.list)
         else if (record.labelerAvailable)
             skywalker.getDetailedProfile(record.labeler.creator.did)
+        else if (record.starterPackAvailable)
+            skywalker.getStarterPackView(record.starterPack.uri)
 
         opening()
     }
@@ -184,6 +196,9 @@ Item {
         }
         else if (record.labelerAvailable) {
             return accessibilityUtils.getLabelerSpeech(record.labeler)
+        }
+        else if (record.starterPackAvailable) {
+            return accessibilityUtils.getStarterPackSpeech(record.starterPack)
         }
 
         return accessibilityUtils.getPostNotAvailableSpeech(

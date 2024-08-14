@@ -281,13 +281,6 @@ Rectangle {
                 postIndexedSecondsAgo: (new Date() - postEntry.postIndexedDateTime) / 1000
             }
 
-            // TODO TEST
-            // Text {
-            //     width: parent.width
-            //     font.bold: isAnchorItem
-            //     text: `Y=${postEntry.y}, H=${postEntry.height}`
-            // }
-
             // Reply to
             Loader {
                 width: parent.width

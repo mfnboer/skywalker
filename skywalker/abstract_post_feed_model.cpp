@@ -28,7 +28,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
-            [this]{ changeData({ int(Role::PostReplyToAuthor), int(Role::PostRecord) }); });
+            [this]{ changeData({ int(Role::PostReplyToAuthor), int(Role::PostRecord), int(Role::PostRecordWithMedia) }); });
 }
 
 void AbstractPostFeedModel::clearFeed()

@@ -3,6 +3,7 @@
 #include "post.h"
 #include "author_cache.h"
 #include "content_filter.h"
+#include "unicode_fonts.h"
 #include "user_settings.h"
 #include "lexicon/lexicon.h"
 #include <atproto/lib/at_uri.h>
