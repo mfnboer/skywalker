@@ -4,6 +4,7 @@
 #include "bookmarks.h"
 #include "content_filter.h"
 #include "local_post_model_changes.h"
+#include "muted_words.h"
 #include "notification.h"
 #include "post_cache.h"
 #include <atproto/lib/client.h>

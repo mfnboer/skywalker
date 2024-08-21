@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "external_view.h"
+#include "unicode_fonts.h"
 #include "user_settings.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/rich_text_master.h>
@@ -46,6 +47,9 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         mLabeler = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(view.mRecord);
         break;
     }
+    case ATProto::RecordType::APP_BSKY_GRAPH_STARTER_PACK_VIEW_BASIC:
+        mStarterPack = std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(view.mRecord);
+        break;
     default:
         qWarning() << "Record type not supported:" << view.mUnsupportedType;
         mNotSupported = true;
@@ -225,7 +229,7 @@ bool RecordView::isReply() const
     return post->mReply != nullptr;
 }
 
-BasicProfile RecordView::getReplyToAuthor() const
+QString RecordView::getReplyToAuthorDid() const
 {
     if (!mRecord)
         return {};
@@ -246,7 +250,16 @@ BasicProfile RecordView::getReplyToAuthor() const
     if (atUri.authorityIsHandle())
         return {};
 
-    const auto did = atUri.getAuthority();
+    return atUri.getAuthority();
+}
+
+BasicProfile RecordView::getReplyToAuthor() const
+{   
+    const auto did = getReplyToAuthorDid();
+
+    if (did.isEmpty())
+        return {};
+
     auto* profile = AuthorCache::instance().get(did);
     return profile ? *profile : BasicProfile();
 }
@@ -311,6 +324,14 @@ LabelerView RecordView::getLabeler() const
         return {};
 
     return LabelerView(mLabeler);
+}
+
+StarterPackViewBasic RecordView::getStarterPack() const
+{
+    if (!mStarterPack)
+        return {};
+
+    return StarterPackViewBasic(mStarterPack);
 }
 
 }

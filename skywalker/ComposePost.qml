@@ -798,7 +798,7 @@ Page {
                         return
                     }
 
-                    let item = itemAt(i)
+                    let item = itemAt(index)
                     item.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
 
                     copyPostItemsToPostList()

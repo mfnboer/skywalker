@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "muted_words.h"
 #include "post_cache.h"
 #include "presence.h"
 #include <atproto/lib/client.h>

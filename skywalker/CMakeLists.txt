@@ -393,6 +393,7 @@ qt_add_qml_module(libskywalker
         QML_FILES GifView.qml
         QML_FILES MenuWithInfoItem.qml
         QML_FILES BlinkingOpacity.qml
+        QML_FILES QuoteStarterPack.qml
 )
 
 if (NOT ANDROID)

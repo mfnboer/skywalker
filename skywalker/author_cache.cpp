@@ -96,7 +96,7 @@ const BasicProfile* AuthorCache::get(const QString& did) const
 
 bool AuthorCache::contains(const QString& did) const
 {
-    return mCache.contains(did);
+    return get(did) != nullptr;
 }
 
 void AuthorCache::setUser(const BasicProfile& user)

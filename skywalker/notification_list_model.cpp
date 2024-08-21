@@ -19,6 +19,14 @@ NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
     mMutedWords(mutedWords)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
+    connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
+            [this]{ changeData({ int(Role::ReplyToAuthor),
+                                 int(Role::NotificationReasonPostReplyToAuthor),
+                                 int(Role::NotificationPostRecord),
+                                 int(Role::NotificationPostRecordWithMedia),
+                                 int(Role::NotificationReasonPostRecord),
+                                 int(Role::NotificationReasonPostRecordWithMedia) });
+            });
 }
 
 void NotificationListModel::clear()
@@ -503,8 +511,24 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReasonPost(mReasonPostCache).isReply();
     case Role::NotificationReasonPostReplyToAuthor:
     {
-        const auto author = notification.getReasonPost(mReasonPostCache).getReplyToAuthor();
-        return author ? QVariant::fromValue(*author) : QVariant();
+        const auto post = notification.getReasonPost(mReasonPostCache);
+
+        if (!post.isReply())
+            return {};
+
+        const auto author = post.getReplyToAuthor();
+
+        if (!author)
+        {
+            const QString did = post.getReplyToAuthorDid();
+
+            if (!did.isEmpty())
+                AuthorCache::instance().putProfile(did);
+
+            return {};
+        }
+
+        return QVariant::fromValue(*author);
     }
     case Role::NotificationReasonPostImages:
         return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getImages());
@@ -521,6 +545,14 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         if (record)
         {
+            if (record->isReply())
+            {
+                const QString did = record->getReplyToAuthorDid();
+
+                if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                    AuthorCache::instance().putProfile(did);
+            }
+
             const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
@@ -539,6 +571,15 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             return QVariant();
 
         auto& record = recordWithMedia->getRecord();
+
+        if (record.isReply())
+        {
+            const QString did = record.getReplyToAuthorDid();
+
+            if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                AuthorCache::instance().putProfile(did);
+        }
+
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
@@ -594,6 +635,14 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         if (record)
         {
+            if (record->isReply())
+            {
+                const QString did = record->getReplyToAuthorDid();
+
+                if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                    AuthorCache::instance().putProfile(did);
+            }
+
             const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
@@ -612,6 +661,15 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             return QVariant();
 
         auto& record = recordWithMedia->getRecord();
+
+        if (record.isReply())
+        {
+            const QString did = record.getReplyToAuthorDid();
+
+            if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                AuthorCache::instance().putProfile(did);
+        }
+
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
@@ -681,7 +739,24 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostIsReply:
         return notification.getPostRecord().isReply();
     case Role::ReplyToAuthor:
-        return QVariant::fromValue(notification.getPostRecord().getReplyToAuthor());
+    {
+        const auto record = notification.getPostRecord();
+
+        if (!record.isReply())
+            return {};
+
+        const auto author = record.getReplyToAuthor();
+
+        if (!author.isNull())
+            return QVariant::fromValue(author);
+
+        const QString did = record.getReplyToAuthorDid();
+
+        if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+            AuthorCache::instance().putProfile(did);
+
+        return {};
+    }
     case Role::NotificationInviteCode:
         return notification.getInviteCode();
     case Role::NotificationInviteCodeUsedBy:
