@@ -143,7 +143,7 @@ SkyListView {
 
         onCalibratedPosition: (dy) => {
             calibrationDy += dy
-            Qt.callLater(calibratePosition)
+            calibratePosition()
         }
     }
 
@@ -155,6 +155,12 @@ SkyListView {
 
     Utils {
         id: utils
+    }
+
+    Timer {
+        id: syncTimer
+        interval: 200
+        onTriggered: sync()
     }
 
     GuiSettings {
@@ -207,6 +213,6 @@ SkyListView {
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
         view.model.onRowsInserted.connect(rowsInsertedHandler)
-        sync()
+        syncTimer.start()
     }
 }

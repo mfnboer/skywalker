@@ -40,11 +40,7 @@ SkyListView {
 
         onCalibratedPosition: (dy) => {
             calibrationDy += dy
-
-            // Delay the positioning. Immediate positioning caused some
-            // elements not to reposition causing empty space in the visible
-            // area of the list view.
-            Qt.callLater(calibratePosition)
+            calibratePosition()
         }
     }
 
@@ -66,6 +62,7 @@ SkyListView {
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        setAnchorItem(lastVisibleIndex + 1)
         updateUnreadPosts(firstVisibleIndex)
     }
 
@@ -140,7 +137,8 @@ SkyListView {
 
     function moveToPost(index) {
         positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
-        setAnchorItem(index)
+        const last = getLastVisibleIndex()
+        setAnchorItem(last + 1)
         updateUnreadPosts(index)
     }
 
@@ -154,8 +152,8 @@ SkyListView {
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        setAnchorItem(firstVisibleIndex)
+        const index = getLastVisibleIndex()
+        setAnchorItem(index + 1)
     }
 
     function setInSync(index) {
