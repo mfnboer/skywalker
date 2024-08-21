@@ -13,11 +13,11 @@ SkyListView {
     id: timelineView
     model: skywalker.timelineModel
 
-    Accessible.name: qsTr("Home feed")
+    Accessible.name: qsTr("Following")
 
     header: PostFeedHeader {
         skywalker: timelineView.skywalker
-        feedName: qsTr("Home feed")
+        feedName: qsTr("Following")
         showAsHome: true
         isHomeFeed: true
     }

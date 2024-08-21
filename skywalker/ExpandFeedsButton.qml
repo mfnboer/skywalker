@@ -25,7 +25,7 @@ SvgButton {
                 rightPadding: homeAvatar.width + 5
                 color: guiSettings.textColor
                 elide: Text.ElideRight
-                text: qsTr("Home feed", "timeline title")
+                text: qsTr("Following", "timeline title")
             }
 
             FeedAvatar {
