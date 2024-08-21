@@ -1,3 +1,7 @@
+next
+====
+* No more occassional flashing of your timeline
+
 3.2.1
 =====
 * Prevent timeline from scrolling down when new posts come in
