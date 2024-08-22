@@ -1,5 +1,5 @@
-next
-====
+3.2.2
+=====
 * No more occassional flashing of your timeline
 * Renamed "home feed" to "following"
 
