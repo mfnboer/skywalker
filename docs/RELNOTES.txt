@@ -1,6 +1,11 @@
 next
 ====
+* Link card retrieval improvements
+
+3.2.2
+=====
 * No more occassional flashing of your timeline
+* Renamed "home feed" to "following"
 
 3.2.1
 =====

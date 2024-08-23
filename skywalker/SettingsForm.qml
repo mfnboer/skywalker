@@ -191,7 +191,7 @@ Page {
             HeaderText {
                 Layout.topMargin: 10
                 Layout.bottomMargin: 10
-                text: qsTr("Home feed preferences")
+                text: qsTr("Following feed preferences")
             }
 
             AccessibleSwitch {

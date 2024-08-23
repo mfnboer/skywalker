@@ -1194,6 +1194,7 @@ Page {
         id: linkCardReader
 
         onLinkCard: (card) => {
+                        busyIndicator.running = false
                         console.debug("Got card:", card.link, card.title, card.thumb)
                         console.debug(card.description)
                         linkCardTimer.immediateGetInProgress = false
@@ -1214,6 +1215,7 @@ Page {
                     }
 
         onLinkCardFailed: {
+            busyIndicator.running = false
             console.debug("Failed to get link card")
             linkCardTimer.immediateGetInProgress = false
             getNextLink()
@@ -1243,7 +1245,10 @@ Page {
 
         id: linkCardTimer
         interval: 1000
-        onTriggered: linkCardReader.getLinkCard(webLink)
+        onTriggered: {
+            busyIndicator.running = true
+            linkCardReader.getLinkCard(webLink)
+        }
 
         function startForLink(postIndex, webLink) {
             if (immediateGetInProgress) {

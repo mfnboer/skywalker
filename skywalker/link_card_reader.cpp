@@ -52,6 +52,12 @@ LinkCardReader::LinkCardReader(QObject* parent):
     mNetwork.setAutoDeleteReplies(true);
     mNetwork.setTransferTimeout(15000);
     mNetwork.setCookieJar(new CookieJar);
+
+    QLocale locale;
+    mAcceptLanguage = QString("%1_%2, *;q=0.5").arg(
+        QLocale::languageToCode(locale.language()),
+        QLocale::territoryToCode(locale.territory()));
+    qDebug() << "Accept-Language:" << mAcceptLanguage;
 }
 
 LinkCard* LinkCardReader::makeLinkCard(const QString& link, const QString& title,
@@ -134,6 +140,11 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, true);
 
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
+    request.setRawHeader("Accept", "*/*");
+    request.setRawHeader("Accept-Encoding", "identity");
+    request.setRawHeader("Accept-Language", mAcceptLanguage.toUtf8()); // For Reuters
+    request.setRawHeader("Priority", "i"); // For Reuters
+    request.setRawHeader("User-Agent", "Skywalker"); // For NYT, Reuters
 
     QNetworkReply* reply = mNetwork.get(request);
     mInProgress = reply;
@@ -161,8 +172,8 @@ static QString matchRegexes(const std::vector<QRegularExpression>& regexes, cons
 
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
-    static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?title[\"'] [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
-    static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'][^>]*>)");
+    static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?title[\"']? [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
+    static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?title[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogTitleREs = {
         QRegularExpression(ogTitleStr1.arg('"')),
@@ -171,8 +182,8 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(ogTitleStr2.arg('\''))
     };
 
-    static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?description[\"'] [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
-    static const QString ogDescriptionStr2(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'][^>]*>)");
+    static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?description[\"']? [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
+    static const QString ogDescriptionStr2(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?description[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogDescriptionREs = {
         QRegularExpression(ogDescriptionStr1.arg('"')),
@@ -181,14 +192,18 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(ogDescriptionStr2.arg('\''))
     };
 
-    static const QString ogImageStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?image[\"'] [^>]*content=%1(?<image>[^%1]+?)%1[^>]*>)");
-    static const QString ogImageStr2(R"(<meta [^>]*content=%1(?<image>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'][^>]*>)");
+    static const QString ogImageStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image[\"']? [^>]*content=%1(?<image>[^%1]+?)%1[^>]*>)");
+    static const QString ogImageStr2(R"(<meta [^>]*content=%1(?<image>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?image[\"']?[^>]*>)");
+    static const QString ogImageStr3(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image[\"']? [^>]*content=(?<image>[^ ]+?)[^>]*>)");
+    static const QString ogImageStr4(R"(<meta [^>]*content=(?<image>[^ ]+?) [^<]*(property|name)=[\"']?(og:|twitter:)?image[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogImageREs = {
         QRegularExpression(ogImageStr1.arg('"')),
         QRegularExpression(ogImageStr1.arg('\'')),
         QRegularExpression(ogImageStr2.arg('"')),
-        QRegularExpression(ogImageStr2.arg('\''))
+        QRegularExpression(ogImageStr2.arg('\'')),
+        QRegularExpression(ogImageStr3),
+        QRegularExpression(ogImageStr4)
     };
 
     mInProgress = nullptr;
@@ -285,6 +300,7 @@ void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)
     mInProgress = nullptr;
     qDebug() << "Failed to get link:" << reply->request().url();
     qDebug() << "Error:" << errCode << reply->errorString();
+    qDebug() << reply->readAll();
     emit linkCardFailed();
 }
 
