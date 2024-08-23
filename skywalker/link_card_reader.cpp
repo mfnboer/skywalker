@@ -134,6 +134,9 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, true);
 
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
+    request.setRawHeader("Accept", "*/*");
+    request.setRawHeader("Accept-Encoding", "identity");
+    request.setRawHeader("User-Agent", "Skywalker"); // Without User-Agent NYT refuses
 
     QNetworkReply* reply = mNetwork.get(request);
     mInProgress = reply;
@@ -289,6 +292,7 @@ void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)
     mInProgress = nullptr;
     qDebug() << "Failed to get link:" << reply->request().url();
     qDebug() << "Error:" << errCode << reply->errorString();
+    qDebug() << reply->readAll();
     emit linkCardFailed();
 }
 
