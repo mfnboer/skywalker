@@ -161,8 +161,8 @@ static QString matchRegexes(const std::vector<QRegularExpression>& regexes, cons
 
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
-    static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?title[\"'] [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
-    static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?title[\"'][^>]*>)");
+    static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?title[\"']? [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
+    static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?title[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogTitleREs = {
         QRegularExpression(ogTitleStr1.arg('"')),
@@ -171,8 +171,8 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(ogTitleStr2.arg('\''))
     };
 
-    static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?description[\"'] [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
-    static const QString ogDescriptionStr2(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?description[\"'][^>]*>)");
+    static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?description[\"']? [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
+    static const QString ogDescriptionStr2(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?description[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogDescriptionREs = {
         QRegularExpression(ogDescriptionStr1.arg('"')),
@@ -181,14 +181,18 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(ogDescriptionStr2.arg('\''))
     };
 
-    static const QString ogImageStr1(R"(<meta [^>]*(property|name) *=[\"'](og:|twitter:)?image[\"'] [^>]*content=%1(?<image>[^%1]+?)%1[^>]*>)");
-    static const QString ogImageStr2(R"(<meta [^>]*content=%1(?<image>[^%1]+?)%1 [^>]*(property|name)=[\"'](og:|twitter:)?image[\"'][^>]*>)");
+    static const QString ogImageStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image[\"']? [^>]*content=%1(?<image>[^%1]+?)%1[^>]*>)");
+    static const QString ogImageStr2(R"(<meta [^>]*content=%1(?<image>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?image[\"']?[^>]*>)");
+    static const QString ogImageStr3(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image[\"']? [^>]*content=(?<image>[^ ]+?)[^>]*>)");
+    static const QString ogImageStr4(R"(<meta [^>]*content=(?<image>[^ ]+?) [^<]*(property|name)=[\"']?(og:|twitter:)?image[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogImageREs = {
         QRegularExpression(ogImageStr1.arg('"')),
         QRegularExpression(ogImageStr1.arg('\'')),
         QRegularExpression(ogImageStr2.arg('"')),
-        QRegularExpression(ogImageStr2.arg('\''))
+        QRegularExpression(ogImageStr2.arg('\'')),
+        QRegularExpression(ogImageStr3),
+        QRegularExpression(ogImageStr4)
     };
 
     mInProgress = nullptr;
