@@ -52,6 +52,12 @@ LinkCardReader::LinkCardReader(QObject* parent):
     mNetwork.setAutoDeleteReplies(true);
     mNetwork.setTransferTimeout(15000);
     mNetwork.setCookieJar(new CookieJar);
+
+    QLocale locale;
+    mAcceptLanguage = QString("%1_%2, *;q=0.5").arg(
+        QLocale::languageToCode(locale.language()),
+        QLocale::territoryToCode(locale.territory()));
+    qDebug() << "Accept-Language:" << mAcceptLanguage;
 }
 
 LinkCard* LinkCardReader::makeLinkCard(const QString& link, const QString& title,
@@ -136,7 +142,9 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
     request.setRawHeader("Accept", "*/*");
     request.setRawHeader("Accept-Encoding", "identity");
-    request.setRawHeader("User-Agent", "Skywalker"); // Without User-Agent NYT refuses
+    request.setRawHeader("Accept-Language", mAcceptLanguage.toUtf8()); // For Reuters
+    request.setRawHeader("Priority", "i"); // For Reuters
+    request.setRawHeader("User-Agent", "Skywalker"); // For NYT, Reuters
 
     QNetworkReply* reply = mNetwork.get(request);
     mInProgress = reply;

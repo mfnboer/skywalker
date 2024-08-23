@@ -39,6 +39,7 @@ private:
     QUrl mPrevDestination;
     bool mRetry = false;
     GifUtils mGifUtils;
+    QString mAcceptLanguage;
 };
 
 }
