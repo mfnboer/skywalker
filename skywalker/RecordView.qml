@@ -138,6 +138,14 @@ Item {
         Text {
             width: parent.width
             color: guiSettings.textColor
+            text: qsTr("QUOTE DETACHED")
+            visible: record.detached
+
+            Accessible.ignored: true
+        }
+        Text {
+            width: parent.width
+            color: guiSettings.textColor
             text: qsTr("NOT SUPPORTED")
             visible: record.notSupported
 
@@ -200,6 +208,9 @@ Item {
         else if (record.starterPackAvailable) {
             return accessibilityUtils.getStarterPackSpeech(record.starterPack)
         }
+
+        if (record.detached)
+            return qstr("quote detached")
 
         return accessibilityUtils.getPostNotAvailableSpeech(
                 record.notFound, record.blocked, record.notSupported)

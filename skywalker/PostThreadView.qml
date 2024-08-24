@@ -143,7 +143,9 @@ SkyListView {
 
         onCalibratedPosition: (dy) => {
             calibrationDy += dy
-            calibratePosition()
+
+            // Direct call sometimes causes the post to be not rendered
+            Qt.callLater(calibratePosition)
         }
     }
 

@@ -1,6 +1,8 @@
 next
 ====
+* Detached quotes
 * Link card retrieval improvements
+* Bug fixes
 
 3.2.2
 =====

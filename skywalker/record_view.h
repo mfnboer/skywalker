@@ -35,6 +35,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
+    Q_PROPERTY(bool detached READ getDetached FINAL)
     Q_PROPERTY(bool notSupported READ getNotSupported FINAL)
     Q_PROPERTY(QString unsupportedType READ getUnsupportedType FINAL)
     Q_PROPERTY(bool available READ getAvailable FINAL)
@@ -77,6 +78,7 @@ public:
 
     bool getNotFound() const { return mNotFound; }
     bool getBlocked() const { return mBlocked; }
+    bool getDetached() const { return mDetached; }
     bool getNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
     bool getAvailable() const { return mRecord != nullptr; }
@@ -103,6 +105,7 @@ private:
     ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr mStarterPack;
     bool mNotFound = false;
     bool mBlocked = false;
+    bool mDetached = false;
     bool mNotSupported = false;
     QString mUnsupportedType;
     QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;

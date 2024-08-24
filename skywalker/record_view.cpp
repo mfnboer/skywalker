@@ -27,6 +27,11 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         mBlocked = true;
         break;
     }
+    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_DETACHED:
+    {
+        mDetached = true;
+        break;
+    }
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD:
     {
         mRecord = std::get<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord);
