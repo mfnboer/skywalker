@@ -182,7 +182,7 @@ void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allow
             mSkywalker->makeLocalModelChange(
                 [cid, threadgateUri, allowMention, allowFollowing, allowList](LocalPostModelChanges* model){
                     model->updateThreadgateUri(cid, threadgateUri);
-                    model->updateReplyRestriction(cid, Post::makeReplyRestriction(allowMention, allowFollowing, !allowList.empty()));
+                    model->updateReplyRestriction(cid, Post::makeReplyRestriction(allowMention, allowFollowing, !allowList.empty(), false));
                     model->updateReplyRestrictionLists(cid, allowList);
                 });
 

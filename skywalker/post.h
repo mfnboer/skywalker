@@ -81,7 +81,7 @@ public:
     bool isReplyDisabled() const;
     QString getThreadgateUri() const;
     QString getRootThreadateUri() const;
-    static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollowing, bool allowList);
+    static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollowing, bool allowList, bool hiddenReplies);
     QEnums::ReplyRestriction getReplyRestriction() const;
     ListViewBasicList getReplyRestrictionLists() const;
 

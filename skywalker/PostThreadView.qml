@@ -85,6 +85,9 @@ SkyListView {
                     if (replyRestriction === QEnums.REPLY_RESTRICTION_NOBODY)
                         return qsTr("Replies are disabled")
 
+                    if (replyRestriction === QEnums.REPLY_RESTRICTION_HIDDEN_REPLIES)
+                        return qsTr("Hidden replies")
+
                     let restrictionList = []
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
@@ -115,7 +118,11 @@ SkyListView {
                     }
 
                     const restrictionListText = guiSettings.toWordSequence(restrictionList)
-                    return qsTr(`Replies are restricted to ${restrictionListText}`)
+
+                    if (replyRestriction & QEnums.REPLY_RESTRICTION_HIDDEN_REPLIES)
+                        return qsTr(`Hidden replies. Replies are restricted to ${restrictionListText}`)
+                    else
+                        return qsTr(`Replies are restricted to ${restrictionListText}`)
                 }
             }
         }

@@ -1,5 +1,6 @@
 next
 ====
+* Hidden replies in thread
 * Detached quotes
 * Link card retrieval improvements
 * Bug fixes
