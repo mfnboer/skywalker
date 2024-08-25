@@ -1192,6 +1192,96 @@ void Skywalker::getListFeedNextPage(int modelId, int maxPages, int minEntries)
     getListFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
+void Skywalker::getQuotesFeed(int modelId, int limit, int maxPages, int minEntries, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get quotes feed model:" << modelId << "cursor:" << cursor;
+
+    if (mGetFeedInProgress)
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& quoteUri = model->getQuoteUri();
+    setGetFeedInProgress(true);
+
+    mBsky->getQuotes(quoteUri, {}, limit, Utils::makeOptionalString(cursor),
+                   [this, modelId, maxPages, minEntries, cursor](auto feed){
+                       setGetFeedInProgress(false);
+                       int addedPosts = 0;
+                       auto* model = getPostFeedModel(modelId);
+
+                       if (!model)
+                       {
+                           qWarning() << "Model does not exist:" << modelId;
+                           return;
+                       }
+
+                       if (cursor.isEmpty())
+                       {
+                           model->setFeed(std::move(feed));
+                           addedPosts = model->rowCount();
+                       }
+                       else
+                       {
+                           const int oldRowCount = model->rowCount();
+                           model->addFeed(std::move(feed));
+                           addedPosts = model->rowCount() - oldRowCount;
+                       }
+
+                       const int postsToAdd = minEntries - addedPosts;
+
+                       if (postsToAdd > 0)
+                           getFeedNextPage(modelId, maxPages - 1, postsToAdd);
+                   },
+                   [this](const QString& error, const QString& msg){
+                       qInfo() << "getQuotesFeed FAILED:" << error << " - " << msg;
+                       setGetFeedInProgress(false);
+                       emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+                   });
+}
+
+void Skywalker::getQuotesFeedNextPage(int modelId, int maxPages, int minEntries)
+{
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& cursor = model->getLastCursor();
+    if (cursor.isEmpty())
+    {
+        qDebug() << "Last page reached, no more cursor";
+        return;
+    }
+
+    getQuotesFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
 void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)
 {
     mAutoUpdateTimelineInProgress = inProgress;
@@ -2005,6 +2095,17 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setListView(listView);
     model->enableLanguageFilter(true);
+    const int id = mPostFeedModels.put(std::move(model));
+    return id;
+}
+
+int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
+{
+    auto model = std::make_unique<PostFeedModel>(tr("Quote posts"),
+                                                 mUserDid, mUserFollows, mMutedReposts,
+                                                 mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
+                                                 mSeenHashtags, mUserPreferences, mUserSettings, this);
+    model->setQuoteUri(quoteUri);
     const int id = mPostFeedModels.put(std::move(model));
     return id;
 }

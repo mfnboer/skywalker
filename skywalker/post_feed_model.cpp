@@ -84,6 +84,12 @@ int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
     return prevTopIndex;
 }
 
+void PostFeedModel::setFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed)
+{
+    clear();
+    addFeed(std::forward<ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr>(feed));
+}
+
 int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (feed->mFeed.empty())
@@ -240,7 +246,18 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
+    addPage(std::move(page));
+}
 
+void PostFeedModel::addFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed)
+{
+    qDebug() << "Add quote posts:" << feed->mPosts.size();
+    auto page = createPage(std::forward<ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr>(feed));
+    addPage(std::move(page));
+}
+
+void PostFeedModel::addPage(Page::Ptr page)
+{
     if (!page->mFeed.empty())
     {
         const size_t newRowCount = mFeed.size() + page->mFeed.size();
@@ -719,6 +736,40 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
         {
             qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
             page->addPost(Post::createNotSupported(feedEntry->mPost->mRawRecordType));
+        }
+    }
+
+    if (feed->mCursor && !feed->mCursor->isEmpty())
+    {
+        page->mCursorNextPage = *feed->mCursor;
+    }
+    else
+    {
+        if (!page->mFeed.empty())
+            page->mFeed.back().setEndOfFeed(true);
+    }
+
+    return page;
+}
+
+PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed)
+{
+    auto page = std::make_unique<Page>();
+
+    for (size_t i = 0; i < feed->mPosts.size(); ++i)
+    {
+        const auto& feedEntry = feed->mPosts[i];
+
+        if (feedEntry->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+        {
+            Post post(feedEntry);
+            preprocess(post);
+            page->addPost(post);
+        }
+        else
+        {
+            qWarning() << "Unsupported post record type:" << int(feedEntry->mRecordType);
+            page->addPost(Post::createNotSupported(feedEntry->mRawRecordType));
         }
     }
 

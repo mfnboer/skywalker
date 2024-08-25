@@ -704,6 +704,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:
         return notification.getNotificationPost(mPostCache).getLikeCount() + (change ? change->mLikeCountDelta : 0);
+    case Role::NotificationPostQuoteCount:
+        return notification.getNotificationPost(mPostCache).getQuoteCount() + (change ? change->mQuoteCountDelta : 0);
     case Role::NotificationPostReplyCount:
         return notification.getNotificationPost(mPostCache).getReplyCount() + (change ? change->mReplyCountDelta : 0);
     case Role::NotificationPostBookmarked:
@@ -816,6 +818,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyRestrictionLists), "notificationPostReplyRestrictionLists" },
         { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
+        { int(Role::NotificationPostQuoteCount), "notificationPostQuoteCount" },
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
         { int(Role::NotificationPostBookmarked), "notificationPostBookmarked" },
         { int(Role::NotificationPostNotFound), "notificationPostNotFound" },

@@ -88,6 +88,8 @@ public:
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getListFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getListFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
+    Q_INVOKABLE void getQuotesFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getPostThread(const QString& uri);
     Q_INVOKABLE const PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
@@ -126,6 +128,7 @@ public:
     Q_INVOKABLE void removeStarterPackListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
+    Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit = 50, const QString& cursor = {});

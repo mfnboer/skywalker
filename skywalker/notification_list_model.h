@@ -68,6 +68,7 @@ public:
         NotificationPostReplyRestrictionLists,
         NotificationPostRepostCount,
         NotificationPostLikeCount,
+        NotificationPostQuoteCount,
         NotificationPostReplyCount,
         NotificationPostBookmarked,
         NotificationPostNotFound,

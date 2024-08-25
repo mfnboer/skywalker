@@ -48,6 +48,7 @@ Rectangle {
     required property int notificationPostReplyRestriction // QEnums::ReplyRestriction
     required property int notificationPostRepostCount
     required property int notificationPostLikeCount
+    required property int notificationPostQuoteCount
     required property int notificationPostReplyCount
     required property bool notificationPostBookmarked
     required property bool notificationPostNotFound
@@ -223,7 +224,7 @@ Rectangle {
                     width: parent.width
                     topPadding: 10
                     replyCount: notificationPostReplyCount
-                    repostCount: notificationPostRepostCount
+                    repostCount: notificationPostRepostCount + notificationPostQuoteCount
                     likeCount: notificationPostLikeCount
                     repostUri: notificationPostRepostUri
                     likeUri: notificationPostLikeUri

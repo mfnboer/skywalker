@@ -43,8 +43,11 @@ public:
     Q_INVOKABLE const ListViewBasic getListView() const { return mListView; }
     void setListView(const ListViewBasic& view) { mListView = view; }
 
-    bool isLanguageFilterConfigured() const;
-    void enableLanguageFilter(bool enabled);
+    const QString& getQuoteUri() const { return mQuoteUri; }
+    void setQuoteUri(const QString& quoteUri) { mQuoteUri = quoteUri; }
+
+    bool isLanguageFilterConfigured() const; // atproto language filtering
+    void enableLanguageFilter(bool enabled); // local language filtering
     bool isLanguageFilterEnabled() const { return mLanguageFilterEnabled; }
     LanguageList getFilterdLanguages() const;
     bool showPostWithMissingLanguage() const;
@@ -52,12 +55,14 @@ public:
     // Return the new index of the current top post.
     // If the feed was empty then -1 is returned.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
-
     void addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
     // Returns gap id if prepending created a gap in the feed.
     // Returns 0 otherwise.
     int prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
+
+    void setFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
+    void addFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
 
     // Returns new gap id if the gap was not fully filled, i.e. there is a new gap.
     // Returns 0 otherwise.
@@ -112,7 +117,9 @@ private:
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     bool mustShowQuotePost(const Post& post) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
+    Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
+    void addPage(Page::Ptr page);
 
     // Returns gap id if insertion created a gap in the feed.
     int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex);
@@ -149,6 +156,7 @@ private:
     QString mFeedName;
     GeneratorView mGeneratorView;
     ListViewBasic mListView;
+    QString mQuoteUri; // posts quoting this post
 };
 
 }

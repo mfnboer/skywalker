@@ -6,12 +6,11 @@ import skywalker
 Rectangle {
     required property var skywalker
     required property string feedName
-    property bool isList: false
+    property svgimage defaultSvg: svgFilled.feed
     property string feedAvatar
     property bool showAsHome: false
     property bool isHomeFeed: false
     property bool showLanguageFilter: false
-    property bool languageFilterEnabled: false
     property list<language> filteredLanguages
     property bool showPostWithMissingLanguage: true
 
@@ -48,7 +47,7 @@ Rectangle {
             height: parent.height - 10
             width: height
             avatarUrl: header.feedAvatar
-            unknownSvg: isList ? svgFilled.list : svgFilled.feed
+            unknownSvg: defaultSvg
             visible: showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()
@@ -109,6 +108,7 @@ Rectangle {
             height: parent.height - 10
             width: height
             avatarUrl: header.feedAvatar
+            unknownSvg: defaultSvg
             visible: !showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()

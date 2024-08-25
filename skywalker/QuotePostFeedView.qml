@@ -6,8 +6,6 @@ import skywalker
 SkyListView {
     required property var skywalker
     required property int modelId
-    property bool showAsHome: false
-    property int unreadPosts: 0
 
     signal closed
 
@@ -19,30 +17,11 @@ SkyListView {
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: postFeedView.model.feedName
-        feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
-        showAsHome: postFeedView.showAsHome
-        showLanguageFilter: postFeedView.model.languageFilterConfigured
-        filteredLanguages: postFeedView.model.filteredLanguages
-        showPostWithMissingLanguage: postFeedView.model.showPostWithMissingLanguage
+        defaultSvg: svgFilled.repost
 
         onClosed: postFeedView.closed()
-        onFeedAvatarClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
     }
     headerPositioning: ListView.OverlayHeader
-
-    footer: SkyFooter {
-        visible: showAsHome
-        timeline: postFeedView
-        skywalker: postFeedView.skywalker
-        homeActive: true
-        showHomeFeedBadge: true
-        onHomeClicked: postFeedView.positionViewAtBeginning()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
-    }
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         width: postFeedView.width
@@ -51,10 +30,8 @@ SkyListView {
     FlickableRefresher {
         inProgress: skywalker.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
-        topOvershootFun: () => skywalker.getFeed(modelId)
-        bottomOvershootFun: () => skywalker.getFeedNextPage(modelId)
-        topText: qsTr("Pull down to refresh feed")
-        enableScrollToTop: !showAsHome
+        bottomOvershootFun: () => skywalker.getQuotesFeedNextPage(modelId)
+        enableScrollToTop: true
     }
 
     EmptyListIndication {

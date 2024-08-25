@@ -36,6 +36,7 @@ Rectangle {
     required property int postReplyCount
     required property int postRepostCount
     required property int postLikeCount
+    required property int postQuoteCount
     required property string postRepostUri
     required property string postLikeUri
     required property bool postLikeTransient
@@ -322,15 +323,19 @@ Rectangle {
                     width: parent.width
                     topPadding: 10
                     bottomPadding: 5
+                    spacing: 30
 
                     StatAuthors {
-                        rightPadding: 30
                         atUri: postUri
                         count: postRepostCount
                         nameSingular: qsTr("repost")
                         namePlural: qsTr("reposts")
                         authorListType: QEnums.AUTHOR_LIST_REPOSTS
                         authorListHeader: qsTr("Reposted by")
+                    }
+                    StatQuotes {
+                        atUri: postUri
+                        count: postQuoteCount
                     }
                     StatAuthors {
                         atUri: postUri
@@ -348,7 +353,7 @@ Rectangle {
                 width: parent.width
                 topPadding: 10
                 replyCount: postReplyCount
-                repostCount: postRepostCount
+                repostCount: postRepostCount + postQuoteCount
                 likeCount: postLikeCount
                 repostUri: postRepostUri
                 likeUri: postLikeUri

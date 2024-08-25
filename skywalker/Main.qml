@@ -1197,6 +1197,15 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
+    function viewQuotePostFeed(quoteUri) {
+        const modelId = skywalker.createQuotePostFeedModel(quoteUri)
+        skywalker.getQuotesFeed(modelId)
+        let component = Qt.createComponent("QuotePostFeedView.qml")
+        let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
+        view.onClosed.connect(() => { popStack() })
+        root.pushStack(view)
+    }
+
     function viewListByUri(listUri, viewPosts) {
         graphUtils.getListView(listUri, viewPosts)
     }

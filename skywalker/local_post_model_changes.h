@@ -24,6 +24,7 @@ public:
 
         int mReplyCountDelta = 0;
         int mRepostCountDelta = 0;
+        int mQuoteCountDelta = 0; // TODO
         std::optional<QString> mRepostUri;
         std::optional<QString> mThreadgateUri;
         QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;

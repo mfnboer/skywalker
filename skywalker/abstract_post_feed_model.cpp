@@ -264,6 +264,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::PostLikeCount:
         return post.getLikeCount() + (change ? change->mLikeCountDelta : 0);
+    case Role::PostQuoteCount:
+        return post.getQuoteCount() + (change ? change->mQuoteCountDelta : 0);
     case Role::PostRepostUri:
         return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
     case Role::PostLikeUri:
@@ -373,6 +375,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostReplyCount), "postReplyCount" },
         { int(Role::PostRepostCount), "postRepostCount" },
         { int(Role::PostLikeCount), "postLikeCount" },
+        { int(Role::PostQuoteCount), "postQuoteCount" },
         { int(Role::PostRepostUri), "postRepostUri" },
         { int(Role::PostLikeUri), "postLikeUri" },
         { int(Role::PostLikeTransient), "postLikeTransient" },

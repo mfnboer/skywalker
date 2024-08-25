@@ -1,5 +1,6 @@
 next
 ====
+* Show quoted posts for a post
 * Hidden replies in thread
 * Detached quotes
 * Link card retrieval improvements

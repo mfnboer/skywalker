@@ -19,11 +19,10 @@ SkyListView {
     header: PostFeedHeader {
         skywalker: postListFeedView.skywalker
         feedName: postListFeedView.model.feedName
-        isList: true
+        defaultSvg: svgFilled.list
         feedAvatar: postListFeedView.model.getListView().avatarThumb
         showAsHome: postListFeedView.showAsHome
         showLanguageFilter: postListFeedView.model.languageFilterConfigured
-        languageFilterEnabled: postListFeedView.model.languageFilterEnabled
         filteredLanguages: postListFeedView.model.filteredLanguages
         showPostWithMissingLanguage: postListFeedView.model.showPostWithMissingLanguage
 

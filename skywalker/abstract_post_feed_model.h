@@ -55,6 +55,7 @@ public:
         PostReplyCount,
         PostRepostCount,
         PostLikeCount,
+        PostQuoteCount,
         PostRepostUri,
         PostLikeUri,
         PostLikeTransient,

@@ -394,6 +394,8 @@ qt_add_qml_module(libskywalker
         QML_FILES MenuWithInfoItem.qml
         QML_FILES BlinkingOpacity.qml
         QML_FILES QuoteStarterPack.qml
+        QML_FILES StatQuotes.qml
+        QML_FILES QuotePostFeedView.qml
 )
 
 if (NOT ANDROID)

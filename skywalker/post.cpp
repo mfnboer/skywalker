@@ -511,6 +511,11 @@ int Post::getLikeCount() const
     return mPost ? mPost->mLikeCount : 0;
 }
 
+int Post::getQuoteCount() const
+{
+    return mPost ? mPost->mQuoteCount : 0;
+}
+
 QString Post::getRepostUri() const
 {
     if (!mPost || !mPost->mViewer)
