@@ -1,8 +1,7 @@
 next
 ====
 * Show quoted posts for a post
-* Hidden replies in thread
-* Detached quotes
+* Handle quotes removed by author
 * Link card retrieval improvements
 * Bug fixes
 

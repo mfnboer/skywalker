@@ -27,7 +27,8 @@ SkyListView {
             color: guiSettings.threadStartColor(root.getSkywalker().getUserSettings().threadColor)
             border.width: 1
             border.color: guiSettings.headerColor
-            visible: model.replyRestriction !== QEnums.REPLY_RESTRICTION_NONE
+            visible: model.replyRestriction !== QEnums.REPLY_RESTRICTION_NONE &&
+                     model.replyRestriction !== QEnums.REPLY_RESTRICTION_HIDDEN_REPLIES
 
             Accessible.role: Accessible.StaticText
             Accessible.name: unicodeFonts.toPlainText(restrictionText.text)
@@ -118,11 +119,7 @@ SkyListView {
                     }
 
                     const restrictionListText = guiSettings.toWordSequence(restrictionList)
-
-                    if (replyRestriction & QEnums.REPLY_RESTRICTION_HIDDEN_REPLIES)
-                        return qsTr(`Hidden replies. Replies are restricted to ${restrictionListText}`)
-                    else
-                        return qsTr(`Replies are restricted to ${restrictionListText}`)
+                    return qsTr(`Replies are restricted to ${restrictionListText}`)
                 }
             }
         }

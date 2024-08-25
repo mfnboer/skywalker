@@ -138,7 +138,7 @@ Item {
         Text {
             width: parent.width
             color: guiSettings.textColor
-            text: qsTr("QUOTE DETACHED")
+            text: qsTr("REMOVED BY AUTHOR")
             visible: record.detached
 
             Accessible.ignored: true
