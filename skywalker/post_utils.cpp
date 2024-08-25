@@ -408,6 +408,39 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
                     });
             }
 
+            if (post->mEmbed)
+            {
+                if (post->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::RECORD)
+                {
+                    const auto& record = std::get<ATProto::AppBskyEmbed::Record::SharedPtr>(post->mEmbed->mEmbed);
+                    Q_ASSERT(record);
+                    Q_ASSERT(record->mRecord);
+
+                    if (record && record->mRecord)
+                    {
+                        mSkywalker->makeLocalModelChange(
+                            [record](LocalPostModelChanges* model){
+                                model->updateQuoteCountDelta(record->mRecord->mCid, 1);
+                            });
+                    }
+                }
+                else if (post->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA)
+                {
+                    const auto& recordWithMedia = std::get<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(post->mEmbed->mEmbed);
+                    Q_ASSERT(recordWithMedia);
+                    Q_ASSERT(recordWithMedia->mRecord);
+                    Q_ASSERT(recordWithMedia->mRecord->mRecord);
+
+                    if (recordWithMedia && recordWithMedia->mRecord && recordWithMedia->mRecord->mRecord)
+                    {
+                        mSkywalker->makeLocalModelChange(
+                            [recordWithMedia](LocalPostModelChanges* model){
+                                model->updateQuoteCountDelta(recordWithMedia->mRecord->mRecord->mCid, 1);
+                            });
+                    }
+                }
+            }
+
             emit postOk(uri, cid);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){

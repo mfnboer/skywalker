@@ -40,6 +40,12 @@ void LocalPostModelChanges::updateRepostCountDelta(const QString& cid, int delta
     repostCountChanged();
 }
 
+void LocalPostModelChanges::updateQuoteCountDelta(const QString& cid, int delta)
+{
+    mChanges[cid].mQuoteCountDelta += delta;
+    quoteCountChanged();
+}
+
 void LocalPostModelChanges::updateRepostUri(const QString& cid, const QString& repostUri)
 {
     mChanges[cid].mRepostUri = repostUri;

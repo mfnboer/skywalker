@@ -128,6 +128,7 @@ protected:
     virtual void likeTransientChanged() override;
     virtual void replyCountChanged() override;
     virtual void repostCountChanged() override;
+    virtual void quoteCountChanged() override;
     virtual void repostUriChanged() override;
     virtual void threadgateUriChanged() override;
     virtual void replyRestrictionChanged() override;

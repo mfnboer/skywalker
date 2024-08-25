@@ -436,6 +436,11 @@ void AbstractPostFeedModel::repostCountChanged()
     changeData({ int(Role::PostRepostCount) });
 }
 
+void AbstractPostFeedModel::quoteCountChanged()
+{
+    changeData({ int(Role::PostQuoteCount) });
+}
+
 void AbstractPostFeedModel::repostUriChanged()
 {
     changeData({ int(Role::PostRepostUri), int(Role::PostLocallyDeleted) });

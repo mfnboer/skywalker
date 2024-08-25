@@ -869,6 +869,11 @@ void NotificationListModel::repostCountChanged()
     changeData({ int(Role::NotificationPostRepostCount) });
 }
 
+void NotificationListModel::quoteCountChanged()
+{
+    changeData({ int(Role::NotificationPostQuoteCount) });
+}
+
 void NotificationListModel::repostUriChanged()
 {
     changeData({ int(Role::NotificationPostRepostUri) });

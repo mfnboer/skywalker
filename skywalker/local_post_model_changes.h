@@ -24,7 +24,7 @@ public:
 
         int mReplyCountDelta = 0;
         int mRepostCountDelta = 0;
-        int mQuoteCountDelta = 0; // TODO
+        int mQuoteCountDelta = 0;
         std::optional<QString> mRepostUri;
         std::optional<QString> mThreadgateUri;
         QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;
@@ -44,6 +44,7 @@ public:
     void updatePostIndexTimestamps();
     void updateReplyCountDelta(const QString& cid, int delta);
     void updateRepostCountDelta(const QString& cid, int delta);
+    void updateQuoteCountDelta(const QString& cid, int delta);
     void updateRepostUri(const QString& cid, const QString& repostUri);
     void updateLikeCountDelta(const QString& cid, int delta);
     void updateLikeUri(const QString& cid, const QString& likeUri);
@@ -61,6 +62,7 @@ protected:
     virtual void likeTransientChanged() = 0;
     virtual void replyCountChanged() = 0;
     virtual void repostCountChanged() = 0;
+    virtual void quoteCountChanged() = 0;
     virtual void repostUriChanged() = 0;
     virtual void threadgateUriChanged() = 0;
     virtual void replyRestrictionChanged() = 0;
