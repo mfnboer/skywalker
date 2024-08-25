@@ -550,6 +550,14 @@ bool Post::isReplyDisabled() const
     return mPost->mViewer->mReplyDisabled;
 }
 
+bool Post::isEmbeddingDisabled() const
+{
+    if (!mPost || !mPost->mViewer)
+        return false;
+
+    return mPost->mViewer->mEmbeddingDisabled;
+}
+
 QString Post::getThreadgateUri() const
 {
     if (!mPost || !mPost->mThreadgate || !mPost->mThreadgate->mUri)

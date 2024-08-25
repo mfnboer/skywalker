@@ -694,6 +694,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     }
     case Role::NotificationPostReplyDisabled:
         return notification.getNotificationPost(mPostCache).isReplyDisabled();
+    case Role::NotificationPostEmbeddingDisabled:
+        return notification.getNotificationPost(mPostCache).isEmbeddingDisabled();
     case Role::NotificationPostThreadgateUri:
         return change && change->mThreadgateUri ? *change->mThreadgateUri : notification.getNotificationPost(mPostCache).getThreadgateUri();
     case Role::NotificationPostReplyRestriction:
@@ -813,6 +815,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostLikeTransient), "notificationPostLikeTransient" },
         { int(Role::NotificationPostThreadMuted), "notificationPostThreadMuted" },
         { int(Role::NotificationPostReplyDisabled), "notificationPostReplyDisabled" },
+        { int(Role::NotificationPostEmbeddingDisabled), "notificationPostEmbeddingDisabled" },
         { int(Role::NotificationPostThreadgateUri), "notificationPostThreadgateUri" },
         { int(Role::NotificationPostReplyRestriction), "notificationPostReplyRestriction" },
         { int(Role::NotificationPostReplyRestrictionLists), "notificationPostReplyRestrictionLists" },

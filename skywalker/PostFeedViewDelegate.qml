@@ -42,6 +42,7 @@ Rectangle {
     required property bool postLikeTransient
     required property bool postThreadMuted
     required property bool postReplyDisabled
+    required property bool postEmbeddingDisabled
     required property string postThreadgateUri
     required property int postReplyRestriction // QEnums::ReplyRestriction flags
     required property list<listviewbasic> postReplyRestrictionLists
@@ -360,6 +361,7 @@ Rectangle {
                 likeTransient: postLikeTransient
                 threadMuted: postThreadMuted
                 replyDisabled: postReplyDisabled
+                embeddingDisabled: postEmbeddingDisabled
                 threadgateUri: postThreadgateUri
                 isReply: postIsReply
                 replyRootUri: postReplyRootUri
@@ -375,7 +377,7 @@ Rectangle {
 
                 onRepost: {
                     root.repost(postRepostUri, postUri, postCid, postText,
-                                postIndexedDateTime, author)
+                                postIndexedDateTime, author, postEmbeddingDisabled)
                 }
 
                 onLike: root.like(postLikeUri, postUri, postCid)

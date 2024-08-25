@@ -12,6 +12,7 @@ Item {
     required property bool likeTransient
     required property bool threadMuted
     required property bool replyDisabled
+    required property bool embeddingDisabled
     required property string threadgateUri
     required property bool isReply
     required property string replyRootUri
@@ -135,12 +136,14 @@ Item {
 
                 AccessibleMenuItem {
                     text: qsTr("Copy post text")
+                    visible: !embeddingDisabled
                     onTriggered: copyPostText()
 
                     MenuItemSvg { svg: svgOutline.copy }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Share")
+                    visible: !embeddingDisabled
                     onTriggered: share()
 
                     MenuItemSvg { svg: svgOutline.share }

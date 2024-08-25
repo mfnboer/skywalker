@@ -80,6 +80,7 @@ public:
     QString getLikeUri() const;
     bool isThreadMuted() const;
     bool isReplyDisabled() const;
+    bool isEmbeddingDisabled() const;
     QString getThreadgateUri() const;
     QString getRootThreadateUri() const;
     static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollowing, bool allowList, bool hiddenReplies);

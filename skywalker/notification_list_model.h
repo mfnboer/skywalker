@@ -63,6 +63,7 @@ public:
         NotificationPostLikeTransient,
         NotificationPostThreadMuted,
         NotificationPostReplyDisabled,
+        NotificationPostEmbeddingDisabled,
         NotificationPostThreadgateUri,
         NotificationPostReplyRestriction,
         NotificationPostReplyRestrictionLists,

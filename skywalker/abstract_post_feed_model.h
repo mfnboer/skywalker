@@ -61,6 +61,7 @@ public:
         PostLikeTransient,
         PostThreadMuted,
         PostReplyDisabled,
+        PostEmbeddingDisabled,
         PostThreadgateUri,
         PostReplyRestriction,
         PostReplyRestrictionLists,

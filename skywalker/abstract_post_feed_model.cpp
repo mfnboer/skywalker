@@ -279,6 +279,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostReplyDisabled:
         return post.isReplyDisabled();
+    case Role::PostEmbeddingDisabled:
+        return post.isEmbeddingDisabled();
     case Role::PostThreadgateUri:
         return change && change->mThreadgateUri ? *change->mThreadgateUri : post.getThreadgateUri();
     case Role::PostReplyRestriction:
@@ -381,6 +383,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLikeTransient), "postLikeTransient" },
         { int(Role::PostThreadMuted), "postThreadMuted" },
         { int(Role::PostReplyDisabled), "postReplyDisabled" },
+        { int(Role::PostEmbeddingDisabled), "postEmbeddingDisabled" },
         { int(Role::PostThreadgateUri), "postThreadgateUri" },
         { int(Role::PostReplyRestriction), "postReplyRestriction" },
         { int(Role::PostReplyRestrictionLists), "postReplyRestrictionLists" },

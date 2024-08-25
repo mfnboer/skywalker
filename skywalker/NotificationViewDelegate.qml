@@ -44,6 +44,7 @@ Rectangle {
     required property bool notificationPostLikeTransient
     required property bool notificationPostThreadMuted
     required property bool notificationPostReplyDisabled
+    required property bool notificationPostEmbeddingDisabled
     required property string notificationPostThreadgateUri
     required property int notificationPostReplyRestriction // QEnums::ReplyRestriction
     required property int notificationPostRepostCount
@@ -231,6 +232,7 @@ Rectangle {
                     likeTransient: notificationPostLikeTransient
                     threadMuted: notificationPostThreadMuted
                     replyDisabled: notificationPostReplyDisabled
+                    embeddingDisabled: notificationPostEmbeddingDisabled
                     threadgateUri: notificationPostThreadgateUri
                     isReply: notificationPostIsReply
                     replyRootUri: notificationPostReplyRootUri
@@ -252,7 +254,7 @@ Rectangle {
                     onRepost: {
                         root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
                                     notificationPostText, notificationPostTimestamp,
-                                    notificationAuthor)
+                                    notificationAuthor, notificationPostEmbeddingDisabled)
                     }
 
                     onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
