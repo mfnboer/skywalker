@@ -543,7 +543,7 @@ Rectangle {
         case QEnums.NOTIFICATION_REASON_QUOTE:
             return qsTr("quoted you")
         case QEnums.NOTIFICATION_REASON_NEW_LABELS:
-            return qsTr("published new labels. Visit the labeler profiles to see which labels are new.")
+            return qsTr("published new labels. Visit the labeler profile to see which labels are new.")
         default:
             return "UNKNOW REASON: " + notificationReason
         }

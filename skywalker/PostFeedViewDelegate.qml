@@ -437,15 +437,15 @@ Rectangle {
                 color: guiSettings.textColor
                 text: {
                     if (postNotFound)
-                        return qsTr("NOT FOUND")
+                        return qsTr("🗑 Not found")
                     else if (postBlocked)
-                        return qsTr("BLOCKED")
+                        return qsTr("🚫 Blocked")
                     else if (postNotSupported)
-                        return qsTr("BLOCKED")
+                        return qsTr("⚠️ Not supported")
                     else if (postLocallyDeleted)
-                        return qsTr("DELETED")
+                        return qsTr("🗑 Deleted")
                     else
-                        return "ERROR"
+                        return "⚠️ Error"
                 }
             }
         }
@@ -560,7 +560,7 @@ Rectangle {
     function confirmDelete() {
         guiSettings.askYesNoQuestion(
                     postEntry,
-                    qsTr("Do you really want to your post?"),
+                    qsTr("Do you really want to delete your post?"),
                     () => root.deletePost(postUri, postCid))
     }
 

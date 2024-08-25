@@ -122,7 +122,7 @@ Item {
         Text {
             width: parent.width
             color: guiSettings.textColor
-            text: qsTr("NOT FOUND")
+            text: qsTr("🗑 Not found")
             visible: record.notFound
 
             Accessible.ignored: true
@@ -130,7 +130,7 @@ Item {
         Text {
             width: parent.width
             color: guiSettings.textColor
-            text: qsTr("BLOCKED")
+            text: qsTr("🚫 Blocked")
             visible: record.blocked
 
             Accessible.ignored: true
@@ -138,7 +138,7 @@ Item {
         Text {
             width: parent.width
             color: guiSettings.textColor
-            text: qsTr("REMOVED BY AUTHOR")
+            text: isUser(record.detachedByDid) ? qsTr("🗑 Detached by you") : qsTr("🗑 Detached by author")
             visible: record.detached
 
             Accessible.ignored: true
@@ -146,7 +146,7 @@ Item {
         Text {
             width: parent.width
             color: guiSettings.textColor
-            text: qsTr("NOT SUPPORTED")
+            text: qsTr("⚠️ Not supported")
             visible: record.notSupported
 
             Accessible.ignored: true
@@ -210,10 +210,14 @@ Item {
         }
 
         if (record.detached)
-            return qstr("quote detached")
+            return isUser(record.detachedByDid) ? qsTr("quote removed by you") : qsTr("quote removed by author")
 
         return accessibilityUtils.getPostNotAvailableSpeech(
                 record.notFound, record.blocked, record.notSupported)
+    }
+
+    function isUser(did) {
+        return skywalker.getUserDid() === did
     }
 
     GuiSettings {

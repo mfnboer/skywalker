@@ -136,14 +136,14 @@ Item {
 
                 AccessibleMenuItem {
                     text: qsTr("Copy post text")
-                    visible: !embeddingDisabled
+                    enabled: !embeddingDisabled
                     onTriggered: copyPostText()
 
                     MenuItemSvg { svg: svgOutline.copy }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Share")
-                    visible: !embeddingDisabled
+                    enabled: !embeddingDisabled
                     onTriggered: share()
 
                     MenuItemSvg { svg: svgOutline.share }

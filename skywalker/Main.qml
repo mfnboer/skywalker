@@ -504,7 +504,7 @@ ApplicationWindow {
         property string repostText
         property date repostDateTime
         property basicprofile repostAuthor
-        property bool embeddingDisabled
+        property bool repostEmbeddingDisabled
 
         id: repostDrawer
         width: parent.width
@@ -549,7 +549,7 @@ ApplicationWindow {
                 id: quotePostButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Quote post")
-                visible: !repostDrawer.embeddingDisabled
+                enabled: !repostDrawer.repostEmbeddingDisabled
                 onClicked: {
                     root.composeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
                                       repostDrawer.repostText, repostDrawer.repostDateTime,
@@ -562,7 +562,7 @@ ApplicationWindow {
                 id: quoteInMessageButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Quote in direct message")
-                visible: !repostDrawer.embeddingDisabled
+                enabled: !repostDrawer.repostEmbeddingDisabled
                 onClicked: {
                     const link = linkUtils.toHttpsLink(repostDrawer.repostUri)
                     startConvo(link)
@@ -571,13 +571,14 @@ ApplicationWindow {
             }
         }
 
-        function show(hasRepostedUri, uri, cid, text, dateTime, author) {
+        function show(hasRepostedUri, uri, cid, text, dateTime, author, embeddingDisabled) {
             repostedAlreadyUri =  hasRepostedUri
             repostUri = uri
             repostCid = cid
             repostText = text
             repostDateTime = dateTime
             repostAuthor = author
+            repostEmbeddingDisabled = embeddingDisabled
             open()
         }
     }
