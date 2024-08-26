@@ -277,6 +277,7 @@ Rectangle {
                     onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
                     onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
                     onTranslatePost: root.translateText(notificationPostPlainText)
+                    onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach)
                 }
             }
         }

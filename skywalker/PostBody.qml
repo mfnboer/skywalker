@@ -287,6 +287,15 @@ Column {
             recordLoader.setSource("RecordView.qml", {record: postRecord})
     }
 
+    onPostRecordWithMediaChanged: {
+        if (postRecordWithMedia) {
+            recordWithMediaLoader.setSource("RecordWithMediaView.qml", {
+                                                record: postRecordWithMedia,
+                                                contentVisibility: postContentVisibility,
+                                                contentWarning: postContentWarning })
+        }
+    }
+
     onVisibleChanged: {
         if (postBody.visible && !postBody.attachmentsInitialized)
             initAttachments()
