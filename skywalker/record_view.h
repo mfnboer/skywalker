@@ -37,6 +37,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
     Q_PROPERTY(bool detached READ getDetached FINAL)
     Q_PROPERTY(QString detachedByDid READ getDetachedByDid FINAL)
+    Q_PROPERTY(QString detachedPostUri READ getDetachedPostUri FINAL)
     Q_PROPERTY(bool notSupported READ getNotSupported FINAL)
     Q_PROPERTY(QString unsupportedType READ getUnsupportedType FINAL)
     Q_PROPERTY(bool available READ getAvailable FINAL)
@@ -81,6 +82,7 @@ public:
     bool getBlocked() const { return mBlocked; }
     bool getDetached() const { return mDetached; }
     const QString& getDetachedByDid() const { return mDetachedByDid; }
+    const QString& getDetachedPostUri() const { return mDetachedPostUri; }
     bool getNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
     bool getAvailable() const { return mRecord != nullptr; }
@@ -109,6 +111,7 @@ private:
     bool mBlocked = false;
     bool mDetached = false;
     QString mDetachedByDid;
+    QString mDetachedPostUri;
     bool mNotSupported = false;
     QString mUnsupportedType;
     QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;

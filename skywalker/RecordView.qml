@@ -138,10 +138,14 @@ Item {
         Text {
             width: parent.width
             color: guiSettings.textColor
-            text: isUser(record.detachedByDid) ? qsTr("🗑 Detached by you") : qsTr("🗑 Detached by author")
+            text: isUser(record.detachedByDid) ?
+                      qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
+                      qsTr("🗑 Detached by author")
             visible: record.detached
 
             Accessible.ignored: true
+
+            onLinkActivated: skywalker.getPostThread(record.detachedPostUri)
         }
         Text {
             width: parent.width

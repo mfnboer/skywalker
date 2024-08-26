@@ -32,6 +32,7 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
         const auto record = std::get<ATProto::AppBskyEmbed::RecordViewDetached::SharedPtr>(view.mRecord);
         const ATProto::ATUri uri(record->mUri);
         mDetachedByDid = uri.getAuthority();
+        mDetachedPostUri = record->mUri;
         mDetached = true;
         break;
     }
