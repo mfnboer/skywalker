@@ -2,6 +2,7 @@ next
 ====
 * Show quoted posts for a post
 * Disable/enable quoting on your posts
+* Detach your post from a quote post
 * Indication for detached quotes
 * Link card retrieval improvements
 * Bug fixes

@@ -51,6 +51,7 @@ public:
     Q_INVOKABLE void addPostgate(const QString& uri, bool disableEmbedding, const QStringList& detachedEmbeddingUris);
     Q_INVOKABLE void undoThreadgate(const QString& threadgateUri, const QString& cid);
     Q_INVOKABLE void undoPostgate(const QString& postUri);
+    Q_INVOKABLE void detachQuote(const QString& uri, const QString& embeddingUri, const QString& embeddingCid, bool detach);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
@@ -120,6 +121,8 @@ signals:
     void postgateFailed(QString error);
     void undoPostgateOk();
     void undoPostgateFailed(QString error);
+    void detachQuoteOk(bool detached);
+    void detachQuoteFailed(QString error);
     void postProgress(QString msg);
     void repostOk();
     void repostFailed(QString error);

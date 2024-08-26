@@ -607,6 +607,17 @@ ApplicationWindow {
         onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUndoThreadgateOk: statusPopup.show(qsTr("Reply restrictions removed"), QEnums.STATUS_LEVEL_INFO, 2)
         onUndoThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onPostgateOk: statusPopup.show(qsTr("Quote restrictions set"), QEnums.STATUS_LEVEL_INFO, 2)
+        onPostgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onDetachQuoteOk: (detached) => {
+            if (detached)
+                statusPopup.show(qsTr("Quote detached"), QEnums.STATUS_LEVEL_INFO, 2)
+            else
+                statusPopup.show(qsTr("Quote re-attached"), QEnums.STATUS_LEVEL_INFO, 2)
+        }
+
+        onDetachQuoteFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
 
         function setAllowListUris(replyRestrictionLists) {
             allowLists = [false, false, false]
@@ -928,6 +939,10 @@ ApplicationWindow {
             postUtils.unmuteThread(uri)
         else
             postUtils.muteThread(uri)
+    }
+
+    function detachQuote(uri, embeddingUri, embeddingCid, detach) {
+        postUtils.detachQuote(uri, embeddingUri, embeddingCid, detach)
     }
 
     function gateRestrictions(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists) {

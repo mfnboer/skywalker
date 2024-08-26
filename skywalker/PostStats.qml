@@ -19,6 +19,8 @@ Item {
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
+    property var record: null // recordview
+    property var recordWithMedia: null // record_with_media_view
     property int topPadding: 0
 
     signal reply()
@@ -32,6 +34,7 @@ Item {
     signal copyPostText()
     signal reportPost()
     signal translatePost()
+    signal detachQuote(string uri, bool detach)
 
     height: replyIcon.height + topPadding
 
@@ -163,6 +166,15 @@ Item {
 
                     MenuItemSvg { svg: threadgateUri ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions }
                 }
+
+                AccessibleMenuItem {
+                    text: recordIsDetached() ? qsTr("Re-attach quote") : qsTr("Detach quote")
+                    visible: hasOwnRecord()
+                    onTriggered: detachQuote(getRecordPostUri(), !recordIsDetached())
+
+                    MenuItemSvg { svg: recordIsDetached() ? svgOutline.attach : svgOutline.detach }
+                }
+
                 AccessibleMenuItem {
                     text: qsTr("Delete")
                     visible: authorIsUser
@@ -187,6 +199,40 @@ Item {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function getRecordPostUri() {
+        if (record)
+            return record.detached ? record.detachedPostUri : record.postUri
+
+        if (recordWithMedia)
+            return recordWithMedia.record.detached ? recordWithMedia.record.detachedPostUri : recordWithMedia.record.postUri
+
+        return ""
+    }
+
+    function recordIsDetached() {
+        if (record)
+            return record.detached
+
+        if (recordWithMedia)
+            return recordWithMedia.record.detached
+
+        return false
+    }
+
+    function hasOwnRecord() {
+        if (record)
+            return record.detached ? isUser(record.detachedByDid) : isUser(record.author.did)
+
+        if (recordWithMedia)
+            return recordWithMedia.record.detached ? isUser(recordWithMedia.record.detachedByDid)  : isUser(recordWithMedia.record.author.did)
+
+        return false
+    }
+
+    function isUser(did) {
+        return skywalker.getUserDid() === did
     }
 
     function statSpeech(stat, textSingular, textPlural) {

@@ -368,6 +368,8 @@ Rectangle {
                 authorIsUser: isUser(author)
                 isBookmarked: postBookmarked
                 bookmarkNotFound: postBookmarkNotFound
+                record: postRecord
+                recordWithMedia: postRecordWithMedia
 
                 onReply: {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
@@ -401,6 +403,7 @@ Rectangle {
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
                 onTranslatePost: root.translateText(postPlainText)
+                onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
             }
         }
 

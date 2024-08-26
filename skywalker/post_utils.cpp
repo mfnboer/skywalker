@@ -293,6 +293,30 @@ void PostUtils::undoPostgate(const QString& postUri)
         });
 }
 
+void PostUtils::detachQuote(const QString& uri, const QString& embeddingUri, const QString& embeddingCid, bool detach)
+{
+    qDebug() << "Detach quote:" << detach << uri << "embeddingUri:" << embeddingUri << "embeddingCid:" << embeddingCid;
+
+    if (!postMaster())
+        return;
+
+    postMaster()->detachEmbedding(uri, embeddingUri, embeddingCid, detach,
+        [this, presence=getPresence()](const QString& uri, const QString& cid, bool detached){
+            if (!presence)
+                return;
+
+            qDebug() << "Detach quote succeeded:" << uri << cid << detached;
+            emit detachQuoteOk(detached);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Detach quote failed:" << error << " - " << msg;
+            emit detachQuoteFailed(msg);
+        });
+}
+
 void PostUtils::continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                              const QString& quoteUri, const QString& quoteCid, const QStringList& labels)
 {

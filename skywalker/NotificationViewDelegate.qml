@@ -240,6 +240,8 @@ Rectangle {
                     authorIsUser: false
                     isBookmarked: notificationPostBookmarked
                     bookmarkNotFound: false
+                    record: notificationPostRecord
+                    recordWithMedia: notificationPostRecordWithMedia
 
                     onReply: {
                         const lang = notificationPostLanguages.length > 0 ?
