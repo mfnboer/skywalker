@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 Dialog {
+    required property string rootUri
+    required property string postUri
     required property bool restrictReply
     required property bool allowMentioned
     required property bool allowFollowing
@@ -12,11 +14,15 @@ Dialog {
     required property list<string> allowListUrisFromDraft
     required property int listModelId
     property list<bool> duplicateList: [false, false, false]
+    property bool prevAllowQuoting: true
+    property bool allowQuoting: true
+    property postgate postgate
+    property bool postgateReceived: false
+    property bool isThreadFromUser: false
 
     id: restrictionDialog
     width: parent.width
     contentHeight: restrictionColumn.height
-    title: qsTr("Who can reply?")
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
@@ -70,9 +76,33 @@ Dialog {
             id: restrictionColumn
             width: parent.width
 
+            AccessibleText {
+                width: parent.width
+                padding: 10
+                font.pointSize: guiSettings.scaledFont(9/8)
+                font.bold: true
+                text: qsTr("Quote settings")
+            }
+
+            AccessibleSwitch {
+                text: qsTr("Allow others to quote this post")
+                checked: allowQuoting
+                enabled: postgateReceived
+                onCheckedChanged: allowQuoting = checked
+            }
+
+            AccessibleText {
+                width: parent.width
+                padding: 10
+                font.pointSize: guiSettings.scaledFont(9/8)
+                font.bold: true
+                text: qsTr("Who can reply to this thread?")
+            }
+
             AccessibleCheckBox {
                 checked: !restrictReply
                 text: qsTr("Everyone")
+                visible: isThreadFromUser
                 onCheckedChanged: {
                     restrictReply = !checked
 
@@ -86,6 +116,7 @@ Dialog {
             AccessibleCheckBox {
                 checked: restrictReply && !allowMentioned && !allowFollowing && !allowLists[0] && !allowLists[1] && !allowLists[2]
                 text: qsTr("Nobody")
+                visible: isThreadFromUser
                 onCheckedChanged: {
                     if (checked) {
                         restrictReply = true
@@ -98,6 +129,7 @@ Dialog {
             AccessibleCheckBox {
                 checked: allowMentioned
                 text: qsTr("Users mentioned in your post")
+                visible: isThreadFromUser
                 onCheckedChanged: {
                     allowMentioned = checked
 
@@ -108,6 +140,7 @@ Dialog {
             AccessibleCheckBox {
                 checked: allowFollowing
                 text: qsTr("Users you follow")
+                visible: isThreadFromUser
                 onCheckStateChanged: {
                     allowFollowing = checked
 
@@ -122,6 +155,7 @@ Dialog {
                 id: listRestrictions
                 width: parent.width
                 model: allowLists.length
+                visible: isThreadFromUser
 
                 function available() {
                     const item = itemAt(0)
@@ -132,7 +166,7 @@ Dialog {
                     required property int index
 
                     width: parent.width
-                    visible: listComboBox.count > index
+                    visible: listComboBox.count > index && isThreadFromUser
 
                     AccessibleCheckBox {
                         id: allowListCheckBox
@@ -160,15 +194,38 @@ Dialog {
                 }
             }
 
-            Text {
-                width: parent.width
-                color: guiSettings.textColor
+            AccessibleText {
+                x: 10
+                width: parent.width - 20
                 wrapMode: Text.Wrap
                 font.italic: true
                 text: qsTr("User lists can also be used to restrict who can reply. You have no user lists at this moment.");
-                visible: listRestrictions.count === 0 || !listRestrictions.available()
+                visible: isThreadFromUser && (listRestrictions.count === 0 || !listRestrictions.available())
+            }
+
+            AccessibleText {
+                x: 10
+                width: parent.width - 20
+                wrapMode: Text.Wrap
+                font.italic: true
+                text: qsTr("You cannot restrict replies as this is not your thread.")
+                visible: !isThreadFromUser
             }
         }
+    }
+
+    PostUtils {
+        id: postUtils
+        skywalker: root.getSkywalker()
+
+        onGetPostgateOk: (postgate) => {
+            restrictionDialog.postgate = postgate
+            prevAllowQuoting = !postgate.disabledEmbedding
+            allowQuoting = prevAllowQuoting
+            postgateReceived = true
+        }
+
+        onGetPostgateFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     GuiSettings {
@@ -177,5 +234,21 @@ Dialog {
 
     function getListUriFromDraft(index) {
         return index < allowListUrisFromDraft.length ? allowListUrisFromDraft[index] : ""
+    }
+
+    Component.onCompleted: {
+        if (postUri)
+            postUtils.getPostgate(postUri)
+
+        if (rootUri) {
+            const did = postUtils.extractDidFromUri(rootUri)
+            isThreadFromUser = Boolean(did === root.getSkywalker().getUserDid())
+        }
+
+        // For a post being composed there are no URIs
+        if (!rootUri && !postUri) {
+            postgateReceived = true
+            isThreadFromUser = true
+        }
     }
 }

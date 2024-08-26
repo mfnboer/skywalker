@@ -396,7 +396,7 @@ Rectangle {
 
                 onShare: skywalker.sharePost(postUri)
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
-                onThreadgate: root.threadgate(postThreadgateUri, postUri, postCid, postReplyRestriction, postReplyRestrictionLists)
+                onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)

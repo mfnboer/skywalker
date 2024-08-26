@@ -396,6 +396,7 @@ qt_add_qml_module(libskywalker
         QML_FILES QuoteStarterPack.qml
         QML_FILES StatQuotes.qml
         QML_FILES QuotePostFeedView.qml
+        SOURCES postgate.h
 )
 
 if (NOT ANDROID)

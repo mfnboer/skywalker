@@ -59,6 +59,25 @@ ImageReader* PostUtils::imageReader()
     return mImageReader.get();
 }
 
+QString PostUtils::extractDidFromUri(const QString& uri)
+{
+    const ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Invalid at-uri:" << uri;
+        return {};
+    }
+
+    if (atUri.authorityIsHandle())
+    {
+        qWarning() << "Authority is not a DID:" << uri;
+        return {};
+    }
+
+    return atUri.getAuthority();
+}
+
 void PostUtils::post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
@@ -197,6 +216,29 @@ void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allow
         });
 }
 
+void PostUtils::addPostgate(const QString& uri, bool disableEmbedding, const QStringList& detachedEmbeddingUris)
+{
+    qDebug() << "Add postgate uri:" << uri << "disableEmbedding:" << disableEmbedding;
+
+    if (!postMaster())
+        return;
+
+    mPostMaster->addPostgate(uri, disableEmbedding, detachedEmbeddingUris,
+        [this, presence=getPresence()](const QString&, const QString&){
+            if (!presence)
+                return;
+
+            emit postgateOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addPostgate failed:" << error << " - " << msg;
+            emit postgateFailed(msg);
+        });
+}
+
 void PostUtils::undoThreadgate(const QString& threadgateUri, const QString& cid)
 {
     if (!postMaster())
@@ -222,6 +264,32 @@ void PostUtils::undoThreadgate(const QString& threadgateUri, const QString& cid)
 
             qDebug() << "Undo threadgate failed:" << error << " - " << msg;
             emit undoThreadgateFailed(msg);
+        });
+}
+
+void PostUtils::undoPostgate(const QString& postUri)
+{
+    qDebug() << "Undo postgate:" << postUri;
+
+    if (!postMaster())
+        return;
+
+    const QString postgateUri = mPostMaster->createPostgateUri(postUri);
+    Q_ASSERT(!postgateUri.isEmpty());
+
+    postMaster()->undo(postgateUri,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            emit undoPostgateOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo postgate failed:" << error << " - " << msg;
+            emit undoPostgateFailed(msg);
         });
 }
 
@@ -1072,7 +1140,10 @@ void PostUtils::getQuotePost(const QString& httpsUri)
         return;
 
     postMaster()->getPost(httpsUri,
-        [this](const auto& uri, const auto& cid, auto post, auto author){
+        [this, presence=getPresence()](const auto& uri, const auto& cid, auto post, auto author){
+            if (!presence)
+                return;
+
             BasicProfile profile(author);
             const auto formattedText = ATProto::RichTextMaster::getFormattedPostText(*post, UserSettings::getLinkColor());
             emit quotePost(uri, cid, formattedText, profile, post->mCreatedAt);
@@ -1085,7 +1156,10 @@ void PostUtils::getQuoteFeed(const QString& httpsUri)
         return;
 
     postMaster()->getFeed(httpsUri,
-        [this](auto feed){
+        [this, presence=getPresence()](auto feed){
+            if (!presence)
+                return;
+
             GeneratorView view(feed);
             emit quoteFeed(view);
         });
@@ -1097,13 +1171,43 @@ void PostUtils::getQuoteList(const QString& httpsUri)
         return;
 
     postMaster()->getList(httpsUri,
-                          [this](auto list){
-                              ListView view(list);
-                              emit quoteList(view);
-                          });
+        [this, presence=getPresence()](auto list){
+            if (!presence)
+                return;
+
+            ListView view(list);
+            emit quoteList(view);
+        });
 }
 
+void PostUtils::getPostgate(const QString& postUri)
+{
+    if (!postMaster())
+        return;
 
+
+    postMaster()->getPostgate(postUri,
+        [this, presence=getPresence()](auto postgate){
+            if (!presence)
+                return;
+
+            emit getPostgateOk(Postgate{postgate});
+        },
+        [this, presence=getPresence(), postUri](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            if (error == ATProto::ATProtoErrorMsg::INVALID_REQUEST)
+            {
+                qDebug() << "No postgate record exists:" << postUri;
+                emit getPostgateOk(Postgate{});
+                return;
+            }
+
+            qWarning() << "Failed to get postgate:" << error << "-" << msg;
+            emit getPostgateFailed(msg);
+        });
+}
 
 void PostUtils::sharePhoto(int fd)
 {

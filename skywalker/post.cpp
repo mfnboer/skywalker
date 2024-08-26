@@ -44,7 +44,7 @@ Post Post::createNotSupported(const QString& unsupportedType)
     return post;
 }
 
-Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement)
+Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView)
 {
     switch (threadElement.mType)
     {
@@ -53,7 +53,9 @@ Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement)
         const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(threadElement.mPost).get();
         Q_ASSERT(threadPost);
         Q_ASSERT(threadPost->mPost);
-        return Post(threadPost->mPost);
+        Post post(threadPost->mPost);
+        post.mThreadgateView = threadgateView;
+        return post;
     }
     case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
         return Post::createNotFound();
@@ -558,12 +560,36 @@ bool Post::isEmbeddingDisabled() const
     return mPost->mViewer->mEmbeddingDisabled;
 }
 
+ATProto::AppBskyFeed::ThreadgateView::SharedPtr Post::getThreadgateView() const
+{
+    if (mThreadgateView)
+        return mThreadgateView;
+
+    if (mPost && mPost->mThreadgate)
+        return mPost->mThreadgate;
+
+    if (mFeedViewPost && mFeedViewPost->mReply)
+    {
+        if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        {
+            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost);
+
+            if (postView->mThreadgate)
+                return postView->mThreadgate;
+        }
+    }
+
+    return nullptr;
+}
+
 QString Post::getThreadgateUri() const
 {
-    if (!mPost || !mPost->mThreadgate || !mPost->mThreadgate->mUri)
-        return {};
+    auto threadgate = getThreadgateView();
 
-    return *mPost->mThreadgate->mUri;
+    if (threadgate && threadgate->mUri)
+        return *threadgate->mUri;
+
+    return {};
 }
 
 QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allowFollowing, const bool allowList, bool hiddenReplies)
@@ -590,10 +616,12 @@ QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allo
 
 QEnums::ReplyRestriction Post::getReplyRestriction() const
 {
-    if (!mPost || !mPost->mThreadgate || !mPost->mThreadgate->mRecord)
+    auto threadgateView = getThreadgateView();
+
+    if (!threadgateView || !threadgateView->mRecord)
         return QEnums::REPLY_RESTRICTION_NONE;
 
-    const auto& threadgate = mPost->mThreadgate->mRecord;
+    const auto& threadgate = threadgateView->mRecord;
     return makeReplyRestriction(threadgate->mAllowMention,
                                 threadgate->mAllowFollowing,
                                 !threadgate->mAllowList.empty(),
@@ -602,12 +630,14 @@ QEnums::ReplyRestriction Post::getReplyRestriction() const
 
 ListViewBasicList Post::getReplyRestrictionLists() const
 {
-    if (!mPost || !mPost->mThreadgate)
+    auto threadgateView = getThreadgateView();
+
+    if (!threadgateView)
         return {};
 
     ListViewBasicList lists;
 
-    for (const auto& l : mPost->mThreadgate->mLists)
+    for (const auto& l : threadgateView->mLists)
     {
         ListViewBasic view(l->mUri, l->mCid, l->mName, l->mPurpose, l->mAvatar.value_or(""));
         lists.append(view);

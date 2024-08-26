@@ -1,7 +1,8 @@
 next
 ====
 * Show quoted posts for a post
-* Handle quotes removed by author
+* Disable/enable quoting on your posts
+* Indication for detached quotes
 * Link card retrieval improvements
 * Bug fixes
 

@@ -930,13 +930,15 @@ ApplicationWindow {
             postUtils.muteThread(uri)
     }
 
-    function threadgate(threadgateUri, uri, cid, replyRestriction, replyRestrictionLists) {
+    function gateRestrictions(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists) {
         const restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
         skywalker.getListList(restrictionsListModelId)
         postUtils.setAllowListUris(replyRestrictionLists)
 
         let component = Qt.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(currentStackItem(), {
+                rootUri: rootUri,
+                postUri: uri,
                 restrictReply: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE,
                 allowMentioned: replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED,
                 allowFollowing: replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING,
@@ -951,16 +953,28 @@ ApplicationWindow {
                     restrictionsPage.allowFollowing === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) &&
                     !checkRestrictionListsChanged(getReplyRestrictionListUris(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)))
                 {
-                    console.debug("No change!")
+                    console.debug("No reply restriction change!")
                 }
                 else if (threadgateUri && !restrictionsPage.restrictReply) {
-                    postUtils.undoThreadgate(threadgateUri, cid)
+                    postUtils.undoThreadgate(threadgateUri, rootCid)
                 }
                 else if (restrictionsPage.restrictReply) {
-                    postUtils.addThreadgate(uri, cid,
+                    postUtils.addThreadgate(rootUri, rootCid,
                                             restrictionsPage.allowMentioned,
                                             restrictionsPage.allowFollowing,
                                             getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes))
+                }
+
+                if (restrictionsPage.prevAllowQuoting !== restrictionsPage.allowQuoting) {
+                    const detachedUris = restrictionsPage.postgate.detachedEmbeddingUris
+
+                    if (!restrictionsPage.postgate.isNull() && detachedUris.length === 0 && restrictionsPage.allowQuoting)
+                        postUtils.undoPostgate(uri)
+                    else
+                        postUtils.addPostgate(uri, !restrictionsPage.allowQuoting, detachedUris)
+                }
+                else {
+                    console.debug("No postgate change")
                 }
 
                 restrictionsPage.destroy()

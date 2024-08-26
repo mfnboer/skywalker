@@ -24,6 +24,7 @@ int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&&
     if (!mFeed.empty())
         clear();
 
+    mThreadgateView = thread->mThreadgate;
     auto page = createPage(std::move(thread));
 
     if (page->mFeed.empty())
@@ -90,6 +91,8 @@ void PostThreadModel::clear()
         clearFeed();
         endRemoveRows();
     }
+
+    mThreadgateView = nullptr;
     qDebug() << "All posts removed";
 }
 
@@ -128,7 +131,7 @@ Post& PostThreadModel::Page::prependPost(const Post& post)
 void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply,
                                            bool directReply, bool firstDirectReply)
 {
-    auto threadPost = Post::createPost(reply);
+    auto threadPost = Post::createPost(reply, mPostFeedModel.mThreadgateView);
     threadPost.addThreadType(QEnums::THREAD_CHILD);
 
     if (directReply)
@@ -237,7 +240,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
 
     ATProto::AppBskyFeed::ThreadViewPost* viewPost = nullptr;
     const auto& postThread = page->mRawThread->mThread;
-    Post post = Post::createPost(*postThread);
+    Post post = Post::createPost(*postThread, mThreadgateView);
     post.addThreadType(QEnums::THREAD_ENTRY);
 
     if (!post.isPlaceHolder())
@@ -265,7 +268,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
         auto parent = viewPost->mParent.get();
         while (parent)
         {
-            Post parentPost = Post::createPost(*parent);
+            Post parentPost = Post::createPost(*parent, mThreadgateView);
             parentPost.addThreadType(QEnums::THREAD_PARENT);
 
             if (!parentPost.isPlaceHolder())

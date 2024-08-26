@@ -697,11 +697,38 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostEmbeddingDisabled:
         return notification.getNotificationPost(mPostCache).isEmbeddingDisabled();
     case Role::NotificationPostThreadgateUri:
-        return change && change->mThreadgateUri ? *change->mThreadgateUri : notification.getNotificationPost(mPostCache).getThreadgateUri();
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+
+        if (post.isReply())
+            return change && change->mThreadgateUri ? *change->mThreadgateUri : post.getThreadgateUri();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mThreadgateUri ? *rootChange->mThreadgateUri : post.getThreadgateUri();
+    }
     case Role::NotificationPostReplyRestriction:
-        return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : notification.getNotificationPost(mPostCache).getReplyRestriction();
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+
+        if (post.isReply())
+            return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? rootChange->mReplyRestriction : post.getReplyRestriction();
+    }
     case Role::NotificationPostReplyRestrictionLists:
-        return QVariant::fromValue(change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : notification.getNotificationPost(mPostCache).getReplyRestrictionLists());
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+
+        if (post.isReply())
+            return QVariant::fromValue(change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists());
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
+    }
     case Role::NotificationPostRepostCount:
         return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:

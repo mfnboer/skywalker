@@ -25,7 +25,7 @@ public:
     static Post createNotFound();
     static Post createBlocked();
     static Post createNotSupported(const QString& unsupportedType);
-    static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement);
+    static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
 
     explicit Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost = nullptr);
@@ -81,8 +81,8 @@ public:
     bool isThreadMuted() const;
     bool isReplyDisabled() const;
     bool isEmbeddingDisabled() const;
+    ATProto::AppBskyFeed::ThreadgateView::SharedPtr getThreadgateView() const;
     QString getThreadgateUri() const;
-    QString getRootThreadateUri() const;
     static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollowing, bool allowList, bool hiddenReplies);
     QEnums::ReplyRestriction getReplyRestriction() const;
     ListViewBasicList getReplyRestrictionLists() const;
@@ -144,6 +144,8 @@ private:
     bool mBookmarkNotFound = false;
 
     LanguageList mLanguages;
+    ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
+
     static int sNextGapId;
 };
 

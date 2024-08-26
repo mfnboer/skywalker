@@ -282,11 +282,32 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostEmbeddingDisabled:
         return post.isEmbeddingDisabled();
     case Role::PostThreadgateUri:
-        return change && change->mThreadgateUri ? *change->mThreadgateUri : post.getThreadgateUri();
+    {
+        if (!post.isReply())
+            return change && change->mThreadgateUri ? *change->mThreadgateUri : post.getThreadgateUri();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mThreadgateUri ? *rootChange->mThreadgateUri : post.getThreadgateUri();
+    }
     case Role::PostReplyRestriction:
-        return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
+    {
+        if (!post.isReply())
+            return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? rootChange->mReplyRestriction : post.getReplyRestriction();
+    }
     case Role::PostReplyRestrictionLists:
-        return QVariant::fromValue(change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists());
+    {
+        if (!post.isReply())
+            return QVariant::fromValue(change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists());
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
+    }
     case Role::PostBookmarked:
         return mBookmarks.isBookmarked(post.getUri());
     case Role::PostBookmarkNotFound:

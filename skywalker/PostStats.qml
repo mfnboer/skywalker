@@ -157,8 +157,8 @@ Item {
                 }
 
                 AccessibleMenuItem {
-                    text: qsTr("Reply restrictions")
-                    visible: authorIsUser && !isReply
+                    text: qsTr("Restrictions")
+                    visible: authorIsUser
                     onTriggered: threadgate()
 
                     MenuItemSvg { svg: threadgateUri ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions }

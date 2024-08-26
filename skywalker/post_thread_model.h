@@ -63,6 +63,8 @@ private:
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
+
+    ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
 };
 
 }

@@ -7,6 +7,7 @@
 #include "image_reader.h"
 #include "link_card.h"
 #include "list_view.h"
+#include "postgate.h"
 #include "presence.h"
 #include "profile.h"
 #include "wrapped_skywalker.h"
@@ -34,6 +35,7 @@ class PostUtils : public WrappedSkywalker, public Presence
 public:
     explicit PostUtils(QObject* parent = nullptr);
 
+    Q_INVOKABLE static QString extractDidFromUri(const QString& uri);
     Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
@@ -46,7 +48,9 @@ public:
                           const QStringList& labels, const QString& language);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const QStringList& allowList);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const ListViewBasicList& allowList);
+    Q_INVOKABLE void addPostgate(const QString& uri, bool disableEmbedding, const QStringList& detachedEmbeddingUris);
     Q_INVOKABLE void undoThreadgate(const QString& threadgateUri, const QString& cid);
+    Q_INVOKABLE void undoPostgate(const QString& postUri);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
@@ -78,6 +82,7 @@ public:
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
     Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
     Q_INVOKABLE void getQuoteList(const QString& httpsUri);
+    Q_INVOKABLE void getPostgate(const QString& postUri);
 
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);
@@ -111,6 +116,10 @@ signals:
     void threadgateFailed(QString error);
     void undoThreadgateOk();
     void undoThreadgateFailed(QString error);
+    void postgateOk();
+    void postgateFailed(QString error);
+    void undoPostgateOk();
+    void undoPostgateFailed(QString error);
     void postProgress(QString msg);
     void repostOk();
     void repostFailed(QString error);
@@ -143,6 +152,8 @@ signals:
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
     void quoteFeed(GeneratorView feed);
     void quoteList(ListView list);
+    void getPostgateOk(Postgate postgate);
+    void getPostgateFailed(QString error);
 
 private:
     void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,

@@ -24,6 +24,7 @@ Page {
     property list<bool> allowLists: [false, false, false]
     property list<string> allowListUrisFromDraft: []
     property int restrictionsListModelId: -1
+    property bool allowQuoting: true
 
     // Reply-to (first post)
     property basicprofile replyToAuthor
@@ -1024,8 +1025,17 @@ Page {
                 Accessible.ignored: true
 
                 function getRestrictionText() {
+                    const replyRestricionText = getReplyRestrictionText()
+
+                    if (allowQuoting)
+                        return replyRestricionText + " " + qsTr("Quoting allowed.")
+
+                    return replyRestricionText + " " + qsTr("Quoting disabled.")
+                }
+
+                function getReplyRestrictionText() {
                     if (!restrictReply)
-                        return qsTr("Everyone can reply")
+                        return qsTr("Everyone can reply.")
 
                     let restrictionList = []
 
@@ -1056,10 +1066,10 @@ Page {
                     }
 
                     if (restrictionList.length === 0)
-                        return qsTr("Replies disabled")
+                        return qsTr("Replies disabled.")
 
                     const restrictedListText = guiSettings.toWordSequence(restrictionList)
-                    return qsTr(`Only ${restrictedListText} can reply`)
+                    return qsTr(`Only ${restrictedListText} can reply.`)
                 }
             }
 
@@ -1277,11 +1287,14 @@ Page {
         onPostOk: (uri, cid) => {
             postedUris.push(uri)
 
+            if (!page.allowQuoting)
+                postUtils.addPostgate(uri, true, [])
+
             if (page.sendingThreadPost > -1)
                 sendNextThreadPost(uri, cid)
             else if (page.restrictReply)
                 postUtils.addThreadgate(uri, cid, page.allowReplyMentioned, page.allowReplyFollowing, page.getReplyRestrictionListUris())
-            else
+            else      
                 postDone()
         }
 
@@ -1297,6 +1310,8 @@ Page {
         }
 
         onThreadgateFailed: (error) => page.postFailed(error)
+
+        onPostgateFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
 
         onPostProgress: (msg) => page.postProgress(msg)
 
@@ -1911,13 +1926,16 @@ Page {
 
         let component = Qt.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(page, {
+                rootUri: "",
+                postUri: "",
                 restrictReply: page.restrictReply,
                 allowMentioned: page.allowReplyMentioned,
                 allowFollowing: page.allowReplyFollowing,
                 allowLists: page.allowLists,
                 allowListIndexes: page.allowListIndexes,
                 allowListUrisFromDraft: page.allowListUrisFromDraft,
-                listModelId: page.restrictionsListModelId
+                listModelId: page.restrictionsListModelId,
+                allowQuoting: page.allowQuoting
         })
         restrictionsPage.onAccepted.connect(() => {
                 page.restrictReply = restrictionsPage.restrictReply
@@ -1925,6 +1943,7 @@ Page {
                 page.allowReplyFollowing = restrictionsPage.allowFollowing
                 page.allowLists = restrictionsPage.allowLists
                 page.allowListIndexes = restrictionsPage.allowListIndexes
+                page.allowQuoting = restrictionsPage.allowQuoting
                 allowListUrisFromDraft = []
                 restrictionsPage.destroy()
         })
