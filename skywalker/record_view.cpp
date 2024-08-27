@@ -14,14 +14,13 @@ using namespace std::chrono_literals;
 
 namespace Skywalker {
 
-RecordView::Ptr RecordView::makeDetachedRecord(const QString postUri)
+RecordView::SharedPtr RecordView::makeDetachedRecord(const QString postUri)
 {
-    auto record = std::make_unique<RecordView>();
+    auto record = std::make_shared<RecordView>();
     record->mDetachedPostUri = postUri;
     record->mDetachedByDid = PostUtils::extractDidFromUri(postUri);
     record->mDetached = true;
     record->mValid = true;
-    qDebug() << "DETACHED RECORD:" << record->mDetachedPostUri << record->mDetachedByDid;
 
     return record;
 }

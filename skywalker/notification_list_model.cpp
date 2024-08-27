@@ -634,6 +634,9 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         auto postRecord = post.getRecordView();
         RecordView* record = postRecord.get();
 
+        if (!record)
+            return QVariant();
+
         if (change)
         {
             if (change->mDetachedRecord)
@@ -642,24 +645,19 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
                 record = change->mReAttachedRecord.get();
         }
 
-        if (record)
+        if (record->isReply())
         {
-            if (record->isReply())
-            {
-                const QString did = record->getReplyToAuthorDid();
+            const QString did = record->getReplyToAuthorDid();
 
-                if (!did.isEmpty() && !AuthorCache::instance().contains(did))
-                    AuthorCache::instance().putProfile(did);
-            }
-
-            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
-            record->setContentVisibility(visibility);
-            record->setContentWarning(warning);
-            record->setMutedReason(mMutedWords);
-            return QVariant::fromValue(*record);
+            if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                AuthorCache::instance().putProfile(did);
         }
 
-        return QVariant();
+        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
+        record->setContentVisibility(visibility);
+        record->setContentWarning(warning);
+        record->setMutedReason(mMutedWords);
+        return QVariant::fromValue(*record);
     }
     case Role::NotificationPostRecordWithMedia:
     {
@@ -668,6 +666,14 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         if (!recordWithMedia)
             return QVariant();
+
+        if (change)
+        {
+            if (change->mDetachedRecord)
+                recordWithMedia->setRecord(change->mDetachedRecord);
+            else if (change->mReAttachedRecord)
+                recordWithMedia->setRecord(change->mReAttachedRecord);
+        }
 
         auto& record = recordWithMedia->getRecord();
 
@@ -937,12 +943,12 @@ void NotificationListModel::threadMutedChanged()
 
 void NotificationListModel::detachedRecordChanged()
 {
-    changeData({ int(Role::NotificationPostRecord) });
+    changeData({ int(Role::NotificationPostRecord), int(Role::NotificationPostRecordWithMedia) });
 }
 
 void NotificationListModel::reAttachedRecordChanged()
 {
-    changeData({ int(Role::NotificationPostRecord) });
+    changeData({ int(Role::NotificationPostRecord), int(Role::NotificationPostRecordWithMedia) });
 }
 
 void NotificationListModel::postDeletedChanged()

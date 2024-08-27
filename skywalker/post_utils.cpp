@@ -343,15 +343,15 @@ void PostUtils::detachQuote(const QString& postUri, const QString& embeddingUri,
         });
 }
 
-void PostUtils::continueReAttachQuote(const QString& embeddingUri)
+void PostUtils::continueReAttachQuote(const QString& embeddingUri, int retries)
 {
-    qDebug() << "Load for re-attachment:" << embeddingUri;
+    qDebug() << "Load for re-attachment:" << embeddingUri << "retries:" << retries;
 
     if (!bskyClient())
         return;
 
     bskyClient()->getPosts({embeddingUri},
-        [this, presence=getPresence(), embeddingUri](auto postViewList){
+        [this, presence=getPresence(), embeddingUri, retries](auto postViewList){
             if (!presence)
                 return;
 
@@ -381,10 +381,31 @@ void PostUtils::continueReAttachQuote(const QString& embeddingUri)
                 recordView = std::make_shared<RecordView>(*protoRecordView);
                 break;
             }
+            case ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW:
+            {
+                auto protoRecordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
+                recordView = std::make_shared<RecordView>(*protoRecordWithMediaView->mRecord);
+                break;
+            }
             default:
                 qWarning() << "Unexpected embed type:" << (int)embed->mType;
                 emit detachQuoteFailed("Could not load quote.");
                 return;
+            }
+
+            if (recordView->getDetached())
+            {
+                if (retries > 0)
+                {
+                    qDebug() << "Quote is still detached, retry";
+                    QTimer::singleShot(500, this, [this, embeddingUri, retries]{ continueReAttachQuote(embeddingUri, retries - 1); });
+                    return;
+                }
+                else
+                {
+                    qWarning() << "Quote is still detached";
+                    emit detachQuoteFailed("Could not load quote.");
+                }
             }
 
             mSkywalker->makeLocalModelChange(

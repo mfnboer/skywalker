@@ -23,6 +23,11 @@ RecordView& RecordWithMediaView::getRecord() const
     return *mRecordView;
 }
 
+void RecordWithMediaView::setRecord(const RecordView::SharedPtr& record)
+{
+    mRecordView = record;
+}
+
 QList<ImageView> RecordWithMediaView::getImages() const
 {
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)

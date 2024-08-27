@@ -31,7 +31,7 @@ public:
         QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;
         std::optional<ListViewBasicList> mReplyRestrictionLists;
         std::optional<bool> mThreadMuted;
-        RecordView::Ptr mDetachedRecord;
+        RecordView::SharedPtr mDetachedRecord;
         RecordView::SharedPtr mReAttachedRecord;
 
         bool mPostDeleted = false;

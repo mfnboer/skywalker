@@ -55,7 +55,7 @@ public:
     using Ptr = std::unique_ptr<RecordView>;
     using SharedPtr = std::shared_ptr<RecordView>;
 
-    static Ptr makeDetachedRecord(const QString postUri);
+    static SharedPtr makeDetachedRecord(const QString postUri);
 
     RecordView() = default;
     explicit RecordView(const ATProto::AppBskyEmbed::RecordView& view);
