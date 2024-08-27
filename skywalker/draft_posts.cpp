@@ -69,7 +69,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const TenorGif gif, const LinkCard* card, const QStringList& labels,
                                        const QString& language,
                                        bool restrictReplies, bool allowMention, bool allowFollowing,
-                                       const QStringList& allowLists,
+                                       const QStringList& allowLists, bool embeddingDisabled,
                                        QDateTime timestamp)
 {
     auto* draft = new DraftPostData(this);
@@ -114,6 +114,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
     draft->setAllowMention(allowMention);
     draft->setAllowFollowing(allowFollowing);
     draft->setAllowLists(allowLists);
+    draft->setEmbeddingDisabled(embeddingDisabled);
 
     return draft;
 }
@@ -172,6 +173,8 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
     draft->mQuote = createQuote(draftPost->quoteUri(), draftPost->quoteAuthor(), draftPost->quoteText(),
                                 draftPost->quoteDateTime(),
                                 draftPost->quoteFeed(), draftPost->quoteList());
+
+    draft->mEmbeddingDisabled = draftPost->embeddingDisabled();
 
     for (int i = 0; i < draftThread.size(); ++i)
     {
@@ -465,6 +468,7 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
         setLabels(data, post);
         setReplyRestrictions(data, post);
 
+        data->setEmbeddingDisabled(post.isEmbeddingDisabled());
         data->setRecordUri(post.getUri());
         draftPostData.push_back(data);
     }
@@ -713,8 +717,16 @@ ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(Dra
     postView->mRecord = std::move(draft.mPost);
     postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
     postView->mThreadgate = createThreadgateView(draft);
+    postView->mViewer = createViewerState(draft);
 
     return postView;
+}
+
+ATProto::AppBskyFeed::ViewerState::SharedPtr DraftPosts::createViewerState(Draft::Draft& draft) const
+{
+    auto viewer = std::make_shared<ATProto::AppBskyFeed::ViewerState>();
+    viewer->mEmbeddingDisabled = draft.mEmbeddingDisabled;
+    return viewer;
 }
 
 ATProto::AppBskyFeed::ThreadgateView::SharedPtr DraftPosts::createThreadgateView(Draft::Draft& draft) const

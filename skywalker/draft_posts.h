@@ -52,7 +52,7 @@ public:
                                            const TenorGif gif, const LinkCard* card, const QStringList& labels,
                                            const QString& language,
                                            bool restrictReplies, bool allowMention, bool allowFollowing,
-                                           const QStringList& allowLists,
+                                           const QStringList& allowLists, bool embeddingDisabled,
                                            QDateTime timestamp = QDateTime::currentDateTime());
 
     Q_INVOKABLE bool saveDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread = {});
@@ -104,6 +104,7 @@ private:
 
     ATProto::AppBskyFeed::PostFeed convertDraftToFeedViewPost(Draft::Draft& draft, const QString& recordUri);
     ATProto::AppBskyFeed::PostView::SharedPtr convertDraftToPostView(Draft::Draft& draft, const QString& recordUri);
+    ATProto::AppBskyFeed::ViewerState::SharedPtr createViewerState(Draft::Draft& draft) const;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(Draft::Draft& draft) const;
     ATProto::AppBskyFeed::Record::Post::SharedPtr createReplyToPost(const Draft::Draft& draft) const;
     ATProto::AppBskyFeed::PostView::SharedPtr convertReplyToPostView(Draft::Draft& draft) const;

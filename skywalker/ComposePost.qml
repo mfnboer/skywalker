@@ -1796,7 +1796,7 @@ Page {
                                  postItem.quoteFeed, postItem.quoteList,
                                  postItem.gif, postItem.card, labels, postItem.language,
                                  restrictReply, allowReplyMentioned, allowReplyFollowing,
-                                 getReplyRestrictionListUris())
+                                 getReplyRestrictionListUris(), !allowQuoting)
 
         let draftItemList = []
 
@@ -1818,7 +1818,7 @@ Page {
                                      threadItem.quoteFeed, threadItem.quoteList,
                                      threadItem.gif, threadItem.card, labelsItem, threadItem.language,
                                      false, false, false,
-                                     [])
+                                     [], false)
 
             draftItemList.push(draftItem)
             postUtils.cacheTags(threadItem.text)
@@ -1887,6 +1887,7 @@ Page {
                 allowListUrisFromDraft = draftData.allowLists
                 allowListIndexes = [0, 1, 2]
                 allowLists = [false, false, false]
+                allowQuoting = !draftData.embeddingDisabled
             }
 
             postItem.quoteUri = draftData.quoteUri

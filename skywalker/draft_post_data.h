@@ -42,6 +42,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(bool allowFollowing READ allowFollowing WRITE setAllowFollowing NOTIFY allowFollowingChanged FINAL)
     Q_PROPERTY(QStringList allowLists READ allowLists WRITE setAllowLists NOTIFY allowListsChanged FINAL)
     Q_PROPERTY(QString recordUri READ recordUri WRITE setRecordUri NOTIFY recordUriChanged FINAL)
+    Q_PROPERTY(bool embeddingDisabled READ embeddingDisabled WRITE setEmbeddingDisabled NOTIFY embeddingDisabledChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -103,6 +104,8 @@ public:
     void setAllowLists(const QStringList &newAllowLists);
     QString recordUri() const;
     void setRecordUri(const QString &newRecordUri);
+    bool embeddingDisabled() const;
+    void setEmbeddingDisabled(bool embeddingDisabled);
 
 signals:
     void textChanged();
@@ -133,6 +136,7 @@ signals:
     void allowListsChanged();
     void openAsQuotePostChanged();
     void recordUriChanged();
+    void embeddingDisabledChanged();
 
 private:
     QString mText;
@@ -163,7 +167,7 @@ private:
     bool mAllowFollowing = false;
     QStringList mAllowLists;
     QString mRecordUri;
-    QString mDraftRef;
+    bool mEmbeddingDisabled = false;
 };
 
 inline QString DraftPostData::text() const
@@ -511,6 +515,19 @@ inline void DraftPostData::setRecordUri(const QString &newRecordUri)
         return;
     mRecordUri = newRecordUri;
     emit recordUriChanged();
+}
+
+inline bool DraftPostData::embeddingDisabled() const
+{
+    return mEmbeddingDisabled;
+}
+
+inline void DraftPostData::setEmbeddingDisabled(bool embeddingDisabled)
+{
+    if (embeddingDisabled == mEmbeddingDisabled)
+        return;
+    mEmbeddingDisabled = embeddingDisabled;
+    emit embeddingDisabledChanged();
 }
 
 inline bool DraftPostData::openAsQuotePost() const

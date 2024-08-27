@@ -9,7 +9,7 @@ SkyListView {
     signal deleted(int index)
 
     id: view
-    boundsBehavior: Flickable.StopAtBoundss
+    boundsBehavior: Flickable.StopAtBounds
 
     header: SimpleHeader {
         text: qsTr(`Drafts ${view.count} / ${view.model.getMaxDrafts()}`)

@@ -138,6 +138,7 @@ QJsonObject Draft::toJson() const
     ATProto::XJsonObject::insertOptionalJsonObject<Quote>(json, "quote", mQuote);
     ATProto::XJsonObject::insertOptionalJsonObject<ATProto::AppBskyFeed::Threadgate>(json, "threadgate", mThreadgate);
     json.insert("threadPosts", ATProto::XJsonObject::toJsonArray<ATProto::AppBskyFeed::Record::Post>(mThreadPosts));
+    json.insert("embeddingDisabled", mEmbeddingDisabled);
     return json;
 }
 
@@ -150,6 +151,7 @@ Draft::SharedPtr Draft::fromJson(const QJsonObject& json)
     draft->mQuote = xjson.getOptionalObject<Quote>("quote");
     draft->mThreadgate = xjson.getOptionalObject<ATProto::AppBskyFeed::Threadgate>("threadgate");
     draft->mThreadPosts = xjson.getOptionalVector<ATProto::AppBskyFeed::Record::Post>("threadPosts");
+    draft->mEmbeddingDisabled = xjson.getOptionalBool("embeddingDisabled", false);
     return draft;
 }
 

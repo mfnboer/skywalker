@@ -65,6 +65,7 @@ struct Draft
     Quote::SharedPtr mQuote;
     ATProto::AppBskyFeed::Threadgate::SharedPtr mThreadgate;
     std::vector<ATProto::AppBskyFeed::Record::Post::SharedPtr> mThreadPosts;
+    bool mEmbeddingDisabled = false;
 
     QJsonObject toJson() const;
 
