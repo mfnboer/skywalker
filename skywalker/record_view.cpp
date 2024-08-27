@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "external_view.h"
+#include "post_utils.h"
 #include "unicode_fonts.h"
 #include "user_settings.h"
 #include <atproto/lib/at_uri.h>
@@ -12,6 +13,18 @@
 using namespace std::chrono_literals;
 
 namespace Skywalker {
+
+RecordView::Ptr RecordView::makeDetachedRecord(const QString postUri)
+{
+    auto record = std::make_unique<RecordView>();
+    record->mDetachedPostUri = postUri;
+    record->mDetachedByDid = PostUtils::extractDidFromUri(postUri);
+    record->mDetached = true;
+    record->mValid = true;
+    qDebug() << "DETACHED RECORD:" << record->mDetachedPostUri << record->mDetachedByDid;
+
+    return record;
+}
 
 RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
 {
@@ -30,8 +43,7 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_DETACHED:
     {
         const auto record = std::get<ATProto::AppBskyEmbed::RecordViewDetached::SharedPtr>(view.mRecord);
-        const ATProto::ATUri uri(record->mUri);
-        mDetachedByDid = uri.getAuthority();
+        mDetachedByDid = PostUtils::extractDidFromUri(record->mUri);
         mDetachedPostUri = record->mUri;
         mDetached = true;
         break;

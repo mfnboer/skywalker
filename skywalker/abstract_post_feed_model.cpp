@@ -170,7 +170,16 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostRecord:
     {
-        auto record = post.getRecordView();
+        auto postRecord = post.getRecordView();
+        RecordView* record = postRecord.get();
+
+        if (change)
+        {
+            if (change->mDetachedRecord)
+                record = change->mDetachedRecord.get();
+            else if (change->mReAttachedRecord)
+                record = change->mReAttachedRecord.get();
+        }
 
         if (record)
         {
@@ -485,6 +494,16 @@ void AbstractPostFeedModel::replyRestrictionListsChanged()
 void AbstractPostFeedModel::threadMutedChanged()
 {
     changeData({ int(Role::PostThreadMuted) });
+}
+
+void AbstractPostFeedModel::detachedRecordChanged()
+{
+    changeData({ int(Role::PostRecord) });
+}
+
+void AbstractPostFeedModel::reAttachedRecordChanged()
+{
+    changeData({ int(Role::PostRecord) });
 }
 
 void AbstractPostFeedModel::postDeletedChanged()

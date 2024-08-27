@@ -134,6 +134,8 @@ protected:
     virtual void replyRestrictionChanged() override;
     virtual void replyRestrictionListsChanged() override;
     virtual void threadMutedChanged() override;
+    virtual void detachedRecordChanged() override;
+    virtual void reAttachedRecordChanged() override;
     virtual void postDeletedChanged() override;
 
     QHash<int, QByteArray> roleNames() const override;

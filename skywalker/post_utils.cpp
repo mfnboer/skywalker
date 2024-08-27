@@ -293,20 +293,106 @@ void PostUtils::undoPostgate(const QString& postUri)
         });
 }
 
-void PostUtils::detachQuote(const QString& uri, const QString& embeddingUri, const QString& embeddingCid, bool detach)
+void PostUtils::detachQuote(const QString& postUri, const QString& embeddingUri, const QString& embeddingCid, bool detach)
 {
-    qDebug() << "Detach quote:" << detach << uri << "embeddingUri:" << embeddingUri << "embeddingCid:" << embeddingCid;
+    qDebug() << "Detach quote:" << detach << postUri << "embeddingUri:" << embeddingUri << "embeddingCid:" << embeddingCid;
 
     if (!postMaster())
         return;
 
-    postMaster()->detachEmbedding(uri, embeddingUri, embeddingCid, detach,
-        [this, presence=getPresence()](const QString& uri, const QString& cid, bool detached){
+    postMaster()->detachEmbedding(postUri, embeddingUri, embeddingCid, detach,
+        [this, postUri, presence=getPresence()](const QString& uri, const QString& cid, bool detached){
             if (!presence)
                 return;
 
+            // The returned (uri, cid) is the embedding post
             qDebug() << "Detach quote succeeded:" << uri << cid << detached;
-            emit detachQuoteOk(detached);
+            bool mustLoadReAttachedRecord = false;
+
+            mSkywalker->makeLocalModelChange(
+                [postUri, cid, detached, &mustLoadReAttachedRecord](LocalPostModelChanges* model){
+                    if (detached)
+                    {
+                        model->updateDetachedRecord(cid, postUri);
+                    }
+                    else
+                    {
+                        if (model->updateDetachedRecord(cid, {}))
+                            mustLoadReAttachedRecord = true;
+                    }
+                });
+
+            if (mustLoadReAttachedRecord)
+            {
+                // Give network some time to process the postgate change
+                // NOTE: if this is not good enough we can fetch the quote itself instead of
+                // the embedding post. But then we need to create a RecordView from that.
+                QTimer::singleShot(300, this, [this, uri]{ continueReAttachQuote(uri); });
+            }
+            else
+            {
+                emit detachQuoteOk(detached);
+            }
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Detach quote failed:" << error << " - " << msg;
+            emit detachQuoteFailed(msg);
+        });
+}
+
+void PostUtils::continueReAttachQuote(const QString& embeddingUri)
+{
+    qDebug() << "Load for re-attachment:" << embeddingUri;
+
+    if (!bskyClient())
+        return;
+
+    bskyClient()->getPosts({embeddingUri},
+        [this, presence=getPresence(), embeddingUri](auto postViewList){
+            if (!presence)
+                return;
+
+            if (postViewList.size() != 1)
+            {
+                qWarning() << "Wrong list size:" << postViewList.size() << "for uri:" << embeddingUri;
+                emit detachQuoteFailed("Could not load quote.");
+                return;
+            }
+
+            const auto& embed = postViewList[0]->mEmbed;
+
+            if (!embed)
+            {
+                qWarning() << "Embedded record missing";
+                emit detachQuoteFailed("Could not load quote.");
+                return;
+            }
+
+            RecordView::SharedPtr recordView;
+
+            switch (embed->mType)
+            {
+            case ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW:
+            {
+                auto protoRecordView = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(embed->mEmbed);
+                recordView = std::make_shared<RecordView>(*protoRecordView);
+                break;
+            }
+            default:
+                qWarning() << "Unexpected embed type:" << (int)embed->mType;
+                emit detachQuoteFailed("Could not load quote.");
+                return;
+            }
+
+            mSkywalker->makeLocalModelChange(
+                [cid=postViewList[0]->mCid, recordView](LocalPostModelChanges* model){
+                    model->updateReAttachedRecord(cid, recordView);
+                });
+
+            emit detachQuoteOk(false);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

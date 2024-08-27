@@ -94,6 +94,35 @@ void LocalPostModelChanges::updateThreadMuted(const QString& uri, bool muted)
     threadMutedChanged();
 }
 
+bool LocalPostModelChanges::updateDetachedRecord(const QString& cid, const QString& postUri)
+{
+    if (postUri.isEmpty())
+    {
+        if (!mChanges[cid].mDetachedRecord)
+        {
+            // Was not locally detached, get record from network
+            return true;
+        }
+        else
+        {
+            mChanges[cid].mDetachedRecord = nullptr; // re-attach of a previously detached record
+        }
+    }
+    else
+    {
+        mChanges[cid].mDetachedRecord = RecordView::makeDetachedRecord(postUri);
+    }
+
+    detachedRecordChanged();
+    return false;
+}
+
+void LocalPostModelChanges::updateReAttachedRecord(const QString& cid, RecordView::SharedPtr record)
+{
+    mChanges[cid].mReAttachedRecord = record;
+    reAttachedRecordChanged();
+}
+
 void LocalPostModelChanges::updatePostDeleted(const QString& cid)
 {
     mChanges[cid].mPostDeleted = true;

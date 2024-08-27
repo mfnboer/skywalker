@@ -168,6 +168,7 @@ private:
     void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continueRepost(const QString& uri, const QString& cid);
+    void continueReAttachQuote(const QString& embeddingUri);
     void sharePhoto(int fd);
     void cancelPhotoPicking();
 

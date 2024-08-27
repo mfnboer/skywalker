@@ -631,7 +631,16 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostRecord:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
-        auto record = post.getRecordView();
+        auto postRecord = post.getRecordView();
+        RecordView* record = postRecord.get();
+
+        if (change)
+        {
+            if (change->mDetachedRecord)
+                record = change->mDetachedRecord.get();
+            else if (change->mReAttachedRecord)
+                record = change->mReAttachedRecord.get();
+        }
 
         if (record)
         {
@@ -924,6 +933,16 @@ void NotificationListModel::replyRestrictionListsChanged()
 void NotificationListModel::threadMutedChanged()
 {
     changeData({ int(Role::NotificationPostThreadMuted) });
+}
+
+void NotificationListModel::detachedRecordChanged()
+{
+    changeData({ int(Role::NotificationPostRecord) });
+}
+
+void NotificationListModel::reAttachedRecordChanged()
+{
+    changeData({ int(Role::NotificationPostRecord) });
 }
 
 void NotificationListModel::postDeletedChanged()

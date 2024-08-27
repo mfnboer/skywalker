@@ -3,6 +3,7 @@
 #pragma once
 #include "enums.h"
 #include "list_view_include.h"
+#include "record_view.h"
 #include <QHashFunctions>
 #include <QString>
 #include <optional>
@@ -30,6 +31,8 @@ public:
         QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;
         std::optional<ListViewBasicList> mReplyRestrictionLists;
         std::optional<bool> mThreadMuted;
+        RecordView::Ptr mDetachedRecord;
+        RecordView::SharedPtr mReAttachedRecord;
 
         bool mPostDeleted = false;
     };
@@ -53,6 +56,16 @@ public:
     void updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion);
     void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
     void updateThreadMuted(const QString& uri, bool muted);
+
+    /**
+     * @brief updateDetachedRecord
+     * @param cid cid of the embedding post
+     * @param postUri the quote uri to be detached, empty uri means re-attach
+     * @return true when a re-attached quote should be loaded
+     */
+    bool updateDetachedRecord(const QString& cid, const QString& postUri);
+
+    void updateReAttachedRecord(const QString& cid, RecordView::SharedPtr record);
     void updatePostDeleted(const QString& cid);
 
 protected:
@@ -68,6 +81,8 @@ protected:
     virtual void replyRestrictionChanged() = 0;
     virtual void replyRestrictionListsChanged() = 0;
     virtual void threadMutedChanged() = 0;
+    virtual void detachedRecordChanged() = 0;
+    virtual void reAttachedRecordChanged() = 0;
     virtual void postDeletedChanged() = 0;
 
 private:
