@@ -37,6 +37,7 @@ Rectangle {
     required property var notificationPostExternal // externalview (var allows NULL)
     required property var notificationPostRecord // recordview
     required property var notificationPostRecordWithMedia // record_with_media_view
+    required property string notificationPostReplyRootAuthorDid
     required property string notificationPostReplyRootUri
     required property string notificationPostReplyRootCid
     required property string notificationPostRepostUri
@@ -46,6 +47,10 @@ Rectangle {
     required property bool notificationPostReplyDisabled
     required property bool notificationPostEmbeddingDisabled
     required property string notificationPostThreadgateUri
+    required property int  notificationPostReplyRestriction // QEnums::ReplyRestriction flags
+    required property list<listviewbasic> notificationPostReplyRestrictionLists
+    required property list<string> notificationPostHiddenReplies
+    required property bool notificationPostIsHiddenReply
     required property int notificationPostRepostCount
     required property int notificationPostLikeCount
     required property int notificationPostQuoteCount
@@ -196,8 +201,15 @@ Rectangle {
                 // Reply to
                 ReplyToRow {
                     width: parent.width
-                    authorName: replyToAuthor.name
+                    text: qsTr(`Reply to ${replyToAuthor.name}`)
                     visible: notificationPostIsReply
+                }
+
+                // Reply hidden by user
+                ReplyToRow {
+                    width: parent.width
+                    text: qsTr("Reply hidden by you")
+                    visible: notificationPostIsHiddenReply && notificationPostReplyRootAuthorDid === skywalker.getUserDid()
                 }
 
                 PostBody {
@@ -232,8 +244,10 @@ Rectangle {
                     threadMuted: notificationPostThreadMuted
                     replyDisabled: notificationPostReplyDisabled
                     embeddingDisabled: notificationPostEmbeddingDisabled
-                    threadgateUri: notificationPostThreadgateUri
+                    replyRestriction: notificationPostReplyRestriction
+                    isHiddenReply: notificationPostIsHiddenReply
                     isReply: notificationPostIsReply
+                    replyRootAuthorDid: notificationPostReplyRootAuthorDid
                     replyRootUri: notificationPostReplyRootUri
                     visible: !notificationPostNotFound
                     authorIsUser: false
@@ -273,6 +287,9 @@ Rectangle {
                     }
 
                     onShare: skywalker.sharePost(notificationPostUri)
+                    onMuteThread: root.muteThread(notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostThreadMuted)
+                    onThreadgate: root.gateRestrictions(notificationPostThreadgateUri, notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostIsReply ? notificationPostReplyRootCid : notificationCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
+                    onHideReply: root.hidePostReply(notificationPostThreadgateUri, notificationPostReplyRootUri, notificationPostReplyRootCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
                     onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
                     onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
                     onTranslatePost: root.translateText(notificationPostPlainText)
@@ -357,7 +374,7 @@ Rectangle {
                 // Reply to
                 ReplyToRow {
                     width: parent.width
-                    authorName: notificationReasonPostReplyToAuthor.name
+                    text: qsTr(`Reply to ${notificationReasonPostReplyToAuthor.name}`)
                     visible: showPostForAggregatableReason() && notificationReasonPostIsReply
                 }
 

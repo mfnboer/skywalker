@@ -945,6 +945,28 @@ ApplicationWindow {
         postUtils.detachQuote(uri, embeddingUri, embeddingCid, detach)
     }
 
+    function hidePostReply(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
+        let hidden = postHiddenReplies
+        const index = hidden.indexOf(uri)
+
+        if (index < 0)
+            hidden.push(uri)
+        else
+            hidden.splice(index, 1)
+
+        const allowMentioned = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
+        const allowFollowing = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING)
+        const allowNobody = Boolean(replyRestriction === QEnums.REPLY_RESTRICTION_NOBODY)
+
+        if (hidden.length === 0 && threadgateUri && replyRestriction === QEnums.REPLY_RESTRICTION_NONE) {
+            postUtils.undoThreadgate(threadgateUri, rootCid)
+        }
+        else {
+            postUtils.addThreadgate(rootUri, rootCid, allowMentioned, allowFollowing,
+                                    replyRestrictionLists, allowNobody, hidden)
+        }
+    }
+
     function gateRestrictions(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
         const restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
         skywalker.getListList(restrictionsListModelId)
@@ -973,9 +995,9 @@ ApplicationWindow {
                 else if (threadgateUri && !restrictionsPage.restrictReply && postHiddenReplies.length === 0) {
                     postUtils.undoThreadgate(threadgateUri, rootCid)
                 }
-                else if (restrictionsPage.restrictReply) {
+                else {
                     const allowLists = getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)
-                    const allowNobody = Boolean(!restrictionsPage.allowMentioned && !restrictionsPage.allowFollowing && (allowLists.length === 0))
+                    const allowNobody = Boolean(restrictionsPage.restrictReply && !restrictionsPage.allowMentioned && !restrictionsPage.allowFollowing && (allowLists.length === 0))
 
                     postUtils.addThreadgate(rootUri, rootCid,
                                             restrictionsPage.allowMentioned,

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post.h"
+#include "post_utils.h"
 #include "author_cache.h"
 #include "content_filter.h"
 #include "unicode_fonts.h"
@@ -361,17 +362,37 @@ QString Post::getReplyToAuthorDid() const
         return {};
 
     const auto& uri = record->mReply->mParent->mUri;
-    const ATProto::ATUri atUri(uri);
+    return PostUtils::extractDidFromUri(uri);
+}
 
-    if (!atUri.isValid())
+QString Post::getReplyRootAuthorDid() const
+{
+    if (mFeedViewPost && mFeedViewPost->mReply)
+    {
+        if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        {
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost).get();
+            return postView->mAuthor->mDid;
+        }
+        else
+        {
+            return {};
+        }
+    }
+
+    if (!mPost)
         return {};
 
-    if (atUri.authorityIsHandle())
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
 
-    const auto did = atUri.getAuthority();
-    qDebug() << "Extracted did from uri:" << uri << "did:" << did;
-    return did;
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
+
+    if (!record->mReply)
+        return {};
+
+    const auto& uri = record->mReply->mRoot->mUri;
+    return PostUtils::extractDidFromUri(uri);
 }
 
 ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyRootRef() const
@@ -659,6 +680,16 @@ QStringList Post::getHiddenReplies() const
 
     QStringList hiddenReplies(threadgateView->mRecord->mHiddenReplies.begin(), threadgateView->mRecord->mHiddenReplies.end());
     return hiddenReplies;
+}
+
+bool Post::isHiddenReply() const
+{
+    auto threadgateView = getThreadgateView();
+
+    if (!threadgateView || !threadgateView->mRecord)
+        return false;
+
+    return threadgateView->mRecord->mHiddenReplies.contains(getUri());
 }
 
 const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& Post::getLabels() const

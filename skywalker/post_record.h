@@ -20,6 +20,7 @@ public:
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyRootRef() const;
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
+    QString getReplyRootAuthorDid() const;
     QString getReplyToAuthorDid() const;
     BasicProfile getReplyToAuthor() const;
     const LanguageList& getLanguages() const;

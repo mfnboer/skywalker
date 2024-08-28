@@ -71,7 +71,6 @@ private:
     bool isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& reply) const;
 
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
-    std::unordered_set<QString> mHiddenReplies;
     std::deque<Post> mHiddenRepliesFeed;
 };
 

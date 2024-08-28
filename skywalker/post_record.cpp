@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_record.h"
+#include "post_utils.h"
 #include "author_cache.h"
 #include "user_settings.h"
 #include <atproto/lib/at_uri.h>
@@ -60,21 +61,22 @@ QString PostRecord::getReplyRootUri() const
     return ref ? ref->mUri : QString();
 }
 
+QString PostRecord::getReplyRootAuthorDid() const
+{
+    const auto replyRootRef = getReplyRootRef();
+    if (!replyRootRef)
+        return {};
+
+    return PostUtils::extractDidFromUri(replyRootRef->mUri);
+}
+
 QString PostRecord::getReplyToAuthorDid() const
 {
     const auto replyToRef = getReplyToRef();
     if (!replyToRef)
         return {};
 
-    ATProto::ATUri atUri(replyToRef->mUri);
-    if (!atUri.isValid())
-    {
-        qWarning() << "Not a valid at-uri:" << replyToRef->mUri;
-        return {};
-    }
-
-    const auto did = atUri.getAuthority();
-    return did;
+    return PostUtils::extractDidFromUri(replyToRef->mUri);
 }
 
 BasicProfile PostRecord::getReplyToAuthor() const

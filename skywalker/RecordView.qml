@@ -54,7 +54,7 @@ Item {
         // Reply to
         ReplyToRow {
             width: parent.width
-            authorName: record.replyToAuthor.name
+            text: qsTr(`Reply to ${record.replyToAuthor.name}`)
             visible: record.postIsReply
         }
 

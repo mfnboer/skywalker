@@ -62,6 +62,7 @@ public:
     QString getReplyToCid() const;
     QString getReplyToUri() const;
     QString getReplyToAuthorDid() const;
+    QString getReplyRootAuthorDid() const;
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyRootRef() const;
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
@@ -88,6 +89,7 @@ public:
     QEnums::ReplyRestriction getReplyRestriction() const;
     ListViewBasicList getReplyRestrictionLists() const;
     QStringList getHiddenReplies() const;
+    bool isHiddenReply() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
     void setPostType(QEnums::PostType postType) { mPostType = postType; }

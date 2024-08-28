@@ -271,6 +271,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const BasicProfile* profileChange = getProfileChange(author->getDid());
         return QVariant::fromValue(profileChange ? *profileChange : *author);
     }
+    case Role::PostReplyRootAuthorDid:
+        return post.getReplyToAuthorDid();
     case Role::PostReplyRootCid:
         return post.getReplyRootCid();
     case Role::PostReplyRootUri:
@@ -326,7 +328,23 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
     }
     case Role::PostHiddenReplies:
-        return post.getHiddenReplies();
+    {
+        if (!post.isReply())
+            return change && change->mHiddenReplies ? *change->mHiddenReplies : post.getHiddenReplies();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mHiddenReplies ? *rootChange->mHiddenReplies : post.getHiddenReplies();
+    }
+    case Role::PostIsHiddenReply:
+    {
+        if (!post.isReply())
+            return change && change->mHiddenReplies ? change->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mHiddenReplies ? rootChange->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
+    }
     case Role::PostBookmarked:
         return mBookmarks.isBookmarked(post.getUri());
     case Role::PostBookmarkNotFound:
@@ -413,6 +431,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIsReply), "postIsReply" },
         { int(Role::PostParentInThread), "postParentInThread" },
         { int(Role::PostReplyToAuthor), "postReplyToAuthor" },
+        { int(Role::PostReplyRootAuthorDid), "postReplyRootAuthorDid" },
         { int(Role::PostReplyRootUri), "postReplyRootUri" },
         { int(Role::PostReplyRootCid), "postReplyRootCid" },
         { int(Role::PostReplyCount), "postReplyCount" },
@@ -429,6 +448,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostReplyRestriction), "postReplyRestriction" },
         { int(Role::PostReplyRestrictionLists), "postReplyRestrictionLists" },
         { int(Role::PostHiddenReplies), "postHiddenReplies" },
+        { int(Role::PostIsHiddenReply), "postIsHiddenReply" },
         { int(Role::PostBookmarked), "postBookmarked" },
         { int(Role::PostBookmarkNotFound), "postBookmarkNotFound" },
         { int(Role::PostLabels), "postLabels" },
@@ -501,6 +521,11 @@ void AbstractPostFeedModel::replyRestrictionChanged()
 void AbstractPostFeedModel::replyRestrictionListsChanged()
 {
     changeData({ int(Role::PostReplyRestrictionLists) });
+}
+
+void AbstractPostFeedModel::hiddenRepliesChanged()
+{
+    changeData({ int(Role::PostHiddenReplies), int(Role::PostIsHiddenReply) });
 }
 
 void AbstractPostFeedModel::threadMutedChanged()

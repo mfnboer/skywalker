@@ -77,7 +77,7 @@ Rectangle {
             // Reply to
             ReplyToRow {
                 width: parent.width
-                authorName: postReplyToAuthor.name
+                text: qsTr(`Reply to ${postReplyToAuthor.name}`)
                 visible: postIsReply
             }
 

@@ -691,6 +691,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
+    case Role::NotificationPostReplyRootAuthorDid:
+        return notification.getPostRecord().getReplyRootAuthorDid();
     case Role::NotificationPostReplyRootUri:
         return notification.getPostRecord().getReplyRootUri();
     case Role::NotificationPostReplyRootCid:
@@ -745,7 +747,27 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
     }
     case Role::NotificationPostHiddenReplies:
-        return notification.getNotificationPost(mPostCache).getHiddenReplies();
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+
+        if (post.isReply())
+            return change && change->mHiddenReplies ? *change->mHiddenReplies : post.getHiddenReplies();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mHiddenReplies ? *rootChange->mHiddenReplies : post.getHiddenReplies();
+    }
+    case Role::NotificationPostIsHiddenReply:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+
+        if (post.isReply())
+            return change && change->mHiddenReplies ? change->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
+
+        const QString rootCid = post.getReplyRootCid();
+        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        return rootChange && rootChange->mHiddenReplies ? rootChange->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
+    }
     case Role::NotificationPostRepostCount:
         return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:
@@ -852,6 +874,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostExternal), "notificationPostExternal" },
         { int(Role::NotificationPostRecord), "notificationPostRecord" },
         { int(Role::NotificationPostRecordWithMedia), "notificationPostRecordWithMedia" },
+        { int(Role::NotificationPostReplyRootAuthorDid), "notificationPostReplyRootAuthorDid" },
         { int(Role::NotificationPostReplyRootUri), "notificationPostReplyRootUri" },
         { int(Role::NotificationPostReplyRootCid), "notificationPostReplyRootCid" },
         { int(Role::NotificationPostRepostUri), "notificationPostRepostUri" },
@@ -864,6 +887,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyRestriction), "notificationPostReplyRestriction" },
         { int(Role::NotificationPostReplyRestrictionLists), "notificationPostReplyRestrictionLists" },
         { int(Role::NotificationPostHiddenReplies), "notificationPostHiddenReplies" },
+        { int(Role::NotificationPostIsHiddenReply), "notificationPostIsHiddenReply" },
         { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
         { int(Role::NotificationPostQuoteCount), "notificationPostQuoteCount" },
@@ -937,6 +961,11 @@ void NotificationListModel::replyRestrictionChanged()
 void NotificationListModel::replyRestrictionListsChanged()
 {
     changeData({ int(Role::NotificationPostReplyRestrictionLists) });
+}
+
+void NotificationListModel::hiddenRepliesChanged()
+{
+    changeData({ int(Role::NotificationPostHiddenReplies), int(Role::NotificationPostIsHiddenReply) });
 }
 
 void NotificationListModel::threadMutedChanged()

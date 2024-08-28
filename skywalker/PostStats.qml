@@ -13,8 +13,10 @@ Item {
     required property bool threadMuted
     required property bool replyDisabled
     required property bool embeddingDisabled
-    required property string threadgateUri
+    required property int replyRestriction // QEnums::ReplyRestriction flags
+    required property bool isHiddenReply
     required property bool isReply
+    required property string replyRootAuthorDid
     required property string replyRootUri
     required property bool authorIsUser
     required property bool isBookmarked
@@ -30,6 +32,7 @@ Item {
     signal bookmark()
     signal share()
     signal threadgate()
+    signal hideReply()
     signal deletePost()
     signal copyPostText()
     signal reportPost()
@@ -160,11 +163,19 @@ Item {
                 }
 
                 AccessibleMenuItem {
+                    text: isHiddenReply ? qsTr("Unhide reply") : qsTr("Hide reply")
+                    visible: isReply && !authorIsUser && isThreadFromUser()
+                    onTriggered: hideReply()
+
+                    MenuItemSvg { svg: isHiddenReply ? svgOutline.visibility : svgOutline.hideVisibility }
+                }
+
+                AccessibleMenuItem {
                     text: qsTr("Restrictions")
                     visible: authorIsUser
                     onTriggered: threadgate()
 
-                    MenuItemSvg { svg: threadgateUri ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions }
+                    MenuItemSvg { svg: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions }
                 }
 
                 AccessibleMenuItem {
@@ -229,6 +240,13 @@ Item {
             return recordWithMedia.record.detached ? isUserDid(recordWithMedia.record.detachedByDid)  : isUserDid(recordWithMedia.record.author.did)
 
         return false
+    }
+
+    function isThreadFromUser() {
+        if (!isReply)
+            return authorIsUser
+
+        return isUserDid(replyRootAuthorDid)
     }
 
     function isUserDid(did) {

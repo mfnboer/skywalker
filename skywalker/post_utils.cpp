@@ -194,15 +194,16 @@ void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allow
         allowListUris.push_back(list.getUri());
 
     mPostMaster->addThreadgate(uri, allowMention, allowFollowing, allowListUris, allowNobody, hiddenReplies,
-        [this, presence=getPresence(), cid, allowMention, allowFollowing, allowList, allowNobody](const QString& threadgateUri, const QString&){
+        [this, presence=getPresence(), cid, allowMention, allowFollowing, allowList, allowNobody, hiddenReplies](const QString& threadgateUri, const QString&){
             if (!presence)
                 return;
 
             mSkywalker->makeLocalModelChange(
-                [cid, threadgateUri, allowMention, allowFollowing, allowList, allowNobody](LocalPostModelChanges* model){
+                [cid, threadgateUri, allowMention, allowFollowing, allowList, allowNobody, hiddenReplies](LocalPostModelChanges* model){
                     model->updateThreadgateUri(cid, threadgateUri);
                     model->updateReplyRestriction(cid, Post::makeReplyRestriction(allowMention, allowFollowing, !allowList.empty(), allowNobody));
                     model->updateReplyRestrictionLists(cid, allowList);
+                    model->updateHiddenReplies(cid, hiddenReplies);
                 });
 
             emit threadgateOk();
@@ -254,6 +255,7 @@ void PostUtils::undoThreadgate(const QString& threadgateUri, const QString& cid)
                     model->updateThreadgateUri(cid, "");
                     model->updateReplyRestriction(cid, QEnums::REPLY_RESTRICTION_NONE);
                     model->updateReplyRestrictionLists(cid, {});
+                    model->updateHiddenReplies(cid, {});
                 });
 
             emit undoThreadgateOk();

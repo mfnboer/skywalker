@@ -3,7 +3,7 @@ next
 * Show quoted posts for a post (repost count contains quotes)
 * Disable/enable quoting on your posts
 * Detach your post from a quote post
-* Indication for detached quotes
+* Hide replies in your thread
 * Link card retrieval improvements
 * Bug fixes
 

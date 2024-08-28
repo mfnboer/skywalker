@@ -56,6 +56,7 @@ public:
         NotificationPostExternal,
         NotificationPostRecord,
         NotificationPostRecordWithMedia,
+        NotificationPostReplyRootAuthorDid,
         NotificationPostReplyRootUri,
         NotificationPostReplyRootCid,
         NotificationPostRepostUri,
@@ -68,6 +69,7 @@ public:
         NotificationPostReplyRestriction,
         NotificationPostReplyRestrictionLists,
         NotificationPostHiddenReplies,
+        NotificationPostIsHiddenReply,
         NotificationPostRepostCount,
         NotificationPostLikeCount,
         NotificationPostQuoteCount,
@@ -134,6 +136,7 @@ protected:
     virtual void threadgateUriChanged() override;
     virtual void replyRestrictionChanged() override;
     virtual void replyRestrictionListsChanged() override;
+    virtual void hiddenRepliesChanged() override;
     virtual void threadMutedChanged() override;
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;

@@ -3,17 +3,19 @@ import QtQuick.Controls
 import skywalker
 
 Row {
-    required property string authorName
+    required property string text
+    property svgimage svg: svgOutline.reply
 
     id: row
     width: parent.width
+    spacing: 5
 
     SvgImage {
         id: replyImg
         width: parent.visible ? replyToText.height : 0
         height: width
         color: Material.color(Material.Grey)
-        svg: svgOutline.reply
+        svg: row.svg
     }
 
     SkyCleanedText {
@@ -23,7 +25,7 @@ Row {
         elide: Text.ElideRight
         color: Material.color(Material.Grey)
         font.pointSize: guiSettings.scaledFont(7/8)
-        plainText: qsTr(`Reply to ${authorName}`)
+        plainText: row.text
 
         Accessible.ignored: true
     }

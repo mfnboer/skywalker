@@ -88,6 +88,12 @@ void LocalPostModelChanges::updateReplyRestrictionLists(const QString& cid, cons
     replyRestrictionListsChanged();
 }
 
+void LocalPostModelChanges::updateHiddenReplies(const QString& cid, const QStringList& hiddenReplies)
+{
+    mChanges[cid].mHiddenReplies = hiddenReplies;
+    hiddenRepliesChanged();
+}
+
 void LocalPostModelChanges::updateThreadMuted(const QString& uri, bool muted)
 {
     mUriChanges[uri].mThreadMuted = muted;

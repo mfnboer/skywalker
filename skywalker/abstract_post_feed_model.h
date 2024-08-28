@@ -51,6 +51,7 @@ public:
         PostIsReply,
         PostParentInThread,
         PostReplyToAuthor,
+        PostReplyRootAuthorDid,
         PostReplyRootUri,
         PostReplyRootCid,
         PostReplyCount,
@@ -67,6 +68,7 @@ public:
         PostReplyRestriction,
         PostReplyRestrictionLists,
         PostHiddenReplies,
+        PostIsHiddenReply,
         PostBookmarked,
         PostBookmarkNotFound,
         PostLabels,
@@ -118,6 +120,7 @@ protected:
     virtual void threadgateUriChanged() override;
     virtual void replyRestrictionChanged() override;
     virtual void replyRestrictionListsChanged() override;
+    virtual void hiddenRepliesChanged() override;
     virtual void threadMutedChanged() override;
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;

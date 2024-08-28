@@ -32,6 +32,7 @@ Rectangle {
     required property bool postIsReply
     required property bool postParentInThread
     required property basicprofile postReplyToAuthor
+    required property string postReplyRootAuthorDid
     required property string postReplyRootUri
     required property string postReplyRootCid
     required property int postReplyCount
@@ -48,6 +49,7 @@ Rectangle {
     required property int postReplyRestriction // QEnums::ReplyRestriction flags
     required property list<listviewbasic> postReplyRestrictionLists
     required property list<string> postHiddenReplies
+    required property bool postIsHiddenReply
     required property bool postBookmarked
     required property bool postBookmarkNotFound
     required property list<contentlabel> postLabels
@@ -293,7 +295,19 @@ Rectangle {
                 visible: status == Loader.Ready
                 sourceComponent: ReplyToRow {
                     width: parent.width
-                    authorName: postReplyToAuthor.name
+                    text: qsTr(`Reply to ${postReplyToAuthor.name}`)
+                }
+            }
+
+            // Reply hidden by user
+            Loader {
+                width: parent.width
+                active: postIsHiddenReply && isUserDid(postReplyRootAuthorDid)
+                visible: status == Loader.Ready
+                sourceComponent: ReplyToRow {
+                    width: parent.width
+                    text: qsTr("Reply hidden by you")
+                    svg: svgOutline.hideVisibility
                 }
             }
 
@@ -365,8 +379,10 @@ Rectangle {
                 threadMuted: postThreadMuted
                 replyDisabled: postReplyDisabled
                 embeddingDisabled: postEmbeddingDisabled
-                threadgateUri: postThreadgateUri
+                replyRestriction: postReplyRestriction
+                isHiddenReply: postIsHiddenReply
                 isReply: postIsReply
+                replyRootAuthorDid: postReplyRootAuthorDid
                 replyRootUri: postReplyRootUri
                 authorIsUser: isUser(author)
                 isBookmarked: postBookmarked
@@ -402,6 +418,7 @@ Rectangle {
                 onShare: skywalker.sharePost(postUri)
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
                 onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
+                onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
@@ -648,7 +665,11 @@ Rectangle {
         return postContentWarning
     }
 
+    function isUserDid(did) {
+        return skywalker.getUserDid() === did
+    }
+
     function isUser(author) {
-        return skywalker.getUserDid() === author.did
+        return isUserDid(author.did)
     }
 }

@@ -30,6 +30,7 @@ public:
         std::optional<QString> mThreadgateUri;
         QEnums::ReplyRestriction mReplyRestriction = QEnums::REPLY_RESTRICTION_UNKNOWN;
         std::optional<ListViewBasicList> mReplyRestrictionLists;
+        std::optional<QStringList> mHiddenReplies;
         std::optional<bool> mThreadMuted;
         RecordView::SharedPtr mDetachedRecord;
         RecordView::SharedPtr mReAttachedRecord;
@@ -55,6 +56,7 @@ public:
     void updateThreadgateUri(const QString& cid, const QString& threadgateUri);
     void updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion);
     void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
+    void updateHiddenReplies(const QString& cid, const QStringList& hiddenReplies);
     void updateThreadMuted(const QString& uri, bool muted);
 
     /**
@@ -80,6 +82,7 @@ protected:
     virtual void threadgateUriChanged() = 0;
     virtual void replyRestrictionChanged() = 0;
     virtual void replyRestrictionListsChanged() = 0;
+    virtual void hiddenRepliesChanged() = 0;
     virtual void threadMutedChanged() = 0;
     virtual void detachedRecordChanged() = 0;
     virtual void reAttachedRecordChanged() = 0;

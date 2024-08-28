@@ -213,18 +213,14 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
 void PostThreadModel::setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView)
 {
     mThreadgateView = threadgateView;
-    mHiddenReplies.clear();
-
-    if (!mThreadgateView || !mThreadgateView->mRecord)
-        return;
-
-    const auto& hiddenReplies = mThreadgateView->mRecord->mHiddenReplies;
-    mHiddenReplies.insert(hiddenReplies.begin(), hiddenReplies.end());
 }
 
 bool PostThreadModel::isHiddenReply(const QString& uri) const
 {
-    return mHiddenReplies.contains(uri);
+    if (!mThreadgateView || !mThreadgateView->mRecord)
+        return false;
+
+    return mThreadgateView->mRecord->mHiddenReplies.contains(uri);
 }
 
 bool PostThreadModel::isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& reply) const
