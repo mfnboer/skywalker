@@ -603,9 +603,7 @@ ApplicationWindow {
         onMuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUnmuteThreadOk: statusPopup.show(qsTr("You will receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 5);
         onUnmuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onThreadgateOk: statusPopup.show(qsTr("Reply restrictions set"), QEnums.STATUS_LEVEL_INFO, 2)
         onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUndoThreadgateOk: statusPopup.show(qsTr("Reply restrictions removed"), QEnums.STATUS_LEVEL_INFO, 2)
         onUndoThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onPostgateOk: statusPopup.show(qsTr("Quote restrictions set"), QEnums.STATUS_LEVEL_INFO, 2)
         onPostgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
@@ -949,21 +947,31 @@ ApplicationWindow {
         let hidden = postHiddenReplies
         const index = hidden.indexOf(uri)
 
-        if (index < 0)
-            hidden.push(uri)
-        else
+        if (index < 0) {
+            guiSettings.askYesNoQuestion(root,
+                qsTr("Do you want to move this reply to the hidden section at the bottom of your thread, and mute notifications both for yourself and others?"),
+                () => {
+                    hidden.push(uri)
+                    hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, hidden)
+                })
+        }
+        else {
             hidden.splice(index, 1)
+            hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, hidden)
+        }
+    }
 
+    function hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
         const allowMentioned = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
         const allowFollowing = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING)
         const allowNobody = Boolean(replyRestriction === QEnums.REPLY_RESTRICTION_NOBODY)
 
-        if (hidden.length === 0 && threadgateUri && replyRestriction === QEnums.REPLY_RESTRICTION_NONE) {
+        if (postHiddenReplies.length === 0 && threadgateUri && replyRestriction === QEnums.REPLY_RESTRICTION_NONE) {
             postUtils.undoThreadgate(threadgateUri, rootCid)
         }
         else {
             postUtils.addThreadgate(rootUri, rootCid, allowMentioned, allowFollowing,
-                                    replyRestrictionLists, allowNobody, hidden)
+                                    replyRestrictionLists, allowNobody, postHiddenReplies)
         }
     }
 

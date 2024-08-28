@@ -105,11 +105,13 @@ private:
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
+        std::unordered_map<QString, ATProto::AppBskyFeed::ThreadgateView::SharedPtr> mRootUriToThreadgate;
         bool mOverlapsWithFeed = false;
 
         void addPost(const Post& post, bool isParent = false);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
+        void setThreadgates();
     };
 
     virtual bool mustHideContent(const Post& post) const override;

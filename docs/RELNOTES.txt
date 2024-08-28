@@ -1,9 +1,10 @@
 next
 ====
-* Show quoted posts for a post (repost count contains quotes)
+* Repost count includes quote posts
+* Show quote posts for a post
 * Disable/enable quoting on your posts
 * Detach your post from a quote post
-* Hide replies in your thread
+* Hide replies (and mute notifications) in your thread
 * Link card retrieval improvements
 * Bug fixes
 

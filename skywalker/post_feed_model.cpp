@@ -445,6 +445,14 @@ void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 
     if (isParent)
         mParentIndexMap[cid] = mFeed.size() - 1;
+
+    if (!post.isReply())
+    {
+        auto threadgate = post.getThreadgateView();
+
+        if (threadgate)
+            mRootUriToThreadgate[post.getUri()] = threadgate;
+    }
 }
 
 bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef)
@@ -615,6 +623,20 @@ bool PostFeedModel::mustShowQuotePost(const Post& post) const
     return true;
 }
 
+void PostFeedModel::Page::setThreadgates()
+{
+    for (auto& post : mFeed)
+    {
+        if (!post.isReply())
+            continue;
+
+        const auto& rootUri = post.getReplyRootUri();
+
+        if (mRootUriToThreadgate.contains(rootUri))
+            post.setThreadgateView(mRootUriToThreadgate[rootUri]);
+    }
+}
+
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
@@ -749,6 +771,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             page->mFeed.back().setEndOfFeed(true);
     }
 
+    page->setThreadgates();
     return page;
 }
 
