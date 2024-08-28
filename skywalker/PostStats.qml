@@ -223,15 +223,15 @@ Item {
 
     function hasOwnRecord() {
         if (record)
-            return record.detached ? isUser(record.detachedByDid) : isUser(record.author.did)
+            return record.detached ? isUserDid(record.detachedByDid) : isUserDid(record.author.did)
 
         if (recordWithMedia)
-            return recordWithMedia.record.detached ? isUser(recordWithMedia.record.detachedByDid)  : isUser(recordWithMedia.record.author.did)
+            return recordWithMedia.record.detached ? isUserDid(recordWithMedia.record.detachedByDid)  : isUserDid(recordWithMedia.record.author.did)
 
         return false
     }
 
-    function isUser(did) {
+    function isUserDid(did) {
         return skywalker.getUserDid() === did
     }
 

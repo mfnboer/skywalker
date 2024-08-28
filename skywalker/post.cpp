@@ -592,8 +592,11 @@ QString Post::getThreadgateUri() const
     return {};
 }
 
-QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allowFollowing, const bool allowList, bool hiddenReplies)
+QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allowFollowing, const bool allowList, bool allowNobody)
 {
+    if (allowNobody)
+        return QEnums::REPLY_RESTRICTION_NOBODY;
+
     int restriction = QEnums::REPLY_RESTRICTION_NONE;
 
     if (allowMention)
@@ -605,13 +608,7 @@ QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allo
     if (allowList)
         restriction |= QEnums::REPLY_RESTRICTION_LIST;
 
-    if (hiddenReplies)
-        restriction |= QEnums::REPLY_RESTRICTION_HIDDEN_REPLIES;
-
-    if (restriction != QEnums::REPLY_RESTRICTION_NONE)
-        return (QEnums::ReplyRestriction)restriction;
-
-    return QEnums::REPLY_RESTRICTION_NOBODY;
+    return (QEnums::ReplyRestriction)restriction;
 }
 
 QEnums::ReplyRestriction Post::getReplyRestriction() const
@@ -625,7 +622,7 @@ QEnums::ReplyRestriction Post::getReplyRestriction() const
     return makeReplyRestriction(threadgate->mAllowMention,
                                 threadgate->mAllowFollowing,
                                 !threadgate->mAllowList.empty(),
-                                !threadgate->mHiddenReplies.empty());
+                                threadgate->mAllowNobody);
 }
 
 ListViewBasicList Post::getReplyRestrictionLists() const
@@ -644,6 +641,17 @@ ListViewBasicList Post::getReplyRestrictionLists() const
     }
 
     return lists;
+}
+
+QStringList Post::getHiddenReplies() const
+{
+    auto threadgateView = getThreadgateView();
+
+    if (!threadgateView || !threadgateView->mRecord)
+        return {};
+
+    QStringList hiddenReplies(threadgateView->mRecord->mHiddenReplies.begin(), threadgateView->mRecord->mHiddenReplies.end());
+    return hiddenReplies;
 }
 
 const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& Post::getLabels() const

@@ -323,6 +323,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
         return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
     }
+    case Role::PostHiddenReplies:
+        return post.getHiddenReplies();
     case Role::PostBookmarked:
         return mBookmarks.isBookmarked(post.getUri());
     case Role::PostBookmarkNotFound:
@@ -423,6 +425,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostThreadgateUri), "postThreadgateUri" },
         { int(Role::PostReplyRestriction), "postReplyRestriction" },
         { int(Role::PostReplyRestrictionLists), "postReplyRestrictionLists" },
+        { int(Role::PostHiddenReplies), "postHiddenReplies" },
         { int(Role::PostBookmarked), "postBookmarked" },
         { int(Role::PostBookmarkNotFound), "postBookmarkNotFound" },
         { int(Role::PostLabels), "postLabels" },

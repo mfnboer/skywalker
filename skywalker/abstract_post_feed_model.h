@@ -65,6 +65,7 @@ public:
         PostThreadgateUri,
         PostReplyRestriction,
         PostReplyRestrictionLists,
+        PostHiddenReplies,
         PostBookmarked,
         PostBookmarkNotFound,
         PostLabels,

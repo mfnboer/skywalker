@@ -164,8 +164,10 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
     if (draftPost->restrictReplies())
     {
         const QString fileName = mStorageType == STORAGE_FILE ? createDraftPostFileName(dateTime) : "draft";
+        const bool allowNobody = !draftPost->allowMention() && !draftPost->allowFollowing() && draftPost->allowLists().empty();
         draft->mThreadgate = ATProto::PostMaster::createThreadgate(
-            getDraftUri(fileName), draftPost->allowMention(), draftPost->allowFollowing(), draftPost->allowLists());
+            getDraftUri(fileName), draftPost->allowMention(), draftPost->allowFollowing(),
+            draftPost->allowLists(), allowNobody, {});
     }
 
     draft->mReplyToPost = createReplyToPost(draftPost->replyToUri(), draftPost->replyToAuthor(),

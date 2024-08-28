@@ -945,7 +945,7 @@ ApplicationWindow {
         postUtils.detachQuote(uri, embeddingUri, embeddingCid, detach)
     }
 
-    function gateRestrictions(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists) {
+    function gateRestrictions(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
         const restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
         skywalker.getListList(restrictionsListModelId)
         postUtils.setAllowListUris(replyRestrictionLists)
@@ -970,14 +970,17 @@ ApplicationWindow {
                 {
                     console.debug("No reply restriction change!")
                 }
-                else if (threadgateUri && !restrictionsPage.restrictReply) {
+                else if (threadgateUri && !restrictionsPage.restrictReply && postHiddenReplies.length === 0) {
                     postUtils.undoThreadgate(threadgateUri, rootCid)
                 }
                 else if (restrictionsPage.restrictReply) {
+                    const allowLists = getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)
+                    const allowNobody = Boolean(!restrictionsPage.allowMentioned && !restrictionsPage.allowFollowing && (allowLists.length === 0))
+
                     postUtils.addThreadgate(rootUri, rootCid,
                                             restrictionsPage.allowMentioned,
                                             restrictionsPage.allowFollowing,
-                                            getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes))
+                                            allowLists, allowNobody, postHiddenReplies)
                 }
 
                 if (restrictionsPage.prevAllowQuoting !== restrictionsPage.allowQuoting) {

@@ -46,7 +46,6 @@ Rectangle {
     required property bool notificationPostReplyDisabled
     required property bool notificationPostEmbeddingDisabled
     required property string notificationPostThreadgateUri
-    required property int notificationPostReplyRestriction // QEnums::ReplyRestriction
     required property int notificationPostRepostCount
     required property int notificationPostLikeCount
     required property int notificationPostQuoteCount

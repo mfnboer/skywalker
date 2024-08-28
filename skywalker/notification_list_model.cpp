@@ -744,6 +744,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
         return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
     }
+    case Role::NotificationPostHiddenReplies:
+        return notification.getNotificationPost(mPostCache).getHiddenReplies();
     case Role::NotificationPostRepostCount:
         return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
     case Role::NotificationPostLikeCount:
@@ -861,6 +863,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostThreadgateUri), "notificationPostThreadgateUri" },
         { int(Role::NotificationPostReplyRestriction), "notificationPostReplyRestriction" },
         { int(Role::NotificationPostReplyRestrictionLists), "notificationPostReplyRestrictionLists" },
+        { int(Role::NotificationPostHiddenReplies), "notificationPostHiddenReplies" },
         { int(Role::NotificationPostRepostCount), "notificationPostRepostCount" },
         { int(Role::NotificationPostLikeCount), "notificationPostLikeCount" },
         { int(Role::NotificationPostQuoteCount), "notificationPostQuoteCount" },

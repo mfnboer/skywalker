@@ -83,9 +83,10 @@ public:
     bool isEmbeddingDisabled() const;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr getThreadgateView() const;
     QString getThreadgateUri() const;
-    static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollowing, bool allowList, bool hiddenReplies);
+    static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollowing, bool allowList, bool allowNobody);
     QEnums::ReplyRestriction getReplyRestriction() const;
     ListViewBasicList getReplyRestrictionLists() const;
+    QStringList getHiddenReplies() const;
 
     void setEndOfFeed(bool end) { mEndOfFeed = end; }
     void setPostType(QEnums::PostType postType) { mPostType = postType; }

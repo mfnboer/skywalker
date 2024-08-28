@@ -67,6 +67,7 @@ public:
         NotificationPostThreadgateUri,
         NotificationPostReplyRestriction,
         NotificationPostReplyRestrictionLists,
+        NotificationPostHiddenReplies,
         NotificationPostRepostCount,
         NotificationPostLikeCount,
         NotificationPostQuoteCount,
