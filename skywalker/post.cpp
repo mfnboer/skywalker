@@ -22,6 +22,13 @@ Post Post::createGapPlaceHolder(const QString& gapCursor)
     return post;
 }
 
+Post Post::createHiddenPosts()
+{
+    Post post;
+    post.mHiddenPosts = true;
+    return post;
+}
+
 Post Post::createNotFound()
 {
     Post post;

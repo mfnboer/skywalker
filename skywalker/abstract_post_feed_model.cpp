@@ -237,6 +237,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.isPlaceHolder();
     case Role::PostGapId:
         return post.getGapId();
+    case Role::PostHiddenPosts:
+        return post.isHiddenPosts();
     case Role::PostNotFound:
         return post.isNotFound();
     case Role::PostBlocked:
@@ -403,6 +405,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostThreadType), "postThreadType" },
         { int(Role::PostIsPlaceHolder), "postIsPlaceHolder" },
         { int(Role::PostGapId), "postGapId" },
+        { int(Role::PostHiddenPosts), "postHiddenPosts" },
         { int(Role::PostNotFound), "postNotFound" },
         { int(Role::PostBlocked), "postBlocked" },
         { int(Role::PostNotSupported), "postNotSupported" },

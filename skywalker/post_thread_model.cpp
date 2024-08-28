@@ -24,7 +24,7 @@ int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&&
     if (!mFeed.empty())
         clear();
 
-    mThreadgateView = thread->mThreadgate;
+    setThreadgateView(thread->mThreadgate);
     auto page = createPage(std::move(thread));
 
     if (page->mFeed.empty())
@@ -33,14 +33,47 @@ int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&&
         return -1;
     }
 
-    const size_t newRowCount = page->mFeed.size();
+    const size_t newRowCount = page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex + 1;
+    const size_t pageInsertCount = page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex;
 
     beginInsertRows({}, 0, newRowCount - 1);
-    insertPage(mFeed.end(), *page, newRowCount);
+    insertPage(mFeed.end(), *page, pageInsertCount);
+
+    if (page->mFirstHiddenReplyIndex != -1)
+        mFeed.push_back(Post::createHiddenPosts());
+
     endInsertRows();
+
+    if (page->mFirstHiddenReplyIndex != -1)
+        mHiddenRepliesFeed.assign(page->mFeed.begin() + page->mFirstHiddenReplyIndex, page->mFeed.end());
 
     qDebug() << "New feed size:" << mFeed.size();
     return page->mEntryPostIndex;
+}
+
+void PostThreadModel::showHiddenReplies()
+{
+    qDebug() << "Show hidden replies:" << mHiddenRepliesFeed.size();
+
+    if (mHiddenRepliesFeed.empty())
+    {
+        qDebug() << "No hidden replies";
+        return;
+    }
+
+    // Remove hidden replies place holder
+    beginRemoveRows({}, mFeed.size() - 1, mFeed.size() - 1);
+    mFeed.erase(mFeed.begin() + mFeed.size() - 1);
+    endRemoveRows();
+
+    const size_t newRowCount = mFeed.size() + mHiddenRepliesFeed.size();
+
+    beginInsertRows({}, mFeed.size(), newRowCount - 1);
+    mFeed.insert(mFeed.end(), mHiddenRepliesFeed.begin(), mHiddenRepliesFeed.end());
+    endInsertRows();
+
+    mHiddenRepliesFeed.clear();
+    qDebug() << "New feed size:" << mFeed.size();
 }
 
 QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
@@ -92,7 +125,8 @@ void PostThreadModel::clear()
         endRemoveRows();
     }
 
-    mThreadgateView = nullptr;
+    setThreadgateView(nullptr);
+    mHiddenRepliesFeed.clear();
     qDebug() << "All posts removed";
 }
 
@@ -154,8 +188,16 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
         if (!post->mReplies.empty())
         {
             mPostFeedModel.sortReplies(post.get());
-            Q_ASSERT(post->mReplies[0]);
-            addReplyThread(*post->mReplies[0], false, false);
+            auto nextReply = post->mReplies[0];
+            Q_ASSERT(nextReply);
+
+            // Hide a reply that is not a direct reply of then thread entry post.
+            // The user will see the current post as a post with a non-zero reply count.
+            // By clicking on this post the hidden replies can be accessed.
+            if (!mPostFeedModel.isHiddenReply(*nextReply))
+                addReplyThread(*nextReply, false, false);
+            else
+                mFeed.back().addThreadType(QEnums::THREAD_LEAF);
         }
         else
         {
@@ -168,11 +210,39 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
     }
 }
 
+void PostThreadModel::setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView)
+{
+    mThreadgateView = threadgateView;
+    mHiddenReplies.clear();
+
+    if (!mThreadgateView || !mThreadgateView->mRecord)
+        return;
+
+    const auto& hiddenReplies = mThreadgateView->mRecord->mHiddenReplies;
+    mHiddenReplies.insert(hiddenReplies.begin(), hiddenReplies.end());
+}
+
+bool PostThreadModel::isHiddenReply(const QString& uri) const
+{
+    return mHiddenReplies.contains(uri);
+}
+
+bool PostThreadModel::isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& reply) const
+{
+    if (reply.mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+        return false;
+
+    const auto post = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply.mPost).get();
+    Q_ASSERT(post);
+    return isHiddenReply(post->mPost->mUri);
+}
+
 // Sort replies in this order:
 // 1. Reply from author
 // 2. Your replies
 // 3. Replies from following
 // 4. Replies from other
+// 5. Hidden replies (previous steps only for non-hidden replies)
 // In each group, new before old.
 void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const
 {
@@ -198,6 +268,15 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
 
             const auto& lhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(lhs->mPost)->mPost;
             const auto& rhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(rhs->mPost)->mPost;
+
+            // Non-hidden before hidden
+            const bool lhsHidden = isHiddenReply(lhsPost->mUri);
+            const bool rhsHidden = isHiddenReply(rhsPost->mUri);
+
+            if (lhsHidden != rhsHidden)
+                return lhsHidden < rhsHidden;
+
+
             const auto& lhsDid = lhsPost->mAuthor->mDid;
             const auto& rhsDid = rhsPost->mAuthor->mDid;
 
@@ -300,6 +379,13 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::Pos
         for (const auto& reply : viewPost->mReplies)
         {
             Q_ASSERT(reply);
+
+            if (page->mFirstHiddenReplyIndex == -1 && isHiddenReply(*reply))
+            {
+                page->mFirstHiddenReplyIndex = page->mFeed.size();
+                qDebug() << "First hidden reply:" << page->mFirstHiddenReplyIndex;
+            }
+
             page->addReplyThread(*reply, true, firstReply);
             firstReply = false;
         }

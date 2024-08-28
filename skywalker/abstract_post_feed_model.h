@@ -43,6 +43,7 @@ public:
         PostThreadType,
         PostIsPlaceHolder,
         PostGapId,
+        PostHiddenPosts,
         PostNotFound,
         PostBlocked,
         PostNotSupported,

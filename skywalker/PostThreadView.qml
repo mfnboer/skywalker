@@ -147,6 +147,8 @@ SkyListView {
             // Direct call sometimes causes the post to be not rendered
             Qt.callLater(calibratePosition)
         }
+
+        onShowHiddenReplies: model.showHiddenReplies()
     }
 
     FlickableRefresher {}

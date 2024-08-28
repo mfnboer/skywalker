@@ -24,6 +24,7 @@ Rectangle {
     required property int postThreadType // QEnums::ThreadPostType flags
     required property bool postIsPlaceHolder
     required property int postGapId;
+    required property bool postHiddenPosts;
     required property bool postNotFound;
     required property bool postBlocked;
     required property bool postNotSupported;
@@ -61,6 +62,7 @@ Rectangle {
     property bool isAnchorItem: false
 
     signal calibratedPosition(int dy)
+    signal showHiddenReplies
 
     id: postEntry
     height: grid.height
@@ -424,6 +426,26 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: getGapPosts()
+                }
+            }
+        }
+
+        // Hidden PostStats
+        Loader {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            active: postHiddenPosts
+            visible: status == Loader.Ready
+            sourceComponent: Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                color: guiSettings.linkColor
+                text: qsTr("Show hidden replies")
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: showHiddenReplies()
                 }
             }
         }

@@ -22,6 +22,7 @@ public:
     // missing posts that have not been retrieved. The gapCursor can be use
     // to fetch those posts.
     static Post createGapPlaceHolder(const QString& gapCursor);
+    static Post createHiddenPosts();
     static Post createNotFound();
     static Post createBlocked();
     static Post createNotSupported(const QString& unsupportedType);
@@ -96,6 +97,7 @@ public:
     int getThreadType() const { return mThreadType; }
     void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
 
+    bool isHiddenPosts() const { return mHiddenPosts; }
     bool isNotFound() const { return mNotFound; }
     bool isBlocked() const { return mBlocked; }
     bool isNotSupported() const { return mNotSupported; }
@@ -136,6 +138,7 @@ private:
     std::optional<BasicProfile> mReplyToAuthor;
     bool mParentInThread = false;
 
+    bool mHiddenPosts = false; // placeholder for hidden replies in thread view
     bool mBlocked = false;
     bool mNotFound = false;
     bool mNotSupported = false;

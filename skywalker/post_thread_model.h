@@ -26,6 +26,8 @@ public:
     // Returns index of the entry post
     int setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread);
 
+    Q_INVOKABLE void showHiddenReplies();
+
     // May return UNKNOWN if there are reply restrictions. This will happen
     // if the root is not in the thread, but the first post has replies disabled.
     QEnums::ReplyRestriction getReplyRestriction() const;
@@ -52,6 +54,7 @@ private:
         std::deque<Post> mFeed;
         ATProto::AppBskyFeed::PostThread::SharedPtr mRawThread;
         int mEntryPostIndex = 0;
+        int mFirstHiddenReplyIndex = -1;
         PostThreadModel& mPostFeedModel;
 
         Post& addPost(const Post& post);
@@ -63,8 +66,13 @@ private:
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
+    void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
+    bool isHiddenReply(const QString& uri) const;
+    bool isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& reply) const;
 
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
+    std::unordered_set<QString> mHiddenReplies;
+    std::deque<Post> mHiddenRepliesFeed;
 };
 
 }
