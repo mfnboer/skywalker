@@ -1,5 +1,5 @@
-next
-====
+3.3
+===
 * Repost count includes quote posts
 * Show quote posts for a post
 * Disable/enable quoting on your posts

@@ -5,13 +5,15 @@
 
 namespace Skywalker {
 
-PostThreadModel::PostThreadModel(const QString& userDid, const IProfileStore& following,
+PostThreadModel::PostThreadModel(const QString& threadEntryUri,
+                                 const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                                  const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent)
+    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent),
+    mThreadEntryUri(threadEntryUri)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -19,13 +21,13 @@ void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, con
     mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
 }
 
-int PostThreadModel::setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread)
+int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
 {
     if (!mFeed.empty())
         clear();
 
     setThreadgateView(thread->mThreadgate);
-    auto page = createPage(std::move(thread));
+    auto page = createPage(thread);
 
     if (page->mFeed.empty())
     {
@@ -308,10 +310,10 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
         });
 }
 
-PostThreadModel::Page::Ptr PostThreadModel::createPage(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread)
+PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
 {
     auto page = std::make_unique<Page>(*this);
-    page->mRawThread = std::move(thread);
+    page->mRawThread = thread;
 
     ATProto::AppBskyFeed::ThreadViewPost* viewPost = nullptr;
     const auto& postThread = page->mRawThread->mThread;

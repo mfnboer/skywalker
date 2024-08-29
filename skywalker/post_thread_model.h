@@ -16,7 +16,8 @@ class PostThreadModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostThreadModel>;
 
-    explicit PostThreadModel(const QString& userDid, const IProfileStore& following,
+    explicit PostThreadModel(const QString& threadEntryUri,
+                             const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                              const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
@@ -24,8 +25,9 @@ public:
                              QObject* parent = nullptr);
 
     // Returns index of the entry post
-    int setPostThread(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread);
+    int setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
 
+    Q_INVOKABLE QString getThreadEntryUri() const { return mThreadEntryUri; }
     Q_INVOKABLE void showHiddenReplies();
 
     // May return UNKNOWN if there are reply restrictions. This will happen
@@ -64,7 +66,7 @@ private:
 
     void clear();
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
-    Page::Ptr createPage(ATProto::AppBskyFeed::PostThread::SharedPtr&& thread);
+    Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     bool isHiddenReply(const QString& uri) const;
@@ -72,6 +74,7 @@ private:
 
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
     std::deque<Post> mHiddenRepliesFeed;
+    QString mThreadEntryUri;
 };
 
 }

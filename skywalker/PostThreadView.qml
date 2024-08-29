@@ -152,7 +152,11 @@ SkyListView {
         onShowHiddenReplies: model.showHiddenReplies()
     }
 
-    FlickableRefresher {}
+    FlickableRefresher {
+        inProgress: skywalker.getPostThreadInProgress
+        topOvershootFun: () => skywalker.getPostThread(model.getThreadEntryUri(), modelId)
+        topText: qsTr("Pull down to refresh")
+    }
 
     UnicodeFonts {
         id: unicodeFonts

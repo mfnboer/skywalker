@@ -1377,10 +1377,10 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
         getTimelineNextPage();
 }
 
-void Skywalker::getPostThread(const QString& uri)
+void Skywalker::getPostThread(const QString& uri, int modelId)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get post thread:" << uri;
+    qDebug() << "Get post thread:" << uri << "model:" << modelId;
 
     if (mGetPostThreadInProgress)
     {
@@ -1390,22 +1390,32 @@ void Skywalker::getPostThread(const QString& uri)
 
     setGetPostThreadInProgress(true);
     mBsky->getPostThread(uri, {}, {},
-        [this](auto thread){
+        [this, uri, modelId](auto thread){
             setGetPostThreadInProgress(false);
-            auto model = std::make_unique<PostThreadModel>(
-                mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
-                mMutedWords, *mFocusHashtags, mSeenHashtags, this);
-            int postEntryIndex = model->setPostThread(std::move(thread));
 
-            if (postEntryIndex < 0)
+            if (modelId < 0)
             {
-                qDebug() << "No thread posts";
-                emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
-                return;
-            }
+                auto model = std::make_unique<PostThreadModel>(uri,
+                    mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+                    mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
-            int id = mPostThreadModels.put(std::move(model));
-            emit postThreadOk(id, postEntryIndex);
+                int postEntryIndex = model->setPostThread(thread);
+
+                if (postEntryIndex < 0)
+                {
+                    qDebug() << "No thread posts";
+                    emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
+                    return;
+                }
+
+                int id = mPostThreadModels.put(std::move(model));
+                emit postThreadOk(id, postEntryIndex);
+            }
+            else
+            {
+                auto model = getPostThreadModel(modelId);
+                model->setPostThread(thread);
+            }
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
@@ -1414,7 +1424,7 @@ void Skywalker::getPostThread(const QString& uri)
         });
 }
 
-const PostThreadModel* Skywalker::getPostThreadModel(int id) const
+PostThreadModel* Skywalker::getPostThreadModel(int id) const
 {
     qDebug() << "Get model:" << id;
     auto* model = mPostThreadModels.get(id);

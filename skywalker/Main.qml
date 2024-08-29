@@ -953,7 +953,7 @@ ApplicationWindow {
 
         if (index < 0) {
             guiSettings.askYesNoQuestion(root,
-                qsTr("Do you want to move this reply to the hidden section at the bottom of your thread, and mute notifications both for yourself and others?"),
+                qsTr("Do you want to move this reply to the hidden section at the bottom of your thread (in next post thread views), and mute notifications both for yourself and others?"),
                 () => {
                     hidden.push(uri)
                     hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, hidden)
