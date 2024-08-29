@@ -53,6 +53,7 @@ SkyListView {
                     anchors.right: parent.right
                     leftPadding: 5
                     color: restrictionIcon.color
+                    ellipsisBackgroundColor: restrictionRect.color
                     font.italic: true
                     font.pointSize: guiSettings.scaledFont(7/8)
                     wrapMode: Text.Wrap

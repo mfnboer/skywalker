@@ -111,6 +111,7 @@ private:
         void addPost(const Post& post, bool isParent = false);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
+        void collectThreadgate(const Post& post);
         void setThreadgates();
     };
 

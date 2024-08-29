@@ -603,10 +603,14 @@ ApplicationWindow {
         onMuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUnmuteThreadOk: statusPopup.show(qsTr("You will receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 5);
         onUnmuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onThreadgateOk: statusPopup.show(qsTr("Reply settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
         onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUndoThreadgateOk: statusPopup.show(qsTr("Reply settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
         onUndoThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onPostgateOk: statusPopup.show(qsTr("Quote restrictions set"), QEnums.STATUS_LEVEL_INFO, 2)
+        onPostgateOk: statusPopup.show(qsTr("Quote settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
         onPostgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUndoPostgateOk: statusPopup.show(qsTr("Quote settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
+        onUndoPostgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
 
         onDetachQuoteOk: (detached) => {
             if (detached)

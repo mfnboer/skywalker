@@ -445,7 +445,10 @@ void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 
     if (isParent)
         mParentIndexMap[cid] = mFeed.size() - 1;
+}
 
+void PostFeedModel::Page::collectThreadgate(const Post& post)
+{
     if (!post.isReply())
     {
         auto threadgate = post.getThreadgateView();
@@ -625,6 +628,9 @@ bool PostFeedModel::mustShowQuotePost(const Post& post) const
 
 void PostFeedModel::Page::setThreadgates()
 {
+    if (mRootUriToThreadgate.empty())
+        return;
+
     for (auto& post : mFeed)
     {
         if (!post.isReply())
@@ -649,6 +655,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
         if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
             Post post(feedEntry);
+            page->collectThreadgate(post);
 
             // Due to reposting a post can show up multiple times in the feed.
             // Also overlapping pages can come in as we look for new posts.
@@ -674,6 +681,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             // Reposted replies are displayed without thread context
             if (replyRef && !post.isRepost())
             {
+                page->collectThreadgate(replyRef->mRoot);
+
                 // If a reply fits in an existing thread then always show it as it provides
                 // context to the user. The leaf of this thread is a reply that passed
                 // through the filter settings.
