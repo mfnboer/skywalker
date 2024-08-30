@@ -20,10 +20,7 @@
 #endif
 
 namespace {
-
-constexpr qsizetype MAX_IMAGE_BYTES = 1000000;
 constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
-
 }
 
 namespace Skywalker::PhotoPicker {
@@ -169,7 +166,7 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
 
         qDebug() << "Blob created, bytes:" << blob.size() << "format:" << format << "mimetype:" << mimeType << "quality:" << quality;
 
-        if (blob.size() > MAX_IMAGE_BYTES)
+        if (blob.size() > ATProto::AppBskyEmbed::Image::MAX_BYTES)
         {
             qDebug() << "Image too large:" << name << "blob bytes:" << blob.size();
             blob.clear();
