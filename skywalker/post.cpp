@@ -477,6 +477,17 @@ QList<ImageView> Post::getDraftImages() const
     return images;
 }
 
+VideoView::Ptr Post::getVideoView() const
+{
+    if (!mPost)
+        return {};
+
+    if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
+        return {};
+
+    const auto& video = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(mPost->mEmbed->mEmbed);
+    return std::make_unique<VideoView>(video);
+}
 
 ExternalView::Ptr Post::getExternalView() const
 {

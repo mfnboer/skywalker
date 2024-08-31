@@ -851,6 +851,9 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
         view->mEmbed = createImagesView(std::get<ATProto::AppBskyEmbed::Images::SharedPtr>(embed->mEmbed).get());
         break;
+    case ATProto::AppBskyEmbed::EmbedType::VIDEO:
+        // TODO
+        break;
     case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
         view->mEmbed = createExternalView(std::get<ATProto::AppBskyEmbed::External::SharedPtr>(embed->mEmbed).get());

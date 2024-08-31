@@ -17,6 +17,7 @@ Rectangle {
     required property bool notificationReasonPostIsReply
     required property basicprofile notificationReasonPostReplyToAuthor
     required property list<imageview> notificationReasonPostImages
+    required property var notificationReasonPostVideo
     required property var notificationReasonPostExternal // externalview (var allows NULL)
     required property var notificationReasonPostRecord // recordview
     required property var notificationReasonPostRecordWithMedia // record_with_media_view
@@ -34,6 +35,7 @@ Rectangle {
     required property string notificationPostPlainText
     required property date notificationPostTimestamp
     required property list<imageview> notificationPostImages
+    required property var notificationPostVideo
     required property var notificationPostExternal // externalview (var allows NULL)
     required property var notificationPostRecord // recordview
     required property var notificationPostRecordWithMedia // record_with_media_view
@@ -225,6 +227,7 @@ Rectangle {
                     postContentVisibility: notificationPostContentVisibility
                     postContentWarning: notificationPostContentWarning
                     postMuted: notificationPostMutedReason
+                    postVideo: notificationPostVideo
                     postExternal: notificationPostExternal
                     postRecord: notificationPostRecord
                     postRecordWithMedia: notificationPostRecordWithMedia
@@ -400,6 +403,7 @@ Rectangle {
                     postContentWarning: ""
                     postMuted: QEnums.MUTED_POST_NONE
                     postDateTime: notificationReasonPostTimestamp
+                    postVideo: notificationReasonPostVideo
                     postExternal: notificationReasonPostExternal
                     postRecord: notificationReasonPostRecord
                     postRecordWithMedia: notificationReasonPostRecordWithMedia

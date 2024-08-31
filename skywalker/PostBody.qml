@@ -14,6 +14,7 @@ Column {
     required property string postContentWarning
     required property int postMuted // QEnums::MutedPostReason
     property string postPlainText
+    property var postVideo // videoView
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
     property var postRecordWithMedia // record_with_media_view
@@ -40,7 +41,7 @@ Column {
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: postText
-        bottomPadding: postImages.length > 0 || postExternal || postRecord ? 5 : 0
+        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord ? 5 : 0
         visible: postVisible() && postText
 
         onLinkActivated: (link) => root.openLink(link)
@@ -156,6 +157,12 @@ Column {
     }
 
     Loader {
+        id: videoLoader
+        width: parent.width
+        visible: status == Loader.Ready
+    }
+
+    Loader {
         id: externalLoader
         width: parent.width
         visible: status == Loader.Ready
@@ -253,6 +260,13 @@ Column {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             imageLoader.setSource(qmlFile, {
                                       images: postImages,
+                                      contentVisibility: postContentVisibility,
+                                      contentWarning: postContentWarning })
+        }
+
+        if (postVideo) {
+            imageLoader.setSource("VideoView.qml", {
+                                      videoView: postBody.postVideo,
                                       contentVisibility: postContentVisibility,
                                       contentWarning: postContentWarning })
         }

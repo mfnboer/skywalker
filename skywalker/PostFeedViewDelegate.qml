@@ -17,6 +17,7 @@ Rectangle {
     required property date postIndexedDateTime
     required property basicprofile postRepostedByAuthor
     required property list<imageview> postImages
+    required property var postVideo // videoView
     required property var postExternal // externalview (var allows NULL)
     required property var postRecord // recordview
     required property var postRecordWithMedia // record_with_media_view
@@ -323,6 +324,7 @@ Rectangle {
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
                 postMuted: postEntry.postMutedReason
+                postVideo: postEntry.postVideo
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia

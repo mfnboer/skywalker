@@ -153,10 +153,15 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getIndexedAt();
     case Role::PostImages:
         return QVariant::fromValue(post.getImages());
+    case Role::PostVideo:
+    {
+        auto video = post.getVideoView();
+        return video ? QVariant::fromValue(*video) : QVariant{};
+    }
     case Role::PostExternal:
     {
         auto external = post.getExternalView();
-        return external ? QVariant::fromValue(*external) : QVariant();
+        return external ? QVariant::fromValue(*external) : QVariant{};
     }
     case Role::PostRepostedByAuthor:
     {
@@ -416,6 +421,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
         { int(Role::PostRepostedByAuthor), "postRepostedByAuthor" },
         { int(Role::PostImages), "postImages" },
+        { int(Role::PostVideo), "postVideo" },
         { int(Role::PostExternal), "postExternal" },
         { int(Role::PostRecord), "postRecord" },
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },

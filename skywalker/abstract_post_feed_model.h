@@ -36,6 +36,7 @@ public:
         PostIndexedDateTime,
         PostRepostedByAuthor,
         PostImages,
+        PostVideo,
         PostExternal,
         PostRecord,
         PostRecordWithMedia,
