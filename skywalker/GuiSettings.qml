@@ -113,6 +113,12 @@ Item {
         return Math.round(duration) + qsTr("yr", "years")
     }
 
+    function videoDurationToString(durationMs) {
+        const minutes = Math.floor(durationMs / 60000)
+        const seconds = String(Math.ceil((durationMs - minutes * 60000) / 1000)).padStart(2, '0')
+        return `${minutes}:${seconds}`
+    }
+
     function askDiscardSaveQuestion(parent, question, onDiscardCb, onSaveCb) {
         let component = Qt.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save })

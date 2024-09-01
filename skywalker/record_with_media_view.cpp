@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "external_view.h"
 #include "record_with_media_view.h"
+#include "video_view.h"
 
 namespace Skywalker {
 
@@ -40,6 +41,15 @@ QList<ImageView> RecordWithMediaView::getImages() const
         images.append(ImageView(img));
 
     return images;
+}
+
+QVariant RecordWithMediaView::getVideo() const
+{
+    if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
+        return {};
+
+    const auto& video = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(mView->mMedia);
+    return  QVariant::fromValue(VideoView(video));
 }
 
 QVariant RecordWithMediaView::getExternal() const

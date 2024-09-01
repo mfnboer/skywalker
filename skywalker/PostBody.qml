@@ -206,6 +206,14 @@ Column {
         id: guiSettings
     }
 
+    function movedOffScreen() {
+        if (videoLoader.item)
+            videoLoader.item.pause()
+
+        if (recordWithMediaLoader.item)
+            recordWithMediaLoader.item.movedOffScreen()
+    }
+
     function postVisible() {
         if (mutePost)
             return false
@@ -265,7 +273,7 @@ Column {
         }
 
         if (postVideo) {
-            imageLoader.setSource("VideoView.qml", {
+            videoLoader.setSource("VideoView.qml", {
                                       videoView: postBody.postVideo,
                                       contentVisibility: postContentVisibility,
                                       contentWarning: postContentWarning })

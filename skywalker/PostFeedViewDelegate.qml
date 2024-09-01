@@ -63,6 +63,7 @@ Rectangle {
 
     property int prevY: 0
     property bool isAnchorItem: false
+    property bool onScreen: false
 
     signal calibratedPosition(int dy)
     signal showHiddenReplies
@@ -83,6 +84,8 @@ Rectangle {
     // causing the list to scroll. To prevent that, we detect the downward movement and
     // scroll back (ideally Qt should not do push down)
     onYChanged: {
+        checkOnScreen()
+
         if (!isAnchorItem)
             return
 
@@ -92,6 +95,11 @@ Rectangle {
             prevY = y
             calibratedPosition(dy)
         }
+    }
+
+    onOnScreenChanged: {
+        if (!onScreen)
+            postBody.movedOffScreen()
     }
 
     GridLayout {
@@ -673,5 +681,16 @@ Rectangle {
 
     function isUser(author) {
         return isUserDid(author.did)
+    }
+
+    function checkOnScreen() {
+        const headerHeight = ListView.view.headerItem ? ListView.view.headerItem.height : 0
+        const topY = ListView.view.contentY + headerHeight
+        onScreen = (y + height > topY) && (y < ListView.view.contentY + ListView.view.height)
+    }
+
+    Component.onCompleted: {
+        ListView.view.enableOnScreenCheck = true
+        checkOnScreen()
     }
 }

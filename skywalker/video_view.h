@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "image_view.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
 
@@ -15,6 +16,7 @@ class VideoView
     Q_PROPERTY(QString alt READ getAlt FINAL)
     Q_PROPERTY(int width READ getWidth FINAL)
     Q_PROPERTY(int height READ getHeight FINAL)
+    Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     QML_VALUE_TYPE(videoview)
 
 public:
@@ -29,6 +31,7 @@ public:
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
     QString getAlt() const { return mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : ""; }
+    ImageView getImageView() const { return ImageView(getThumbUrl(), getAlt()); }
 
 private:
     ATProto::AppBskyEmbed::VideoView::SharedPtr mVideoView;

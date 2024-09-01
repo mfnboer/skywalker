@@ -14,6 +14,7 @@ Column {
     Rectangle {
         width: parent.width
         height: videoPreview.height
+        color: "transparent"
 
         RoundedFrame {
             id: videoPreview
@@ -43,11 +44,11 @@ Column {
                     height: filter.height
                     color: "transparent"
                 }
-                ImageAutoRetry {
+                ThumbImageView {
                     id: thumbImg
                     x: 1
                     width: parent.width - 2
-                    source: filter.imageVisible() ? videoView.thumbUrl : ""
+                    imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
                     fillMode: Image.PreserveAspectFit
                 }
             }
@@ -55,17 +56,14 @@ Column {
             SvgButton {
                 x: (parent.width - width) / 2
                 y: (parent.height - height) / 2
-                width: 70
+                width: 50
                 height: width
-                imageMargin: 0
                 opacity: 0.5
                 accessibleName: qsTr("play video")
                 svg: svgFilled.play
-                visible: !videoPlayer.playing
+                visible: !videoPlayer.playing && !videoPlayer.restarting
 
-                onClicked: {
-                    videoPlayer.play()
-                }
+                onClicked: videoPlayer.play()
             }
         }
 
@@ -75,16 +73,23 @@ Column {
             height: parent.height
 
             MediaPlayer {
+                property bool restarting: false
+
                 id: videoPlayer
                 source: videoView.playlistUrl
                 videoOutput: videoOutput
-                audioOutput: AudioOutput {}
+                audioOutput: audioOutput
 
                 onPlaybackStateChanged: {
                     if (playbackState == MediaPlayer.StoppedState) {
                         source = ""
                         source = videoView.playlistUrl
                     }
+                }
+
+                onPlayingChanged: {
+                    if (playing)
+                        restarting = false
                 }
 
                 onErrorOccurred: (error, errorString) => { console.debug("Video error:", error, errorString) }
@@ -95,41 +100,91 @@ Column {
                     else
                         pause()
                 }
+
+                function restart() {
+                    restarting = true
+                    stop()
+                    source = ""
+                    source = videoView.playlistUrl
+                    play()
+                }
             }
             VideoOutput {
                 id: videoOutput
                 anchors.fill: parent
             }
+            AudioOutput {
+                id: audioOutput
+
+                function toggleSound() {
+                    muted = !muted
+                }
+            }
+
             BusyIndicator {
                 anchors.centerIn: parent
-                running: videoPlayer.playing && videoPlayer.mediaStatus < MediaPlayer.BufferedMedia
-            }
-            AccessibleText {
-                color: "white"
-                text: `${(Math.round(videoPlayer.position / 1000))} / ${(Math.round(videoPlayer.duration / 1000))}`
+                running: (videoPlayer.playing && videoPlayer.mediaStatus < MediaPlayer.BufferedMedia) || videoPlayer.restarting
             }
         }
     }
 
     Rectangle {
-        anchors.top: player.bottom
         width: parent.width
         height: playPauseButton.height
-        visible: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState
+        color: "transparent"
+        visible: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting
 
         SvgTransparentButton {
             id: playPauseButton
             width: 24
             height: width
             svg: videoPlayer.playing ? svgFilled.pause : svgFilled.play
-            accessibleName: qsTr("pause video")
+            accessibleName: videoPlayer.playing ? qsTr("pause video") : qsTr("continue playing video")
             color: guiSettings.textColor
 
             onClicked: videoPlayer.playPause()
+        }
+
+        SvgTransparentButton {
+            id: replayButton
+            anchors.left: playPauseButton.right
+            anchors.leftMargin: 10
+            width: 24
+            height: width
+            svg: svgOutline.refresh
+            accessibleName: qsTr("restart video")
+            color: guiSettings.textColor
+
+            onClicked: videoPlayer.restart()
+        }
+
+        AccessibleText {
+            anchors.right: soundButton.left
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            font.pointSize: guiSettings.scaledFont(6/8)
+            text: guiSettings.videoDurationToString(videoPlayer.duration - videoPlayer.position)
+        }
+
+        SvgTransparentButton {
+            id: soundButton
+            anchors.right: parent.right
+            width: 24
+            height: width
+            svg: audioOutput.muted ? svgOutline.soundOff : svgOutline.soundOn
+            accessibleName: audioOutput.muted ? qsTr("turn sound on") : qsTr("turn sound off")
+            color: guiSettings.textColor
+
+            onClicked: audioOutput.toggleSound()
         }
     }
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function pause() {
+        if (videoPlayer.playing)
+            videoPlayer.pause()
     }
 }

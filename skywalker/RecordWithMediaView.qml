@@ -25,6 +25,12 @@ Item {
         }
 
         Loader {
+            id: videoLoader
+            width: parent.width
+            visible: status == Loader.Ready
+        }
+
+        Loader {
             id: externalLoader
             width: parent.width
             visible: status == Loader.Ready
@@ -41,6 +47,13 @@ Item {
                                           images: record.images,
                                           contentVisibility: recordItem.contentVisibility,
                                           contentWarning: recordItem.contentWarning })
+            }
+
+            if (record.video) {
+                videoLoader.setSource("VideoView.qml", {
+                                          videoView: record.video,
+                                          contentVisibility: recordItem.contentVisibility,
+                                          contentWarning: recordItem.contentVisibility })
             }
 
             if (record.external) {
@@ -61,5 +74,10 @@ Item {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    function movedOffScreen() {
+        if (videoLoader.item)
+            videoLoader.item.pause()
     }
 }

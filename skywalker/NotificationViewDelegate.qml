@@ -69,6 +69,7 @@ Rectangle {
     required property string notificationInviteCode
     required property basicprofile notificationInviteCodeUsedBy
     required property bool endOfList
+    property bool onScreen: false
 
     id: notification
     height: grid.height
@@ -78,17 +79,7 @@ Rectangle {
     Accessible.name: getSpeech()
     Accessible.onPressAction: openNotification()
 
-    ListView.onPooled: {
-        postLoader.active = false
-        aggregatableLoader.active = false
-        inviteCodeLoader.active = false
-    }
-
-    ListView.onReused: {
-        postLoader.active = showPost()
-        aggregatableLoader.active = isAggregatableReason()
-        inviteCodeLoader.active = notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
-    }
+    onYChanged: checkOnScreen()
 
     GridLayout {
         id: grid
@@ -629,5 +620,16 @@ Rectangle {
 
         if (showPost())
             return getPostSpeech()
+    }
+
+    function checkOnScreen() {
+        const headerHeight = ListView.view.headerItem ? ListView.view.headerItem.height : 0
+        const topY = ListView.view.contentY + headerHeight
+        onScreen = (y + height > topY) && (y < ListView.view.contentY + ListView.view.height)
+    }
+
+    Component.onCompleted: {
+        ListView.view.enableOnScreenCheck = true
+        checkOnScreen()
     }
 }
