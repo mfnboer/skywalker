@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     required property var skywalker
     required property string authorDid
     required property string authorName

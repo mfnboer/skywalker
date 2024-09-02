@@ -6,6 +6,7 @@ import skywalker
 SkyListView {
     required property int modelId
     required property int postEntryIndex
+    property bool syncToEntry: true
     property int calibrationDy: 0
 
     signal closed
@@ -154,7 +155,10 @@ SkyListView {
 
     FlickableRefresher {
         inProgress: skywalker.getPostThreadInProgress
-        topOvershootFun: () => skywalker.getPostThread(model.getThreadEntryUri(), modelId)
+        topOvershootFun: () => {
+            syncToEntry = false
+            skywalker.getPostThread(model.getThreadEntryUri(), modelId)
+        }
         topText: qsTr("Pull down to refresh")
     }
 
@@ -211,7 +215,8 @@ SkyListView {
     }
 
     function rowsInsertedHandler(parent, start, end) {
-        sync()
+        if (syncToEntry)
+            sync()
     }
 
     Component.onDestruction: {

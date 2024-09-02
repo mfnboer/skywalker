@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Page {
+SkyPage {
     required property contentlabel label
     required property contentgroup contentGroup
     required property string labelerHandle

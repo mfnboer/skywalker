@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     required property var skywalker
     required property generatorview feed
     property int feedLikeCount: feed.likeCount

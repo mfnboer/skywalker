@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     property int years: root.getSkywalker().getAnniversary().getAnniversaryYears()
 
     signal canceled

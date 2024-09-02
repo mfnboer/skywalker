@@ -26,6 +26,19 @@ ListView {
         }
     }
 
+    // Called when list gets covered by another page
+    function cover() {
+        if (!enableOnScreenCheck)
+            return
+
+        for (var i = 0; i < count; ++i) {
+            const item = itemAtIndex(i)
+
+            if (item)
+                item.cover()
+        }
+    }
+
     GuiSettings {
         id: guiSettings
     }

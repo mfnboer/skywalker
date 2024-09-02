@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Window 2.2
 import skywalker
 
-Page {
+SkyPage {
     required property var skywalker
     property string initialText
     property string initialImage

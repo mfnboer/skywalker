@@ -81,6 +81,16 @@ Rectangle {
 
     onYChanged: checkOnScreen()
 
+    onOnScreenChanged: {
+        if (!onScreen)
+            cover()
+    }
+
+    function cover() {
+        postLoader.movedOffScreen()
+        aggregatableLoader.movedOffScreen()
+    }
+
     GridLayout {
         id: grid
         columns: 2
@@ -177,10 +187,20 @@ Rectangle {
             width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: showPost()
             visible: status == Loader.Ready
+
+            function movedOffScreen() {
+                if (item)
+                    item.movedOffScreen()
+            }
+
             sourceComponent: Column {
                 id: postColumn
                 width: parent.width
                 topPadding: 5
+
+                function movedOffScreen() {
+                    postBody.movedOffScreen()
+                }
 
                 PostHeader {
                     id: postHeader
@@ -297,9 +317,19 @@ Rectangle {
             width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: isAggregatableReason()
             visible: status == Loader.Ready
+
+            function movedOffScreen() {
+                if (item)
+                    item.movedOffScreen()
+            }
+
             sourceComponent: Column {
                 width: parent.width
                 topPadding: 5
+
+                function movedOffScreen() {
+                    reasonPostBody.movedOffScreen()
+                }
 
                 Row {
                     width: parent.width

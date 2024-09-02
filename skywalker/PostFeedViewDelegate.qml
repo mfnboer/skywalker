@@ -99,7 +99,11 @@ Rectangle {
 
     onOnScreenChanged: {
         if (!onScreen)
-            postBody.movedOffScreen()
+            cover()
+    }
+
+    function cover() {
+        postBody.movedOffScreen()
     }
 
     GridLayout {

@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     required property var globalLabelModel
     required property int labelerAuthorListModelId
     property var skywalker: root.getSkywalker()

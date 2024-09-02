@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     signal closed
     signal selected(tenorgif gif)
 

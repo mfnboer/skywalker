@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Shapes
 import skywalker
 
-Page {
+SkyPage {
     required property string photoSource
     property double relativeRadius: 0.5
     property double maskOpacity: 0.8

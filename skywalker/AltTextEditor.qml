@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     required property string imgSource
     property alias text: altText.text
     property var skywalker: root.getSkywalker()

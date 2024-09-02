@@ -63,7 +63,7 @@ Column {
                 svg: svgFilled.play
                 visible: !videoPlayer.playing && !videoPlayer.restarting
 
-                onClicked: videoPlayer.play()
+                onClicked: videoPlayer.start()
             }
         }
 
@@ -99,6 +99,11 @@ Column {
                         play()
                     else
                         pause()
+                }
+
+                function start() {
+                    restarting = true
+                    play()
                 }
 
                 function restart() {

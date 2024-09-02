@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 import atproto
 
-Page {
+SkyPage {
     required property var skywalker
     required property detailedprofile author
     required property int modelId

@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 import atproto
 
-Page {
+SkyPage {
     required property var skywalker
     property var timeline
     property bool isTyping: true
@@ -28,6 +28,11 @@ Page {
     Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
+
+    onCover: {
+        postsViewTop.cover()
+        postsViewLatest.cover()
+    }
 
     header: SearchHeader {
         minSearchTextLength: 0
@@ -258,6 +263,11 @@ Page {
                 width: postsViewTop.width
             }
 
+            StackLayout.onIsCurrentItemChanged: {
+                if (!StackLayout.isCurrentItem)
+                    cover()
+            }
+
             FlickableRefresher {
                 inProgress: searchUtils.searchPostsTopInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
@@ -285,6 +295,11 @@ Page {
 
             delegate: PostFeedViewDelegate {
                 width: postsViewLatest.width
+            }
+
+            StackLayout.onIsCurrentItemChanged: {
+                if (!StackLayout.isCurrentItem)
+                    cover()
             }
 
             FlickableRefresher {

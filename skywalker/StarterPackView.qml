@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     required property starterpackview starterPack
     property var skywalker: root.getSkywalker()
     readonly property int postFeedModelId: skywalker.createPostFeedModel(starterPack.list)
@@ -136,6 +136,11 @@ Page {
 
             delegate: PostFeedViewDelegate {
                 width: postListView.width
+            }
+
+            StackLayout.onIsCurrentItemChanged: {
+                if (!StackLayout.isCurrentItem)
+                    cover()
             }
 
             FlickableRefresher {

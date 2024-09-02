@@ -399,6 +399,7 @@ qt_add_qml_module(libskywalker
         SOURCES postgate.h
         SOURCES video_view.h
         QML_FILES VideoView.qml
+        QML_FILES SkyPage.qml
 )
 
 if (NOT ANDROID)

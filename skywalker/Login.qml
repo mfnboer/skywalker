@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 import atproto
 
-Page {
+SkyPage {
     property string did
     property string host
     property string user

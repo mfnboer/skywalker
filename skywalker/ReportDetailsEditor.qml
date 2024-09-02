@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-Page {
+SkyPage {
     property alias text: detailsText.text
     property var skywalker: root.getSkywalker()
     readonly property int margin: 10

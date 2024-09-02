@@ -289,6 +289,13 @@ ApplicationWindow {
         currentIndex: timelineIndex
 
         onCurrentIndexChanged: {
+            let prevStack = stackLayout.children[prevIndex]
+
+            if (prevStack.depth > 0) {
+                let prevItem = prevStack.get(prevStack.depth - 1)
+                prevItem.cover()
+            }
+
             if (prevIndex === notificationIndex)
                 skywalker.notificationListModel.updateRead()
 
@@ -1481,6 +1488,11 @@ ApplicationWindow {
     }
 
     function pushStack(item, operation) {
+        let current = currentStackItem()
+
+        if (current)
+            current.cover()
+
         currentStack().push(item, operation)
     }
 

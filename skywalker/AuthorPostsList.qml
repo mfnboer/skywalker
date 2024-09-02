@@ -22,6 +22,9 @@ SkyListView {
     interactive: !enclosingView.interactive
 
     StackLayout.onIsCurrentItemChanged: {
+        if (!StackLayout.isCurrentItem)
+            cover()
+
         if (StackLayout.isCurrentItem && modelId < 0 && !skywalker.getAuthorFeedInProgress) {
             modelId = skywalker.createAuthorFeedModel(author, feedFilter)
             model = skywalker.getAuthorFeedModel(modelId)

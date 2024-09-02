@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     required property EditUserPreferences userPrefs
     property var userSettings: root.getSkywalker().getUserSettings()
 

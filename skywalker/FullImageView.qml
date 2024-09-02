@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
 

@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Page {
+SkyPage {
     property var skywalker: root.getSkywalker()
     property bool isTyping: false
 

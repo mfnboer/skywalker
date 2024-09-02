@@ -11,7 +11,7 @@ class RecordWithMediaView
     Q_GADGET
     Q_PROPERTY(RecordView record READ getRecord FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
-    Q_PROPERTY(QVariant video READ getExternal FINAL)
+    Q_PROPERTY(QVariant video READ getVideo FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     QML_VALUE_TYPE(record_with_media_view)
 
