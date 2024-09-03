@@ -46,6 +46,11 @@ public:
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
                           const QStringList& labels, const QString& language);
+    Q_INVOKABLE void postVideo(const QString& text, const QString videoFileName, const QString videoAltText,
+                          const QString& replyToUri, const QString& replyToCid,
+                          const QString& replyRootUri, const QString& replyRootCid,
+                          const QString& quoteUri, const QString& quoteCid,
+                          const QStringList& labels, const QString& language);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const QStringList& allowList, bool allowNobody, const QStringList& hiddenReplies);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const ListViewBasicList& allowList, bool allowNobody, const QStringList& hiddenReplies);
     Q_INVOKABLE void addPostgate(const QString& uri, bool disableEmbedding, const QStringList& detachedEmbeddingUris);
@@ -60,9 +65,10 @@ public:
     Q_INVOKABLE void unmuteThread(const QString& uri);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
     Q_INVOKABLE void batchDeletePosts(const QStringList& postUris);
-    Q_INVOKABLE bool pickPhoto();
+    Q_INVOKABLE bool pickPhoto(bool pickVideo = false);
     Q_INVOKABLE void savePhoto(const QString& sourceUrl);
     Q_INVOKABLE void dropPhoto(const QString& source);
+    Q_INVOKABLE void dropVideo(const QString& source);
     Q_INVOKABLE QString cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize);
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
                                           int maxLength = -1, const QString& lengthExceededColor = {});
@@ -140,6 +146,7 @@ signals:
     void postDeletedOk();
     void postDeletedFailed(QString error);
     void photoPicked(QString imgSource);
+    void videoPicked(QUrl url);
     void photoPickFailed(QString error);
     void photoPickCanceled();
     void editMentionChanged();
@@ -166,10 +173,15 @@ private:
                       const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
     void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
+    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continueRepost(const QString& uri, const QString& cid);
     void continueReAttachQuote(const QString& embeddingUri, int retries =1);
+    void shareMedia(int fd, const QString& mimeType);
     void sharePhoto(int fd);
+    void shareVideo(int fd);
     void cancelPhotoPicking();
 
     ATProto::PostMaster* postMaster();
@@ -191,6 +203,7 @@ private:
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;
     bool mPickingPhoto = false;
+    std::vector<std::unique_ptr<QTemporaryFile>> mPickedVideos;
 };
 
 }

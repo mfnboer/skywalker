@@ -15,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultCaller;
 import androidx.appcompat.app.AppCompatActivity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,11 +24,15 @@ import android.util.Log;
 
 public class QPhotoPicker extends AppCompatActivity {
     private static final String LOGTAG = "QPhotoPicker";
+    private static final int REQUEST_CODE = 42;
 
-    public static native void emitPhotoPicked(int fd);
+    private static boolean pickVideo = false;
+
+    public static native void emitPhotoPicked(int fd, String mimeType);
     public static native void emitPhotoPickCanceled();
 
-    public static void start() {
+    public static void start(boolean video) {
+        pickVideo = video;
         Context context = QtNative.getContext();
         Intent intent = new Intent(context, QPhotoPicker.class);
         context.startActivity(intent);
@@ -38,25 +43,65 @@ public class QPhotoPicker extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(LOGTAG, "onCreate");
 
-        ActivityResultLauncher<String> getContent = registerForActivityResult(new GetContent(),
-            new ActivityResultCallback<Uri>() {
-                @Override
-                public void onActivityResult(Uri uri) {
-                    if (uri != null) {
-                        Log.d("PhotoPicker", "Selected URI: " + uri);
-                        int fd = FileUtils.openContentUri(uri);
-                        emitPhotoPicked(fd);
-                    } else {
-                        Log.d("PhotoPicker", "No media selected");
-                        emitPhotoPickCanceled();
-                    }
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        String[] mimeTypesWithVideo = {"image/*", "video/mp4"};
+        String[] mimeTypesImageOnly = {"image/*"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, pickVideo ? mimeTypesWithVideo : mimeTypesImageOnly);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
 
-                    finish();
-                }
-        });
-
-        getContent.launch("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select File"), REQUEST_CODE);
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+            Uri uri = data.getData();
+
+            if (uri != null) {
+                Context context = QtNative.getContext();
+                String mimeType = context.getContentResolver().getType(uri);
+                Log.d("PhotoPicker", "Selected URI: " + uri + " mimetype: " + mimeType);
+                int fd = FileUtils.openContentUri(uri);
+                emitPhotoPicked(fd, mimeType);
+            } else {
+                Log.d("PhotoPicker", "No media selected");
+                emitPhotoPickCanceled();
+            }
+
+            finish();
+        }
+    }
+
+    // Code before adding video. With the launcher GetContent only takes a single mime tyoe
+    //
+    // public void onCreate(Bundle savedInstanceState) {
+    //     super.onCreate(savedInstanceState);
+    //     Log.d(LOGTAG, "onCreate");
+
+    //     ActivityResultLauncher<String> getContent = registerForActivityResult(new GetContent(),
+    //         new ActivityResultCallback<Uri>() {
+    //             @Override
+    //             public void onActivityResult(Uri uri) {
+    //                 if (uri != null) {
+    //                     Context context = QtNative.getContext();
+    //                     String mimeType = context.getContentResolver().getType(uri);
+    //                     Log.d("PhotoPicker", "Selected URI: " + uri + " mimetype: " + mimeType);
+    //                     int fd = FileUtils.openContentUri(uri);
+    //                     emitPhotoPicked(fd);
+    //                 } else {
+    //                     Log.d("PhotoPicker", "No media selected");
+    //                     emitPhotoPickCanceled();
+    //                 }
+
+    //                 finish();
+    //             }
+    //     });
+
+    //     getContent.launch("image/*");
+    // }
 
     // PickVisualMediaRequest should be the way to go according to the Android documentation.
     // However, this has a serious permission limits which makes almost all photo albums

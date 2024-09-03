@@ -181,7 +181,7 @@ int OffLineMessageChecker::check()
         }
     }
 
-    QObject guard;
+    QObject guard; // TODO: is this ok??
     QTimer::singleShot(0, &guard, [this]{ resumeSession(); });
     startEventLoop();
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());

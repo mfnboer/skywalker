@@ -15,12 +15,13 @@ Q_GLOBAL_STATIC(std::unique_ptr<JNICallbackListener>, gTheInstance);
 namespace {
 
 #if defined(Q_OS_ANDROID)
-void _handlePhotoPicked(JNIEnv*, jobject, jint fd)
+void _handlePhotoPicked(JNIEnv* env, jobject, jint fd, jstring jsMimeType)
 {
-    qDebug() << "Photo picked fd:" << fd;
+    QString mimeType = jsMimeType ? env->GetStringUTFChars(jsMimeType, nullptr) : QString();
+    qDebug() << "Photo picked fd:" << fd << mimeType;
     auto& instance = *gTheInstance;
     if (instance)
-        instance->handlePhotoPicked(fd);
+        instance->handlePhotoPicked(fd, mimeType);
 }
 
 void _handlePhotoPickCanceled(JNIEnv*, jobject)
@@ -112,7 +113,7 @@ JNICallbackListener::JNICallbackListener() : QObject()
     QJniEnvironment jni;
 
     const JNINativeMethod photoPickerCallbacks[] = {
-        { "emitPhotoPicked", "(I)V", reinterpret_cast<void *>(_handlePhotoPicked) },
+        { "emitPhotoPicked", "(ILjava/lang/String;)V", reinterpret_cast<void *>(_handlePhotoPicked) },
         { "emitPhotoPickCanceled", "()V", reinterpret_cast<void *>(_handlePhotoPickCanceled) }
     };
     jni.registerNativeMethods("com/gmail/mfnboer/QPhotoPicker", photoPickerCallbacks, 2);
@@ -128,9 +129,9 @@ JNICallbackListener::JNICallbackListener() : QObject()
 #endif
 }
 
-void JNICallbackListener::handlePhotoPicked(int fd)
+void JNICallbackListener::handlePhotoPicked(int fd, const QString mimeType)
 {
-    emit photoPicked(fd);
+    emit photoPicked(fd, mimeType);
 }
 
 void JNICallbackListener::handlePhotoPickCanceled()

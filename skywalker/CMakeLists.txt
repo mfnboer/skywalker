@@ -400,6 +400,7 @@ qt_add_qml_module(libskywalker
         SOURCES video_view.h
         QML_FILES VideoView.qml
         QML_FILES SkyPage.qml
+        QML_FILES VideoPreview.qml
 )
 
 if (NOT ANDROID)

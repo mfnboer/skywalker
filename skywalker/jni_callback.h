@@ -15,7 +15,7 @@ public:
     // the handling is started.
     static void handlePendingIntent();
 
-    void handlePhotoPicked(int fd);
+    void handlePhotoPicked(int fd, const QString mimeType);
     void handlePhotoPickCanceled();
     void handleSharedTextReceived(const QString sharedText);
     void handleSharedImageReceived(const QString fileName, const QString text);
@@ -24,7 +24,7 @@ public:
     void handleShowDirectMessages();
 
 signals:
-    void photoPicked(int fd);
+    void photoPicked(int fd, QString mimeType);
     void photoPickCanceled();
     void sharedTextReceived(const QString sharedText);
     void sharedImageReceived(const QString fileName, const QString text);

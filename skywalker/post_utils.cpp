@@ -18,7 +18,7 @@ PostUtils::PostUtils(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
-            this, [this](int fd){ sharePhoto(fd);});
+            this, [this](int fd, QString mimeType){ shareMedia(fd, mimeType);});
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
             this, [this]{ cancelPhotoPicking(); });
@@ -163,6 +163,53 @@ void PostUtils::post(const QString& text, const LinkCard* card,
                 });
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Post not found:" << error << " - " << msg;
+            emit postFailed(tr("Reply-to post") + ": " + msg);
+        });
+}
+
+void PostUtils::postVideo(const QString& text, const QString videoFileName, const QString videoAltText,
+                     const QString& replyToUri, const QString& replyToCid,
+                     const QString& replyRootUri, const QString& replyRootCid,
+                     const QString& quoteUri, const QString& quoteCid,
+                     const QStringList& labels, const QString& language)
+{
+    qDebug() << "Posting video:" << text;
+
+    if (!postMaster())
+        return;
+
+    emit postProgress(tr("Posting"));
+
+    // TODO: code duplication
+    if (replyToUri.isEmpty())
+    {
+        postMaster()->createPost(text, language, nullptr,
+            [this, presence=getPresence(), videoFileName, videoAltText, quoteUri, quoteCid, labels](auto post){
+                if (presence)
+                    continuePostVideo(videoFileName, videoAltText, post, quoteUri, quoteCid, labels);
+            });
+        return;
+    }
+
+    postMaster()->checkRecordExists(replyToUri, replyToCid,
+        [this, presence=getPresence(), text, videoFileName, videoAltText , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels, language]
+        {
+            if (!presence)
+                return;
+
+            auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+
+            postMaster()->createPost(text, language, std::move(replyRef),
+                [this, presence, videoFileName, videoAltText, quoteUri, quoteCid, labels](auto post){
+                    if (presence)
+                        continuePostVideo(videoFileName, videoAltText , post, quoteUri, quoteCid, labels);
+                });
+        },
+        [this, presence=getPresence()] (const QString& error, const QString& msg){
             if (!presence)
                 return;
 
@@ -589,6 +636,89 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
         });
 }
 
+void PostUtils::continuePostVideo(const QString& videoFileName, const QString& videoAltText, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const QString& quoteUri, const QString& quoteCid, const QStringList& labels)
+{
+    ATProto::PostMaster::addLabelsToPost(*post, labels);
+
+    if (quoteUri.isEmpty())
+    {
+        continuePostVideo(videoFileName, videoAltText, post);
+        return;
+    }
+
+    if (!postMaster())
+        return;
+
+    postMaster()->checkRecordExists(quoteUri, quoteCid,
+        [this, presence=getPresence(), videoFileName, videoAltText, post, quoteUri, quoteCid]{
+            if (!presence)
+                return;
+
+            postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
+            continuePostVideo(videoFileName, videoAltText, post);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Post not found:" << error << " - " << msg;
+            emit postFailed(tr("Quoted post") + ": " + msg);
+        });
+}
+
+void PostUtils::continuePostVideo(const QString& videoFileName, const QString& videoAltText, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+{
+    emit postProgress(tr("Uploading video"));
+
+    // TODO: Android file
+    const QString fileName = videoFileName.sliced(7);
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly))
+    {
+        qWarning() << "Could not open video file:" << fileName;
+        emit postFailed(tr("Could not open video file"));
+        return;
+    }
+
+    qDebug() << "Loading video:" << fileName;
+    QByteArray blob = file.readAll();
+
+    if (blob.isEmpty())
+    {
+        emit postFailed(tr("Could not load video file"));
+        return;
+    }
+
+    qDebug() << "Video loaded:" << blob.size();
+
+    bskyClient()->uploadVideo(blob,
+        [this, presence=getPresence(), videoAltText, post](ATProto::AppBskyVideo::JobStatusOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            postMaster()->addVideoToPost(post, *output->mJobStatus, videoAltText,
+                [this, presence, post]{
+                    if (presence)
+                       continuePost(post);
+                },
+                [this, presence](const QString& error, const QString& msg){
+                    if (!presence)
+                        return;
+
+                    qDebug() << "Post failed:" << error << " - " << msg;
+                    emit postFailed(msg);
+                });
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Post failed:" << error << " - " << msg;
+            emit postFailed(msg);
+        });
+}
+
 void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 {
     if (!postMaster())
@@ -919,9 +1049,9 @@ void PostUtils::batchDeletePosts(const QStringList& postUris)
         });
 }
 
-bool PostUtils::pickPhoto()
+bool PostUtils::pickPhoto(bool pickVideo)
 {
-    const bool permission = PhotoPicker::pickPhoto();
+    const bool permission = PhotoPicker::pickPhoto(pickVideo);
 
     if (!permission)
     {
@@ -1342,12 +1472,23 @@ void PostUtils::getPostgate(const QString& postUri)
         });
 }
 
-void PostUtils::sharePhoto(int fd)
+void PostUtils::shareMedia(int fd, const QString& mimeType)
 {
     if (!mPickingPhoto)
         return;
 
     mPickingPhoto = false;
+
+    if (mimeType.startsWith("image"))
+        sharePhoto(fd);
+    else if (mimeType.startsWith("video"))
+        shareVideo(fd);
+    else
+        qWarning() << "Unsupported mime type:" << mimeType;
+}
+
+void PostUtils::sharePhoto(int fd)
+{
     qDebug() << "Share photo fd:" << fd;
     auto [img, error] = PhotoPicker::readImageFd(fd);
 
@@ -1360,6 +1501,45 @@ void PostUtils::sharePhoto(int fd)
     auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
     const QString source = imgProvider->addImage(img);
     emit photoPicked(source);
+}
+
+void PostUtils::shareVideo(int fd)
+{
+    qDebug() << "Share video fd:" << fd;
+    QFile file;
+
+    if (!file.open(fd, QFile::ReadOnly))
+    {
+        const QString fileError = file.errorString();
+        qWarning() << "Failed to open video file:" << fileError;
+        return;
+    }
+
+    auto video = std::make_unique<QTemporaryFile>("sw_video_XXXXXX.mp4");
+
+    if (!video->open())
+    {
+        const QString fileError = video->errorString();
+        qWarning() << "Failed to open tmp file:" << fileError;
+        return;
+    }
+
+    if (video->write(file.readAll()) < 0)
+    {
+        const QString fileError = video->errorString();
+        qWarning() << "Failed to write video to tmp file:" << fileError;
+        return;
+    }
+
+    video->flush();
+    video->close();
+
+    const QString tmpFilePath = video->fileName();
+    QUrl url = QUrl::fromLocalFile(tmpFilePath);
+    qDebug() << "Video url:" << url;
+
+    mPickedVideos.push_back(std::move(video));
+    emit videoPicked(url);
 }
 
 void PostUtils::cancelPhotoPicking()
@@ -1379,6 +1559,26 @@ void PostUtils::dropPhoto(const QString& source)
         auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
         imgProvider->removeImage(source);
     }
+}
+
+void PostUtils::dropVideo(const QString& source)
+{
+    if (source.startsWith("file://"))
+    {
+        const QString fileName = source.sliced(7);
+
+        for (auto it = mPickedVideos.begin(); it != mPickedVideos.end(); ++it)
+        {
+            if ((*it)->fileName() == fileName)
+            {
+                qDebug() << "Remove:" << fileName;
+                mPickedVideos.erase(it);
+                return;
+            }
+        }
+    }
+
+    qDebug() << "File not found:" << source;
 }
 
 }

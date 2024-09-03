@@ -228,7 +228,7 @@ SkyPage {
 
     ImageFileDialog {
         id: fileDialog
-        onFileSelected: (fileName) => photoPicked(fileName)
+        onImageSelected: (fileName) => photoPicked(fileName)
     }
 
     PostUtils {

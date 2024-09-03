@@ -18,6 +18,8 @@ Item {
     property tenorgif gif
     property var card: null
     property string language: ""
+    property string video: ""
+    property string videoAltText: ""
 
     // Content warnings
     property bool cwSuggestive: false

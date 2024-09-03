@@ -56,14 +56,16 @@ std::tuple<QImage, QString> readImageFd(int fd)
     return { img, "" };
 }
 
-bool pickPhoto()
+bool pickPhoto(bool pickVideo)
 {
 #ifdef Q_OS_ANDROID
     if (!FileUtils::checkReadMediaPermission())
         return false;
 
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker", "start");
+    jboolean jVideo = pickVideo;
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker", "start", "(Z)V", jVideo);
 #endif
+    Q_UNUSED(pickVideo)
     return true;
 }
 

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window 2.2
+import QtMultimedia
 import skywalker
 
 SkyPage {
@@ -266,6 +267,8 @@ SkyPage {
                         quoteText: page.quoteText
                         quoteDateTime: page.quoteDateTime
                         language: replyToLanguage ? replyToLanguage : languageUtils.defaultPostLanguage
+                        video: ""
+                        videoAltText: ""
                     }
                 ]
 
@@ -293,6 +296,8 @@ SkyPage {
                     property bool cwPorn: false
                     property bool cwGore: false
                     property string language
+                    property string video
+                    property string videoAltText
 
                     function copyToPostList() {
                         threadPosts.postList[index].text = text
@@ -315,6 +320,8 @@ SkyPage {
                         threadPosts.postList[index].cwPorn = cwPorn
                         threadPosts.postList[index].cwGore = cwGore
                         threadPosts.postList[index].language = language
+                        threadPosts.postList[index].video = video
+                        threadPosts.postList[index].videoAltText = videoAltText
                     }
 
                     function copyFromPostList() {
@@ -342,6 +349,8 @@ SkyPage {
                         cwPorn = threadPosts.postList[index].cwPorn
                         cwGore = threadPosts.postList[index].cwGore
                         language = threadPosts.postList[index].language
+                        video = threadPosts.postList[index].video
+                        videoAltText = threadPosts.postList[index].videoAltText
 
                         // Set text last as it will trigger link extractions which
                         // will check if a link card is already in place.
@@ -355,6 +364,7 @@ SkyPage {
 
                     function hasAttachment() {
                         return imageScroller.images.length > 0 ||
+                                Boolean(videoAttachement.video) ||
                                 !gifAttachment.gif.isNull() ||
                                 linkCard.card ||
                                 quoteFixed
@@ -604,6 +614,25 @@ SkyPage {
                         visible: !linkCard.visible && !gifAttachment.visible
                     }
 
+                    VideoPreview {
+                        property alias video: postItem.video
+                        property alias altText: postItem.videoAltText
+
+                        id: videoAttachement
+                        x: page.margin
+                        width: Math.min(height * 1.777, page.width - 2 * page.margin)
+                        height: visible ? 180 : 0
+                        anchors.top: imageScroller.bottom
+                        anchors.topMargin: visible ? 10 : 0
+                        source: video
+                        visible: Boolean(video) && !linkCard.visible && !linkCard.visible
+
+                        onVideoChanged: {
+                            if (Boolean(video))
+                                Qt.callLater(play)
+                        }
+                    }
+
                     // GIF attachment
                     AnimatedImage {
                         property tenorgif gif
@@ -611,7 +640,7 @@ SkyPage {
                         id: gifAttachment
                         x: page.margin
                         width: Math.min(gif ? gif.smallSize.width : 1, page.width - 2 * page.margin)
-                        anchors.top: imageScroller.bottom
+                        anchors.top: videoAttachement.bottom
                         anchors.topMargin: !gif.isNull() ? 10 : 0
                         fillMode: Image.PreserveAspectFit
                         source: !gif.isNull() ? gif.smallUrl : ""
@@ -801,6 +830,9 @@ SkyPage {
 
                     let item = itemAt(index)
                     item.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
+
+                    if (Boolean(item.video))
+                        postUtils.dropVideo(item.video)
 
                     copyPostItemsToPostList()
 
@@ -1093,10 +1125,12 @@ SkyPage {
             enabled: page.canAddImage()
 
             onClicked: {
+                const pickVideo = page.canAddVideo()
+
                 if (Qt.platform.os === "android") {
-                    pickingImage = postUtils.pickPhoto()
+                    pickingImage = postUtils.pickPhoto(pickVideo)
                 } else {
-                    fileDialog.open()
+                    fileDialog.pick(pickVideo)
                 }
             }
         }
@@ -1195,7 +1229,8 @@ SkyPage {
 
     ImageFileDialog {
         id: fileDialog
-        onFileSelected: (fileName) => { photoPicked(fileName) }
+        onImageSelected: (fileName) => photoPicked(fileName)
+        onVideoSelected: (fileName) => videoPicked(fileName)
     }
 
     LinkCardReader {
@@ -1318,6 +1353,12 @@ SkyPage {
         onPhotoPicked: (imgSource) => {
             pickingImage = false
             page.photoPicked(imgSource)
+            currentPostItem().getPostText().forceActiveFocus()
+        }
+
+        onVideoPicked: (videoUrl) => {
+            pickingImage = false;
+            page.videoPicked(videoUrl)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
@@ -1557,6 +1598,16 @@ SkyPage {
         scrollBar.position = 1.0 - scrollBar.size
     }
 
+    function videoPicked(source, altText = "") {
+        console.debug("VIDEO:", source)
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return
+
+        postItem.video = source
+    }
+
     function addSharedText(text) {
         if (text) {
             let postItem = currentPostItem()
@@ -1723,6 +1774,11 @@ SkyPage {
                            parentUri, parentCid,
                            rootUri, rootCid,
                            qUri, qCid, labels, postItem.language)
+        } else if (Boolean(postItem.video)) {
+            postUtils.postVideo(postText, postItem.video, postItem.videoAltText,
+                                parentUri, parentCid,
+                                rootUri, rootCid,
+                                qUri, qCid, labels, postItem.language);
         } else {
             const images = getImagesToSend(postItem)
 
@@ -2001,9 +2057,19 @@ SkyPage {
             return false
 
         return postItem.images.length < maxImages &&
+                postItem.video.length === 0 &&
                 threadPosts.postList[currentPostIndex].gif.isNull() &&
                 !threadPosts.postList[currentPostIndex].card &&
                 !pickingImage
+    }
+
+    function canAddVideo() {
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return false
+
+        return canAddImage() && postItem.images.length === 0
     }
 
     function canAddGif() {
@@ -2014,7 +2080,8 @@ SkyPage {
 
         return threadPosts.postList[currentPostIndex].gif.isNull() &&
                 !threadPosts.postList[currentPostIndex].card &&
-                postItem.images.length === 0
+                postItem.images.length === 0 &&
+                postItem.video.length === 0
     }
 
     function currentPostLanguage() {
