@@ -19,10 +19,11 @@ Video {
             Qt.callLater(play)
     }
 
-    // Play video for 50ms to get a still frame showing
+    // Play video for 200ms to get a still frame showing
+    // I did 50ms first. That does not always work.
     Timer {
         id: pauseTimer
-        interval: 50
+        interval: 200
         onTriggered: videoThumbnail.pause()
     }
 }

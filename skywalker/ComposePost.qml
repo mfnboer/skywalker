@@ -625,6 +625,7 @@ SkyPage {
                         anchors.top: imageScroller.bottom
                         anchors.topMargin: visible ? 10 : 0
                         videoSource: video
+                        requireAltText: page.requireAltText
                         visible: Boolean(video) && !linkCard.visible && !linkCard.visible
                     }
 
@@ -1567,6 +1568,9 @@ SkyPage {
 
         for (let postIndex = 0; postIndex < threadPosts.count; ++postIndex) {
             const postItem = threadPosts.itemAt(postIndex)
+
+            if (Boolean(postItem.video) && !Boolean(postItem.videoAltText))
+                return false
 
             for (let i = 0; i < postItem.images.length; ++i) {
                 if (i >= postItem.altTexts.length || postItem.altTexts[i].length === 0)

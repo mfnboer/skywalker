@@ -62,8 +62,20 @@ SkyPage {
             height: 180
             fillMode: Image.PreserveAspectCrop
             autoTransform: true
-            source: page.imgSource
+            source: !sourceIsVideo ? page.imgSource : ""
             visible: !sourceIsVideo
+        }
+
+        VideoThumbnail {
+            id: altVideo
+            anchors.leftMargin: page.margin
+            anchors.left: parent.left
+            anchors.topMargin: 10
+            anchors.top: altText.bottom
+            width: Math.min(height * 1.777, page.width - 2 * page.margin)
+            height: 180
+            videoSource: sourceIsVideo ? page.imgSource : ""
+            visible: sourceIsVideo
         }
     }
 
