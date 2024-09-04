@@ -26,10 +26,13 @@ Column {
 
             FilteredImageWarning {
                 id: filter
-                width: parent.width - 2
+                x: 10
+                y: 10
+                width: parent.width - 20
                 contentVisibiliy: videoStack.contentVisibility
                 contentWarning: videoStack.contentWarning
                 imageUrl: videoView.thumbUrl
+                isVideo: true
             }
 
             Column {
@@ -41,8 +44,8 @@ Column {
                 // HACK: The filter should be in this place, but inside a rounded object links
                 // cannot be clicked.
                 Rectangle {
-                    width: filter.width
-                    height: filter.height
+                    width: parent.width
+                    height: filter.height > 0 ? filter.height + 20 : 0
                     color: "transparent"
                 }
                 Rectangle {
@@ -64,7 +67,7 @@ Column {
                         width: parent.width - 2
                         height: width / videoStack.getAspectRatio()
                         color: guiSettings.avatarDefaultColor
-                        visible: videoView.imageView.isNull() || !filter.imageVisible() || thumbImg.status != Image.Ready
+                        visible: videoView.imageView.isNull() || thumbImg.status != Image.Ready && filter.imageVisible()
 
                         SvgImage {
                             x: (parent.width - width) / 2
@@ -86,7 +89,7 @@ Column {
                 opacity: 0.5
                 accessibleName: qsTr("play video")
                 svg: svgFilled.play
-                visible: !videoPlayer.playing && !videoPlayer.restarting
+                visible: filter.imageVisible() && !videoPlayer.playing && !videoPlayer.restarting
                 enabled: videoPlayer.hasVideo
 
                 onClicked: videoPlayer.start()
