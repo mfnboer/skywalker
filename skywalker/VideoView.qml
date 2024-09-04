@@ -45,12 +45,36 @@ Column {
                     height: filter.height
                     color: "transparent"
                 }
-                ThumbImageView {
-                    id: thumbImg
-                    x: 1
-                    width: parent.width - 2
-                    imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
-                    fillMode: Image.PreserveAspectFit
+                Rectangle {
+                    width: parent.width
+                    height: defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.height
+                    color: "transparent"
+
+                    ThumbImageView {
+                        id: thumbImg
+                        x: 1
+                        width: parent.width - 2
+                        imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
+                        fillMode: Image.PreserveAspectFit
+                        // Note: visible property does not work due to rounded corners
+                    }
+                    Rectangle {
+                        id: defaultThumbImg
+                        x: 1
+                        width: parent.width - 2
+                        height: width / videoStack.getAspectRatio()
+                        color: guiSettings.avatarDefaultColor
+                        visible: videoView.imageView.isNull() || !filter.imageVisible() || thumbImg.status != Image.Ready
+
+                        SvgImage {
+                            x: (parent.width - width) / 2
+                            y: (parent.height - height) / 2 + height
+                            width: Math.min(parent.width, 150)
+                            height: width
+                            color: "white"
+                            svg: svgFilled.film
+                        }
+                    }
                 }
             }
 
@@ -230,5 +254,12 @@ Column {
     function pause() {
         if (videoPlayer.playing)
             videoPlayer.pause()
+    }
+
+    function getAspectRatio() {
+        if (videoView && videoView.width > 0 && videoView.height > 0)
+            return videoView.width / videoView.height
+        else
+            return 16/9
     }
 }

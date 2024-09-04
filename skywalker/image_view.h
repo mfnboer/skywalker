@@ -33,6 +33,7 @@ public:
         mViewImage(viewImage)
     {}
 
+    Q_INVOKABLE bool isNull() const { return getFullSizeUrl().isEmpty(); }
     QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : mFullSizeUrl; }
     QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : mFullSizeUrl; }
     QString getAlt() const { return mViewImage ? mViewImage->mAlt : mAlt; }
