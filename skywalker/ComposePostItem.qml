@@ -48,7 +48,7 @@ Item {
     }
 
     function hasImageContent() {
-        return gif || (card && card.thumb) || images.length > 0
+        return gif || (card && card.thumb) || images.length > 0 || Boolean(video)
     }
 
     function imageHasMeme(index) {

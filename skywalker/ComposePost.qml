@@ -2046,7 +2046,8 @@ SkyPage {
 
         return !postItem.getGifAttachment().gif.isNull() ||
                 (postItem.getLinkCard().card && postItem.getLinkCard().card.thumb) ||
-                postItem.images.length > 0
+                postItem.images.length > 0 ||
+                Boolean(postItem.video)
     }
 
     function canAddImage() {
