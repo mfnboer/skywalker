@@ -5,6 +5,7 @@ import skywalker
 
 SkyPage {
     required property string imgSource
+    property bool sourceIsVideo: false
     property alias text: altText.text
     property var skywalker: root.getSkywalker()
     readonly property int margin: 10
@@ -20,6 +21,7 @@ SkyPage {
     header: SimpleButtonHeader {
         title: qsTr("ALT text")
         buttonSvg: svgOutline.check
+        enabled: !altText.maxGraphemeLengthExceeded()
         onButtonClicked: altTextChanged(page.text)
     }
 
@@ -46,6 +48,7 @@ SkyPage {
             rightPadding: page.margin
             parentPage: page
             parentFlick: flick
+            maxLength: 1000
             placeholderText: qsTr("Help users with visual impairments")
         }
 
@@ -60,6 +63,7 @@ SkyPage {
             fillMode: Image.PreserveAspectCrop
             autoTransform: true
             source: page.imgSource
+            visible: !sourceIsVideo
         }
     }
 

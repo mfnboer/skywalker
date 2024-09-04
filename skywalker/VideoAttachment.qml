@@ -1,15 +1,9 @@
 import QtQuick
 import QtQuick.Controls
-import QtMultimedia
 import skywalker
 
-Video {
+VideoThumbnail {
     id: videoAttachement
-    fillMode: VideoOutput.PreserveAspectCrop
-
-    onPlaying: pauseTimer.start()
-
-    onErrorOccurred: (error, errorString) => console.debug("ERROR:", error, errorString)
 
     function remove() {
         postUtils.dropVideo(video)
@@ -19,13 +13,6 @@ Video {
 
     function hasAltText() {
         return Boolean(altText)
-    }
-
-    // Play video for 50ms to get a still frame showing
-    Timer {
-        id: pauseTimer
-        interval: 50
-        onTriggered: videoAttachement.pause()
     }
 
     SkyButton {

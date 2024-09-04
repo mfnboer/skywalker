@@ -614,7 +614,7 @@ SkyPage {
                         visible: !linkCard.visible && !gifAttachment.visible
                     }
 
-                    VideoPreview {
+                    VideoAttachment {
                         property alias video: postItem.video
                         property alias altText: postItem.videoAltText
 
@@ -624,13 +624,8 @@ SkyPage {
                         height: visible ? 180 : 0
                         anchors.top: imageScroller.bottom
                         anchors.topMargin: visible ? 10 : 0
-                        source: video
+                        videoSource: video
                         visible: Boolean(video) && !linkCard.visible && !linkCard.visible
-
-                        onVideoChanged: {
-                            if (Boolean(video))
-                                Qt.callLater(play)
-                        }
                     }
 
                     // GIF attachment
