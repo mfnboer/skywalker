@@ -13,6 +13,7 @@ class SvgFilled : public QObject
     Q_PROPERTY(SvgImage bookmark MEMBER sBookmark CONSTANT FINAL)
     Q_PROPERTY(SvgImage directMessage MEMBER sMail CONSTANT FINAL)
     Q_PROPERTY(SvgImage feed MEMBER sRssFeed CONSTANT FINAL)
+    Q_PROPERTY(SvgImage film MEMBER sVideocam CONSTANT FINAL)
     Q_PROPERTY(SvgImage home MEMBER sHome CONSTANT FINAL)
     Q_PROPERTY(SvgImage like MEMBER sFavorite CONSTANT FINAL)
     Q_PROPERTY(SvgImage list MEMBER sList CONSTANT FINAL)
@@ -26,6 +27,7 @@ class SvgFilled : public QObject
     Q_PROPERTY(SvgImage search MEMBER sSearch CONSTANT FINAL)
     Q_PROPERTY(SvgImage send MEMBER sSend CONSTANT FINAL)
     Q_PROPERTY(SvgImage star MEMBER sStar CONSTANT FINAL)
+    Q_PROPERTY(SvgImage stop MEMBER sStop CONSTANT FINAL)
     Q_PROPERTY(SvgImage unknownAvatar MEMBER sPerson CONSTANT FINAL)
     QML_ELEMENT
 
@@ -51,6 +53,9 @@ private:
     static constexpr SvgImage sShield{"M480-134q-115-36-191.5-142T212-516v-208l268-100 268 100v208q0 134-76.5 240T480-134Z"};
     static constexpr SvgImage sSend{"M120-160v-240l320-80-320-80v-240l760 320-760 320Z"};
     static constexpr SvgImage sStar{"m311-188 45-192-149-129 196-17 77-181 77 181 196 17-149 129 45 192-169-102-169 102Z"};
+    static constexpr SvgImage sStop{"M240-240v-480h480v480H240Z"};
+    static constexpr SvgImage sVideocam{"M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h480q33 0 56.5 23.5T720-720v180l160-160v440L720-420v180q0 33-23.5 56.5T640-160H160Z"};
+
 };
 
 }

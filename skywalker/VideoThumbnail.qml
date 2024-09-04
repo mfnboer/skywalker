@@ -19,6 +19,17 @@ Video {
             Qt.callLater(play)
     }
 
+    SvgImage {
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2 + height
+        width: 50
+        height: width
+        color: "white"
+        outlineColor: "black"
+        opacity: 0.6
+        svg: svgFilled.film
+    }
+
     // Play video for 200ms to get a still frame showing
     // I did 50ms first. That does not always work.
     Timer {

@@ -388,6 +388,20 @@ bool UserSettings::getGifAutoPlay() const
     return mSettings.value("gifAutoPlay", true).toBool();
 }
 
+void UserSettings::setVideoSound(bool on)
+{
+    if (on == getVideoSound())
+        return;
+
+    mSettings.setValue("videoSound", on);
+    emit videoSoundChanged();
+}
+
+bool UserSettings::getVideoSound() const
+{
+    return mSettings.value("videoSound", true).toBool();
+}
+
 void UserSettings::setGiantEmojis(bool giantEmojis)
 {
     if (giantEmojis == getGiantEmojis())

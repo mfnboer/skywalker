@@ -8,6 +8,7 @@ Column {
     required property var videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    property var userSettings: root.getSkywalker().getUserSettings()
 
     id: videoStack
 
@@ -62,6 +63,7 @@ Column {
                 accessibleName: qsTr("play video")
                 svg: svgFilled.play
                 visible: !videoPlayer.playing && !videoPlayer.restarting
+                enabled: videoPlayer.hasVideo
 
                 onClicked: videoPlayer.start()
             }
@@ -88,8 +90,8 @@ Column {
                 }
 
                 onPlayingChanged: {
-                    if (playing)
-                        restarting = false
+                    if (videoPlayer.playing)
+                        restartTimer.set(false)
                 }
 
                 onErrorOccurred: (error, errorString) => { console.debug("Video error:", error, errorString) }
@@ -102,16 +104,20 @@ Column {
                 }
 
                 function start() {
-                    restarting = true
+                    restartTimer.set(true)
                     play()
                 }
 
                 function restart() {
-                    restarting = true
-                    stop()
+                    stopPlaying()
                     source = ""
                     source = videoView.playlistUrl
-                    play()
+                    start()
+                }
+
+                function stopPlaying() {
+                    stop()
+                    restartTimer.set(false)
                 }
             }
             VideoOutput {
@@ -120,15 +126,35 @@ Column {
             }
             AudioOutput {
                 id: audioOutput
+                muted: !userSettings.videoSound
 
                 function toggleSound() {
-                    muted = !muted
+                    userSettings.videoSound = !userSettings.videoSound
                 }
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
                 running: (videoPlayer.playing && videoPlayer.mediaStatus < MediaPlayer.BufferedMedia) || videoPlayer.restarting
+            }
+
+            Timer {
+                id: restartTimer
+                interval: 5000
+                onTriggered: {
+                    videoPlayer.stop()
+                    videoPlayer.restarting = false
+                    console.warn("Failed to start video")
+                }
+
+                function set(on) {
+                    videoPlayer.restarting = on
+
+                    if (on)
+                        start()
+                    else
+                        stop()
+                }
             }
         }
     }
@@ -151,8 +177,21 @@ Column {
         }
 
         SvgTransparentButton {
-            id: replayButton
+            id: stopButton
             anchors.left: playPauseButton.right
+            anchors.leftMargin: 10
+            width: 24
+            height: width
+            svg: svgFilled.stop
+            accessibleName: qsTr("stop video")
+            color: guiSettings.textColor
+
+            onClicked: videoPlayer.stopPlaying()
+        }
+
+        SvgTransparentButton {
+            id: replayButton
+            anchors.left: stopButton.right
             anchors.leftMargin: 10
             width: 24
             height: width
