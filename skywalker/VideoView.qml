@@ -12,6 +12,7 @@ Column {
     property var userSettings: root.getSkywalker().getUserSettings()
 
     id: videoStack
+    spacing: 10
 
     Rectangle {
         width: parent.width
@@ -138,6 +139,11 @@ Column {
                     stop()
                     restartTimer.set(false)
                 }
+
+                function isLoading() {
+                    return [MediaPlayer.LoadingMedia,
+                            MediaPlayer.BufferingMedia].includes(mediaStatus)
+                }
             }
             VideoOutput {
                 id: videoOutput
@@ -154,7 +160,7 @@ Column {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: (videoPlayer.playing && videoPlayer.mediaStatus < MediaPlayer.BufferedMedia) || videoPlayer.restarting
+                running: (videoPlayer.playing && videoPlayer.isLoading()) || videoPlayer.restarting
             }
 
             Timer {
@@ -186,6 +192,7 @@ Column {
     }
 
     Rectangle {
+        id: playControls
         width: parent.width
         height: playPauseButton.height
         color: "transparent"
@@ -228,7 +235,46 @@ Column {
             onClicked: videoPlayer.restart()
         }
 
+        ProgressBar {
+            id: playProgress
+            anchors.left: replayButton.right
+            anchors.leftMargin: 10
+            anchors.right: remainingTimeText.left
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            from: 0
+            to: videoPlayer.duration
+            value: videoPlayer.position
+
+            background: Rectangle {
+                implicitWidth: parent.width
+                implicitHeight: 4
+                color: guiSettings.disabledColor
+            }
+
+            contentItem: Item {
+                implicitWidth: parent.width
+                implicitHeight: 4
+
+                Rectangle {
+                    width: playProgress.visualPosition * parent.width
+                    height: parent.height
+                    color: guiSettings.textColor
+                }
+            }
+        }
+
+        MouseArea {
+            x: playProgress.x
+            width: playProgress.width
+            height: playControls.height
+            onClicked: (event) => {
+                videoPlayer.position = (videoPlayer.duration / width) * event.x
+            }
+        }
+
         AccessibleText {
+            id: remainingTimeText
             anchors.right: soundButton.left
             anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
