@@ -4,6 +4,7 @@ import skywalker
 
 ImageAutoRetry {
     required property imageview imageView
+    property bool enableAlt: true
 
     id: img
     source: imageView.thumbUrl
@@ -19,7 +20,7 @@ ImageAutoRetry {
         color: "white"
         font.pointSize: guiSettings.scaledFont(4.5/8)
         text: qsTr("ALT", "alternative text indication on an image")
-        visible: imageView.alt
+        visible: imageView.alt && enableAlt
 
         background: Rectangle {
             radius: 3

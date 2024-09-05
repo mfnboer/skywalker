@@ -8,7 +8,11 @@ Column {
     required property var videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    property string controlColor: guiSettings.textColor
+    property string disabledColor: guiSettings.disabledColor
     property string backgroundColor: guiSettings.backgroundColor
+    property int maxHeight: 0
+    property bool isFullViewMode: false
     property var userSettings: root.getSkywalker().getUserSettings()
 
     id: videoStack
@@ -18,6 +22,7 @@ Column {
         width: parent.width
         height: videoColumn.height
         color: "transparent"
+        clip: true
 
         FilteredImageWarning {
             id: filter
@@ -49,19 +54,41 @@ Column {
 
                 ThumbImageView {
                     id: thumbImg
-                    x: 1
+                    x: (parent.width - width) / 2
                     width: parent.width - 2
                     imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
                     fillMode: Image.PreserveAspectFit
-                    // Note: visible property does not work due to rounded corners
+                    enableAlt: !isFullViewMode
+
+                    onHeightChanged: {
+                        if (maxHeight && height > maxHeight)
+                            Qt.callLater(setMaxHeight)
+                    }
+
+                    function setMaxHeight() {
+                        const ratio = width / height
+                        height = maxHeight
+                        width = height * ratio
+                    }
                 }
                 Rectangle {
                     id: defaultThumbImg
-                    x: 1
+                    x: (parent.width - width) / 2
                     width: parent.width - 2
                     height: width / videoStack.getAspectRatio()
                     color: guiSettings.avatarDefaultColor
                     visible: videoView.imageView.isNull() || thumbImg.status != Image.Ready && filter.imageVisible()
+
+                    onHeightChanged: {
+                        if (maxHeight && height > maxHeight)
+                            Qt.callLater(setMaxHeight)
+                    }
+
+                    function setMaxHeight() {
+                        const ratio = width / height
+                        height = maxHeight
+                        width = height * ratio
+                    }
 
                     SvgImage {
                         x: (parent.width - width) / 2
@@ -183,6 +210,14 @@ Column {
             }
         }
 
+        MouseArea {
+            width: parent.width
+            height: parent.height
+            z: -1
+            onClicked: root.viewFullVideo(videoView)
+            enabled: !isFullViewMode
+        }
+
         RoundCornerMask {
             width: parent.width
             height: parent.height
@@ -204,7 +239,7 @@ Column {
             height: width
             svg: videoPlayer.playing ? svgFilled.pause : svgFilled.play
             accessibleName: videoPlayer.playing ? qsTr("pause video") : qsTr("continue playing video")
-            color: guiSettings.textColor
+            color: controlColor
 
             onClicked: videoPlayer.playPause()
         }
@@ -217,7 +252,7 @@ Column {
             height: width
             svg: svgFilled.stop
             accessibleName: qsTr("stop video")
-            color: guiSettings.textColor
+            color: controlColor
 
             onClicked: videoPlayer.stopPlaying()
         }
@@ -230,7 +265,7 @@ Column {
             height: width
             svg: svgOutline.refresh
             accessibleName: qsTr("restart video")
-            color: guiSettings.textColor
+            color: controlColor
 
             onClicked: videoPlayer.restart()
         }
@@ -249,7 +284,7 @@ Column {
             background: Rectangle {
                 implicitWidth: parent.width
                 implicitHeight: 4
-                color: guiSettings.disabledColor
+                color: disabledColor
             }
 
             contentItem: Item {
@@ -259,7 +294,7 @@ Column {
                 Rectangle {
                     width: playProgress.visualPosition * parent.width
                     height: parent.height
-                    color: guiSettings.textColor
+                    color: controlColor
                 }
             }
         }
@@ -289,7 +324,7 @@ Column {
             height: width
             svg: audioOutput.muted ? svgOutline.soundOff : svgOutline.soundOn
             accessibleName: audioOutput.muted ? qsTr("turn sound on") : qsTr("turn sound off")
-            color: guiSettings.textColor
+            color: controlColor
 
             onClicked: audioOutput.toggleSound()
         }

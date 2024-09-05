@@ -1113,6 +1113,13 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function viewFullVideo(videoView) {
+        let component = Qt.createComponent("FullVideoView.qml")
+        let view = component.createObject(root, { videoView: videoView })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+    }
+
     function viewTimeline() {
         unwindStack()
         stackLayout.currentIndex = stackLayout.timelineIndex

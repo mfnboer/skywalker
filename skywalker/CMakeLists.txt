@@ -403,6 +403,7 @@ qt_add_qml_module(libskywalker
         QML_FILES VideoAttachment.qml
         QML_FILES VideoThumbnail.qml
         QML_FILES RoundCornerMask.qml
+        QML_FILES FullVideoView.qml
 )
 
 if (NOT ANDROID)
