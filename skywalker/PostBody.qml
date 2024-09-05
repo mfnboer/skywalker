@@ -276,7 +276,8 @@ Column {
             videoLoader.setSource("VideoView.qml", {
                                       videoView: postBody.postVideo,
                                       contentVisibility: postContentVisibility,
-                                      contentWarning: postContentWarning })
+                                      contentWarning: postContentWarning,
+                                      backgroundColor: ellipsisBackgroundColor })
         }
 
         if (postExternal) {
@@ -300,7 +301,8 @@ Column {
             recordWithMediaLoader.setSource("RecordWithMediaView.qml", {
                                                 record: postRecordWithMedia,
                                                 contentVisibility: postContentVisibility,
-                                                contentWarning: postContentWarning })
+                                                contentWarning: postContentWarning,
+                                                backgroundColor: ellipsisBackgroundColor })
         }
     }
 
@@ -314,7 +316,8 @@ Column {
             recordWithMediaLoader.setSource("RecordWithMediaView.qml", {
                                                 record: postRecordWithMedia,
                                                 contentVisibility: postContentVisibility,
-                                                contentWarning: postContentWarning })
+                                                contentWarning: postContentWarning,
+                                                backgroundColor: ellipsisBackgroundColor})
         }
     }
 

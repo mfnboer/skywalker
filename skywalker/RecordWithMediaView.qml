@@ -7,6 +7,7 @@ Item {
     required property record_with_media_view record
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    property string backgroundColor: guiSettings.backgroundColor
 
     id: recordItem
     width: parent.width
@@ -53,7 +54,8 @@ Item {
                 videoLoader.setSource("VideoView.qml", {
                                           videoView: record.video,
                                           contentVisibility: recordItem.contentVisibility,
-                                          contentWarning: recordItem.contentVisibility })
+                                          contentWarning: recordItem.contentVisibility,
+                                          backgroundColor: recordItem.backgroundColor })
             }
 
             if (record.external) {

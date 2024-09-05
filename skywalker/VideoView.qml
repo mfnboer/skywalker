@@ -8,6 +8,7 @@ Column {
     required property var videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    property string backgroundColor: guiSettings.backgroundColor
     property var userSettings: root.getSkywalker().getUserSettings()
 
     id: videoStack
@@ -183,6 +184,13 @@ Column {
                         stop()
                 }
             }
+        }
+
+        RoundCornerMask {
+            width: parent.width
+            height: parent.height
+            color: "transparent"
+            maskColor: videoStack.backgroundColor
         }
     }
 
