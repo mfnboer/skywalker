@@ -15,86 +15,77 @@ Column {
 
     Rectangle {
         width: parent.width
-        height: videoPreview.height
+        height: videoColumn.height
         color: "transparent"
 
-        RoundedFrame {
-            id: videoPreview
+        FilteredImageWarning {
+            id: filter
+            x: 10
+            y: 10
+            width: parent.width - 20
+            contentVisibiliy: videoStack.contentVisibility
+            contentWarning: videoStack.contentWarning
+            imageUrl: videoView.thumbUrl
+            isVideo: true
+        }
+
+        Column {
+            id: videoColumn
             width: parent.width
-            objectToRound: videoColumn
-            border.width: 1
-            border.color: guiSettings.borderColor
+            topPadding: 1
+            spacing: 3
 
-            FilteredImageWarning {
-                id: filter
-                x: 10
-                y: 10
-                width: parent.width - 20
-                contentVisibiliy: videoStack.contentVisibility
-                contentWarning: videoStack.contentWarning
-                imageUrl: videoView.thumbUrl
-                isVideo: true
-            }
-
-            Column {
-                id: videoColumn
+            Rectangle {
                 width: parent.width
-                topPadding: 1
-                spacing: 3
+                height: filter.height > 0 ? filter.height + 20 : 0
+                color: "transparent"
+            }
 
-                // HACK: The filter should be in this place, but inside a rounded object links
-                // cannot be clicked.
-                Rectangle {
-                    width: parent.width
-                    height: filter.height > 0 ? filter.height + 20 : 0
-                    color: "transparent"
+            Rectangle {
+                width: parent.width
+                height: defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.height
+                color: "transparent"
+
+                ThumbImageView {
+                    id: thumbImg
+                    x: 1
+                    width: parent.width - 2
+                    imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
+                    fillMode: Image.PreserveAspectFit
+                    // Note: visible property does not work due to rounded corners
                 }
                 Rectangle {
-                    width: parent.width
-                    height: defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.height
-                    color: "transparent"
+                    id: defaultThumbImg
+                    x: 1
+                    width: parent.width - 2
+                    height: width / videoStack.getAspectRatio()
+                    color: guiSettings.avatarDefaultColor
+                    visible: videoView.imageView.isNull() || thumbImg.status != Image.Ready && filter.imageVisible()
 
-                    ThumbImageView {
-                        id: thumbImg
-                        x: 1
-                        width: parent.width - 2
-                        imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
-                        fillMode: Image.PreserveAspectFit
-                        // Note: visible property does not work due to rounded corners
-                    }
-                    Rectangle {
-                        id: defaultThumbImg
-                        x: 1
-                        width: parent.width - 2
-                        height: width / videoStack.getAspectRatio()
-                        color: guiSettings.avatarDefaultColor
-                        visible: videoView.imageView.isNull() || thumbImg.status != Image.Ready && filter.imageVisible()
-
-                        SvgImage {
-                            x: (parent.width - width) / 2
-                            y: (parent.height - height) / 2 + height
-                            width: Math.min(parent.width, 150)
-                            height: width
-                            color: "white"
-                            svg: svgFilled.film
-                        }
+                    SvgImage {
+                        x: (parent.width - width) / 2
+                        y: (parent.height - height) / 2 + height
+                        width: Math.min(parent.width, 150)
+                        height: width
+                        color: "white"
+                        svg: svgFilled.film
                     }
                 }
             }
+        }
 
-            SvgButton {
-                x: (parent.width - width) / 2
-                y: (parent.height - height) / 2
-                width: 50
-                height: width
-                opacity: 0.5
-                accessibleName: qsTr("play video")
-                svg: svgFilled.play
-                visible: filter.imageVisible() && !videoPlayer.playing && !videoPlayer.restarting
-                enabled: videoPlayer.hasVideo
+        SvgButton {
+            x: (parent.width - width) / 2
+            y: (parent.height - height) / 2
+            width: 50
+            height: width
+            opacity: 0.5
+            accessibleName: qsTr("play video")
+            svg: svgFilled.play
+            visible: filter.imageVisible() && !videoPlayer.playing && !videoPlayer.restarting
+            enabled: videoPlayer.hasVideo
 
-                onClicked: videoPlayer.start()
-            }
+            onClicked: videoPlayer.start()
         }
 
         Item {
