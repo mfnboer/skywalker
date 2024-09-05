@@ -243,7 +243,7 @@ Rectangle {
                     postRecord: notificationPostRecord
                     postRecordWithMedia: notificationPostRecordWithMedia
                     postDateTime: notificationPostTimestamp
-                    ellipsisBackgroundColor: notification.color
+                    bodyBackgroundColor: notification.color
                 }
 
                 PostStats {
@@ -428,7 +428,7 @@ Rectangle {
                     postExternal: notificationReasonPostExternal
                     postRecord: notificationReasonPostRecord
                     postRecordWithMedia: notificationReasonPostRecordWithMedia
-                    ellipsisBackgroundColor: notification.color
+                    bodyBackgroundColor: notification.color
                     visible: showPostForAggregatableReason()
                 }
             }

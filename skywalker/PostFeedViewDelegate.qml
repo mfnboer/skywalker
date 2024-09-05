@@ -342,7 +342,7 @@ Rectangle {
                 postRecordWithMedia: postEntry.postRecordWithMedia
                 postDateTime: postEntry.postIndexedDateTime
                 detailedView: postThreadType & QEnums.THREAD_ENTRY
-                ellipsisBackgroundColor: postEntry.color
+                bodyBackgroundColor: postEntry.color
                 postHighlightColor: postEntry.postHighlightColor
             }
 

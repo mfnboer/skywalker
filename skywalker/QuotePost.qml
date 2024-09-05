@@ -64,7 +64,7 @@ Column {
         postMuted: QEnums.MUTED_POST_NONE
         postDateTime: postDateTime
         maxTextLines: 5
-        ellipsisBackgroundColor: quoteColumn.ellipsisBackgroundColor
+        bodyBackgroundColor: quoteColumn.ellipsisBackgroundColor
     }
 
     AccessibilityUtils {

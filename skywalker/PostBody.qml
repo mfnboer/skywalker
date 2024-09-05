@@ -20,7 +20,7 @@ Column {
     property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
     property int maxTextLines: 1000
-    property string ellipsisBackgroundColor: guiSettings.backgroundColor
+    property string bodyBackgroundColor: guiSettings.backgroundColor
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property bool attachmentsInitialized: false
@@ -35,7 +35,7 @@ Column {
         wrapMode: Text.Wrap
         initialShowMaxLineCount: Math.min(maxTextLines, 25)
         maximumLineCount: maxTextLines
-        ellipsisBackgroundColor: postBody.ellipsisBackgroundColor
+        ellipsisBackgroundColor: postBody.bodyBackgroundColor
         elide: Text.ElideRight
         textFormat: Text.RichText
         color: guiSettings.textColor
@@ -277,7 +277,7 @@ Column {
                                       videoView: postBody.postVideo,
                                       contentVisibility: postContentVisibility,
                                       contentWarning: postContentWarning,
-                                      backgroundColor: ellipsisBackgroundColor })
+                                      backgroundColor: bodyBackgroundColor })
         }
 
         if (postExternal) {
@@ -302,7 +302,7 @@ Column {
                                                 record: postRecordWithMedia,
                                                 contentVisibility: postContentVisibility,
                                                 contentWarning: postContentWarning,
-                                                backgroundColor: ellipsisBackgroundColor })
+                                                backgroundColor: bodyBackgroundColor })
         }
     }
 
@@ -317,7 +317,7 @@ Column {
                                                 record: postRecordWithMedia,
                                                 contentVisibility: postContentVisibility,
                                                 contentWarning: postContentWarning,
-                                                backgroundColor: ellipsisBackgroundColor})
+                                                backgroundColor: bodyBackgroundColor})
         }
     }
 
