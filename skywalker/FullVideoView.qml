@@ -11,13 +11,13 @@ SkyPage {
     id: page
     width: parent.width
     height: parent.height
-    padding: 10
     background: Rectangle { color: "black" }
 
     VideoView {
-        y: (parent.height - altFlick.height - height) / 2
+        id: view
+        y: (parent.height - height) / 2
         width: parent.width
-        maxHeight: parent.height - altFlick.height
+        maxHeight: parent.height
         videoView: page.videoView
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
@@ -30,6 +30,7 @@ SkyPage {
     Flickable {
         id: altFlick
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
         width: parent.width
         height: Math.min(contentHeight, 6 * 21)
         clip: true
@@ -38,6 +39,7 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: ScrollBar { id: altScrollBar }
+        visible: !view.isPlaying
 
         onHeightChanged: setScrollBarPolicy()
         onContentHeightChanged: setScrollBarPolicy()
@@ -59,24 +61,27 @@ SkyPage {
     }
 
     SvgButton {
+        x: 10
         iconColor: "white"
         Material.background: "black"
         opacity: 0.7
         svg: svgOutline.arrowBack
         accessibleName: qsTr("go back")
+        visible: !view.isPlaying
         onClicked: page.closed()
     }
 
     SvgButton {
         anchors.top: parent.top
         anchors.right: parent.right
+        anchors.rightMargin: 10
         iconColor: "white"
         Material.background: "black"
         opacity: 0.7
         svg: svgOutline.moreVert
         accessibleName: qsTr("more options")
+        visible: Boolean(videoView.alt) && !view.isPlaying
         onClicked: moreMenu.open()
-        visible: Boolean(videoView.alt)
 
         Menu {
             id: moreMenu

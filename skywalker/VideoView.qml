@@ -13,10 +13,11 @@ Column {
     property string backgroundColor: guiSettings.backgroundColor
     property int maxHeight: 0
     property bool isFullViewMode: false
+    readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
 
     id: videoStack
-    spacing: 10
+    spacing: isFullViewMode ? -playControls.height : 10
 
     Rectangle {
         width: parent.width
@@ -223,6 +224,7 @@ Column {
             height: parent.height
             color: "transparent"
             maskColor: videoStack.backgroundColor
+            visible: !isFullViewMode
         }
     }
 
@@ -233,8 +235,16 @@ Column {
         color: "transparent"
         visible: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting
 
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+            opacity: 0.3
+            visible: isFullViewMode
+        }
+
         SvgTransparentButton {
             id: playPauseButton
+            x: isFullViewMode ? 10 : 0
             width: 24
             height: width
             svg: videoPlayer.playing ? svgFilled.pause : svgFilled.play
@@ -314,12 +324,14 @@ Column {
             anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             font.pointSize: guiSettings.scaledFont(6/8)
+            color: controlColor
             text: guiSettings.videoDurationToString(videoPlayer.duration - videoPlayer.position)
         }
 
         SvgTransparentButton {
             id: soundButton
             anchors.right: parent.right
+            anchors.rightMargin: isFullViewMode ? 10 : 0
             width: 24
             height: width
             svg: audioOutput.muted ? svgOutline.soundOff : svgOutline.soundOn
