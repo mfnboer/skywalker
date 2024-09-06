@@ -70,9 +70,14 @@ public class QPhotoPicker extends AppCompatActivity {
                 Log.d("PhotoPicker", "No media selected");
                 emitPhotoPickCanceled();
             }
-
-            finish();
         }
+        else
+        {
+            Log.d("PhotoPicker", "requestCode: " + requestCode + " resultCode: " + resultCode);
+            emitPhotoPickCanceled();
+        }
+
+        finish();
     }
 
     // Code before adding video. With the launcher GetContent only takes a single mime tyoe
