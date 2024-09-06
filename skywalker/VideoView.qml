@@ -49,33 +49,28 @@ Column {
             }
 
             Rectangle {
+                id: imgPreview
                 width: parent.width
                 height: defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.height
                 color: "transparent"
 
                 ThumbImageView {
+                    property double aspectRatio: (width > 0 && height > 0) ? width / height : 0
+                    property double maxWidth: maxHeight * aspectRatio
+
                     id: thumbImg
                     x: (parent.width - width) / 2
-                    width: parent.width - 2
+                    width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
                     imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
                     fillMode: Image.PreserveAspectFit
                     enableAlt: !isFullViewMode
-
-                    onHeightChanged: {
-                        if (maxHeight && height > maxHeight)
-                            Qt.callLater(setMaxHeight)
-                    }
-
-                    function setMaxHeight() {
-                        const ratio = width / height
-                        height = maxHeight
-                        width = height * ratio
-                    }
                 }
                 Rectangle {
+                    property double maxWidth: maxHeight * videoStack.getAspectRatio()
+
                     id: defaultThumbImg
                     x: (parent.width - width) / 2
-                    width: parent.width - 2
+                    width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
                     height: width / videoStack.getAspectRatio()
                     color: guiSettings.avatarDefaultColor
                     visible: videoView.imageView.isNull() || thumbImg.status != Image.Ready && filter.imageVisible()
@@ -87,8 +82,8 @@ Column {
 
                     function setMaxHeight() {
                         const ratio = width / height
-                        height = maxHeight
-                        width = height * ratio
+                        //height = maxHeight
+                        width = Math.floor(maxHeight * ratio)
                     }
 
                     SvgImage {
@@ -115,6 +110,11 @@ Column {
             enabled: videoPlayer.hasVideo
 
             onClicked: videoPlayer.start()
+
+            BusyIndicator {
+                anchors.fill: parent
+                running: parent.visible && !parent.enabled
+            }
         }
 
         Item {
@@ -215,8 +215,12 @@ Column {
             width: parent.width
             height: parent.height
             z: -1
-            onClicked: root.viewFullVideo(videoView)
-            enabled: !isFullViewMode
+            onClicked: {
+                if (isFullViewMode)
+                    playControls.show = !playControls.show
+                else
+                    root.viewFullVideo(videoView)
+            }
         }
 
         RoundCornerMask {
@@ -229,11 +233,14 @@ Column {
     }
 
     Rectangle {
+        property bool show: true
+
         id: playControls
-        width: parent.width
+        x: (parent.width - width) / 2
+        width: defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.width
         height: playPauseButton.height
         color: "transparent"
-        visible: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting
+        visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
 
         Rectangle {
             anchors.fill: parent
