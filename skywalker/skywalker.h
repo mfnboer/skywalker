@@ -263,6 +263,7 @@ signals:
     void getPostThreadInProgressChanged();
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString text); // Shared from another app
+    void sharedVideoReceived(QUrl url, QString text); // Shared from another app
     void sharedDmTextReceived(QString text); // Shared from another app
     void showNotifications(); // Action received from clicking an app notification
     void showDirectMessages(); // Action received from clicking an app notification
@@ -300,6 +301,7 @@ private:
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
     void shareImage(const QString& contentUri, const QString& text);
+    void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
     void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});

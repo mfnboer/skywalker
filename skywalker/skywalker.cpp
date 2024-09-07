@@ -10,6 +10,7 @@
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
+#include "temp_file_holder.h"
 #include "utils.h"
 #include <atproto/lib/at_uri.h>
 #include <QClipboard>
@@ -77,6 +78,8 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& text){ emit sharedTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
             [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
+    connect(&jniCallbackListener, &JNICallbackListener::sharedVideoReceived, this,
+            [this](const QString& contentUri, const QString& text){ shareVideo(contentUri, text); });
     connect(&jniCallbackListener, &JNICallbackListener::sharedDmTextReceived, this,
             [this](const QString& text){ emit sharedDmTextReceived(text); });
     connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
@@ -3054,6 +3057,29 @@ void Skywalker::shareImage(const QString& contentUri, const QString& text)
     auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
     const QString source = imgProvider->addImage(img);
     emit sharedImageReceived(source, text);
+}
+
+void Skywalker::shareVideo(const QString& contentUri, const QString& text)
+{
+    if (!FileUtils::checkReadMediaPermission())
+    {
+        showStatusMessage(tr("No permission to access video."), QEnums::STATUS_LEVEL_ERROR);
+        return;
+    }
+
+    int fd = FileUtils::openContentUri(contentUri);
+    auto video = FileUtils::createTempFile(fd, "mp4");
+
+    if (!video)
+    {
+        showStatusMessage(tr("Could not open video."), QEnums::STATUS_LEVEL_ERROR);
+        return;
+    }
+
+    const QString tmpFilePath = video->fileName();
+    QUrl url = QUrl::fromLocalFile(tmpFilePath);
+    TempFileHolder::instance().put(std::move(video));
+    emit sharedVideoReceived(url, text);
 }
 
 void Skywalker::disableDebugLogging()

@@ -200,6 +200,22 @@ SkyListView {
                           initialText, imageSource)
     }
 
+    function videoReply(initialText, videoSource) {
+        const postUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostUri)
+        const postCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostCid)
+        const postText = model.getData(postEntryIndex, AbstractPostFeedModel.PostText)
+        const postIndexedDateTime = model.getData(postEntryIndex, AbstractPostFeedModel.PostIndexedDateTime)
+        const author = getReplyToAuthor()
+        const postReplyRootUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootUri)
+        const postReplyRootCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootCid)
+        const postLanguages = model.getData(postEntryIndex, AbstractPostFeedModel.PostLanguages)
+
+        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+        root.composeVideoReply(postUri, postCid, postText, postIndexedDateTime,
+                               author, postReplyRootUri, postReplyRootCid, lang,
+                               initialText, videoSource)
+    }
+
     function calibratePosition() {
         view.contentY += calibrationDy
         calibrationDy = 0

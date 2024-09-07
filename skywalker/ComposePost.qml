@@ -9,6 +9,7 @@ SkyPage {
     required property var skywalker
     property string initialText
     property string initialImage
+    property string initialVideo: ""
     property int margin: 15
 
     readonly property int maxPostLength: 300
@@ -267,7 +268,7 @@ SkyPage {
                         quoteText: page.quoteText
                         quoteDateTime: page.quoteDateTime
                         language: replyToLanguage ? replyToLanguage : languageUtils.defaultPostLanguage
-                        video: ""
+                        video: initialVideo
                         videoAltText: ""
                     }
                 ]
@@ -1624,13 +1625,29 @@ SkyPage {
         if (!postItem)
             return
 
-        if (postItem.images.length >= page.maxImages) {
-            statusPopup.show(qsTr(`Post already has ${page.maxImages} images attached.`), QEnums.STATUS_LEVEL_INFO, 30)
+        if (!canAddImage()) {
+            statusPopup.show(qsTr("Cannot add an image to this post."), QEnums.STATUS_LEVEL_INFO, 30)
             postUtils.dropPhoto(source)
             return
         }
 
         photoPicked(source)
+        addSharedText(text)
+    }
+
+    function addSharedVideo(source, text) {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return
+
+        if (!canAddVideo()) {
+            statusPopup.show(qsTr("Cannot add video to this post."), QEnums.STATUS_LEVEL_INFO, 30)
+            postUtils.dropVideo(source)
+            return
+        }
+
+        videoPicked(source)
         addSharedText(text)
     }
 
@@ -2110,6 +2127,9 @@ SkyPage {
         for (let i = 0; i < threadPosts.count; ++i) {
             let postItem = threadPosts.itemAt(i)
             postItem.images.forEach((value, index, array) => { postUtils.dropPhoto(value); })
+
+            if (Boolean(postItem.video))
+                postUtils.dropVideo(postItem.video)
         }
 
         page.tmpImages.forEach((value, index, array) => { postUtils.dropPhoto(value); })

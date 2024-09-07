@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_utils.h"
+#include "file_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
 #include "skywalker.h"
+#include "temp_file_holder.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QImageReader>
@@ -671,7 +673,6 @@ void PostUtils::continuePostVideo(const QString& videoFileName, const QString& v
 {
     emit postProgress(tr("Uploading video"));
 
-    // TODO: Android file
     const QString fileName = videoFileName.sliced(7);
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly))
@@ -1506,39 +1507,16 @@ void PostUtils::sharePhoto(int fd)
 void PostUtils::shareVideo(int fd)
 {
     qDebug() << "Share video fd:" << fd;
-    QFile file;
+    auto video = FileUtils::createTempFile(fd, "mp4");
 
-    if (!file.open(fd, QFile::ReadOnly))
-    {
-        const QString fileError = file.errorString();
-        qWarning() << "Failed to open video file:" << fileError;
+    if (!video)
         return;
-    }
-
-    auto video = std::make_unique<QTemporaryFile>("sw_video_XXXXXX.mp4");
-
-    if (!video->open())
-    {
-        const QString fileError = video->errorString();
-        qWarning() << "Failed to open tmp file:" << fileError;
-        return;
-    }
-
-    if (video->write(file.readAll()) < 0)
-    {
-        const QString fileError = video->errorString();
-        qWarning() << "Failed to write video to tmp file:" << fileError;
-        return;
-    }
-
-    video->flush();
-    video->close();
 
     const QString tmpFilePath = video->fileName();
     QUrl url = QUrl::fromLocalFile(tmpFilePath);
     qDebug() << "Video url:" << url;
 
-    mPickedVideos.push_back(std::move(video));
+    TempFileHolder::instance().put(std::move(video));
     emit videoPicked(url);
 }
 
@@ -1566,19 +1544,8 @@ void PostUtils::dropVideo(const QString& source)
     if (source.startsWith("file://"))
     {
         const QString fileName = source.sliced(7);
-
-        for (auto it = mPickedVideos.begin(); it != mPickedVideos.end(); ++it)
-        {
-            if ((*it)->fileName() == fileName)
-            {
-                qDebug() << "Remove:" << fileName;
-                mPickedVideos.erase(it);
-                return;
-            }
-        }
+        TempFileHolder::instance().remove(fileName);
     }
-
-    qDebug() << "File not found:" << source;
 }
 
 }

@@ -404,6 +404,8 @@ qt_add_qml_module(libskywalker
         QML_FILES VideoThumbnail.qml
         QML_FILES RoundCornerMask.qml
         QML_FILES FullVideoView.qml
+        SOURCES temp_file_holder.h
+        SOURCES temp_file_holder.cpp
 )
 
 if (NOT ANDROID)

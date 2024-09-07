@@ -32,6 +32,7 @@ public class SkywalkerActivity extends QtActivity {
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
+    public static native void emitSharedVideoReceived(String uri, String text);
     public static native void emitSharedDmTextReceived(String text);
     public static native void emitShowNotifications();
     public static native void emitShowDirectMessages();
@@ -132,6 +133,11 @@ public class SkywalkerActivity extends QtActivity {
             return;
         }
 
+        if (intent.getType().startsWith("video/")) {
+            handleSharedVideo(intent);
+            return;
+        }
+
         Log.d(LOGTAG, "Unsupported intent type: " + intent.getType());
     }
 
@@ -174,6 +180,28 @@ public class SkywalkerActivity extends QtActivity {
         Log.d(LOGTAG, "Shared image: " + uriString);
         Log.d(LOGTAG, "Extra text  : " + text);
         emitSharedImageReceived(uriString, text);
+    }
+
+    private void handleSharedVideo(Intent intent) {
+        Uri uri = (Uri)intent.getParcelableExtra(Intent.EXTRA_STREAM);
+
+        if (uri == null) {
+            Log.d(LOGTAG, "Empty video uri received");
+            return;
+        }
+
+        String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+        if (text == null)
+            text = "";
+
+        if (text.length() > MAX_TEXT_LEN)
+            text = text.substring(0, MAX_TEXT_LEN);
+
+        String uriString = uri.toString();
+        Log.d(LOGTAG, "Shared video: " + uriString);
+        Log.d(LOGTAG, "Extra text  : " + text);
+        emitSharedVideoReceived(uriString, text);
     }
 
     // Avoid the app to close when the user presses the back button.

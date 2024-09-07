@@ -1053,9 +1053,14 @@ SkyPage {
         authorBanner = source
     }
 
-    function mentionPost() {
-        const mentionText = (isUser(author) || author.hasInvalidHandle()) ? "" : `@${author.handle} `
-        root.composePost(mentionText)
+    function mentionPost(text = "", imgSource = "") {
+        const mentionText = (isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
+        root.composePost(mentionText, imgSource)
+    }
+
+    function mentionVideoPost(text = "", videoSource = "") {
+        const mentionText = (isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
+        root.composeVideoPost(mentionText, videoSource)
     }
 
     function feedOkHandler(modelId) {

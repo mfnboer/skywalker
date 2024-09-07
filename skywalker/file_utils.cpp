@@ -160,6 +160,41 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
+std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtension)
+{
+    QFile file;
+
+    if (!file.open(fd, QFile::ReadOnly))
+    {
+        const QString fileError = file.errorString();
+        qWarning() << "Failed to open file:" << fileError;
+        return nullptr;
+    }
+
+    const QString nameTemplate = QString("sw_temp_XXXXXX.%1").arg(fileExtension);
+    auto tmpFile = std::make_unique<QTemporaryFile>(nameTemplate);
+
+    if (!tmpFile->open())
+    {
+        const QString fileError = tmpFile->errorString();
+        qWarning() << "Failed to open tmp file:" << fileError;
+        return nullptr;
+    }
+
+    if (tmpFile->write(file.readAll()) < 0)
+    {
+        const QString fileError = tmpFile->errorString();
+        qWarning() << "Failed to write file to tmp file:" << fileError;
+        return nullptr;
+    }
+
+    tmpFile->flush();
+    tmpFile->close();
+
+    qDebug() << "Created temp file:" << tmpFile->fileName();
+    return tmpFile;
+}
+
 QString createDateTimeName(QDateTime timestamp)
 {
     return timestamp.toString("yyyyMMddhhmmss");

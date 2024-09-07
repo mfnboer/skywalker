@@ -250,6 +250,20 @@ ApplicationWindow {
                 composePost(text, source)
         }
 
+        onSharedVideoReceived: (source, text) => {
+            closeStartupStatus() // close startup status if sharing started the app
+            let item = currentStackItem()
+
+            if (item instanceof ComposePost)
+                item.addSharedVideo(source, text)
+            else if (item instanceof PostThreadView)
+                item.videoReply(text, source)
+            else if (item instanceof AuthorView)
+                item.mentionVideoPost(text, source)
+            else
+                composeVideoPost(text, source)
+        }
+
         onSharedDmTextReceived: (text) => {
             closeStartupStatus() // close startup status if sharing started the app
             let item = currentStackItem()
@@ -884,6 +898,17 @@ ApplicationWindow {
         pushStack(page)
     }
 
+    function composeVideoPost(initialText = "", videoSource = "") {
+        let component = Qt.createComponent("ComposePost.qml")
+        let page = component.createObject(root, {
+                skywalker: skywalker,
+                initialText: initialText,
+                initialVideo: videoSource
+        })
+        page.onClosed.connect(() => { popStack() })
+        pushStack(page)
+    }
+
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, initialText = "", imageSource = "")
     {
@@ -892,6 +917,27 @@ ApplicationWindow {
                 skywalker: skywalker,
                 initialText: initialText,
                 initialImage: imageSource,
+                replyToPostUri: replyToUri,
+                replyToPostCid: replyToCid,
+                replyRootPostUri: replyRootUri,
+                replyRootPostCid: replyRootCid,
+                replyToPostText: replyToText,
+                replyToPostDateTime: replyToDateTime,
+                replyToAuthor: replyToAuthor,
+                replyToLanguage: replyToLanguage
+        })
+        page.onClosed.connect(() => { popStack() })
+        pushStack(page)
+    }
+
+    function composeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                               replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource)
+    {
+        let component = Qt.createComponent("ComposePost.qml")
+        let page = component.createObject(root, {
+                skywalker: skywalker,
+                initialText: initialText,
+                initialVideo: videoSource,
                 replyToPostUri: replyToUri,
                 replyToPostCid: replyToCid,
                 replyRootPostUri: replyRootUri,

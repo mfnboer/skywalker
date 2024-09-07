@@ -42,9 +42,9 @@ void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
         instance->handleSharedTextReceived(sharedText);
 }
 
-void _handleSharedImageReceived(JNIEnv* env, jobject, jstring jsFileName, jstring jsText)
+void _handleSharedImageReceived(JNIEnv* env, jobject, jstring jsContentUri, jstring jsText)
 {
-    QString fileName = jsFileName ? env->GetStringUTFChars(jsFileName, nullptr) : QString();
+    QString fileName = jsContentUri ? env->GetStringUTFChars(jsContentUri, nullptr) : QString();
     qDebug() << "Shared image received:" << fileName;
     QString text = jsText ? env->GetStringUTFChars(jsText, nullptr) : QString();
     qDebug() << "Additional text received:" << text;
@@ -52,6 +52,18 @@ void _handleSharedImageReceived(JNIEnv* env, jobject, jstring jsFileName, jstrin
 
     if (instance)
         instance->handleSharedImageReceived(fileName, text);
+}
+
+void _handleSharedVideoReceived(JNIEnv* env, jobject, jstring jsContentUri, jstring jsText)
+{
+    QString fileName = jsContentUri ? env->GetStringUTFChars(jsContentUri, nullptr) : QString();
+    qDebug() << "Shared video received:" << fileName;
+    QString text = jsText ? env->GetStringUTFChars(jsText, nullptr) : QString();
+    qDebug() << "Additional text received:" << text;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleSharedVideoReceived(fileName, text);
 }
 
 void _handleSharedDmTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
@@ -121,11 +133,12 @@ JNICallbackListener::JNICallbackListener() : QObject()
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
+        { "emitSharedVideoReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedVideoReceived) },
         { "emitSharedDmTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedDmTextReceived) },
         { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
         { "emitShowDirectMessages", "()V", reinterpret_cast<void *>(_handleShowDirectMessages) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 5);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 6);
 #endif
 }
 
@@ -144,9 +157,14 @@ void JNICallbackListener::handleSharedTextReceived(const QString sharedText)
     emit sharedTextReceived(sharedText);
 }
 
-void JNICallbackListener::handleSharedImageReceived(const QString fileName, const QString text)
+void JNICallbackListener::handleSharedImageReceived(const QString contentUri, const QString text)
 {
-    emit sharedImageReceived(fileName, text);
+    emit sharedImageReceived(contentUri, text);
+}
+
+void JNICallbackListener::handleSharedVideoReceived(const QString contentUri, const QString text)
+{
+    emit sharedVideoReceived(contentUri, text);
 }
 
 void JNICallbackListener::handleSharedDmTextReceived(const QString sharedText)

@@ -203,7 +203,6 @@ private:
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;
     bool mPickingPhoto = false;
-    std::vector<std::unique_ptr<QTemporaryFile>> mPickedVideos;
 };
 
 }
