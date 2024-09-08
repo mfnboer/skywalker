@@ -23,7 +23,7 @@ Column {
         width: parent.width
         height: videoColumn.height
         color: "transparent"
-        clip: true
+        visible: videoPlayer.videoFound || videoPlayer.error == MediaPlayer.NoError
 
         FilteredImageWarning {
             id: filter
@@ -113,7 +113,7 @@ Column {
 
             BusyIndicator {
                 anchors.fill: parent
-                running: parent.visible && !parent.enabled
+                running: parent.visible && !parent.enabled && (videoPlayer.error == MediaPlayer.NoError || videoPlayer.videoFound)
             }
         }
 
@@ -123,12 +123,18 @@ Column {
             height: parent.height
 
             MediaPlayer {
+                property bool videoFound: false
                 property bool restarting: false
 
                 id: videoPlayer
                 source: videoView.playlistUrl
                 videoOutput: videoOutput
                 audioOutput: audioOutput
+
+                onHasVideoChanged: {
+                    if (hasVideo)
+                        videoFound = true
+                }
 
                 onPlaybackStateChanged: {
                     if (playbackState == MediaPlayer.StoppedState) {
@@ -346,6 +352,22 @@ Column {
             color: controlColor
 
             onClicked: audioOutput.toggleSound()
+        }
+    }
+
+    Rectangle {
+        width: parent.width
+        height: errorText.height
+        radius: 10
+        border.width: 1
+        border.color: guiSettings.borderColor
+        color: "transparent"
+        visible: !videoPlayer.videoFound && videoPlayer.error != MediaPlayer.NoError
+
+        AccessibleText {
+            id: errorText
+            padding: 10
+            text: qsTr(`⚠️ Video error: ${videoPlayer.errorString}`)
         }
     }
 
