@@ -11,7 +11,8 @@ Rectangle {
     required property string postPlainText
     required property date postIndexedDateTime
     required property list<imageview> postImages
-    required property var postExternal // externalview (var allows NULL)
+    required property var postVideo // videoview (var allows NULL)
+    required property var postExternal // externalview
     required property var postRecord // recordview
     required property var postRecordWithMedia // record_with_media_view
     required property bool postIsReply
@@ -88,6 +89,7 @@ Rectangle {
                 postAuthor: draftPostView.author
                 postText: draftPostView.postText
                 postPlainText: draftPostView.postPlainText
+                postVideo: draftPostView.postVideo
                 postImages: draftPostView.postImages
                 postLanguageLabels: draftPostView.postLanguages
                 postContentLabels: draftPostView.postLabels
@@ -98,6 +100,7 @@ Rectangle {
                 postRecord: draftPostView.postRecord
                 postRecordWithMedia: draftPostView.postRecordWithMedia
                 postDateTime: draftPostView.postIndexedDateTime
+                isDraft: true
             }
         }
 
@@ -165,5 +168,9 @@ Rectangle {
 
     function selectDraft() {
         selected()
+    }
+
+    Component.onCompleted: {
+        console.debug("VIDEO:", postVideo.playlistUrl)
     }
 }

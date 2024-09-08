@@ -24,17 +24,21 @@ public:
 
     VideoView() = default;
     VideoView(const ATProto::AppBskyEmbed::VideoView::SharedPtr& videoView) : mVideoView(videoView) {}
+    VideoView(const QString& playListUrl, const QString& alt) : mPlayListUrl(playListUrl), mAlt(alt) {}
 
+    Q_INVOKABLE bool isNull() const { return getPlaylistUrl().isEmpty(); }
     QString getThumbUrl() const { return mVideoView && mVideoView->mThumbnail ? *mVideoView->mThumbnail : ""; }
-    QString getPlaylistUrl() const { return mVideoView ? mVideoView->mPlaylist : ""; }
+    QString getPlaylistUrl() const { return mVideoView ? mVideoView->mPlaylist : mPlayListUrl; }
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mVideoView ? mVideoView->mAspectRatio.get() : nullptr; }
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
-    QString getAlt() const { return mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : ""; }
+    QString getAlt() const { return mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : mAlt; }
     ImageView getImageView() const { return ImageView(getThumbUrl(), getAlt()); }
 
 private:
     ATProto::AppBskyEmbed::VideoView::SharedPtr mVideoView;
+    QString mPlayListUrl;
+    QString mAlt;
 };
 
 }

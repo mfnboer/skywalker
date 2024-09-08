@@ -6,6 +6,7 @@
 #include "list_view.h"
 #include "profile.h"
 #include "tenor_gif.h"
+#include "video_view.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -16,6 +17,7 @@ class DraftPostData : public QObject
     Q_OBJECT
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged FINAL)
     Q_PROPERTY(QList<ImageView> images READ images WRITE setImages NOTIFY imagesChanged FINAL)
+    Q_PROPERTY(VideoView video READ video WRITE setVideo NOTIFY videoChanged FINAL)
     Q_PROPERTY(QDateTime indexedAt READ indexedAt WRITE setIndexedAt NOTIFY indexedAtChanged FINAL)
     Q_PROPERTY(QString replyToUri READ replyToUri WRITE setReplyToUri NOTIFY replyToUriChanged FINAL)
     Q_PROPERTY(QString replyToCid READ replyToCid WRITE setReplyToCid NOTIFY replyToCidChanged FINAL)
@@ -52,6 +54,8 @@ public:
     void setText(const QString &newText);
     QList<ImageView> images() const;
     void setImages(const QList<ImageView> &newImages);
+    VideoView video() const;
+    void setVideo(const VideoView& video);
     QDateTime indexedAt() const;
     void setIndexedAt(const QDateTime &newIndexedAt);
     QString replyToUri() const;
@@ -110,6 +114,7 @@ public:
 signals:
     void textChanged();
     void imagesChanged();
+    void videoChanged();
     void indexedAtChanged();
     void replyToUriChanged();
     void replyToCidChanged();
@@ -141,6 +146,7 @@ signals:
 private:
     QString mText;
     QList<ImageView> mImages;
+    VideoView mVideo;
     QDateTime mIndexedAt;
     QString mReplyToUri;
     QString mReplyToCid;
@@ -192,6 +198,17 @@ inline void DraftPostData::setImages(const QList<ImageView> &newImages)
 {
     mImages = newImages;
     emit imagesChanged();
+}
+
+inline VideoView DraftPostData::video() const
+{
+    return mVideo;
+}
+
+inline void DraftPostData::setVideo(const VideoView& video)
+{
+    mVideo = video;
+    emit videoChanged();
 }
 
 inline QDateTime DraftPostData::indexedAt() const

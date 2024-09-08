@@ -1859,6 +1859,7 @@ SkyPage {
         const draft = draftPosts.createDraft(postItem.text,
                                  postItem.images, postItem.altTexts,
                                  postItem.memeTopTexts, postItem.memeBottomTexts,
+                                 postItem.video, postItem.videoAltText,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
@@ -1881,6 +1882,7 @@ SkyPage {
             const draftItem = draftPosts.createDraft(threadItem.text,
                                      threadItem.images, threadItem.altTexts,
                                      threadItem.memeTopTexts, threadItem.memeBottomTexts,
+                                     threadItem.video, threadItem.videoAltText,
                                      "", "",
                                      "", "",
                                      nullAuthor, "",
@@ -1940,6 +1942,12 @@ SkyPage {
                 postItem.altTexts.push(draftData.images[i].alt)
                 postItem.memeTopTexts.push(draftData.images[i].memeTopText)
                 postItem.memeBottomTexts.push(draftData.images[i].memeBottomText)
+            }
+
+            if (!draftData.video.isNull())
+            {
+                postItem.video = draftData.video.playlistUrl
+                postItem.videoAltText = draftData.video.alt
             }
 
             if (j === 0) {

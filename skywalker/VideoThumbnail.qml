@@ -12,7 +12,7 @@ Video {
 
     onPlaying: pauseTimer.start()
 
-    onErrorOccurred: (error, errorString) => console.debug("ERROR:", error, errorString)
+    onErrorOccurred: (error, errorString) => console.debug("ERROR:", source, error, errorString)
 
     onVideoSourceChanged: {
         if (Boolean(videoSource))

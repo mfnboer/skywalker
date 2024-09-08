@@ -7,6 +7,7 @@
 #include "gif_utils.h"
 #include "photo_picker.h"
 #include "skywalker.h"
+#include "temp_file_holder.h"
 #include "lexicon/lexicon.h"
 #include <atproto/lib/xjson.h>
 
@@ -58,6 +59,7 @@ bool DraftPosts::canSaveDraft() const
 DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const QStringList& imageFileNames, const QStringList& altTexts,
                                        const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
+                                       const QString& videoFileName, const QString& videoAltText,
                                        const QString& replyToUri, const QString& replyToCid,
                                        const QString& replyRootUri, const QString& replyRootCid,
                                        const BasicProfile& replyToAuthor, const QString& replyToText,
@@ -87,6 +89,13 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
     }
 
     draft->setImages(images);
+
+    if (!videoFileName.isEmpty())
+    {
+        const VideoView video(videoFileName, videoAltText);
+        draft->setVideo(video);
+    }
+
     draft->setIndexedAt(timestamp);
     draft->setReplyToUri(replyToUri);
     draft->setReplyToCid(replyToCid);
@@ -141,7 +150,7 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
             return false;
         }
 
-        if (!draftPost->images().isEmpty())
+        if (!draftPost->images().isEmpty() || !draftPost->video().isNull())
         {
             picDraftsPath = getPictureDraftsPath();
 
@@ -195,11 +204,13 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
         if (!save(*draft, draftsPath, dateTime))
         {
             dropImages(picDraftsPath, createPicBaseName(dateTime, 0), draftPost->images().size());
+            dropVideo(picDraftsPath, createPicBaseName(dateTime, 0));
 
             for (int i = 0; i < draftThread.size(); ++i)
             {
                 const auto* draftThreadPost = draftThread[i];
                 dropImages(picDraftsPath, createPicBaseName(dateTime, i + 1), draftThreadPost->images().size());
+                dropVideo(picDraftsPath, createPicBaseName(dateTime, i + 1));
             }
 
             return false;
@@ -229,7 +240,7 @@ ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createPost(const Draft
             return nullptr;
         }
 
-        if (!draftPost->images().isEmpty())
+        if (!draftPost->images().isEmpty() || !draftPost->video().isNull())
         {
             picDraftsPath = getPictureDraftsPath();
 
@@ -254,8 +265,14 @@ ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createPost(const Draft
     if (!draftPost->quoteUri().isEmpty())
         ATProto::PostMaster::addQuoteToPost(*post, draftPost->quoteUri(), draftPost->quoteCid());
 
-    if (mStorageType == STORAGE_FILE && !addImagesToPost(*post, draftPost->images(), picDraftsPath, picBaseName))
-        return nullptr;
+    if (mStorageType == STORAGE_FILE)
+    {
+        if (!addImagesToPost(*post, draftPost->images(), picDraftsPath, picBaseName))
+            return nullptr;
+
+        if (!addVideoToPost(*post, draftPost->video(), picDraftsPath, picBaseName))
+            return nullptr;
+    }
 
     if (!draftPost->gif().isNull())
         addGifToPost(*post, draftPost->gif());
@@ -342,6 +359,22 @@ static void setImages(DraftPostData* data, const QList<ImageView>& images)
     }
 
     data->setImages(draftImages);
+}
+
+static void setVideo(DraftPostData* data, const VideoView& videoView)
+{
+    if (videoView.isNull())
+        return;
+
+    auto tmpFile = FileUtils::createTempFile(videoView.getPlaylistUrl(), "mp4");
+
+    if (!tmpFile)
+        return;
+
+    const QUrl url = QUrl::fromLocalFile(tmpFile->fileName());
+    VideoView video(url.toString(), videoView.getAlt());
+    data->setVideo(video);
+    TempFileHolder::instance().put(std::move(tmpFile));
 }
 
 static void setExternal(DraftPostData* data, const ExternalView* externalView)
@@ -432,6 +465,11 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
         auto* data = new DraftPostData(this);
         data->setText(post.getText());
         setImages(data, post.getDraftImages());
+
+        const auto videoView = post.getVideoView();
+        if (videoView)
+            setVideo(data, *videoView);
+
         data->setIndexedAt(post.getIndexedAt());
         data->setReplyToUri(post.getReplyToUri());
         data->setReplyToCid(post.getReplyToCid());
@@ -457,6 +495,11 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
         if (recordMediaView)
         {
             setImages(data, recordMediaView->getImages());
+
+            const auto video = recordMediaView->getVideo();
+            if (!video.isNull())
+                setVideo(data, video.value<VideoView>());
+
             setRecordViewData(data, &recordMediaView->getRecord());
         }
 
@@ -553,6 +596,11 @@ QString DraftPosts::createDraftPostFileName(const QString& baseName) const
 QString DraftPosts::createDraftImageFileName(const QString& baseName, int seq) const
 {
     return QString("SWI%1_%2.jpg").arg(seq).arg(baseName);
+}
+
+QString DraftPosts::createDraftVideoFileName(const QString& baseName) const
+{
+    return QString("SWV_%1.mp4").arg(baseName);
 }
 
 QString DraftPosts::getBaseNameFromPostFileName(const QString& fileName) const
@@ -852,7 +900,8 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(
         view->mEmbed = createImagesView(std::get<ATProto::AppBskyEmbed::Images::SharedPtr>(embed->mEmbed).get());
         break;
     case ATProto::AppBskyEmbed::EmbedType::VIDEO:
-        // TODO
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+        view->mEmbed = createVideoView(std::get<ATProto::AppBskyEmbed::Video::SharedPtr>(embed->mEmbed).get());
         break;
     case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
@@ -879,16 +928,6 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
     if (!images || images->mImages.empty())
         return nullptr;
 
-    QString draftsPath;
-
-    if (mStorageType == STORAGE_FILE)
-    {
-        draftsPath = getPictureDraftsPath();
-
-        if (draftsPath.isEmpty())
-            return nullptr;
-    }
-
     auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
     const QString host = bskyClient()->getHost();
     const QString did = mSkywalker->getUserDid();
@@ -902,6 +941,11 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
         {
         case STORAGE_FILE:
         {
+            const auto draftsPath = getPictureDraftsPath();
+
+            if (draftsPath.isEmpty())
+                return nullptr;
+
             const QString path = createAbsPath(draftsPath, image->mImage->mRefLink);
             imgSource = "file://" + path;
             break;
@@ -926,6 +970,38 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
         imgView->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
         view->mImages.push_back(std::move(imgView));
     }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const ATProto::AppBskyEmbed::Video* video)
+{
+    if (!video || !video->mVideo)
+        return nullptr;
+
+    QString videoSource;
+
+    switch (mStorageType)
+    {
+    case STORAGE_FILE:
+    {
+        const auto draftsPath = getPictureDraftsPath();
+
+        if (draftsPath.isEmpty())
+            return nullptr;
+
+        const QString path = createAbsPath(draftsPath, video->mVideo->mRefLink);
+        videoSource = "file://" + path;
+        break;
+    }
+    case STORAGE_REPO:
+        qWarning() << "REPO storage not supported";
+        return nullptr;
+    }
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::VideoView>();
+    view->mPlaylist = videoSource;
+    view->mAlt = video->mAlt;
 
     return view;
 }
@@ -1165,6 +1241,26 @@ bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
     return true;
 }
 
+bool DraftPosts::addVideoToPost(ATProto::AppBskyFeed::Record::Post& post,
+                                const VideoView& video,
+                                const QString& draftsPath, const QString& baseName)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    if (video.isNull())
+        return true;
+
+    auto blob = saveVideo(video.getPlaylistUrl(), draftsPath, baseName);
+
+    if (!blob)
+    {
+        dropVideo(draftsPath, baseName);
+        return false;
+    }
+
+    ATProto::PostMaster::addVideoToPost(post, std::move(blob), video.getAlt());
+    return true;
+}
+
 std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString& imgName,
                                                const QString& memeTopText, const QString& memeBottomText,
                                                const QString& draftsPath, const QString& baseName, int seq)
@@ -1207,6 +1303,35 @@ std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString&
     return { blob, img.size() };
 }
 
+ATProto::Blob::SharedPtr DraftPosts::saveVideo(const QString& videoName, const QString& draftsPath, const QString& baseName)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    qDebug() << "Save video:" << videoName << "path:" << draftsPath << "base:" << baseName;
+
+    if (!videoName.startsWith("file://"))
+    {
+        qWarning() << "Invalid video:" << videoName;
+        return nullptr;
+    }
+
+    const QString videoFileName = videoName.sliced(7);
+    const QString draftFileName = createDraftVideoFileName(baseName);
+    const QString absDraftFileName = createAbsPath(draftsPath, draftFileName);
+    qDebug() << "Draft image file name:" << absDraftFileName;
+
+    if (!QFile::copy(videoFileName, absDraftFileName))
+    {
+        qWarning() << "Failed to save video:" << absDraftFileName;
+        emit saveDraftPostFailed(tr("Failed to save video: %1").arg(absDraftFileName));
+        return nullptr;
+    }
+
+    auto blob = std::make_shared<ATProto::Blob>();
+    blob->mRefLink = draftFileName;
+    blob->mMimeType = "video/mp4";
+    return blob;
+}
+
 void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count) const
 {
     Q_ASSERT(mStorageType == STORAGE_FILE);
@@ -1220,6 +1345,15 @@ void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, i
     const QString imgFileName = createDraftImageFileName(baseName, seq);
     const QString fileName = createAbsPath(draftsPath, imgFileName);
     qDebug() << "Drop draft image:" << fileName;
+    QFile::remove(fileName);
+}
+
+void DraftPosts::dropVideo(const QString& draftsPath, const QString& baseName)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString videoFileName = createDraftVideoFileName(baseName);
+    const QString fileName = createAbsPath(draftsPath, videoFileName);
+    qDebug() << "Drop draft video:" << fileName;
     QFile::remove(fileName);
 }
 

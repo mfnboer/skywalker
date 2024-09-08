@@ -25,6 +25,7 @@ Column {
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property bool attachmentsInitialized: false
     property string postHighlightColor: "transparent"
+    property bool isDraft: false
 
     id: postBody
 
@@ -273,11 +274,19 @@ Column {
         }
 
         if (postVideo) {
-            videoLoader.setSource("VideoView.qml", {
-                                      videoView: postBody.postVideo,
-                                      contentVisibility: postContentVisibility,
-                                      contentWarning: postContentWarning,
-                                      backgroundColor: bodyBackgroundColor })
+            if (isDraft) {
+                videoLoader.setSource("VideoThumbnail.qml", {
+                                        width: Math.min(180 * 1.777, postBody.width),
+                                        height: 180,
+                                        videoSource: postBody.postVideo.playlistUrl });
+            }
+            else {
+                videoLoader.setSource("VideoView.qml", {
+                                          videoView: postBody.postVideo,
+                                          contentVisibility: postContentVisibility,
+                                          contentWarning: postContentWarning,
+                                          backgroundColor: bodyBackgroundColor })
+            }
         }
 
         if (postExternal) {

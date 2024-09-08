@@ -41,6 +41,7 @@ public:
     Q_INVOKABLE DraftPostData* createDraft(const QString& text,
                                            const QStringList& imageFileNames, const QStringList& altTexts,
                                            const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
+                                           const QString& videoFileName, const QString& videoAltText,
                                            const QString& replyToUri, const QString& replyToCid,
                                            const QString& replyRootUri, const QString& replyRootCid,
                                            const BasicProfile& replyToAuthor, const QString& replyToText,
@@ -85,6 +86,7 @@ private:
     QString getPictureDraftsPath() const;
     QString createDraftPostFileName(const QString& baseName) const;
     QString createDraftImageFileName(const QString& baseName, int seq) const;
+    QString createDraftVideoFileName(const QString& baseName) const;
     QString getBaseNameFromPostFileName(const QString& fileName) const;
 
     static ATProto::AppBskyActor::ProfileViewBasic::SharedPtr createProfileViewBasic(const BasicProfile& author);
@@ -113,6 +115,7 @@ private:
     ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(
         const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::SharedPtr quote);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyEmbed::Images* images);
+    ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyEmbed::Video* video);
     ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyEmbed::External* external) const;
     ATProto::AppBskyEmbed::RecordView::SharedPtr createRecordView(const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(
@@ -129,11 +132,16 @@ private:
     bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
                          const QList<ImageView>& images,
                          const QString& draftsPath, const QString& baseName);
+    bool addVideoToPost(ATProto::AppBskyFeed::Record::Post& post,
+                        const VideoView& video,
+                        const QString& draftsPath, const QString& baseName);
     std::tuple<ATProto::Blob::SharedPtr, QSize> saveImage(const QString& imgName,
                                        const QString& memeTopText, const QString& memeBottomText,
                                        const QString& draftsPath, const QString& baseName, int seq);
+    ATProto::Blob::SharedPtr saveVideo(const QString& videoName, const QString& draftsPath, const QString& baseName);
     void dropImages(const QString& draftsPath, const QString& baseName, int count) const;
     void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;
+    void dropVideo(const QString& draftsPath, const QString& baseName);
     void dropDraftPostFiles(const QString& draftsPath, const QString& fileName);
     void dropDraftPost(const QString& fileName);
 

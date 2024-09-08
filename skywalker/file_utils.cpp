@@ -160,6 +160,21 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
+std::unique_ptr<QTemporaryFile> createTempFile(const QString& fileUri, const QString& fileExtension)
+{
+    qDebug() << "Create temp file for:" << fileUri << "ext:" << fileExtension;
+
+    if (!fileUri.startsWith("file://"))
+    {
+        qWarning() << "Unknow uri scheme:" << fileUri;
+        return nullptr;
+    }
+
+    const auto fileName = fileUri.sliced(7);
+    QFile file(fileName);
+    return createTempFile(file, fileExtension);
+}
+
 std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtension)
 {
     QFile file;
@@ -169,6 +184,21 @@ std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtens
         const QString fileError = file.errorString();
         qWarning() << "Failed to open file:" << fileError;
         return nullptr;
+    }
+
+    return createTempFile(file, fileExtension);
+}
+
+std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileExtension)
+{
+    if (!file.isOpen())
+    {
+        if (!file.open(QFile::ReadOnly))
+        {
+            const QString fileError = file.errorString();
+            qWarning() << "Failed to open file:" << fileError;
+            return nullptr;
+        }
     }
 
     const QString nameTemplate = QString("sw_temp_XXXXXX.%1").arg(fileExtension);

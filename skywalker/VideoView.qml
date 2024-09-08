@@ -142,7 +142,7 @@ Column {
                         restartTimer.set(false)
                 }
 
-                onErrorOccurred: (error, errorString) => { console.debug("Video error:", error, errorString) }
+                onErrorOccurred: (error, errorString) => { console.debug("Video error:", source, error, errorString) }
 
                 function playPause() {
                     if (playbackState == MediaPlayer.PausedState)
