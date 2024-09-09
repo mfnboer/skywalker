@@ -10,6 +10,7 @@
 #include "postgate.h"
 #include "presence.h"
 #include "profile.h"
+#include "video_upload_limits.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <QImage>
@@ -90,6 +91,8 @@ public:
     Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
     Q_INVOKABLE void getQuoteList(const QString& httpsUri);
     Q_INVOKABLE void getPostgate(const QString& postUri);
+    Q_INVOKABLE void getVideoUploadLimits();
+    Q_INVOKABLE void checkVideoUploadLimits(const QString& videoSource);
 
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);
@@ -146,9 +149,10 @@ signals:
     void postDeletedOk();
     void postDeletedFailed(QString error);
     void photoPicked(QString imgSource);
-    void videoPicked(QUrl url);
     void photoPickFailed(QString error);
     void photoPickCanceled();
+    void videoPicked(QUrl url);
+    void videoPickedFailed(QString error);
     void editMentionChanged();
     void editTagChanged();
     void firstWebLinkChanged();
@@ -164,6 +168,7 @@ signals:
     void quoteList(ListView list);
     void getPostgateOk(Postgate postgate);
     void getPostgateFailed(QString error);
+    void videoUploadLimits(VideoUploadLimits limits);
 
 private:
     void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
@@ -183,6 +188,7 @@ private:
     void sharePhoto(int fd);
     void shareVideo(int fd);
     void cancelPhotoPicking();
+    void getVideoUploadLimits(const std::function<void(const VideoUploadLimits&)>& cb);
 
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();

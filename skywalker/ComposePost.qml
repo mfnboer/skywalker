@@ -1226,8 +1226,8 @@ SkyPage {
 
     ImageFileDialog {
         id: fileDialog
-        onImageSelected: (fileName) => photoPicked(fileName)
-        onVideoSelected: (fileName) => videoPicked(fileName)
+        onImageSelected: (fileUri) => photoPicked(fileUri)
+        onVideoSelected: (fileUri) => postUtils.checkVideoUploadLimits(fileUri)
     }
 
     LinkCardReader {
@@ -1354,8 +1354,14 @@ SkyPage {
         }
 
         onVideoPicked: (videoUrl) => {
-            pickingImage = false;
+            pickingImage = false
             page.videoPicked(videoUrl)
+            currentPostItem().getPostText().forceActiveFocus()
+        }
+
+        onVideoPickedFailed: (error) => {
+            pickingImage = false
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
@@ -1647,8 +1653,8 @@ SkyPage {
             return
         }
 
-        videoPicked(source)
         addSharedText(text)
+        postUtils.checkVideoUploadLimits(source)
     }
 
     function postDone() {

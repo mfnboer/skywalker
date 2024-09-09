@@ -674,27 +674,16 @@ void PostUtils::continuePostVideo(const QString& videoFileName, const QString& v
     emit postProgress(tr("Uploading video"));
 
     const QString fileName = videoFileName.sliced(7);
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly))
+    auto file = std::make_shared<QFile>(fileName);
+    if (!file->open(QFile::ReadOnly))
     {
         qWarning() << "Could not open video file:" << fileName;
         emit postFailed(tr("Could not open video file"));
         return;
     }
 
-    qDebug() << "Loading video:" << fileName;
-    QByteArray blob = file.readAll();
-
-    if (blob.isEmpty())
-    {
-        emit postFailed(tr("Could not load video file"));
-        return;
-    }
-
-    qDebug() << "Video loaded:" << blob.size();
-
-    bskyClient()->uploadVideo(blob,
-        [this, presence=getPresence(), videoAltText, post](ATProto::AppBskyVideo::JobStatusOutput::SharedPtr output){
+    bskyClient()->uploadVideo(file.get(),
+        [this, presence=getPresence(), videoAltText, post, file](ATProto::AppBskyVideo::JobStatusOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -711,7 +700,7 @@ void PostUtils::continuePostVideo(const QString& videoFileName, const QString& v
                     emit postFailed(msg);
                 });
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), file](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
@@ -1473,6 +1462,51 @@ void PostUtils::getPostgate(const QString& postUri)
         });
 }
 
+void PostUtils::getVideoUploadLimits(const std::function<void(const VideoUploadLimits&)>& cb)
+{
+    Q_ASSERT(cb);
+    qDebug() << "Get video upload limits";
+
+    if (!bskyClient())
+        return;
+
+    bskyClient()->getVideoUploadLimits(
+        [cb](auto output){
+            const VideoUploadLimits limits(output);
+            qDebug() << "Video upload limits:" << limits.canUpload() << "daily:" << limits.getRemainingDailyVideos() << limits.getRemainingDailyBytes() << limits.getError() << limits.getMessage();
+            cb(limits);
+        },
+        [cb](const QString& error, const QString& msg){
+            qWarning() << "Failed to get video upload limits:"  << error << "-" << msg;
+            cb(VideoUploadLimits(error, msg));
+        });
+}
+
+void PostUtils::getVideoUploadLimits()
+{
+    getVideoUploadLimits(
+        [this, presence=getPresence()](const VideoUploadLimits& limits){
+            if (!presence)
+                return;
+
+            emit videoUploadLimits(limits);
+        });
+}
+
+void PostUtils::checkVideoUploadLimits(const QString& videoSource)
+{
+    getVideoUploadLimits(
+        [this, presence=getPresence(), videoSource](const VideoUploadLimits& limits){
+            if (!presence)
+                return;
+
+            if (limits.canUpload())
+                emit videoPicked(videoSource);
+            else
+                emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
+        });
+}
+
 void PostUtils::shareMedia(int fd, const QString& mimeType)
 {
     if (!mPickingPhoto)
@@ -1507,17 +1541,34 @@ void PostUtils::sharePhoto(int fd)
 void PostUtils::shareVideo(int fd)
 {
     qDebug() << "Share video fd:" << fd;
-    auto video = FileUtils::createTempFile(fd, "mp4");
 
-    if (!video)
-        return;
+    getVideoUploadLimits(
+        [this, presence=getPresence(), fd](const VideoUploadLimits& limits){
+            if (!presence)
+                return;
 
-    const QString tmpFilePath = video->fileName();
-    QUrl url = QUrl::fromLocalFile(tmpFilePath);
-    qDebug() << "Video url:" << url;
+            if (!limits.canUpload())
+            {
+                qDebug() << "Cannot upload video:" << limits.getError() << "-" << limits.getMessage();
+                emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
+                return;
+            }
 
-    TempFileHolder::instance().put(std::move(video));
-    emit videoPicked(url);
+            auto video = FileUtils::createTempFile(fd, "mp4");
+
+            if (!video)
+            {
+                emit videoPickedFailed(tr("Cannot create video file"));
+                return;
+            }
+
+            const QString tmpFilePath = video->fileName();
+            QUrl url = QUrl::fromLocalFile(tmpFilePath);
+            qDebug() << "Video url:" << url;
+
+            TempFileHolder::instance().put(std::move(video));
+            emit videoPicked(url);
+        });
 }
 
 void PostUtils::cancelPhotoPicking()

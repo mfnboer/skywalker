@@ -406,6 +406,7 @@ qt_add_qml_module(libskywalker
         QML_FILES FullVideoView.qml
         SOURCES temp_file_holder.h
         SOURCES temp_file_holder.cpp
+        SOURCES video_upload_limits.h
 )
 
 if (NOT ANDROID)
