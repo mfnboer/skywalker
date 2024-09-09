@@ -6,6 +6,7 @@ package com.gmail.mfnboer;
 import com.gmail.mfnboer.FileUtils;
 import com.gmail.mfnboer.NewMessageChecker;
 import com.gmail.mfnboer.NewMessageNotifier;
+import com.gmail.mfnboer.VideoTranscoder;
 
 import org.qtproject.qt.android.QtNative;
 import org.qtproject.qt.android.bindings.QtActivity;
@@ -229,5 +230,14 @@ public class SkywalkerActivity extends QtActivity {
             else
                 Log.w(LOGTAG, "Cannot get window insets controller");
         }
+    }
+
+    public void transcodeVideo(String inputFilePath, String outputFilePath, int height) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                VideoTranscoder.transcodeVideo(inputFilePath, outputFilePath, height);
+            }
+        });
     }
 }

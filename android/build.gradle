@@ -25,6 +25,9 @@ dependencies {
     implementation 'androidx.work:work-multiprocess:2.9.0'
     implementation 'androidx.annotation:annotation:1.7.1'
     implementation "androidx.core:core-splashscreen:1.0.0"
+    implementation "androidx.media3:media3-transformer:1.4.1" 
+    implementation "androidx.media3:media3-effect:1.4.1" 
+    implementation "androidx.media3:media3-common:1.4.1" 
 
     constraints {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {

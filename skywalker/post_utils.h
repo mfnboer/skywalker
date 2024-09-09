@@ -187,6 +187,7 @@ private:
     void shareMedia(int fd, const QString& mimeType);
     void sharePhoto(int fd);
     void shareVideo(int fd);
+    void shareTranscodedVideo(const QString& inputFileName, const QString& outputFileName);
     void cancelPhotoPicking();
     void getVideoUploadLimits(const std::function<void(const VideoUploadLimits&)>& cb);
 

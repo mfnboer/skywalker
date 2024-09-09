@@ -32,6 +32,28 @@ void _handlePhotoPickCanceled(JNIEnv*, jobject)
         instance->handlePhotoPickCanceled();
 }
 
+void _handleVideoTranscodingOk(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName)
+{
+    QString inputFileName = jsInputFileName ? env->GetStringUTFChars(jsInputFileName, nullptr) : QString();
+    QString outputFileName = jsOuputFileName ? env->GetStringUTFChars(jsOuputFileName, nullptr) : QString();
+    qDebug() << "Video transcoding ok:" << outputFileName << "from:" << inputFileName;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleVideoTranscodingOk(inputFileName, outputFileName);
+}
+
+void _handleVideoTranscodingFailed(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName)
+{
+    QString inputFileName = jsInputFileName ? env->GetStringUTFChars(jsInputFileName, nullptr) : QString();
+    QString outputFileName = jsOuputFileName ? env->GetStringUTFChars(jsOuputFileName, nullptr) : QString();
+    qDebug() << "Video transcoding failed:" << outputFileName << "from:" << inputFileName;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleVideoTranscodingFailed(inputFileName, outputFileName);
+}
+
 void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
 {
     QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
@@ -130,6 +152,12 @@ JNICallbackListener::JNICallbackListener() : QObject()
     };
     jni.registerNativeMethods("com/gmail/mfnboer/QPhotoPicker", photoPickerCallbacks, 2);
 
+    const JNINativeMethod videoTranscoderCallbacks[] = {
+        { "emitTranscodingOk", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingOk) },
+        { "emitTranscodingFailed", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingFailed) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/VideoTranscoder", videoTranscoderCallbacks, 2);
+
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
@@ -150,6 +178,16 @@ void JNICallbackListener::handlePhotoPicked(int fd, const QString mimeType)
 void JNICallbackListener::handlePhotoPickCanceled()
 {
     emit photoPickCanceled();
+}
+
+void JNICallbackListener::handleVideoTranscodingOk(QString inputFileName, QString outputFileName)
+{
+    emit videoTranscodingOk(inputFileName, outputFileName);
+}
+
+void JNICallbackListener::handleVideoTranscodingFailed(QString inputFileName, QString outputFileName)
+{
+    emit videoTranscodingFailed(inputFileName, outputFileName);
 }
 
 void JNICallbackListener::handleSharedTextReceived(const QString sharedText)

@@ -26,10 +26,23 @@ void TempFileHolder::put(std::unique_ptr<QTemporaryFile> tempFile)
     mFiles[tempFile->fileName()] = std::move(tempFile);
 }
 
+void TempFileHolder::put(const QString& fileName)
+{
+    qDebug() << "Add file name:" << fileName;
+    mFileNames.insert(fileName);
+}
+
 void TempFileHolder::remove(const QString& fileName)
 {
-    qDebug() << "Remove file:" << fileName;
+    qDebug() << "Remove temp file:" << fileName;
     mFiles.erase(fileName);
+
+    if (mFileNames.contains(fileName))
+    {
+        qDebug() << "Delete file:" << fileName;
+        QFile::remove(fileName);
+        mFileNames.erase(fileName);
+    }
 }
 
 }

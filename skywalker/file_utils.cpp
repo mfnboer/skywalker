@@ -160,6 +160,21 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
+std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension)
+{
+    const QString nameTemplate = QString("sw_temp_XXXXXX.%1").arg(fileExtension);
+    auto tmpFile = std::make_unique<QTemporaryFile>(nameTemplate);
+
+    if (!tmpFile->open())
+    {
+        const QString fileError = tmpFile->errorString();
+        qWarning() << "Failed to open tmp file:" << fileError;
+        return nullptr;
+    }
+
+    return tmpFile;
+}
+
 std::unique_ptr<QTemporaryFile> createTempFile(const QString& fileUri, const QString& fileExtension)
 {
     qDebug() << "Create temp file for:" << fileUri << "ext:" << fileExtension;
@@ -191,6 +206,8 @@ std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtens
 
 std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileExtension)
 {
+    qDebug() << "Create temp file, input size:" << file.size();
+
     if (!file.isOpen())
     {
         if (!file.open(QFile::ReadOnly))
@@ -201,15 +218,10 @@ std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileE
         }
     }
 
-    const QString nameTemplate = QString("sw_temp_XXXXXX.%1").arg(fileExtension);
-    auto tmpFile = std::make_unique<QTemporaryFile>(nameTemplate);
+    auto tmpFile = makeTempFile(fileExtension);
 
-    if (!tmpFile->open())
-    {
-        const QString fileError = tmpFile->errorString();
-        qWarning() << "Failed to open tmp file:" << fileError;
+    if (!tmpFile)
         return nullptr;
-    }
 
     if (tmpFile->write(file.readAll()) < 0)
     {
@@ -221,7 +233,7 @@ std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileE
     tmpFile->flush();
     tmpFile->close();
 
-    qDebug() << "Created temp file:" << tmpFile->fileName();
+    qDebug() << "Created temp file:" << tmpFile->fileName() << tmpFile->size();
     return tmpFile;
 }
 

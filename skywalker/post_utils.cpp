@@ -8,6 +8,7 @@
 #include "skywalker.h"
 #include "temp_file_holder.h"
 #include "unicode_fonts.h"
+#include "video_utils.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QImageReader>
 
@@ -20,10 +21,17 @@ PostUtils::PostUtils(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
-            this, [this](int fd, QString mimeType){ shareMedia(fd, mimeType);});
+        this, [this](int fd, QString mimeType){ shareMedia(fd, mimeType);});
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
-            this, [this]{ cancelPhotoPicking(); });
+        this, [this]{ cancelPhotoPicking(); });
+
+    connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
+        this, [this](QString inputFileName, QString outputFileName){
+            shareTranscodedVideo(inputFileName, outputFileName);
+        });
+
+    // TODO: videoTranscodingFailed
 
     connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
         if (!mSkywalker)
@@ -1514,12 +1522,26 @@ void PostUtils::shareMedia(int fd, const QString& mimeType)
 
     mPickingPhoto = false;
 
+    if (fd < 0)
+    {
+        qWarning() << "No file descriptor:" << fd;
+        emit photoPickFailed(tr("Failed to open media"));
+        return;
+    }
+
     if (mimeType.startsWith("image"))
+    {
         sharePhoto(fd);
+    }
     else if (mimeType.startsWith("video"))
+    {
         shareVideo(fd);
+    }
     else
+    {
         qWarning() << "Unsupported mime type:" << mimeType;
+        emit photoPickFailed(QString("Unsupported media type: %1").arg(mimeType));
+    }
 }
 
 void PostUtils::sharePhoto(int fd)
@@ -1542,33 +1564,47 @@ void PostUtils::shareVideo(int fd)
 {
     qDebug() << "Share video fd:" << fd;
 
+    auto video = FileUtils::createTempFile(fd, "mp4");
+
+    if (!video)
+    {
+        emit videoPickedFailed(tr("Cannot create video file"));
+        return;
+    }
+
+    const QString tmpFilePath = video->fileName();
+    TempFileHolder::instance().put(std::move(video));
+
     getVideoUploadLimits(
-        [this, presence=getPresence(), fd](const VideoUploadLimits& limits){
+        [presence=getPresence(), tmpFilePath](const VideoUploadLimits& limits){
             if (!presence)
                 return;
 
             if (!limits.canUpload())
             {
                 qDebug() << "Cannot upload video:" << limits.getError() << "-" << limits.getMessage();
-                emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
-                return;
+                // TODO: delete temp file
+                //emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
+                //return;
             }
 
-            auto video = FileUtils::createTempFile(fd, "mp4");
+            // TODO TEST
+            VideoUtils::transcodeVideo(tmpFilePath);
 
-            if (!video)
-            {
-                emit videoPickedFailed(tr("Cannot create video file"));
-                return;
-            }
-
-            const QString tmpFilePath = video->fileName();
-            QUrl url = QUrl::fromLocalFile(tmpFilePath);
-            qDebug() << "Video url:" << url;
-
-            TempFileHolder::instance().put(std::move(video));
-            emit videoPicked(url);
+            // QUrl url = QUrl::fromLocalFile(tmpFilePath);
+            // qDebug() << "Video url:" << url;
+            // emit videoPicked(url);
         });
+}
+
+void PostUtils::shareTranscodedVideo(const QString& inputFileName, const QString& outputFileName)
+{
+    qDebug() << "Share transcoded video:" << inputFileName << "-->" << outputFileName;
+    TempFileHolder::instance().remove(inputFileName);
+    TempFileHolder::instance().put(outputFileName);
+    QUrl url = QUrl::fromLocalFile(outputFileName);
+    qDebug() << "Video url:" << url;
+    emit videoPicked(url);
 }
 
 void PostUtils::cancelPhotoPicking()
