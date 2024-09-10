@@ -298,6 +298,9 @@ SkyPage {
                     property string language
                     property string video
                     property string videoAltText
+                    property int videoNewHeight
+                    property int videoStartMs
+                    property int videoEndMs
 
                     function copyToPostList() {
                         threadPosts.postList[index].text = text
@@ -322,6 +325,9 @@ SkyPage {
                         threadPosts.postList[index].language = language
                         threadPosts.postList[index].video = video
                         threadPosts.postList[index].videoAltText = videoAltText
+                        threadPosts.postList[index].videoNewHeight = videoNewHeight
+                        threadPosts.postList[index].videoStartMs = videoStartMs
+                        threadPosts.postList[index].videoEndMs = videoEndMs
                     }
 
                     function copyFromPostList() {
@@ -351,6 +357,9 @@ SkyPage {
                         language = threadPosts.postList[index].language
                         video = threadPosts.postList[index].video
                         videoAltText = threadPosts.postList[index].videoAltText
+                        videoNewHeight = threadPosts.postList[index].videoNewHeight
+                        videoStartMs = threadPosts.postList[index].videoStartMs
+                        videoEndMs = threadPosts.postList[index].videoEndMs
 
                         // Set text last as it will trigger link extractions which
                         // will check if a link card is already in place.
@@ -617,6 +626,7 @@ SkyPage {
                     VideoAttachment {
                         property alias video: postItem.video
                         property alias altText: postItem.videoAltText
+                        // TODO: video transcoding params
 
                         id: videoAttachement
                         x: page.margin
@@ -1440,20 +1450,33 @@ SkyPage {
     }
 
     VideoUtils {
+        property var callbackOk: (videoSource) => {}
+        property var callbackFailed: (error) => {}
+
         id: videoUtils
 
         onTranscodingOk: (inputFileName, outputFileName) => {
-            postUtils.dropVideo(inputFileName)
-            page.videoPicked("file://" + outputFileName)
-            currentPostItem().getPostText().forceActiveFocus()
-            busyIndicator.running = false
+            callbackOk("file://" + outputFileName)
+            // postUtils.dropVideo(inputFileName)
+            // page.videoPicked("file://" + outputFileName)
+            // currentPostItem().getPostText().forceActiveFocus()
+            // busyIndicator.running = false
         }
 
         onTranscodingFailed: (inputFileName, error) => {
-            postUtils.dropVideo(inputFileName)
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-            currentPostItem().getPostText().forceActiveFocus()
-            busyIndicator.running = false
+            callbackFailed(error)
+            // postUtils.dropVideo(inputFileName)
+            // statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            // currentPostItem().getPostText().forceActiveFocus()
+            // busyIndicator.running = false
+        }
+
+        function transcode(videoSource, newHeight, startMs, endMs, cbOk, cbFailed) {
+            callbackOk = cbOk
+            callbackFailed = cbFailed
+            const fileName = videoSource.slice(7)
+            transcodeVideo(fileName, newHeight, startMs, endMs, cbOk)
+            postProgress(qsTr("Transcoding video"))
         }
     }
 
@@ -1819,13 +1842,17 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid, labels, postItem.language)
         } else if (Boolean(postItem.video)) {
-            postUtils.postVideo(postText, postItem.video, postItem.videoAltText,
-                                parentUri, parentCid,
-                                rootUri, rootCid,
-                                qUri, qCid, labels, postItem.language);
+            // TODO: drop transcoded video file after posting
+            videoUtils.transcode(postItem.video, postItem.videoNewHeight,
+                                 postItem.videoStartMs, postItem.videoEndMs,
+                                 (transcodedVideo) => {
+                                     postUtils.postVideo(postText, transcodedVideo, postItem.videoAltText,
+                                     parentUri, parentCid,
+                                     rootUri, rootCid,
+                                     qUri, qCid, labels, postItem.language) },
+                                 (error) => postFailed(error))
         } else {
             const images = getImagesToSend(postItem)
-
             postUtils.post(postText, images, postItem.altTexts,
                            parentUri, parentCid,
                            rootUri, rootCid,
@@ -1907,6 +1934,7 @@ SkyPage {
             const qCidItem = threadItem.getQuoteCid()
             const labelsItem = threadItem.getContentLabels()
 
+            // TODO: transcoding params
             const draftItem = draftPosts.createDraft(threadItem.text,
                                      threadItem.images, threadItem.altTexts,
                                      threadItem.memeTopTexts, threadItem.memeBottomTexts,
@@ -1976,6 +2004,7 @@ SkyPage {
             {
                 postItem.video = draftData.video.playlistUrl
                 postItem.videoAltText = draftData.video.alt
+                // TODO: video transcoding params
             }
 
             if (j === 0) {
@@ -2159,10 +2188,17 @@ SkyPage {
         let component = Qt.createComponent("VideoEditor.qml")
         let videoPage = component.createObject(page, { videoSource: videoSource })
         videoPage.onVideoEdited.connect((newHeight, startMs, endMs) => {
+            const postItem = currentPostItem()
+
+            if (postItem) {
+                postItem.videoNewHeight = newHeight
+                postItem.videoStartMs = startMs
+                postItem.videoEndMs = endMs
+            }
+
+            page.videoPicked(videoSource)
             root.popStack()
-            busyIndicator.running = true
-            const videoUrl = `${videoSource}`
-            videoUtils.transcodeVideo(videoUrl.slice(7), newHeight, startMs, endMs)
+            currentPostItem().getPostText().forceActiveFocus()
         })
         videoPage.onCancel.connect(() => {
             root.popStack()

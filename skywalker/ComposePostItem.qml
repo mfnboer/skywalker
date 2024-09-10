@@ -20,6 +20,9 @@ Item {
     property string language: ""
     property string video: ""
     property string videoAltText: ""
+    property int videoNewHeight: -1
+    property int videoStartMs: -1
+    property int videoEndMs: -1
 
     // Content warnings
     property bool cwSuggestive: false
