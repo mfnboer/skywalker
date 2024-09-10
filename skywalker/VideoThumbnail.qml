@@ -5,6 +5,7 @@ import skywalker
 
 Video {
     property string videoSource
+    property bool showFilmIcon: true
 
     id: videoThumbnail
     fillMode: VideoOutput.PreserveAspectCrop
@@ -28,6 +29,7 @@ Video {
         outlineColor: "black"
         opacity: 0.6
         svg: svgFilled.film
+        visible: showFilmIcon
     }
 
     // Play video for 200ms to get a still frame showing

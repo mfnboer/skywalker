@@ -1508,10 +1508,14 @@ void PostUtils::checkVideoUploadLimits(const QString& videoSource)
             if (!presence)
                 return;
 
-            if (limits.canUpload())
-                emit videoPicked(videoSource);
-            else
-                emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
+            qDebug() << "Can upload:" << limits.canUpload() << limits.getError() << limits.getMessage();
+            emit videoPicked(videoSource);
+
+            // TODO
+            // if (limits.canUpload())
+            //     emit videoPicked(videoSource);
+            // else
+            //     emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
         });
 }
 
@@ -1576,24 +1580,22 @@ void PostUtils::shareVideo(int fd)
     TempFileHolder::instance().put(std::move(video));
 
     getVideoUploadLimits(
-        [presence=getPresence(), tmpFilePath](const VideoUploadLimits& limits){
+        [this, presence=getPresence(), tmpFilePath](const VideoUploadLimits& limits){
             if (!presence)
                 return;
 
             if (!limits.canUpload())
             {
                 qDebug() << "Cannot upload video:" << limits.getError() << "-" << limits.getMessage();
-                // TODO: delete temp file
-                //emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
-                //return;
+                // TODO
+                // TempFileHolder::instance().remove(tmpFilePath);
+                // emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
+                // return;
             }
 
-            // TODO TEST
-            VideoUtils::transcodeVideo(tmpFilePath);
-
-            // QUrl url = QUrl::fromLocalFile(tmpFilePath);
-            // qDebug() << "Video url:" << url;
-            // emit videoPicked(url);
+            QUrl url = QUrl::fromLocalFile(tmpFilePath);
+            qDebug() << "Video url:" << url;
+            emit videoPicked(url);
         });
 }
 

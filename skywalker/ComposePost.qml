@@ -1226,7 +1226,7 @@ SkyPage {
     ImageFileDialog {
         id: fileDialog
         onImageSelected: (fileUri) => photoPicked(fileUri)
-        onVideoSelected: (fileUri) => videoPicked(fileUri) // TODO postUtils.checkVideoUploadLimits(fileUri)
+        onVideoSelected: (fileUri) => postUtils.checkVideoUploadLimits(fileUri)
     }
 
     LinkCardReader {
@@ -1354,9 +1354,14 @@ SkyPage {
 
         onVideoPicked: (videoUrl) => {
             pickingImage = false
-            page.videoPicked(videoUrl)
-            currentPostItem().getPostText().forceActiveFocus()
+            editVideo(videoUrl)
         }
+
+        // onVideoPicked: (videoUrl) => {
+        //     pickingImage = false
+        //     page.videoPicked(videoUrl)
+        //     currentPostItem().getPostText().forceActiveFocus()
+        // }
 
         onVideoPickedFailed: (error) => {
             pickingImage = false
@@ -2130,6 +2135,21 @@ SkyPage {
             return false
 
         return hasImageContent() && (postItem.cwSuggestive || postItem.cwNudity || postItem.cwPorn || postItem.cwGore)
+    }
+
+    function editVideo(videoSource) {
+        let component = Qt.createComponent("VideoEditor.qml")
+        let videoPage = component.createObject(page, { videoSource: videoSource })
+        videoPage.onVideoEdited.connect((source) => {
+            root.popStack()
+            page.videoPicked(source)
+            currentPostItem().getPostText().forceActiveFocus()
+        })
+        videoPage.onCancel.connect(() => {
+            root.popStack()
+            currentPostItem().getPostText().forceActiveFocus()
+        })
+        root.pushStack(videoPage)
     }
 
     VirtualKeyboardPageResizer {

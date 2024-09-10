@@ -55,7 +55,7 @@ Column {
                 color: "transparent"
 
                 ThumbImageView {
-                    property double aspectRatio: (width > 0 && height > 0) ? width / height : 0
+                    property double aspectRatio: height > 0 ? width / height : 0
                     property double maxWidth: maxHeight * aspectRatio
 
                     id: thumbImg
