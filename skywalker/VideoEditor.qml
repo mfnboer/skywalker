@@ -6,17 +6,16 @@ import skywalker
 
 SkyPage {
     property string videoSource
+    readonly property int maxDurationMs: 60000
     readonly property int margin: 10
 
     id: page
     width: parent.width
     height: parent.height
-    // topPadding: margin
-    // bottomPadding: margin
     padding: margin
 
     signal cancel
-    signal videoEdited(string source)
+    signal videoEdited(int height, int startMs, int endMs)
 
     header: SimpleHeader {
         text: qsTr("Video editor")
@@ -29,11 +28,11 @@ SkyPage {
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.check
             accessibleName: qsTr("process video")
-            onClicked: videoEdited(videoSource)
+            onClicked: videoEdited(getNewHeight(), durationControl.first.value, durationControl.second.value)
         }
     }
 
-    VideoThumbnail {
+    Video {
         readonly property var videoResolution: metaData.value(MediaMetaData.Resolution)
         readonly property int videoWidth: videoResolution ? videoResolution.width : 0
         readonly property int videoHeight: videoResolution ? videoResolution.height : 0
@@ -42,14 +41,61 @@ SkyPage {
         readonly property int maxWidth: maxHeight * aspectRatio
 
         id: video
-        videoSource: page.videoSource
+        source: page.videoSource
         fillMode: VideoOutput.PreserveAspectFit
         width: maxWidth > 0 && parent.width > maxWidth ? maxWidth : parent.width
         height: width / aspectRatio
-        showFilmIcon: false
+
+        onPositionChanged: {
+            if (video.playbackState !== MediaPlayer.PlayingState)
+                return
+
+            if (position >= durationControl.second.value)
+                pause()
+        }
+
+        SvgButton {
+            x: (parent.width - width) / 2
+            y: (parent.height - height) / 2
+            width: 50
+            height: width
+            opacity: 0.5
+            accessibleName: video.playbackState !== MediaPlayer.PlayingState ? qsTr("play video") : qsTr("stop video")
+            svg: video.playbackState !== MediaPlayer.PlayingState ? svgFilled.play : svgFilled.stop
+            enabled: video.hasVideo
+
+            onClicked: {
+                if (video.playbackState !== MediaPlayer.PlayingState) {
+                    video.position = durationControl.first.value
+                    video.play()
+                }
+                else {
+                    video.pause()
+                }
+            }
+        }
+
+        Label {
+            anchors.right: parent.right
+            anchors.rightMargin: 5
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 5
+            padding: 5
+            color: "white"
+            font.pointSize: guiSettings.scaledFont(6/8)
+            text: guiSettings.videoDurationToString(durationControl.duration)
+
+            background: Rectangle {
+                radius: 3
+                color: "black"
+                opacity: 0.6
+            }
+        }
     }
 
     RangeSlider {
+        property int duration: second.value - first.value
+
         id: durationControl
         anchors.top: video.bottom
         anchors.topMargin: 5
@@ -59,10 +105,21 @@ SkyPage {
         stepSize: 1
         snapMode: RangeSlider.SnapOnRelease
         first.value: 0
-        second.value: to
+        second.value: Math.min(to, maxDurationMs)
 
-        first.onValueChanged: video.position = first.value
-        second.onValueChanged: video.position = second.value
+        first.onValueChanged: {
+            if (second.value - first.value > maxDurationMs)
+                second.value = first.value + maxDurationMs
+
+            video.position = first.value
+        }
+
+        second.onValueChanged: {
+            if (second.value - first.value > maxDurationMs)
+                first.value = second.value - maxDurationMs
+
+            video.position = second.value
+        }
 
         Text {
             x: durationControl.first.handle.x - 5
@@ -76,6 +133,17 @@ SkyPage {
             y: 0
             font.pointSize: guiSettings.scaledFont(6/8)
             text: guiSettings.videoDurationToString(durationControl.second.value)
+        }
+
+        Rectangle {
+            x: durationControl.leftPadding + video.position * (durationControl.availableWidth / video.duration) - width / 2
+            y: durationControl.topPadding + durationControl.availableHeight / 2 - height / 2
+
+            width: 10
+            height: width
+            radius: width / 2
+            color: guiSettings.buttonColor
+            visible: video.playbackState === MediaPlayer.PlayingState
         }
     }
 
@@ -102,20 +170,29 @@ SkyPage {
         }
 
         RowLayout {
+            id: resolutionChoice
             Layout.fillWidth: true
             spacing: -1
             visible: calcHdResolution() !== Qt.size(0, 0)
 
             SkyRadioButton {
+                id: hdRadioButton
                 Layout.fillWidth: true
                 text: `HD (${(sizeString(calcHdResolution()))})`
                 checked: true
             }
             SkyRadioButton {
+                id: sdRadioButton
                 Layout.fillWidth: true
                 text: `SD (${(sizeString(calcSdResolution()))})`
             }
         }
+    }
+
+    Timer {
+        id: pauseTimer
+        interval: 200
+        onTriggered: video.pause()
     }
 
     function calcHdResolution() {
@@ -123,7 +200,7 @@ SkyPage {
             const xScale = video.videoWidth / 1280
             const yScale = video.videoHeight / 720
             const scale = Math.max(xScale, yScale)
-            return Qt.size(video.videoWidth / scale, video.videoHeight / scale)
+            return Qt.size(Math.floor(video.videoWidth / scale), Math.floor(video.videoHeight / scale))
         }
 
         if (video.videoWidth > 640 || video.videoHeight > 360)
@@ -137,7 +214,7 @@ SkyPage {
             const xScale = video.videoWidth / 640
             const yScale = video.videoHeight / 360
             const scale = Math.max(xScale, yScale)
-            return Qt.size(video.videoWidth / scale, video.videoHeight / scale)
+            return Qt.size(Math.floor(video.videoWidth / scale), Math.floor(video.videoHeight / scale))
         }
 
         return Qt.size(video.videoWidth, video.videoHeight)
@@ -147,7 +224,22 @@ SkyPage {
         return `${sz.width} x ${sz.height}`
     }
 
+    function getNewHeight() {
+        if (!resolutionChoice.visible)
+            return video.videoHeight
+
+        if (hdRadioButton.checked)
+            return calcHdResolution().height
+
+        return calcSdResolution().height
+    }
+
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onCompleted: {
+        video.play()
+        pauseTimer.start()
     }
 }

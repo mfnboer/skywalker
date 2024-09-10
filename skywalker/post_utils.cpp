@@ -8,7 +8,6 @@
 #include "skywalker.h"
 #include "temp_file_holder.h"
 #include "unicode_fonts.h"
-#include "video_utils.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QImageReader>
 
@@ -25,13 +24,6 @@ PostUtils::PostUtils(QObject* parent) :
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
         this, [this]{ cancelPhotoPicking(); });
-
-    connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
-        this, [this](QString inputFileName, QString outputFileName){
-            shareTranscodedVideo(inputFileName, outputFileName);
-        });
-
-    // TODO: videoTranscodingFailed
 
     connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
         if (!mSkywalker)
@@ -181,7 +173,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
         });
 }
 
-void PostUtils::postVideo(const QString& text, const QString videoFileName, const QString videoAltText,
+void PostUtils::postVideo(const QString& text, const QString& videoFileName, const QString& videoAltText,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
@@ -1597,16 +1589,6 @@ void PostUtils::shareVideo(int fd)
             qDebug() << "Video url:" << url;
             emit videoPicked(url);
         });
-}
-
-void PostUtils::shareTranscodedVideo(const QString& inputFileName, const QString& outputFileName)
-{
-    qDebug() << "Share transcoded video:" << inputFileName << "-->" << outputFileName;
-    TempFileHolder::instance().remove(inputFileName);
-    TempFileHolder::instance().put(outputFileName);
-    QUrl url = QUrl::fromLocalFile(outputFileName);
-    qDebug() << "Video url:" << url;
-    emit videoPicked(url);
 }
 
 void PostUtils::cancelPhotoPicking()

@@ -1,23 +1,24 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "presence.h"
-#include "wrapped_skywalker.h"
+#include <QObject>
+#include <QtQmlIntegration>
 
 namespace Skywalker {
 
-class VideoUtils : public WrappedSkywalker, public Presence
+class VideoUtils : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
 
 public:
     explicit VideoUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE static void transcodeVideo(const QString inputFileName);
+    Q_INVOKABLE void transcodeVideo(const QString inputFileName, int height, int startMs, int endMs);
 
 signals:
     void transcodingOk(QString inputFileName, QString outputFileName);
-    void transcodingFailed(QString inputFileName, QString outputFileName, QString error);
+    void transcodingFailed(QString inputFileName, QString error);
 };
 
 }

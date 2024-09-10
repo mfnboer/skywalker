@@ -1439,6 +1439,24 @@ SkyPage {
             }
     }
 
+    VideoUtils {
+        id: videoUtils
+
+        onTranscodingOk: (inputFileName, outputFileName) => {
+            postUtils.dropVideo(inputFileName)
+            page.videoPicked("file://" + outputFileName)
+            currentPostItem().getPostText().forceActiveFocus()
+            busyIndicator.running = false
+        }
+
+        onTranscodingFailed: (inputFileName, error) => {
+            postUtils.dropVideo(inputFileName)
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            currentPostItem().getPostText().forceActiveFocus()
+            busyIndicator.running = false
+        }
+    }
+
     DraftPosts {
         id: draftPosts
         skywalker: page.skywalker
@@ -1568,9 +1586,9 @@ SkyPage {
         busyIndicator.running = true
 
         if (sendingThreadPost < 0)
-            statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
+            statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO, 300)
         else
-            statusPopup.show(qsTr(`Post ${(sendingThreadPost + 1)}: ${msg}`), QEnums.STATUS_LEVEL_INFO)
+            statusPopup.show(qsTr(`Post ${(sendingThreadPost + 1)}: ${msg}`), QEnums.STATUS_LEVEL_INFO, 300)
     }
 
     function checkAltText() {
@@ -2140,10 +2158,11 @@ SkyPage {
     function editVideo(videoSource) {
         let component = Qt.createComponent("VideoEditor.qml")
         let videoPage = component.createObject(page, { videoSource: videoSource })
-        videoPage.onVideoEdited.connect((source) => {
+        videoPage.onVideoEdited.connect((newHeight, startMs, endMs) => {
             root.popStack()
-            page.videoPicked(source)
-            currentPostItem().getPostText().forceActiveFocus()
+            busyIndicator.running = true
+            const videoUrl = `${videoSource}`
+            videoUtils.transcodeVideo(videoUrl.slice(7), newHeight, startMs, endMs)
         })
         videoPage.onCancel.connect(() => {
             root.popStack()

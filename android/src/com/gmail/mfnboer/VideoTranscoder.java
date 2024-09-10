@@ -26,7 +26,7 @@ public class VideoTranscoder {
     public static native void emitTranscodingOk(String inputFilePath, String outputFilePath);
     public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath, String error);
 
-    public static void transcodeVideo(String inputFilePath, String outputFilePath, int height) {
+    public static void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs) {
         Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height);
 
         Context context = QtNative.getContext();
@@ -38,7 +38,16 @@ public class VideoTranscoder {
 
         Uri inputUri = Uri.fromFile(new File(inputFilePath));
 
-        EditedMediaItem editedMediaItem = new EditedMediaItem.Builder(MediaItem.fromUri(inputUri))
+        MediaItem mediaItem = new MediaItem.Builder()
+                .setUri(inputUri)
+                .setClippingConfiguration(
+                    new MediaItem.ClippingConfiguration.Builder()
+                        .setStartPositionMs(startMs)
+                        .setEndPositionMs(endMs)
+                        .build())
+                .build();
+
+        EditedMediaItem editedMediaItem = new EditedMediaItem.Builder(mediaItem)
                 .setEffects(new Effects(ImmutableList.of(), ImmutableList.of(Presentation.createForHeight(height))))
                 .build();
 

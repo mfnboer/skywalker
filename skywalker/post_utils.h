@@ -47,7 +47,7 @@ public:
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
                           const QStringList& labels, const QString& language);
-    Q_INVOKABLE void postVideo(const QString& text, const QString videoFileName, const QString videoAltText,
+    Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName, const QString& videoAltText,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
@@ -187,7 +187,6 @@ private:
     void shareMedia(int fd, const QString& mimeType);
     void sharePhoto(int fd);
     void shareVideo(int fd);
-    void shareTranscodedVideo(const QString& inputFileName, const QString& outputFileName);
     void cancelPhotoPicking();
     void getVideoUploadLimits(const std::function<void(const VideoUploadLimits&)>& cb);
 

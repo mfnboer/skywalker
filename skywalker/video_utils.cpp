@@ -3,28 +3,36 @@
 #include "video_utils.h"
 #include "file_utils.h"
 #include "jni_callback.h"
+#include "temp_file_holder.h"
 
 namespace Skywalker {
 
 VideoUtils::VideoUtils(QObject* parent) :
-    WrappedSkywalker(parent),
-    Presence()
+    QObject(parent)
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
             this, [this](QString inputFileName, QString outputFileName){
+                TempFileHolder::instance().put(outputFileName);
                 emit transcodingOk(inputFileName, outputFileName);
             });
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingFailed,
             this, [this](QString inputFileName, QString outputFileName, QString error){
-                emit transcodingFailed(inputFileName, outputFileName, error);
+                QFile::remove(outputFileName);
+                emit transcodingFailed(inputFileName, error);
             });
 }
 
-void VideoUtils::transcodeVideo(const QString inputFileName)
+void VideoUtils::transcodeVideo(const QString inputFileName, int height, int startMs, int endMs)
 {
+    QFileInfo fileInfo(inputFileName);
+    const QString ext = fileInfo.suffix();
+    auto outputFile = FileUtils::makeTempFile(ext);
+    const QString outputFileName = outputFile->fileName();
+    outputFile = nullptr;
+
 #if defined(Q_OS_ANDROID)
     if (!QNativeInterface::QAndroidApplication::isActivityContext())
     {
@@ -33,25 +41,26 @@ void VideoUtils::transcodeVideo(const QString inputFileName)
     }
 
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    QFileInfo fileInfo(inputFileName);
-    const QString ext = fileInfo.suffix();
-    auto outputFile = FileUtils::makeTempFile(ext);
-    const QString outputFileName = outputFile->fileName();
-    outputFile = nullptr;
-
     QJniObject jsInputFileName = QJniObject::fromString(inputFileName);
     QJniObject jsOutputFileName = QJniObject::fromString(outputFileName);
-    jint jHeight = 720;
+    jint jiHeight = height;
+    jint jiStartMs = startMs;
+    jint jiEndMs = endMs;
 
     activity.callMethod<void>(
         "transcodeVideo",
-        "(Ljava/lang/String;Ljava/lang/String;I)V",
+        "(Ljava/lang/String;Ljava/lang/String;III)V",
         jsInputFileName.object<jstring>(),
         jsOutputFileName.object<jstring>(),
-        jHeight);
+        jiHeight, jiStartMs, jiEndMs);
 #else
-    // TODO
-    Q_UNUSED(inputFileName)
+    Q_UNUSED(height)
+    Q_UNUSED(startMs)
+    Q_UNUSED(endMs)
+    qDebug() << "Transcoding not supported";
+    QFile::copy(inputFileName, outputFileName);
+    TempFileHolder::instance().put(outputFileName);
+    emit transcodingOk(inputFileName, outputFileName);
 #endif
 }
 
