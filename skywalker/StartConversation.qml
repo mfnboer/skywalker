@@ -12,7 +12,6 @@ SkyPage {
 
     id: page
     clip: true
-    Material.background: guiSettings.backgroundColor
 
     header: SimpleHeader {
         text: qsTr("Start conversation")

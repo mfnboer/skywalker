@@ -11,7 +11,6 @@ SkyPage {
     signal canceled
 
     id: page
-    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 

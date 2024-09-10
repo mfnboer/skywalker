@@ -13,7 +13,6 @@ SkyPage {
     signal closed
 
     id: page
-    Material.background: guiSettings.backgroundColor
 
     header: SimpleHeader {
         text: qsTr("Starter pack")

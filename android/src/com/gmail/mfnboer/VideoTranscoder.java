@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 public class VideoTranscoder {
     private static final String LOGTAG = "VideoTranscoder";
     public static native void emitTranscodingOk(String inputFilePath, String outputFilePath);
-    public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath);
+    public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath, String error);
 
     public static void transcodeVideo(String inputFilePath, String outputFilePath, int height) {
         Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height);
@@ -53,8 +53,9 @@ public class VideoTranscoder {
 
                     @Override
                     public void onError(Composition composition, ExportResult result, ExportException exception) {
-                        Log.w(LOGTAG, "Transcoding failed: " + exception.getErrorCodeName());
-                        emitTranscodingFailed(inputFilePath, outputFilePath);
+                        String error = exception.getErrorCodeName();
+                        Log.w(LOGTAG, "Transcoding failed: " + error);
+                        emitTranscodingFailed(inputFilePath, outputFilePath, error);
                     }
                 })
                 .build();

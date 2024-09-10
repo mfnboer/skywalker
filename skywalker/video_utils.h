@@ -14,6 +14,10 @@ public:
     explicit VideoUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE static void transcodeVideo(const QString inputFileName);
+
+signals:
+    void transcodingOk(QString inputFileName, QString outputFileName);
+    void transcodingFailed(QString inputFileName, QString outputFileName, QString error);
 };
 
 }

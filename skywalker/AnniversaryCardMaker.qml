@@ -12,7 +12,6 @@ SkyPage {
     id: page
     width: parent.width
     height: parent.height
-    Material.background: guiSettings.backgroundColor
 
     header: SimpleHeader {
         backIsCancel: true

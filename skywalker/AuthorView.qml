@@ -42,7 +42,6 @@ SkyPage {
     signal closed
 
     id: page
-    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)

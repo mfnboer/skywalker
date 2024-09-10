@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "video_utils.h"
 #include "file_utils.h"
+#include "jni_callback.h"
 
 namespace Skywalker {
 
@@ -9,6 +10,17 @@ VideoUtils::VideoUtils(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
 {
+    auto& jniCallbackListener = JNICallbackListener::getInstance();
+
+    connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
+            this, [this](QString inputFileName, QString outputFileName){
+                emit transcodingOk(inputFileName, outputFileName);
+            });
+
+    connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingFailed,
+            this, [this](QString inputFileName, QString outputFileName, QString error){
+                emit transcodingFailed(inputFileName, outputFileName, error);
+            });
 }
 
 void VideoUtils::transcodeVideo(const QString inputFileName)
@@ -39,7 +51,7 @@ void VideoUtils::transcodeVideo(const QString inputFileName)
         jHeight);
 #else
     // TODO
-    return true;
+    Q_UNUSED(inputFileName)
 #endif
 }
 

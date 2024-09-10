@@ -18,7 +18,6 @@ SkyPage {
     id: editListPage
     width: parent.width
     clip: true
-    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 

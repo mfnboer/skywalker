@@ -8,7 +8,6 @@ SkyPage {
     required property int modelId
 
     id: page
-    Material.background: guiSettings.backgroundColor
 
     signal closed
 

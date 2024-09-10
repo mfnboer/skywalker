@@ -18,7 +18,6 @@ SkyPage {
 
     id: loginPage
     width: parent.width
-    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 

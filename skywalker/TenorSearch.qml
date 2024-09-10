@@ -9,7 +9,6 @@ SkyPage {
 
     id: page
     clip: true
-    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 

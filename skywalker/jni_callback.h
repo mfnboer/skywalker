@@ -15,14 +15,14 @@ public:
     // the handling is started.
     static void handlePendingIntent();
 
-    void handlePhotoPicked(int fd, const QString mimeType);
+    void handlePhotoPicked(int fd, const QString& mimeType);
     void handlePhotoPickCanceled();
-    void handleVideoTranscodingOk(QString inputFileName, QString outputFileName);
-    void handleVideoTranscodingFailed(QString inputFileName, QString outputFileName);
-    void handleSharedTextReceived(const QString sharedText);
-    void handleSharedImageReceived(const QString contentUri, const QString text);
-    void handleSharedVideoReceived(const QString contentUri, const QString text);
-    void handleSharedDmTextReceived(const QString sharedText);
+    void handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName);
+    void handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error);
+    void handleSharedTextReceived(const QString& sharedText);
+    void handleSharedImageReceived(const QString& contentUri, const QString& text);
+    void handleSharedVideoReceived(const QString& contentUri, const QString& text);
+    void handleSharedDmTextReceived(const QString& sharedText);
     void handleShowNotifications();
     void handleShowDirectMessages();
 
@@ -30,11 +30,11 @@ signals:
     void photoPicked(int fd, QString mimeType);
     void photoPickCanceled();
     void videoTranscodingOk(QString inputFileName, QString outputFileName);
-    void videoTranscodingFailed(QString inputFileName, QString outputFileName);
-    void sharedTextReceived(const QString sharedText);
-    void sharedImageReceived(const QString contentUri, const QString text);
-    void sharedVideoReceived(const QString contentUri, const QString text);
-    void sharedDmTextReceived(const QString sharedText);
+    void videoTranscodingFailed(QString inputFileName, QString outputFileName, QString error);
+    void sharedTextReceived(QString sharedText);
+    void sharedImageReceived(QString contentUri, QString text);
+    void sharedVideoReceived(QString contentUri, QString text);
+    void sharedDmTextReceived(QString sharedText);
     void showNotifications();
     void showDirectMessages();
 

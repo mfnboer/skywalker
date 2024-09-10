@@ -27,7 +27,6 @@ SkyPage {
     signal closed
 
     id: page
-    Material.background: guiSettings.backgroundColor
 
     header: MessagesListHeader {
         convo: page.convo

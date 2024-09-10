@@ -9,7 +9,6 @@ SkyPage {
 
     id: page
     padding: 10
-    //Material.background: guiSettings.backgroundColor
 
     signal closed()
 

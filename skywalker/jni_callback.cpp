@@ -43,15 +43,16 @@ void _handleVideoTranscodingOk(JNIEnv* env, jobject, jstring jsInputFileName, js
         instance->handleVideoTranscodingOk(inputFileName, outputFileName);
 }
 
-void _handleVideoTranscodingFailed(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName)
+void _handleVideoTranscodingFailed(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName, jstring jsError)
 {
     QString inputFileName = jsInputFileName ? env->GetStringUTFChars(jsInputFileName, nullptr) : QString();
     QString outputFileName = jsOuputFileName ? env->GetStringUTFChars(jsOuputFileName, nullptr) : QString();
+    QString error = jsError ? env->GetStringUTFChars(jsError, nullptr) : QString();
     qDebug() << "Video transcoding failed:" << outputFileName << "from:" << inputFileName;
     auto& instance = *gTheInstance;
 
     if (instance)
-        instance->handleVideoTranscodingFailed(inputFileName, outputFileName);
+        instance->handleVideoTranscodingFailed(inputFileName, outputFileName, error);
 }
 
 void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
@@ -154,7 +155,7 @@ JNICallbackListener::JNICallbackListener() : QObject()
 
     const JNINativeMethod videoTranscoderCallbacks[] = {
         { "emitTranscodingOk", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingOk) },
-        { "emitTranscodingFailed", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingFailed) }
+        { "emitTranscodingFailed", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingFailed) }
     };
     jni.registerNativeMethods("com/gmail/mfnboer/VideoTranscoder", videoTranscoderCallbacks, 2);
 
@@ -170,7 +171,7 @@ JNICallbackListener::JNICallbackListener() : QObject()
 #endif
 }
 
-void JNICallbackListener::handlePhotoPicked(int fd, const QString mimeType)
+void JNICallbackListener::handlePhotoPicked(int fd, const QString& mimeType)
 {
     emit photoPicked(fd, mimeType);
 }
@@ -180,32 +181,32 @@ void JNICallbackListener::handlePhotoPickCanceled()
     emit photoPickCanceled();
 }
 
-void JNICallbackListener::handleVideoTranscodingOk(QString inputFileName, QString outputFileName)
+void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName)
 {
     emit videoTranscodingOk(inputFileName, outputFileName);
 }
 
-void JNICallbackListener::handleVideoTranscodingFailed(QString inputFileName, QString outputFileName)
+void JNICallbackListener::handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
-    emit videoTranscodingFailed(inputFileName, outputFileName);
+    emit videoTranscodingFailed(inputFileName, outputFileName, error);
 }
 
-void JNICallbackListener::handleSharedTextReceived(const QString sharedText)
+void JNICallbackListener::handleSharedTextReceived(const QString& sharedText)
 {
     emit sharedTextReceived(sharedText);
 }
 
-void JNICallbackListener::handleSharedImageReceived(const QString contentUri, const QString text)
+void JNICallbackListener::handleSharedImageReceived(const QString& contentUri, const QString& text)
 {
     emit sharedImageReceived(contentUri, text);
 }
 
-void JNICallbackListener::handleSharedVideoReceived(const QString contentUri, const QString text)
+void JNICallbackListener::handleSharedVideoReceived(const QString& contentUri, const QString& text)
 {
     emit sharedVideoReceived(contentUri, text);
 }
 
-void JNICallbackListener::handleSharedDmTextReceived(const QString sharedText)
+void JNICallbackListener::handleSharedDmTextReceived(const QString& sharedText)
 {
     emit sharedDmTextReceived(sharedText);
 }

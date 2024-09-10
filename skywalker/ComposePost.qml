@@ -83,7 +83,6 @@ SkyPage {
     contentHeight: flick.height
     topPadding: 0
     bottomPadding: 10
-    Material.background: guiSettings.backgroundColor
 
     header: Rectangle {
         width: parent.width
@@ -1227,7 +1226,7 @@ SkyPage {
     ImageFileDialog {
         id: fileDialog
         onImageSelected: (fileUri) => photoPicked(fileUri)
-        onVideoSelected: (fileUri) => postUtils.checkVideoUploadLimits(fileUri)
+        onVideoSelected: (fileUri) => videoPicked(fileUri) // TODO postUtils.checkVideoUploadLimits(fileUri)
     }
 
     LinkCardReader {

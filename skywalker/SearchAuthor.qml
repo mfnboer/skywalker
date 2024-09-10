@@ -11,7 +11,6 @@ SkyPage {
     signal authorClicked(basicprofile profile)
 
     id: page
-    Material.background: guiSettings.backgroundColor
 
     header: SearchHeader {
         placeHolderText: qsTr("Search user")

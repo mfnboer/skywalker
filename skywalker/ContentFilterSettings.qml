@@ -14,7 +14,6 @@ SkyPage {
 
     id: page
     padding: 10
-    Material.background: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 

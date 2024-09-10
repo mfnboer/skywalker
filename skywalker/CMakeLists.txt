@@ -409,6 +409,7 @@ qt_add_qml_module(libskywalker
         SOURCES video_upload_limits.h
         SOURCES video_utils.h
         SOURCES video_utils.cpp
+        QML_FILES VideoEditor.qml
 )
 
 if (NOT ANDROID)
