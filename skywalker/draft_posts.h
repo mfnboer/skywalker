@@ -42,6 +42,7 @@ public:
                                            const QStringList& imageFileNames, const QStringList& altTexts,
                                            const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
                                            const QString& videoFileName, const QString& videoAltText,
+                                           int videoStartMs, int videoEndMs, int videoNewHeight,
                                            const QString& replyToUri, const QString& replyToCid,
                                            const QString& replyRootUri, const QString& replyRootCid,
                                            const BasicProfile& replyToAuthor, const QString& replyToText,
@@ -138,7 +139,8 @@ private:
     std::tuple<ATProto::Blob::SharedPtr, QSize> saveImage(const QString& imgName,
                                        const QString& memeTopText, const QString& memeBottomText,
                                        const QString& draftsPath, const QString& baseName, int seq);
-    ATProto::Blob::SharedPtr saveVideo(const QString& videoName, const QString& draftsPath, const QString& baseName);
+    ATProto::Blob::SharedPtr saveVideo(const QString& videoName, int videoStartMs, int videoEndMs,
+                                       int videoNewHeight, const QString& draftsPath, const QString& baseName);
     void dropImages(const QString& draftsPath, const QString& baseName, int count) const;
     void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;
     void dropVideo(const QString& draftsPath, const QString& baseName);

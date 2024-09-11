@@ -489,6 +489,29 @@ VideoView::Ptr Post::getVideoView() const
     return std::make_unique<VideoView>(video);
 }
 
+VideoView::Ptr Post::getDraftVideoView() const
+{
+    auto videoView = getVideoView();
+
+    if (!videoView)
+        return {};
+
+    const auto& atProtoView = videoView->getATProtoView();
+
+    if (!atProtoView)
+        return {};
+
+    const ATProto::XJsonObject xjson(atProtoView->mJson);
+    const int startMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_START_MS_FIELD, 0);
+    const int endMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_END_MS_FIELD, 0);
+    const int newHeight = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, 0);
+    videoView->setStartMs(startMs);
+    videoView->setEndMs(endMs);
+    videoView->setNewHeight(newHeight);
+
+    return videoView;
+}
+
 ExternalView::Ptr Post::getExternalView() const
 {
     if (!mPost)

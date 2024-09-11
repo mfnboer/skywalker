@@ -169,8 +169,4 @@ Rectangle {
     function selectDraft() {
         selected()
     }
-
-    Component.onCompleted: {
-        console.debug("VIDEO:", postVideo.playlistUrl)
-    }
 }

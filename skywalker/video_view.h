@@ -17,6 +17,9 @@ class VideoView
     Q_PROPERTY(int width READ getWidth FINAL)
     Q_PROPERTY(int height READ getHeight FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
+    Q_PROPERTY(int startMs READ getStartMs FINAL)
+    Q_PROPERTY(int endMs READ getEndMs FINAL)
+    Q_PROPERTY(int newHeight READ getNewHeight FINAL)
     QML_VALUE_TYPE(videoview)
 
 public:
@@ -24,7 +27,8 @@ public:
 
     VideoView() = default;
     VideoView(const ATProto::AppBskyEmbed::VideoView::SharedPtr& videoView) : mVideoView(videoView) {}
-    VideoView(const QString& playListUrl, const QString& alt) : mPlayListUrl(playListUrl), mAlt(alt) {}
+    VideoView(const QString& playListUrl, const QString& alt, int startMs, int endMs, int newHeight) :
+        mPlayListUrl(playListUrl), mAlt(alt), mStartMs(startMs), mEndMs(endMs), mNewHeight(newHeight) {}
 
     Q_INVOKABLE bool isNull() const { return getPlaylistUrl().isEmpty(); }
     QString getThumbUrl() const { return mVideoView && mVideoView->mThumbnail ? *mVideoView->mThumbnail : ""; }
@@ -34,11 +38,24 @@ public:
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
     QString getAlt() const { return mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : mAlt; }
     ImageView getImageView() const { return ImageView(getThumbUrl(), getAlt()); }
+    int getStartMs() const { return mStartMs; }
+    void setStartMs(int startMs) { mStartMs = startMs; }
+    int getEndMs() const { return mEndMs; }
+    void setEndMs(int endMs) { mEndMs = endMs; }
+    int getNewHeight() const { return mNewHeight; }
+    void setNewHeight(int newHeight) { mNewHeight = newHeight; }
+
+    const ATProto::AppBskyEmbed::VideoView::SharedPtr& getATProtoView() const { return mVideoView; }
 
 private:
     ATProto::AppBskyEmbed::VideoView::SharedPtr mVideoView;
     QString mPlayListUrl;
     QString mAlt;
+
+    // Only for draft posts
+    int mStartMs = 0;
+    int mEndMs = 0;
+    int mNewHeight = 0;
 };
 
 }

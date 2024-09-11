@@ -71,6 +71,7 @@ public:
     QList<ImageView> getImages() const;
     QList<ImageView> getDraftImages() const;
     VideoView::Ptr getVideoView() const;
+    VideoView::Ptr getDraftVideoView() const;
     ExternalView::Ptr getExternalView() const;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;

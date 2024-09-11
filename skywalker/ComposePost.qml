@@ -1937,6 +1937,7 @@ SkyPage {
                                  postItem.images, postItem.altTexts,
                                  postItem.memeTopTexts, postItem.memeBottomTexts,
                                  postItem.video, postItem.videoAltText,
+                                 postItem.videoStartMs, postItem.videoEndMs, postItem.videoNewHeight,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
@@ -1956,11 +1957,11 @@ SkyPage {
             const qCidItem = threadItem.getQuoteCid()
             const labelsItem = threadItem.getContentLabels()
 
-            // TODO: transcoding params
             const draftItem = draftPosts.createDraft(threadItem.text,
                                      threadItem.images, threadItem.altTexts,
                                      threadItem.memeTopTexts, threadItem.memeBottomTexts,
                                      threadItem.video, threadItem.videoAltText,
+                                     threadItem.videoStartMs, threadItem.videoEndMs, threadItem.videoNewHeight,
                                      "", "",
                                      "", "",
                                      nullAuthor, "",
@@ -2026,7 +2027,9 @@ SkyPage {
             {
                 postItem.video = draftData.video.playlistUrl
                 postItem.videoAltText = draftData.video.alt
-                // TODO: video transcoding params
+                postItem.videoStartMs = draftData.video.startMs
+                postItem.videoEndMs = draftData.video.endMs
+                postItem.videoNewHeight = draftData.video.newHeight
             }
 
             if (j === 0) {
