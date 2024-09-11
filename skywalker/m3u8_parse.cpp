@@ -45,10 +45,19 @@ M3U8StreamType M3U8Parser::parse(const QByteArray& data)
         else
         {
             qDebug() << "Video stream:" << line;
+
+            if (!mStreamVideo.isEmpty())
+            {
+                qDebug() << "Multiple parts";
+                return M3U8StreamType::VIDEO_MULTIPART;
+            }
+
             mStreamVideo = line;
-            return M3U8StreamType::VIDEO;
         }
     }
+
+    if (!mStreamVideo.isEmpty())
+        return M3U8StreamType::VIDEO;
 
     return M3U8StreamType::PLAYLIST;
 }

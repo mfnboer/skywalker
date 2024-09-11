@@ -66,6 +66,13 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
 
     const auto streamType = parser.parse(data);
 
+    if (streamType == M3U8StreamType::VIDEO_MULTIPART)
+    {
+        qDebug() << "Video consists of multiple parts";
+        emit getVideoStreamFailed();
+        return;
+    }
+
     if (streamType == M3U8StreamType::VIDEO)
     {
         if (parser.getStreamVideo().isEmpty())

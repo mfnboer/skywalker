@@ -126,6 +126,8 @@ Column {
             MediaPlayer {
                 property bool videoFound: false
                 property bool restarting: false
+                property bool positionKicked: false
+                property bool mustKickPosition: false
 
                 id: videoPlayer
                 source: videoSource
@@ -138,8 +140,31 @@ Column {
                 }
 
                 onPlayingChanged: {
-                    if (videoPlayer.playing)
+                    if (videoPlayer.playing) {
                         restartTimer.set(false)
+                    }
+                }
+
+                onPositionChanged: {
+                    if (!mustKickPosition || positionKicked)
+                        return
+
+                    // HORRIBLE HACK
+                    // Qt fails to play the first part properly. Resetting the position
+                    // like this makes it somewhat better
+                    if (position > 1450) {
+                        position = 1400
+                        positionKicked = true
+                        console.debug("POSITION KICKED")
+                    }
+                }
+
+                onPlaybackStateChanged: {
+                    if (playbackState === MediaPlayer.StoppedState)
+                    {
+                        source = ""
+                        source = videoSource
+                    }
                 }
 
                 onErrorOccurred: (error, errorString) => { console.debug("Video error:", source, error, errorString) }
@@ -152,12 +177,15 @@ Column {
                 }
 
                 function start() {
+                    positionKicked = false
                     restartTimer.set(true)
                     play()
                 }
 
                 function restart() {
                     stopPlaying()
+                    source = ""
+                    source = videoSource
                     start()
                 }
 
@@ -367,7 +395,11 @@ Column {
         id: m3u8Reader
 
         onGetVideoStreamOk: (videoStream) => videoSource = videoStream
-        onGetVideoStreamFailed: videoSource = videoView.playlistUrl
+
+        onGetVideoStreamFailed: {
+            videoSource = videoView.playlistUrl
+            videoPlayer.mustKickPosition = true
+        }
     }
 
     GuiSettings {

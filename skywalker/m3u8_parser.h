@@ -8,7 +8,8 @@ namespace Skywalker {
 enum class M3U8StreamType
 {
     PLAYLIST,
-    VIDEO
+    VIDEO,
+    VIDEO_MULTIPART
 };
 
 struct M3U8Stream

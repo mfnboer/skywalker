@@ -683,11 +683,11 @@ void PostUtils::continuePostVideo(const QString& videoFileName, const QString& v
     }
 
     bskyClient()->uploadVideo(file.get(),
-        [this, presence=getPresence(), videoAltText, post, file](ATProto::AppBskyVideo::JobStatusOutput::SharedPtr output){
+        [this, presence=getPresence(), videoAltText, post, file](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
             if (!presence)
                 return;
 
-            postMaster()->addVideoToPost(post, *output->mJobStatus, videoAltText,
+            postMaster()->addVideoToPost(post, *output, videoAltText,
                 [this, presence, post]{
                     if (presence)
                        continuePost(post);
