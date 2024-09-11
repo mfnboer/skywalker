@@ -1493,21 +1493,20 @@ void PostUtils::getVideoUploadLimits()
         });
 }
 
-void PostUtils::checkVideoUploadLimits(const QString& videoSource)
+void PostUtils::checkVideoUploadLimits()
 {
     getVideoUploadLimits(
-        [this, presence=getPresence(), videoSource](const VideoUploadLimits& limits){
+        [this, presence=getPresence()](const VideoUploadLimits& limits){
             if (!presence)
                 return;
 
             qDebug() << "Can upload:" << limits.canUpload() << limits.getError() << limits.getMessage();
-            emit videoPicked(videoSource);
 
-            // TODO
-            // if (limits.canUpload())
-            //     emit videoPicked(videoSource);
-            // else
-            //     emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
+
+            if (limits.canUpload())
+                emit checkVideoLimitsOk(limits);
+            else
+                emit checkVideoLimitsFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
         });
 }
 
@@ -1570,25 +1569,9 @@ void PostUtils::shareVideo(int fd)
 
     const QString tmpFilePath = video->fileName();
     TempFileHolder::instance().put(std::move(video));
-
-    getVideoUploadLimits(
-        [this, presence=getPresence(), tmpFilePath](const VideoUploadLimits& limits){
-            if (!presence)
-                return;
-
-            if (!limits.canUpload())
-            {
-                qDebug() << "Cannot upload video:" << limits.getError() << "-" << limits.getMessage();
-                // TODO
-                // TempFileHolder::instance().remove(tmpFilePath);
-                // emit videoPickedFailed(!limits.getMessage().isEmpty() ? limits.getMessage() : limits.getError());
-                // return;
-            }
-
-            QUrl url = QUrl::fromLocalFile(tmpFilePath);
-            qDebug() << "Video url:" << url;
-            emit videoPicked(url);
-        });
+    QUrl url = QUrl::fromLocalFile(tmpFilePath);
+    qDebug() << "Video url:" << url;
+    emit videoPicked(url);
 }
 
 void PostUtils::cancelPhotoPicking()

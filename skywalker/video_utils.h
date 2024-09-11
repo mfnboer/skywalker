@@ -19,6 +19,10 @@ public:
 signals:
     void transcodingOk(QString inputFileName, QString outputFileName);
     void transcodingFailed(QString inputFileName, QString error);
+
+private:
+    void handleTranscodingOk(const QString& inputFileName, const QString& outputFileName);
+    void handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error);
 };
 
 }

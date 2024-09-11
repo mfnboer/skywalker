@@ -4,6 +4,9 @@ import skywalker
 
 VideoThumbnail {
     property bool requireAltText: false
+    required property int videoEndMs
+
+    signal edit
 
     id: videoAttachement
 
@@ -32,6 +35,25 @@ VideoThumbnail {
         color: "white"
         text: "ALT text missing"
         visible: requireAltText && !hasAltText()
+    }
+
+    SvgButton {
+        x: parent.width - width
+        y: parent.height - height
+        width: 34
+        height: 34
+        svg: svgOutline.edit
+        accessibleName: qsTr("edit video")
+        onClicked: edit()
+    }
+
+    SkyLabel {
+        x: 5
+        y: parent.height - height - 5
+        backgroundColor: "black"
+        backgroundOpacity: 0.6
+        color: "white"
+        text: guiSettings.videoDurationToString(videoEndMs - videoStartMs)
     }
 
     GuiSettings {

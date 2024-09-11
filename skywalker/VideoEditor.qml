@@ -6,8 +6,12 @@ import skywalker
 
 SkyPage {
     property string videoSource
+    property int startMs: 0
+    property int endMs: 0
+    property int newHeight: 0
     readonly property int maxDurationMs: 60000
     readonly property int margin: 10
+    property var userSettings: root.getSkywalker().getUserSettings()
 
     id: page
     width: parent.width
@@ -29,6 +33,7 @@ SkyPage {
             svg: svgOutline.check
             accessibleName: qsTr("process video")
             onClicked: videoEdited(getNewHeight(), durationControl.first.value, durationControl.second.value)
+            enabled: durationControl.first.value < durationControl.second.value
         }
     }
 
@@ -45,6 +50,7 @@ SkyPage {
         fillMode: VideoOutput.PreserveAspectFit
         width: maxWidth > 0 && parent.width > maxWidth ? maxWidth : parent.width
         height: width / aspectRatio
+        muted: !userSettings.videoSound
 
         onPositionChanged: {
             if (video.playbackState !== MediaPlayer.PlayingState)
@@ -52,6 +58,10 @@ SkyPage {
 
             if (position >= durationControl.second.value)
                 pause()
+        }
+
+        function toggleSound() {
+            userSettings.videoSound = !userSettings.videoSound
         }
 
         SvgButton {
@@ -75,21 +85,26 @@ SkyPage {
             }
         }
 
-        Label {
-            anchors.right: parent.right
-            anchors.rightMargin: 5
+        SkyLabel {
+            anchors.left: parent.left
+            anchors.leftMargin: 5
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 5
-            padding: 5
+            backgroundColor: "black"
+            backgroundOpacity: 0.6
             color: "white"
-            font.pointSize: guiSettings.scaledFont(6/8)
             text: guiSettings.videoDurationToString(durationControl.duration)
+        }
 
-            background: Rectangle {
-                radius: 3
-                color: "black"
-                opacity: 0.6
-            }
+        SvgButton {
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            width: 34
+            height: 34
+            svg: video.muted ? svgOutline.soundOff : svgOutline.soundOn
+            accessibleName: video.muted ? qsTr("turn sound on") : qsTr("turn sound off")
+
+            onClicked: video.toggleSound()
         }
     }
 
@@ -192,7 +207,17 @@ SkyPage {
     Timer {
         id: pauseTimer
         interval: 200
-        onTriggered: video.pause()
+        onTriggered: {
+            video.pause()
+
+            if (endMs > 0)
+                durationControl.second.value = endMs
+
+            durationControl.first.value = startMs
+
+            if (page.newHeight > 0 && page.newHeight === calcSdResolution().height)
+                sdRadioButton.checked = true
+        }
     }
 
     function calcHdResolution() {

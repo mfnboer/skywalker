@@ -5,6 +5,7 @@ import skywalker
 
 Video {
     property string videoSource
+    property int videoStartMs: 0
 
     id: videoThumbnail
     fillMode: VideoOutput.PreserveAspectCrop
@@ -19,6 +20,8 @@ Video {
         if (Boolean(videoSource))
             Qt.callLater(play)
     }
+
+    onVideoStartMsChanged: videoThumbnail.position = videoStartMs
 
     SvgImage {
         x: (parent.width - width) / 2
@@ -36,6 +39,9 @@ Video {
     Timer {
         id: pauseTimer
         interval: 200
-        onTriggered: videoThumbnail.pause()
+        onTriggered: {
+            videoThumbnail.pause()
+            videoThumbnail.position = videoStartMs
+        }
     }
 }

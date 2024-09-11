@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "file_utils.h"
+#include "temp_file_holder.h"
 #include <QDir>
 #include <QStandardPaths>
 
@@ -162,7 +163,7 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 
 std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension)
 {
-    const QString nameTemplate = QString("sw_temp_XXXXXX.%1").arg(fileExtension);
+    const QString nameTemplate = TempFileHolder::getNameTemplate(fileExtension);
     auto tmpFile = std::make_unique<QTemporaryFile>(nameTemplate);
 
     if (!tmpFile->open())

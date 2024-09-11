@@ -68,8 +68,8 @@ public:
     Q_INVOKABLE void batchDeletePosts(const QStringList& postUris);
     Q_INVOKABLE bool pickPhoto(bool pickVideo = false);
     Q_INVOKABLE void savePhoto(const QString& sourceUrl);
-    Q_INVOKABLE void dropPhoto(const QString& source);
-    Q_INVOKABLE void dropVideo(const QString& source);
+    Q_INVOKABLE static void dropPhoto(const QString& source);
+    Q_INVOKABLE static void dropVideo(const QString& source);
     Q_INVOKABLE QString cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize);
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
                                           int maxLength = -1, const QString& lengthExceededColor = {});
@@ -92,7 +92,7 @@ public:
     Q_INVOKABLE void getQuoteList(const QString& httpsUri);
     Q_INVOKABLE void getPostgate(const QString& postUri);
     Q_INVOKABLE void getVideoUploadLimits();
-    Q_INVOKABLE void checkVideoUploadLimits(const QString& videoSource);
+    Q_INVOKABLE void checkVideoUploadLimits();
 
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);
@@ -169,6 +169,8 @@ signals:
     void getPostgateOk(Postgate postgate);
     void getPostgateFailed(QString error);
     void videoUploadLimits(VideoUploadLimits limits);
+    void checkVideoLimitsOk(VideoUploadLimits limits);
+    void checkVideoLimitsFailed(QString error);
 
 private:
     void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,

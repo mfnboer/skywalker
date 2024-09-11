@@ -74,6 +74,7 @@ SkyPage {
 
     // Cache
     property list<string> tmpImages: []
+    property list<string> tmpVideos: []
 
     signal closed
 
@@ -626,7 +627,9 @@ SkyPage {
                     VideoAttachment {
                         property alias video: postItem.video
                         property alias altText: postItem.videoAltText
-                        // TODO: video transcoding params
+                        property alias startMs: postItem.videoStartMs
+                        property alias endMs: postItem.videoEndMs
+                        property alias newHeight: postItem.videoNewHeight
 
                         id: videoAttachement
                         x: page.margin
@@ -635,8 +638,12 @@ SkyPage {
                         anchors.top: imageScroller.bottom
                         anchors.topMargin: visible ? 10 : 0
                         videoSource: video
+                        videoStartMs: startMs
+                        videoEndMs: endMs
                         requireAltText: page.requireAltText
                         visible: Boolean(video) && !linkCard.visible && !linkCard.visible
+
+                        onEdit: editVideo(video, startMs, endMs, newHeight)
                     }
 
                     // GIF attachment
@@ -1236,7 +1243,7 @@ SkyPage {
     ImageFileDialog {
         id: fileDialog
         onImageSelected: (fileUri) => photoPicked(fileUri)
-        onVideoSelected: (fileUri) => postUtils.checkVideoUploadLimits(fileUri)
+        onVideoSelected: (fileUri) => videoPicked(fileUri)
     }
 
     LinkCardReader {
@@ -1322,6 +1329,9 @@ SkyPage {
     }
 
     PostUtils {
+        property var callbackCanUploadVideo: () => {}
+        property var callbackCannotUploadVideo: (error) => {}
+
         id: postUtils
         skywalker: page.skywalker
 
@@ -1367,12 +1377,6 @@ SkyPage {
             editVideo(videoUrl)
         }
 
-        // onVideoPicked: (videoUrl) => {
-        //     pickingImage = false
-        //     page.videoPicked(videoUrl)
-        //     currentPostItem().getPostText().forceActiveFocus()
-        // }
-
         onVideoPickedFailed: (error) => {
             pickingImage = false
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
@@ -1391,62 +1395,80 @@ SkyPage {
         }
 
         onQuotePost: (uri, cid, text, author, timestamp) => {
-                let postItem = currentPostItem()
-                let postText = postItem.getPostText()
+            let postItem = currentPostItem()
+            let postText = postItem.getPostText()
 
-                if (!postText.firstPostLink)
-                    return
+            if (!postText.firstPostLink)
+                return
 
-                postItem.quoteList = page.nullList
-                postItem.quoteFeed = page.nullFeed
-                postItem.quoteUri = uri
-                postItem.quoteCid = cid
-                postItem.quoteText = text
-                postItem.quoteAuthor = author
-                postItem.quoteDateTime = timestamp
+            postItem.quoteList = page.nullList
+            postItem.quoteFeed = page.nullFeed
+            postItem.quoteUri = uri
+            postItem.quoteCid = cid
+            postItem.quoteText = text
+            postItem.quoteAuthor = author
+            postItem.quoteDateTime = timestamp
 
-                if (!postText.cursorInFirstPostLink)
-                    postItem.fixQuoteLink(true)
-                else
-                    postText.cutLinkIfJustAdded(postText.firstPostLink, () => postItem.fixQuoteLink(true))
-            }
+            if (!postText.cursorInFirstPostLink)
+                postItem.fixQuoteLink(true)
+            else
+                postText.cutLinkIfJustAdded(postText.firstPostLink, () => postItem.fixQuoteLink(true))
+        }
 
         onQuoteFeed: (feed) => {
-                let postItem = currentPostItem()
-                let postText = postItem.getPostText()
+            let postItem = currentPostItem()
+            let postText = postItem.getPostText()
 
-                if (!postText.firstFeedLink)
-                    return
+            if (!postText.firstFeedLink)
+                return
 
-                if (postText.firstPostLink)
-                    return
+            if (postText.firstPostLink)
+                return
 
-                postItem.quoteList = page.nullList
-                postItem.quoteFeed = feed
+            postItem.quoteList = page.nullList
+            postItem.quoteFeed = feed
 
-                if (!postText.cursorInFirstFeedLink)
-                    postItem.fixQuoteLink(true)
-                else
-                    postText.cutLinkIfJustAdded(postText.firstFeedLink, () => postItem.fixQuoteLink(true))
-            }
+            if (!postText.cursorInFirstFeedLink)
+                postItem.fixQuoteLink(true)
+            else
+                postText.cutLinkIfJustAdded(postText.firstFeedLink, () => postItem.fixQuoteLink(true))
+        }
 
         onQuoteList: (list) => {
-                let postItem = currentPostItem()
-                let postText = postItem.getPostText()
+            let postItem = currentPostItem()
+            let postText = postItem.getPostText()
 
-                if (!postText.firstListLink)
-                    return
+            if (!postText.firstListLink)
+                return
 
-                if (postText.firstPostLink || postText.firstFeedLink)
-                    return
+            if (postText.firstPostLink || postText.firstFeedLink)
+                return
 
-                postItem.quoteList = list
+            postItem.quoteList = list
 
-                if (!postText.cursorInFirstListLink)
-                    postItem.fixQuoteLink(true)
-                else
-                    postText.cutLinkIfJustAdded(postText.firstListLink, () => postItem.fixQuoteLink(true))
-            }
+            if (!postText.cursorInFirstListLink)
+                postItem.fixQuoteLink(true)
+            else
+                postText.cutLinkIfJustAdded(postText.firstListLink, () => postItem.fixQuoteLink(true))
+        }
+
+        function checkVideoLimits(cbOk, cbFailed) {
+            callbackCanUploadVideo = cbOk
+            callbackCannotUploadVideo = cbFailed
+            checkVideoUploadLimits()
+        }
+
+        onCheckVideoLimitsOk: {
+            callbackCanUploadVideo()
+            callbackCanUploadVideo = () => {}
+            callbackCannotUploadVideo = (error) => {}
+        }
+
+        onCheckVideoLimitsFailed: (error) => {
+            callbackCannotUploadVideo(error)
+            callbackCanUploadVideo = () => {}
+            callbackCannotUploadVideo = (error) => {}
+        }
     }
 
     VideoUtils {
@@ -1456,19 +1478,17 @@ SkyPage {
         id: videoUtils
 
         onTranscodingOk: (inputFileName, outputFileName) => {
-            callbackOk("file://" + outputFileName)
-            // postUtils.dropVideo(inputFileName)
-            // page.videoPicked("file://" + outputFileName)
-            // currentPostItem().getPostText().forceActiveFocus()
-            // busyIndicator.running = false
+            const source = "file://" + outputFileName
+            page.tmpVideos.push(source)
+            callbackOk(source)
+            callbackOk = (videoSource) => {}
+            callbackFailed = (error) => {}
         }
 
         onTranscodingFailed: (inputFileName, error) => {
             callbackFailed(error)
-            // postUtils.dropVideo(inputFileName)
-            // statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-            // currentPostItem().getPostText().forceActiveFocus()
-            // busyIndicator.running = false
+            callbackOk = (videoSource) => {}
+            callbackFailed = (error) => {}
         }
 
         function transcode(videoSource, newHeight, startMs, endMs, cbOk, cbFailed) {
@@ -1657,6 +1677,7 @@ SkyPage {
             return
 
         postItem.video = source
+        postItem.videoAltText = altText
     }
 
     function addSharedText(text) {
@@ -1699,7 +1720,7 @@ SkyPage {
         }
 
         addSharedText(text)
-        postUtils.checkVideoUploadLimits(source)
+        videoPicked(source)
     }
 
     function postDone() {
@@ -1842,15 +1863,16 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid, labels, postItem.language)
         } else if (Boolean(postItem.video)) {
-            // TODO: drop transcoded video file after posting
-            videoUtils.transcode(postItem.video, postItem.videoNewHeight,
-                                 postItem.videoStartMs, postItem.videoEndMs,
-                                 (transcodedVideo) => {
-                                     postUtils.postVideo(postText, transcodedVideo, postItem.videoAltText,
-                                     parentUri, parentCid,
-                                     rootUri, rootCid,
-                                     qUri, qCid, labels, postItem.language) },
-                                 (error) => postFailed(error))
+            postUtils.checkVideoLimits(
+                () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
+                        postItem.videoStartMs, postItem.videoEndMs,
+                        (transcodedVideo) => {
+                            postUtils.postVideo(postText, transcodedVideo, postItem.videoAltText,
+                            parentUri, parentCid,
+                            rootUri, rootCid,
+                            qUri, qCid, labels, postItem.language) },
+                        (error) => postFailed(error)),
+                (error) => postFailed(error))
         } else {
             const images = getImagesToSend(postItem)
             postUtils.post(postText, images, postItem.altTexts,
@@ -2184,19 +2206,27 @@ SkyPage {
         return hasImageContent() && (postItem.cwSuggestive || postItem.cwNudity || postItem.cwPorn || postItem.cwGore)
     }
 
-    function editVideo(videoSource) {
+    function editVideo(videoSource, startMs = 0, endMs = 0, newHeight = 0) {
+        console.debug("Edit video, start:", startMs, "end:", endMs, "height:", newHeight)
         let component = Qt.createComponent("VideoEditor.qml")
-        let videoPage = component.createObject(page, { videoSource: videoSource })
+        let videoPage = component.createObject(page, {
+                videoSource: videoSource,
+                startMs: startMs,
+                endMs: endMs,
+                newHeight: newHeight
+        })
         videoPage.onVideoEdited.connect((newHeight, startMs, endMs) => {
             const postItem = currentPostItem()
+            let altText = ""
 
             if (postItem) {
                 postItem.videoNewHeight = newHeight
                 postItem.videoStartMs = startMs
                 postItem.videoEndMs = endMs
+                altText = postItem.videoAltText
             }
 
-            page.videoPicked(videoSource)
+            page.videoPicked(videoSource, altText)
             root.popStack()
             currentPostItem().getPostText().forceActiveFocus()
         })
@@ -2221,6 +2251,7 @@ SkyPage {
         }
 
         page.tmpImages.forEach((value, index, array) => { postUtils.dropPhoto(value); })
+        page.tmpVideos.forEach((value, index, array) => { postUtils.dropVideo(value); })
 
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)

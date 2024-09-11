@@ -10,6 +10,8 @@ class TempFileHolder
 {
 public:
     static TempFileHolder& instance();
+    static void initTempDir();
+    static QString getNameTemplate(const QString& fileExtension);
 
     ~TempFileHolder();
     void put(std::unique_ptr<QTemporaryFile> tempFile);
@@ -23,6 +25,7 @@ private:
     std::unordered_set<QString> mFileNames;
 
     static std::unique_ptr<TempFileHolder> sInstance;
+    static QString sTempPath;
 };
 
 }

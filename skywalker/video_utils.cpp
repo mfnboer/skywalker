@@ -14,14 +14,12 @@ VideoUtils::VideoUtils(QObject* parent) :
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
             this, [this](QString inputFileName, QString outputFileName){
-                TempFileHolder::instance().put(outputFileName);
-                emit transcodingOk(inputFileName, outputFileName);
+                handleTranscodingOk(inputFileName, outputFileName);
             });
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingFailed,
             this, [this](QString inputFileName, QString outputFileName, QString error){
-                QFile::remove(outputFileName);
-                emit transcodingFailed(inputFileName, error);
+                handleTranscodingFailed(inputFileName, outputFileName, error);
             });
 }
 
@@ -59,9 +57,20 @@ void VideoUtils::transcodeVideo(const QString inputFileName, int height, int sta
     Q_UNUSED(endMs)
     qDebug() << "Transcoding not supported";
     QFile::copy(inputFileName, outputFileName);
+    handleTranscodingOk(inputFileName, outputFileName);
+#endif
+}
+
+void VideoUtils::handleTranscodingOk(const QString& inputFileName, const QString& outputFileName)
+{
     TempFileHolder::instance().put(outputFileName);
     emit transcodingOk(inputFileName, outputFileName);
-#endif
+}
+
+void VideoUtils::handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
+{
+    QFile::remove(outputFileName);
+    emit transcodingFailed(inputFileName, error);
 }
 
 }

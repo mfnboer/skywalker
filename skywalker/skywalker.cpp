@@ -69,6 +69,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(2, TIMELINE_PREPEND_PAGE_SIZE); });
 
+    TempFileHolder::initTempDir();
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
     OffLineMessageChecker::createNotificationChannels();

@@ -889,6 +889,12 @@ ApplicationWindow {
 
     function composePost(initialText = "", imageSource = "") {
         let component = Qt.createComponent("ComposePost.qml")
+
+        if (component.status === Component.Error) {
+            console.warn(component.errorString())
+            return
+        }
+
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 initialText: initialText,
