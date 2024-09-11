@@ -410,6 +410,10 @@ qt_add_qml_module(libskywalker
         SOURCES video_utils.h
         SOURCES video_utils.cpp
         QML_FILES VideoEditor.qml
+        SOURCES m3u8_parser.h
+        SOURCES m3u8_parse.cpp
+        SOURCES m3u8_reader.h
+        SOURCES m3u8_reader.cpp
 )
 
 if (NOT ANDROID)

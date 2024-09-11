@@ -15,6 +15,7 @@ Column {
     property bool isFullViewMode: false
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
+    property string videoSource
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
@@ -127,7 +128,7 @@ Column {
                 property bool restarting: false
 
                 id: videoPlayer
-                source: videoView.playlistUrl
+                source: videoSource
                 videoOutput: videoOutput
                 audioOutput: audioOutput
 
@@ -136,36 +137,9 @@ Column {
                         videoFound = true
                 }
 
-                onPlaybackStateChanged: {
-                    if (playbackState == MediaPlayer.StoppedState) {
-                        source = ""
-                        source = videoView.playlistUrl
-                    }
-                }
-
                 onPlayingChanged: {
                     if (videoPlayer.playing)
                         restartTimer.set(false)
-                }
-
-                onVideoTracksChanged: {
-                    console.debug("VIDEO TRACKS:", videoTracks.length)
-                    for (let i = 0; i < videoTracks.length; ++i) {
-                        console.debug("VIDEO TRACK", i, "META:", videoTracks[i].keys())
-
-                        for (let j = 0; j < videoTracks[i].keys().length; ++j) {
-                            const k = videoTracks[i].keys()[j]
-                            console.debug("VIDEO TRACK", i, "KEY:", videoTracks[i].metaDataKeyToString(k), videoTracks[i].stringValue(k))
-                        }
-                    }
-                }
-                onMetaDataChanged: {
-                    console.debug("VIDEO METADATA:", metaData.keys())
-
-                    for (let j = 0; j < metaData.keys().length; ++j) {
-                        const k = metaData.keys()[j]
-                        console.debug("VIDEO METADATA KEY:", metaData.metaDataKeyToString(k), metaData.stringValue(k))
-                    }
                 }
 
                 onErrorOccurred: (error, errorString) => { console.debug("Video error:", source, error, errorString) }
@@ -184,8 +158,6 @@ Column {
 
                 function restart() {
                     stopPlaying()
-                    source = ""
-                    source = videoView.playlistUrl
                     start()
                 }
 
@@ -278,7 +250,7 @@ Column {
         SvgTransparentButton {
             id: playPauseButton
             x: isFullViewMode ? 10 : 0
-            width: 24
+            width: 32
             height: width
             svg: videoPlayer.playing ? svgFilled.pause : svgFilled.play
             accessibleName: videoPlayer.playing ? qsTr("pause video") : qsTr("continue playing video")
@@ -291,7 +263,7 @@ Column {
             id: stopButton
             anchors.left: playPauseButton.right
             anchors.leftMargin: 10
-            width: 24
+            width: 32
             height: width
             svg: svgFilled.stop
             accessibleName: qsTr("stop video")
@@ -304,7 +276,7 @@ Column {
             id: replayButton
             anchors.left: stopButton.right
             anchors.leftMargin: 10
-            width: 24
+            width: 32
             height: width
             svg: svgOutline.refresh
             accessibleName: qsTr("restart video")
@@ -365,7 +337,7 @@ Column {
             id: soundButton
             anchors.right: parent.right
             anchors.rightMargin: isFullViewMode ? 10 : 0
-            width: 24
+            width: 32
             height: width
             svg: audioOutput.muted ? svgOutline.soundOff : svgOutline.soundOn
             accessibleName: audioOutput.muted ? qsTr("turn sound on") : qsTr("turn sound off")
@@ -391,6 +363,13 @@ Column {
         }
     }
 
+    M3U8Reader {
+        id: m3u8Reader
+
+        onGetVideoStreamOk: (videoStream) => videoSource = videoStream
+        onGetVideoStreamFailed: videoSource = videoView.playlistUrl
+    }
+
     GuiSettings {
         id: guiSettings
     }
@@ -405,5 +384,12 @@ Column {
             return videoView.width / videoView.height
         else
             return 16/9
+    }
+
+    Component.onCompleted: {
+        if (videoView.playlistUrl.endsWith(".m3u8"))
+            m3u8Reader.getVideoStream(videoView.playlistUrl)
+        else
+            videoSource = videoView.playlistUrl
     }
 }

@@ -33,8 +33,6 @@ public:
     Q_INVOKABLE bool isNull() const { return getPlaylistUrl().isEmpty(); }
     QString getThumbUrl() const { return mVideoView && mVideoView->mThumbnail ? *mVideoView->mThumbnail : ""; }
     QString getPlaylistUrl() const { return mVideoView ? mVideoView->mPlaylist : mPlayListUrl; }
-    //QString getPlaylistUrl() const { return "https://video.bsky.app/watch/did%3Aplc%3Aoisofpd7lj26yvgiivf3lxsi/bafkreihc3xae3wohhhgveo3ydjaee2dlrpfe726pz7nntyg7tiqd55o6pu/360p/video.m3u8?session_id=crgs65kcgcls72stgg1g"; } // TODO TEST
-    //QString getPlaylistUrl() const { return "https://video.bsky.app/watch/did%3Aplc%3Aqrllvid7s54k4hnwtqxwetrf/bafkreifaocag4dsbz3kfm446hje5zyw3sohcpmozjyrnebseukcqgc5iwa/360p/video0.ts?session_id=crgu8crij0ss72uv4v5g&dur=8.333333"; } // TODO TEST
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mVideoView ? mVideoView->mAspectRatio.get() : nullptr; }
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
