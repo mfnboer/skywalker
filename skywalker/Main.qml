@@ -1549,7 +1549,7 @@ ApplicationWindow {
     function pushStack(item, operation) {
         let current = currentStackItem()
 
-        if (current)
+        if (current && typeof current.cover === 'function')
             current.cover()
 
         currentStack().push(item, operation)

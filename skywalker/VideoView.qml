@@ -148,6 +148,26 @@ Column {
                         restartTimer.set(false)
                 }
 
+                onVideoTracksChanged: {
+                    console.debug("VIDEO TRACKS:", videoTracks.length)
+                    for (let i = 0; i < videoTracks.length; ++i) {
+                        console.debug("VIDEO TRACK", i, "META:", videoTracks[i].keys())
+
+                        for (let j = 0; j < videoTracks[i].keys().length; ++j) {
+                            const k = videoTracks[i].keys()[j]
+                            console.debug("VIDEO TRACK", i, "KEY:", videoTracks[i].metaDataKeyToString(k), videoTracks[i].stringValue(k))
+                        }
+                    }
+                }
+                onMetaDataChanged: {
+                    console.debug("VIDEO METADATA:", metaData.keys())
+
+                    for (let j = 0; j < metaData.keys().length; ++j) {
+                        const k = metaData.keys()[j]
+                        console.debug("VIDEO METADATA KEY:", metaData.metaDataKeyToString(k), metaData.stringValue(k))
+                    }
+                }
+
                 onErrorOccurred: (error, errorString) => { console.debug("Video error:", source, error, errorString) }
 
                 function playPause() {
