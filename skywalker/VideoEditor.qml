@@ -42,12 +42,13 @@ SkyPage {
         readonly property int videoWidth: videoResolution ? videoResolution.width : 0
         readonly property int videoHeight: videoResolution ? videoResolution.height : 0
         readonly property double aspectRatio: videoHeight > 0 ? videoWidth / videoHeight : 0
-        readonly property int maxHeight: parent.height - resizeControl.height - durationControl.height - 5
+        readonly property int maxHeight: durationControl.y - 5
         readonly property int maxWidth: maxHeight * aspectRatio
 
         id: video
         source: page.videoSource
         fillMode: VideoOutput.PreserveAspectFit
+        x: (parent.width - width) / 2
         width: maxWidth > 0 && parent.width > maxWidth ? maxWidth : parent.width
         height: width / aspectRatio
         muted: !userSettings.videoSound
@@ -112,8 +113,7 @@ SkyPage {
         property int duration: second.value - first.value
 
         id: durationControl
-        anchors.top: video.bottom
-        anchors.topMargin: 5
+        anchors.bottom: resizeControl.top
         width: parent.width
         from: 0
         to: video.duration
@@ -164,7 +164,8 @@ SkyPage {
 
     GridLayout {
         id: resizeControl
-        anchors.top: durationControl.bottom
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
         width: parent.width
         columns: 2
 
@@ -220,27 +221,38 @@ SkyPage {
         }
     }
 
-    function calcHdResolution() {
-        if (video.videoWidth > 1280 || video.videoHeight > 720) {
-            const xScale = video.videoWidth / 1280
-            const yScale = video.videoHeight / 720
-            const scale = Math.max(xScale, yScale)
+    function calcResolution(longRes, shortRes) {
+        const longSide = video.videoWidth >= video.videoHeight ? video.videoWidth : video.videoHeight
+        const shortSide = video.videoWidth >= video.videoHeight ? video.videoHeight : video.videoWidth
+
+        if (longSide > longRes || shortSide > shortRes) {
+            const longScale = longSide / longRes
+            const shortScale = shortSide / shortRes
+            const scale = Math.max(longScale, shortScale)
             return Qt.size(Math.floor(video.videoWidth / scale), Math.floor(video.videoHeight / scale))
         }
 
-        if (video.videoWidth > 640 || video.videoHeight > 360)
+        return Qt.size(0, 0)
+    }
+
+    function calcHdResolution() {
+        const resolution = calcResolution(1280, 720)
+        console.debug("HD RESOULUTION", resolution)
+
+        if (resolution !== Qt.size(0, 0))
+            return resolution
+
+        if (calcResolution(640, 360) !== Qt.size(0, 0))
             return Qt.size(video.videoWidth, video.videoHeight)
 
         return Qt.size(0, 0)
     }
 
     function calcSdResolution() {
-        if (video.videoWidth > 640 || video.videoHeight > 360) {
-            const xScale = video.videoWidth / 640
-            const yScale = video.videoHeight / 360
-            const scale = Math.max(xScale, yScale)
-            return Qt.size(Math.floor(video.videoWidth / scale), Math.floor(video.videoHeight / scale))
-        }
+        const resolution = calcResolution(640, 320)
+
+        if (resolution !== Qt.size(0, 0))
+            return resolution
 
         return Qt.size(video.videoWidth, video.videoHeight)
     }

@@ -268,7 +268,7 @@ SkyPage {
                         quoteText: page.quoteText
                         quoteDateTime: page.quoteDateTime
                         language: replyToLanguage ? replyToLanguage : languageUtils.defaultPostLanguage
-                        video: initialVideo
+                        video: ""
                         videoAltText: ""
                     }
                 ]
@@ -1585,8 +1585,13 @@ SkyPage {
             if (!postText.text.startsWith("\n#")) // hashtag post
                 postText.cursorPosition = postText.text.length
 
-            postText.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
-            postText.forceActiveFocus()
+            if (Boolean(page.initialVideo)) {
+                editVideo(page.initialVideo)
+            }
+            else {
+                postText.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
+                postText.forceActiveFocus()
+            }
         }
     }
 
@@ -1720,7 +1725,7 @@ SkyPage {
         }
 
         addSharedText(text)
-        videoPicked(source)
+        editVideo(source)
     }
 
     function postDone() {
