@@ -205,6 +205,13 @@ SkyPage {
                     enabled: threadPosts.count > 1
                     onTriggered: threadPosts.mergePosts()
                 }
+                AccessibleMenuItem {
+                    text: qsTr("Video limits")
+                    onTriggered: {
+                        busyIndicator.running = true
+                        postUtils.getVideoUploadLimits()
+                    }
+                }
             }
         }
     }
@@ -1452,6 +1459,11 @@ SkyPage {
                 postText.cutLinkIfJustAdded(postText.firstListLink, () => postItem.fixQuoteLink(true))
         }
 
+        onVideoUploadLimits: (limits) => {
+            busyIndicator.running = false
+            showVideoUploadLimits(limits)
+        }
+
         function checkVideoLimits(cbOk, cbFailed) {
             callbackCanUploadVideo = cbOk
             callbackCannotUploadVideo = cbFailed
@@ -2243,6 +2255,13 @@ SkyPage {
             currentPostItem().getPostText().forceActiveFocus()
         })
         root.pushStack(videoPage)
+    }
+
+    function showVideoUploadLimits(limits) {
+        let component = Qt.createComponent("VideoUploadLimits.qml")
+        let limitsPage = component.createObject(page, { limits: limits })
+        limitsPage.onAccepted.connect(() => limitsPage.destroy())
+        limitsPage.open()
     }
 
     VirtualKeyboardPageResizer {

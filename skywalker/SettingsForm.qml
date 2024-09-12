@@ -62,7 +62,6 @@ SkyPage {
             }
 
             AccessibleText {
-                color: guiSettings.textColor
                 text: qsTr("Email:")
             }
             RowLayout {
@@ -71,7 +70,6 @@ SkyPage {
                 AccessibleText {
                     id: mailText
                     Layout.fillWidth: true
-                    color: guiSettings.textColor
                     elide: Text.ElideRight
                     text: userPrefs.email
                 }

@@ -414,6 +414,7 @@ qt_add_qml_module(libskywalker
         SOURCES m3u8_parse.cpp
         SOURCES m3u8_reader.h
         SOURCES m3u8_reader.cpp
+        QML_FILES VideoUploadLimits.qml
 )
 
 if (NOT ANDROID)

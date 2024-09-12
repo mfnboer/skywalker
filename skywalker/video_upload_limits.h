@@ -12,7 +12,7 @@ class VideoUploadLimits
     Q_GADGET
     Q_PROPERTY(bool canUpload READ canUpload FINAL)
     Q_PROPERTY(int remainingDailyVideos READ getRemainingDailyVideos FINAL)
-    Q_PROPERTY(int remainingDailyBytes READ getRemainingDailyBytes FINAL)
+    Q_PROPERTY(qint64 remainingDailyBytes READ getRemainingDailyBytes FINAL)
     Q_PROPERTY(QString error READ getError FINAL)
     Q_PROPERTY(QString message READ getMessage FINAL)
     QML_VALUE_TYPE(videouploadlimits)
@@ -24,7 +24,7 @@ public:
 
     bool canUpload() const { return mLimits ? mLimits->mCanUpload : false; }
     int getRemainingDailyVideos() const { return mLimits ? mLimits->mRemainingDailyVideos.value_or(0) : 0; }
-    int getRemainingDailyBytes() const { return mLimits ? mLimits->mRemainingDailyBytes.value_or(0) : 0; }
+    qint64 getRemainingDailyBytes() const { return mLimits ? mLimits->mRemainingDailyBytes.value_or(0) : 0; }
     QString getError() const { return mLimits ? mLimits->mError.value_or("") : mError; }
     QString getMessage() const { return mLimits ? mLimits->mMessage.value_or("") : mMessage; }
 
