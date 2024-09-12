@@ -149,12 +149,14 @@ Column {
                     if (!mustKickPosition || positionKicked)
                         return
 
+                    console.debug("POSITION:", position)
+
                     // HORRIBLE HACK
                     // Qt fails to play the first part properly. Resetting the position
                     // like this makes it somewhat better
-                    if (position > 1450) {
-                        position = 1400
+                    if (position > 0) {
                         positionKicked = true
+                        position = position - 1
                         console.debug("POSITION KICKED")
                     }
                 }
