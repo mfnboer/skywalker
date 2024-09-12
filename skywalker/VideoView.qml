@@ -154,9 +154,9 @@ Column {
                     // HORRIBLE HACK
                     // Qt fails to play the first part properly. Resetting the position
                     // like this makes it somewhat better
-                    if (position > 0) {
+                    if (position > 100) {
                         positionKicked = true
-                        position = position - 1
+                        position = position - 50
                         console.debug("POSITION KICKED")
                     }
                 }

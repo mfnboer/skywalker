@@ -351,11 +351,11 @@ Rectangle {
                 width: parent.width
                 active: postThreadType & QEnums.THREAD_ENTRY
                 visible: status == Loader.Ready
-                sourceComponent: Row {
+                sourceComponent: Flow {
                     width: parent.width
                     topPadding: 10
                     bottomPadding: 5
-                    spacing: 30
+                    spacing: 10
 
                     StatAuthors {
                         atUri: postUri

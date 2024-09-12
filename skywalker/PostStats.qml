@@ -44,7 +44,7 @@ Item {
     StatIcon {
         id: replyIcon
         y: topPadding
-        width: parent.width / 5
+        width: parent.width / 4
         iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
         svg: svgOutline.reply
         statistic: replyCount
@@ -58,7 +58,7 @@ Item {
         id: repostIcon
         y: topPadding
         anchors.left: replyIcon.right
-        width: parent.width / 5
+        width: parent.width / 4
         iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: svgOutline.repost
         statistic: repostCount
@@ -71,7 +71,7 @@ Item {
         id: likeIcon
         y: topPadding
         anchors.left: repostIcon.right
-        width: parent.width / 5
+        width: parent.width / 4
         iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: likeUri ? svgFilled.like : svgOutline.like
         statistic: likeCount
@@ -89,7 +89,7 @@ Item {
         id: bookmarkIcon
         y: topPadding
         anchors.left: likeIcon.right
-        width: parent.width / 5
+        width: parent.width / 8
         iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
         svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
         onClicked: bookmark()
@@ -100,7 +100,7 @@ Item {
         id: moreIcon
         y: topPadding
         anchors.left: bookmarkIcon.right
-        width: parent.width / 5
+        width: parent.width / 8
         svg: svgOutline.moreVert
         visible: !bookmarkNotFound
         onClicked: moreMenuLoader.open()
