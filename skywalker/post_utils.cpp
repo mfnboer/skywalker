@@ -698,6 +698,18 @@ void PostUtils::continuePostVideo(const QString& videoFileName, const QString& v
 
                     qDebug() << "Post failed:" << error << " - " << msg;
                     emit postFailed(msg);
+                },
+                [this, presence](const QString& status, std::optional<int> progress){
+                    if (!presence)
+                        return;
+
+                    qDebug() << "Status:" << status << "progress:" << progress.value_or(-1);
+                    QString msg(tr("Processing video: %1").arg(status));
+
+                    if (progress)
+                        msg += QString(" %1%").arg(*progress);
+
+                    emit postProgress(msg);
                 });
         },
         [this, presence=getPresence(), file](const QString& error, const QString& msg){
