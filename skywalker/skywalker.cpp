@@ -1418,7 +1418,11 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
             else
             {
                 auto model = getPostThreadModel(modelId);
-                model->setPostThread(thread);
+
+                if (model)
+                    model->setPostThread(thread);
+                else
+                    qWarning() << "Model does not exist:" << modelId;
             }
         },
         [this](const QString& error, const QString& msg){
