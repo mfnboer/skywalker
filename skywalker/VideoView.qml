@@ -96,6 +96,17 @@ Column {
                         svg: svgFilled.film
                     }
                 }
+
+                SkyLabel {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 10
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 5
+                    backgroundColor: "black"
+                    backgroundOpacity: 0.6
+                    color: "white"
+                    text: guiSettings.videoDurationToString(videoPlayer.duration)
+                }
             }
         }
 

@@ -1507,6 +1507,8 @@ void PostUtils::getVideoUploadLimits()
 
 void PostUtils::checkVideoUploadLimits()
 {
+    emit postProgress(tr("Checking limits"));
+
     getVideoUploadLimits(
         [this, presence=getPresence()](const VideoUploadLimits& limits){
             if (!presence)
