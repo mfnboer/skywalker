@@ -1,3 +1,9 @@
+next
+====
+* Video
+* Disable autocorrect in search fields
+* Bug fixes
+
 3.3
 ===
 * Repost count includes quote posts
