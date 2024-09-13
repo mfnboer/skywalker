@@ -84,6 +84,7 @@ private:
     MutedWords mMutedWords;
     NotificationListModel mNotificationListModel;
     std::unordered_map<QString, QByteArray> mAvatars; // URL -> jpg
+    QObject mPresence;
 };
 
 }
