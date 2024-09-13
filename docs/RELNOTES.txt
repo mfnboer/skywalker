@@ -1,5 +1,5 @@
-next
-====
+3.4
+===
 * Video
 * Disable autocorrect in search fields
 * Bug fixes
