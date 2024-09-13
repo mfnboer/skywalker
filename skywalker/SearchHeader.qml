@@ -49,7 +49,7 @@ Rectangle {
                 rightPadding: clearButton.width
                 font.pointSize: guiSettings.scaledFont(9/8)
                 color: guiSettings.textColor
-                inputMethodHints: Qt.ImhNoAutoUppercase
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 maximumLength: 2048
                 focus: true
 

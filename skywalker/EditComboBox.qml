@@ -37,6 +37,7 @@ ComboBox {
         color: comboBox.textColor
         enabled: comboBox.editable
         font.pointSize: guiSettings.scaledFont(9/8)
+        inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
         text: comboBox.displayText
 
         onDisplayTextChanged: {

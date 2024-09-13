@@ -39,6 +39,7 @@ SkyPage {
         width: parent.width
         svgIcon: svgOutline.user
         placeholderText: qsTr("Search user")
+        inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
 
         onDisplayTextChanged: {
             page.isTyping = true
