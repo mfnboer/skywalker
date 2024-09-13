@@ -590,12 +590,14 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
             if (presence)
                 continuePost(card, image, post);
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence(), card, post](const QString& error){
             if (!presence)
                 return;
 
-            qDebug() << "Post failed:" << error;
-            emit postFailed(error);
+            qDebug() << "Failed to load image:" << error;
+            // Post the card without image anyway. Sometimes card information at sites
+            // have broken image links.
+            continuePost(card, QImage(), post);
         });
 }
 
