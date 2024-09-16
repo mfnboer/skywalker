@@ -1165,9 +1165,9 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewFullVideo(videoView) {
+    function viewFullVideo(videoView, videoSource) {
         let component = Qt.createComponent("FullVideoView.qml")
-        let view = component.createObject(root, { videoView: videoView })
+        let view = component.createObject(root, { videoView: videoView, videoSource: videoSource })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }

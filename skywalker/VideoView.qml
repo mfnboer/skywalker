@@ -138,10 +138,11 @@ Column {
                 property bool videoFound: false
                 property bool restarting: false
                 property bool positionKicked: false
-                property bool mustKickPosition: false
+                property bool mustKickPosition: false // hack for playing live stream
 
                 id: videoPlayer
                 source: videoSource
+                loops: MediaPlayer.Infinite
                 videoOutput: videoOutput
                 audioOutput: audioOutput
 
@@ -173,7 +174,7 @@ Column {
                 }
 
                 onPlaybackStateChanged: {
-                    if (playbackState === MediaPlayer.StoppedState)
+                    if (mustKickPosition && playbackState === MediaPlayer.StoppedState)
                     {
                         source = ""
                         source = videoSource
@@ -190,16 +191,12 @@ Column {
                 }
 
                 function start() {
-                    positionKicked = false
                     restartTimer.set(true)
                     play()
                 }
 
                 function restart() {
-                    stopPlaying()
-                    source = ""
-                    source = videoSource
-                    start()
+                    position = 0
                 }
 
                 function stopPlaying() {
@@ -258,7 +255,7 @@ Column {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
                 else
-                    root.viewFullVideo(videoView)
+                    root.viewFullVideo(videoView, videoSource)
             }
         }
 
@@ -431,10 +428,17 @@ Column {
             return 16/9
     }
 
-    Component.onCompleted: {
+    function setVideoSource() {
+        console.debug("Set video source for:", videoView.playlistUrl)
+
         if (videoView.playlistUrl.endsWith(".m3u8"))
             m3u8Reader.getVideoStream(videoView.playlistUrl)
         else
             videoSource = videoView.playlistUrl
+    }
+
+    Component.onCompleted: {
+        if (!videoSource)
+            setVideoSource()
     }
 }
