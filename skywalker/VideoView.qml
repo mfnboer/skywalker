@@ -61,21 +61,19 @@ Column {
 
                     id: thumbImg
                     x: (parent.width - width) / 2
-                    // width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
                     width: parent.width - 2
                     imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
                     fillMode: Image.PreserveAspectFit
                     enableAlt: !isFullViewMode
 
-                    onWidthChanged: setSize()
+                    onWidthChanged: Qt.callLater(setSize)
+                    onHeightChanged: Qt.callLater(setSize)
 
                     function setSize() {
-                        if (maxHeight > 0) {
-                            if (maxWidth > 0 && width > maxWidth)
-                                height = maxHeight
-                            else
-                                height = width / aspectRatio
-                        }
+                        if (maxWidth > 0 && width > maxWidth)
+                            height = maxHeight
+                        else if (aspectRatio > 0)
+                            height = width / aspectRatio
                     }
 
                     Component.onCompleted: setSize()
@@ -97,7 +95,6 @@ Column {
 
                     function setMaxHeight() {
                         const ratio = width / height
-                        //height = maxHeight
                         width = Math.floor(maxHeight * ratio)
                     }
 
