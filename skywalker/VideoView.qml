@@ -56,15 +56,29 @@ Column {
                 color: "transparent"
 
                 ThumbImageView {
-                    property double aspectRatio: height > 0 ? width / height : 0
+                    property double aspectRatio: implicitHeight > 0 ? implicitWidth / implicitHeight : 0
                     property double maxWidth: maxHeight * aspectRatio
 
                     id: thumbImg
                     x: (parent.width - width) / 2
-                    width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
+                    // width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
+                    width: parent.width - 2
                     imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
                     fillMode: Image.PreserveAspectFit
                     enableAlt: !isFullViewMode
+
+                    onWidthChanged: setSize()
+
+                    function setSize() {
+                        if (maxHeight > 0) {
+                            if (maxWidth > 0 && width > maxWidth)
+                                height = maxHeight
+                            else
+                                height = width / aspectRatio
+                        }
+                    }
+
+                    Component.onCompleted: setSize()
                 }
                 Rectangle {
                     property double maxWidth: maxHeight * videoStack.getAspectRatio()
@@ -98,14 +112,15 @@ Column {
                 }
 
                 SkyLabel {
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5
                     backgroundColor: "black"
                     backgroundOpacity: 0.6
                     color: "white"
                     text: guiSettings.videoDurationToString(videoPlayer.duration)
+                    visible: !isFullViewMode
                 }
             }
         }
@@ -273,7 +288,7 @@ Column {
 
         id: playControls
         x: (parent.width - width) / 2
-        width: defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.width
+        width: defaultThumbImg.visible ? defaultThumbImg.width : Math.min(thumbImg.width, thumbImg.maxWidth)
         height: playPauseButton.height
         color: "transparent"
         visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
