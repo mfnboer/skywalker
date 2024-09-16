@@ -1,3 +1,8 @@
+next
+====
+* Improve video playing
+* New settings for video: auto play, auto load (default off)
+
 3.4
 ===
 * Video

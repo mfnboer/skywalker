@@ -14,16 +14,23 @@ namespace Skywalker {
 class M3U8Reader : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged FINAL)
     QML_ELEMENT
 
 public:
     explicit M3U8Reader(QObject* parent = nullptr);
 
+    bool isLoading() const { return mLoading; }
+    void setLoading(bool loading);
     Q_INVOKABLE void getVideoStream(const QString& link, bool firstCall = true);
+    Q_INVOKABLE void loadStream();
 
 signals:
-    void getVideoStreamOk(QString videoStream);
-    void getVideoStreamFailed();
+    void getVideoStreamOk(int durationMs);
+    void getVideoStreamError();
+    void loadStreamOk(QString videoStream);
+    void loadStreamError();
+    void loadingChanged();
 
 private:
     void reset();
@@ -32,7 +39,6 @@ private:
     void requestSslFailed(QNetworkReply* reply);
     static QString buildStreamUrl(const QUrl& requestUrl, const QString& stream);
 
-    void loadStream();
     void loadStream(QNetworkReply* reply);
     void loadStreamFailed(QNetworkReply* reply, int errCode);
     void loadStreamSslFailed(QNetworkReply* reply);
@@ -42,6 +48,7 @@ private:
     int mLoopCount = 0; // protect against potential loop
     QStringList mStreamSegments;
     std::unique_ptr<QTemporaryFile> mStream;
+    bool mLoading = false;
 };
 
 }

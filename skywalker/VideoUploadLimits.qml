@@ -29,7 +29,7 @@ Dialog {
         }
 
         AccessibleText {
-            text: qsTr("Remaing videos today:")
+            text: qsTr("Remaining videos today:")
         }
 
         AccessibleText {
@@ -37,7 +37,7 @@ Dialog {
         }
 
         AccessibleText {
-            text: qsTr("Remaing bytes today:")
+            text: qsTr("Remaining bytes today:")
         }
 
         AccessibleText {

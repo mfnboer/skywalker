@@ -13,6 +13,15 @@ M3U8Reader::M3U8Reader(QObject* parent) :
     mNetwork.setTransferTimeout(15000);
 }
 
+void M3U8Reader::setLoading(bool loading)
+{
+    if (loading != mLoading)
+    {
+        mLoading = loading;
+        emit loadingChanged();
+    }
+}
+
 void M3U8Reader::getVideoStream(const QString& link, bool firstCall)
 {
     if (firstCall)
@@ -25,7 +34,7 @@ void M3U8Reader::getVideoStream(const QString& link, bool firstCall)
     if (mLoopCount <= 0)
     {
         qWarning() << "Loop detected:" << link;
-        emit getVideoStreamFailed();
+        emit getVideoStreamError();
         return;
     }
 
@@ -39,7 +48,7 @@ void M3U8Reader::getVideoStream(const QString& link, bool firstCall)
     if (!url.isValid())
     {
         qWarning() << "Invalid link:" << link;
-        emit getVideoStreamFailed();
+        emit getVideoStreamError();
         return;
     }
 
@@ -67,12 +76,18 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
 
     const auto streamType = parser.parse(data);
 
+    if (streamType == M3U8StreamType::ERROR)
+    {
+        emit getVideoStreamError();
+        return;
+    }
+
     if (streamType == M3U8StreamType::VIDEO)
     {
         if (parser.getStreamSegments().isEmpty())
         {
             qWarning() << "Empty stream:" << reply->request().url();
-            emit getVideoStreamFailed();
+            emit getVideoStreamError();
             return;
         }
 
@@ -89,12 +104,12 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
         if (!mStream)
         {
             qWarning() << "Failed to create temp file";
-            emit getVideoStreamFailed();
+            emit getVideoStreamError();
         }
 
 
         qDebug() << "Created temp file:" << mStream->fileName();
-        loadStream();
+        emit getVideoStreamOk(parser.getStreamDurationSeconds() * 1000);
         return;
     }
 
@@ -107,7 +122,7 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
     if (stream.isEmpty())
     {
         qWarning() << "Cannot find stream:" << reply->request().url();
-        emit getVideoStreamFailed();
+        emit getVideoStreamError();
         return;
     }
 
@@ -130,24 +145,27 @@ void M3U8Reader::requestFailed(QNetworkReply* reply, int errCode)
     qDebug() << "Failed to get link:" << reply->request().url();
     qDebug() << "Error:" << errCode << reply->errorString();
     qDebug() << reply->readAll();
-    emit getVideoStreamFailed();
+    emit getVideoStreamError();
 }
 
 void M3U8Reader::requestSslFailed(QNetworkReply* reply)
 {
     mInProgress = nullptr;
     qDebug() << "SSL error, failed to get link:" << reply->request().url();
-    emit getVideoStreamFailed();
+    emit getVideoStreamError();
 }
 
 void M3U8Reader::loadStream()
 {
+    setLoading(true);
+
     if (mStreamSegments.isEmpty())
     {
         qDebug() << "No more segments to load";
         mStream->close();
         QUrl url = QUrl::fromLocalFile(mStream->fileName());
-        emit getVideoStreamOk(url.toString());
+        setLoading(false);
+        emit loadStreamOk(url.toString());
         return;
     }
 
@@ -155,7 +173,8 @@ void M3U8Reader::loadStream()
     if (!url.isValid())
     {
         qWarning() << "Invalid segment URL:" << mStreamSegments.first();
-        emit getVideoStreamFailed();
+        setLoading(false);
+        emit loadStreamError();
         return;
     }
 
@@ -181,7 +200,8 @@ void M3U8Reader::loadStream(QNetworkReply* reply)
     if (mStream->write(data) < 0)
     {
         qWarning() << "Failed to save stream into tempfile:" << mStream->fileName();
-        emit getVideoStreamFailed();
+        setLoading(false);
+        emit loadStreamError();
         return;
     }
     else
@@ -198,14 +218,16 @@ void M3U8Reader::loadStreamFailed(QNetworkReply* reply, int errCode)
     qDebug() << "Failed to load stream segment:" << reply->request().url();
     qDebug() << "Error:" << errCode << reply->errorString();
     qDebug() << reply->readAll();
-    emit getVideoStreamFailed();
+    setLoading(false);
+    emit loadStreamError();
 }
 
 void M3U8Reader::loadStreamSslFailed(QNetworkReply* reply)
 {
     mInProgress = nullptr;
     qDebug() << "SSL error, failed to load stream segment:" << reply->request().url();
-    emit getVideoStreamFailed();
+    setLoading(false);
+    emit loadStreamError();
 }
 
 }
