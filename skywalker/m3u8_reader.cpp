@@ -157,6 +157,12 @@ void M3U8Reader::requestSslFailed(QNetworkReply* reply)
 
 void M3U8Reader::loadStream()
 {
+    if (!mStream)
+    {
+        qWarning() << "Stream is not yet set";
+        return;
+    }
+
     setLoading(true);
 
     if (mStreamSegments.isEmpty())

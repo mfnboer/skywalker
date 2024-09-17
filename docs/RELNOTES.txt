@@ -1,5 +1,5 @@
-next
-====
+3.4.1
+=====
 * Improve video playing
 * New settings for video: auto play, auto load (default off)
 

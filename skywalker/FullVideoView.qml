@@ -29,6 +29,15 @@ SkyPage {
         isFullViewMode: true
     }
 
+    Rectangle {
+        width: parent.width
+        anchors.top: altFlick.top
+        anchors.bottom: parent.bottom
+        color: "black"
+        opacity: 0.7
+        visible: altFlick.visible
+    }
+
     Flickable {
         id: altFlick
         anchors.bottom: parent.bottom
