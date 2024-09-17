@@ -16,6 +16,7 @@ Column {
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
     property string videoSource
+    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
@@ -56,15 +57,27 @@ Column {
                 color: "transparent"
 
                 ThumbImageView {
-                    property double aspectRatio: height > 0 ? width / height : 0
+                    property double aspectRatio: implicitHeight > 0 ? implicitWidth / implicitHeight : 0
                     property double maxWidth: maxHeight * aspectRatio
 
                     id: thumbImg
                     x: (parent.width - width) / 2
-                    width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
+                    width: parent.width - 2
                     imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
                     fillMode: Image.PreserveAspectFit
                     enableAlt: !isFullViewMode
+
+                    onWidthChanged: Qt.callLater(setSize)
+                    onHeightChanged: Qt.callLater(setSize)
+
+                    function setSize() {
+                        if (maxWidth > 0 && width > maxWidth)
+                            height = maxHeight
+                        else if (aspectRatio > 0)
+                            height = width / aspectRatio
+                    }
+
+                    Component.onCompleted: setSize()
                 }
                 Rectangle {
                     property double maxWidth: maxHeight * videoStack.getAspectRatio()
@@ -83,7 +96,6 @@ Column {
 
                     function setMaxHeight() {
                         const ratio = width / height
-                        //height = maxHeight
                         width = Math.floor(maxHeight * ratio)
                     }
 
@@ -98,14 +110,15 @@ Column {
                 }
 
                 SkyLabel {
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 5
                     backgroundColor: "black"
                     backgroundOpacity: 0.6
                     color: "white"
-                    text: guiSettings.videoDurationToString(videoPlayer.duration)
+                    text: guiSettings.videoDurationToString(videoPlayer.getDuration())
+                    visible: !isFullViewMode
                 }
             }
         }
@@ -119,9 +132,14 @@ Column {
             accessibleName: qsTr("play video")
             svg: svgFilled.play
             visible: filter.imageVisible() && !videoPlayer.playing && !videoPlayer.restarting
-            enabled: videoPlayer.hasVideo
+            enabled: videoPlayer.hasVideo || !autoLoad
 
-            onClicked: videoPlayer.start()
+            onClicked: {
+                if (videoSource)
+                    videoPlayer.start()
+                else if (!autoLoad)
+                    m3u8Reader.loadStream()
+            }
 
             BusyIndicator {
                 anchors.fill: parent
@@ -138,10 +156,12 @@ Column {
                 property bool videoFound: false
                 property bool restarting: false
                 property bool positionKicked: false
-                property bool mustKickPosition: false
+                property bool mustKickPosition: false // hack for playing live stream
+                property int m3u8DurationMs: 0
 
                 id: videoPlayer
                 source: videoSource
+                loops: MediaPlayer.Infinite
                 videoOutput: videoOutput
                 audioOutput: audioOutput
 
@@ -173,7 +193,7 @@ Column {
                 }
 
                 onPlaybackStateChanged: {
-                    if (playbackState === MediaPlayer.StoppedState)
+                    if (mustKickPosition && playbackState === MediaPlayer.StoppedState)
                     {
                         source = ""
                         source = videoSource
@@ -181,6 +201,10 @@ Column {
                 }
 
                 onErrorOccurred: (error, errorString) => { console.debug("Video error:", source, error, errorString) }
+
+                function getDuration() {
+                    return duration === 0 ? m3u8DurationMs : duration
+                }
 
                 function playPause() {
                     if (playbackState == MediaPlayer.PausedState)
@@ -190,16 +214,12 @@ Column {
                 }
 
                 function start() {
-                    positionKicked = false
                     restartTimer.set(true)
                     play()
                 }
 
                 function restart() {
-                    stopPlaying()
-                    source = ""
-                    source = videoSource
-                    start()
+                    position = 0
                 }
 
                 function stopPlaying() {
@@ -218,16 +238,19 @@ Column {
             }
             AudioOutput {
                 id: audioOutput
-                muted: !userSettings.videoSound
+                muted: !userSettings.videoSound || userSettings.videoAutoPlay
 
                 function toggleSound() {
-                    userSettings.videoSound = !userSettings.videoSound
+                    if (userSettings.videoAutoPlay)
+                        muted = !muted
+                    else
+                        userSettings.videoSound = !userSettings.videoSound
                 }
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: (videoPlayer.playing && videoPlayer.isLoading()) || videoPlayer.restarting
+                running: (videoPlayer.playing && videoPlayer.isLoading()) || videoPlayer.restarting || (m3u8Reader.loading && !autoLoad)
             }
 
             Timer {
@@ -258,7 +281,7 @@ Column {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
                 else
-                    root.viewFullVideo(videoView)
+                    root.viewFullVideo(videoView, videoSource)
             }
         }
 
@@ -276,7 +299,7 @@ Column {
 
         id: playControls
         x: (parent.width - width) / 2
-        width: defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.width
+        width: defaultThumbImg.visible ? defaultThumbImg.width : Math.min(thumbImg.width, thumbImg.maxWidth ? thumbImg.maxWidth : thumbImg.width)
         height: playPauseButton.height
         color: "transparent"
         visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
@@ -407,11 +430,30 @@ Column {
     M3U8Reader {
         id: m3u8Reader
 
-        onGetVideoStreamOk: (videoStream) => videoSource = videoStream
+        onGetVideoStreamOk: (durationMs) => {
+            videoPlayer.m3u8DurationMs = durationMs
 
-        onGetVideoStreamFailed: {
+            if (autoLoad)
+                loadStream()
+        }
+
+        onGetVideoStreamError: {
             videoSource = videoView.playlistUrl
             videoPlayer.mustKickPosition = true
+
+            if (userSettings.videoAutoPlay)
+                videoPlayer.start()
+        }
+
+        onLoadStreamOk: (videoStream) => {
+            videoSource = videoStream
+
+            if (!autoLoad || userSettings.videoAutoPlay)
+                videoPlayer.start()
+        }
+
+        onLoadStreamError: {
+            console.warn("Could not load stream")
         }
     }
 
@@ -421,7 +463,12 @@ Column {
 
     function pause() {
         if (videoPlayer.playing)
-            videoPlayer.pause()
+        {
+            if (!userSettings.videoAutoPlay)
+                videoPlayer.pause()
+            else
+                audioOutput.muted = true
+        }
     }
 
     function getAspectRatio() {
@@ -431,10 +478,22 @@ Column {
             return 16/9
     }
 
-    Component.onCompleted: {
-        if (videoView.playlistUrl.endsWith(".m3u8"))
+    function setVideoSource() {
+        console.debug("Set video source for:", videoView.playlistUrl)
+
+        if (videoView.playlistUrl.endsWith(".m3u8")) {
             m3u8Reader.getVideoStream(videoView.playlistUrl)
-        else
+        }
+        else {
             videoSource = videoView.playlistUrl
+
+            if (userSettings.videoAutoPlay)
+                videoPlayer.start()
+        }
+    }
+
+    Component.onCompleted: {
+        if (!videoSource)
+            setVideoSource()
     }
 }

@@ -5,6 +5,7 @@ import skywalker
 
 SkyPage {
     required property var videoView // videoview
+    property string videoSource
 
     signal closed
 
@@ -19,12 +20,22 @@ SkyPage {
         width: parent.width
         maxHeight: parent.height
         videoView: page.videoView
+        videoSource: page.videoSource
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
         controlColor: "white"
         disabledColor: "darkslategrey"
         backgroundColor: "black"
         isFullViewMode: true
+    }
+
+    Rectangle {
+        width: parent.width
+        anchors.top: altFlick.top
+        anchors.bottom: parent.bottom
+        color: "black"
+        opacity: 0.7
+        visible: altFlick.visible
     }
 
     Flickable {

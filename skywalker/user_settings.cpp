@@ -388,6 +388,34 @@ bool UserSettings::getGifAutoPlay() const
     return mSettings.value("gifAutoPlay", true).toBool();
 }
 
+void UserSettings::setVideoAutoPlay(bool autoPlay)
+{
+    if (autoPlay == getVideoAutoPlay())
+        return;
+
+    mSettings.setValue("videoAutoPlay", autoPlay);
+    emit videoAutoPlayChanged();
+}
+
+bool UserSettings::getVideoAutoPlay() const
+{
+    return mSettings.value("videoAutoPlay", false).toBool();
+}
+
+void UserSettings::setVideoAutoLoad(bool autoLoad)
+{
+    if (autoLoad == getVideoAutoLoad())
+        return;
+
+    mSettings.setValue("videoAutoLoad", autoLoad);
+    emit videoAutoLoadChanged();
+}
+
+bool UserSettings::getVideoAutoLoad() const
+{
+    return mSettings.value("videoAutoLoad", false).toBool();
+}
+
 void UserSettings::setVideoSound(bool on)
 {
     if (on == getVideoSound())

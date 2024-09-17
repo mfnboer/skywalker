@@ -481,6 +481,25 @@ SkyPage {
                 checked: userPrefs.gifAutoPlay
                 onCheckedChanged: userPrefs.gifAutoPlay = checked
             }
+
+            AccessibleSwitch {
+                text: qsTr("Video auto play")
+                checked: userSettings.videoAutoPlay
+                onCheckedChanged: userSettings.videoAutoPlay = checked
+            }
+
+            AccessibleSwitch {
+                text: qsTr("Video auto load")
+                checked: userSettings.videoAutoLoad
+                onCheckedChanged: userSettings.videoAutoLoad = checked
+                enabled: !userSettings.videoAutoPlay
+            }
+            AccessibleText {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                text: qsTr("With auto loading, the video is automatically loaded (more data usage) so it starts faster when you press play. Otherwise it will load when you press play.")
+                enabled: !userSettings.videoAutoPlay
+            }
         }
 
         ColumnLayout {

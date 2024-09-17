@@ -26,6 +26,8 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
+    Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
+    Q_PROPERTY(bool videoAutoLoad READ getVideoAutoLoad WRITE setVideoAutoLoad NOTIFY videoAutoLoadChanged FINAL)
 
 public:
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
@@ -109,6 +111,12 @@ public:
 
     void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
+
+    void setVideoAutoPlay(bool autoPlay);
+    bool getVideoAutoPlay() const;
+
+    void setVideoAutoLoad(bool autoLoad);
+    bool getVideoAutoLoad() const;
 
     void setVideoSound(bool on);
     bool getVideoSound() const;
@@ -209,6 +217,8 @@ signals:
     void threadColorChanged();
     void giantEmojisChanged();
     void videoSoundChanged();
+    void videoAutoPlayChanged();
+    void videoAutoLoadChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;
