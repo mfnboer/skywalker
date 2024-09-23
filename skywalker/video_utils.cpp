@@ -25,9 +25,7 @@ VideoUtils::VideoUtils(QObject* parent) :
 
 void VideoUtils::transcodeVideo(const QString inputFileName, int height, int startMs, int endMs)
 {
-    QFileInfo fileInfo(inputFileName);
-    const QString ext = fileInfo.suffix();
-    auto outputFile = FileUtils::makeTempFile(ext);
+    auto outputFile = FileUtils::makeTempFile("mp4");
     const QString outputFileName = outputFile->fileName();
     outputFile = nullptr;
 

@@ -3072,6 +3072,8 @@ void Skywalker::shareVideo(const QString& contentUri, const QString& text)
         return;
     }
 
+    // NOTE: the content-URI may point to another video container than mp4, but creating
+    // a temp file with mp4-extension seems to work fine for other containers, e.g. webm
     int fd = FileUtils::openContentUri(contentUri);
     auto video = FileUtils::createTempFile(fd, "mp4");
 

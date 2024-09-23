@@ -188,7 +188,7 @@ private:
     void continueReAttachQuote(const QString& embeddingUri, int retries =1);
     void shareMedia(int fd, const QString& mimeType);
     void sharePhoto(int fd);
-    void shareVideo(int fd);
+    void shareVideo(int fd, const QString& mimeType);
     void cancelPhotoPicking();
     void getVideoUploadLimits(const std::function<void(const VideoUploadLimits&)>& cb);
 

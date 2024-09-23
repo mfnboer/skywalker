@@ -1,3 +1,7 @@
+next
+====
+* Support other video formats than mp4 for upload, e.g. webm
+
 3.4.1
 =====
 * Improve video playing

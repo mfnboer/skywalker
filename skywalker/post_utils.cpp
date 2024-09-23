@@ -10,6 +10,8 @@
 #include "unicode_fonts.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QImageReader>
+#include <QMimeDatabase>
+#include <QMimeType>
 
 namespace Skywalker {
 
@@ -1546,7 +1548,7 @@ void PostUtils::shareMedia(int fd, const QString& mimeType)
     }
     else if (mimeType.startsWith("video"))
     {
-        shareVideo(fd);
+        shareVideo(fd, mimeType);
     }
     else
     {
@@ -1571,11 +1573,20 @@ void PostUtils::sharePhoto(int fd)
     emit photoPicked(source);
 }
 
-void PostUtils::shareVideo(int fd)
+void PostUtils::shareVideo(int fd, const QString& mimeTypeName)
 {
-    qDebug() << "Share video fd:" << fd;
+    qDebug() << "Share video fd:" << fd << mimeTypeName;
+    QMimeDatabase mimeDb;
+    const QMimeType mimeType = mimeDb.mimeTypeForName(mimeTypeName);
+    const QString ext = mimeType.preferredSuffix();
 
-    auto video = FileUtils::createTempFile(fd, "mp4");
+    if (ext.isEmpty())
+    {
+        emit videoPickedFailed(tr("Unsupported mime type: %1").arg(mimeTypeName));
+        return;
+    }
+
+    auto video = FileUtils::createTempFile(fd, ext);
 
     if (!video)
     {

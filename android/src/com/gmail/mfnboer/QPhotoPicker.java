@@ -45,7 +45,7 @@ public class QPhotoPicker extends AppCompatActivity {
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
-        String[] mimeTypesWithVideo = {"image/*", "video/mp4"};
+        String[] mimeTypesWithVideo = {"image/*", "video/*"};
         String[] mimeTypesImageOnly = {"image/*"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, pickVideo ? mimeTypesWithVideo : mimeTypesImageOnly);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
