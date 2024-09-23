@@ -20,19 +20,7 @@ Item {
         spacing: 5
 
         Loader {
-            id: imageLoader
-            width: parent.width
-            visible: status == Loader.Ready
-        }
-
-        Loader {
-            id: videoLoader
-            width: parent.width
-            visible: status == Loader.Ready
-        }
-
-        Loader {
-            id: externalLoader
+            id: mediaLoader
             width: parent.width
             visible: status == Loader.Ready
         }
@@ -44,22 +32,20 @@ Item {
         Component.onCompleted: {
             if (record.images.length > 0) {
                 let qmlFile = `ImagePreview${(record.images.length)}.qml`
-                imageLoader.setSource(qmlFile, {
+                mediaLoader.setSource(qmlFile, {
                                           images: record.images,
                                           contentVisibility: recordItem.contentVisibility,
                                           contentWarning: recordItem.contentWarning })
             }
-
-            if (record.video) {
-                videoLoader.setSource("VideoView.qml", {
+            else if (record.video) {
+                mediaLoader.setSource("VideoView.qml", {
                                           videoView: record.video,
                                           contentVisibility: recordItem.contentVisibility,
                                           contentWarning: recordItem.contentVisibility,
                                           backgroundColor: recordItem.backgroundColor })
             }
-
-            if (record.external) {
-                externalLoader.setSource("ExternalView.qml", {
+            else if (record.external) {
+                mediaLoader.setSource("ExternalView.qml", {
                                             postExternal: record.external,
                                             contentVisibility: recordItem.contentVisibility,
                                             contentWarning: recordItem.contentVisibility })
@@ -79,7 +65,7 @@ Item {
     }
 
     function movedOffScreen() {
-        if (videoLoader.item)
-            videoLoader.item.pause()
+        if (record.video && mediaLoader.item)
+            mediaLoader.item.pause()
     }
 }
