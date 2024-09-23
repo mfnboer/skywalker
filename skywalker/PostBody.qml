@@ -152,19 +152,7 @@ Column {
     }
 
     Loader {
-        id: imageLoader
-        width: parent.width
-        visible: status == Loader.Ready
-    }
-
-    Loader {
-        id: videoLoader
-        width: parent.width
-        visible: status == Loader.Ready
-    }
-
-    Loader {
-        id: externalLoader
+        id: mediaLoader
         width: parent.width
         visible: status == Loader.Ready
     }
@@ -177,12 +165,6 @@ Column {
 
     Loader {
         id: recordLoader
-        width: parent.width
-        visible: status == Loader.Ready
-    }
-
-    Loader {
-        id: recordWithMediaLoader
         width: parent.width
         visible: status == Loader.Ready
     }
@@ -208,11 +190,11 @@ Column {
     }
 
     function movedOffScreen() {
-        if (videoLoader.item)
-            videoLoader.item.pause()
+        if (postVideo && mediaLoader.item)
+            mediaLoader.item.pause()
 
-        if (recordWithMediaLoader.item)
-            recordWithMediaLoader.item.movedOffScreen()
+        if (postRecordWithMedia && recordLoader.item)
+            recordLoader.item.movedOffScreen()
     }
 
     function postVisible() {
@@ -267,30 +249,28 @@ Column {
 
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
-            imageLoader.setSource(qmlFile, {
+            mediaLoader.setSource(qmlFile, {
                                       images: postImages,
                                       contentVisibility: postContentVisibility,
                                       contentWarning: postContentWarning })
         }
-
-        if (postVideo) {
+        else if (postVideo) {
             if (isDraft) {
-                videoLoader.setSource("VideoThumbnail.qml", {
+                mediaLoader.setSource("VideoThumbnail.qml", {
                                         width: Math.min(180 * 1.777, postBody.width),
                                         height: 180,
                                         videoSource: postBody.postVideo.playlistUrl });
             }
             else {
-                videoLoader.setSource("VideoView.qml", {
+                mediaLoader.setSource("VideoView.qml", {
                                           videoView: postBody.postVideo,
                                           contentVisibility: postContentVisibility,
                                           contentWarning: postContentWarning,
                                           backgroundColor: bodyBackgroundColor })
             }
         }
-
-        if (postExternal) {
-            externalLoader.setSource("ExternalView.qml", {
+        else if (postExternal) {
+            mediaLoader.setSource("ExternalView.qml", {
                                         postExternal: postBody.postExternal,
                                         contentVisibility: postContentVisibility,
                                         contentWarning: postContentWarning })
@@ -305,9 +285,8 @@ Column {
 
         if (postRecord)
             recordLoader.setSource("RecordView.qml", {record: postRecord})
-
-        if (postRecordWithMedia) {
-            recordWithMediaLoader.setSource("RecordWithMediaView.qml", {
+        else if (postRecordWithMedia) {
+            recordLoader.setSource("RecordWithMediaView.qml", {
                                                 record: postRecordWithMedia,
                                                 contentVisibility: postContentVisibility,
                                                 contentWarning: postContentWarning,
@@ -322,7 +301,7 @@ Column {
 
     onPostRecordWithMediaChanged: {
         if (postRecordWithMedia) {
-            recordWithMediaLoader.setSource("RecordWithMediaView.qml", {
+            recordLoader.setSource("RecordWithMediaView.qml", {
                                                 record: postRecordWithMedia,
                                                 contentVisibility: postContentVisibility,
                                                 contentWarning: postContentWarning,
