@@ -10,7 +10,9 @@ namespace Skywalker::FileUtils {
 bool checkReadMediaPermission();
 bool checkWriteMediaPermission();
 QString getAppDataPath(const QString& subDir);
+QString getPicturesPath();
 QString getPicturesPath(const QString& subDir);
+QString getMoviesPath();
 int openContentUri(const QString& contentUri);
 QString resolveContentUriToFile(const QString& contentUri);
 std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension);
@@ -18,5 +20,6 @@ std::unique_ptr<QTemporaryFile> createTempFile(const QString& fileUri, const QSt
 std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileExtension);
 std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtension);
 QString createDateTimeName(QDateTime timestamp = QDateTime::currentDateTime());
+void scanMediaFile(const QString& fileName);
 
 }

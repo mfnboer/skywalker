@@ -191,38 +191,6 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
     return { mimeType, img.size() };
 }
 
-static void scanMediaFile(const QString& fileName)
-{
-#if defined(Q_OS_ANDROID)
-    auto jsFileName = QJniObject::fromString(fileName);
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/FileUtils",
-                                       "scanMediaFile",
-                                       "(Ljava/lang/String;)V",
-                                       jsFileName.object<jstring>());
-#else
-    qDebug() << "No need to scan media:" << fileName;
-#endif
-}
-
-static QString getPicturesPath()
-{
-#if defined(Q_OS_ANDROID)
-    auto pathObj = QJniObject::callStaticMethod<jstring>("com/gmail/mfnboer/FileUtils",
-                                                         "getPicturesPath",
-                                                         "()Ljava/lang/String;");
-
-    if (!pathObj.isValid())
-    {
-        qWarning() << "Invalid path object.";
-        return {};
-    }
-
-    return pathObj.toString();
-#else
-    return QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-#endif
-}
-
 static QString createPictureFileName()
 {
     return QString("SKYWALKER_%1.jpg").arg(FileUtils::createDateTimeName());
@@ -244,7 +212,7 @@ void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
                 return;
             }
 
-            const QString picturesPath = getPicturesPath();
+            const QString picturesPath = FileUtils::getPicturesPath();
 
             if (picturesPath.isEmpty())
             {
@@ -261,7 +229,7 @@ void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
                 errorCb(QObject::tr("Failed to save picture"));
             }
 
-            scanMediaFile(fileName);
+            FileUtils::scanMediaFile(fileName);
             successCb();
         },
         [errorCb](const QString& error){

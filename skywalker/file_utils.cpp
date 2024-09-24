@@ -87,6 +87,25 @@ QString getAppDataPath(const QString& subDir)
 #endif
 }
 
+QString getPicturesPath()
+{
+#if defined(Q_OS_ANDROID)
+    auto pathObj = QJniObject::callStaticMethod<jstring>("com/gmail/mfnboer/FileUtils",
+                                                         "getPicturesPath",
+                                                         "()Ljava/lang/String;");
+
+    if (!pathObj.isValid())
+    {
+        qWarning() << "Invalid path object.";
+        return {};
+    }
+
+    return pathObj.toString();
+#else
+    return QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+#endif
+}
+
 QString getPicturesPath(const QString& subDir)
 {
     Q_ASSERT(!subDir.isEmpty());
@@ -117,6 +136,25 @@ QString getPicturesPath(const QString& subDir)
     }
 #endif
     return picPath;
+}
+
+QString getMoviesPath()
+{
+#if defined(Q_OS_ANDROID)
+    auto pathObj = QJniObject::callStaticMethod<jstring>("com/gmail/mfnboer/FileUtils",
+                                                         "getMoviesPath",
+                                                         "()Ljava/lang/String;");
+
+    if (!pathObj.isValid())
+    {
+        qWarning() << "Invalid path object.";
+        return {};
+    }
+
+    return pathObj.toString();
+#else
+    return QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
+#endif
 }
 
 int openContentUri(const QString& contentUri)
@@ -241,6 +279,19 @@ std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileE
 QString createDateTimeName(QDateTime timestamp)
 {
     return timestamp.toString("yyyyMMddhhmmss");
+}
+
+void scanMediaFile(const QString& fileName)
+{
+#if defined(Q_OS_ANDROID)
+    auto jsFileName = QJniObject::fromString(fileName);
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/FileUtils",
+                                       "scanMediaFile",
+                                       "(Ljava/lang/String;)V",
+                                       jsFileName.object<jstring>());
+#else
+    qDebug() << "No need to scan media:" << fileName;
+#endif
 }
 
 }

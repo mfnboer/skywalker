@@ -10,11 +10,13 @@ import java.io.File;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MimeTypes;
 import androidx.media3.effect.Presentation;
+import androidx.media3.muxer.Muxer;
 import androidx.media3.transformer.Composition;
 import androidx.media3.transformer.EditedMediaItem;
 import androidx.media3.transformer.Effects;
 import androidx.media3.transformer.ExportException;
 import androidx.media3.transformer.ExportResult;
+import androidx.media3.transformer.InAppMuxer;
 import androidx.media3.transformer.Transformer;
 import android.content.Context;
 import android.net.Uri;
@@ -28,7 +30,7 @@ public class VideoTranscoder {
     public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath, String error);
 
     public static void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs) {
-        Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height);
+        Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height + " start:" + startMs + " end:" + endMs);
 
         Context context = QtNative.getContext();
 
@@ -48,14 +50,18 @@ public class VideoTranscoder {
                         .build())
                 .build();
 
-        EditedMediaItem editedMediaItem = new EditedMediaItem.Builder(mediaItem)
-                .setEffects(new Effects(ImmutableList.of(), ImmutableList.of(Presentation.createForHeight(height))))
-                .build();
+        EditedMediaItem.Builder emiBuilder = new EditedMediaItem.Builder(mediaItem);
 
+        if (height > 0)
+            emiBuilder.setEffects(new Effects(ImmutableList.of(), ImmutableList.of(Presentation.createForHeight(height))));
 
+        EditedMediaItem editedMediaItem = emiBuilder.build();
+
+        // NOTE: The InAppMuxer is needed to transfrom mpeg-ts to mp4. Without it the code crashes.
         Transformer transformer = new Transformer.Builder(context)
                 .setVideoMimeType(MimeTypes.VIDEO_H264)
                 .setAudioMimeType(MimeTypes.AUDIO_AAC)
+                .setMuxerFactory(new InAppMuxer.Factory.Builder().build())
                 .addListener(new Transformer.Listener() {
                     @Override
                     public void onCompleted(Composition composition, ExportResult result) {

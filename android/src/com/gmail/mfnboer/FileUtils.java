@@ -94,6 +94,12 @@ public class FileUtils {
         return subPath.getAbsolutePath();
     }
 
+    public static String getMoviesPath() {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        Log.d(LOGTAG, path.getAbsolutePath());
+        return path.getAbsolutePath();
+    }
+
     public static String getAppDataPath(String subDir) {
         Context context = QtNative.getContext();
 

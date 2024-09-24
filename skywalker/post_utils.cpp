@@ -1578,7 +1578,10 @@ void PostUtils::shareVideo(int fd, const QString& mimeTypeName)
     qDebug() << "Share video fd:" << fd << mimeTypeName;
     QMimeDatabase mimeDb;
     const QMimeType mimeType = mimeDb.mimeTypeForName(mimeTypeName);
-    const QString ext = mimeType.preferredSuffix();
+    QString ext = mimeType.preferredSuffix();
+
+    if (ext.isEmpty() && mimeTypeName == "video/mp2ts")
+        ext = "ts";
 
     if (ext.isEmpty())
     {

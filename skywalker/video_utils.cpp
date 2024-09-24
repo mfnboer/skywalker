@@ -23,7 +23,16 @@ VideoUtils::VideoUtils(QObject* parent) :
             });
 }
 
-void VideoUtils::transcodeVideo(const QString inputFileName, int height, int startMs, int endMs)
+void VideoUtils::setTranscoding(bool transcoding)
+{
+    if (transcoding != mTranscoding)
+    {
+        mTranscoding = transcoding;
+        emit transcodingChanged();
+    }
+}
+
+void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int startMs, int endMs)
 {
     auto outputFile = FileUtils::makeTempFile("mp4");
     const QString outputFileName = outputFile->fileName();
@@ -49,6 +58,8 @@ void VideoUtils::transcodeVideo(const QString inputFileName, int height, int sta
         jsInputFileName.object<jstring>(),
         jsOutputFileName.object<jstring>(),
         jiHeight, jiStartMs, jiEndMs);
+
+    setTranscoding(true);
 #else
     Q_UNUSED(height)
     Q_UNUSED(startMs)
@@ -61,14 +72,67 @@ void VideoUtils::transcodeVideo(const QString inputFileName, int height, int sta
 
 void VideoUtils::handleTranscodingOk(const QString& inputFileName, const QString& outputFileName)
 {
+    setTranscoding(false);
     TempFileHolder::instance().put(outputFileName);
     emit transcodingOk(inputFileName, outputFileName);
 }
 
 void VideoUtils::handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
+    setTranscoding(false);
     QFile::remove(outputFileName);
     emit transcodingFailed(inputFileName, error);
+}
+
+static QString createVideoFileName(QString extension)
+{
+    return QString("SKYWALKER_%1.%2").arg(FileUtils::createDateTimeName(), extension);
+}
+
+void VideoUtils::copyVideoToGallery(const QString& fileName)
+{
+    if (!FileUtils::checkWriteMediaPermission())
+    {
+        emit copyVideoFailed(tr("No permission to save video"));
+        return;
+    }
+
+    const QString moviesPath = FileUtils::getMoviesPath();
+
+    if (moviesPath.isEmpty())
+    {
+        emit copyVideoFailed(tr("No location to save video"));
+        return;
+    }
+
+    const QFileInfo fileInfo(fileName);
+    const QString outputFileName = QString("%1/%2").arg(moviesPath, createVideoFileName(fileInfo.suffix()));
+    qDebug() << "Copy" << fileName << "to" << outputFileName;
+
+    QFile inputFile(fileName);
+    if (!inputFile.open(QFile::ReadOnly))
+    {
+        emit copyVideoFailed(tr("Failed read video"));
+        return;
+    }
+
+    QFile outputFile(outputFileName);
+    if (!outputFile.open(QFile::WriteOnly))
+    {
+        emit copyVideoFailed(tr("Failed write video"));
+        return;
+    }
+
+    if (outputFile.write(inputFile.readAll()) < 0)
+    {
+        emit copyVideoFailed(tr("Failed to copy video to gallery"));
+        return;
+    }
+
+    outputFile.flush();
+    outputFile.close();
+    FileUtils::scanMediaFile(outputFileName);
+    emit copyVideoOk();
 }
 
 }

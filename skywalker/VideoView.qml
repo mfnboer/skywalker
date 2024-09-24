@@ -478,6 +478,10 @@ Column {
             return 16/9
     }
 
+    function getDurationMs() {
+        return videoPlayer.getDuration()
+    }
+
     function setVideoSource() {
         console.debug("Set video source for:", videoView.playlistUrl)
 
