@@ -41,7 +41,10 @@ SkyPage {
         readonly property var videoResolution: metaData.value(MediaMetaData.Resolution)
         readonly property int videoWidth: videoResolution ? videoResolution.width : 0
         readonly property int videoHeight: videoResolution ? videoResolution.height : 0
-        readonly property double aspectRatio: videoHeight > 0 ? videoWidth / videoHeight : 0
+        readonly property var videoOrientationValue: metaData.value(MediaMetaData.Orientation)
+        readonly property int videoOrientation: videoOrientationValue ? videoOrientationValue : 0
+        readonly property bool videoRotated: [-90, 90, 270].includes(videoOrientation)
+        readonly property double aspectRatio: !videoRotated ? (videoHeight > 0 ? videoWidth / videoHeight : 0) : (videoWidth > 0 ? videoHeight / videoWidth : 0)
         readonly property int maxHeight: durationControl.y - 5
         readonly property int maxWidth: maxHeight * aspectRatio
 
@@ -176,7 +179,7 @@ SkyPage {
 
         AccessibleText {
             Layout.fillWidth: true
-            text: `${video.videoWidth} x ${video.videoHeight}`
+            text: sizeString(Qt.size(video.videoWidth, video.videoHeight))
         }
 
         AccessibleText {
@@ -249,7 +252,7 @@ SkyPage {
     }
 
     function calcSdResolution() {
-        const resolution = calcResolution(640, 320)
+        const resolution = calcResolution(640, 360)
 
         if (resolution !== Qt.size(0, 0))
             return resolution
@@ -258,7 +261,7 @@ SkyPage {
     }
 
     function sizeString(sz) {
-        return `${sz.width} x ${sz.height}`
+        return !video.videoRotated ? `${sz.width} x ${sz.height}` : `${sz.height} x ${sz.width}`
     }
 
     function getNewHeight() {
