@@ -3,8 +3,11 @@
 #include "m3u8_reader.h"
 #include "file_utils.h"
 #include "m3u8_parser.h"
+#include "network_utils.h"
 
 namespace Skywalker {
+
+static constexpr int HD_BANDWIDTH_THRESHOLD_KBPS = 2000;
 
 M3U8Reader::M3U8Reader(QObject* parent) :
     QObject(parent)
@@ -22,14 +25,29 @@ void M3U8Reader::setLoading(bool loading)
     }
 }
 
-void M3U8Reader::getVideoStream(const QString& link, StreamResolution resolution, bool firstCall)
+void M3U8Reader::setResolution()
 {
-    mResolution = resolution;
+    const int kbps = NetworkUtils::getBandwidthKbps();
 
-    if (firstCall)
-        mLoopCount = 5;
+    if (kbps < HD_BANDWIDTH_THRESHOLD_KBPS)
+        mResolution = STREAM_RESOLUTION_360;
     else
+        mResolution = STREAM_RESOLUTION_720;
+
+    qDebug() << "Resolution:" << mResolution;
+}
+
+void M3U8Reader::getVideoStream(const QString& link, bool firstCall)
+{   
+    if (firstCall)
+    {
+        setResolution();
+        mLoopCount = 5;
+    }
+    else
+    {
         --mLoopCount;
+    }
 
     qDebug() << "Get video stream:" << link << "firstCall:" << firstCall << "loopCount:" << mLoopCount;
 
@@ -120,7 +138,7 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
 
     qDebug() << "Extracted stream:" << stream;
     const QString streamUrl = buildStreamUrl(reply->request().url(), stream);
-    getVideoStream(streamUrl, mResolution);
+    getVideoStream(streamUrl);
 }
 
 QString M3U8Reader::buildStreamUrl(const QUrl& requestUrl, const QString& stream)

@@ -486,7 +486,7 @@ Column {
         console.debug("Set video source for:", videoView.playlistUrl)
 
         if (videoView.playlistUrl.endsWith(".m3u8")) {
-            m3u8Reader.getVideoStream(videoView.playlistUrl, M3U8Reader.STREAM_RESOLUTION_360)
+            m3u8Reader.getVideoStream(videoView.playlistUrl)
         }
         else {
             videoSource = videoView.playlistUrl

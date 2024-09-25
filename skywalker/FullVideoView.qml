@@ -163,7 +163,7 @@ SkyPage {
             videoUtils.copyVideoToGallery(view.videoSource.slice(7))
         }
         else if (videoView.playlistUrl.endsWith(".m3u8")) {
-            m3u8Reader.getVideoStream(videoView.playlistUrl, M3U8Reader.STREAM_RESOLUTION_720)
+            m3u8Reader.getVideoStream(videoView.playlistUrl)
             statusPopup.show(qsTr("Saving video"), QEnums.STATUS_LEVEL_INFO, 60)
         }
         else {
