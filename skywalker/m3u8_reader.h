@@ -18,11 +18,18 @@ class M3U8Reader : public QObject
     QML_ELEMENT
 
 public:
+    enum StreamResolution
+    {
+        STREAM_RESOLUTION_360,
+        STREAM_RESOLUTION_720
+    };
+    Q_ENUM(StreamResolution)
+
     explicit M3U8Reader(QObject* parent = nullptr);
 
     bool isLoading() const { return mLoading; }
     void setLoading(bool loading);
-    Q_INVOKABLE void getVideoStream(const QString& link, bool firstCall = true);
+    Q_INVOKABLE void getVideoStream(const QString& link, StreamResolution resolution, bool firstCall = true);
     Q_INVOKABLE void loadStream();
 
 signals:
@@ -46,8 +53,9 @@ private:
     QNetworkAccessManager mNetwork;
     QNetworkReply* mInProgress = nullptr;
     int mLoopCount = 0; // protect against potential loop
+    StreamResolution mResolution = STREAM_RESOLUTION_360;
     QStringList mStreamSegments;
-    std::unique_ptr<QTemporaryFile> mStream;
+    std::unique_ptr<QFile> mStream;
     bool mLoading = false;
 };
 

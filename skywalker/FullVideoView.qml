@@ -101,7 +101,6 @@ SkyPage {
             MenuItem {
                 text: qsTr("Save video")
                 onTriggered: page.saveVideo()
-                enabled: view.videoSource && view.videoSource.startsWith("file://")
 
                 MenuItemSvg {
                     svg: svgOutline.save
@@ -121,37 +120,35 @@ SkyPage {
     }
 
     BusyIndicator {
+        anchors.centerIn: parent
         running: m3u8Reader.loading || videoUtils.transcoding
     }
 
     M3U8Reader {
-        property int duration: 0
-
         id: m3u8Reader
 
-        onGetVideoStreamOk: (durationMs) => {
-            duration = durationMs
-            loadStream()
-        }
+        onGetVideoStreamOk: (durationMs) => loadStream()
 
+        // NOTE: Transcoding to MP4 results in an MP4 that cannot be played by the gallery
+        // app. The MP4 can be played with other players. For now save as mpeg-ts. This
+        // can be played by the gallery app.
         onGetVideoStreamError: root.getSkywalker().showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
-        onLoadStreamOk: (videoSource) => videoUtils.copyVideoToGallery(videoSource.slice(7)) // videoUtils.transcodeVideo(videoSource.slice(7), 360, 0, duration)
+        onLoadStreamOk: (videoSource) => videoUtils.copyVideoToGallery(videoSource.slice(7))
         onLoadStreamError: root.getSkywalker().showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
     }
 
     VideoUtils {
         id: videoUtils
 
-        // TODO: drop temp file
-        onTranscodingOk: (inputFileName, outputFileName) => videoUtils.copyVideoToGallery(outputFileName)
-        onTranscodingFailed: (inputFileName, error) => root.getSkywalker().showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onCopyVideoOk: root.getSkywalker().showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
         onCopyVideoFailed: (error) => root.getSkywalker().showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     function saveVideo() {
-        if (videoView.playlistUrl.endsWith(".m3u8"))
-            m3u8Reader.getVideoStream(videoView.playlistUrl)
+        if (view.videoSource && view.videoSource.startsWith("file://"))
+            videoUtils.copyVideoToGallery(view.videoSource.slice(7))
+        else if (videoView.playlistUrl.endsWith(".m3u8"))
+            m3u8Reader.getVideoStream(videoView.playlistUrl, M3U8Reader.STREAM_RESOLUTION_720)
         else
             root.getSkywalker().showStatusMessage(qsTr(`Cannot save: ${videoView.playlistUrl}`), QEnums.STATUS_LEVEL_ERROR)
     }

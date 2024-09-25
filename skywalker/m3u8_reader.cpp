@@ -22,8 +22,10 @@ void M3U8Reader::setLoading(bool loading)
     }
 }
 
-void M3U8Reader::getVideoStream(const QString& link, bool firstCall)
+void M3U8Reader::getVideoStream(const QString& link, StreamResolution resolution, bool firstCall)
 {
+    mResolution = resolution;
+
     if (firstCall)
         mLoopCount = 5;
     else
@@ -114,10 +116,10 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
     }
 
     Q_ASSERT(streamType == M3U8StreamType::PLAYLIST);
-    QString stream = parser.getStream360();
+    QString stream = mResolution == STREAM_RESOLUTION_360 ? parser.getStream360() : parser.getStream720();
 
     if (stream.isEmpty())
-        stream = parser.getStream720();
+        stream = mResolution == STREAM_RESOLUTION_360 ? parser.getStream720() : parser.getStream360();
 
     if (stream.isEmpty())
     {
@@ -128,7 +130,7 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
 
     qDebug() << "Extracted stream:" << stream;
     const QString streamUrl = buildStreamUrl(reply->request().url(), stream);
-    getVideoStream(streamUrl);
+    getVideoStream(streamUrl, mResolution);
 }
 
 QString M3U8Reader::buildStreamUrl(const QUrl& requestUrl, const QString& stream)

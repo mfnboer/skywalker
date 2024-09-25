@@ -89,6 +89,20 @@ static QString createVideoFileName(QString extension)
     return QString("SKYWALKER_%1.%2").arg(FileUtils::createDateTimeName(), extension);
 }
 
+QString VideoUtils::getVideoFileNameForGallery(const QString& extension)
+{
+    const QString moviesPath = FileUtils::getMoviesPath();
+
+    if (moviesPath.isEmpty())
+    {
+        qWarning() << "No location to save video";
+        return {};
+    }
+
+    const QString outputFileName = QString("%1/%2").arg(moviesPath, createVideoFileName(extension));
+    return outputFileName;
+}
+
 void VideoUtils::copyVideoToGallery(const QString& fileName)
 {
     if (!FileUtils::checkWriteMediaPermission())
@@ -97,16 +111,15 @@ void VideoUtils::copyVideoToGallery(const QString& fileName)
         return;
     }
 
-    const QString moviesPath = FileUtils::getMoviesPath();
+    const QFileInfo fileInfo(fileName);
+    const QString outputFileName = getVideoFileNameForGallery(fileInfo.suffix());
 
-    if (moviesPath.isEmpty())
+    if (outputFileName.isEmpty())
     {
-        emit copyVideoFailed(tr("No location to save video"));
+        emit copyVideoFailed(tr("Cannot save to gallery"));
         return;
     }
 
-    const QFileInfo fileInfo(fileName);
-    const QString outputFileName = QString("%1/%2").arg(moviesPath, createVideoFileName(fileInfo.suffix()));
     qDebug() << "Copy" << fileName << "to" << outputFileName;
 
     QFile inputFile(fileName);

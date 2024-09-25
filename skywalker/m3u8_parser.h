@@ -13,11 +13,6 @@ enum class M3U8StreamType
     ERROR
 };
 
-struct M3U8Stream
-{
-
-};
-
 class M3U8Parser
 {
 public:
