@@ -30,7 +30,9 @@ public:
     bool isLoading() const { return mLoading; }
     void setLoading(bool loading);
     Q_INVOKABLE void getVideoStream(const QString& link, StreamResolution resolution, bool firstCall = true);
-    Q_INVOKABLE void loadStream();
+
+    // If fileName is empty then a temp file will be created
+    Q_INVOKABLE void loadStream(const QString& fileName = {});
 
 signals:
     void getVideoStreamOk(int durationMs);

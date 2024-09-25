@@ -127,13 +127,27 @@ SkyPage {
     M3U8Reader {
         id: m3u8Reader
 
-        onGetVideoStreamOk: (durationMs) => loadStream()
+        onGetVideoStreamOk: (durationMs) => {
+            const fileName = videoUtils.getVideoFileNameForGallery("ts")
+
+            if (!fileName) {
+                root.getSkywalker().showStatusMessage(qsTr("Cannot create gallery file"), QEnums.STATUS_LEVEL_ERROR)
+                return
+            }
+
+            loadStream(fileName)
+        }
 
         // NOTE: Transcoding to MP4 results in an MP4 that cannot be played by the gallery
         // app. The MP4 can be played with other players. For now save as mpeg-ts. This
         // can be played by the gallery app.
         onGetVideoStreamError: root.getSkywalker().showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
-        onLoadStreamOk: (videoSource) => videoUtils.copyVideoToGallery(videoSource.slice(7))
+
+        onLoadStreamOk: (videoSource) => {
+            videoUtils.indexGalleryFile(videoSource.slice(7))
+            root.getSkywalker().showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
+        }
+
         onLoadStreamError: root.getSkywalker().showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
     }
 
@@ -145,11 +159,15 @@ SkyPage {
     }
 
     function saveVideo() {
-        if (view.videoSource && view.videoSource.startsWith("file://"))
+        if (view.videoSource && view.videoSource.startsWith("file://")) {
             videoUtils.copyVideoToGallery(view.videoSource.slice(7))
-        else if (videoView.playlistUrl.endsWith(".m3u8"))
+        }
+        else if (videoView.playlistUrl.endsWith(".m3u8")) {
             m3u8Reader.getVideoStream(videoView.playlistUrl, M3U8Reader.STREAM_RESOLUTION_720)
-        else
+            statusPopup.show(qsTr("Saving video"), QEnums.STATUS_LEVEL_INFO, 60)
+        }
+        else {
             root.getSkywalker().showStatusMessage(qsTr(`Cannot save: ${videoView.playlistUrl}`), QEnums.STATUS_LEVEL_ERROR)
+        }
     }
 }

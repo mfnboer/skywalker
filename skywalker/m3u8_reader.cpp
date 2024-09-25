@@ -101,16 +101,6 @@ void M3U8Reader::extractStream(QNetworkReply* reply)
             mStreamSegments.push_back(streamUrl);
         }
 
-        mStream = FileUtils::makeTempFile("ts");
-
-        if (!mStream)
-        {
-            qWarning() << "Failed to create temp file";
-            emit getVideoStreamError();
-        }
-
-
-        qDebug() << "Created temp file:" << mStream->fileName();
         emit getVideoStreamOk(parser.getStreamDurationSeconds() * 1000);
         return;
     }
@@ -157,12 +147,40 @@ void M3U8Reader::requestSslFailed(QNetworkReply* reply)
     emit getVideoStreamError();
 }
 
-void M3U8Reader::loadStream()
+void M3U8Reader::loadStream(const QString& fileName)
 {
     if (!mStream)
     {
-        qWarning() << "Stream is not yet set";
-        return;
+        if (mStreamSegments.isEmpty())
+        {
+            qWarning() << "Stream is not yet set";
+            return;
+        }
+
+        if (fileName.isEmpty())
+        {
+            mStream = FileUtils::makeTempFile("ts");
+
+            if (!mStream)
+            {
+                qWarning() << "Failed to create temp file";
+                emit loadStreamError();
+                return;
+            }
+
+            qDebug() << "Created temp file:" << mStream->fileName();
+        }
+        else
+        {
+            mStream = std::make_unique<QFile>(fileName);
+
+            if (!mStream->open(QFile::WriteOnly))
+            {
+                qWarning() << "Cannot open file:" << fileName;
+                emit loadStreamError();
+                return;
+            }
+        }
     }
 
     setLoading(true);

@@ -20,6 +20,7 @@ public:
     Q_INVOKABLE void transcodeVideo(const QString& inputFileName, int height, int startMs, int endMs);
     Q_INVOKABLE QString getVideoFileNameForGallery(const QString& extension);
     Q_INVOKABLE void copyVideoToGallery(const QString& fileName);
+    Q_INVOKABLE void indexGalleryFile(const QString& fileName);
 
 signals:
     void transcodingOk(QString inputFileName, QString outputFileName);

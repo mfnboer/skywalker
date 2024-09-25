@@ -144,8 +144,14 @@ void VideoUtils::copyVideoToGallery(const QString& fileName)
 
     outputFile.flush();
     outputFile.close();
-    FileUtils::scanMediaFile(outputFileName);
+    indexGalleryFile(outputFileName);
     emit copyVideoOk();
+}
+
+void VideoUtils::indexGalleryFile(const QString& fileName)
+{
+    qDebug() << "Index:" << fileName;
+    FileUtils::scanMediaFile(fileName);
 }
 
 }
