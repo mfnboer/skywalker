@@ -1,5 +1,5 @@
-next
-====
+3.4.2
+=====
 * Play SD or HD video based on your network bandwidth
 * Support other video formats than mp4 for upload, e.g. webm
 * Save video from a post to your gallery
