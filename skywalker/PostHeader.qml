@@ -36,7 +36,6 @@ GridLayout {
         text: "@" + author.handle
         font.pointSize: guiSettings.scaledFont(7/8)
         color: guiSettings.handleColor
-        visible: postThreadType & QEnums.THREAD_ENTRY
 
         Accessible.ignored: true
     }

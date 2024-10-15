@@ -1,3 +1,7 @@
+next
+====
+* Always show handles on posts
+
 3.4.2
 =====
 * Play SD or HD video based on your network bandwidth
