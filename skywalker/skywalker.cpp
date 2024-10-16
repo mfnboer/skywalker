@@ -1712,7 +1712,7 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     qDebug() << "Get author feed:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor),
+    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), {}, {},
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);

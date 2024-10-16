@@ -211,15 +211,15 @@ QDateTime Post::getTimelineTimestamp() const
     if (!mReplyRefTimestamp.isNull())
         return mReplyRefTimestamp;
 
-    if (mFeedViewPost && mFeedViewPost->mReason)
-        return mFeedViewPost->mReason->mIndexedAt;
+    if (mFeedViewPost && mFeedViewPost->mReason && std::holds_alternative<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason))
+        return std::get<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason)->mIndexedAt;
 
     return getIndexedAt();
 }
 
 bool Post::isRepost() const
 {
-    return mFeedViewPost && mFeedViewPost->mReason;
+    return mFeedViewPost && mFeedViewPost->mReason && std::holds_alternative<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason);
 }
 
 std::optional<BasicProfile> Post::getRepostedBy() const
@@ -227,7 +227,7 @@ std::optional<BasicProfile> Post::getRepostedBy() const
     if (!isRepost())
         return {};
 
-    return BasicProfile(mFeedViewPost->mReason->mBy);
+    return BasicProfile(std::get<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason)->mBy);
 }
 
 bool Post::isReply() const
