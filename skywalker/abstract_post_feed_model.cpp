@@ -381,6 +381,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const QColor color = mFocusHashtags.highlightColor(post);
         return color.isValid() ? color.name() : "transparent";
     }
+    case Role::PostIsPinned:
+        return post.isPinned();
     case Role::PostLocallyDeleted:
     {
         if (!change)
@@ -462,6 +464,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostContentWarning), "postContentWarning" },
         { int(Role::PostMutedReason), "postMutedReason" },
         { int(Role::PostHighlightColor), "postHighlightColor" },
+        { int(Role::PostIsPinned), "postIsPinned" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };

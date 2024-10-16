@@ -208,6 +208,7 @@ class DetailedProfile : public Profile
     Q_PROPERTY(int followersCount READ getFollowersCount FINAL)
     Q_PROPERTY(int followsCount READ getFollowsCount FINAL)
     Q_PROPERTY(int postsCount READ getPostsCount FINAL)
+    Q_PROPERTY(QString pinnedPostUri READ getPinnedPostUri FINAL)
     QML_VALUE_TYPE(detailedprofile)
 
 public:
@@ -218,6 +219,7 @@ public:
     int getFollowersCount() const;
     int getFollowsCount() const;
     int getPostsCount() const;
+    QString getPinnedPostUri() const;
 };
 
 }

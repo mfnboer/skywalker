@@ -31,7 +31,18 @@ void AuthorFeedModel::clear()
 int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     if (!mFeed.empty())
+    {
+        const Post firstPost(mFeed.front());
         clear();
+
+        if (firstPost.isPinned())
+        {
+            qDebug() << "Keep pinned post:" << firstPost.getUri();
+            beginInsertRows({}, 0, 0);
+            mFeed.push_back(firstPost);
+            endInsertRows();
+        }
+    }
 
     return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 }
@@ -72,6 +83,39 @@ int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 
     qDebug() << "New feed size:" << mFeed.size();
     return page->mFeed.size();
+}
+
+void AuthorFeedModel::setPinnedPost(const ATProto::AppBskyFeed::PostView::SharedPtr& postView)
+{
+    Post pinnedPost(postView);
+    pinnedPost.setPinned(true);
+
+    if (hasPinnedPost())
+        removePinnedPost();
+
+    beginInsertRows({}, 0, 0);
+    mFeed.push_front(pinnedPost);
+    endInsertRows();
+    qDebug() << "Set pinned post:" << postView->mUri;
+}
+
+void AuthorFeedModel::removePinnedPost()
+{
+    if (!hasPinnedPost())
+        return;
+
+    qDebug() << "Remove pinned post:" << mFeed.front().getUri();
+    beginRemoveRows({}, 0, 0);
+    mFeed.pop_front();
+    endRemoveRows();
+}
+
+bool AuthorFeedModel::hasPinnedPost() const
+{
+    if (mFeed.empty())
+        return false;
+
+    return mFeed.front().isPinned();
 }
 
 void AuthorFeedModel::Page::addPost(const Post& post)

@@ -403,4 +403,9 @@ int DetailedProfile::getPostsCount() const
     return mProfileDetailedView ? mProfileDetailedView->mPostsCount : 0;
 }
 
+QString DetailedProfile::getPinnedPostUri() const
+{
+    return mProfileDetailedView && mProfileDetailedView->mPinndedPost ? mProfileDetailedView->mPinndedPost->mUri : "";
+}
+
 }

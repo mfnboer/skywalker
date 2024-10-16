@@ -77,6 +77,7 @@ public:
         PostContentWarning,
         PostMutedReason,
         PostHighlightColor,
+        PostIsPinned,
         PostLocallyDeleted,
         EndOfFeed
     };

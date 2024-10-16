@@ -58,6 +58,7 @@ Rectangle {
     required property string postContentWarning
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
+    required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
 
@@ -160,6 +161,40 @@ Rectangle {
             width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: topLeftSpace.height
             color: "transparent"
+        }
+
+        // Pinned post
+        Loader {
+            width: guiSettings.threadColumnWidth
+            Layout.fillHeight: true
+            active: postIsPinned && !postLocallyDeleted
+            visible: status == Loader.Ready
+            sourceComponent: Rectangle {
+                width: parent.width
+                height: parent.height
+                color: guiSettings.backgroundColor
+
+                SvgImage {
+                    anchors.right: parent.right
+                    width: 18
+                    height: width
+                    color: Material.color(Material.Grey)
+                    svg: svgFilled.pin
+                }
+            }
+        }
+        Loader {
+            Layout.fillWidth: true
+            active: postIsPinned && !postLocallyDeleted
+            visible: status == Loader.Ready
+            sourceComponent: AccessibleText {
+                width: parent.width
+                elide: Text.ElideRight
+                text: qsTr("Pinned post")
+                color: Material.color(Material.Grey)
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(7/8)
+            }
         }
 
         // Repost information

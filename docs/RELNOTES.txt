@@ -1,5 +1,6 @@
 next
 ====
+* Pinned posts
 * Always show handles on posts
 
 3.4.2

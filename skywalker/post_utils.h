@@ -86,7 +86,7 @@ public:
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE int getEditTagIndex() const { return mEditTagIndex; }
     Q_INVOKABLE QString linkiFy(const QString& text, const QString& colorName);
-    Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; };
+    Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; }
     Q_INVOKABLE void getQuotePost(const QString& httpsUri);
     Q_INVOKABLE void getQuoteFeed(const QString& httpsUri);
     Q_INVOKABLE void getQuoteList(const QString& httpsUri);

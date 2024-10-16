@@ -120,6 +120,9 @@ public:
     bool isBookmarkNotFound() const { return mBookmarkNotFound; }
     void setBookmarkNotFound(bool notFound) { mBookmarkNotFound = notFound; }
 
+    bool isPinned() const { return mPinned; }
+    void setPinned(bool pinned) { mPinned = pinned; }
+
 private:
     // null is place holder for more posts (gap)
     ATProto::AppBskyFeed::PostView::SharedPtr mPost;
@@ -155,6 +158,8 @@ private:
 
     LanguageList mLanguages;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
+
+    bool mPinned = false;
 
     static int sNextGapId;
 };

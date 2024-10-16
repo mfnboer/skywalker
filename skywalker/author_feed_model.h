@@ -25,6 +25,9 @@ public:
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     int addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
+    void setPinnedPost(const ATProto::AppBskyFeed::PostView::SharedPtr& postView);
+    void removePinnedPost();
+    bool hasPinnedPost() const;
     void clear();
 
     const BasicProfile& getAuthor() const { return mAuthor; }

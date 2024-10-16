@@ -1070,6 +1070,11 @@ SkyPage {
         authorFeedView.retryGetFeed(modelId, error, msg)
     }
 
+    function getPinnedPost(modelId) {
+        if (mustGetFeed() && author.pinnedPostUri)
+            skywalker.getAuthorFeedPinnedPost(modelId, author.pinnedPostUri)
+    }
+
     function getFeed(modelId) {
         if (mustGetFeed())
             skywalker.getAuthorFeed(modelId, 50)
@@ -1246,6 +1251,7 @@ SkyPage {
         authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
+        getPinnedPost(modelId)
         getFeed(modelId)
         profileUtils.getFirstAppearance(author.did)
 

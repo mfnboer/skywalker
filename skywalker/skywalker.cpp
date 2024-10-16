@@ -1778,6 +1778,40 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
+void Skywalker::getAuthorFeedPinnedPost(int id, const QString& postUri)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get author feed pinned post:" << id << "post:" << postUri;
+
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    mBsky->getPosts({postUri},
+        [this, id, postUri](auto postViewList){
+            if (postViewList.size() != 1)
+            {
+                qWarning() << "Wrong list size:" << postViewList.size() << "for uri:" << postUri;
+                return;
+            }
+
+            const auto* model = mAuthorFeedModels.get(id);
+
+            if (!model)
+                return; // user has closed the view
+
+            (*model)->setPinnedPost(postViewList.front());
+        },
+        [](const QString& error, const QString& msg){
+            qWarning() << "getAuthorFeedPinnedPost failed:" << error << " - " << msg;
+        });
+}
+
 void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, const QString& cursor)
 {
     Q_ASSERT(mBsky);
