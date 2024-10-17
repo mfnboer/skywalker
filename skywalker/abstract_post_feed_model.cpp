@@ -305,6 +305,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.isReplyDisabled();
     case Role::PostEmbeddingDisabled:
         return post.isEmbeddingDisabled();
+    case Role::PostViewerStatePinned:
+        return change && change->mViewerStatePinned ? *change->mViewerStatePinned : post.isViewerStatePinned();
     case Role::PostThreadgateUri:
     {
         if (!post.isReply())
@@ -452,6 +454,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostThreadMuted), "postThreadMuted" },
         { int(Role::PostReplyDisabled), "postReplyDisabled" },
         { int(Role::PostEmbeddingDisabled), "postEmbeddingDisabled" },
+        { int(Role::PostViewerStatePinned), "postViewerStatePinned" },
         { int(Role::PostThreadgateUri), "postThreadgateUri" },
         { int(Role::PostReplyRestriction), "postReplyRestriction" },
         { int(Role::PostReplyRestrictionLists), "postReplyRestrictionLists" },
@@ -550,6 +553,11 @@ void AbstractPostFeedModel::detachedRecordChanged()
 void AbstractPostFeedModel::reAttachedRecordChanged()
 {
     changeData({ int(Role::PostRecord), int(Role::PostRecordWithMedia) });
+}
+
+void AbstractPostFeedModel::viewerStatePinnedChanged()
+{
+    changeData({ int(Role::PostViewerStatePinned) });
 }
 
 void AbstractPostFeedModel::postDeletedChanged()

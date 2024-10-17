@@ -86,6 +86,7 @@ public:
     bool isThreadMuted() const;
     bool isReplyDisabled() const;
     bool isEmbeddingDisabled() const;
+    bool isViewerStatePinned() const;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr getThreadgateView() const;
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgate) { mThreadgateView = threadgate; }
     QString getThreadgateUri() const;

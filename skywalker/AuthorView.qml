@@ -6,6 +6,7 @@ import atproto
 
 SkyPage {
     required property var skywalker
+    required property var rootProfileUtils
     required property detailedprofile author
     required property int modelId
 
@@ -1070,9 +1071,16 @@ SkyPage {
         authorFeedView.retryGetFeed(modelId, error, msg)
     }
 
-    function getPinnedPost(modelId) {
-        if (mustGetFeed() && author.pinnedPostUri)
-            skywalker.getAuthorFeedPinnedPost(modelId, author.pinnedPostUri)
+    function pinnedPostHandler(postUri, postCid) {
+        let model = skywalker.getAuthorFeedModel(modelId)
+        model.setPinnedPost(postUri)
+        getFeed(modelId)
+    }
+
+    function unpinnedPostHandler() {
+        let model = skywalker.getAuthorFeedModel(modelId)
+        model.removePinnedPost()
+        getFeed(modelId)
     }
 
     function getFeed(modelId) {
@@ -1193,7 +1201,7 @@ SkyPage {
         labelerLikeTransient = true
 
         if (likeUri)
-            profileUtils.undoLikeLabeler(likeUri, cid)
+            profileUtils.undoLikeLabeler(likeUri)
         else
             profileUtils.likeLabeler(uri, cid)
     }
@@ -1228,6 +1236,11 @@ SkyPage {
         skywalker.onAuthorFeedError.disconnect(feedFailedHandler)
         skywalker.onAuthorFeedOk.disconnect(feedOkHandler)
 
+        if (isUser(author)) {
+            rootProfileUtils.onSetPinnedPostOk.disconnect(pinnedPostHandler)
+            rootProfileUtils.onClearPinnedPostOk.disconnect(unpinnedPostHandler)
+        }
+
         setAuthorBanner("")
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
@@ -1244,6 +1257,11 @@ SkyPage {
         skywalker.onAuthorFeedError.connect(feedFailedHandler)
         skywalker.onAuthorFeedOk.connect(feedOkHandler)
 
+        if (isUser(author)) {
+            rootProfileUtils.onSetPinnedPostOk.connect(pinnedPostHandler)
+            rootProfileUtils.onClearPinnedPostOk.connect(unpinnedPostHandler)
+        }
+
         authorName = author.name
         authorDescription = author.description
         authorAvatar = author.avatarUrl
@@ -1251,7 +1269,6 @@ SkyPage {
         authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
-        getPinnedPost(modelId)
         getFeed(modelId)
         profileUtils.getFirstAppearance(author.did)
 

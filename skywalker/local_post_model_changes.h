@@ -34,6 +34,7 @@ public:
         std::optional<bool> mThreadMuted;
         RecordView::SharedPtr mDetachedRecord;
         RecordView::SharedPtr mReAttachedRecord;
+        std::optional<bool> mViewerStatePinned;
 
         bool mPostDeleted = false;
     };
@@ -68,6 +69,7 @@ public:
     bool updateDetachedRecord(const QString& cid, const QString& postUri);
 
     void updateReAttachedRecord(const QString& cid, RecordView::SharedPtr record);
+    void updateViewerStatePinned(const QString& cid, bool pinned);
     void updatePostDeleted(const QString& cid);
 
 protected:
@@ -86,6 +88,7 @@ protected:
     virtual void threadMutedChanged() = 0;
     virtual void detachedRecordChanged() = 0;
     virtual void reAttachedRecordChanged() = 0;
+    virtual void viewerStatePinnedChanged() = 0;
     virtual void postDeletedChanged() = 0;
 
 private:

@@ -46,6 +46,7 @@ Rectangle {
     required property bool postThreadMuted
     required property bool postReplyDisabled
     required property bool postEmbeddingDisabled
+    required property bool postViewerStatePinned
     required property string postThreadgateUri
     required property int postReplyRestriction // QEnums::ReplyRestriction flags
     required property list<listviewbasic> postReplyRestrictionLists
@@ -428,6 +429,7 @@ Rectangle {
                 threadMuted: postThreadMuted
                 replyDisabled: postReplyDisabled
                 embeddingDisabled: postEmbeddingDisabled
+                viewerStatePinned: postViewerStatePinned
                 replyRestriction: postReplyRestriction
                 isHiddenReply: postIsHiddenReply
                 isReply: postIsReply
@@ -473,6 +475,8 @@ Rectangle {
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
                 onTranslatePost: root.translateText(postPlainText)
                 onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
+                onPin: root.pinPost(postUri, postCid)
+                onUnpin: root.unpinPost(postCid)
             }
         }
 
@@ -496,7 +500,7 @@ Rectangle {
             }
         }
 
-        // Hidden PostStats
+        // Hidden posts
         Loader {
             Layout.columnSpan: 2
             Layout.fillWidth: true

@@ -129,6 +129,12 @@ void LocalPostModelChanges::updateReAttachedRecord(const QString& cid, RecordVie
     reAttachedRecordChanged();
 }
 
+void LocalPostModelChanges::updateViewerStatePinned(const QString& cid, bool pinned)
+{
+    mChanges[cid].mViewerStatePinned = pinned;
+    viewerStatePinnedChanged();
+}
+
 void LocalPostModelChanges::updatePostDeleted(const QString& cid)
 {
     mChanges[cid].mPostDeleted = true;

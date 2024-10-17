@@ -622,6 +622,14 @@ bool Post::isEmbeddingDisabled() const
     return mPost->mViewer->mEmbeddingDisabled;
 }
 
+bool Post::isViewerStatePinned() const
+{
+    if (!mPost || !mPost->mViewer)
+        return false;
+
+    return mPost->mViewer->mPinned;
+}
+
 ATProto::AppBskyFeed::ThreadgateView::SharedPtr Post::getThreadgateView() const
 {
     if (mThreadgateView)

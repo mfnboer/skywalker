@@ -31,8 +31,10 @@ public:
 
     Q_INVOKABLE void getLabelerViewDetailed(const QString& did);
     Q_INVOKABLE void likeLabeler(const QString& uri, const QString& cid);
-    Q_INVOKABLE void undoLikeLabeler(const QString& likeUri, const QString& cid);
+    Q_INVOKABLE void undoLikeLabeler(const QString& likeUri);
     Q_INVOKABLE void getFirstAppearance(const QString& did);
+    Q_INVOKABLE void setPinnedPost(const QString& did, const QString& uri, const QString& cid);
+    Q_INVOKABLE void clearPinnedPost(const QString& did, const QString& cid);
 
 signals:
     void handle(QString handle, QString displayName, QString did);
@@ -48,6 +50,10 @@ signals:
     void undoLikeLabelerOk();
     void undoLikeLabelerFailed(QString error);
     void firstAppearanceOk(QString did, QDateTime appearance);
+    void setPinnedPostOk(QString uri, QString cid);
+    void setPinnedPostFailed(QString error);
+    void clearPinnedPostOk();
+    void clearPinnedPostFailed(QString error);
 
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
@@ -56,6 +62,7 @@ private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
                                ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
                                ATProto::Blob::SharedPtr bannerBlob, bool updateBanner);
+    void continueSetPinnedPost(const QString& did, const QString& uri, const QString& cid);
 
     ATProto::ProfileMaster* profileMaster();
     ATProto::PostMaster* postMaster();

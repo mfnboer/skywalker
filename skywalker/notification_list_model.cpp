@@ -725,6 +725,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getNotificationPost(mPostCache).isReplyDisabled();
     case Role::NotificationPostEmbeddingDisabled:
         return notification.getNotificationPost(mPostCache).isEmbeddingDisabled();
+    case Role::NotificationPostViewerStatePinned:
+        return change && change->mViewerStatePinned ? *change->mViewerStatePinned : notification.getNotificationPost(mPostCache).isViewerStatePinned();
     case Role::NotificationPostThreadgateUri:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
@@ -897,6 +899,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostThreadMuted), "notificationPostThreadMuted" },
         { int(Role::NotificationPostReplyDisabled), "notificationPostReplyDisabled" },
         { int(Role::NotificationPostEmbeddingDisabled), "notificationPostEmbeddingDisabled" },
+        { int(Role::NotificationPostViewerStatePinned), "notificationPostViewerStatePinned" },
         { int(Role::NotificationPostThreadgateUri), "notificationPostThreadgateUri" },
         { int(Role::NotificationPostReplyRestriction), "notificationPostReplyRestriction" },
         { int(Role::NotificationPostReplyRestrictionLists), "notificationPostReplyRestrictionLists" },
@@ -995,6 +998,11 @@ void NotificationListModel::detachedRecordChanged()
 void NotificationListModel::reAttachedRecordChanged()
 {
     changeData({ int(Role::NotificationPostRecord), int(Role::NotificationPostRecordWithMedia) });
+}
+
+void NotificationListModel::viewerStatePinnedChanged()
+{
+    changeData({ int(Role::NotificationPostViewerStatePinned) });
 }
 
 void NotificationListModel::postDeletedChanged()

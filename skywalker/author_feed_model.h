@@ -13,7 +13,7 @@ class AuthorFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
-    AuthorFeedModel(const BasicProfile& author, const QString& userDid, const IProfileStore& following,
+    AuthorFeedModel(const DetailedProfile& author, const QString& userDid, const IProfileStore& following,
                     const IProfileStore& mutedReposts,
                     const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                     const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
@@ -25,9 +25,8 @@ public:
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     int addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
-    void setPinnedPost(const ATProto::AppBskyFeed::PostView::SharedPtr& postView);
-    void removePinnedPost();
-    bool hasPinnedPost() const;
+    Q_INVOKABLE void setPinnedPost(const QString& uri) { mPinnedPostUri = uri; }
+    Q_INVOKABLE void removePinnedPost() { mPinnedPostUri.clear(); }
     void clear();
 
     const BasicProfile& getAuthor() const { return mAuthor; }
@@ -48,6 +47,7 @@ private:
 
     QString mCursorNextPage;
     QEnums::AuthorFeedFilter mFilter = QEnums::AUTHOR_FEED_FILTER_POSTS;
+    QString mPinnedPostUri;
 };
 
 }

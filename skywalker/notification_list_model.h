@@ -67,6 +67,7 @@ public:
         NotificationPostThreadMuted,
         NotificationPostReplyDisabled,
         NotificationPostEmbeddingDisabled,
+        NotificationPostViewerStatePinned,
         NotificationPostThreadgateUri,
         NotificationPostReplyRestriction,
         NotificationPostReplyRestrictionLists,
@@ -142,6 +143,7 @@ protected:
     virtual void threadMutedChanged() override;
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
+    virtual void viewerStatePinnedChanged() override;
     virtual void postDeletedChanged() override;
 
     QHash<int, QByteArray> roleNames() const override;

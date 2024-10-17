@@ -48,6 +48,7 @@ Rectangle {
     required property bool notificationPostThreadMuted
     required property bool notificationPostReplyDisabled
     required property bool notificationPostEmbeddingDisabled
+    required property bool notificationPostViewerStatePinned
     required property string notificationPostThreadgateUri
     required property int  notificationPostReplyRestriction // QEnums::ReplyRestriction flags
     required property list<listviewbasic> notificationPostReplyRestrictionLists
@@ -258,6 +259,7 @@ Rectangle {
                     threadMuted: notificationPostThreadMuted
                     replyDisabled: notificationPostReplyDisabled
                     embeddingDisabled: notificationPostEmbeddingDisabled
+                    viewerStatePinned: notificationPostViewerStatePinned
                     replyRestriction: notificationPostReplyRestriction
                     isHiddenReply: notificationPostIsHiddenReply
                     isReply: notificationPostIsReply
@@ -308,6 +310,8 @@ Rectangle {
                     onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
                     onTranslatePost: root.translateText(notificationPostPlainText)
                     onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach)
+                    onPin: root.pinPost(notificationPostUri, notificationCid)
+                    onUnpin: root.unpinPost(notificationCid)
                 }
             }
         }

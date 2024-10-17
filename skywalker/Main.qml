@@ -653,6 +653,16 @@ ApplicationWindow {
         }
     }
 
+    ProfileUtils {
+        id: profileUtils
+        skywalker: skywalker
+
+        onSetPinnedPostOk: statusPopup.show(qsTr("Post pinned"), QEnums.STATUS_LEVEL_INFO, 2)
+        onSetPinnedPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onClearPinnedPostOk: statusPopup.show(qsTr("Post unpinned"), QEnums.STATUS_LEVEL_INFO, 2)
+        onClearPinnedPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     FeedUtils {
         id: feedUtils
         skywalker: skywalker
@@ -1143,6 +1153,16 @@ ApplicationWindow {
         postUtils.deletePost(uri, cid)
     }
 
+    function pinPost(uri, cid) {
+        const did = skywalker.getUserDid()
+        profileUtils.setPinnedPost(did, uri, cid)
+    }
+
+    function unpinPost(cid) {
+        const did = skywalker.getUserDid()
+        profileUtils.clearPinnedPost(did, cid)
+    }
+
     function viewPostThread(modelId, postEntryIndex) {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
@@ -1375,7 +1395,7 @@ ApplicationWindow {
 
     function viewAuthor(profile, modelId) {
         let component = Qt.createComponent("AuthorView.qml")
-        let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker })
+        let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker, rootProfileUtils: profileUtils })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }

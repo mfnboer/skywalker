@@ -13,6 +13,7 @@ Item {
     required property bool threadMuted
     required property bool replyDisabled
     required property bool embeddingDisabled
+    required property bool viewerStatePinned
     required property int replyRestriction // QEnums::ReplyRestriction flags
     required property bool isHiddenReply
     required property bool isReply
@@ -38,6 +39,8 @@ Item {
     signal reportPost()
     signal translatePost()
     signal detachQuote(string uri, bool detach)
+    signal pin()
+    signal unpin()
 
     height: replyIcon.height + topPadding
 
@@ -184,6 +187,19 @@ Item {
                     onTriggered: detachQuote(getRecordPostUri(), !recordIsDetached())
 
                     MenuItemSvg { svg: recordIsDetached() ? svgOutline.attach : svgOutline.detach }
+                }
+
+                AccessibleMenuItem {
+                    text: viewerStatePinned ? qsTr("Unpin from profile") : qsTr("Pin to profile")
+                    visible: authorIsUser
+                    onTriggered: {
+                        if (viewerStatePinned)
+                            unpin()
+                        else
+                            pin()
+                    }
+
+                    MenuItemSvg { svg: viewerStatePinned ? svgFilled.unpin : svgFilled.pin }
                 }
 
                 AccessibleMenuItem {

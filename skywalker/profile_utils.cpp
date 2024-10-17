@@ -266,13 +266,13 @@ void ProfileUtils::likeLabeler(const QString& uri, const QString& cid)
         });
 }
 
-void ProfileUtils::undoLikeLabeler(const QString& likeUri, const QString& cid)
+void ProfileUtils::undoLikeLabeler(const QString& likeUri)
 {
     if (!postMaster())
         return;
 
     postMaster()->undo(likeUri,
-        [this, presence=getPresence(), cid]{
+        [this, presence=getPresence()]{
             if (!presence)
                 return;
 
@@ -298,6 +298,87 @@ void ProfileUtils::getFirstAppearance(const QString& did)
         },
         [](int errorCode, const QString& errorMsg){
                qDebug() << "getFirstAppearance failed:" << errorCode << " - " << errorMsg;
+        });
+}
+
+void ProfileUtils::setPinnedPost(const QString& did, const QString& uri, const QString& cid)
+{
+    if (!bskyClient())
+        return;
+
+    bskyClient()->getProfile(did,
+        [this, presence=getPresence(), uri, cid](auto profile){
+            if (!presence)
+                return;
+
+            if (profile->mPinnedPost)
+            {
+                mSkywalker->makeLocalModelChange(
+                    [profile](LocalPostModelChanges* model){
+                        model->updateViewerStatePinned(profile->mPinnedPost->mCid, false);
+                    });
+            }
+
+            continueSetPinnedPost(profile->mDid, uri, cid);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Get profile failed:" << error << " - " << msg;
+            emit setPinnedPostFailed(msg);
+        });
+}
+
+void ProfileUtils::continueSetPinnedPost(const QString& did, const QString& uri, const QString& cid)
+{
+    if (!profileMaster())
+        return;
+
+    profileMaster()->setPinnedPost(did, uri, cid,
+        [this, presence=getPresence(), uri, cid]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalPostModelChanges* model){
+                    model->updateViewerStatePinned(cid, true);
+                });
+
+            emit setPinnedPostOk(uri, cid);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Set pinned post failed:" << error << " - " << msg;
+            emit setPinnedPostFailed(msg);
+        });
+}
+
+void ProfileUtils::clearPinnedPost(const QString& did, const QString& cid)
+{
+    if (!profileMaster())
+        return;
+
+    profileMaster()->clearPinnedPost(did,
+        [this, presence=getPresence(), cid]{
+            if (!presence)
+                return;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalPostModelChanges* model){
+                    model->updateViewerStatePinned(cid, false);
+                });
+
+            emit clearPinnedPostOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Clear pinned post failed:" << error << " - " << msg;
+            emit clearPinnedPostFailed(msg);
         });
 }
 

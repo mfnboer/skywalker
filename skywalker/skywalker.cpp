@@ -1712,7 +1712,7 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     qDebug() << "Get author feed:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), {}, {},
+    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), {}, true,
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
@@ -1776,40 +1776,6 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     }
 
     getAuthorFeed(id, AUTHOR_FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
-}
-
-void Skywalker::getAuthorFeedPinnedPost(int id, const QString& postUri)
-{
-    Q_ASSERT(mBsky);
-    qDebug() << "Get author feed pinned post:" << id << "post:" << postUri;
-
-    const auto* model = mAuthorFeedModels.get(id);
-    Q_ASSERT(model);
-
-    if (!model)
-    {
-        qWarning() << "Model does not exist:" << id;
-        return;
-    }
-
-    mBsky->getPosts({postUri},
-        [this, id, postUri](auto postViewList){
-            if (postViewList.size() != 1)
-            {
-                qWarning() << "Wrong list size:" << postViewList.size() << "for uri:" << postUri;
-                return;
-            }
-
-            const auto* model = mAuthorFeedModels.get(id);
-
-            if (!model)
-                return; // user has closed the view
-
-            (*model)->setPinnedPost(postViewList.front());
-        },
-        [](const QString& error, const QString& msg){
-            qWarning() << "getAuthorFeedPinnedPost failed:" << error << " - " << msg;
-        });
 }
 
 void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, const QString& cursor)
@@ -1901,7 +1867,7 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
     getAuthorLikes(id, AUTHOR_LIKES_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
-int Skywalker::createAuthorFeedModel(const BasicProfile& author, QEnums::AuthorFeedFilter filter)
+int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter)
 {
     auto model = std::make_unique<AuthorFeedModel>(
         author, mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,

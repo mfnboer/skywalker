@@ -65,6 +65,7 @@ public:
         PostThreadMuted,
         PostReplyDisabled,
         PostEmbeddingDisabled,
+        PostViewerStatePinned,
         PostThreadgateUri,
         PostReplyRestriction,
         PostReplyRestrictionLists,
@@ -126,6 +127,7 @@ protected:
     virtual void threadMutedChanged() override;
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
+    virtual void viewerStatePinnedChanged() override;
     virtual void postDeletedChanged() override;
 
     // LocalProfileChanges

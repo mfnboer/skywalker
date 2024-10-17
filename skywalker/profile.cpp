@@ -405,7 +405,7 @@ int DetailedProfile::getPostsCount() const
 
 QString DetailedProfile::getPinnedPostUri() const
 {
-    return mProfileDetailedView && mProfileDetailedView->mPinndedPost ? mProfileDetailedView->mPinndedPost->mUri : "";
+    return mProfileDetailedView && mProfileDetailedView->mPinnedPost ? mProfileDetailedView->mPinnedPost->mUri : "";
 }
 
 }
