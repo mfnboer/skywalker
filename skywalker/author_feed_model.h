@@ -21,6 +21,7 @@ public:
                     QObject* parent = nullptr);
 
     void setFilter(QEnums::AuthorFeedFilter filter) { mFilter = filter; }
+    QEnums::AuthorFeedFilter getFilter() const { return mFilter; }
 
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
