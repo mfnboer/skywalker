@@ -6,7 +6,7 @@
 
 namespace Skywalker {
 
-constexpr int VIDEO_BIT_RATE = 6'000'000;
+constexpr int VIDEO_BIT_RATE = 8'000'000;
 
 void GifToVideoConverter::convert(const QString& gifFileName)
 {
@@ -21,7 +21,7 @@ void GifToVideoConverter::convert(const QString& gifFileName)
         return;
     }
 
-    mVideoFile = FileUtils::makeTempFile(".mp4");
+    mVideoFile = FileUtils::makeTempFile("mp4");
 
     if (!mVideoFile)
     {
@@ -40,6 +40,7 @@ void GifToVideoConverter::convert(const QString& gifFileName)
     }
 
     qDebug() << "Frame count:" << mGif->frameCount();
+    mGif->jumpToFrame(0);
     const QImage firstFrame = mGif->currentImage();
 
     if (firstFrame.isNull())

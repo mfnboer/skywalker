@@ -7,6 +7,7 @@ namespace Skywalker {
 
 bool VideoEncoder::open(const QString& fileName, int width, int height, int fps, int bitsPerFrame)
 {
+    qDebug() << "file:" << fileName << "width:" << width << "height:" << height << "fps:" << fps << "bits/frame:" << bitsPerFrame;
 #if defined(Q_OS_ANDROID)
     Q_ASSERT(!mEncoder);
     mWidth = width;

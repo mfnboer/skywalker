@@ -6,14 +6,17 @@
 #include <QObject>
 #include <QTemporaryFile>
 #include <QThread>
+#include <QtQmlIntegration>
 
 namespace Skywalker {
 
 class GifToVideoConverter : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+
 public:
-    void convert(const QString& gifFileName);
+    Q_INVOKABLE void convert(const QString& gifFileName);
 
 signals:
     void conversionOk(QString fileName);

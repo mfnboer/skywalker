@@ -1512,6 +1512,13 @@ SkyPage {
         }
     }
 
+    GifToVideoConverter {
+        id: gifToVideoConverter
+
+        onConversionOk: (videoFileName) => videoPicked(`file://${videoFileName}`)
+        onConversionFailed: (error) => statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+    }
+
     DraftPosts {
         id: draftPosts
         skywalker: page.skywalker
@@ -1672,6 +1679,20 @@ SkyPage {
 
     // "file://" or "image://" source
     function photoPicked(source, altText = "") {
+        if (!canAddVideo() || !source.endsWith(".gif")) {
+            photoPickedContinued(source, altText)
+            return
+        }
+
+        // TODO: gif as image://
+        guiSettings.askYesNoQuestion(
+            page,
+            qsTr("Do you want to post this GIF as video?"),
+            () => gifToVideoConverter.convert(source.slice(7)),
+            () => photoPickedContinued(source, altText))
+    }
+
+    function photoPickedContinued(source, altText = "") {
         console.debug("IMAGE:", source)
         let postItem = currentPostItem()
 
