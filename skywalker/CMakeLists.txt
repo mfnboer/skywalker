@@ -417,6 +417,10 @@ qt_add_qml_module(libskywalker
         QML_FILES VideoUploadLimits.qml
         SOURCES network_utils.h
         SOURCES network_utils.cpp
+        SOURCES video_encoder.h
+        SOURCES video_encoder.cpp
+        SOURCES gif_to_video_converter.h
+        SOURCES gif_to_video_converter.cpp
 )
 
 if (NOT ANDROID)
