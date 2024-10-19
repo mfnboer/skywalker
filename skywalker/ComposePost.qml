@@ -1373,9 +1373,9 @@ SkyPage {
 
         onPostProgress: (msg) => page.postProgress(msg)
 
-        onPhotoPicked: (imgSource) => {
+        onPhotoPicked: (imgSource, gifTempFileName) => {
             pickingImage = false
-            page.photoPicked(imgSource)
+            page.photoPicked(imgSource, gifTempFileName)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
@@ -1515,7 +1515,11 @@ SkyPage {
     GifToVideoConverter {
         id: gifToVideoConverter
 
-        onConversionOk: (videoFileName) => videoPicked(`file://${videoFileName}`)
+        onConversionOk: (videoFileName) => {
+            page.tmpVideos.push("file://" + videoFileName)
+            editVideo(`file://${videoFileName}`)
+        }
+
         onConversionFailed: (error) => statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
     }
 
@@ -1678,17 +1682,29 @@ SkyPage {
     }
 
     // "file://" or "image://" source
-    function photoPicked(source, altText = "") {
-        if (!canAddVideo() || !source.endsWith(".gif")) {
+    function photoPicked(source, gifTempFileName = "", altText = "") {
+        if (gifTempFileName)
+            page.tmpVideos.push("file://" + gifTempFileName)
+
+        if (!canAddVideo()) {
             photoPickedContinued(source, altText)
             return
         }
 
-        // TODO: gif as image://
+        let gifFileName = gifTempFileName
+
+        if (source.startsWith("file://") && source.endsWith(".gif"))
+            gifFileName = source.slice(7)
+
+        if (!gifFileName) {
+            photoPickedContinued(source, altText)
+            return
+        }
+
         guiSettings.askYesNoQuestion(
             page,
             qsTr("Do you want to post this GIF as video?"),
-            () => gifToVideoConverter.convert(source.slice(7)),
+            () => gifToVideoConverter.convert(gifFileName),
             () => photoPickedContinued(source, altText))
     }
 
@@ -2041,7 +2057,7 @@ SkyPage {
         let cardPage = component.createObject(page)
         cardPage.onCanceled.connect(() => root.popStack())
         cardPage.onAddCard.connect((source, years) => {
-            page.photoPicked(source, qsTr(`Bluesky anniversary card sent with ${guiSettings.skywalkerHandle}`))
+            page.photoPicked(source, "", qsTr(`Bluesky anniversary card sent with ${guiSettings.skywalkerHandle}`))
             page.addSharedText(qsTr(`Today is my ${years} year Bluesky anniversary 🥳`))
             root.popStack()
         })

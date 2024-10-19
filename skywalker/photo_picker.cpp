@@ -5,6 +5,7 @@
 #include "file_utils.h"
 #include "image_reader.h"
 #include "shared_image_provider.h"
+#include "temp_file_holder.h"
 #include <QtGlobal>
 #include <QBuffer>
 #include <QCoreApplication>
@@ -25,12 +26,14 @@ constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
 
 namespace Skywalker::PhotoPicker {
 ;
-std::tuple<QImage, QString> readImageFd(int fd)
+std::tuple<QImage, QString, QString> readImageFd(int fd)
 {
+    QString gifTempFileName;
+
     if (fd < 0)
     {
         qWarning() << "Invalid file descriptor";
-        return { QImage{}, "Invalid file descriptor (file not found)" };
+        return { QImage{}, gifTempFileName, "Invalid file descriptor (file not found)" };
     }
 
     QFile file;
@@ -39,10 +42,11 @@ std::tuple<QImage, QString> readImageFd(int fd)
     {
         const QString fileError = file.errorString();
         qWarning() << "Could not open file:" << fileError;
-        return { QImage{}, "Could not open file: " + fileError };
+        return { QImage{}, gifTempFileName, "Could not open file: " + fileError };
     }
 
     QImageReader reader(&file);
+    qDebug() << "Input image format:" << reader.format();
     reader.setAutoTransform(true);
     QImage img = reader.read();
 
@@ -50,10 +54,26 @@ std::tuple<QImage, QString> readImageFd(int fd)
     {
         QString readError = reader.errorString();
         qWarning() << "Could not read image data:" << readError;
-        return { QImage{}, "Could not read image data: " + readError };
+        return { QImage{}, gifTempFileName, "Could not read image data: " + readError };
     }
 
-    return { img, "" };
+    if (reader.format() == "gif")
+    {
+        file.seek(0);
+        auto gifTempFile = FileUtils::createTempFile(file, "gif");
+
+        if (gifTempFile)
+        {
+            gifTempFileName = gifTempFile->fileName();
+            TempFileHolder::instance().put(std::move(gifTempFile));
+        }
+        else
+        {
+            qWarning() << "Could not create temp file for GIF";
+        }
+    }
+
+    return { img, gifTempFileName, "" };
 }
 
 bool pickPhoto(bool pickVideo)

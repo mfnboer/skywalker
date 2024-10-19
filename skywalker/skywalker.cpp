@@ -3064,7 +3064,7 @@ void Skywalker::shareImage(const QString& contentUri, const QString& text)
     }
 
     int fd = FileUtils::openContentUri(contentUri);
-    auto [img, error] = PhotoPicker::readImageFd(fd);
+    auto [img, gifTempFileName, error] = PhotoPicker::readImageFd(fd);
 
     if (img.isNull())
     {
@@ -3074,7 +3074,7 @@ void Skywalker::shareImage(const QString& contentUri, const QString& text)
 
     auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
     const QString source = imgProvider->addImage(img);
-    emit sharedImageReceived(source, text);
+    emit sharedImageReceived(source, gifTempFileName, text);
 }
 
 void Skywalker::shareVideo(const QString& contentUri, const QString& text)

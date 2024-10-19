@@ -43,6 +43,7 @@ Rectangle {
             TextInput {
                 id: searchText
                 EnterKeyAction.actionId: EnterKeyAction.Search
+                // TODO in Qt6.8 EnterKey.type: Qt.EnterKeySearch
                 width: parent.width
                 clip: true
                 padding: 5

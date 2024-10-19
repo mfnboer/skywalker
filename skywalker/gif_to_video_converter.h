@@ -27,7 +27,7 @@ private:
     void finished();
     bool pushFrames();
 
-    VideoEncoder mVideoEncoder;
+    std::unique_ptr<VideoEncoder> mVideoEncoder;
     std::unique_ptr<QMovie> mGif;
     std::unique_ptr<QTemporaryFile> mVideoFile;
     std::unique_ptr<QThread> mThread;

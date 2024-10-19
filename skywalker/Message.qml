@@ -49,7 +49,8 @@ Dialog {
     }
 
     function show(msg) {
-        msgLabel.text = msg;
-        open();
+        msgLabel.text = msg
+        open()
+        forceActiveFocus()
     }
 }

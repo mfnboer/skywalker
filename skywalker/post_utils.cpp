@@ -1560,7 +1560,7 @@ void PostUtils::shareMedia(int fd, const QString& mimeType)
 void PostUtils::sharePhoto(int fd)
 {
     qDebug() << "Share photo fd:" << fd;
-    auto [img, error] = PhotoPicker::readImageFd(fd);
+    auto [img, gifTempFileName, error] = PhotoPicker::readImageFd(fd);
 
     if (img.isNull())
     {
@@ -1570,7 +1570,7 @@ void PostUtils::sharePhoto(int fd)
 
     auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
     const QString source = imgProvider->addImage(img);
-    emit photoPicked(source);
+    emit photoPicked(source, gifTempFileName);
 }
 
 void PostUtils::shareVideo(int fd, const QString& mimeTypeName)

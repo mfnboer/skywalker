@@ -7,7 +7,7 @@
 
 namespace Skywalker::PhotoPicker {
 
-std::tuple<QImage, QString> readImageFd(int fd);
+std::tuple<QImage, QString /* gif temp file name */, QString /* error */> readImageFd(int fd);
 
 // Start photo pick selector on Android.
 bool pickPhoto(bool pickVideo = false);

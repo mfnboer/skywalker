@@ -13,7 +13,7 @@ namespace Skywalker {
 class VideoEncoder
 {
 public:
-    bool open(const QString& fileName, int width, int height, int fps, int bitsPerFrame);
+    bool open(const QString& fileName, int width, int height, int fps, int bitRate);
     bool close();
     bool push(const QImage& frame);
 

@@ -6,7 +6,8 @@
 
 namespace Skywalker {
 
-constexpr int VIDEO_BIT_RATE = 8'000'000;
+constexpr int VIDEO_BIT_RATE_SD = 4'000'000;
+constexpr int VIDEO_BIT_RATE_HD = 8'000'000;
 
 void GifToVideoConverter::convert(const QString& gifFileName)
 {
@@ -21,6 +22,7 @@ void GifToVideoConverter::convert(const QString& gifFileName)
         return;
     }
 
+    qDebug() << "Format:" << mGif->format() << "supported:" << mGif->supportedFormats();
     mVideoFile = FileUtils::makeTempFile("mp4");
 
     if (!mVideoFile)
@@ -32,7 +34,7 @@ void GifToVideoConverter::convert(const QString& gifFileName)
 
     mVideoFile->close();
 
-    if (mGif->frameCount() < 2)
+    if (mGif->frameCount() < 3)
     {
         qWarning() << "Not enough frames:" << mGif->frameCount();
         emit conversionFailed("Not enough frames");
@@ -40,7 +42,11 @@ void GifToVideoConverter::convert(const QString& gifFileName)
     }
 
     qDebug() << "Frame count:" << mGif->frameCount();
+
+    // Frames start at 0, but the delay between frame 0 and 1 seems not always right
     mGif->jumpToFrame(0);
+    mGif->jumpToNextFrame();
+
     const QImage firstFrame = mGif->currentImage();
 
     if (firstFrame.isNull())
@@ -61,14 +67,35 @@ void GifToVideoConverter::convert(const QString& gifFileName)
     }
 
     const int fps = std::max(1000 / frameDelayMs, 1);
-    const int bitsPerFrame = VIDEO_BIT_RATE / fps;
+    int width = firstFrame.width();
 
-    if (!mVideoEncoder.open(mVideoFile->fileName(), firstFrame.width(), firstFrame.height(), fps, bitsPerFrame))
+    // Resolution must be even for the video encoder
+    if (width & 1)
+        width += 1;
+
+    int height = firstFrame.height();
+
+    if (height & 1)
+        height += 1;
+
+    if (width != firstFrame.width() || height != firstFrame.height())
+    {
+        mGif->setScaledSize(QSize(width, height));
+        qDebug() << "Scaled to:" << width << "x" << height;
+    }
+
+    int maxSize = std::max(width, height);
+    const int bitRate = maxSize <= 720 ? VIDEO_BIT_RATE_SD : VIDEO_BIT_RATE_HD;
+    mVideoEncoder = std::make_unique<VideoEncoder>();
+
+    if (!mVideoEncoder->open(mVideoFile->fileName(), width, height, fps, bitRate))
     {
         qWarning() << "Cannot encode video";
         emit conversionFailed("Cannot encode video");
         return;
     }
+
+    startThread();
 }
 
 void GifToVideoConverter::startThread()
@@ -89,6 +116,9 @@ void GifToVideoConverter::startThread()
 
 void GifToVideoConverter::finished()
 {
+    mVideoEncoder->close();
+    mVideoEncoder = nullptr;
+
     if (!mConversionDone)
     {
         emit conversionFailed("Conversion failed");
@@ -96,6 +126,8 @@ void GifToVideoConverter::finished()
     }
 
     qDebug() << "Conversion finished";
+    mVideoFile->flush();
+    mVideoFile->close();
     const QString fileName = mVideoFile->fileName();
     TempFileHolder::instance().put(std::move(mVideoFile));
     emit conversionOk(fileName);
@@ -104,22 +136,28 @@ void GifToVideoConverter::finished()
 bool GifToVideoConverter::pushFrames()
 {
     qDebug() << "Push frames to video encoder";
+    mGif->jumpToFrame(0);
+    const int frameCount = mGif->frameCount();
+    int frameIndex = 0;
 
     do {
+        qDebug() << "Push frame:" << frameIndex << "/" << frameCount << "next frame delay:" << mGif->nextFrameDelay();
         const QImage frame = mGif->currentImage();
 
         if (frame.isNull())
         {
-            qWarning() << "Failed to read frame";
+            qWarning() << "Failed to read frame:" << frameIndex;
             return false;
         }
 
-        if (!mVideoEncoder.push(frame))
+        if (!mVideoEncoder->push(frame))
         {
-            qWarning() << "Failed to push frame to video enoder";
+            qWarning() << "Failed to push frame to video enoder:" << frameIndex;
             return false;
         }
-    } while (mGif->jumpToNextFrame());
+    } while (mGif->jumpToNextFrame() && ++frameIndex <= frameCount);
+    // Frames start counting at zero still there is a frame at index frameCount.
+    // Seems frame 0 is not counted in the count??
 
     qDebug() << "All frames pushed";
     return true;

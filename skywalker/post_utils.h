@@ -148,7 +148,7 @@ signals:
     void unmuteThreadFailed(QString error);
     void postDeletedOk();
     void postDeletedFailed(QString error);
-    void photoPicked(QString imgSource);
+    void photoPicked(QString imgSource, QString gifTempFileName);
     void photoPickFailed(QString error);
     void photoPickCanceled();
     void videoPicked(QUrl url);

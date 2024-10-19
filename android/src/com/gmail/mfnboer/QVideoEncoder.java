@@ -43,7 +43,6 @@ public class QVideoEncoder {
         // Configure the output format
         MediaFormat outputFormat = MediaFormat.createVideoFormat(MIME_TYPE, mWidth, mHeight);
         outputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-
         outputFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_VBR);
         outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitRate);
         outputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps);
@@ -63,7 +62,13 @@ public class QVideoEncoder {
         Log.d(LOGTAG, "Complexity: " + caps.getComplexityRange());
         Log.d(LOGTAG, "Quality: " + caps.getQualityRange());
 
-        mEncoder.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        try {
+            mEncoder.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        } catch (IllegalArgumentException e) {
+            Log.w(LOGTAG, "Failed to configure encoder: " + e.getMessage());
+            return false;
+        }
+
         mInputSurface = mEncoder.createInputSurface();
         mEncoder.start();
 
