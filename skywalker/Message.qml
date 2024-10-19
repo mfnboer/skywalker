@@ -51,6 +51,5 @@ Dialog {
     function show(msg) {
         msgLabel.text = msg
         open()
-        forceActiveFocus()
     }
 }

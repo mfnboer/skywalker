@@ -1,6 +1,7 @@
 next
 ====
 * Pinned posts
+* Post your own GIF as video
 * Always show handles on posts
 
 3.4.2

@@ -1513,14 +1513,35 @@ SkyPage {
     }
 
     GifToVideoConverter {
+        property var progressDialog
+
         id: gifToVideoConverter
 
         onConversionOk: (videoFileName) => {
+            progressDialog.destroy()
             page.tmpVideos.push("file://" + videoFileName)
             editVideo(`file://${videoFileName}`)
         }
 
-        onConversionFailed: (error) => statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        onConversionFailed: (error) => {
+            progressDialog.destroy()
+            statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onConversionProgress: (progress) => progressDialog.setProgress(progress)
+
+        function start(gifFileName) {
+            progressDialog = guiSettings.showProgress(page, qsTr("Converting GIF to Video"), () => doCancel())
+            gifToVideoConverter.convert(gifFileName)
+        }
+
+        function doCancel() {
+            gifToVideoConverter.cancel()
+            let postItem = currentPostItem()
+
+            if (postItem)
+                postItem.getPostText().forceActiveFocus()
+        }
     }
 
     DraftPosts {
@@ -1704,8 +1725,10 @@ SkyPage {
         guiSettings.askYesNoQuestion(
             page,
             qsTr("Do you want to post this GIF as video?"),
-            () => gifToVideoConverter.convert(gifFileName),
+            () => gifToVideoConverter.start(gifFileName),
             () => photoPickedContinued(source, altText))
+
+        Qt.inputMethod.setVisible(false)
     }
 
     function photoPickedContinued(source, altText = "") {
@@ -1721,6 +1744,7 @@ SkyPage {
         postItem.memeBottomTexts.push("")
         let scrollBar = postItem.getImageScroller().ScrollBar.horizontal
         scrollBar.position = 1.0 - scrollBar.size
+        postItem.getPostText().forceActiveFocus()
     }
 
     function videoPicked(source, altText = "") {

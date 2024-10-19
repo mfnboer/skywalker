@@ -98,8 +98,15 @@ void GifToVideoConverter::convert(const QString& gifFileName)
     startThread();
 }
 
+void GifToVideoConverter::cancel()
+{
+    qDebug() << "Cancel";
+    mCanceled = true;
+}
+
 void GifToVideoConverter::startThread()
 {
+    mCanceled = false;
     QThread* thread = QThread::create([this]{ mConversionDone = pushFrames(); });
 
     if (!thread)
@@ -118,6 +125,11 @@ void GifToVideoConverter::finished()
 {
     mVideoEncoder->close();
     mVideoEncoder = nullptr;
+    mThread->wait();
+    mThread = nullptr;
+
+    if (mCanceled)
+        return;
 
     if (!mConversionDone)
     {
@@ -142,7 +154,7 @@ bool GifToVideoConverter::pushFrames()
 
     do {
         qDebug() << "Push frame:" << frameIndex << "/" << frameCount << "next frame delay:" << mGif->nextFrameDelay();
-        const QImage frame = mGif->currentImage();
+        QImage frame = mGif->currentImage();
 
         if (frame.isNull())
         {
@@ -150,9 +162,19 @@ bool GifToVideoConverter::pushFrames()
             return false;
         }
 
+        frame.convertTo(QImage::Format_RGBA8888); // must match format in QVideoEncoder.java
+
         if (!mVideoEncoder->push(frame))
         {
             qWarning() << "Failed to push frame to video enoder:" << frameIndex;
+            return false;
+        }
+
+        emit conversionProgress(frameIndex / double(frameCount));
+
+        if (mCanceled)
+        {
+            qDebug() << "Canceled";
             return false;
         }
     } while (mGif->jumpToNextFrame() && ++frameIndex <= frameCount);

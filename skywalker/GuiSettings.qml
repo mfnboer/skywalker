@@ -144,6 +144,14 @@ Item {
         message.show(msg)
     }
 
+    function showProgress(parent, msg, onCancelCb) {
+        let component = Qt.createComponent("ProgressDialog.qml")
+        let dialog = component.createObject(parent)
+        dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
+        dialog.show(msg)
+        return dialog
+    }
+
     function toWordSequence(stringList) {
         if (!stringList)
             return ""

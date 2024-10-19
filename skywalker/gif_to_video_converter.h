@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "video_encoder.h"
+#include <QAtomicInt>
 #include <QMovie>
 #include <QObject>
 #include <QTemporaryFile>
@@ -17,10 +18,12 @@ class GifToVideoConverter : public QObject
 
 public:
     Q_INVOKABLE void convert(const QString& gifFileName);
+    Q_INVOKABLE void cancel();
 
 signals:
     void conversionOk(QString fileName);
     void conversionFailed(QString error);
+    void conversionProgress(double progress); // 0.0 => 1.0
 
 private:
     void startThread();
@@ -32,6 +35,7 @@ private:
     std::unique_ptr<QTemporaryFile> mVideoFile;
     std::unique_ptr<QThread> mThread;
     bool mConversionDone = false;
+    QAtomicInteger<bool> mCanceled = false;
 };
 
 }
