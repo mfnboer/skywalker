@@ -26,6 +26,14 @@ Dialog {
             id: progressBar
             Layout.fillWidth: true
         }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            horizontalAlignment: Qt.AlignRight
+            text: `${(Math.round(progressBar.value * 100))}%`
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: Material.color(Material.Grey)
+        }
     }
 
     GuiSettings {

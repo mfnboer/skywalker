@@ -244,9 +244,9 @@ ApplicationWindow {
                 return
             }
 
-            guiSettings.askYesNoQuestion(
+            guiSettings.askConvertGif(
                 root,
-                qsTr("Do you want to post this GIF as video?"),
+                "file://" + gifTempFileName,
                 () => gifToVideoConverter.start(gifTempFileName, text),
                 () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
         }

@@ -1722,13 +1722,13 @@ SkyPage {
             return
         }
 
-        guiSettings.askYesNoQuestion(
+        guiSettings.askConvertGif(
             page,
-            qsTr("Do you want to post this GIF as video?"),
+            "file://" + gifFileName,
             () => gifToVideoConverter.start(gifFileName),
             () => photoPickedContinued(source, altText))
 
-        Qt.inputMethod.setVisible(false)
+        Qt.inputMethod.setVisible(false) // TODO
     }
 
     function photoPickedContinued(source, altText = "") {

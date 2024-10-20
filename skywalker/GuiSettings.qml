@@ -144,6 +144,14 @@ Item {
         message.show(msg)
     }
 
+    function askConvertGif(parent, gifSource, onVideoCb, onImageCb) {
+        let component = Qt.createComponent("ConvertGifDialog.qml")
+        let dialog = component.createObject(parent, { gifSource: gifSource })
+        dialog.onAccepted.connect(() => { dialog.destroy(); onVideoCb() })
+        dialog.onRejected.connect(() => { dialog.destroy(); onImageCb() })
+        dialog.open()
+    }
+
     function showProgress(parent, msg, onCancelCb) {
         let component = Qt.createComponent("ProgressDialog.qml")
         let dialog = component.createObject(parent)
