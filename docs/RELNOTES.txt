@@ -3,6 +3,7 @@ next
 * Pinned posts
 * Post your own GIF as video
 * Always show handles on posts
+* Border colors adapt to background color (when you change it)
 * Bug fixes
 
 3.4.2
