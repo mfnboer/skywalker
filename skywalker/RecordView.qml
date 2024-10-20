@@ -11,7 +11,7 @@ Item {
 
     id: recordView
     width: parent.width
-    height: recordColumn.height + 10
+    height: recordColumn.height + 20
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()
@@ -27,7 +27,7 @@ Item {
 
     Column {
         id: recordColumn
-        width: parent.width - 10
+        width: parent.width - 20
         anchors.centerIn: parent
 
         RowLayout {

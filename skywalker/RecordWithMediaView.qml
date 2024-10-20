@@ -11,11 +11,11 @@ Item {
 
     id: recordItem
     width: parent.width
-    height: recordColumn.height + 10
+    height: recordColumn.height
 
     Column {
         id: recordColumn
-        width: parent.width - 10
+        width: parent.width
         anchors.centerIn: parent
         spacing: 5
 
@@ -51,13 +51,6 @@ Item {
                                             contentWarning: recordItem.contentVisibility })
             }
         }
-    }
-    Rectangle {
-        anchors.fill: parent
-        border.width: 1
-        border.color: guiSettings.borderColor
-        color: "transparent"
-        radius: 10
     }
 
     GuiSettings {
