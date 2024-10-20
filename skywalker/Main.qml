@@ -222,7 +222,7 @@ ApplicationWindow {
         onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack)
 
         onSharedTextReceived: (text) => {
-            closeStartupStatus() // close startup status if sharing started the app
+            closeStartupStatus() // close startup status if sharing started the app                      
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
@@ -236,8 +236,22 @@ ApplicationWindow {
         }
 
         // "file://" or "image://" source
-        onSharedImageReceived: (source, text) => {
+        onSharedImageReceived: (source, gifTempFileName, text) => {
             closeStartupStatus() // close startup status if sharing started the app
+
+            if (!gifTempFileName) {
+                handleSharedImageReceived(source, text)
+                return
+            }
+
+            guiSettings.askYesNoQuestion(
+                root,
+                qsTr("Do you want to post this GIF as video?"),
+                () => gifToVideoConverter.start(gifTempFileName, text),
+                () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
+        }
+
+        function handleSharedImageReceived(source, text) {
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
@@ -252,6 +266,10 @@ ApplicationWindow {
 
         onSharedVideoReceived: (source, text) => {
             closeStartupStatus() // close startup status if sharing started the app
+            handleSharedVideoReceived(source, text)
+        }
+
+        function handleSharedVideoReceived(source, text) {
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
@@ -287,6 +305,40 @@ ApplicationWindow {
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
             skywalker.getUserProfileAndFollows()
+        }
+    }
+
+    GifToVideoConverter {
+        property var progressDialog
+        property string postText
+        property string gifFileName
+
+        id: gifToVideoConverter
+
+        onConversionOk: (videoFileName) => {
+            progressDialog.destroy()
+            postUtils.dropVideo("file://" + gifFileName)
+            skywalker.handleSharedVideoReceived(`file://${videoFileName}`, postText)
+        }
+
+        onConversionFailed: (error) => {
+            progressDialog.destroy()
+            postUtils.dropVideo("file://" + gifFileName)
+            statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onConversionProgress: (progress) => progressDialog.setProgress(progress)
+
+        function start(fileName, text) {
+            postText = text
+            gifFileName = fileName
+            progressDialog = guiSettings.showProgress(root, qsTr("Converting GIF to Video"), () => doCancel())
+            gifToVideoConverter.convert(fileName)
+        }
+
+        function doCancel() {
+            gifToVideoConverter.cancel()
+            postUtils.dropVideo("file://" + gifFileName)
         }
     }
 

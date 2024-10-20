@@ -2341,6 +2341,12 @@ SkyPage {
         page.tmpImages.forEach((value, index, array) => { postUtils.dropPhoto(value); })
         page.tmpVideos.forEach((value, index, array) => { postUtils.dropVideo(value); })
 
+        if (initialImage)
+            getPostUtils().dropPhoto(initialImage)
+
+        if (initialVideo)
+            postUtils.dropVideo(initialVideo)
+
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)
 
