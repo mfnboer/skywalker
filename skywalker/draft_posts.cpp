@@ -1331,9 +1331,33 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     const QString absDraftFileName = createAbsPath(draftsPath, draftFileName);
     qDebug() << "Draft image file name:" << absDraftFileName;
 
-    if (!QFile::copy(videoFileName, absDraftFileName))
+    if (!FileUtils::checkWriteMediaPermission())
     {
-        qWarning() << "Failed to save video:" << absDraftFileName;
+        qWarning() << "No permission to write media:" << absDraftFileName;
+        return nullptr;
+    }
+
+    QFile fromFile(videoFileName);
+
+    if (!fromFile.open(QFile::ReadOnly))
+    {
+        qWarning() << "Cannot open file:" << videoFileName << fromFile.errorString();
+        return nullptr;
+    }
+
+    QFile toFile(absDraftFileName);
+
+    if (!toFile.open(QFile::WriteOnly))
+    {
+        qWarning() << "Cannot create file:" << absDraftFileName << toFile.errorString();
+        return nullptr;
+    }
+
+    if (toFile.write(fromFile.readAll()) < 0)
+    {
+        qWarning() << "Failed to save video:" << absDraftFileName << toFile.errorString();
+        toFile.close();
+        toFile.remove();
         emit saveDraftPostFailed(tr("Failed to save video: %1").arg(absDraftFileName));
         return nullptr;
     }
