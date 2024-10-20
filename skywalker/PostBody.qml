@@ -42,7 +42,7 @@ Column {
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: postText
-        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord ? 5 : 0
+        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia ? 5 : 0
         visible: postVisible() && postText
 
         onLinkActivated: (link) => root.openLink(link)
