@@ -22,7 +22,7 @@ Item {
     readonly property string badgeColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string badgeTextColor: "white"
     readonly property string bannerDefaultColor: "blue"
-    readonly property string borderColor: Material.theme === Material.Light ? "#ececec" : "#1d3030"
+    readonly property string borderColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6) // Material.theme === Material.Light ? "#ececec" : "#1d3030"
     readonly property string buttonColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string buttonNeutralColor: Material.theme === Material.Light ? Material.background : "darkslategrey"
     readonly property string buttonTextColor: "white"
@@ -48,9 +48,9 @@ Item {
     readonly property string messageOtherTextColor: Material.theme === Material.Light ? "black" : "white"
     readonly property string moderatorIconColor: "lightgrey"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
-    readonly property string postHighLightColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
+    readonly property string postHighLightColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.03) : Qt.lighter(backgroundColor, 1.3)
     readonly property string selectionColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
-    readonly property string separatorColor: Material.theme === Material.Light ? "#ececec" : "#1d3030"
+    readonly property string separatorColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6) // Material.theme === Material.Light ? "#ececec" : "#1d3030"
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string statsColor: Material.color(Material.Grey)
     readonly property string textColor: Material.foreground
@@ -218,7 +218,6 @@ Item {
     function allowedBackgroundColors() {
         return [textColor,
                 badgeColor,
-                borderColor,
                 buttonColor,
                 contentLabelColor,
                 contentUserLabelColor,
@@ -228,7 +227,6 @@ Item {
                 messageNewBackgroundColor,
                 messageUserBackgroundColor,
                 messageOtherBackgroundColor,
-                separatorColor,
                 statsColor]
     }
 }
