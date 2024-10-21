@@ -92,6 +92,7 @@ SkyPage {
         color: guiSettings.headerColor
 
         SvgButton {
+            id: cancelButton
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             svg: svgOutline.cancel
@@ -1528,7 +1529,10 @@ SkyPage {
             statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
 
-        onConversionProgress: (progress) => progressDialog.setProgress(progress)
+        onConversionProgress: (progress) => {
+            if (progressDialog)
+                progressDialog.setProgress(progress)
+        }
 
         function start(gifFileName) {
             progressDialog = guiSettings.showProgress(page, qsTr("Converting GIF to Video"), () => doCancel())
@@ -1727,8 +1731,6 @@ SkyPage {
             "file://" + gifFileName,
             () => gifToVideoConverter.start(gifFileName),
             () => photoPickedContinued(source, altText))
-
-        Qt.inputMethod.setVisible(false) // TODO
     }
 
     function photoPickedContinued(source, altText = "") {

@@ -16,11 +16,20 @@ Dialog {
             flat: true
             text: qsTr("Image")
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+
+            // HACK
+            // When the virtual keyboard still shows in the compose window, then
+            // a press on the butten makes the keyboard disappear, the dialog moves
+            // and the press does not become a click.
+            onPressed: clicked()
         }
         Button {
+            id: videoButton
             flat: true
             text: qsTr("Video")
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+
+            onPressed: clicked()
         }
     }
 
