@@ -3,7 +3,7 @@ import QtQuick.Shapes
 import skywalker
 
 Shape {
-    required property svgimage svg
+    required property SvgImage svg
     property string color
     property string outlineColor: color
 

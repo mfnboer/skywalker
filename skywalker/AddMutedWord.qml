@@ -21,7 +21,7 @@ Dialog {
     SkyTextInput {
         id: textInput
         width: parent.width
-        svgIcon: svgOutline.mutedWords
+        svgIcon: SvgOutline.mutedWords
         initialText: editWord
         placeholderText: qsTr("Word, phrase, or hashtag to mute")
         enabled: true

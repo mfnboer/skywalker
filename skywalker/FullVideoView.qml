@@ -76,7 +76,7 @@ SkyPage {
         iconColor: "white"
         Material.background: "black"
         opacity: 0.7
-        svg: svgOutline.arrowBack
+        svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
         visible: !view.isPlaying
         onClicked: page.closed()
@@ -89,7 +89,7 @@ SkyPage {
         iconColor: "white"
         Material.background: "black"
         opacity: 0.7
-        svg: svgOutline.moreVert
+        svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
         visible: !view.isPlaying
         onClicked: moreMenu.open()
@@ -103,7 +103,7 @@ SkyPage {
                 onTriggered: page.saveVideo()
 
                 MenuItemSvg {
-                    svg: svgOutline.save
+                    svg: SvgOutline.save
                 }
             }
 
@@ -113,7 +113,7 @@ SkyPage {
                 onTriggered: root.translateText(videoView.alt)
 
                 MenuItemSvg {
-                    svg: svgOutline.googleTranslate
+                    svg: SvgOutline.googleTranslate
                 }
             }
         }

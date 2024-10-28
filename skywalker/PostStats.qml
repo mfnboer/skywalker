@@ -49,7 +49,7 @@ Item {
         y: topPadding
         width: parent.width / 4
         iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
-        svg: svgOutline.reply
+        svg: SvgOutline.reply
         statistic: replyCount
         visible: !bookmarkNotFound
         enabled: !replyDisabled
@@ -63,7 +63,7 @@ Item {
         anchors.left: replyIcon.right
         width: parent.width / 4
         iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
-        svg: svgOutline.repost
+        svg: SvgOutline.repost
         statistic: repostCount
         visible: !bookmarkNotFound
         onClicked: repost()
@@ -76,7 +76,7 @@ Item {
         anchors.left: repostIcon.right
         width: parent.width / 4
         iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
-        svg: likeUri ? svgFilled.like : svgOutline.like
+        svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
         visible: !bookmarkNotFound
         onClicked: like()
@@ -94,7 +94,7 @@ Item {
         anchors.left: likeIcon.right
         width: parent.width / 8
         iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
-        svg: isBookmarked ? svgFilled.bookmark : svgOutline.bookmark
+        svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
         onClicked: bookmark()
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
@@ -104,7 +104,7 @@ Item {
         y: topPadding
         anchors.left: bookmarkIcon.right
         width: parent.width / 8
-        svg: svgOutline.moreVert
+        svg: SvgOutline.moreVert
         visible: !bookmarkNotFound
         onClicked: moreMenuLoader.open()
 
@@ -140,7 +140,7 @@ Item {
                     text: qsTr("Translate")
                     onTriggered: translatePost()
 
-                    MenuItemSvg { svg: svgOutline.googleTranslate }
+                    MenuItemSvg { svg: SvgOutline.googleTranslate }
                 }
 
                 AccessibleMenuItem {
@@ -148,21 +148,21 @@ Item {
                     enabled: !embeddingDisabled
                     onTriggered: copyPostText()
 
-                    MenuItemSvg { svg: svgOutline.copy }
+                    MenuItemSvg { svg: SvgOutline.copy }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Share")
                     enabled: !embeddingDisabled
                     onTriggered: share()
 
-                    MenuItemSvg { svg: svgOutline.share }
+                    MenuItemSvg { svg: SvgOutline.share }
                 }
                 AccessibleMenuItem {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")
                     visible: !isReply || replyRootUri
                     onTriggered: muteThread()
 
-                    MenuItemSvg { svg: threadMuted ? svgOutline.notifications : svgOutline.notificationsOff }
+                    MenuItemSvg { svg: threadMuted ? SvgOutline.notifications : SvgOutline.notificationsOff }
                 }
 
                 AccessibleMenuItem {
@@ -170,7 +170,7 @@ Item {
                     visible: isReply && !authorIsUser && isThreadFromUser()
                     onTriggered: hideReply()
 
-                    MenuItemSvg { svg: isHiddenReply ? svgOutline.visibility : svgOutline.hideVisibility }
+                    MenuItemSvg { svg: isHiddenReply ? SvgOutline.visibility : SvgOutline.hideVisibility }
                 }
 
                 AccessibleMenuItem {
@@ -178,7 +178,7 @@ Item {
                     visible: authorIsUser
                     onTriggered: threadgate()
 
-                    MenuItemSvg { svg: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE ? svgOutline.replyRestrictions : svgOutline.noReplyRestrictions }
+                    MenuItemSvg { svg: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE ? SvgOutline.replyRestrictions : SvgOutline.noReplyRestrictions }
                 }
 
                 AccessibleMenuItem {
@@ -186,7 +186,7 @@ Item {
                     visible: hasOwnRecord()
                     onTriggered: detachQuote(getRecordPostUri(), !recordIsDetached())
 
-                    MenuItemSvg { svg: recordIsDetached() ? svgOutline.attach : svgOutline.detach }
+                    MenuItemSvg { svg: recordIsDetached() ? SvgOutline.attach : SvgOutline.detach }
                 }
 
                 AccessibleMenuItem {
@@ -199,7 +199,7 @@ Item {
                             pin()
                     }
 
-                    MenuItemSvg { svg: viewerStatePinned ? svgFilled.unpin : svgFilled.pin }
+                    MenuItemSvg { svg: viewerStatePinned ? SvgFilled.unpin : SvgFilled.pin }
                 }
 
                 AccessibleMenuItem {
@@ -207,14 +207,14 @@ Item {
                     visible: authorIsUser
                     onTriggered: deletePost()
 
-                    MenuItemSvg { svg: svgOutline.delete }
+                    MenuItemSvg { svg: SvgOutline.delete }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report post")
                     visible: !authorIsUser
                     onTriggered: reportPost()
 
-                    MenuItemSvg { svg: svgOutline.report }
+                    MenuItemSvg { svg: SvgOutline.report }
                 }
             }
         }

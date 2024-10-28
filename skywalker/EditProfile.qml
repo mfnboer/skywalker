@@ -37,7 +37,7 @@ SkyPage {
             id: updateProfileButton
             anchors.right: parent.right
             anchors.top: parent.top
-            svg: svgOutline.check
+            svg: SvgOutline.check
             accessibleName: qsTr("save profile")
             enabled: changesMade() && !nameField.maxGraphemeLengthExceeded()
 
@@ -138,7 +138,7 @@ SkyPage {
                         x: parent.width - width
                         width: 40
                         height: width
-                        svg: svgOutline.close
+                        svg: SvgOutline.close
                         accessibleName: qsTr("delete banner")
                         visible: banner.source.toString() !== ""
 
@@ -187,7 +187,7 @@ SkyPage {
                                 y: parent.height - height + 10
                                 width: 40
                                 height: width
-                                svg: svgOutline.close
+                                svg: SvgOutline.close
                                 accessibleName: qsTr("delete avatar")
                                 visible: avatar.avatarUrl
 

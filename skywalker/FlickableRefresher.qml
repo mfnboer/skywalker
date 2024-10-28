@@ -37,7 +37,7 @@ Item {
         height: width
         iconColor: guiSettings.textColor
         Material.background: guiSettings.buttonNeutralColor
-        svg: svgOutline.scrollToTop
+        svg: SvgOutline.scrollToTop
         accessibleName: qsTr("Scroll to top")
         visible: scrollTopTopButtonVisible && !list.atYBeginning && enableScrollToTop
         onClicked: scrollToTopFun()

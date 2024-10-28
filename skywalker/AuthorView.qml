@@ -75,7 +75,7 @@ SkyPage {
             iconColor: guiSettings.headerTextColor
             Material.background: guiSettings.headerColor
             opacity: 0.5
-            svg: svgOutline.arrowBack
+            svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
             onClicked: page.closed()
         }
@@ -114,7 +114,7 @@ SkyPage {
 
         PostButton {
             y: -height - 10
-            svg: (isUser(author) || author.hasInvalidHandle()) ? svgOutline.chat : svgOutline.atSign
+            svg: (isUser(author) || author.hasInvalidHandle()) ? SvgOutline.chat : SvgOutline.atSign
             overrideOnClicked: () => mentionPost()
 
             Accessible.role: Accessible.Button
@@ -159,7 +159,7 @@ SkyPage {
 
             RowLayout {
                 SvgButton {
-                    svg: svgOutline.edit
+                    svg: SvgOutline.edit
                     onClicked: editAuthor(author)
                     accessibleName: qsTr("edit your profile")
                     visible: isUser(author)
@@ -167,7 +167,7 @@ SkyPage {
 
                 SvgButton {
                     id: moreButton
-                    svg: svgOutline.moreVert
+                    svg: SvgOutline.moreVert
                     accessibleName: qsTr("more options")
                     onClicked: moreMenu.open()
 
@@ -187,13 +187,13 @@ SkyPage {
                             visible: authorDescription
                             onTriggered: root.translateText(authorDescription)
 
-                            MenuItemSvg { svg: svgOutline.googleTranslate }
+                            MenuItemSvg { svg: SvgOutline.googleTranslate }
                         }
                         AccessibleMenuItem {
                             text: qsTr("Share")
                             onTriggered: skywalker.shareAuthor(author)
 
-                            MenuItemSvg { svg: svgOutline.share }
+                            MenuItemSvg { svg: SvgOutline.share }
                         }
                         AccessibleMenuItem {
                             text: following ? qsTr("Unfollow") : qsTr("Follow")
@@ -205,13 +205,13 @@ SkyPage {
                                     graphUtils.follow(author)
                             }
 
-                            MenuItemSvg { svg: following ? svgOutline.noUsers : svgOutline.addUser }
+                            MenuItemSvg { svg: following ? SvgOutline.noUsers : SvgOutline.addUser }
                         }
                         AccessibleMenuItem {
                             text: qsTr("Search")
                             onTriggered: root.viewSearchView("", author.handle)
 
-                            MenuItemSvg { svg: svgOutline.search }
+                            MenuItemSvg { svg: SvgOutline.search }
                         }
                         AccessibleMenuItem {
                             text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
@@ -223,7 +223,7 @@ SkyPage {
                                     graphUtils.mute(author.did)
                             }
 
-                            MenuItemSvg { svg: authorMuted ? svgOutline.unmute : svgOutline.mute }
+                            MenuItemSvg { svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute }
                         }
                         AccessibleMenuItem {
                             text: blocking ? qsTr("Unblock account") : qsTr("Block account")
@@ -235,7 +235,7 @@ SkyPage {
                                     graphUtils.block(author.did)
                             }
 
-                            MenuItemSvg { svg: blocking ? svgOutline.unblock : svgOutline.block }
+                            MenuItemSvg { svg: blocking ? SvgOutline.unblock : SvgOutline.block }
                         }
                         AccessibleMenuItem {
                            text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
@@ -247,27 +247,27 @@ SkyPage {
                                    graphUtils.muteReposts(author)
                            }
 
-                           MenuItemSvg { svg: svgOutline.repost }
+                           MenuItemSvg { svg: SvgOutline.repost }
                         }
 
                         AccessibleMenuItem {
                             text: qsTr("Update lists")
                             onTriggered: updateLists()
 
-                            MenuItemSvg { svg: svgOutline.list }
+                            MenuItemSvg { svg: SvgOutline.list }
                         }
                         AccessibleMenuItem {
                             text: qsTr("Report account")
                             visible: !isUser(author)
                             onTriggered: root.reportAuthor(author)
 
-                            MenuItemSvg { svg: svgOutline.report }
+                            MenuItemSvg { svg: SvgOutline.report }
                         }
                     }
                 }
 
                 SvgButton {
-                    svg: svgOutline.directMessage
+                    svg: SvgOutline.directMessage
                     accessibleName: qsTr(`direct message ${author.name}`)
                     onClicked: skywalker.chat.startConvoForMember(author.did)
                     visible: author.canSendDirectMessage() && !isUser(author) && !skywalker.chat.messageConvoOpen()
@@ -480,7 +480,7 @@ SkyPage {
                 StatIcon {
                     id: likeIcon
                     iconColor: labelerLikeUri ? guiSettings.likeColor : guiSettings.statsColor
-                    svg: labelerLikeUri ? svgFilled.like : svgOutline.like
+                    svg: labelerLikeUri ? SvgFilled.like : SvgOutline.like
                     onClicked: likeLabeler(labelerLikeUri, labeler.uri, labeler.cid)
                     Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(labelerLikeCount, qsTr("like"), qsTr("likes"))
 
@@ -629,7 +629,7 @@ SkyPage {
                 FlickableRefresher {}
 
                 EmptyListIndication {
-                    svg: svgOutline.noLabels
+                    svg: SvgOutline.noLabels
                     text: qsTr("No labels")
                     list: labelList
                 }
@@ -728,7 +728,7 @@ SkyPage {
                 }
 
                 EmptyListIndication {
-                    svg: svgOutline.noPosts
+                    svg: SvgOutline.noPosts
                     text: qsTr("No feeds")
                     list: authorFeedList
                 }
@@ -776,7 +776,7 @@ SkyPage {
                 }
 
                 EmptyListIndication {
-                    svg: svgOutline.noLists
+                    svg: SvgOutline.noLists
                     text: qsTr("No starter packs")
                     list: authorStarterPackList
                 }
@@ -831,7 +831,7 @@ SkyPage {
                 }
 
                 EmptyListIndication {
-                    svg: svgOutline.noLists
+                    svg: SvgOutline.noLists
                     text: qsTr("No lists")
                     list: authorListList
                 }
@@ -1160,14 +1160,14 @@ SkyPage {
 
     function getEmptyListIndicationSvg() {
         if (author.viewer.blockedBy || blocking) {
-            return svgOutline.block
+            return SvgOutline.block
         } else if (authorMuted) {
-            return svgOutline.mute
+            return SvgOutline.mute
         } else if (!contentVisible()) {
-            return svgOutline.hideVisibility
+            return SvgOutline.hideVisibility
         }
 
-        return svgOutline.noPosts
+        return SvgOutline.noPosts
     }
 
     function getEmptyListIndicationText() {

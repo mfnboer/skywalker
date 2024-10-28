@@ -29,7 +29,7 @@ Rectangle {
             id: backButton
             iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
-            svg: svgOutline.arrowBack
+            svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
             onClicked: headerRect.back()
         }
@@ -76,7 +76,7 @@ Rectangle {
                     y: parent.y - parent.padding
                     width: height
                     height: parent.height + 10
-                    svg: svgOutline.close
+                    svg: SvgOutline.close
                     accessibleName: qsTr("clear search text")
                     visible: searchText.displayText.length > 0
                     onClicked: searchText.clear()
@@ -103,7 +103,7 @@ Rectangle {
             id: searchButton
             iconColor: enabled ? guiSettings.headerTextColor : guiSettings.disabledColor
             Material.background: enabled ? guiSettings.buttonColor : guiSettings.headerColor
-            svg: svgOutline.search
+            svg: SvgOutline.search
             accessibleName: qsTr("start search for posts and users")
             onClicked: headerRect.search(searchText.displayText)
             enabled: searchText.displayText.length >= headerRect.minSearchTextLength

@@ -25,7 +25,7 @@ Row {
         width: 30
         height: width
         color: Material.color(Material.Grey)
-        svg: svgOutline.hideVisibility
+        svg: SvgOutline.hideVisibility
         visible: !imageVisible()
     }
 

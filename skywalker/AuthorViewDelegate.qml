@@ -137,7 +137,7 @@ Rectangle {
                 Accessible.name: qsTr(`press to unfollow ${author.name}`)
             }
             SvgButton {
-                svg: svgOutline.delete
+                svg: SvgOutline.delete
                 accessibleName: qsTr(`press to delete ${author.name}`)
                 visible: listItemUri && allowDeleteItem
                 onClicked: confirmDelete()

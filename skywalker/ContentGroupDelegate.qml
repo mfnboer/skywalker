@@ -44,7 +44,7 @@ Rectangle {
                 implicitWidth: height
                 implicitHeight: titleText.height
                 Layout.rightMargin: contentGroupView.margin
-                svg: contentGroup.target === QEnums.LABEL_TARGET_CONTENT ? svgOutline.chat : svgOutline.image
+                svg: contentGroup.target === QEnums.LABEL_TARGET_CONTENT ? SvgOutline.chat : SvgOutline.image
                 accessibleName: qsTr("target of the label")
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"

@@ -30,7 +30,7 @@ SkyPage {
             id: okButton
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            svg: svgOutline.check
+            svg: SvgOutline.check
             accessibleName: qsTr("process video")
             onClicked: videoEdited(getNewHeight(), durationControl.first.value, durationControl.second.value)
             enabled: durationControl.first.value < durationControl.second.value
@@ -75,7 +75,7 @@ SkyPage {
             height: width
             opacity: 0.5
             accessibleName: video.playbackState !== MediaPlayer.PlayingState ? qsTr("play video") : qsTr("stop video")
-            svg: video.playbackState !== MediaPlayer.PlayingState ? svgFilled.play : svgFilled.stop
+            svg: video.playbackState !== MediaPlayer.PlayingState ? SvgFilled.play : SvgFilled.stop
             enabled: video.hasVideo
 
             onClicked: {
@@ -105,7 +105,7 @@ SkyPage {
             anchors.bottom: parent.bottom
             width: 34
             height: 34
-            svg: video.muted ? svgOutline.soundOff : svgOutline.soundOn
+            svg: video.muted ? SvgOutline.soundOff : SvgOutline.soundOn
             accessibleName: video.muted ? qsTr("turn sound on") : qsTr("turn sound off")
 
             onClicked: video.toggleSound()

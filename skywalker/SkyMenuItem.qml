@@ -2,7 +2,7 @@ import QtQuick
 import skywalker
 
 Item {
-    required property svgimage icon
+    required property SvgImage icon
     property string text
 
     signal clicked()

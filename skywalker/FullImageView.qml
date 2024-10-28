@@ -151,7 +151,7 @@ SkyPage {
         iconColor: "white"
         Material.background: "black"
         opacity: 0.7
-        svg: svgOutline.arrowBack
+        svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
         onClicked: page.closed()
     }
@@ -162,7 +162,7 @@ SkyPage {
         iconColor: "white"
         Material.background: "black"
         opacity: 0.7
-        svg: svgOutline.moreVert
+        svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
         onClicked: moreMenu.open()
 
@@ -175,7 +175,7 @@ SkyPage {
                 onTriggered: page.saveImage(images[view.currentIndex].fullSizeUrl)
 
                 MenuItemSvg {
-                    svg: svgOutline.save
+                    svg: SvgOutline.save
                 }
             }
 
@@ -185,7 +185,7 @@ SkyPage {
                 onTriggered: root.translateText(images[view.currentIndex].alt)
 
                 MenuItemSvg {
-                    svg: svgOutline.googleTranslate
+                    svg: SvgOutline.googleTranslate
                 }
             }
         }

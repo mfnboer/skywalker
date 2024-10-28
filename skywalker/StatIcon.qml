@@ -4,7 +4,7 @@ import skywalker
 
 Rectangle {
     property int statistic: -1
-    property svgimage svg
+    property SvgImage svg
     property string iconColor: guiSettings.statsColor
     property var onClicked
 

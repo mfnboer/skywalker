@@ -30,7 +30,7 @@ SkyListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: svgOutline.noPosts
+        svg: SvgOutline.noPosts
         text: qsTr("No bookmarks")
         list: bookmarksView
     }

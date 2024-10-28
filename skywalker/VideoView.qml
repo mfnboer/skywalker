@@ -105,7 +105,7 @@ Column {
                         width: Math.min(parent.width, 150)
                         height: width
                         color: "white"
-                        svg: svgFilled.film
+                        svg: SvgFilled.film
                     }
                 }
 
@@ -130,7 +130,7 @@ Column {
             height: width
             opacity: 0.5
             accessibleName: qsTr("play video")
-            svg: svgFilled.play
+            svg: SvgFilled.play
             visible: filter.imageVisible() && !videoPlayer.playing && !videoPlayer.restarting
             enabled: videoPlayer.hasVideo || !autoLoad
 
@@ -316,7 +316,7 @@ Column {
             x: isFullViewMode ? 10 : 0
             width: 32
             height: width
-            svg: videoPlayer.playing ? svgFilled.pause : svgFilled.play
+            svg: videoPlayer.playing ? SvgFilled.pause : SvgFilled.play
             accessibleName: videoPlayer.playing ? qsTr("pause video") : qsTr("continue playing video")
             color: controlColor
 
@@ -329,7 +329,7 @@ Column {
             anchors.leftMargin: 10
             width: 32
             height: width
-            svg: svgFilled.stop
+            svg: SvgFilled.stop
             accessibleName: qsTr("stop video")
             color: controlColor
 
@@ -342,7 +342,7 @@ Column {
             anchors.leftMargin: 10
             width: 32
             height: width
-            svg: svgOutline.refresh
+            svg: SvgOutline.refresh
             accessibleName: qsTr("restart video")
             color: controlColor
 
@@ -403,7 +403,7 @@ Column {
             anchors.rightMargin: isFullViewMode ? 10 : 0
             width: 32
             height: width
-            svg: audioOutput.muted ? svgOutline.soundOff : svgOutline.soundOn
+            svg: audioOutput.muted ? SvgOutline.soundOff : SvgOutline.soundOn
             accessibleName: audioOutput.muted ? qsTr("turn sound on") : qsTr("turn sound off")
             color: controlColor
 

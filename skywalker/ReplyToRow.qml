@@ -4,7 +4,7 @@ import skywalker
 
 Row {
     required property string text
-    property svgimage svg: svgOutline.reply
+    property SvgImage svg: SvgOutline.reply
 
     id: row
     width: parent.width

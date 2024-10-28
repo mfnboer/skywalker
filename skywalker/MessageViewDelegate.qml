@@ -144,26 +144,26 @@ Rectangle {
                     text: qsTr("Translate")
                     onTriggered: root.translateText(message.text)
 
-                    MenuItemSvg { svg: svgOutline.googleTranslate }
+                    MenuItemSvg { svg: SvgOutline.googleTranslate }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Copy message")
                     onTriggered: skywalker.copyToClipboard(message.text)
 
-                    MenuItemSvg { svg: svgOutline.copy }
+                    MenuItemSvg { svg: SvgOutline.copy }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Delete")
                     onTriggered: deleteMessage(message.id)
 
-                    MenuItemSvg { svg: svgOutline.delete }
+                    MenuItemSvg { svg: SvgOutline.delete }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report message")
                     visible: !senderIsUser
                     onTriggered: reportMessage(message)
 
-                    MenuItemSvg { svg: svgOutline.report }
+                    MenuItemSvg { svg: SvgOutline.report }
                 }
             }
         }

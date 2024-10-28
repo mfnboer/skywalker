@@ -6,17 +6,19 @@
 
 namespace Skywalker {
 
-class SvgImage
+class SvgImage : public QObject
 {
-    Q_GADGET
+    Q_OBJECT
     Q_PROPERTY(QString path MEMBER mPath CONSTANT FINAL)
     Q_PROPERTY(int width MEMBER mWidth CONSTANT FINAL)
     Q_PROPERTY(int height MEMBER mHeight CONSTANT FINAL)
-    QML_VALUE_TYPE(svgimage)
+    QML_ELEMENT
+    QML_UNCREATABLE("only created on the C++ side")
 
 public:
-    SvgImage() = default;
-    constexpr SvgImage(const char* path, int width = 960, int height = 960) :
+    SvgImage(QObject* parent = nullptr) : QObject(parent) {}
+    SvgImage(const char* path, QObject* parent = nullptr, int width = 960, int height = 960) :
+        QObject(parent),
         mPath(path),
         mWidth(width),
         mHeight(height)
@@ -25,7 +27,7 @@ public:
     Q_INVOKABLE bool isNull() const { return mWidth == 0; }
 
 private:
-    const char* mPath = "";
+    QString mPath = "";
     int mWidth = 0;
     int mHeight = 0;
 };

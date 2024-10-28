@@ -18,7 +18,7 @@ Dialog {
     SkyTextInput {
         id: textInput
         width: parent.width
-        svgIcon: svgOutline.hashtag
+        svgIcon: SvgOutline.hashtag
         initialText: focusHashtag
         placeholderText: qsTr("Hashtag for focus")
         validator: RegularExpressionValidator { regularExpression: /[^ ]+/ }

@@ -26,7 +26,7 @@ ListView {
 
         SvgButton {
             anchors.right: parent.right
-            svg: svgOutline.add
+            svg: SvgOutline.add
             onClicked: addWord()
             accessibleName: qsTr(`add word to mute`)
             visible: view.count < skywalker.mutedWords.maxSize
@@ -54,14 +54,14 @@ ListView {
             SvgButton {
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
-                svg: svgOutline.edit
+                svg: SvgOutline.edit
                 accessibleName: qsTr(`edit ${entryText.text}`)
                 onClicked: editWord(entryText.text)
             }
             SvgButton {
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
-                svg: svgOutline.delete
+                svg: SvgOutline.delete
                 accessibleName: qsTr(`delete ${entryText.text}`)
                 onClicked: skywalker.mutedWords.removeEntry(entryText.text)
             }
@@ -78,7 +78,7 @@ ListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: svgOutline.mutedWords
+        svg: SvgOutline.mutedWords
         text: qsTr("No muted words")
         list: view
     }

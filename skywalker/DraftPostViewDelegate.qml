@@ -109,7 +109,7 @@ Rectangle {
             Layout.alignment: Qt.AlignRight
             Layout.rightMargin: 10
             Layout.columnSpan: 2
-            svg: svgOutline.delete
+            svg: SvgOutline.delete
             onClicked: deleted()
 
             Accessible.name: qsTr("delete draft post")

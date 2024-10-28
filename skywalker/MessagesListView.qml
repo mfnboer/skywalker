@@ -73,7 +73,7 @@ SkyPage {
 
         EmptyListIndication {
             y: parent.headerItem ? parent.headerItem.height : 0
-            svg: svgOutline.noDirectMessages
+            svg: SvgOutline.noDirectMessages
             text: qsTr("None")
             list: messagesView
         }
@@ -204,7 +204,7 @@ SkyPage {
         anchors.right: parent.right
         anchors.rightMargin: page.margin
         y: flick.y + flick.height + 5
-        svg: svgFilled.send
+        svg: SvgFilled.send
         accessibleName: qsTr("send message")
         enabled: !page.isSending && newMessageText.graphemeLength > 0 && newMessageText.graphemeLength <= page.maxMessageLength
         onClicked: sendMessage()

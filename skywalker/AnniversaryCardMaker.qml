@@ -26,7 +26,7 @@ SkyPage {
             anchors.rightMargin: 10
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            svg: svgOutline.check
+            svg: SvgOutline.check
             accessibleName: qsTr("add card")
             onClicked: addCard(anniversaryCard.imageSource, page.years)
         }

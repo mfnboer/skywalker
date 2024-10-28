@@ -28,7 +28,7 @@ Rectangle {
             id: backButton
             iconColor: backIsCancel ? guiSettings.buttonTextColor : guiSettings.headerTextColor
             Material.background: backIsCancel ? guiSettings.buttonColor : "transparent"
-            svg: backIsCancel ? svgOutline.cancel : svgOutline.arrowBack
+            svg: backIsCancel ? SvgOutline.cancel : SvgOutline.arrowBack
             accessibleName: backIsCancel ? qsTr("cancel") : qsTr("go back")
             onClicked: headerRect.back()
         }

@@ -43,7 +43,7 @@ ListView {
 
             SvgButton {
                 id: addButton
-                svg: svgOutline.add
+                svg: SvgOutline.add
                 accessibleName: qsTr("create new list")
                 visible: ownLists
                 onClicked: newList()
@@ -75,7 +75,7 @@ ListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: svgOutline.noLists
+        svg: SvgOutline.noLists
         text: qsTr("No lists")
         list: view
     }

@@ -28,7 +28,7 @@ SkyPage {
                 id: backButton
                 iconColor: guiSettings.headerTextColor
                 Material.background: "transparent"
-                svg: svgOutline.arrowBack
+                svg: SvgOutline.arrowBack
                 accessibleName: qsTr("go back")
                 onClicked: page.closed()
             }
@@ -81,7 +81,7 @@ SkyPage {
                     iconColor: guiSettings.buttonColor
                     Material.background: "transparent"
                     accessibleName: qsTr("E-mail address confirmed")
-                    svg: svgOutline.check
+                    svg: SvgOutline.check
                     visible: userPrefs.emailConfirmed
                     onClicked: root.getSkywalker().showStatusMessage(accessibleName, QEnums.STATUS_LEVEL_INFO)
                 }
@@ -92,7 +92,7 @@ SkyPage {
                     iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     accessibleName: qsTr("Two-factor authentication enabled")
-                    svg: svgOutline.confirmationCode
+                    svg: SvgOutline.confirmationCode
                     visible: userPrefs.emailAuthFactor
                     onClicked: root.getSkywalker().showStatusMessage(accessibleName, QEnums.STATUS_LEVEL_INFO)
                 }
@@ -137,7 +137,7 @@ SkyPage {
                     imageMargin: 0
                     implicitWidth: height
                     implicitHeight: didLabel.height
-                    svg: svgOutline.copy
+                    svg: SvgOutline.copy
                     accessibleName: qsTr("copy") + " D I D"
                     iconColor: guiSettings.textColor
                     Material.background: "transparent"
@@ -397,7 +397,7 @@ SkyPage {
                         anchors.right: parent.right
                         width: height
                         height: 34
-                        svg: svgOutline.close
+                        svg: SvgOutline.close
                         accessibleName: qsTr("reset background color to default")
                         onClicked: userSettings.resetBackgroundColor()
                     }
@@ -463,7 +463,7 @@ SkyPage {
                         anchors.right: parent.right
                         width: height
                         height: 34
-                        svg: svgOutline.close
+                        svg: SvgOutline.close
                         accessibleName: qsTr("reset thread color to default")
                         onClicked: userSettings.resetThreadColor()
                     }

@@ -26,7 +26,7 @@ SkyPage {
             id: okButton
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            svg: svgOutline.check
+            svg: SvgOutline.check
             accessibleName: qsTr("add meme")
             onClicked: page.meme(memeMaker.topText, memeMaker.bottomText)
         }

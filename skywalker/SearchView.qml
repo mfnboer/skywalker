@@ -120,7 +120,7 @@ SkyPage {
         height: 30
         iconColor: guiSettings.linkColor
         Material.background: "transparent"
-        svg: svgOutline.block
+        svg: SvgOutline.block
         accessibleName: qsTr(`mute hashtag ${page.getSearchText()}`)
         visible: isHashtagSearch
         onClicked: muteWord(page.getSearchText())
@@ -136,7 +136,7 @@ SkyPage {
         height: 30
         iconColor: guiSettings.linkColor
         Material.background: "transparent"
-        svg: svgOutline.hashtag
+        svg: SvgOutline.hashtag
         accessibleName: qsTr(`set focus on hashtag ${page.getSearchText()}`)
         visible: isHashtagSearch
         onClicked: focusHashtag(page.getSearchText())
@@ -168,7 +168,7 @@ SkyPage {
             width: height
             height: 20
             color: guiSettings.linkColor
-            svg: svgOutline.noReplyRestrictions
+            svg: SvgOutline.noReplyRestrictions
             Accessible.ignored: true
 
             MouseArea {
@@ -275,7 +275,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                svg: svgOutline.noPosts
+                svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewTop
             }
@@ -309,7 +309,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                svg: svgOutline.noPosts
+                svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewLatest
             }
@@ -346,7 +346,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                svg: svgOutline.noUsers
+                svg: SvgOutline.noUsers
                 text: qsTr("No users found")
                 list: usersView
             }
@@ -394,7 +394,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                svg: svgOutline.noUsers
+                svg: SvgOutline.noUsers
                 text: qsTr("No suggestions")
                 list: suggestedUsersView
             }
@@ -432,7 +432,7 @@ SkyPage {
                     anchors.right: parent.right
                     width: height
                     height: parent.height
-                    svg: svgOutline.close
+                    svg: SvgOutline.close
                     accessibleName: qsTr("clear recent searches")
                     onPressed: {
                         recentSearchesView.keepFocus = true
@@ -456,7 +456,7 @@ SkyPage {
                     width: 40
                     height: width
                     color: guiSettings.textColor
-                    svg: svgOutline.search
+                    svg: SvgOutline.search
                 }
 
                 AccessibleText {
@@ -480,7 +480,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                svg: svgOutline.search
+                svg: SvgOutline.search
                 text: qsTr("No recent searches")
                 list: recentSearchesView
             }

@@ -26,7 +26,7 @@ ListView {
 
         SvgButton {
             anchors.right: parent.right
-            svg: svgOutline.add
+            svg: SvgOutline.add
             onClicked: addHashtagEntry()
             accessibleName: qsTr(`add hashtag for focus`)
             visible: view.count < skywalker.focusHashtags.maxSize
@@ -83,12 +83,12 @@ ListView {
                         AccessibleMenuItem {
                             text: qsTr("Edit")
                             onTriggered: editHashtagInEntry(modelData, hashtagMenu.selectedTag)
-                            MenuItemSvg { svg: svgOutline.edit }
+                            MenuItemSvg { svg: SvgOutline.edit }
                         }
                         AccessibleMenuItem {
                             text: qsTr("Delete")
                             onTriggered: removeHashtagFromEntry(modelData, hashtagMenu.selectedTag)
-                            MenuItemSvg { svg: svgOutline.delete }
+                            MenuItemSvg { svg: SvgOutline.delete }
                         }
                     }
                 }
@@ -99,7 +99,7 @@ ListView {
                     imageMargin: 0
                     iconColor: guiSettings.textColor
                     Material.background: "transparent"
-                    svg: svgOutline.palette
+                    svg: SvgOutline.palette
                     accessibleName: qsTr(`set hightlight color for ${entryText.text}`)
                     onClicked: setHighlightColor(modelData)
                 }
@@ -110,7 +110,7 @@ ListView {
                     imageMargin: 0
                     iconColor: guiSettings.textColor
                     Material.background: "transparent"
-                    svg: svgOutline.add
+                    svg: SvgOutline.add
                     accessibleName: qsTr(`edit ${entryText.text}`)
                     onClicked: addHashtagToEntry(modelData)
                 }
@@ -122,7 +122,7 @@ ListView {
                     id: deleteButton
                     iconColor: guiSettings.textColor
                     Material.background: "transparent"
-                    svg: svgOutline.delete
+                    svg: SvgOutline.delete
                     accessibleName: qsTr(`delete ${entryText.text}`)
                     onClicked: deleteHashtagEntry(modelData)
                 }
@@ -147,7 +147,7 @@ ListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: svgOutline.hashtag
+        svg: SvgOutline.hashtag
         text: qsTr("No focus hashtags")
         list: view
     }

@@ -55,7 +55,7 @@ Rectangle {
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
-                svg: homeActive ? svgFilled.home : svgOutline.home
+                svg: homeActive ? SvgFilled.home : SvgOutline.home
 
                 BadgeCounter {
                     counter: timeline.unreadPosts
@@ -79,7 +79,7 @@ Rectangle {
                         width: 14
                         height: width
                         color: guiSettings.backgroundColor
-                        svg: svgOutline.feed
+                        svg: SvgOutline.feed
                     }
                 }
             }
@@ -106,7 +106,7 @@ Rectangle {
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
-                svg: searchActive ? svgFilled.search : svgOutline.search
+                svg: searchActive ? SvgFilled.search : SvgOutline.search
             }
 
             MouseArea {
@@ -131,7 +131,7 @@ Rectangle {
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
-                svg: feedsActive ? svgFilled.feed : svgOutline.feed
+                svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
             }
 
             MouseArea {
@@ -156,7 +156,7 @@ Rectangle {
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
-                svg: messagesActive ? svgFilled.directMessage : svgOutline.directMessage
+                svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
                 Accessible.ignored: true
 
                 BadgeCounter {
@@ -186,7 +186,7 @@ Rectangle {
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: guiSettings.textColor
-                svg: notificationsActive ? svgFilled.notifications : svgOutline.notifications
+                svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
                 Accessible.ignored: true
 
                 BadgeCounter {
@@ -217,12 +217,12 @@ Rectangle {
 
         function getSvg() {
             if (messagesActive)
-                return svgOutline.add
+                return SvgOutline.add
 
             if (isHashtagSearch())
-                return svgOutline.hashtag
+                return SvgOutline.hashtag
 
-            return svgOutline.chat
+            return SvgOutline.chat
         }
     }
 

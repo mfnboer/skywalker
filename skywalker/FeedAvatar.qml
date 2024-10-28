@@ -3,5 +3,5 @@ import skywalker
 
 Avatar {
     radius: width * 0.1
-    unknownSvg: svgFilled.feed
+    unknownSvg: SvgFilled.feed
 }

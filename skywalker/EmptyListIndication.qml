@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    required property svgimage svg
+    required property SvgImage svg
     required property string text
     required property var list
 

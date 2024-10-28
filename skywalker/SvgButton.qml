@@ -4,7 +4,7 @@ import skywalker
 
 RoundButton {
     required property string accessibleName
-    required property svgimage svg
+    required property SvgImage svg
     property string iconColor: guiSettings.buttonTextColor
     property int imageMargin: 10
 

@@ -180,7 +180,7 @@ Rectangle {
                     width: 18
                     height: width
                     color: Material.color(Material.Grey)
-                    svg: svgFilled.pin
+                    svg: SvgFilled.pin
                 }
             }
         }
@@ -214,7 +214,7 @@ Rectangle {
                     width: 18
                     height: width
                     color: Material.color(Material.Grey)
-                    svg: svgOutline.repost
+                    svg: SvgOutline.repost
                 }
             }
         }
@@ -356,7 +356,7 @@ Rectangle {
                 sourceComponent: ReplyToRow {
                     width: parent.width
                     text: qsTr("Reply hidden by you")
-                    svg: svgOutline.hideVisibility
+                    svg: SvgOutline.hideVisibility
                 }
             }
 

@@ -9,7 +9,7 @@ SvgTransparentButton {
 
     id: addGifButton
     accessibleName: qsTr("add GIF")
-    svg: svgOutline.addGif
+    svg: SvgOutline.addGif
 
     onClicked: selectGif()
 

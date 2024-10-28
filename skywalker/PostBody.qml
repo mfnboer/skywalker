@@ -75,16 +75,16 @@ Column {
 
                 function getIcon() {
                     if (!mutePost)
-                        return svgOutline.hideVisibility
+                        return SvgOutline.hideVisibility
 
                     switch (postMuted) {
                     case QEnums.MUTED_POST_AUTHOR:
-                        return svgOutline.mute
+                        return SvgOutline.mute
                     case QEnums.MUTED_POST_WORDS:
-                        return svgOutline.mutedWords
+                        return SvgOutline.mutedWords
                     }
 
-                    return svgOutline.hideVisibility
+                    return SvgOutline.hideVisibility
                 }
             }
 

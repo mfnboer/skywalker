@@ -33,7 +33,7 @@ Rectangle {
                     id: backButton
                     iconColor: guiSettings.headerTextColor
                     Material.background: "transparent"
-                    svg: svgOutline.arrowBack
+                    svg: SvgOutline.arrowBack
                     accessibleName: qsTr("go back")
                     onClicked: header.closed()
                 }

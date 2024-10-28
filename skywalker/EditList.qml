@@ -30,7 +30,7 @@ SkyPage {
             id: createListButton
             anchors.right: parent.right
             anchors.top: parent.top
-            svg: svgOutline.check
+            svg: SvgOutline.check
             accessibleName: qsTr("save list")
             enabled: nameField.text.length > 0 && !nameField.maxGraphemeLengthExceeded() && changesMade()
 
@@ -138,7 +138,7 @@ SkyPage {
                     x: parent.width - width
                     width: 40
                     height: width
-                    svg: svgOutline.close
+                    svg: SvgOutline.close
                     accessibleName: qsTr("delete list avatar")
                     visible: avatar.avatarUrl
 

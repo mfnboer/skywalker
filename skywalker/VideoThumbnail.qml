@@ -31,7 +31,7 @@ Video {
         color: "white"
         outlineColor: "black"
         opacity: 0.6
-        svg: svgFilled.film
+        svg: SvgFilled.film
     }
 
     // Play video for 200ms to get a still frame showing

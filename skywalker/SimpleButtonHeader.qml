@@ -3,7 +3,7 @@ import QtQuick
 // Header with a title and a button
 Rectangle {
     required property string title
-    required property svgimage buttonSvg
+    required property SvgImage buttonSvg
     property bool enabled: true
 
     signal buttonClicked

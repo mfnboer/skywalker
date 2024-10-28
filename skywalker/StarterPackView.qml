@@ -121,7 +121,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                svg: svgOutline.noPosts
+                svg: SvgOutline.noPosts
                 text: qsTr("No feeds")
                 list: feedListView
             }
@@ -150,7 +150,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                svg: svgOutline.noPosts
+                svg: SvgOutline.noPosts
                 text: qsTr("Feed is empty")
                 list: postListView
             }

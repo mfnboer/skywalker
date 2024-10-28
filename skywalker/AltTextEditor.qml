@@ -19,7 +19,7 @@ SkyPage {
 
     header: SimpleButtonHeader {
         title: qsTr("ALT text")
-        buttonSvg: svgOutline.check
+        buttonSvg: SvgOutline.check
         enabled: !altText.maxGraphemeLengthExceeded()
         onButtonClicked: altTextChanged(page.text)
     }

@@ -3,7 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 Rectangle {
-    property svgimage svgIcon
+    property SvgImage svgIcon
     property string initialText
     property string placeholderText
     property alias echoMode: textField.echoMode

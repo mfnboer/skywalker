@@ -6,7 +6,7 @@ SkySvg {
     y: height - height / 2
     height: width
     color: guiSettings.favoriteColor
-    svg: svgFilled.star
+    svg: SvgFilled.star
 
     GuiSettings {
         id: guiSettings

@@ -115,7 +115,7 @@ SkyPage {
 
         SvgButton {
             id: moreButton
-            svg: svgOutline.moreVert
+            svg: SvgOutline.moreVert
             accessibleName: qsTr("more options")
             onClicked: moreMenu.open()
 
@@ -141,7 +141,7 @@ SkyPage {
                     }
 
                     MenuItemSvg {
-                        svg: isSavedFeed ? svgOutline.remove : svgOutline.add
+                        svg: isSavedFeed ? SvgOutline.remove : SvgOutline.add
                     }
                 }
                 AccessibleMenuItem {
@@ -154,7 +154,7 @@ SkyPage {
                     }
 
                     MenuItemSvg {
-                        svg: isPinnedFeed ? svgFilled.star : svgOutline.star
+                        svg: isPinnedFeed ? SvgFilled.star : SvgOutline.star
                         color: isPinnedFeed ? guiSettings.favoriteColor : guiSettings.textColor
                     }
                 }
@@ -164,7 +164,7 @@ SkyPage {
                     onTriggered: root.translateText(feed.description)
 
                     MenuItemSvg {
-                        svg: svgOutline.googleTranslate
+                        svg: SvgOutline.googleTranslate
                     }
                 }
                 AccessibleMenuItem {
@@ -172,7 +172,7 @@ SkyPage {
                     onTriggered: skywalker.shareFeed(feed)
 
                     MenuItemSvg {
-                        svg: svgOutline.share
+                        svg: SvgOutline.share
                     }
                 }
                 AccessibleMenuItem {
@@ -180,7 +180,7 @@ SkyPage {
                     onTriggered: root.reportFeed(feed)
 
                     MenuItemSvg {
-                        svg: svgOutline.report
+                        svg: SvgOutline.report
                     }
                 }
             }
@@ -228,7 +228,7 @@ SkyPage {
             StatIcon {
                 id: likeIcon
                 iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
-                svg: feedLikeUri ? svgFilled.like : svgOutline.like
+                svg: feedLikeUri ? SvgFilled.like : SvgOutline.like
                 onClicked: likeFeed(feedLikeUri, feed.uri, feed.cid)
                 Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, qsTr("like"), qsTr("likes"))
 

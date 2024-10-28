@@ -42,7 +42,7 @@ Dialog {
             y: parent.y - parent.padding
             width: height
             height: parent.height
-            svg: svgOutline.close
+            svg: SvgOutline.close
             accessibleName: qsTr("reset prefix")
             onClicked: textInput.text = "🧵"
         }

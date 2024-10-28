@@ -43,7 +43,7 @@ Popup {
         anchors.verticalCenter: parent.verticalCenter
         iconColor: statusText.color
         Material.background: "transparent"
-        svg: svgOutline.close
+        svg: SvgOutline.close
         accessibleName: qsTr("close status message")
         onClicked: statusPopup.close()
     }

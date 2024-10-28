@@ -78,7 +78,7 @@ SkyListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: svgOutline.noPosts
+        svg: SvgOutline.noPosts
         text: qsTr("No posts, follow more people")
         list: timelineView
     }
@@ -135,11 +135,32 @@ SkyListView {
             anchorItem.isAnchorItem = true
     }
 
-    function moveToPost(index) {
+    Timer {
+        property int postIndex
+
+        id: moveToPostTimer
+        interval: 200
+        onTriggered: doMoveToPost(postIndex)
+
+        function go(index) {
+            postIndex = index
+            start()
+        }
+    }
+
+    function doMoveToPost(index) {
         positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
         const last = getLastVisibleIndex()
         setAnchorItem(last + 1)
         updateUnreadPosts(index)
+    }
+
+    function moveToPost(index) {
+        doMoveToPost(index)
+
+        // HACK: doing it again after a short interval makes the positioning work.
+        // After the first time the positioning can be off.
+        moveToPostTimer.go(index)
     }
 
     function calibrateUnreadPosts() {

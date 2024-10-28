@@ -17,7 +17,7 @@ SkyListView {
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: postFeedView.model.feedName
-        defaultSvg: svgFilled.repost
+        defaultSvg: SvgFilled.repost
 
         onClosed: postFeedView.closed()
     }
@@ -36,7 +36,7 @@ SkyListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: svgOutline.noPosts
+        svg: SvgOutline.noPosts
         text: qsTr("Feed is empty")
         list: postFeedView
     }

@@ -97,7 +97,7 @@ SkyPage {
                     width: height
                     x: parent.width - 20
                     y: (parent.height + height) / 2
-                    svg: svgOutline.navigateNext
+                    svg: SvgOutline.navigateNext
                     color: guiSettings.textColor
                 }
 

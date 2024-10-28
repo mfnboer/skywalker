@@ -81,7 +81,7 @@ SkyPage {
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 enabled: isNewAccount()
-                svgIcon: svgOutline.atSign
+                svgIcon: SvgOutline.atSign
                 initialText: user
                 placeholderText: qsTr("User name")
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
@@ -94,7 +94,7 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
-                svgIcon: svgFilled.lock
+                svgIcon: SvgFilled.lock
                 initialText: password
                 echoMode: TextInput.Password
                 placeholderText: qsTr("Password")
@@ -127,7 +127,7 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
-                svgIcon: svgOutline.confirmationCode
+                svgIcon: SvgOutline.confirmationCode
                 placeholderText: qsTr("Confirmation code")
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
                 maximumLength: 253

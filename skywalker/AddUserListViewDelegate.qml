@@ -86,7 +86,7 @@ Rectangle {
 
         SvgButton {
             Layout.alignment: Qt.AlignTop
-            svg: memberCheck === QEnums.TRIPLE_BOOL_YES ? svgOutline.remove : svgOutline.add
+            svg: memberCheck === QEnums.TRIPLE_BOOL_YES ? SvgOutline.remove : SvgOutline.add
             accessibleName: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("add") : qsTr("remove")
             visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
             onClicked: updateList()
