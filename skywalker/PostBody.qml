@@ -180,7 +180,7 @@ Column {
             Layout.fillWidth: true
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
-            text: postDateTime.toLocaleString(Qt.locale(), Locale.LongFormat)
+            text: postDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
             font.pointSize: guiSettings.scaledFont(7/8)
         }
     }

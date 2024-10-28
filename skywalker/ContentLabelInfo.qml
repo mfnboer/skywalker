@@ -73,7 +73,7 @@ Dialog {
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
             font.pointSize: guiSettings.scaledFont(7/8)
-            text: label.createdAt.toLocaleString(Qt.locale(), Locale.LongFormat)
+            text: label.createdAt.toLocaleString(Qt.locale(), Locale.ShortFormat)
         }
 
         AccessibleText {

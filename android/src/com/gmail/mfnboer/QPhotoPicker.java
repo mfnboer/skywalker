@@ -35,6 +35,7 @@ public class QPhotoPicker extends AppCompatActivity {
         pickVideo = video;
         Context context = QtNative.getContext();
         Intent intent = new Intent(context, QPhotoPicker.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 

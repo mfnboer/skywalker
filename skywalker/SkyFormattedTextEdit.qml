@@ -103,6 +103,22 @@ TextEdit {
     //         Qt.inputMethod.show()
     // }
 
+    // HACK:
+    // Sometimes while editing and moving the cursor by tapping on the screen, the text
+    // sticks to the cursor, or the cursor begins to jump when typing. The commit on tap
+    // seems to prevent this.
+    // An alternative with TapHandler did not work
+    MouseArea {
+        anchors.fill: parent
+        onPressed: (mouse) => {
+                       Qt.inputMethod.commit()
+                       editText.forceActiveFocus()
+                       let position = editText.positionAt(mouse.x, mouse.y)
+                       editText.cursorPosition = position
+                       Qt.inputMethod.show()
+                   }
+    }
+
     // Text can only be changed outside onPreeditTextChanged.
     // This timer makes the call to applyFont async.
     Timer {
