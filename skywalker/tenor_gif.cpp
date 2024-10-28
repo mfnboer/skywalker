@@ -6,14 +6,14 @@ namespace Skywalker {
 
 const QString TenorGif::getUrlForPosting() const
 {
-    if (mSize.isEmpty())
-        return mUrl;
+    if (mData->mSize.isEmpty())
+        return mData->mUrl;
 
     // Without these parameters Bluesky will not play the GIF.
-    QUrl gifUrl(mUrl);
+    QUrl gifUrl(mData->mUrl);
     QUrlQuery query{
-        {"hh", QString::number(mSize.height())},
-        {"ww", QString::number(mSize.width())}
+        {"hh", QString::number(mData->mSize.height())},
+        {"ww", QString::number(mData->mSize.width())}
     };
     gifUrl.setQuery(query);
     return gifUrl.toString();
