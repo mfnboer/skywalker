@@ -20,6 +20,8 @@ if (NOT ANDROID)
     add_link_options(-fprofile-arcs -ftest-coverage)
 endif()
 
+set(QML_IMPORT_PATH "${CMAKE_BINARY_DIR}" CACHE STRING "QML imports.")
+
 include_directories(..)
 #qt_add_library(libskywalker)
 

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
-import atproto
+import atproto.lib
 
 SkyPage {
     property string did
