@@ -47,7 +47,7 @@ SkyPage {
             rightPadding: page.margin
             parentPage: page
             parentFlick: flick
-            maxLength: 1000
+            maxLength: 2000
             placeholderText: qsTr("Help users with visual impairments")
         }
 
