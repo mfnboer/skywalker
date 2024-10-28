@@ -22,7 +22,7 @@ Item {
         bottomPadding: 10
         spacing: 20
 
-        SvgImage {
+        SkySvg {
             width: 30
             height: width
             color: guiSettings.textColor

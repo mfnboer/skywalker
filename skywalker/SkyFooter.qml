@@ -48,7 +48,7 @@ Rectangle {
             Accessible.name: getHomeSpeech()
             Accessible.onPressAction: homeClicked()
 
-            SvgImage {
+            SkySvg {
                 id: homeButton
                 y: height + 5
                 width: height
@@ -73,7 +73,7 @@ Rectangle {
                     border.width: 2
                     visible: showHomeFeedBadge
 
-                    SvgImage {
+                    SkySvg {
                         x: 4
                         y: height + 2
                         width: 14
@@ -99,7 +99,7 @@ Rectangle {
             Accessible.name: qsTr("search")
             Accessible.onPressAction: searchClicked()
 
-            SvgImage {
+            SkySvg {
                 id: searchButton
                 y: height + 5
                 width: height
@@ -124,7 +124,7 @@ Rectangle {
             Accessible.name: qsTr("feeds")
             Accessible.onPressAction: feedsClicked()
 
-            SvgImage {
+            SkySvg {
                 id: feedsButton
                 y: height + 5
                 width: height
@@ -149,7 +149,7 @@ Rectangle {
             Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
             Accessible.onPressAction: messagesClicked()
 
-            SvgImage {
+            SkySvg {
                 id: messagesButton
                 y: height + 5
                 width: height
@@ -179,7 +179,7 @@ Rectangle {
             Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
             Accessible.onPressAction: notificationsClicked()
 
-            SvgImage {
+            SkySvg {
                 id: notificationsButton
                 y: height + 5
                 width: height

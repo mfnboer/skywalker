@@ -1052,7 +1052,7 @@ SkyPage {
                 return qsTr(`${speech}, press to change reply restrictions`)
             }
 
-            SvgImage {
+            SkySvg {
                 id: restrictionIcon
                 x: 10
                 y: height + 3

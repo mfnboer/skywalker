@@ -20,7 +20,7 @@ Rectangle {
     Accessible.name: text
     Accessible.description: Accessible.name
 
-    SvgImage {
+    SkySvg {
         id: noListsImage
         width: 150
         height: 150

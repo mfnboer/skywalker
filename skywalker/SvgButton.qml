@@ -16,7 +16,7 @@ RoundButton {
     Accessible.name: accessibleName
     Accessible.onPressAction: if (button.enabled) button.clicked()
 
-    SvgImage {
+    SkySvg {
         width: button.width - 2 * button.imageMargin
         height: button.height - 2 * button.imageMargin
         x: button.imageMargin

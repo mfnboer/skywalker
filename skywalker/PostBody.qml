@@ -66,7 +66,7 @@ Column {
             width: parent.width
             spacing: 10
 
-            SvgImage {
+            SkySvg {
                 id: imgIcon
                 width: 30
                 height: width

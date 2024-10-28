@@ -92,7 +92,7 @@ SkyPage {
                 highlight: contentFilter.hasNewLabels(author.did)
                 maximumDescriptionLineCount: 3
 
-                SvgImage {
+                SkySvg {
                     height: 40
                     width: height
                     x: parent.width - 20

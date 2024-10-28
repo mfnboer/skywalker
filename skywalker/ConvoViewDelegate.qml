@@ -66,7 +66,7 @@ Rectangle {
                     plainText: convo.memberNames
                 }
 
-                SvgImage {
+                SkySvg {
                     id: mutedImg
                     height: convo.muted ? nameText.height : 0
                     width: height

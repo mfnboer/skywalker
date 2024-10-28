@@ -99,7 +99,7 @@ Column {
                         width = Math.floor(maxHeight * ratio)
                     }
 
-                    SvgImage {
+                    SkySvg {
                         x: (parent.width - width) / 2
                         y: (parent.height - height) / 2 + height
                         width: Math.min(parent.width, 150)

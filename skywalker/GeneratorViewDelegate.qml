@@ -112,7 +112,7 @@ Rectangle {
                 Accessible.name: feedPinned ? qsTr("remove from favorites") : qsTr("add to favorites")
                 Accessible.onPressAction: favoriteClicked(feed, !feedPinned)
 
-                SvgImage {
+                SkySvg {
                     id: favoIcon
                     width: 40
                     height: width

@@ -1,7 +1,7 @@
 import QtQuick
 import skywalker
 
-SvgImage {
+SkySvg {
     x: parent.width - width * 0.8
     y: height - height * 0.2
     height: width

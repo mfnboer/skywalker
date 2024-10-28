@@ -72,7 +72,7 @@ Rectangle {
             color: skyTextInput.color
         }
 
-        SvgImage {
+        SkySvg {
             id: icon
             anchors.left: parent.left
             y: height + 5

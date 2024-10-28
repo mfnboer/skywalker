@@ -41,7 +41,7 @@ SkyListView {
                 height: restrictionText.height + 10
                 color: "transparent"
 
-                SvgImage {
+                SkySvg {
                     id: restrictionIcon
                     width: 20
                     height: 20

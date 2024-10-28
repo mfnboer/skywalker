@@ -10,7 +10,7 @@ Row {
     width: parent.width
     spacing: 5
 
-    SvgImage {
+    SkySvg {
         id: replyImg
         width: parent.visible ? replyToText.height : 0
         height: width

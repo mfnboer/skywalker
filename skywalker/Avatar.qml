@@ -41,7 +41,7 @@ Item {
         color: guiSettings.avatarDefaultColor
         visible: !avatarFrame.visible
 
-        SvgImage {
+        SkySvg {
             width: parent.width
             height: parent.height
             color: "white"

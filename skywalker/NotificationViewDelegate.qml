@@ -126,7 +126,7 @@ Rectangle {
                 Accessible.name: qsTr(`show profile of ${notificationAuthor.name}`)
                 Accessible.onPressAction: clicked()
             }
-            SvgImage {
+            SkySvg {
                 x: parent.x + 14
                 y: height + 5
                 width: parent.width - 19
@@ -135,7 +135,7 @@ Rectangle {
                 svg: svgFilled.like
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_LIKE
             }
-            SvgImage {
+            SkySvg {
                 x: parent.x + 14
                 y: height + 5
                 width: parent.width - 19
@@ -144,7 +144,7 @@ Rectangle {
                 svg: svgOutline.repost
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_REPOST
             }
-            SvgImage {
+            SkySvg {
                 x: parent.x + 14
                 y: height + 5
                 width: parent.width - 19
@@ -153,7 +153,7 @@ Rectangle {
                 svg: svgOutline.inviteCode
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
             }
-            SvgImage {
+            SkySvg {
                 x: parent.x + 14
                 y: height + 5
                 width: parent.width - 19
@@ -172,7 +172,7 @@ Rectangle {
                 color: guiSettings.avatarDefaultColor
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_FOLLOW
 
-                SvgImage {
+                SkySvg {
                     x: 5
                     y: height + 5
                     width: parent.width - 10

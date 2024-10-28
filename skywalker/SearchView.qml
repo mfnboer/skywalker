@@ -162,7 +162,7 @@ SkyPage {
         bottomPadding: 5
         visible: page.isPostSearch
 
-        SvgImage {
+        SkySvg {
             id: restrictionIcon
             y: height
             width: height
@@ -450,7 +450,7 @@ SkyPage {
                 height: Math.max(recentSearchIcon.height, recentSearchText.height)
                 color: "transparent"
 
-                SvgImage {
+                SkySvg {
                     id: recentSearchIcon
                     x: page.margin
                     width: 40

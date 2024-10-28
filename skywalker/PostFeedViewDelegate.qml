@@ -175,7 +175,7 @@ Rectangle {
                 height: parent.height
                 color: guiSettings.backgroundColor
 
-                SvgImage {
+                SkySvg {
                     anchors.right: parent.right
                     width: 18
                     height: width
@@ -209,7 +209,7 @@ Rectangle {
                 height: parent.height
                 color: guiSettings.backgroundColor
 
-                SvgImage {
+                SkySvg {
                     anchors.right: parent.right
                     width: 18
                     height: width
