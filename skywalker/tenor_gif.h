@@ -21,7 +21,7 @@ class TenorGif
     QML_VALUE_TYPE(tenorgif)
 
 public:
-    TenorGif() : mData{std::make_shared<Data>()} {}
+    TenorGif() : mPrivateData{std::make_shared<PrivateData>()} {}
     ~TenorGif() = default;
     TenorGif(const TenorGif&) = default;
     TenorGif& operator=(const TenorGif&) = default;
@@ -33,7 +33,7 @@ public:
             const QString& url, QSize size,
             const QString& smallUrl, QSize smallSize,
             const QString& imageUrl, QSize imageSize) :
-        mData{std::make_shared<Data>(
+        mPrivateData{std::make_shared<PrivateData>(
             id,
             description,
             searchTerm,
@@ -43,24 +43,24 @@ public:
             smallSize)}
     {}
 
-    Q_INVOKABLE bool isNull() const { return mData->mUrl.isEmpty(); }
-    const QString& getId() const { return mData->mId; }
-    const QString& getDescription() const { return mData->mDescription; }
-    const QString& getUrl() const { return mData->mUrl; }
-    const QString& getImageUrl() const { return mData->mImageUrl; }
-    const QString& getSearchTerm() const { return mData->mSearchTerm; }
-    const QString& getSmallUrl() const { return mData->mSmallUrl; }
-    QSize getSize() const { return mData->mSize; }
-    QSize getSmallSize() const { return mData->mSmallSize; }
-    QSize getImageSize() const { return mData->mImageSize; }
-    QSize getOverviewSize() const { return mData->mOverviewSize; }
-    void setOverviewSize(QSize size) { mData->mOverviewSize = size; }
+    Q_INVOKABLE bool isNull() const { return mPrivateData->mUrl.isEmpty(); }
+    const QString& getId() const { return mPrivateData->mId; }
+    const QString& getDescription() const { return mPrivateData->mDescription; }
+    const QString& getUrl() const { return mPrivateData->mUrl; }
+    const QString& getImageUrl() const { return mPrivateData->mImageUrl; }
+    const QString& getSearchTerm() const { return mPrivateData->mSearchTerm; }
+    const QString& getSmallUrl() const { return mPrivateData->mSmallUrl; }
+    QSize getSize() const { return mPrivateData->mSize; }
+    QSize getSmallSize() const { return mPrivateData->mSmallSize; }
+    QSize getImageSize() const { return mPrivateData->mImageSize; }
+    QSize getOverviewSize() const { return mPrivateData->mOverviewSize; }
+    void setOverviewSize(QSize size) { mPrivateData->mOverviewSize = size; }
 
     // Get a URL that is compatible with Bluesky
     Q_INVOKABLE const QString getUrlForPosting() const;
 
 private:
-    struct Data
+    struct PrivateData
     {
         QString mId;
         QString mDescription;
@@ -74,7 +74,7 @@ private:
         QSize mOverviewSize;
     };
 
-    std::shared_ptr<Data> mData;
+    std::shared_ptr<PrivateData> mPrivateData;
 };
 
 using TenorGifList = QList<TenorGif>;
