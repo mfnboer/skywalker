@@ -6,15 +6,16 @@ namespace Skywalker {
 
 bool ContentLabel::appliesToActor() const
 {
-    return mUri.startsWith("did:");
+    return mPrivate->mUri.startsWith("did:");
 }
 
-QString ContentLabel::getActorDid() const
+const QString& ContentLabel::getActorDid() const
 {
-    if (mUri.startsWith("did:"))
-        return mUri;
+    if (mPrivate->mUri.startsWith("did:"))
+        return mPrivate->mUri;
 
-    return {};
+    static const QString NULL_STRING;
+    return NULL_STRING;
 }
 
 }

@@ -17,34 +17,39 @@ class ContentLabel {
     QML_VALUE_TYPE(contentlabel)
 
 public:
-    ContentLabel() = default;
+    ContentLabel() : mPrivate{std::make_shared<PrivateData>()} {}
     ContentLabel(const QString& did, const QString& uri, const QString& cid,
                  const QString& labelId, const QDateTime& createdAt) :
-        mDid(did),
-        mUri(uri),
-        mCid(cid),
-        mLabelId(labelId),
-        mCreatedAt(createdAt)
+        mPrivate{std::make_shared<PrivateData>(
+            did,
+            uri,
+            cid,
+            labelId,
+            createdAt)}
     {}
 
     static bool isSystemLabelId(const QString& labelId) { return labelId.startsWith('!'); }
 
-    const QString& getDid() const { return mDid; }
-    const QString& getUri() const { return mUri; }
-    const QString& getCid() const { return mCid; }
-    const QString& getLabelId() const { return mLabelId; }
-    const QDateTime& getCreatedAt() const { return mCreatedAt; }
-    Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mLabelId); }
+    const QString& getDid() const { return mPrivate->mDid; }
+    const QString& getUri() const { return mPrivate->mUri; }
+    const QString& getCid() const { return mPrivate->mCid; }
+    const QString& getLabelId() const { return mPrivate->mLabelId; }
+    const QDateTime& getCreatedAt() const { return mPrivate->mCreatedAt; }
+    Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mPrivate->mLabelId); }
 
     Q_INVOKABLE bool appliesToActor() const;
-    Q_INVOKABLE QString getActorDid() const;
+    Q_INVOKABLE const QString& getActorDid() const;
 
 private:
-    QString mDid;
-    QString mUri;
-    QString mCid;
-    QString mLabelId;
-    QDateTime mCreatedAt;
+    struct PrivateData
+    {
+        QString mDid;
+        QString mUri;
+        QString mCid;
+        QString mLabelId;
+        QDateTime mCreatedAt;
+    };
+    std::shared_ptr<PrivateData> mPrivate;
 };
 
 using ContentLabelList = QList<ContentLabel>;
