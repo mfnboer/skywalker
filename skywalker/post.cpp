@@ -740,12 +740,16 @@ const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& Post::getLabels()
     return mPost ? mPost->mLabels : NO_LABELS;
 }
 
-ContentLabelList Post::getLabelsIncludingAuthorLabels() const
+const ContentLabelList& Post::getLabelsIncludingAuthorLabels() const
 {
-    const auto author = getAuthor();
+    if (mLabelsIncludingAuthorLabels)
+        return *mLabelsIncludingAuthorLabels;
+
+    const auto& author = getAuthor();
     ContentLabelList contentLabels = author.getContentLabels();
     ContentFilter::addContentLabels(contentLabels, getLabels());
-    return contentLabels;
+    const_cast<Post*>(this)->mLabelsIncludingAuthorLabels = contentLabels;
+    return *mLabelsIncludingAuthorLabels;
 }
 
 const LanguageList& Post::getLanguages() const

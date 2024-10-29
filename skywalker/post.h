@@ -111,7 +111,7 @@ public:
     const QString& getUnsupportedType() const { return mUnsupportedType; }
 
     const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
-    ContentLabelList getLabelsIncludingAuthorLabels() const;
+    const ContentLabelList& getLabelsIncludingAuthorLabels() const;
 
     const LanguageList& getLanguages() const;
     bool hasLanguage() const;
@@ -161,6 +161,7 @@ private:
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
 
     bool mPinned = false;
+    std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
 
     static int sNextGapId;
 };

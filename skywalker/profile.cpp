@@ -6,91 +6,133 @@
 
 namespace Skywalker {
 
+static const QString NULL_STRING;
+
 KnownFollowers::KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* knownFollowers)
 {
     if (!knownFollowers)
         return;
 
-    mCount = knownFollowers->mCount;
-    mFollowers.reserve(knownFollowers->mFollowers.size());
+    mPrivate = std::make_shared<PrivateData>();
+
+    mPrivate->mCount = knownFollowers->mCount;
+    mPrivate->mFollowers.reserve(knownFollowers->mFollowers.size());
 
     for (const auto& follower : knownFollowers->mFollowers)
     {
-        auto profile = std::make_shared<BasicProfile>(follower);
-        mFollowers.push_back(profile);
+        mPrivate->mFollowers.push_back(BasicProfile(follower));
 
         // Cap followers to the maximum to be safe in case the networks gives
         // much more.
-        if (mFollowers.size() >= ATProto::AppBskyActor::KnownFollowers::MAX_COUNT)
+        if (mPrivate->mFollowers.size() >= ATProto::AppBskyActor::KnownFollowers::MAX_COUNT)
             break;
     }
 }
 
-QList<BasicProfile> KnownFollowers::getFollowers() const
+const QList<BasicProfile>& KnownFollowers::getFollowers() const
 {
-    BasicProfileList followers;
-    followers.reserve(mFollowers.size());
+    if (!mPrivate)
+    {
+        static const QList<BasicProfile> NULL_LIST;
+        return NULL_LIST;
+    }
 
-    for (const auto& follower : mFollowers)
-        followers.emplace_back(*follower);
-
-    return followers;
+    return mPrivate->mFollowers;
 }
 
 ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState::SharedPtr& viewerState) :
-    mViewerState(viewerState)
+    mPrivate{std::make_shared<PrivateData>(viewerState)}
 {
 }
 
 bool ProfileViewerState::isValid() const
 {
-    return mViewerState != nullptr;
+    return mPrivate != nullptr && mPrivate->mViewerState != nullptr;
 }
 
 bool ProfileViewerState::isMuted() const
 {
-    return mViewerState ? mViewerState->mMuted : false;
+    return mPrivate && mPrivate->mViewerState ? mPrivate->mViewerState->mMuted : false;
 }
 
 bool ProfileViewerState::isBlockedBy() const
 {
-    return mViewerState ? mViewerState->mBlockedBy : false;
+    return mPrivate && mPrivate->mViewerState ? mPrivate->mViewerState->mBlockedBy : false;
 }
 
-QString ProfileViewerState::getBlocking() const
+const QString& ProfileViewerState::getBlocking() const
 {
-    return mViewerState ? mViewerState->mBlocking.value_or("") : "";
+    return mPrivate && mPrivate->mViewerState && mPrivate->mViewerState->mBlocking ? *mPrivate->mViewerState->mBlocking : NULL_STRING;
 }
 
-QString ProfileViewerState::getFollowing() const
+const QString& ProfileViewerState::getFollowing() const
 {
-    return mViewerState ? mViewerState->mFollowing.value_or("") : "";
+    return mPrivate && mPrivate->mViewerState && mPrivate->mViewerState->mFollowing ? *mPrivate->mViewerState->mFollowing : NULL_STRING;
 }
 
-QString ProfileViewerState::getFollowedBy() const
+const QString& ProfileViewerState::getFollowedBy() const
 {
-    return mViewerState ? mViewerState->mFollowedBy.value_or("") : "";
+    return mPrivate && mPrivate->mViewerState && mPrivate->mViewerState->mFollowedBy ? *mPrivate->mViewerState->mFollowedBy : NULL_STRING;
 }
 
-ListViewBasic ProfileViewerState::getMutedByList() const
+const ListViewBasic& ProfileViewerState::getMutedByList() const
 {
-    if (mViewerState && mViewerState->mMutedByList)
-        return ListViewBasic(mViewerState->mMutedByList);
+    if (mPrivate && mPrivate->mMutedByList)
+        return *mPrivate->mMutedByList;
 
-    return {};
+    if (mPrivate)
+    {
+        if (mPrivate->mViewerState && mPrivate->mViewerState->mMutedByList)
+            mPrivate->mMutedByList = ListViewBasic(mPrivate->mViewerState->mMutedByList);
+        else
+            mPrivate->mMutedByList = ListViewBasic{};
+    }
+    else
+    {
+        const_cast<ProfileViewerState*>(this)->mPrivate = std::make_shared<PrivateData>();
+        mPrivate->mMutedByList = ListViewBasic{};
+    }
+
+    return *mPrivate->mMutedByList;
 }
 
-ListViewBasic ProfileViewerState::getBlockingByList() const
+const ListViewBasic& ProfileViewerState::getBlockingByList() const
 {
-    if (mViewerState && mViewerState->mBlockingByList)
-        return ListViewBasic(mViewerState->mBlockingByList);
+    if (mPrivate && mPrivate->mBlockedByList)
+        return *mPrivate->mBlockedByList;
 
-    return {};
+    if (mPrivate)
+    {
+        if (mPrivate->mViewerState && mPrivate->mViewerState->mBlockingByList)
+           mPrivate->mBlockedByList = ListViewBasic(mPrivate->mViewerState->mBlockingByList);
+        else
+            mPrivate->mBlockedByList = ListViewBasic{};
+    }
+    else
+    {
+        const_cast<ProfileViewerState*>(this)->mPrivate = std::make_shared<PrivateData>();
+        mPrivate->mBlockedByList = ListViewBasic{};
+    }
+
+    return *mPrivate->mBlockedByList;
 }
 
-KnownFollowers ProfileViewerState::getKnownFollowers() const
+const KnownFollowers& ProfileViewerState::getKnownFollowers() const
 {
-    return mViewerState ? KnownFollowers(mViewerState->mKnownFollowers.get()) : KnownFollowers{};
+    if (mPrivate && mPrivate->mKnownFollowers)
+        return *mPrivate->mKnownFollowers;
+
+    if (mPrivate)
+    {
+        mPrivate->mKnownFollowers = mPrivate->mViewerState ? KnownFollowers(mPrivate->mViewerState->mKnownFollowers.get()) : KnownFollowers{};
+    }
+    else
+    {
+        const_cast<ProfileViewerState*>(this)->mPrivate = std::make_shared<PrivateData>();
+        mPrivate->mKnownFollowers = KnownFollowers{};
+    }
+
+    return *mPrivate->mKnownFollowers;
 }
 
 ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr& associated) :
@@ -111,9 +153,9 @@ ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssocia
 }
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic::SharedPtr& profile) :
-    mProfileBasicView(profile)
+    mPrivate{std::make_shared<PrivateData>(profile)}
 {
-    Q_ASSERT(mProfileBasicView);
+    Q_ASSERT(mPrivate->mProfileBasicView);
 }
 
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile) :
@@ -132,13 +174,16 @@ BasicProfile::BasicProfile(const QString& did, const QString& handle, const QStr
                            const QString& avatarUrl, const ProfileAssociated& associated,
                            const ProfileViewerState& viewer,
                            const ContentLabelList& contentLabels) :
-    mDid(did),
-    mHandle(handle),
-    mDisplayName(displayName),
-    mAvatarUrl(avatarUrl),
-    mAssociated(associated),
-    mViewer(viewer),
-    mContentLabels(contentLabels)
+    mPrivate{std::make_shared<PrivateData>(
+        nullptr,
+        did,
+        handle,
+        displayName,
+        avatarUrl,
+        nullptr,
+        associated,
+        viewer,
+        contentLabels)}
 {
 }
 
@@ -147,13 +192,16 @@ bool BasicProfile::isNull() const
     return getDid().isEmpty();
 }
 
-QString BasicProfile::getDid() const
+const QString& BasicProfile::getDid() const
 {
-    if (mDid)
-        return *mDid;
+    if (mPrivate)
+    {
+        if (mPrivate->mDid)
+            return *mPrivate->mDid;
 
-    if (mProfileBasicView)
-        return mProfileBasicView->mDid;
+        if (mPrivate->mProfileBasicView)
+            return mPrivate->mProfileBasicView->mDid;
+    }
 
     if (mProfileView)
         return mProfileView->mDid;
@@ -161,7 +209,7 @@ QString BasicProfile::getDid() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mDid;
 
-    return {};
+    return NULL_STRING;
 }
 
 static QString createName(const QString& handle, const QString& displayName)
@@ -180,30 +228,36 @@ QString BasicProfile::getName() const
     return name;
 }
 
-QString BasicProfile::getDisplayName() const
+const QString& BasicProfile::getDisplayName() const
 {
-    if (mDisplayName)
-        return *mDisplayName;
+    if (mPrivate)
+    {
+        if (mPrivate->mDisplayName)
+            return *mPrivate->mDisplayName;
 
-    if (mProfileBasicView)
-        return mProfileBasicView->mDisplayName.value_or("");
+        if (mPrivate->mProfileBasicView)
+            return mPrivate->mProfileBasicView->mDisplayName ? *mPrivate->mProfileBasicView->mDisplayName : NULL_STRING;
+    }
 
     if (mProfileView)
-        return mProfileView->mDisplayName.value_or("");
+        return mProfileView->mDisplayName ? *mProfileView->mDisplayName : NULL_STRING;
 
     if (mProfileDetailedView)
-        return mProfileDetailedView->mDisplayName.value_or("");
+        return mProfileDetailedView->mDisplayName ? *mProfileDetailedView->mDisplayName : NULL_STRING;
 
-    return {};
+    return NULL_STRING;
 }
 
-QString BasicProfile::getHandle() const
+const QString& BasicProfile::getHandle() const
 {
-    if (mHandle)
-        return *mHandle;
+    if (mPrivate)
+    {
+        if (mPrivate->mHandle)
+            return *mPrivate->mHandle;
 
-    if (mProfileBasicView)
-        return mProfileBasicView->mHandle;
+        if (mPrivate->mProfileBasicView)
+            return mPrivate->mProfileBasicView->mHandle;
+    }
 
     if (mProfileView)
         return mProfileView->mHandle;
@@ -211,7 +265,7 @@ QString BasicProfile::getHandle() const
     if (mProfileDetailedView)
         return mProfileDetailedView->mHandle;
 
-    return {};
+    return NULL_STRING;
 }
 
 bool BasicProfile::hasInvalidHandle() const
@@ -219,7 +273,7 @@ bool BasicProfile::hasInvalidHandle() const
     return getHandle().endsWith(INVALID_HANDLE_SUFFIX);
 }
 
-QString BasicProfile::getHandleOrDid() const
+const QString& BasicProfile::getHandleOrDid() const
 {
     const QString& handle = getHandle();
 
@@ -229,21 +283,24 @@ QString BasicProfile::getHandleOrDid() const
     return handle;
 }
 
-QString BasicProfile::getAvatarUrl() const
+const QString& BasicProfile::getAvatarUrl() const
 {
-    if (mAvatarUrl)
-        return *mAvatarUrl;
+    if (mPrivate)
+    {
+        if (mPrivate->mAvatarUrl)
+            return *mPrivate->mAvatarUrl;
 
-    if (mProfileBasicView)
-        return mProfileBasicView->mAvatar.value_or("");
+        if (mPrivate->mProfileBasicView)
+            return mPrivate->mProfileBasicView->mAvatar ? *mPrivate->mProfileBasicView->mAvatar : NULL_STRING;
+    }
 
     if (mProfileView)
-        return mProfileView->mAvatar.value_or("");
+        return mProfileView->mAvatar? *mProfileView->mAvatar : NULL_STRING;
 
     if (mProfileDetailedView)
-        return mProfileDetailedView->mAvatar.value_or("");
+        return mProfileDetailedView->mAvatar ? *mProfileDetailedView->mAvatar : NULL_STRING;
 
-    return {};
+    return NULL_STRING;
 }
 
 QString BasicProfile::getAvatarThumbUrl() const
@@ -258,11 +315,14 @@ ImageView BasicProfile::getImageView() const
 
 ProfileAssociated BasicProfile::getAssociated() const
 {
-    if (mAssociated)
-        return *mAssociated;
+    if (mPrivate)
+    {
+        if (mPrivate->mAssociated)
+            return *mPrivate->mAssociated;
 
-    if (mProfileBasicView)
-        return mProfileBasicView->mAssociated ? ProfileAssociated(mProfileBasicView->mAssociated) : ProfileAssociated{};
+        if (mPrivate->mProfileBasicView)
+            return mPrivate->mProfileBasicView->mAssociated ? ProfileAssociated(mPrivate->mProfileBasicView->mAssociated) : ProfileAssociated{};
+    }
 
     if (mProfileView)
         return mProfileView->mAssociated ? ProfileAssociated(mProfileView->mAssociated) : ProfileAssociated{};
@@ -273,55 +333,83 @@ ProfileAssociated BasicProfile::getAssociated() const
     return {};
 }
 
-ProfileViewerState BasicProfile::getViewer() const
+const ProfileViewerState& BasicProfile::getViewer() const
 {
-    if (mViewer)
-        return *mViewer;
+    if (mPrivate)
+    {
+        if (mPrivate->mViewer)
+            return *mPrivate->mViewer;
 
-    if (mProfileBasicView)
-        return mProfileBasicView->mViewer ? ProfileViewerState(mProfileBasicView->mViewer) : ProfileViewerState{};
+        if (mPrivate->mProfileBasicView)
+            mPrivate->mViewer = mPrivate->mProfileBasicView->mViewer ? ProfileViewerState(mPrivate->mProfileBasicView->mViewer) : ProfileViewerState{};
+        else
+            mPrivate->mViewer = ProfileViewerState{};
+
+        return *mPrivate->mViewer;
+    }
+    else
+    {
+        const_cast<BasicProfile*>(this)->mPrivate = std::make_shared<PrivateData>();
+    }
 
     if (mProfileView)
-        return mProfileView->mViewer ? ProfileViewerState(mProfileView->mViewer) : ProfileViewerState{};
+        mPrivate->mViewer = mProfileView->mViewer ? ProfileViewerState(mProfileView->mViewer) : ProfileViewerState{};
+    else if (mProfileDetailedView)
+        mPrivate->mViewer = mProfileDetailedView->mViewer ? ProfileViewerState(mProfileDetailedView->mViewer) : ProfileViewerState{};
+    else
+        mPrivate->mViewer = ProfileViewerState{};
 
-    if (mProfileDetailedView)
-        return mProfileDetailedView->mViewer ? ProfileViewerState(mProfileDetailedView->mViewer) : ProfileViewerState{};
-
-    return {};
+    return *mPrivate->mViewer;
 }
 
-ContentLabelList BasicProfile::getContentLabels() const
+const ContentLabelList& BasicProfile::getContentLabels() const
 {
-    if (mContentLabels)
-        return *mContentLabels;
+    if (mPrivate && mPrivate->mContentLabels)
+        return *mPrivate->mContentLabels;
 
     const ContentFilter::LabelList* labels = nullptr;
 
-    if (mProfileBasicView)
-        labels = &mProfileBasicView->mLabels;
+    if (mPrivate && mPrivate->mProfileBasicView)
+        labels = &mPrivate->mProfileBasicView->mLabels;
     else if (mProfileView)
         labels = &mProfileView->mLabels;
     else if (mProfileDetailedView)
         labels = &mProfileDetailedView->mLabels;
 
-    if (!labels)
-        return {};
+    if (!mPrivate)
+        const_cast<BasicProfile*>(this)->mPrivate = std::make_shared<PrivateData>();
 
-    return ContentFilter::getContentLabels(*labels);
+    if (labels)
+        mPrivate->mContentLabels = ContentFilter::getContentLabels(*labels);
+    else
+        mPrivate->mContentLabels = ContentLabelList{};
+
+    return *mPrivate->mContentLabels;
+}
+
+void BasicProfile::setDisplayName(const QString& displayName)
+{
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
+
+    mPrivate->mDisplayName = displayName;
 }
 
 void BasicProfile::setAvatarUrl(const QString& avatarUrl)
 {
-    mAvatarUrl = avatarUrl;
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
+
+    mPrivate->mAvatarUrl = avatarUrl;
 
     if (avatarUrl.startsWith("image://"))
     {
         auto* provider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
-        mAvatarSource = std::make_shared<SharedImageSource>(avatarUrl, provider);
+        mPrivate->mAvatarSource = std::make_shared<SharedImageSource>(avatarUrl, provider);
     }
     else
     {
-        mAvatarSource = nullptr;
+        mPrivate->mAvatarSource = nullptr;
     }
 }
 

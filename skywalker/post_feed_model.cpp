@@ -570,13 +570,13 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         if (replyRef->mParent.isPlaceHolder())
             return false;
 
-        const auto parentDid = replyRef->mParent.getAuthor().getDid();
+        const auto& parentDid = replyRef->mParent.getAuthor().getDid();
 
         // Always show replies to the user
         if (parentDid == mUserDid)
             return true;
 
-        const auto rootDid = replyRef->mRoot.getAuthor().getDid();
+        const auto& rootDid = replyRef->mRoot.getAuthor().getDid();
 
         // Always show replies in a thread from the user
         if (rootDid == mUserDid)

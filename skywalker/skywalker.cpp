@@ -2731,7 +2731,7 @@ void Skywalker::shareList(const ListView& list)
 
 void Skywalker::shareAuthor(const BasicProfile& author)
 {
-    const QString authorId = author.getDid();
+    const QString& authorId = author.getDid();
     const QString shareUri = QString("https://bsky.app/profile/%1").arg(authorId);
 
 #ifdef Q_OS_ANDROID

@@ -212,12 +212,19 @@ QVariant RecordView::getExternal() const
     return QVariant::fromValue(ExternalView(external));
 }
 
-ContentLabelList RecordView::getContentLabels() const
+const ContentLabelList& RecordView::getContentLabels() const
 {
     if (!mRecord)
-        return {};
+    {
+        static const ContentLabelList NO_LABELS;
+        return NO_LABELS;
+    }
 
-    return ContentFilter::getContentLabels(mRecord->mLabels);
+    if (mContentLabels)
+        return *mContentLabels;
+
+    const_cast<RecordView*>(this)->mContentLabels = ContentFilter::getContentLabels(mRecord->mLabels);
+    return *mContentLabels;
 }
 
 const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& RecordView::getLabels() const
@@ -229,12 +236,17 @@ const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& RecordView::getLa
     return mRecord->mLabels;
 }
 
-ContentLabelList RecordView::getLabelsIncludingAuthorLabels() const
+const ContentLabelList& RecordView::getLabelsIncludingAuthorLabels() const
 {
-    const auto author = getAuthor();
+    if (mLabelsIncludingAuthorLabels)
+        return *mLabelsIncludingAuthorLabels;
+
+    const auto& author = getAuthor();
     ContentLabelList contentLabels = author.getContentLabels();
     ContentFilter::addContentLabels(contentLabels, getLabels());
-    return contentLabels;
+    const_cast<RecordView*>(this)->mLabelsIncludingAuthorLabels = contentLabels;
+
+    return *mLabelsIncludingAuthorLabels;
 }
 
 bool RecordView::isReply() const

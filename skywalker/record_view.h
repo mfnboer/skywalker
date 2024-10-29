@@ -69,9 +69,9 @@ public:
     QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;
     QVariant getExternal() const;
-    ContentLabelList getContentLabels() const;
+    const ContentLabelList& getContentLabels() const;
     const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
-    ContentLabelList getLabelsIncludingAuthorLabels() const;
+    const ContentLabelList& getLabelsIncludingAuthorLabels() const;
     bool isReply() const;
     QString getReplyToAuthorDid() const;
     BasicProfile getReplyToAuthor() const;
@@ -121,6 +121,8 @@ private:
     QString mContentWarning = "NOT INITIALIZED";
     QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
     LanguageList mLanguages;
+    std::optional<ContentLabelList> mContentLabels;
+    std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
 };
 
 }

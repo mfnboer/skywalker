@@ -24,12 +24,16 @@ public:
     KnownFollowers() = default;
     explicit KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* knownFollowers);
 
-    int getCount() const { return mCount; }
-    QList<BasicProfile> getFollowers() const;
+    int getCount() const { return mPrivate ? mPrivate->mCount : 0; }
+    const QList<BasicProfile>& getFollowers() const;
 
 private:
-    int mCount = 0;
-    QList<std::shared_ptr<BasicProfile>> mFollowers;
+    struct PrivateData
+    {
+        int mCount = 0;
+        QList<BasicProfile> mFollowers;
+    };
+    std::shared_ptr<PrivateData> mPrivate;
 };
 
 class ProfileViewerState
@@ -53,15 +57,22 @@ public:
     bool isValid() const;
     bool isMuted() const;
     bool isBlockedBy() const;
-    QString getBlocking() const;
-    QString getFollowing() const;
-    QString getFollowedBy() const;
-    ListViewBasic getMutedByList() const;
-    ListViewBasic getBlockingByList() const;
-    KnownFollowers getKnownFollowers() const;
+    const QString& getBlocking() const;
+    const QString& getFollowing() const;
+    const QString& getFollowedBy() const;
+    const ListViewBasic& getMutedByList() const;
+    const ListViewBasic& getBlockingByList() const;
+    const KnownFollowers& getKnownFollowers() const;
 
 private:
-    ATProto::AppBskyActor::ViewerState::SharedPtr mViewerState;
+    struct PrivateData
+    {
+        ATProto::AppBskyActor::ViewerState::SharedPtr mViewerState;
+        std::optional<ListViewBasic> mMutedByList;
+        std::optional<ListViewBasic> mBlockedByList;
+        std::optional<KnownFollowers> mKnownFollowers;
+    };
+    std::shared_ptr<PrivateData> mPrivate;
 };
 
 class ProfileAssociatedChat
@@ -134,23 +145,23 @@ public:
     BasicProfile& operator=(const BasicProfile&) = default;
 
     Q_INVOKABLE bool isNull() const;
-    QString getDid() const;
+    const QString& getDid() const;
     QString getName() const;
-    QString getDisplayName() const;
-    QString getHandle() const;
-    QString getAvatarUrl() const;
+    const QString& getDisplayName() const;
+    const QString& getHandle() const;
+    const QString& getAvatarUrl() const;
     QString getAvatarThumbUrl() const;
     ImageView getImageView() const;
     ProfileAssociated getAssociated() const;
-    ProfileViewerState getViewer() const;
-    ContentLabelList getContentLabels() const;
+    const ProfileViewerState& getViewer() const;
+    const ContentLabelList& getContentLabels() const;
 
     Q_INVOKABLE bool hasInvalidHandle() const;
 
     // Get the handle, but if it is invalid then get the DID
-    QString getHandleOrDid() const;
+    const QString& getHandleOrDid() const;
 
-    void setDisplayName(const QString& displayName) { mDisplayName = displayName; }
+    void setDisplayName(const QString& displayName);
 
     // If avatarUrl is a "image://", then the profile takes ownership of the image
     void setAvatarUrl(const QString& avatarUrl);
@@ -167,16 +178,19 @@ protected:
     ATProto::AppBskyActor::ProfileView::SharedPtr mProfileView;
 
 private:
-    ATProto::AppBskyActor::ProfileViewBasic::SharedPtr mProfileBasicView;
-
-    std::optional<QString> mDid;
-    std::optional<QString> mHandle;
-    std::optional<QString> mDisplayName;
-    std::optional<QString> mAvatarUrl;
-    SharedImageSource::SharedPtr mAvatarSource;
-    std::optional<ProfileAssociated> mAssociated;
-    std::optional<ProfileViewerState> mViewer;
-    std::optional<ContentLabelList> mContentLabels;
+    struct PrivateData
+    {
+        ATProto::AppBskyActor::ProfileViewBasic::SharedPtr mProfileBasicView;
+        std::optional<QString> mDid;
+        std::optional<QString> mHandle;
+        std::optional<QString> mDisplayName;
+        std::optional<QString> mAvatarUrl;
+        SharedImageSource::SharedPtr mAvatarSource;
+        std::optional<ProfileAssociated> mAssociated;
+        std::optional<ProfileViewerState> mViewer;
+        std::optional<ContentLabelList> mContentLabels;
+    };
+    std::shared_ptr<PrivateData> mPrivate;
 };
 
 using BasicProfileList = QList<BasicProfile>;
