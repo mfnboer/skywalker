@@ -12,6 +12,7 @@ SkyListView {
     signal closed
 
     id: postListFeedView
+    width: parent.width
     model: skywalker.getPostFeedModel(modelId)
 
     Accessible.name: postListFeedView.model.feedName

@@ -11,6 +11,7 @@ SkyListView {
     property int calibrationDy: 0
 
     id: timelineView
+    width: parent.width
     model: skywalker.timelineModel
 
     Accessible.name: qsTr("Following")

@@ -39,7 +39,7 @@ SvgButton {
                 onClicked: parent.triggered()
             }
 
-            onTriggered: root.viewTimeline()
+            onTriggered: { highlighted = false; root.viewTimeline() }
 
             Accessible.role: Accessible.MenuItem
             Accessible.name: contentItem.text
@@ -75,7 +75,7 @@ SvgButton {
                     onClicked: parent.triggered()
                 }
 
-                onTriggered: viewFeed()
+                onTriggered: { highlighted = false; viewFeed() }
 
                 Accessible.role: Accessible.MenuItem
                 Accessible.name: contentItem.text
