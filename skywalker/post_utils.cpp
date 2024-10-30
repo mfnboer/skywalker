@@ -1075,12 +1075,12 @@ bool PostUtils::pickPhoto(bool pickVideo)
 
 void PostUtils::savePhoto(const QString& sourceUrl)
 {
-    PhotoPicker::savePhoto(sourceUrl,
-        [this, presence=getPresence()]{
+    PhotoPicker::savePhoto(sourceUrl, false,
+        [this, presence=getPresence()](const QString& fileName){
             if (!presence)
                 return;
 
-            qDebug() << "Saved photo!";
+            qDebug() << "Saved photo:" << fileName;
             mSkywalker->showStatusMessage(tr("Picture saved"), QEnums::STATUS_LEVEL_INFO);
         },
         [this, presence=getPresence()](const QString& error){
@@ -1089,6 +1089,55 @@ void PostUtils::savePhoto(const QString& sourceUrl)
 
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
+}
+
+void PostUtils::sharePhotoToApp(const QString& sourceUrl)
+{
+#ifdef Q_OS_ANDROID
+    PhotoPicker::savePhoto(sourceUrl, true,
+        [this, presence=getPresence()](const QString& fileName){
+            if (!presence)
+                return;
+
+            qDebug() << "Saved photo to cache:" << fileName;
+            continueSharePhotoToApp(fileName);
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+#else
+    PhotoPicker::copyPhotoToClipboard(sourceUrl,
+        [this, presence=getPresence()](){
+            if (!presence)
+                return;
+
+            mSkywalker->showStatusMessage("Copied photo top clipboard", QEnums::STATUS_LEVEL_INFO);
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
+        });
+#endif
+}
+
+void PostUtils::continueSharePhotoToApp(const QString& fileName)
+{
+    qDebug() << "Share photo to app:" << fileName;
+#ifdef Q_OS_ANDROID
+    QJniObject jFileName = QJniObject::fromString(fileName);
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareMedia",
+                                       "(Ljava/lang/String;)V",
+                                       jFileName.object<jstring>());
+#else
+    mSkywalker->showStatusMessage("Sharing not supported", QEnums::STATUS_LEVEL_ERROR);
+#endif
 }
 
 QString PostUtils::cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize)

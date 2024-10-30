@@ -1,6 +1,8 @@
 next
 ====
+* Share pictures to other apps
 * Maximum length for ALT text increased to 2000
+* Performance improvements
 * Bug fixes
 
 3.5

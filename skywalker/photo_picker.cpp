@@ -9,7 +9,9 @@
 #include <QtGlobal>
 #include <QBuffer>
 #include <QCoreApplication>
+#include <QClipboard>
 #include <QFile>
+#include <QGuiApplication>
 #include <QImage>
 #include <QImageReader>
 #include <QStandardPaths>
@@ -216,7 +218,8 @@ static QString createPictureFileName()
     return QString("SKYWALKER_%1.jpg").arg(FileUtils::createDateTimeName());
 }
 
-void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
+void savePhoto(const QString& sourceUrl, bool cache,
+               const std::function<void(const QString&)>& successCb,
                const std::function<void(const QString&)>& errorCb)
 {
     static ImageReader imageReader;
@@ -225,14 +228,23 @@ void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
     Q_ASSERT(errorCb);
 
     imageReader.getImage(sourceUrl,
-        [successCb, errorCb](QImage img){
-            if (!FileUtils::checkWriteMediaPermission())
-            {
-                errorCb(QObject::tr("No permission to save pictures"));
-                return;
-            }
+        [cache, successCb, errorCb](QImage img){
+            QString picturesPath;
 
-            const QString picturesPath = FileUtils::getPicturesPath();
+            if (cache)
+            {
+                picturesPath = FileUtils::getCachePath("shared");
+            }
+            else
+            {
+                if (!FileUtils::checkWriteMediaPermission())
+                {
+                    errorCb(QObject::tr("No permission to save pictures"));
+                    return;
+                }
+
+                picturesPath = FileUtils::getPicturesPath();
+            }
 
             if (picturesPath.isEmpty())
             {
@@ -249,7 +261,30 @@ void savePhoto(const QString& sourceUrl, const std::function<void()>& successCb,
                 errorCb(QObject::tr("Failed to save picture"));
             }
 
-            FileUtils::scanMediaFile(fileName);
+            if (!cache)
+                FileUtils::scanMediaFile(fileName);
+
+            successCb(fileName);
+        },
+        [errorCb](const QString& error){
+            qWarning() << "Failed get get image:" << error;
+            errorCb(error);
+        });
+}
+
+void copyPhotoToClipboard(const QString& sourceUrl,
+                          const std::function<void()>& successCb,
+                          const std::function<void(const QString&)>& errorCb)
+{
+    static ImageReader imageReader;
+
+    Q_ASSERT(successCb);
+    Q_ASSERT(errorCb);
+
+    imageReader.getImage(sourceUrl,
+        [successCb, errorCb](QImage img){
+            QClipboard *clipboard = QGuiApplication::clipboard();
+            clipboard->setImage(img);
             successCb();
         },
         [errorCb](const QString& error){

@@ -21,6 +21,18 @@ import android.util.Log;
 public class FileUtils {
     private static final String LOGTAG = "FileUtils";
 
+    private static String makePath(File path) {
+        try {
+            path.mkdirs();
+        } catch (SecurityException e) {
+            Log.w(LOGTAG, "Could not create path: " + path + " details: " + e.getMessage());
+            return null;
+        }
+
+        Log.d(LOGTAG, path.getAbsolutePath());
+        return path.getAbsolutePath();
+    }
+
     public static String resolveContentUriToFile(String uriString) {
         Context context = QtNative.getContext();
 
@@ -82,16 +94,7 @@ public class FileUtils {
     public static String getPicturesPath(String subDir) {
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File subPath = new File(path, subDir);
-
-        try {
-            subPath.mkdirs();
-        } catch (SecurityException e) {
-            Log.w(LOGTAG, "Could not create path: " + subPath + " details: " + e.getMessage());
-            return null;
-        }
-
-        Log.d(LOGTAG, subPath.getAbsolutePath());
-        return subPath.getAbsolutePath();
+        return makePath(subPath);
     }
 
     public static String getMoviesPath() {
@@ -110,30 +113,33 @@ public class FileUtils {
 
         File path = context.getFilesDir();
         File subPath = new File(path, subDir);
+        return makePath(subPath);
+    }
 
-        try {
-            subPath.mkdirs();
-        } catch (SecurityException e) {
-            Log.w(LOGTAG, "Could not create path: " + subPath + " details: " + e.getMessage());
+    public static String getCachePath(String subDir) {
+        Context context = QtNative.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context to get cache path: " + subDir);
             return null;
         }
 
-        Log.d(LOGTAG, subPath.getAbsolutePath());
-        return subPath.getAbsolutePath();
+        File subPath = new File(context.getCacheDir(), subDir);
+        return makePath(subPath);
     }
 
-// Make a media file show up in the gallery
-public static void scanMediaFile(String fileName) {
-    Log.d(LOGTAG, "Scan media file=" + fileName);
+    // Make a media file show up in the gallery
+    public static void scanMediaFile(String fileName) {
+        Log.d(LOGTAG, "Scan media file=" + fileName);
 
-    MediaScannerConnection.scanFile(QtNative.getContext(),
-            new String[]{ fileName }, null,
-            new MediaScannerConnection.OnScanCompletedListener() {
-                public void onScanCompleted(String path, Uri uri) {
-                    Log.d(LOGTAG, "Scanned " + path + ":");
-                    Log.d(LOGTAG, "  uri=" + uri);
+        MediaScannerConnection.scanFile(QtNative.getContext(),
+                new String[]{ fileName }, null,
+                new MediaScannerConnection.OnScanCompletedListener() {
+                    public void onScanCompleted(String path, Uri uri) {
+                        Log.d(LOGTAG, "Scanned " + path + ":");
+                        Log.d(LOGTAG, "  uri=" + uri);
+                    }
                 }
-            }
-        );
+            );
     }
 }

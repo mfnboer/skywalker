@@ -68,6 +68,7 @@ public:
     Q_INVOKABLE void batchDeletePosts(const QStringList& postUris);
     Q_INVOKABLE bool pickPhoto(bool pickVideo = false);
     Q_INVOKABLE void savePhoto(const QString& sourceUrl);
+    Q_INVOKABLE void sharePhotoToApp(const QString& sourceUrl);
     Q_INVOKABLE static void dropPhoto(const QString& source);
     Q_INVOKABLE static void dropVideo(const QString& source);
     Q_INVOKABLE QString cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize);
@@ -191,6 +192,7 @@ private:
     void shareVideo(int fd, const QString& mimeType);
     void cancelPhotoPicking();
     void getVideoUploadLimits(const std::function<void(const VideoUploadLimits&)>& cb);
+    void continueSharePhotoToApp(const QString& fileName);
 
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();

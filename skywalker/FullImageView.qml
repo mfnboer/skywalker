@@ -9,6 +9,7 @@ SkyPage {
 
     signal closed
     signal saveImage(string sourceUrl)
+    signal shareImage(string sourceUrl)
 
     id: page
     width: parent.width
@@ -174,9 +175,14 @@ SkyPage {
                 text: qsTr("Save picture")
                 onTriggered: page.saveImage(images[view.currentIndex].fullSizeUrl)
 
-                MenuItemSvg {
-                    svg: SvgOutline.save
-                }
+                MenuItemSvg { svg: SvgOutline.save }
+            }
+
+            MenuItem {
+                text: qsTr("Share picture")
+                onTriggered: page.shareImage(images[view.currentIndex].fullSizeUrl)
+
+                MenuItemSvg { svg: SvgOutline.share }
             }
 
             MenuItem {
@@ -184,9 +190,7 @@ SkyPage {
                 enabled: images[view.currentIndex].alt
                 onTriggered: root.translateText(images[view.currentIndex].alt)
 
-                MenuItemSvg {
-                    svg: SvgOutline.googleTranslate
-                }
+                MenuItemSvg { svg: SvgOutline.googleTranslate }
             }
         }
     }

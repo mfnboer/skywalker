@@ -1220,6 +1220,7 @@ ApplicationWindow {
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() })
         view.onSaveImage.connect((sourceUrl) => { postUtils.savePhoto(sourceUrl) })
+        view.onShareImage.connect((sourceUrl) => { postUtils.sharePhotoToApp(sourceUrl) })
         pushStack(view)
     }
 
