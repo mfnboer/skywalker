@@ -12,6 +12,7 @@ constexpr char const* DRAFT_MEME_TOP_TEXT_FIELD = "eu.thereforeiam.skywalker.mem
 constexpr char const* DRAFT_MEME_BOTTOM_TEXT_FIELD = "eu.thereforeiam.skywalker.memeBottomText";
 constexpr char const* DRAFT_VIDEO_START_MS_FIELD = "eu.thereforeiam.skywalker.videoStartMs";
 constexpr char const* DRAFT_VIDEO_END_MS_FIELD = "eu.thereforeiam.skywalker.videoEndMs";
+constexpr char const* DRAFT_VIDEO_REMOVE_AUDIO_FIELD = "eu.thereforeiam.skywalker.videoRemoveAudio";
 constexpr char const* DRAFT_VIDEO_NEW_HEIGHT_FIELD = "eu.thereforeiam.skywalker.videoNewHeight";
 
 }

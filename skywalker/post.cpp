@@ -504,9 +504,11 @@ VideoView::Ptr Post::getDraftVideoView() const
     const ATProto::XJsonObject xjson(atProtoView->mJson);
     const int startMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_START_MS_FIELD, 0);
     const int endMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_END_MS_FIELD, 0);
+    const int removeAudio = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, false);
     const int newHeight = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, 0);
     videoView->setStartMs(startMs);
     videoView->setEndMs(endMs);
+    videoView->setRemoveAudio(removeAudio);
     videoView->setNewHeight(newHeight);
 
     return videoView;

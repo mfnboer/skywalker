@@ -232,11 +232,11 @@ public class SkywalkerActivity extends QtActivity {
         }
     }
 
-    public void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs) {
+    public void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                VideoTranscoder.transcodeVideo(inputFilePath, outputFilePath, height, startMs, endMs);
+                VideoTranscoder.transcodeVideo(inputFilePath, outputFilePath, height, startMs, endMs, removeAudio);
             }
         });
     }

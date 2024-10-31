@@ -1,6 +1,7 @@
 next
 ====
 * Share pictures to other apps
+* Option to remove audio track from video
 * Maximum length for ALT text increased to 2000
 * Performance improvements
 * Bug fixes

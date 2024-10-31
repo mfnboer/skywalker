@@ -32,7 +32,7 @@ void VideoUtils::setTranscoding(bool transcoding)
     }
 }
 
-void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int startMs, int endMs)
+void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int startMs, int endMs, bool removeAudio)
 {
     auto outputFile = FileUtils::makeTempFile("mp4");
     const QString outputFileName = outputFile->fileName();
@@ -51,19 +51,21 @@ void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     jint jiHeight = height;
     jint jiStartMs = startMs;
     jint jiEndMs = endMs;
+    jboolean jbRemoveAudio = removeAudio;
 
     activity.callMethod<void>(
         "transcodeVideo",
-        "(Ljava/lang/String;Ljava/lang/String;III)V",
+        "(Ljava/lang/String;Ljava/lang/String;IIIZ)V",
         jsInputFileName.object<jstring>(),
         jsOutputFileName.object<jstring>(),
-        jiHeight, jiStartMs, jiEndMs);
+        jiHeight, jiStartMs, jiEndMs, jbRemoveAudio);
 
     setTranscoding(true);
 #else
     Q_UNUSED(height)
     Q_UNUSED(startMs)
     Q_UNUSED(endMs)
+    Q_UNUSED(removeAudio)
     qDebug() << "Transcoding not supported";
     QFile::copy(inputFileName, outputFileName);
     handleTranscodingOk(inputFileName, outputFileName);

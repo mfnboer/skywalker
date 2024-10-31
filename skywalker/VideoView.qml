@@ -401,11 +401,12 @@ Column {
             id: soundButton
             anchors.right: parent.right
             anchors.rightMargin: isFullViewMode ? 10 : 0
-            width: 32
+            width: visible ? 32 : 0
             height: width
             svg: audioOutput.muted ? SvgOutline.soundOff : SvgOutline.soundOn
             accessibleName: audioOutput.muted ? qsTr("turn sound on") : qsTr("turn sound off")
             color: controlColor
+            visible: videoPlayer.hasAudio
 
             onClicked: audioOutput.toggleSound()
         }

@@ -19,6 +19,7 @@ class VideoView
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(int startMs READ getStartMs FINAL)
     Q_PROPERTY(int endMs READ getEndMs FINAL)
+    Q_PROPERTY(bool removeAudio READ getRemoveAudio FINAL)
     Q_PROPERTY(int newHeight READ getNewHeight FINAL)
     QML_VALUE_TYPE(videoview)
 
@@ -27,8 +28,8 @@ public:
 
     VideoView() = default;
     VideoView(const ATProto::AppBskyEmbed::VideoView::SharedPtr& videoView) : mVideoView(videoView) {}
-    VideoView(const QString& playListUrl, const QString& alt, int startMs, int endMs, int newHeight) :
-        mPlayListUrl(playListUrl), mAlt(alt), mStartMs(startMs), mEndMs(endMs), mNewHeight(newHeight) {}
+    VideoView(const QString& playListUrl, const QString& alt, int startMs, int endMs, bool removeAudio, int newHeight) :
+        mPlayListUrl(playListUrl), mAlt(alt), mStartMs(startMs), mEndMs(endMs), mRemoveAudio(removeAudio), mNewHeight(newHeight) {}
 
     Q_INVOKABLE bool isNull() const { return getPlaylistUrl().isEmpty(); }
     QString getThumbUrl() const { return mVideoView && mVideoView->mThumbnail ? *mVideoView->mThumbnail : ""; }
@@ -42,6 +43,8 @@ public:
     void setStartMs(int startMs) { mStartMs = startMs; }
     int getEndMs() const { return mEndMs; }
     void setEndMs(int endMs) { mEndMs = endMs; }
+    bool getRemoveAudio() const { return mRemoveAudio; }
+    void setRemoveAudio(bool removeAudio) { mRemoveAudio = removeAudio; }
     int getNewHeight() const { return mNewHeight; }
     void setNewHeight(int newHeight) { mNewHeight = newHeight; }
 
@@ -55,6 +58,7 @@ private:
     // Only for draft posts
     int mStartMs = 0;
     int mEndMs = 0;
+    bool mRemoveAudio = false;
     int mNewHeight = 0;
 };
 

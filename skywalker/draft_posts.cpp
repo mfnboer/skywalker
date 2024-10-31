@@ -61,6 +61,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
                                        const QString& videoFileName, const QString& videoAltText,
                                        int videoStartMs, int videoEndMs, int videoNewHeight,
+                                       bool videoRemoveAudio,
                                        const QString& replyToUri, const QString& replyToCid,
                                        const QString& replyRootUri, const QString& replyRootCid,
                                        const BasicProfile& replyToAuthor, const QString& replyToText,
@@ -93,7 +94,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
 
     if (!videoFileName.isEmpty())
     {
-        const VideoView video(videoFileName, videoAltText, videoStartMs, videoEndMs, videoNewHeight);
+        const VideoView video(videoFileName, videoAltText, videoStartMs, videoEndMs, videoRemoveAudio, videoNewHeight);
         draft->setVideo(video);
     }
 
@@ -373,7 +374,8 @@ static void setVideo(DraftPostData* data, const VideoView& videoView)
         return;
 
     const QUrl url = QUrl::fromLocalFile(tmpFile->fileName());
-    VideoView video(url.toString(), videoView.getAlt(), videoView.getStartMs(), videoView.getEndMs(), videoView.getNewHeight());
+    VideoView video(url.toString(), videoView.getAlt(), videoView.getStartMs(), videoView.getEndMs(),
+                    videoView.getRemoveAudio(), videoView.getNewHeight());
     data->setVideo(video);
     TempFileHolder::instance().put(std::move(tmpFile));
 }
@@ -1003,6 +1005,7 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
     const ATProto::XJsonObject xjson(video->mVideo->mJson);
     const int startMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_START_MS_FIELD, 0);
     const int endMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_END_MS_FIELD, 0);
+    const bool removeAudio = xjson.getOptionalBool(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, false);
     const int newHeight = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, 0);
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::VideoView>();
@@ -1010,6 +1013,7 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
     view->mAlt = video->mAlt;
     view->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, startMs);
     view->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, endMs);
+    view->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, removeAudio);
     view->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, newHeight);
 
     return view;
@@ -1259,7 +1263,7 @@ bool DraftPosts::addVideoToPost(ATProto::AppBskyFeed::Record::Post& post,
         return true;
 
     auto blob = saveVideo(video.getPlaylistUrl(), video.getStartMs(), video.getEndMs(),
-                          video.getNewHeight(), draftsPath, baseName);
+                          video.getRemoveAudio(), video.getNewHeight(), draftsPath, baseName);
 
     if (!blob)
     {
@@ -1314,7 +1318,7 @@ std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString&
 }
 
 ATProto::Blob::SharedPtr DraftPosts::saveVideo(
-        const QString& videoName, int videoStartMs, int videoEndMs,
+        const QString& videoName, int videoStartMs, int videoEndMs, bool videoRemoveAudio,
         int videoNewHeight, const QString& draftsPath, const QString& baseName)
 {
     Q_ASSERT(mStorageType == STORAGE_FILE);
@@ -1367,6 +1371,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     blob->mMimeType = "video/mp4";
     blob->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, videoStartMs);
     blob->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, videoEndMs);
+    blob->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, videoRemoveAudio);
     blob->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, videoNewHeight);
     return blob;
 }

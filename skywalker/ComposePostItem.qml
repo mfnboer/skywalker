@@ -23,6 +23,7 @@ Item {
     property int videoNewHeight: 0
     property int videoStartMs: 0
     property int videoEndMs: 0
+    property bool videoRemoveAudio: false
 
     // Content warnings
     property bool cwSuggestive: false

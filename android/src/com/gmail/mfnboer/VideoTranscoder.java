@@ -29,8 +29,8 @@ public class VideoTranscoder {
     public static native void emitTranscodingOk(String inputFilePath, String outputFilePath);
     public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath, String error);
 
-    public static void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs) {
-        Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height + " start:" + startMs + " end:" + endMs);
+    public static void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
+        Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height + " start: " + startMs + " end: " + endMs + " remove audio: " + removeAudio);
 
         Context context = QtNative.getContext();
 
@@ -54,6 +54,9 @@ public class VideoTranscoder {
 
         if (height > 0)
             emiBuilder.setEffects(new Effects(ImmutableList.of(), ImmutableList.of(Presentation.createForHeight(height))));
+
+        if (removeAudio)
+            emiBuilder.setRemoveAudio(true);
 
         EditedMediaItem editedMediaItem = emiBuilder.build();
 

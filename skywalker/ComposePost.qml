@@ -310,6 +310,7 @@ SkyPage {
                     property int videoNewHeight
                     property int videoStartMs
                     property int videoEndMs
+                    property bool videoRemoveAudio
 
                     function copyToPostList() {
                         threadPosts.postList[index].text = text
@@ -337,6 +338,7 @@ SkyPage {
                         threadPosts.postList[index].videoNewHeight = videoNewHeight
                         threadPosts.postList[index].videoStartMs = videoStartMs
                         threadPosts.postList[index].videoEndMs = videoEndMs
+                        threadPosts.postList[index].videoRemoveAudio = videoRemoveAudio
                     }
 
                     function copyFromPostList() {
@@ -369,6 +371,7 @@ SkyPage {
                         videoNewHeight = threadPosts.postList[index].videoNewHeight
                         videoStartMs = threadPosts.postList[index].videoStartMs
                         videoEndMs = threadPosts.postList[index].videoEndMs
+                        videoRemoveAudio = threadPosts.postList[index].videoRemoveAudio
 
                         // Set text last as it will trigger link extractions which
                         // will check if a link card is already in place.
@@ -637,6 +640,7 @@ SkyPage {
                         property alias altText: postItem.videoAltText
                         property alias startMs: postItem.videoStartMs
                         property alias endMs: postItem.videoEndMs
+                        property alias removeAudio: postItem.videoRemoveAudio
                         property alias newHeight: postItem.videoNewHeight
 
                         id: videoAttachement
@@ -651,7 +655,7 @@ SkyPage {
                         requireAltText: page.requireAltText
                         visible: Boolean(video) && !linkCard.visible && !linkCard.visible
 
-                        onEdit: editVideo(video, startMs, endMs, newHeight)
+                        onEdit: editVideo(video, startMs, endMs, removeAudio, newHeight)
                     }
 
                     // GIF attachment
@@ -1504,11 +1508,11 @@ SkyPage {
             callbackFailed = (error) => {}
         }
 
-        function transcode(videoSource, newHeight, startMs, endMs, cbOk, cbFailed) {
+        function transcode(videoSource, newHeight, startMs, endMs, removeAudio, cbOk, cbFailed) {
             callbackOk = cbOk
             callbackFailed = cbFailed
             const fileName = videoSource.slice(7)
-            transcodeVideo(fileName, newHeight, startMs, endMs, cbOk)
+            transcodeVideo(fileName, newHeight, startMs, endMs, removeAudio)
             postProgress(qsTr("Transcoding video"))
         }
     }
@@ -1945,7 +1949,7 @@ SkyPage {
         } else if (Boolean(postItem.video)) {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
-                        postItem.videoStartMs, postItem.videoEndMs,
+                        postItem.videoStartMs, postItem.videoEndMs, postItem.videoRemoveAudio,
                         (transcodedVideo) => {
                             postUtils.postVideo(postText, transcodedVideo, postItem.videoAltText,
                             parentUri, parentCid,
@@ -2018,6 +2022,7 @@ SkyPage {
                                  postItem.memeTopTexts, postItem.memeBottomTexts,
                                  postItem.video, postItem.videoAltText,
                                  postItem.videoStartMs, postItem.videoEndMs, postItem.videoNewHeight,
+                                 postItem.videoRemoveAudio,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
                                  replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
@@ -2042,6 +2047,7 @@ SkyPage {
                                      threadItem.memeTopTexts, threadItem.memeBottomTexts,
                                      threadItem.video, threadItem.videoAltText,
                                      threadItem.videoStartMs, threadItem.videoEndMs, threadItem.videoNewHeight,
+                                     threadItem.videoRemoveAudio,
                                      "", "",
                                      "", "",
                                      nullAuthor, "",
@@ -2110,6 +2116,7 @@ SkyPage {
                 postItem.videoStartMs = draftData.video.startMs
                 postItem.videoEndMs = draftData.video.endMs
                 postItem.videoNewHeight = draftData.video.newHeight
+                postItem.videoRemoveAudio = draftData.video.removeAudio
             }
 
             if (j === 0) {
@@ -2289,16 +2296,17 @@ SkyPage {
         return hasImageContent() && (postItem.cwSuggestive || postItem.cwNudity || postItem.cwPorn || postItem.cwGore)
     }
 
-    function editVideo(videoSource, startMs = 0, endMs = 0, newHeight = 0) {
+    function editVideo(videoSource, startMs = 0, endMs = 0, removeAudio = false, newHeight = 0) {
         console.debug("Edit video, start:", startMs, "end:", endMs, "height:", newHeight)
         let component = Qt.createComponent("VideoEditor.qml")
         let videoPage = component.createObject(page, {
                 videoSource: videoSource,
                 startMs: startMs,
                 endMs: endMs,
-                newHeight: newHeight
+                newHeight: newHeight,
+                removeAudio: removeAudio
         })
-        videoPage.onVideoEdited.connect((newHeight, startMs, endMs) => {
+        videoPage.onVideoEdited.connect((newHeight, startMs, endMs, removeAudio) => {
             const postItem = currentPostItem()
             let altText = ""
 
@@ -2306,6 +2314,7 @@ SkyPage {
                 postItem.videoNewHeight = newHeight
                 postItem.videoStartMs = startMs
                 postItem.videoEndMs = endMs
+                postItem.videoRemoveAudio = removeAudio
                 altText = postItem.videoAltText
             }
 

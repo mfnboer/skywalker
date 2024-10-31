@@ -8,6 +8,7 @@ SkyPage {
     property string videoSource
     property int startMs: 0
     property int endMs: 0
+    property bool removeAudio: false
     property int newHeight: 0
     readonly property int maxDurationMs: 60000
     readonly property int margin: 10
@@ -19,7 +20,7 @@ SkyPage {
     padding: margin
 
     signal cancel
-    signal videoEdited(int height, int startMs, int endMs)
+    signal videoEdited(int height, int startMs, int endMs, bool removeAudio)
 
     header: SimpleHeader {
         text: qsTr("Video editor")
@@ -32,7 +33,7 @@ SkyPage {
             anchors.verticalCenter: parent.verticalCenter
             svg: SvgOutline.check
             accessibleName: qsTr("process video")
-            onClicked: videoEdited(getNewHeight(), durationControl.first.value, durationControl.second.value)
+            onClicked: videoEdited(getNewHeight(), durationControl.first.value, durationControl.second.value, page.removeAudio)
             enabled: durationControl.first.value < durationControl.second.value
         }
     }
@@ -54,7 +55,7 @@ SkyPage {
         x: (parent.width - width) / 2
         width: maxWidth > 0 && parent.width > maxWidth ? maxWidth : parent.width
         height: width / aspectRatio
-        muted: !userSettings.videoSound
+        muted: !userSettings.videoSound || page.removeAudio
 
         onPositionChanged: {
             if (video.playbackState !== MediaPlayer.PlayingState)
@@ -106,6 +107,7 @@ SkyPage {
             width: 34
             height: 34
             svg: video.muted ? SvgOutline.soundOff : SvgOutline.soundOn
+            visible: video.hasAudio && !page.removeAudio
             accessibleName: video.muted ? qsTr("turn sound on") : qsTr("turn sound off")
 
             onClicked: video.toggleSound()
@@ -205,6 +207,14 @@ SkyPage {
                 Layout.fillWidth: true
                 text: `SD (${(sizeString(calcSdResolution()))})`
             }
+        }
+
+        AccessibleCheckBox {
+            Layout.columnSpan: 2
+            checked: page.removeAudio
+            text: qsTr("Remove audio")
+            visible: video.hasAudio
+            onCheckedChanged: page.removeAudio = checked
         }
     }
 
