@@ -68,6 +68,16 @@ ScrollView {
                     onClicked: imageScroller.removeImage(index)
                 }
 
+                SvgButton {
+                    x: parent.width - width
+                    y: parent.height - height
+                    width: 34
+                    height: width
+                    svg: SvgOutline.share
+                    accessibleName: qsTr(`share picture ${(index + 1)} to other app`)
+                    onClicked: postUtils.sharePhotoToApp(modelData)
+                }
+
                 SkyLabel {
                     anchors.left: parent.left
                     anchors.right: parent.right

@@ -14,7 +14,11 @@ public:
     using ErrorCb = std::function<void(const QString& error)>;
 
     ImageReader();
+
+    // Gets file:// image:// http:// https:// images
     bool getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb);
+
+    bool getImageFromWeb(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb);
 
 private:
     void replyFinished(QNetworkReply* reply, const ImageCb& imageCb, const ErrorCb& errorCb);

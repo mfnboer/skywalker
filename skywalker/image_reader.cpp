@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "image_reader.h"
+#include "photo_picker.h"
 #include <QImageReader>
 
 namespace Skywalker {
@@ -15,6 +16,25 @@ ImageReader::ImageReader() :
 bool ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb)
 {
     qDebug() << "Get image:" << urlString;
+
+    if (urlString.startsWith("file://") || urlString.startsWith("image://"))
+    {
+        auto img = PhotoPicker::loadImage(urlString);
+
+        if (!img.isNull())
+            imageCb(img);
+        else
+            errorCb("Failed to load image");
+
+        return true;
+    }
+
+    return getImageFromWeb(urlString, imageCb, errorCb);
+}
+
+bool ImageReader::getImageFromWeb(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb)
+{
+    qDebug() << "Get image from web:" << urlString;
 
     QUrl url(urlString.startsWith("http") ? urlString : "https://" + urlString);
     if (!url.isValid())

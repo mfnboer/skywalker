@@ -1093,6 +1093,7 @@ void PostUtils::savePhoto(const QString& sourceUrl)
 
 void PostUtils::sharePhotoToApp(const QString& sourceUrl)
 {
+    qDebug() << "Share photo to app:" << sourceUrl;
 #ifdef Q_OS_ANDROID
     PhotoPicker::savePhoto(sourceUrl, true,
         [this, presence=getPresence()](const QString& fileName){
