@@ -175,7 +175,6 @@ SkyPage {
         columns: 2
 
         AccessibleText {
-            font.bold: true
             text: qsTr("Resolution")
         }
 
@@ -185,7 +184,6 @@ SkyPage {
         }
 
         AccessibleText {
-            font.bold: true
             text: qsTr("Resize to")
             visible: calcHdResolution() !== Qt.size(0, 0)
         }
