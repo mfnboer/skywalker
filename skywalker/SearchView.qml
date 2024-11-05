@@ -320,17 +320,11 @@ SkyPage {
             }
         }
 
-        ListView {
+        SkyListView {
             id: usersView
             width: parent.width
             height: parent.height
-            spacing: 0
-            clip: true
             model: searchUtils.getSearchUsersModel()
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
-            ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
 
@@ -357,17 +351,11 @@ SkyPage {
             }
         }
 
-        ListView {
+        SkyListView {
             id: suggestedUsersView
             width: parent.width
             height: parent.height
-            spacing: 0
-            clip: true
             model: searchUtils.getSearchSuggestedUsersModel()
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
-            ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
 
@@ -405,18 +393,12 @@ SkyPage {
             }
         }
 
-        ListView {
+        SkyListView {
             property bool keepFocus: false
 
             id: recentSearchesView
             width: parent.width
             height: parent.height
-            spacing: 0
-            clip: true
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
-            ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
 

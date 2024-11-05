@@ -9,7 +9,7 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
-    cacheBuffer: 10000
+    cacheBuffer: 30000
     ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List
