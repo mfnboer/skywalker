@@ -1299,6 +1299,9 @@ void PostUtils::setHighLightMaxLength(int maxLength)
 void PostUtils::extractMentionsAndLinks(const QString& text, const QString& preeditText,
                                         int cursor)
 {
+    if (cursor < 0)
+        cursor = text.size();
+
     const QString fullText = text.sliced(0, cursor) + preeditText + text.sliced(cursor);
     const auto facets = ATProto::RichTextMaster::parseFacets(fullText);
 

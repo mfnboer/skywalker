@@ -236,7 +236,7 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label
     if (group)
         return getGroupVisibility(*group);
 
-    qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
+    // qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QEnums::CONTENT_VISIBILITY_SHOW;
 }
 
