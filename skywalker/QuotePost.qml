@@ -37,7 +37,6 @@ Column {
         PostHeader {
             Layout.fillWidth: true
             author: quoteColumn.author
-            postThreadType: QEnums.THREAD_NONE
             postIndexedSecondsAgo: (new Date() - postDateTime) / 1000
         }
 

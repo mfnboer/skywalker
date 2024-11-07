@@ -1,5 +1,5 @@
 ﻿import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -119,7 +119,7 @@ Rectangle {
         Rectangle {
             id: topLeftSpace
             Layout.leftMargin: 8 + (avatarImg.width - width) / 2
-            width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
+            Layout.preferredWidth: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
             Layout.preferredHeight: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ? 2 : 1)
 
             color: {
@@ -159,14 +159,14 @@ Rectangle {
             }
         }
         Rectangle {
-            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: topLeftSpace.height
             color: "transparent"
         }
 
         // Pinned post
         Loader {
-            width: guiSettings.threadColumnWidth
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             active: postIsPinned && !postLocallyDeleted
             visible: status == Loader.Ready
@@ -200,7 +200,7 @@ Rectangle {
 
         // Repost information
         Loader {
-            width: guiSettings.threadColumnWidth
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
             visible: status == Loader.Ready
@@ -242,7 +242,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            width: guiSettings.threadColumnWidth
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
             opacity: 0.9
@@ -326,14 +326,19 @@ Rectangle {
             // Change from width to Layout.preferredWidth seems to solve the issue
             // where posts sometimes are too wide (like landscape mode) but makes
             // things very slow :-(
-            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             visible: !postIsPlaceHolder && !postLocallyDeleted
+
+            // TODO: remove debug code
+            Text {
+                width: parent.width
+                text: `index: ${postEntry.index} duration: ${postEntry.dbgDuration}`
+            }
 
             PostHeader {
                 id: postHeader
                 width: parent.width
                 author: postEntry.author
-                postThreadType: postEntry.postThreadType
                 postIndexedSecondsAgo: (new Date() - postEntry.postIndexedDateTime) / 1000
             }
 
@@ -566,8 +571,8 @@ Rectangle {
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Rectangle {
-            width: guiSettings.threadColumnWidth
-            height: postEntry.margin
+            Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredHeight: postEntry.margin
             color: "transparent"
 
             Rectangle {
@@ -601,14 +606,14 @@ Rectangle {
             }
         }
         Rectangle {
-            width: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
-            height: postEntry.margin
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            Layout.preferredHeight: postEntry.margin
             color: "transparent"
         }
 
         // Post/Thread separator
         Rectangle {
-            width: parent.width
+            Layout.preferredWidth: parent.width
             Layout.columnSpan: 2
             Layout.preferredHeight: 1
             color: guiSettings.separatorColor

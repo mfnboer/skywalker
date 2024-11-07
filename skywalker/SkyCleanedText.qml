@@ -4,6 +4,7 @@ import skywalker
 
 Text {
     required property string plainText
+    property bool mustElideRich: elide === Text.ElideRight && wrapMode === Text.NoWrap && textFormat === Text.RichText && !mustClean
     property string elidedText
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
@@ -15,7 +16,7 @@ Text {
                 Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     clip: true
     color: guiSettings.textColor
-    text: plainText
+    text: mustClean ? unicodeFonts.toCleanedHtml(textMetrics.elidedText) :  textMetrics.elidedText //plainText
 
     onPlainTextChanged: {
         determineTextFormat()
@@ -26,10 +27,6 @@ Text {
     Accessible.role: Accessible.StaticText
     Accessible.name: plainText
 
-    function isRichText() {
-        return textFormat === Text.RichText
-    }
-
     function setElidedText() {
         if (mustClean)
             text = unicodeFonts.toCleanedHtml(elidedText)
@@ -38,13 +35,7 @@ Text {
     }
 
     function elideRichText() {
-        if (!isRichText())
-            return
-
-        if (elide !== Text.ElideRight)
-            return
-
-        if (wrapMode !== Text.NoWrap)
+        if (!mustElideRich)
             return
 
         if (contentWidth <= width)
@@ -68,7 +59,7 @@ Text {
     }
 
     function resetText() {
-        if (!isRichText())
+        if (!mustElideRich)
             return
 
         if (elidedText !== plainText) {
@@ -80,15 +71,19 @@ Text {
     }
 
     function determineTextFormat() {
-        text = plainText
-        elideRichText()
+        if (mustElideRich) {
+            text = plainText
+            elidedText = plainText
+            elideRichText()
+        }
 
-        if (isRichText())
+        if (textFormat === Text.RichText) {
             return
+        }
 
         if (unicodeFonts.hasCombinedEmojis(plainText)) {
-            textFormat = Text.RichText
             mustClean = true
+            textFormat = Text.RichText
             resetText()
         }
     }
@@ -120,6 +115,14 @@ Text {
 
     function numLinesHidden() {
         return Math.floor((contentHeight - height) / fontMetrics.height + 1)
+    }
+
+    TextMetrics {
+        id: textMetrics
+        font: theText.font
+        elide:  (theText.wrapMode === Text.NoWrap && !mustElideRich) ? theText.elide : Text.ElideNone
+        elideWidth: theText.width
+        text: theText.plainText
     }
 
     FontMetrics {

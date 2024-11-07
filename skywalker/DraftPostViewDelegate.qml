@@ -71,7 +71,6 @@ Rectangle {
                 width: parent.width
                 Layout.fillWidth: true
                 author: draftPostView.author
-                postThreadType: QEnums.THREAD_NONE
                 postIndexedSecondsAgo: (new Date() - postIndexedDateTime) / 1000
             }
 

@@ -208,7 +208,6 @@ Rectangle {
                     width: parent.width
                     Layout.fillWidth: true
                     author: notificationPostAuthor
-                    postThreadType: QEnums.THREAD_NONE
                     postIndexedSecondsAgo: (new Date() - notificationTimestamp) / 1000
                 }
 

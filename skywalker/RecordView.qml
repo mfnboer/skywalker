@@ -30,7 +30,8 @@ Item {
         width: parent.width - 20
         anchors.centerIn: parent
 
-        RowLayout {
+        Row {
+            spacing: 10
             width: parent.width
             visible: record.available
 
@@ -44,9 +45,8 @@ Item {
             }
 
             PostHeader {
-                Layout.fillWidth: true
+                width: parent.width - avatar.width - parent.spacing
                 author: record.author
-                postThreadType: QEnums.THREAD_NONE
                 postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
             }
         }
@@ -119,53 +119,61 @@ Item {
             }
         }
 
-        Text {
+        Loader {
             width: parent.width
-            color: guiSettings.textColor
-            text: qsTr("🗑 Not found")
-            visible: record.notFound
+            active: record.notFound || record.blocked || record.notSupported
 
-            Accessible.ignored: true
+            sourceComponent: Text {
+                width: parent.width
+                color: guiSettings.textColor
+                text: getDescription()
+
+                Accessible.ignored: true
+
+                function getDescription() {
+                    if (record.notFound)
+                        return qsTr("🗑 Not found")
+                    if (record.blocked)
+                        return qsTr("🚫 Blocked")
+                    if (record.notSupported)
+                        return qsTr("⚠️ Not supported")
+                    return "UNNKNOW"
+                }
+            }
         }
-        Text {
-            width: parent.width
-            color: guiSettings.textColor
-            text: qsTr("🚫 Blocked")
-            visible: record.blocked
 
-            Accessible.ignored: true
+        Loader {
+            width: parent.width
+            active: record.detached
+
+            sourceComponent: Text {
+                width: parent.width
+                color: guiSettings.textColor
+                text: isUser(record.detachedByDid) ?
+                          qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
+                          qsTr("🗑 Detached by author")
+
+                Accessible.ignored: true
+
+                onLinkActivated: skywalker.getPostThread(record.detachedPostUri)
+            }
         }
-        Text {
+
+        Loader {
             width: parent.width
-            color: guiSettings.textColor
-            text: isUser(record.detachedByDid) ?
-                      qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
-                      qsTr("🗑 Detached by author")
-            visible: record.detached
+            active: record.notSupported
 
-            Accessible.ignored: true
+            sourceComponent: Text {
+                width: parent.width
+                color: guiSettings.textColor
+                wrapMode: Text.Wrap
+                maximumLineCount: 2
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                text: record.unsupportedType
 
-            onLinkActivated: skywalker.getPostThread(record.detachedPostUri)
-        }
-        Text {
-            width: parent.width
-            color: guiSettings.textColor
-            text: qsTr("⚠️ Not supported")
-            visible: record.notSupported
-
-            Accessible.ignored: true
-        }
-        Text {
-            width: parent.width
-            color: guiSettings.textColor
-            wrapMode: Text.Wrap
-            maximumLineCount: 2
-            elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(7/8)
-            text: record.unsupportedType
-            visible: record.notSupported
-
-            Accessible.ignored: true
+                Accessible.ignored: true
+            }
         }
     }
     MouseArea {
