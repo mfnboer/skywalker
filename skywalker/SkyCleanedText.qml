@@ -4,12 +4,12 @@ import skywalker
 
 Text {
     required property string plainText
-    property bool mustElideRich: elide === Text.ElideRight && wrapMode === Text.NoWrap && textFormat === Text.RichText && !mustClean
     property string elidedText
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
     property int capLineCount: initialShowMaxLineCount
+    readonly property bool mustElideRich: elide === Text.ElideRight && wrapMode === Text.NoWrap && textFormat === Text.RichText && !mustClean
 
     id: theText
     height: textFormat === Text.RichText && elide === Text.ElideRight && wrapMode !== Text.NoWrap ?
