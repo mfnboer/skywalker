@@ -5,8 +5,8 @@ Label {
     property string backgroundColor: guiSettings.labelColor
     property double backgroundOpacity: 1.0
 
-    topPadding: 1
-    bottomPadding: 1
+    topPadding: (guiSettings.labelHeight - guiSettings.labelFontHeight) / 2
+    bottomPadding: topPadding
     leftPadding: 2
     rightPadding: 2
     background: Rectangle { color: backgroundColor; radius: 2; opacity: backgroundOpacity }

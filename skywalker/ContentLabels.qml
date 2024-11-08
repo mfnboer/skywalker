@@ -6,7 +6,7 @@ ScrollView {
     property var skywalker: root.getSkywalker()
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
-    readonly property list<contentlabel> labelsToShow: filterLabelsToShow()
+    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentLabels)
     property int parentWidth: parent.width
 
     id: labelView
@@ -23,7 +23,7 @@ ScrollView {
 
     Row {
         id: labelRow
-        topPadding: 5
+        topPadding: guiSettings.labelRowPadding
         spacing: 5
 
         Repeater {
@@ -56,20 +56,6 @@ ScrollView {
     function getDisplayText(label) {
         const contentGroup = skywalker.getContentGroup(label.did, label.labelId)
         return contentGroup.titleWithSeverity
-    }
-
-    function filterLabelsToShow() {
-        let contentFilter = skywalker.getContentFilter()
-        let labels = []
-
-        for (let i = 0; i < contentLabels.length; ++i) {
-            const label = contentLabels[i]
-
-            if (!label.isSystemLabel() && contentFilter.mustShowBadge(label))
-                labels.push(label)
-        }
-
-        return labels
     }
 
     function appeal(contentLabel, contentGroup, labelerHandle) {

@@ -5,6 +5,9 @@ import skywalker
 Column {
     required property basicprofile author
     required property int postIndexedSecondsAgo
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.labels)
+
+    id: postHeader
 
     // Name eliding seems expensive. Background rendering helps to make the app
     // more responsive.
@@ -49,17 +52,26 @@ Column {
         Accessible.ignored: true
     }
 
-    Rectangle {
+    Loader {
+        active: labelsToShow.length > 0
         width: parent.width
-        height: author.labels ? contentLabels.height + 5 : 0
-        color: "transparent"
+        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding : 0
+        asynchronous: true
+        visible: active
 
-        ContentLabels {
-            id: contentLabels
-            anchors.left: parent.left
-            anchors.right: undefined
-            contentLabels: author.labels
-            contentAuthorDid: author.did
+        sourceComponent: Rectangle {
+            width: parent.width
+            height: parent.height
+            color: "transparent"
+
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.right: undefined
+                contentLabels: author.labels
+                labelsToShow: postHeader.labelsToShow
+                contentAuthorDid: author.did
+            }
         }
     }
 

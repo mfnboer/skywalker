@@ -10,6 +10,8 @@ Item {
     readonly property int footerZLevel: 10
     readonly property int headerHeight: 50
     readonly property int headerZLevel: 10
+    readonly property int labelHeight: labelFontHeight + 2
+    readonly property int labelRowPadding: 5
     readonly property int statsHeight: appFontHeight + 4
     readonly property int threadBarWidth: 12 // In 5px units
     readonly property int threadColumnWidth: threadBarWidth * 5
@@ -62,6 +64,7 @@ Item {
 
     // Font size
     readonly property double appFontHeight: fontMetrics.height
+    readonly property double labelFontHeight: appFontHeight * 6/8
     readonly property double labelFontSize: scaledFont(6/8)
 
     // Misc
@@ -202,8 +205,22 @@ Item {
         if (author.viewer.blockedBy)
             return false
 
-        let visibility = skywalker.getContentVisibility(author.labels)
+        let visibility = root.getSkywalker().getContentVisibility(author.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
+    }
+
+    function filterContentLabelsToShow(contentLabels) {
+        let contentFilter = root.getSkywalker().getContentFilter()
+        let labels = []
+
+        for (let i = 0; i < contentLabels.length; ++i) {
+            const label = contentLabels[i]
+
+            if (!label.isSystemLabel() && contentFilter.mustShowBadge(label))
+                labels.push(label)
+        }
+
+        return labels
     }
 
     function threadStartColor(color) {
