@@ -10,6 +10,7 @@ Item {
     readonly property int footerZLevel: 10
     readonly property int headerHeight: 50
     readonly property int headerZLevel: 10
+    readonly property int statsHeight: appFontHeight + 4
     readonly property int threadBarWidth: 12 // In 5px units
     readonly property int threadColumnWidth: threadBarWidth * 5
     readonly property int threadLineWidth: 2
@@ -60,6 +61,7 @@ Item {
     readonly property double focusHighlightOpacity: 0.2
 
     // Font size
+    readonly property double appFontHeight: fontMetrics.height
     readonly property double labelFontSize: scaledFont(6/8)
 
     // Misc
@@ -72,6 +74,11 @@ Item {
     readonly property string skywalkerHandle: "@skywalker.thereforeiam.eu"
 
     Accessible.ignored: true
+
+    FontMetrics {
+        id: fontMetrics
+        font: Application.font
+    }
 
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;

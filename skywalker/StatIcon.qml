@@ -11,8 +11,8 @@ Rectangle {
     signal clicked()
 
     id: control
-    height: statText.height
-    width: statIcon.width + (statText.visible ? statText.width : 0)
+    height: statIcon.height
+    width: statIcon.width + (statText.active ? statText.width : 0)
     color: "transparent"
 
     Accessible.role: Accessible.Button
@@ -21,28 +21,30 @@ Rectangle {
     SkySvg {
         id: statIcon
         anchors.left: parent.left
-        width: statText.height
-        height: statText.height
+        width: guiSettings.statsHeight
+        height: width
         color: iconColor
         svg: parent.svg
     }
-    Text {
+    Loader {
         id: statText
         anchors.left: statIcon.right
-        topPadding: 2
-        bottomPadding: 2
-        color: iconColor
-        font.pointSize: guiSettigs.scaledFont(7/8)
-        text: statistic
-        visible: statistic >= 0
+        active: statistic >= 0
+
+        sourceComponent: Text {
+            topPadding: 2
+            bottomPadding: 2
+            color: iconColor
+            font.pointSize: guiSettings.scaledFont(7/8)
+            text: statistic
+        }
     }
     MouseArea {
         anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
         onClicked: control.clicked()
     }
 
     GuiSettings {
-        id: guiSettigs
+        id: guiSettings
     }
 }

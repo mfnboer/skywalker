@@ -9,14 +9,14 @@ Text {
     property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
     property int capLineCount: initialShowMaxLineCount
-    readonly property bool mustElideRich: elide === Text.ElideRight && wrapMode === Text.NoWrap && textFormat === Text.RichText && !mustClean
+    readonly property bool mustElideRich: elide === Text.ElideRight && wrapMode === Text.NoWrap && textFormat === Text.RichText
 
     id: theText
     height: textFormat === Text.RichText && elide === Text.ElideRight && wrapMode !== Text.NoWrap ?
                 Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     clip: true
     color: guiSettings.textColor
-    text: mustClean ? unicodeFonts.toCleanedHtml(textMetrics.elidedText) :  textMetrics.elidedText //plainText
+    text: textMetrics.elidedText
 
     onPlainTextChanged: {
         determineTextFormat()
@@ -136,5 +136,9 @@ Text {
 
     GuiSettings {
         id: guiSettings
+    }
+
+    Component.onCompleted: {
+        determineTextFormat()
     }
 }

@@ -101,7 +101,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            width: guiSettings.threadColumnWidth
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -185,7 +185,7 @@ Rectangle {
 
         Loader {
             id: postLoader
-            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: showPost()
             visible: status == Loader.Ready
 
@@ -246,78 +246,85 @@ Rectangle {
                     bodyBackgroundColor: notification.color
                 }
 
-                PostStats {
+                Loader {
+                    active: true
                     width: parent.width
-                    topPadding: 10
-                    replyCount: notificationPostReplyCount
-                    repostCount: notificationPostRepostCount + notificationPostQuoteCount
-                    likeCount: notificationPostLikeCount
-                    repostUri: notificationPostRepostUri
-                    likeUri: notificationPostLikeUri
-                    likeTransient: notificationPostLikeTransient
-                    threadMuted: notificationPostThreadMuted
-                    replyDisabled: notificationPostReplyDisabled
-                    embeddingDisabled: notificationPostEmbeddingDisabled
-                    viewerStatePinned: notificationPostViewerStatePinned
-                    replyRestriction: notificationPostReplyRestriction
-                    isHiddenReply: notificationPostIsHiddenReply
-                    isReply: notificationPostIsReply
-                    replyRootAuthorDid: notificationPostReplyRootAuthorDid
-                    replyRootUri: notificationPostReplyRootUri
-                    visible: !notificationPostNotFound
-                    authorIsUser: false
-                    isBookmarked: notificationPostBookmarked
-                    bookmarkNotFound: false
-                    record: notificationPostRecord
-                    recordWithMedia: notificationPostRecordWithMedia
+                    height: guiSettings.statsHeight + 10
+                    asynchronous: true
 
-                    onReply: {
-                        const lang = notificationPostLanguages.length > 0 ?
-                                       notificationPostLanguages[0].shortCode : ""
+                    sourceComponent: PostStats {
+                        width: parent.width
+                        topPadding: 10
+                        replyCount: notificationPostReplyCount
+                        repostCount: notificationPostRepostCount + notificationPostQuoteCount
+                        likeCount: notificationPostLikeCount
+                        repostUri: notificationPostRepostUri
+                        likeUri: notificationPostLikeUri
+                        likeTransient: notificationPostLikeTransient
+                        threadMuted: notificationPostThreadMuted
+                        replyDisabled: notificationPostReplyDisabled
+                        embeddingDisabled: notificationPostEmbeddingDisabled
+                        viewerStatePinned: notificationPostViewerStatePinned
+                        replyRestriction: notificationPostReplyRestriction
+                        isHiddenReply: notificationPostIsHiddenReply
+                        isReply: notificationPostIsReply
+                        replyRootAuthorDid: notificationPostReplyRootAuthorDid
+                        replyRootUri: notificationPostReplyRootUri
+                        visible: !notificationPostNotFound
+                        authorIsUser: false
+                        isBookmarked: notificationPostBookmarked
+                        bookmarkNotFound: false
+                        record: notificationPostRecord
+                        recordWithMedia: notificationPostRecordWithMedia
 
-                        root.composeReply(notificationPostUri, notificationCid, notificationPostText,
-                                          notificationPostTimestamp, notificationAuthor,
-                                          notificationPostReplyRootUri, notificationPostReplyRootCid,
-                                          lang)
-                    }
+                        onReply: {
+                            const lang = notificationPostLanguages.length > 0 ?
+                                           notificationPostLanguages[0].shortCode : ""
 
-                    onRepost: {
-                        root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
-                                    notificationPostText, notificationPostTimestamp,
-                                    notificationAuthor, notificationPostEmbeddingDisabled)
-                    }
-
-                    onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
-
-                    onBookmark: {
-                        if (isBookmarked) {
-                            skywalker.bookmarks.removeBookmark(notificationPostUri)
+                            root.composeReply(notificationPostUri, notificationCid, notificationPostText,
+                                              notificationPostTimestamp, notificationAuthor,
+                                              notificationPostReplyRootUri, notificationPostReplyRootCid,
+                                              lang)
                         }
-                        else {
-                            const bookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
 
-                            if (!bookmarked)
-                                skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                        onRepost: {
+                            root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
+                                        notificationPostText, notificationPostTimestamp,
+                                        notificationAuthor, notificationPostEmbeddingDisabled)
                         }
-                    }
 
-                    onShare: skywalker.sharePost(notificationPostUri)
-                    onMuteThread: root.muteThread(notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostThreadMuted)
-                    onThreadgate: root.gateRestrictions(notificationPostThreadgateUri, notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostIsReply ? notificationPostReplyRootCid : notificationCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
-                    onHideReply: root.hidePostReply(notificationPostThreadgateUri, notificationPostReplyRootUri, notificationPostReplyRootCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
-                    onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
-                    onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
-                    onTranslatePost: root.translateText(notificationPostPlainText)
-                    onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach)
-                    onPin: root.pinPost(notificationPostUri, notificationCid)
-                    onUnpin: root.unpinPost(notificationCid)
+                        onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
+
+                        onBookmark: {
+                            if (isBookmarked) {
+                                skywalker.bookmarks.removeBookmark(notificationPostUri)
+                            }
+                            else {
+                                const bookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
+
+                                if (!bookmarked)
+                                    skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                            }
+                        }
+
+                        onShare: skywalker.sharePost(notificationPostUri)
+                        onMuteThread: root.muteThread(notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostThreadMuted)
+                        onThreadgate: root.gateRestrictions(notificationPostThreadgateUri, notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostIsReply ? notificationPostReplyRootCid : notificationCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
+                        onHideReply: root.hidePostReply(notificationPostThreadgateUri, notificationPostReplyRootUri, notificationPostReplyRootCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
+                        onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
+                        onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
+                        onTranslatePost: root.translateText(notificationPostPlainText)
+                        onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach)
+                        onPin: root.pinPost(notificationPostUri, notificationCid)
+                        onUnpin: root.unpinPost(notificationCid)
+                    }
                 }
             }
         }
 
         Loader {
             id: aggregatableLoader
-            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: isAggregatableReason()
             visible: status == Loader.Ready
 
@@ -439,7 +446,7 @@ Rectangle {
 
         Loader {
             id: inviteCodeLoader
-            width: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
             visible: status == Loader.Ready
             sourceComponent: Column {
@@ -450,8 +457,8 @@ Rectangle {
                     width: parent.width
                     Avatar {
                         id: usedByAvatar
-                        width: 34
-                        height: width
+                        Layout.preferredWidth: 34
+                        Layout.preferredHeight: width
                         author: notificationInviteCodeUsedBy
 
                         onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
@@ -486,7 +493,7 @@ Rectangle {
 
         // Separator
         Rectangle {
-            width: parent.width
+            Layout.preferredWidth: parent.width
             Layout.preferredHeight: 1
             Layout.columnSpan: 2
             color: guiSettings.separatorColor

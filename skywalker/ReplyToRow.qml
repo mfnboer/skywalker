@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import skywalker
 
 Row {
@@ -12,7 +12,7 @@ Row {
 
     SkySvg {
         id: replyImg
-        width: parent.visible ? replyToText.height : 0
+        width: parent.visible ? guiSettings.appFontHeight * 7/8 : 0
         height: width
         color: Material.color(Material.Grey)
         svg: row.svg
@@ -20,7 +20,7 @@ Row {
 
     SkyCleanedText {
         id: replyToText
-        width: parent.width - implicitHeight
+        width: parent.width - replyImg.width
         anchors.verticalCenter: parent.verticalCenter
         elide: Text.ElideRight
         color: Material.color(Material.Grey)
@@ -28,5 +28,9 @@ Row {
         plainText: row.text
 
         Accessible.ignored: true
+    }
+
+    GuiSettings {
+        id: guiSettings
     }
 }

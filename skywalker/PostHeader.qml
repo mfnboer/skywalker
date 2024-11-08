@@ -6,26 +6,35 @@ Column {
     required property basicprofile author
     required property int postIndexedSecondsAgo
 
-    Row {
-        spacing: 10
+    // Name eliding seems expensive. Background rendering helps to make the app
+    // more responsive.
+    Loader {
         width: parent.width
+        height: guiSettings.appFontHeight
+        active: true
+        asynchronous: true
 
-        SkyCleanedText {
-            width: parent.width - durationText.width - parent.spacing
-            elide: Text.ElideRight
-            plainText: author.name
-            font.bold: true
-            color: guiSettings.textColor
+        sourceComponent: Row {
+            spacing: 10
+            width: parent.width
 
-            Accessible.ignored: true
-        }
-        Text {
-            id: durationText
-            text: guiSettings.durationToString(postIndexedSecondsAgo)
-            font.pointSize: guiSettings.scaledFont(7/8)
-            color: Material.color(Material.Grey)
+            SkyCleanedText {
+                width: parent.width - durationText.width - parent.spacing
+                elide: Text.ElideRight
+                plainText: author.name
+                font.bold: true
+                color: guiSettings.textColor
 
-            Accessible.ignored: true
+                Accessible.ignored: true
+            }
+            Text {
+                id: durationText
+                text: guiSettings.durationToString(postIndexedSecondsAgo)
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: Material.color(Material.Grey)
+
+                Accessible.ignored: true
+            }
         }
     }
 
@@ -51,6 +60,16 @@ Column {
             anchors.right: undefined
             contentLabels: author.labels
             contentAuthorDid: author.did
+        }
+    }
+
+    FontMetrics
+    {
+        id: fontMetrics
+        font: Application.font
+
+        Component.onCompleted: {
+            font.bold = true
         }
     }
 

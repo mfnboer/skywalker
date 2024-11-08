@@ -326,14 +326,9 @@ Rectangle {
             // Change from width to Layout.preferredWidth seems to solve the issue
             // where posts sometimes are too wide (like landscape mode) but makes
             // things very slow :-(
+            // This seems fixed on Qt 6.7.3
             Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
             visible: !postIsPlaceHolder && !postLocallyDeleted
-
-            // TODO: remove debug code
-            Text {
-                width: parent.width
-                text: `index: ${postEntry.index} duration: ${postEntry.dbgDuration}`
-            }
 
             PostHeader {
                 id: postHeader
@@ -422,66 +417,73 @@ Rectangle {
             }
 
             // Stats
-            PostStats {
+            Loader {
+                active: true
                 width: parent.width
-                topPadding: 10
-                replyCount: postReplyCount
-                repostCount: postRepostCount + postQuoteCount
-                likeCount: postLikeCount
-                repostUri: postRepostUri
-                likeUri: postLikeUri
-                likeTransient: postLikeTransient
-                threadMuted: postThreadMuted
-                replyDisabled: postReplyDisabled
-                embeddingDisabled: postEmbeddingDisabled
-                viewerStatePinned: postViewerStatePinned
-                replyRestriction: postReplyRestriction
-                isHiddenReply: postIsHiddenReply
-                isReply: postIsReply
-                replyRootAuthorDid: postReplyRootAuthorDid
-                replyRootUri: postReplyRootUri
-                authorIsUser: isUser(author)
-                isBookmarked: postBookmarked
-                bookmarkNotFound: postBookmarkNotFound
-                record: postRecord
-                recordWithMedia: postRecordWithMedia
+                height: guiSettings.statsHeight + 10
+                asynchronous: true
 
-                onReply: {
-                    const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
-                    root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                                      author, postReplyRootUri, postReplyRootCid, lang)
-                }
+                sourceComponent: PostStats {
+                    width: parent.width
+                    topPadding: 10
+                    replyCount: postReplyCount
+                    repostCount: postRepostCount + postQuoteCount
+                    likeCount: postLikeCount
+                    repostUri: postRepostUri
+                    likeUri: postLikeUri
+                    likeTransient: postLikeTransient
+                    threadMuted: postThreadMuted
+                    replyDisabled: postReplyDisabled
+                    embeddingDisabled: postEmbeddingDisabled
+                    viewerStatePinned: postViewerStatePinned
+                    replyRestriction: postReplyRestriction
+                    isHiddenReply: postIsHiddenReply
+                    isReply: postIsReply
+                    replyRootAuthorDid: postReplyRootAuthorDid
+                    replyRootUri: postReplyRootUri
+                    authorIsUser: isUser(author)
+                    isBookmarked: postBookmarked
+                    bookmarkNotFound: postBookmarkNotFound
+                    record: postRecord
+                    recordWithMedia: postRecordWithMedia
 
-                onRepost: {
-                    root.repost(postRepostUri, postUri, postCid, postText,
-                                postIndexedDateTime, author, postEmbeddingDisabled)
-                }
-
-                onLike: root.like(postLikeUri, postUri, postCid)
-
-                onBookmark: {
-                    if (isBookmarked) {
-                        skywalker.bookmarks.removeBookmark(postUri)
+                    onReply: {
+                        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+                        root.composeReply(postUri, postCid, postText, postIndexedDateTime,
+                                          author, postReplyRootUri, postReplyRootCid, lang)
                     }
-                    else {
-                        const bookmarked = skywalker.bookmarks.addBookmark(postUri)
 
-                        if (!bookmarked)
-                            skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                    onRepost: {
+                        root.repost(postRepostUri, postUri, postCid, postText,
+                                    postIndexedDateTime, author, postEmbeddingDisabled)
                     }
-                }
 
-                onShare: skywalker.sharePost(postUri)
-                onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
-                onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
-                onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
-                onDeletePost: confirmDelete()
-                onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
-                onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
-                onTranslatePost: root.translateText(postPlainText)
-                onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
-                onPin: root.pinPost(postUri, postCid)
-                onUnpin: root.unpinPost(postCid)
+                    onLike: root.like(postLikeUri, postUri, postCid)
+
+                    onBookmark: {
+                        if (isBookmarked) {
+                            skywalker.bookmarks.removeBookmark(postUri)
+                        }
+                        else {
+                            const bookmarked = skywalker.bookmarks.addBookmark(postUri)
+
+                            if (!bookmarked)
+                                skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
+                        }
+                    }
+
+                    onShare: skywalker.sharePost(postUri)
+                    onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
+                    onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
+                    onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
+                    onDeletePost: confirmDelete()
+                    onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
+                    onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
+                    onTranslatePost: root.translateText(postPlainText)
+                    onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
+                    onPin: root.pinPost(postUri, postCid)
+                    onUnpin: root.unpinPost(postCid)
+                }
             }
         }
 
