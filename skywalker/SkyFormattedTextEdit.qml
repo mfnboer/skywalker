@@ -167,8 +167,8 @@ TextEdit {
         const prevGraphemeLength = graphemeLength
         const linkShorteningReduction = enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0
 
-        graphemeLength = unicodeFonts.graphemeLength(editText.text) +
-                unicodeFonts.graphemeLength(preeditText) -
+        graphemeLength = UnicodeFonts.graphemeLength(editText.text) +
+                UnicodeFonts.graphemeLength(preeditText) -
                 linkShorteningReduction
 
         postUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
@@ -301,9 +301,6 @@ TextEdit {
         onCursorInFirstListLinkChanged: editText.cursorInFirstListLink = cursorInFirstListLink
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 
     function maxGraphemeLengthExceeded() {

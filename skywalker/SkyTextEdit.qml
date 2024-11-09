@@ -43,12 +43,12 @@ TextEdit {
     onPreeditTextChanged: updateGraphemeLength()
 
     function updateGraphemeLength() {
-        graphemeLength = unicodeFonts.graphemeLength(skyTextEdit.text) +
-                unicodeFonts.graphemeLength(preeditText)
+        graphemeLength = UnicodeFonts.graphemeLength(skyTextEdit.text) +
+                UnicodeFonts.graphemeLength(preeditText)
 
         if (strictMax && maxLength > -1 && graphemeLength > maxLength) {
             Qt.inputMethod.commit()
-            const graphemeInfo = unicodeFonts.getGraphemeInfo(text)
+            const graphemeInfo = UnicodeFonts.getGraphemeInfo(text)
             text = graphemeInfo.sliced(text, 0, maxLength)
             cursorPosition = text.length
         }
@@ -75,11 +75,6 @@ TextEdit {
 
     EmojiFixHighlighter {
         id: emojiFixer
-    }
-
-    // TODO: singleton
-    UnicodeFonts {
-        id: unicodeFonts
     }
 
     Component.onCompleted: {

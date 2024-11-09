@@ -37,21 +37,21 @@ Text {
             return
 
         const ratio = width / contentWidth
-        const graphemeInfo = unicodeFonts.getGraphemeInfo(plainText)
+        const graphemeInfo = UnicodeFonts.getGraphemeInfo(plainText)
         const newLength = Math.floor(graphemeInfo.length * ratio - 1)
 
         if (newLength < 1)
             return
 
         const elidedText = graphemeInfo.sliced(plainText, 0, newLength) + "…"
-        text = unicodeFonts.toCleanedHtml(elidedText)
+        text = UnicodeFonts.toCleanedHtml(elidedText)
     }
 
     function setPlainText() {
-        mustClean = unicodeFonts.hasCombinedEmojis(plainText)
+        mustClean = UnicodeFonts.hasCombinedEmojis(plainText)
 
         if (mustClean) {
-            text = unicodeFonts.toCleanedHtml(plainText)
+            text = UnicodeFonts.toCleanedHtml(plainText)
             elideText()
         }
         else {
@@ -59,9 +59,6 @@ Text {
         }
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
     Component.onCompleted: {
         isCompleted = true

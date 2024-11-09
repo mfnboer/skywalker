@@ -31,7 +31,7 @@ SkyListView {
             visible: model.replyRestriction !== QEnums.REPLY_RESTRICTION_NONE
 
             Accessible.role: Accessible.StaticText
-            Accessible.name: unicodeFonts.toPlainText(restrictionText.text)
+            Accessible.name: UnicodeFonts.toPlainText(restrictionText.text)
 
             Rectangle {
                 id: restrictionRow
@@ -103,7 +103,7 @@ SkyListView {
 
                         for (let i = 0; i < lists.length; ++i) {
                             const l = lists[i]
-                            const listName = unicodeFonts.toCleanedHtml(l.name)
+                            const listName = UnicodeFonts.toCleanedHtml(l.name)
                             listNames.push(`<a href="${l.uri}" style="color: ${GuiSettings.linkColor}; text-decoration: none">${listName}</a>`)
                         }
 
@@ -162,9 +162,6 @@ SkyListView {
         topText: qsTr("Pull down to refresh")
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
     Utils {
         id: utils

@@ -13,6 +13,7 @@ class UnicodeFonts : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_SINGLETON
 
 public:
     using FontType = QEnums::FontType;

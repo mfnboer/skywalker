@@ -648,9 +648,6 @@ Rectangle {
         onClicked: openPostThread()
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
     AccessibilityUtils {
         id: accessibilityUtils

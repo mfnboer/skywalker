@@ -52,12 +52,9 @@ Dialog {
         y: textInput.y + textInput.height + 10
         width: parent.width
         textFormat: Text.RichText
-        text: unicodeFonts.toCleanedHtml(qsTr(`Example: ${getPrefix()}1/2`))
+        text: UnicodeFonts.toCleanedHtml(qsTr(`Example: ${getPrefix()}1/2`))
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
     function getPrefix() {
         return textInput.text

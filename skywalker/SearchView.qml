@@ -43,7 +43,7 @@ SkyPage {
             currentText = text
 
             if (text.length > 0) {
-                if (unicodeFonts.isHashtag(text)) {
+                if (UnicodeFonts.isHashtag(text)) {
                     page.isHashtagSearch = true
                     hashtagTypeaheadSearchTimer.start()
                 }
@@ -552,9 +552,6 @@ SkyPage {
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 
     function changeSearchPostScope() {

@@ -15,7 +15,7 @@ Text {
     visible: count
 
     Accessible.role: Accessible.Link
-    Accessible.name: unicodeFonts.toPlainText(text)
+    Accessible.name: UnicodeFonts.toPlainText(text)
     Accessible.onPressAction: showAuthors()
 
     MouseArea {
@@ -28,8 +28,5 @@ Text {
         root.viewAuthorList(modelId, authorListHeader);
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 }

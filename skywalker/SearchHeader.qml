@@ -1,7 +1,6 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
-import QtQuick.VirtualKeyboard
 import skywalker
 
 Rectangle {
@@ -37,12 +36,11 @@ Rectangle {
         Rectangle {
             radius: 5
             Layout.fillWidth: true
-            height: searchText.height
+            Layout.preferredHeight: searchText.height
             color: GuiSettings.backgroundColor
 
             TextInput {
                 id: searchText
-                EnterKeyAction.actionId: EnterKeyAction.Search
                 // TODO in Qt6.8 EnterKey.type: Qt.EnterKeySearch
                 width: parent.width
                 clip: true

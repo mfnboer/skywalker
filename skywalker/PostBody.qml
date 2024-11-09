@@ -219,7 +219,7 @@ Column {
             return GuiSettings.scaledFont(1)
 
         return onlyEmojisPost() ?
-                    GuiSettings.scaledFont(unicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
+                    GuiSettings.scaledFont(UnicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
                     GuiSettings.scaledFont(1)
     }
 
@@ -227,10 +227,10 @@ Column {
         if (!postPlainText)
             return false
 
-        if (unicodeFonts.graphemeLength(postPlainText) > 5)
+        if (UnicodeFonts.graphemeLength(postPlainText) > 5)
             return false
 
-        return unicodeFonts.onlyEmojis(postPlainText)
+        return UnicodeFonts.onlyEmojis(postPlainText)
     }
 
     function mustShowLangaugess() {

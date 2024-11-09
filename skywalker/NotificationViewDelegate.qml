@@ -484,7 +484,7 @@ Rectangle {
                     wrapMode: Text.Wrap
                     color: GuiSettings.textColor
                     text: {
-                        `<b>${(unicodeFonts.toCleanedHtml(notificationInviteCodeUsedBy.name))}</b> ` +
+                        `<b>${(UnicodeFonts.toCleanedHtml(notificationInviteCodeUsedBy.name))}</b> ` +
                         qsTr("used your invite code") + ": " + notificationInviteCode
                     }
                 }
@@ -523,9 +523,6 @@ Rectangle {
         id: accessibilityUtils
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 
     function openNotification() {
@@ -601,11 +598,11 @@ Rectangle {
     }
 
     function authorsAndReasonText() {
-        return `<b>${(unicodeFonts.toCleanedHtml(notificationAuthor.name))}</b> ` +
+        return `<b>${(UnicodeFonts.toCleanedHtml(notificationAuthor.name))}</b> ` +
             (notificationOtherAuthors.length > 0 ?
                 (notificationOtherAuthors.length > 1 ?
                     qsTr(`and ${(notificationOtherAuthors.length)} others `) :
-                    qsTr(`and <b>${(unicodeFonts.toCleanedHtml(notificationOtherAuthors[0].name))}</b> `)) :
+                    qsTr(`and <b>${(UnicodeFonts.toCleanedHtml(notificationOtherAuthors[0].name))}</b> `)) :
                 "") +
             reasonText()
     }
@@ -626,7 +623,7 @@ Rectangle {
     }
 
     function getAggregatableSpeech() {
-        const reason = unicodeFonts.toPlainText(authorsAndReasonText())
+        const reason = UnicodeFonts.toPlainText(authorsAndReasonText())
         const time = accessibilityUtils.getTimeSpeech(notificationTimestamp)
         let speech = `${time} ${reason}`
 

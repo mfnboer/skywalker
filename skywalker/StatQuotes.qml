@@ -11,7 +11,7 @@ Text {
     visible: count
 
     Accessible.role: Accessible.Link
-    Accessible.name: unicodeFonts.toPlainText(text)
+    Accessible.name: UnicodeFonts.toPlainText(text)
     Accessible.onPressAction: showQuotes()
 
     MouseArea {
@@ -23,8 +23,5 @@ Text {
         root.viewQuotePostFeed(atUri)
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 }

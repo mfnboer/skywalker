@@ -378,7 +378,7 @@ SkyPage {
                     text: qsTr(`<b>${author.postsCount}</b> posts`)
 
                     Accessible.role: Accessible.StaticText
-                    Accessible.name: unicodeFonts.toPlainText(text)
+                    Accessible.name: UnicodeFonts.toPlainText(text)
                 }
             }
 
@@ -1005,9 +1005,6 @@ SkyPage {
         }
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
     AccessibilityUtils {
         id: accessibilityUtils
@@ -1169,14 +1166,14 @@ SkyPage {
 
     function getEmptyListIndicationText() {
         if (!author.viewer.blockingByList.isNull()) {
-            const listName = unicodeFonts.toCleanedHtml(author.viewer.blockingByList.name)
+            const listName = UnicodeFonts.toCleanedHtml(author.viewer.blockingByList.name)
             return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${GuiSettings.linkColor}">${listName}</a>`)
         } else if (blocking) {
             return qsTr("You blocked this account")
         } else if (author.viewer.blockedBy) {
             return qsTr("You are blocked")
         } else if (!author.viewer.mutedByList.isNull()) {
-            const listName = unicodeFonts.toCleanedHtml(author.viewer.mutedByList.name)
+            const listName = UnicodeFonts.toCleanedHtml(author.viewer.mutedByList.name)
             return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${GuiSettings.linkColor}">${listName}</a>`)
         } else if (authorMuted) {
             return qsTr("You muted this account")
@@ -1212,10 +1209,10 @@ SkyPage {
         if (knownFollowers.followers.length === 0)
             return knownFollowers.count > 1 ? qsTr(`${knownFollowers.count} others you follow`) : qsTr("1 other you follow")
 
-        let followersText = unicodeFonts.toCleanedHtml(knownFollowers.followers[0].name)
+        let followersText = UnicodeFonts.toCleanedHtml(knownFollowers.followers[0].name)
 
         if (knownFollowers.followers.length > 1)
-            followersText = `${followersText}, ${unicodeFonts.toCleanedHtml(knownFollowers.followers[1].name)}`
+            followersText = `${followersText}, ${UnicodeFonts.toCleanedHtml(knownFollowers.followers[1].name)}`
 
         if (knownFollowers.count > 3)
             followersText = qsTr(`${followersText} and ${(knownFollowers.count - 2)} others`)

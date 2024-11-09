@@ -29,7 +29,7 @@ Dialog {
         onDisplayTextChanged: {
             page.isTyping = true
 
-            if (displayText.length > 1 && unicodeFonts.isHashtag(displayText)) {
+            if (displayText.length > 1 && UnicodeFonts.isHashtag(displayText)) {
                 page.isHashtag = true
                 hashtagTypeaheadSearchTimer.start()
             }
@@ -76,9 +76,6 @@ Dialog {
         skywalker: root.getSkywalker()
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 
     function getText() {

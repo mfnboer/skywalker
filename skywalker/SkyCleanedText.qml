@@ -31,7 +31,7 @@ Text {
 
     function setElidedText() {
         if (mustClean)
-            text = unicodeFonts.toCleanedHtml(elidedText)
+            text = UnicodeFonts.toCleanedHtml(elidedText)
         else
             text = elidedText
     }
@@ -47,7 +47,7 @@ Text {
             return
 
         const ratio = width / contentWidth
-        const graphemeInfo = unicodeFonts.getGraphemeInfo(elidedText)
+        const graphemeInfo = UnicodeFonts.getGraphemeInfo(elidedText)
         const newLength = Math.floor(graphemeInfo.length * ratio - 1)
 
         if (newLength < 1)
@@ -79,7 +79,7 @@ Text {
         if (textFormat === Text.RichText)
             return
 
-        if (unicodeFonts.hasCombinedEmojis(plainText)) {
+        if (UnicodeFonts.hasCombinedEmojis(plainText)) {
             mustClean = true
             textFormat = Text.RichText
             resetText()
@@ -133,9 +133,6 @@ Text {
         font: theText.font
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 
     Component.onCompleted: {

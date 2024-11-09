@@ -197,7 +197,7 @@ Rectangle {
             return GuiSettings.scaledFont(1)
 
         return onlyEmojisMessage() ?
-                    GuiSettings.scaledFont(unicodeFonts.graphemeLength(message.text) === 1 ? 9 : 3) :
+                    GuiSettings.scaledFont(UnicodeFonts.graphemeLength(message.text) === 1 ? 9 : 3) :
                     GuiSettings.scaledFont(1)
     }
 
@@ -205,14 +205,11 @@ Rectangle {
         if (!message.text)
             return false
 
-        if (unicodeFonts.graphemeLength(message.text) > 5)
+        if (UnicodeFonts.graphemeLength(message.text) > 5)
             return false
 
-        return unicodeFonts.onlyEmojis(message.text)
+        return UnicodeFonts.onlyEmojis(message.text)
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 }

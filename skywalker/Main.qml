@@ -747,9 +747,6 @@ ApplicationWindow {
     //     onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
     // }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 
     function enablePopupShield(enable) {
@@ -771,7 +768,7 @@ ApplicationWindow {
         } else if (link.startsWith("did:")) {
             console.debug("DID-MENTION:", link)
             skywalker.getDetailedProfile(link)
-        } else if (unicodeFonts.isHashtag(link)) {
+        } else if (UnicodeFonts.isHashtag(link)) {
             console.debug("#-TAG:", link)
             viewSearchView(link)
         } else {
@@ -1570,7 +1567,7 @@ ApplicationWindow {
 
     function translateText(text) {
         const lang = Qt.locale().name.split("_")[0]
-        const normalized = unicodeFonts.normalizeToNFKD(text)
+        const normalized = UnicodeFonts.normalizeToNFKD(text)
         const encoded = encodeURIComponent(normalized)
         const url = `https://translate.google.com/?hl=${lang}&sl=auto&tl=${lang}&text=${encoded}&op=translate`
         Qt.openUrlExternally(url)

@@ -186,7 +186,7 @@ SkyPage {
                     id: numberPrefixItem
                     contentItem: AccessibleText {
                         textFormat: Text.RichText
-                        text: qsTr(`Number prefix: ${(threadPrefix ? unicodeFonts.toCleanedHtml(threadPrefix) : qsTr("<i>&lt;none&gt;</i>"))}`)
+                        text: qsTr(`Number prefix: ${(threadPrefix ? UnicodeFonts.toCleanedHtml(threadPrefix) : qsTr("<i>&lt;none&gt;</i>"))}`)
                     }
                     enabled: autoNumberItem.checked
                     onTriggered: editThreadPrefix()
@@ -457,7 +457,7 @@ SkyPage {
 
                                 // Avoid to re-split when the post count text becomes visible or longer
                                 const maxPartLength = page.maxPostLength - postCountText.maxSize()
-                                const parts = unicodeFonts.splitText(text, maxPartLength, minPostSplitLineLength, 2)
+                                const parts = UnicodeFonts.splitText(text, maxPartLength, minPostSplitLineLength, 2)
 
                                 if (parts.length > 1) {
                                     const moveCursor = cursorPosition > parts[0].length && index === currentPostIndex
@@ -951,7 +951,7 @@ SkyPage {
                     for (let i = index + 1; i < endIndex; ++i)
                         threadPosts.removePost(index + 1)
 
-                    const parts = unicodeFonts.splitText(text, maxLength, page.minPostSplitLineLengths)
+                    const parts = UnicodeFonts.splitText(text, maxLength, page.minPostSplitLineLengths)
                     threadPosts.itemAt(index).getPostText().text = parts[0].trim()
 
                     for (let j = 1; j < parts.length; ++j) {
@@ -1001,7 +1001,7 @@ SkyPage {
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
-        Accessible.name: unicodeFonts.toPlainText(text)
+        Accessible.name: UnicodeFonts.toPlainText(text)
         Accessible.onPressAction: showDraftPosts()
     }
 
@@ -1016,7 +1016,7 @@ SkyPage {
         onLinkActivated: addAnniversaryCard()
 
         Accessible.role: Accessible.Link
-        Accessible.name: unicodeFonts.toPlainText(text)
+        Accessible.name: UnicodeFonts.toPlainText(text)
         Accessible.onPressAction: addAnniversaryCard()
     }
 
@@ -1052,7 +1052,7 @@ SkyPage {
             Accessible.onPressAction: page.addReplyRestrictions()
 
             function getRestrictionsSpeech() {
-                const speech = unicodeFonts.toPlainText(restrictionText.text)
+                const speech = UnicodeFonts.toPlainText(restrictionText.text)
                 return qsTr(`${speech}, press to change reply restrictions`)
             }
 
@@ -1109,7 +1109,7 @@ SkyPage {
                         if (allowLists[i]) {
                             let model = skywalker.getListListModel(restrictionsListModelId)
                             const listView = model.getEntry(allowListIndexes[i])
-                            const listName = unicodeFonts.toCleanedHtml(listView.name)
+                            const listName = UnicodeFonts.toCleanedHtml(listView.name)
                             listNames.push(`<b>${listName}</b>`)
                         }
                     }
@@ -1567,9 +1567,6 @@ SkyPage {
         onLoadDraftPostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
     LanguageUtils {
         id: languageUtils
@@ -1870,7 +1867,7 @@ SkyPage {
     }
 
     function getPostCountText(postIndex, postCount) {
-        return `${unicodeFonts.toCleanedHtml(threadPrefix)}${(postIndex + 1)}/${postCount}`
+        return `${UnicodeFonts.toCleanedHtml(threadPrefix)}${(postIndex + 1)}/${postCount}`
     }
 
     function editThreadPrefix() {
@@ -2022,9 +2019,9 @@ SkyPage {
                                  postItem.videoRemoveAudio,
                                  replyToPostUri, replyToPostCid,
                                  replyRootPostUri, replyRootPostCid,
-                                 replyToAuthor, unicodeFonts.toPlainText(replyToPostText),
+                                 replyToAuthor, UnicodeFonts.toPlainText(replyToPostText),
                                  replyToPostDateTime,
-                                 qUri, qCid, postItem.quoteAuthor, unicodeFonts.toPlainText(postItem.quoteText),
+                                 qUri, qCid, postItem.quoteAuthor, UnicodeFonts.toPlainText(postItem.quoteText),
                                  postItem.quoteDateTime, postItem.quoteFixed,
                                  postItem.quoteFeed, postItem.quoteList,
                                  postItem.gif, postItem.card, labels, postItem.language,
@@ -2049,7 +2046,7 @@ SkyPage {
                                      "", "",
                                      nullAuthor, "",
                                      new Date(),
-                                     qUriItem, qCidItem, threadItem.quoteAuthor, unicodeFonts.toPlainText(threadItem.quoteText),
+                                     qUriItem, qCidItem, threadItem.quoteAuthor, UnicodeFonts.toPlainText(threadItem.quoteText),
                                      threadItem.quoteDateTime, threadItem.quoteFixed,
                                      threadItem.quoteFeed, threadItem.quoteList,
                                      threadItem.gif, threadItem.card, labelsItem, threadItem.language,

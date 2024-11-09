@@ -40,7 +40,7 @@ SkyPage {
             onLinkActivated: (link) => { root.openLink(link) }
 
             Accessible.role: Accessible.StaticText
-            Accessible.name: unicodeFonts.toPlainText(text)
+            Accessible.name: UnicodeFonts.toPlainText(text)
         }
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -75,8 +75,5 @@ SkyPage {
         }
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 }

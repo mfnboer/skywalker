@@ -50,12 +50,12 @@ Rectangle {
         onPreeditTextChanged: updateGraphemeLength()
 
         function updateGraphemeLength() {
-            graphemeLength = unicodeFonts.graphemeLength(text) +
-                    unicodeFonts.graphemeLength(preeditText)
+            graphemeLength = UnicodeFonts.graphemeLength(text) +
+                    UnicodeFonts.graphemeLength(preeditText)
 
             if (strictGraphemeMax && maximumGraphemeLength > -1 && graphemeLength > maximumGraphemeLength) {
                 Qt.inputMethod.commit()
-                const graphemeInfo = unicodeFonts.getGraphemeInfo(text)
+                const graphemeInfo = UnicodeFonts.getGraphemeInfo(text)
                 text = graphemeInfo.sliced(text, 0, maximumGraphemeLength)
             }
         }
@@ -101,9 +101,6 @@ Rectangle {
         return maximumGraphemeLength > -1 && graphemeLength > maximumGraphemeLength
     }
 
-    UnicodeFonts {
-        id: unicodeFonts
-    }
 
 
     function setFocus() {
