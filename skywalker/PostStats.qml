@@ -47,7 +47,7 @@ Item {
         id: replyIcon
         y: topPadding
         width: parent.width / 4
-        iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
+        iconColor: enabled ? GuiSettings.statsColor : GuiSettings.disabledColor
         svg: SvgOutline.reply
         statistic: replyCount
         visible: !bookmarkNotFound
@@ -61,7 +61,7 @@ Item {
         y: topPadding
         anchors.left: replyIcon.right
         width: parent.width / 4
-        iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
+        iconColor: repostUri ? GuiSettings.likeColor : GuiSettings.statsColor
         svg: SvgOutline.repost
         statistic: repostCount
         visible: !bookmarkNotFound
@@ -74,7 +74,7 @@ Item {
         y: topPadding
         anchors.left: repostIcon.right
         width: parent.width / 4
-        iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
+        iconColor: likeUri ? GuiSettings.likeColor : GuiSettings.statsColor
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
         visible: !bookmarkNotFound
@@ -92,7 +92,7 @@ Item {
         y: topPadding
         anchors.left: likeIcon.right
         width: parent.width / 8
-        iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
+        iconColor: isBookmarked ? GuiSettings.buttonColor : GuiSettings.statsColor
         svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
         onClicked: bookmark()
 
@@ -223,9 +223,6 @@ Item {
         id: accessibilityUtils
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getRecordPostUri() {
         if (record)

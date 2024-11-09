@@ -20,7 +20,7 @@ Column {
     property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
     property int maxTextLines: 1000
-    property string bodyBackgroundColor: guiSettings.backgroundColor
+    property string bodyBackgroundColor: GuiSettings.backgroundColor
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property bool attachmentsInitialized: false
@@ -39,7 +39,7 @@ Column {
         ellipsisBackgroundColor: postBody.bodyBackgroundColor
         elide: Text.ElideRight
         textFormat: Text.RichText
-        color: guiSettings.textColor
+        color: GuiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: postText
         bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia ? 5 : 0
@@ -54,7 +54,7 @@ Column {
             z: parent.z - 1
             radius: 5
             color: postHighlightColor
-            opacity: guiSettings.focusHighlightOpacity
+            opacity: GuiSettings.focusHighlightOpacity
         }
     }
 
@@ -98,7 +98,7 @@ Column {
                 elide: Text.ElideRight
                 textFormat: Text.RichText
                 color: Material.color(Material.Grey)
-                text: postContentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                text: postContentWarning + `<br><a href=\"show\" style=\"color: ${GuiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                 visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
                 onLinkActivated: {
                     showWarnedPost = true
@@ -118,7 +118,7 @@ Column {
                 elide: Text.ElideRight
                 textFormat: Text.RichText
                 color: Material.color(Material.Grey)
-                text: getMuteText() + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                text: getMuteText() + `<br><a href=\"show\" style=\"color: ${GuiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                 visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
                 onLinkActivated: {
                     mutePost = false
@@ -181,13 +181,10 @@ Column {
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
             text: postDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
-            font.pointSize: guiSettings.scaledFont(7/8)
+            font.pointSize: GuiSettings.scaledFont(7/8)
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function movedOffScreen() {
         if (postVideo && mediaLoader.item)
@@ -219,11 +216,11 @@ Column {
 
     function getPostFontSize() {
         if (!root.getSkywalker().getUserSettings().giantEmojis)
-            return guiSettings.scaledFont(1)
+            return GuiSettings.scaledFont(1)
 
         return onlyEmojisPost() ?
-                    guiSettings.scaledFont(unicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
-                    guiSettings.scaledFont(1)
+                    GuiSettings.scaledFont(unicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
+                    GuiSettings.scaledFont(1)
     }
 
     function onlyEmojisPost() {

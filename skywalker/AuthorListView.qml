@@ -86,9 +86,6 @@ SkyListView {
         running: skywalker.getAuthorListInProgress
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function deleteListItem(listItemUri, index) {
         model.deleteEntry(index)

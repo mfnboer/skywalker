@@ -15,7 +15,7 @@ Rectangle {
 
     id: view
     height: grid.height
-    color: guiSettings.backgroundColor
+    color: GuiSettings.backgroundColor
 
     Accessible.role: Accessible.StaticText
     Accessible.name: `${listTypeNameText.text} ${list.name} by ${listCreatorHandleText.text}`
@@ -54,7 +54,7 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: list.name
 
                 Accessible.ignored: true
@@ -64,9 +64,9 @@ Rectangle {
                 id: listTypeNameText
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
-                text: guiSettings.listTypeName(list.purpose)
+                font.pointSize: GuiSettings.scaledFont(7/8)
+                color: GuiSettings.handleColor
+                text: GuiSettings.listTypeName(list.purpose)
 
                 Accessible.ignored: true
             }
@@ -76,8 +76,8 @@ Rectangle {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
+                font.pointSize: GuiSettings.scaledFont(7/8)
+                color: GuiSettings.handleColor
                 text: `@${listCreator.handle}`
 
                 Accessible.ignored: true
@@ -103,13 +103,10 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function updateList() {
         switch (memberCheck) {

@@ -44,7 +44,7 @@ SkyPage {
                 topPadding: 10
                 leftPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("Sign into")
             }
 
@@ -71,7 +71,7 @@ SkyPage {
                 topPadding: 10
                 leftPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("Account")
             }
 
@@ -117,7 +117,7 @@ SkyPage {
                 topPadding: 10
                 leftPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("2FA Confirmation")
                 visible: authFactorTokenRequired()
             }
@@ -138,9 +138,9 @@ SkyPage {
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 Layout.fillWidth: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 wrapMode: Text.Wrap
-                font.pointSize: guiSettings.scaledFont(7/8)
+                font.pointSize: GuiSettings.scaledFont(7/8)
                 text: qsTr("Check your email for a login code and enter it here.")
                 visible: authFactorTokenRequired()
             }
@@ -150,7 +150,7 @@ SkyPage {
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 Layout.fillWidth: true
-                color: guiSettings.errorColor
+                color: GuiSettings.errorColor
                 wrapMode: Text.Wrap
                 text: errorMsg
                 visible: errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
@@ -178,9 +178,6 @@ SkyPage {
         id: virtualKeyboardPageResizer
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function autoCompleteHandle(handle, host) {
         let newHandle = handle

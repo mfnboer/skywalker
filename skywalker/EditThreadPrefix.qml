@@ -9,18 +9,18 @@ Dialog {
     width: 250
     title: qsTr("Prefix")
     contentHeight: exampleText.y + exampleText.height
-    topMargin: guiSettings.headerHeight
+    topMargin: GuiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     Rectangle {
         width: parent.width
         height: textInput.height
         radius: 5
         border.width: 1
-        border.color: guiSettings.borderColor
-        color: guiSettings.backgroundColor
+        border.color: GuiSettings.borderColor
+        color: GuiSettings.backgroundColor
 
         SkyTextEdit {
             id: textInput

@@ -38,7 +38,7 @@ Rectangle {
             Layout.rightMargin: generatorView.margin
             x: 8
             y: 5
-            width: guiSettings.threadBarWidth * 5
+            width: GuiSettings.threadBarWidth * 5
             avatarUrl: showFeed ? feed.avatarThumb : ""
 
             onClicked: feedClicked(feed)
@@ -58,7 +58,7 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: feed.displayName
             }
 
@@ -66,7 +66,7 @@ Rectangle {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: feedCreator.name
 
                 Accessible.role: Accessible.Link
@@ -82,8 +82,8 @@ Rectangle {
             Text {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
+                font.pointSize: GuiSettings.scaledFont(7/8)
+                color: GuiSettings.handleColor
                 text: "@" + feedCreator.handle
 
                 Accessible.role: Accessible.Link
@@ -116,7 +116,7 @@ Rectangle {
                     id: favoIcon
                     width: 40
                     height: width
-                    color: feedPinned ? guiSettings.favoriteColor : guiSettings.statsColor
+                    color: feedPinned ? GuiSettings.favoriteColor : GuiSettings.statsColor
                     svg: feedPinned ? SvgFilled.star : SvgOutline.star
                 }
 
@@ -132,8 +132,8 @@ Rectangle {
                 width: 40
                 height: width
                 flat: feedSaved
-                iconColor: flat ? guiSettings.textColor : guiSettings.buttonTextColor
-                Material.background: flat ? guiSettings.labelColor : guiSettings.buttonColor
+                iconColor: flat ? GuiSettings.textColor : GuiSettings.buttonTextColor
+                Material.background: flat ? GuiSettings.labelColor : GuiSettings.buttonColor
                 svg: feedSaved ? SvgOutline.remove : SvgOutline.add
                 accessibleName: feedSaved ? qsTr("remove from saved feeds") : qsTr("save feed")
                 onClicked: addClicked(feed, !feedSaved)
@@ -167,7 +167,7 @@ Rectangle {
             maximumLineCount: maxTextLines
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             text: feed.formattedDescription
             visible: showFeed
 
@@ -186,7 +186,7 @@ Rectangle {
             StatIcon {
                 id: likeIcon
                 width: parent.width / 2
-                iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
+                iconColor: feedLikeUri ? GuiSettings.likeColor : GuiSettings.statsColor
                 svg: feedLikeUri ? SvgFilled.like : SvgOutline.like
                 statistic: feedLikeCount
                 onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid)
@@ -201,7 +201,7 @@ Rectangle {
 
             StatIcon {
                 width: parent.width / 2
-                iconColor: guiSettings.statsColor
+                iconColor: GuiSettings.statsColor
                 svg: SvgOutline.moreVert
                 onClicked: moreMenu.open()
 
@@ -249,7 +249,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
 
         // End of feed indication
@@ -259,7 +259,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: generatorView.margin
             elide: Text.ElideRight
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfFeed
@@ -279,9 +279,6 @@ Rectangle {
         id: accessibilityUtils
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function feedClicked(feed) {
         root.viewPostFeed(feed)
@@ -302,6 +299,6 @@ Rectangle {
     }
 
     function feedVisible() {
-        return guiSettings.contentVisible(feed)
+        return GuiSettings.contentVisible(feed)
     }
 }

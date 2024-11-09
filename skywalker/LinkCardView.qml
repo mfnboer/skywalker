@@ -15,7 +15,7 @@ RoundedFrame {
     id: card
     objectToRound: externalColumn
     border.width: 1
-    border.color: guiSettings.borderColor
+    border.color: GuiSettings.borderColor
 
     FilteredImageWarning {
         id: filter
@@ -52,7 +52,7 @@ RoundedFrame {
             rightPadding: 5
             text: card.uri ? new URL(card.uri).hostname : ""
             elide: Text.ElideRight
-            color: guiSettings.linkColor
+            color: GuiSettings.linkColor
         }
         Text {
             id: titleText
@@ -80,7 +80,4 @@ RoundedFrame {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

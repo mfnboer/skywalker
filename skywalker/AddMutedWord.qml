@@ -11,10 +11,10 @@ Dialog {
     id: page
     width: parent.width
     contentHeight: textInput.height + (hashtagTypeaheadView.visible ? hashtagTypeaheadView.height : 0)
-    topMargin: guiSettings.headerHeight
+    topMargin: GuiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     Accessible.role: Accessible.Dialog
 
@@ -80,9 +80,6 @@ Dialog {
         id: unicodeFonts
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getText() {
         return textInput.text.trim()

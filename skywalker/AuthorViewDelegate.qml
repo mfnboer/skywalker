@@ -24,7 +24,7 @@ Rectangle {
 
     id: authorRect
     height: grid.height
-    color: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
+    color: highlight ? GuiSettings.postHighLightColor : GuiSettings.backgroundColor
 
     Accessible.role: Accessible.Button
     Accessible.name: author.name
@@ -41,7 +41,7 @@ Rectangle {
         Rectangle {
             id: avatar
             Layout.rowSpan: 2
-            width: guiSettings.threadColumnWidth
+            width: GuiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -66,7 +66,7 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: author.name
 
                 Accessible.ignored: true
@@ -74,8 +74,8 @@ Rectangle {
             Text {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
+                font.pointSize: GuiSettings.scaledFont(7/8)
+                color: GuiSettings.handleColor
                 text: `@${author.handle}`
 
                 Accessible.ignored: true
@@ -152,7 +152,7 @@ Rectangle {
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             maximumLineCount: authorRect.maximumDescriptionLineCount
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             plainText: author.description
             visible: showAuthor && author.description
         }
@@ -161,7 +161,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
     }
     MouseArea {
@@ -170,19 +170,16 @@ Rectangle {
         onClicked: skywalker.getDetailedProfile(author.did)
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function confirmDelete() {
-        guiSettings.askYesNoQuestion(
+        GuiSettings.askYesNoQuestion(
                     authorRect,
                     qsTr(`Do you really want to delete: @${author.handle} ?`),
                     () => deleteItem(listItemUri))
     }
 
     function authorVisible() {
-        return guiSettings.contentVisible(author)
+        return GuiSettings.contentVisible(author)
     }
 
     function isUser(author) {

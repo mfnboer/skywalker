@@ -6,7 +6,7 @@ Column {
     property basicprofile author
     property string postText
     property date postDateTime
-    property string ellipsisBackgroundColor: guiSettings.backgroundColor
+    property string ellipsisBackgroundColor: GuiSettings.backgroundColor
     property bool showCloseButton: false
 
     signal closeClicked
@@ -70,7 +70,4 @@ Column {
         id: accessibilityUtils
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

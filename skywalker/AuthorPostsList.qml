@@ -72,7 +72,7 @@ SkyListView {
         anchors.horizontalCenter: parent.horizontalCenter
         elide: Text.ElideRight
         textFormat: Text.RichText
-        text: `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor}\">` + qsTr("Show profile") + "</a>"
+        text: `<br><a href=\"show\" style=\"color: ${GuiSettings.linkColor}\">` + qsTr("Show profile") + "</a>"
         visible: visibilityShowProfileLink(authorPostsList)
         onLinkActivated: disableWarning()
     }
@@ -111,9 +111,6 @@ SkyListView {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function feedOk() {
         retryGetFeedTimer.resetRetryAttempts()

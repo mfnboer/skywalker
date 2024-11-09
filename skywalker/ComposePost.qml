@@ -87,9 +87,9 @@ SkyPage {
 
     header: Rectangle {
         width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
+        height: GuiSettings.headerHeight
+        z: GuiSettings.headerZLevel
+        color: GuiSettings.headerColor
 
         SvgButton {
             id: cancelButton
@@ -241,8 +241,8 @@ SkyPage {
             radius: 10
             anchors.fill: replyToColumn
             border.width: 1
-            border.color: guiSettings.borderColor
-            color: guiSettings.postHighLightColor
+            border.color: GuiSettings.borderColor
+            color: GuiSettings.postHighLightColor
             visible: replyToColumn.visible
         }
         QuotePost {
@@ -253,7 +253,7 @@ SkyPage {
             author: replyToAuthor
             postText: replyToPostText
             postDateTime: replyToPostDateTime
-            ellipsisBackgroundColor: guiSettings.postHighLightColor
+            ellipsisBackgroundColor: GuiSettings.postHighLightColor
             visible: replyToPostUri
         }
 
@@ -752,8 +752,8 @@ SkyPage {
                         radius: 10
                         anchors.fill: quoteColumn
                         border.width: 1
-                        border.color: guiSettings.borderColor
-                        color: guiSettings.postHighLightColor
+                        border.color: GuiSettings.borderColor
+                        color: GuiSettings.postHighLightColor
                         visible: quoteColumn.visible
                     }
                     QuotePost {
@@ -765,7 +765,7 @@ SkyPage {
                         author: postItem.quoteAuthor
                         postText: postItem.quoteText
                         postDateTime: postItem.quoteDateTime
-                        ellipsisBackgroundColor: guiSettings.postHighLightColor
+                        ellipsisBackgroundColor: GuiSettings.postHighLightColor
                         showCloseButton: postItem.quoteFixed
                         visible: postItem.quoteUri
 
@@ -780,8 +780,8 @@ SkyPage {
                         radius: 10
                         anchors.fill: quoteFeedColumn
                         border.width: 1
-                        border.color: guiSettings.borderColor
-                        color: guiSettings.postHighLightColor
+                        border.color: GuiSettings.borderColor
+                        color: GuiSettings.postHighLightColor
                         visible: quoteFeedColumn.visible
                     }
                     QuoteFeed {
@@ -805,8 +805,8 @@ SkyPage {
                         radius: 10
                         anchors.fill: quoteListColumn
                         border.width: 1
-                        border.color: guiSettings.borderColor
-                        color: guiSettings.postHighLightColor
+                        border.color: GuiSettings.borderColor
+                        color: GuiSettings.postHighLightColor
                         visible: quoteListColumn.visible
                     }
                     QuoteList {
@@ -981,11 +981,11 @@ SkyPage {
             gradient: Gradient {
                 GradientStop {
                     position: 0.0
-                    color: guiSettings.threadStartColor(skywalker.getUserSettings().threadColor)
+                    color: GuiSettings.threadStartColor(skywalker.getUserSettings().threadColor)
                 }
                 GradientStop {
                     position: 1.0
-                    color: guiSettings.threadMidColor(skywalker.getUserSettings().threadColor)
+                    color: GuiSettings.threadMidColor(skywalker.getUserSettings().threadColor)
                 }
             }
         }
@@ -994,9 +994,9 @@ SkyPage {
     Text {
         id: draftsLink
         anchors.centerIn: parent
-        font.pointSize: guiSettings.scaledFont(9/8)
+        font.pointSize: GuiSettings.scaledFont(9/8)
         textFormat: Text.RichText
-        text: qsTr(`<a href=\"drafts\" style=\"color: ${guiSettings.linkColor}\">Drafts</a>`)
+        text: qsTr(`<a href=\"drafts\" style=\"color: ${GuiSettings.linkColor}\">Drafts</a>`)
         visible: threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
         onLinkActivated: showDraftPosts()
 
@@ -1009,9 +1009,9 @@ SkyPage {
         anchors.top: draftsLink.bottom
         anchors.topMargin: 10
         anchors.horizontalCenter: parent.horizontalCenter
-        font.pointSize: guiSettings.scaledFont(9/8)
+        font.pointSize: GuiSettings.scaledFont(9/8)
         textFormat: Text.RichText
-        text: qsTr(`<a href=\"card\" style=\"color: ${guiSettings.linkColor}\">Add anniversary card</a>`)
+        text: qsTr(`<a href=\"card\" style=\"color: ${GuiSettings.linkColor}\">Add anniversary card</a>`)
         visible: isAnniversary && threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
         onLinkActivated: addAnniversaryCard()
 
@@ -1024,18 +1024,18 @@ SkyPage {
         id: textFooter
         width: page.width
         height: getFooterHeight()
-        z: guiSettings.footerZLevel
-        color: guiSettings.footerColor
+        z: GuiSettings.footerZLevel
+        color: GuiSettings.footerColor
 
         function getFooterHeight() {
-            return guiSettings.footerHeight + (replyToPostUri ? 0 : restrictionRow.height + footerSeparator.height)
+            return GuiSettings.footerHeight + (replyToPostUri ? 0 : restrictionRow.height + footerSeparator.height)
         }
 
         Rectangle {
             id: footerSeparator
             width: parent.width
             height: replyToPostUri ? 0 : 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
             visible: !replyToPostUri
         }
 
@@ -1062,7 +1062,7 @@ SkyPage {
                 y: height + 3
                 width: 20
                 height: 20
-                color: guiSettings.linkColor
+                color: GuiSettings.linkColor
                 svg: restrictReply ? SvgOutline.replyRestrictions : SvgOutline.noReplyRestrictions
 
                 Accessible.ignored: true
@@ -1073,9 +1073,9 @@ SkyPage {
                 anchors.left: restrictionIcon.right
                 anchors.right: parent.right
                 leftPadding: 5
-                color: guiSettings.linkColor
+                color: GuiSettings.linkColor
                 font.italic: true
-                font.pointSize: guiSettings.scaledFont(7/8)
+                font.pointSize: GuiSettings.scaledFont(7/8)
                 wrapMode: Text.Wrap
                 text: getRestrictionText()
 
@@ -1118,14 +1118,14 @@ SkyPage {
                         listNames = allowListUrisFromDraft
 
                     if (listNames.length > 0) {
-                        const names = guiSettings.toWordSequence(listNames)
+                        const names = GuiSettings.toWordSequence(listNames)
                         restrictionList.push(qsTr(`members of ${names}`))
                     }
 
                     if (restrictionList.length === 0)
                         return qsTr("Replies disabled.")
 
-                    const restrictedListText = guiSettings.toWordSequence(restrictionList)
+                    const restrictedListText = GuiSettings.toWordSequence(restrictionList)
                     return qsTr(`Only ${restrictedListText} can reply.`)
                 }
             }
@@ -1195,7 +1195,7 @@ SkyPage {
                 console.debug("ACTIVATED LANG:", valueAt(index))
 
                 if (!languageUtils.getDefaultLanguageNoticeSeen()) {
-                    guiSettings.notice(page,
+                    GuiSettings.notice(page,
                         qsTr("To set this language as default for your posts, you can press and hold the language button for a second."))
                     languageUtils.setDefaultLanguageNoticeSeen(true)
                 }
@@ -1539,7 +1539,7 @@ SkyPage {
         }
 
         function start(gifFileName) {
-            progressDialog = guiSettings.showProgress(page, qsTr("Converting GIF to Video"), () => doCancel())
+            progressDialog = GuiSettings.showProgress(page, qsTr("Converting GIF to Video"), () => doCancel())
             gifToVideoConverter.convert(gifFileName)
         }
 
@@ -1647,9 +1647,6 @@ SkyPage {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getPostUtils() {
         return postUtils
@@ -1730,7 +1727,7 @@ SkyPage {
             return
         }
 
-        guiSettings.askConvertGif(
+        GuiSettings.askConvertGif(
             page,
             "file://" + gifFileName,
             () => gifToVideoConverter.start(gifFileName),
@@ -1858,14 +1855,14 @@ SkyPage {
         }
 
         if (draftPosts.canSaveDraft()) {
-            guiSettings.askDiscardSaveQuestion(
+            GuiSettings.askDiscardSaveQuestion(
                     page,
                     qsTr("Do you want to discard your post or save it as draft?"),
                     () => page.closed(),
                     () => page.saveDraftPost())
         }
         else {
-            guiSettings.askYesNoQuestion(
+            GuiSettings.askYesNoQuestion(
                     page,
                     qsTr("Do you want to to discard your post?<br>You cannot save more drafts."),
                     () => page.closed())
@@ -1936,10 +1933,10 @@ SkyPage {
 
             let gifCard = linkCardReader.makeLinkCard(
                     postItem.gif.getUrlForPosting(),
-                    `${postItem.gif.description} (via Tenor)\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
+                    `${postItem.gif.description} (via Tenor)\nPosted from Skywalker ${GuiSettings.skywalkerHandle}`,
                     qsTr("This GIF has been posted from Skywalker for Android. " +
                          "Get Skywalker from Google Play.") +
-                         (`<br>Bluesky: ${guiSettings.skywalkerHandle}`),
+                         (`<br>Bluesky: ${GuiSettings.skywalkerHandle}`),
                     postItem.gif.imageUrl)
 
             postUtils.post(postText, gifCard,
@@ -2089,7 +2086,7 @@ SkyPage {
         let cardPage = component.createObject(page)
         cardPage.onCanceled.connect(() => root.popStack())
         cardPage.onAddCard.connect((source, years) => {
-            page.photoPicked(source, "", qsTr(`Bluesky anniversary card sent with ${guiSettings.skywalkerHandle}`))
+            page.photoPicked(source, "", qsTr(`Bluesky anniversary card sent with ${GuiSettings.skywalkerHandle}`))
             page.addSharedText(qsTr(`Today is my ${years} year Bluesky anniversary 🥳`))
             root.popStack()
         })

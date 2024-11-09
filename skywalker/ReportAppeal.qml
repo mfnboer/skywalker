@@ -34,9 +34,9 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: page.width
-        height: guiSettings.footerHeight
-        z: guiSettings.footerZLevel
-        color: guiSettings.footerColor
+        height: GuiSettings.footerHeight
+        z: GuiSettings.footerZLevel
+        color: GuiSettings.footerColor
 
         TextLengthBar {
             textField: detailsText
@@ -68,8 +68,8 @@ SkyPage {
             elide: Text.ElideRight
             wrapMode: Text.Wrap
             font.bold: true
-            font.pointSize: guiSettings.scaledFont(10/8)
-            color: guiSettings.textColor
+            font.pointSize: GuiSettings.scaledFont(10/8)
+            color: GuiSettings.textColor
             plainText: contentGroup.title
         }
 
@@ -113,9 +113,6 @@ SkyPage {
         id: virtualKeyboardPageResizer
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function sendAppeal() {
         if (label.appliesToActor()) {

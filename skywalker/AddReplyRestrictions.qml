@@ -26,7 +26,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     onAllowListsChanged: {
         allowLists.forEach((allow) => {
@@ -79,7 +79,7 @@ Dialog {
             AccessibleText {
                 width: parent.width
                 padding: 10
-                font.pointSize: guiSettings.scaledFont(9/8)
+                font.pointSize: GuiSettings.scaledFont(9/8)
                 font.bold: true
                 text: qsTr("Quote settings")
             }
@@ -94,7 +94,7 @@ Dialog {
             AccessibleText {
                 width: parent.width
                 padding: 10
-                font.pointSize: guiSettings.scaledFont(9/8)
+                font.pointSize: GuiSettings.scaledFont(9/8)
                 font.bold: true
                 text: qsTr("Who can reply to this thread?")
             }
@@ -185,7 +185,7 @@ Dialog {
                         bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
                         initialIndex: allowListIndexes[parent.index]
                         findValue: getListUriFromDraft(parent.index)
-                        backgroundColor: duplicateList[parent.index] ? guiSettings.errorColor : Material.dialogColor
+                        backgroundColor: duplicateList[parent.index] ? GuiSettings.errorColor : Material.dialogColor
                         enabled: allowLists[parent.index]
 
                         onCurrentIndexChanged: allowListIndexes[parent.index] = currentIndex
@@ -228,9 +228,6 @@ Dialog {
         onGetPostgateFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getListUriFromDraft(index) {
         return index < allowListUrisFromDraft.length ? allowListUrisFromDraft[index] : ""

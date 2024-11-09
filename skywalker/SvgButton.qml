@@ -5,11 +5,11 @@ import skywalker
 RoundButton {
     required property string accessibleName
     required property SvgImage svg
-    property string iconColor: guiSettings.buttonTextColor
+    property string iconColor: GuiSettings.buttonTextColor
     property int imageMargin: 10
 
     id: button
-    Material.background: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
+    Material.background: enabled ? GuiSettings.buttonColor : GuiSettings.disabledColor
     opacity: 1
 
     Accessible.role: Accessible.Button
@@ -26,7 +26,4 @@ RoundButton {
         Accessible.ignored: true
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

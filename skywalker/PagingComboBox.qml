@@ -67,7 +67,4 @@ ComboBox {
         enableScrollToTop: false
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

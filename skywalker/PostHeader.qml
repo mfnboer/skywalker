@@ -5,7 +5,7 @@ import skywalker
 Column {
     required property basicprofile author
     required property int postIndexedSecondsAgo
-    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.labels)
+    readonly property list<contentlabel> labelsToShow: GuiSettings.filterContentLabelsToShow(author.labels)
 
     id: postHeader
 
@@ -13,7 +13,7 @@ Column {
     // more responsive.
     Loader {
         width: parent.width
-        height: guiSettings.appFontHeight
+        height: GuiSettings.appFontHeight
         active: true
         asynchronous: true
 
@@ -26,14 +26,14 @@ Column {
                 elide: Text.ElideRight
                 plainText: author.name
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
 
                 Accessible.ignored: true
             }
             Text {
                 id: durationText
-                text: guiSettings.durationToString(postIndexedSecondsAgo)
-                font.pointSize: guiSettings.scaledFont(7/8)
+                text: GuiSettings.durationToString(postIndexedSecondsAgo)
+                font.pointSize: GuiSettings.scaledFont(7/8)
                 color: Material.color(Material.Grey)
 
                 Accessible.ignored: true
@@ -46,8 +46,8 @@ Column {
         bottomPadding: 5
         elide: Text.ElideRight
         text: "@" + author.handle
-        font.pointSize: guiSettings.scaledFont(7/8)
-        color: guiSettings.handleColor
+        font.pointSize: GuiSettings.scaledFont(7/8)
+        color: GuiSettings.handleColor
 
         Accessible.ignored: true
     }
@@ -55,7 +55,7 @@ Column {
     Loader {
         active: labelsToShow.length > 0
         width: parent.width
-        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding : 0
+        height: active ? GuiSettings.labelHeight + GuiSettings.labelRowPadding : 0
         asynchronous: true
         visible: active
 
@@ -85,7 +85,4 @@ Column {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

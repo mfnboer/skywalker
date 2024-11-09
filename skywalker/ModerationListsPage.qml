@@ -77,7 +77,4 @@ SkyPage {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

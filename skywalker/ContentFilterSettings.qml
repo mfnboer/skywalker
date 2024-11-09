@@ -41,7 +41,7 @@ SkyPage {
             bottomPadding: 20
             id: adultContentSwitch
             width: parent.width
-            Material.accent: guiSettings.buttonColor
+            Material.accent: GuiSettings.buttonColor
             text: qsTr("Adult content")
             checked: page.globalLabelModel.adultContent
             onCheckedChanged: page.globalLabelModel.adultContent = checked
@@ -98,7 +98,7 @@ SkyPage {
                     x: parent.width - 20
                     y: (parent.height + height) / 2
                     svg: SvgOutline.navigateNext
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                 }
 
                 MouseArea {
@@ -113,9 +113,6 @@ SkyPage {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function reloadSubscribedLabelers() {
         skywalker.getAuthorList(labelerAuthorListModelId)

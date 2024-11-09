@@ -8,8 +8,8 @@ Rectangle {
     width: Math.max(counterText.width + 10, height)
     height: 20
     radius: 8
-    color: guiSettings.badgeColor
-    border.color: guiSettings.badgeBorderColor
+    color: GuiSettings.badgeColor
+    border.color: GuiSettings.badgeBorderColor
     border.width: 2
     visible: counter > 0
 
@@ -17,12 +17,9 @@ Rectangle {
         id: counterText
         anchors.centerIn: parent
         font.bold: true
-        font.pointSize: guiSettings.scaledFont(6/8)
-        color: guiSettings.badgeTextColor
+        font.pointSize: GuiSettings.scaledFont(6/8)
+        color: GuiSettings.badgeTextColor
         text: counter
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

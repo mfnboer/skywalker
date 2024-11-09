@@ -14,7 +14,7 @@ Popup {
         color: [Material.theme === Material.Light ? "lightcyan" : "teal",
                 Material.theme === Material.Light ? "crimson" : "darkred"][level]
         border.width: 1
-        border.color: guiSettings.borderColor
+        border.color: GuiSettings.borderColor
         radius: 5
     }
     closePolicy: Popup.CloseOnPressOutside
@@ -30,7 +30,7 @@ Popup {
         wrapMode: Text.Wrap
         maximumLineCount: 8
         elide: Text.ElideRight
-        color: guiSettings.textColor
+        color: GuiSettings.textColor
         text: "Status"
 
         Accessible.role: Accessible.StaticText
@@ -58,9 +58,6 @@ Popup {
         onTriggered: statusPopup.close()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function show(msg, level = QEnums.STATUS_LEVEL_INFO, intervalSec = 30) {
         console.debug("Level:", level, "Msg:", msg);

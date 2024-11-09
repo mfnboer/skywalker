@@ -59,9 +59,6 @@ SkyListView {
         running: chat.getConvosInProgress
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function addConvo(msg = "") {
         let component = Qt.createComponent("StartConversation.qml")
@@ -77,7 +74,7 @@ SkyListView {
     }
 
     function deleteConvo(convo) {
-        guiSettings.askYesNoQuestion(conversationsView,
+        GuiSettings.askYesNoQuestion(conversationsView,
                 qsTr(`Do you want to delete the conversation with <b>${convo.memberNames}</b>. Your messages will be deleted for you, but not for the other participant.`),
                 () => chat.leaveConvo(convo.id))
     }

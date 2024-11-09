@@ -5,11 +5,8 @@ SkySvg {
     x: parent.width - width * 0.8
     y: height - height * 0.2
     height: width
-    color: guiSettings.moderatorIconColor
-    outlineColor: guiSettings.backgroundColor
+    color: GuiSettings.moderatorIconColor
+    outlineColor: GuiSettings.backgroundColor
     svg: SvgFilled.moderator
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

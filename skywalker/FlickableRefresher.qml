@@ -24,7 +24,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: ((list.headerItem && list.headerItem.visible) ? list.headerItem.height : 0) - verticalOvershoot - height
         font.italic: true
-        color: guiSettings.textColor
+        color: GuiSettings.textColor
         visible: verticalOvershoot < 0
         text: inTopOvershoot ? qsTr("Refreshing...") : topText
     }
@@ -35,8 +35,8 @@ Item {
         y: parent.height - height - ((list.footerItem && list.footerItem.visible) ? list.footerItem.height : 0) - 10
         width: 50
         height: width
-        iconColor: guiSettings.textColor
-        Material.background: guiSettings.buttonNeutralColor
+        iconColor: GuiSettings.textColor
+        Material.background: GuiSettings.buttonNeutralColor
         svg: SvgOutline.scrollToTop
         accessibleName: qsTr("Scroll to top")
         visible: scrollTopTopButtonVisible && !list.atYBeginning && enableScrollToTop
@@ -84,9 +84,6 @@ Item {
         hideScrollToTopButtonTimer.start()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onDestruction: {
         list.onMovementStarted.disconnect(showScrollToTopButton)

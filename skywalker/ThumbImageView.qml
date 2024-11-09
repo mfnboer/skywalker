@@ -18,7 +18,7 @@ ImageAutoRetry {
         bottomInset: 5
         padding: 5
         color: "white"
-        font.pointSize: guiSettings.scaledFont(4.5/8)
+        font.pointSize: GuiSettings.scaledFont(4.5/8)
         text: qsTr("ALT", "alternative text indication on an image")
         visible: imageView.alt && enableAlt
 
@@ -29,7 +29,4 @@ ImageAutoRetry {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

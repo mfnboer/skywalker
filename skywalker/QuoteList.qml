@@ -33,7 +33,7 @@ Column {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: list.name
 
                 Accessible.ignored: true
@@ -42,9 +42,9 @@ Column {
             Text {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
-                text: qsTr(`${(guiSettings.listTypeName(list.purpose))} by @${list.creator.handle}`)
+                font.pointSize: GuiSettings.scaledFont(7/8)
+                color: GuiSettings.handleColor
+                text: qsTr(`${(GuiSettings.listTypeName(list.purpose))} by @${list.creator.handle}`)
 
                 Accessible.ignored: true
             }
@@ -66,7 +66,7 @@ Column {
         wrapMode: Text.Wrap
         maximumLineCount: 5
         elide: Text.ElideRight
-        color: guiSettings.textColor
+        color: GuiSettings.textColor
         text: list.description
     }
 
@@ -74,7 +74,4 @@ Column {
         id: accessibilityUtils
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

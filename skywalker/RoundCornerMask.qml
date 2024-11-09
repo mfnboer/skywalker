@@ -4,7 +4,7 @@ import QtQuick.Shapes
 
 Rectangle {
     property int cornerRadius: 10
-    property string maskColor: guiSettings.backgroundColor
+    property string maskColor: GuiSettings.backgroundColor
 
     id: maskRect
     color: "transparent"
@@ -93,7 +93,4 @@ Rectangle {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

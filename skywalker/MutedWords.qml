@@ -12,9 +12,9 @@ ListView {
     spacing: 0
     boundsBehavior: Flickable.StopAtBounds
     model: skywalker.mutedWords.entries
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
+    flickDeceleration: GuiSettings.flickDeceleration
+    maximumFlickVelocity: GuiSettings.maxFlickVelocity
+    pixelAligned: GuiSettings.flickPixelAligned
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -47,19 +47,19 @@ ListView {
                 rightPadding: 10
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
-                font.pointSize: guiSettings.scaledFont(9/8)
-                color: guiSettings.textColor
+                font.pointSize: GuiSettings.scaledFont(9/8)
+                color: GuiSettings.textColor
                 text: modelData
             }
             SvgButton {
-                iconColor: guiSettings.textColor
+                iconColor: GuiSettings.textColor
                 Material.background: "transparent"
                 svg: SvgOutline.edit
                 accessibleName: qsTr(`edit ${entryText.text}`)
                 onClicked: editWord(entryText.text)
             }
             SvgButton {
-                iconColor: guiSettings.textColor
+                iconColor: GuiSettings.textColor
                 Material.background: "transparent"
                 svg: SvgOutline.delete
                 accessibleName: qsTr(`delete ${entryText.text}`)
@@ -70,7 +70,7 @@ ListView {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
     }
 
@@ -83,9 +83,6 @@ ListView {
         list: view
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function addWord() {
         let component = Qt.createComponent("AddMutedWord.qml")

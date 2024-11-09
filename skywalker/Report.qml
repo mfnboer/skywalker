@@ -28,9 +28,9 @@ SkyPage {
 
     header: Rectangle {
         width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
+        height: GuiSettings.headerHeight
+        z: GuiSettings.headerZLevel
+        color: GuiSettings.headerColor
 
         SvgButton {
             anchors.left: parent.left
@@ -44,8 +44,8 @@ SkyPage {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             font.bold: true
-            font.pointSize: guiSettings.scaledFont(10/8)
-            color: guiSettings.headerTextColor
+            font.pointSize: GuiSettings.scaledFont(10/8)
+            color: GuiSettings.headerTextColor
             text: getReportTitle()
         }
 
@@ -65,7 +65,7 @@ SkyPage {
         x: 10
         width: parent.width - 20
         height: visible ? implicitHeight : 0
-        font.pointSize: guiSettings.scaledFont(9/8)
+        font.pointSize: GuiSettings.scaledFont(9/8)
         font.bold: true
         text: qsTr("Report to:")
         visible: labelerComboBox.visible
@@ -93,13 +93,13 @@ SkyPage {
         model: reportUtils.getReportReasons(getReportTarget())
 
         header: Rectangle {
-            z: guiSettings.headerZLevel
+            z: GuiSettings.headerZLevel
             width: parent.width
             height: calcHeight()
             radius: 3
-            color: guiSettings.postHighLightColor
+            color: GuiSettings.postHighLightColor
             border.width: 1
-            border.color: guiSettings.borderColor
+            border.color: GuiSettings.borderColor
 
             function calcHeight() {
                 if (quotePost.visible)
@@ -143,15 +143,15 @@ SkyPage {
                     SkyCleanedText {
                         elide: Text.ElideRight
                         font.bold: true
-                        color: guiSettings.textColor
+                        color: GuiSettings.textColor
                         plainText: author.name
 
                         Accessible.ignored: true
                     }
                     Text {
                         elide: Text.ElideRight
-                        font.pointSize: guiSettings.scaledFont(7/8)
-                        color: guiSettings.handleColor
+                        font.pointSize: GuiSettings.scaledFont(7/8)
+                        color: GuiSettings.handleColor
                         text: author.handle ? `@${author.handle}` : ""
 
                         Accessible.ignored: true
@@ -196,9 +196,9 @@ SkyPage {
         headerPositioning: ListView.OverlayHeader
 
         footer: Rectangle {
-            z: guiSettings.headerZLevel
+            z: GuiSettings.headerZLevel
             width: parent.width
-            height: guiSettings.footerHeight
+            height: GuiSettings.footerHeight
             color: "transparent"
 
             SkyButton {
@@ -233,7 +233,7 @@ SkyPage {
                     width: parent.width - 20
                     wrapMode: Text.Wrap
                     font.bold: true
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                     text: reasonEntry.reportReason.title
                 }
                 Text {
@@ -241,8 +241,8 @@ SkyPage {
                     bottomPadding: 5
                     width: parent.width - 20
                     wrapMode: Text.Wrap
-                    color: guiSettings.textColor
-                    font.pointSize: guiSettings.scaledFont(7/8)
+                    color: GuiSettings.textColor
+                    font.pointSize: GuiSettings.scaledFont(7/8)
                     text: reasonEntry.reportReason.description
                 }
             }
@@ -270,9 +270,6 @@ SkyPage {
         onReportFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function editDetails() {
         let component = Qt.createComponent("ReportDetailsEditor.qml")

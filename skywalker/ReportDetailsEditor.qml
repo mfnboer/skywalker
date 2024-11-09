@@ -23,9 +23,9 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: page.width
-        height: guiSettings.footerHeight
-        z: guiSettings.footerZLevel
-        color: guiSettings.footerColor
+        height: GuiSettings.footerHeight
+        z: GuiSettings.footerZLevel
+        color: GuiSettings.footerColor
 
         TextLengthBar {
             textField: detailsText
@@ -65,9 +65,6 @@ SkyPage {
         id: virtualKeyboardPageResizer
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onCompleted: {
         // Save the full page height now. Later when the Android keyboard pops up,

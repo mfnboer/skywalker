@@ -11,7 +11,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     onOpened: msgLabel.focus = true
 
@@ -24,7 +24,7 @@ Dialog {
             id: emojiLabel
             height: visible ? implicitHeight : 0
             verticalAlignment: Text.AlignVCenter
-            font.pointSize: guiSettings.scaledFont(6)
+            font.pointSize: GuiSettings.scaledFont(6)
             text: emoji
             visible: emoji
         }
@@ -44,9 +44,6 @@ Dialog {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function show(msg) {
         msgLabel.text = msg

@@ -10,7 +10,7 @@ SkySvg {
     id: button
     width: 34
     height: 34
-    color: button.enabled ? guiSettings.buttonColor : guiSettings.disabledColor
+    color: button.enabled ? GuiSettings.buttonColor : GuiSettings.disabledColor
     opacity: 1
 
     Rectangle {
@@ -32,7 +32,4 @@ SkySvg {
         onClicked: button.clicked()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

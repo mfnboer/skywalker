@@ -20,7 +20,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         border.width: 1
-        border.color: guiSettings.borderColor
+        border.color: GuiSettings.borderColor
         color: recordView.backgroundColor
         radius: 10
     }
@@ -125,7 +125,7 @@ Item {
 
             sourceComponent: Text {
                 width: parent.width
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: getDescription()
 
                 Accessible.ignored: true
@@ -148,9 +148,9 @@ Item {
 
             sourceComponent: Text {
                 width: parent.width
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: isUser(record.detachedByDid) ?
-                          qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
+                          qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${GuiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
                           qsTr("🗑 Detached by author")
 
                 Accessible.ignored: true
@@ -165,11 +165,11 @@ Item {
 
             sourceComponent: Text {
                 width: parent.width
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
+                font.pointSize: GuiSettings.scaledFont(7/8)
                 text: record.unsupportedType
 
                 Accessible.ignored: true
@@ -232,7 +232,4 @@ Item {
         return skywalker.getUserDid() === did
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

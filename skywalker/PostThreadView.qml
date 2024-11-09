@@ -16,7 +16,7 @@ SkyListView {
     model: skywalker.getPostThreadModel(modelId)
 
     header: SimpleHeader {
-        height: restrictionRow.visible ? guiSettings.headerHeight + restrictionRow.height : guiSettings.headerHeight
+        height: restrictionRow.visible ? GuiSettings.headerHeight + restrictionRow.height : GuiSettings.headerHeight
         text: qsTr("Post thread")
         onBack: view.closed()
 
@@ -25,9 +25,9 @@ SkyListView {
             width: parent.width
             height: restrictionRow.height + 5
             anchors.bottom: parent.bottom
-            color: guiSettings.threadStartColor(root.getSkywalker().getUserSettings().threadColor)
+            color: GuiSettings.threadStartColor(root.getSkywalker().getUserSettings().threadColor)
             border.width: 1
-            border.color: guiSettings.headerColor
+            border.color: GuiSettings.headerColor
             visible: model.replyRestriction !== QEnums.REPLY_RESTRICTION_NONE
 
             Accessible.role: Accessible.StaticText
@@ -35,7 +35,7 @@ SkyListView {
 
             Rectangle {
                 id: restrictionRow
-                x: guiSettings.threadBarWidth * 5 - restrictionIcon.width
+                x: GuiSettings.threadBarWidth * 5 - restrictionIcon.width
                 anchors.bottom: parent.bottom
                 width: parent.width - x - 10
                 height: restrictionText.height + 10
@@ -56,7 +56,7 @@ SkyListView {
                     color: restrictionIcon.color
                     ellipsisBackgroundColor: restrictionRect.color
                     font.italic: true
-                    font.pointSize: guiSettings.scaledFont(7/8)
+                    font.pointSize: GuiSettings.scaledFont(7/8)
                     wrapMode: Text.Wrap
                     maximumLineCount: 3
                     elide: Text.ElideRight
@@ -94,7 +94,7 @@ SkyListView {
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) {
                         const author = model.replyRestrictionAuthor
-                        restrictionList.push(qsTr(`users followed by <a href="${author.did}" style="color: ${guiSettings.linkColor}; text-decoration: none">@${author.handle}</a>`))
+                        restrictionList.push(qsTr(`users followed by <a href="${author.did}" style="color: ${GuiSettings.linkColor}; text-decoration: none">@${author.handle}</a>`))
                     }
 
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_LIST) {
@@ -104,10 +104,10 @@ SkyListView {
                         for (let i = 0; i < lists.length; ++i) {
                             const l = lists[i]
                             const listName = unicodeFonts.toCleanedHtml(l.name)
-                            listNames.push(`<a href="${l.uri}" style="color: ${guiSettings.linkColor}; text-decoration: none">${listName}</a>`)
+                            listNames.push(`<a href="${l.uri}" style="color: ${GuiSettings.linkColor}; text-decoration: none">${listName}</a>`)
                         }
 
-                        const names = guiSettings.toWordSequence(listNames)
+                        const names = GuiSettings.toWordSequence(listNames)
                         restrictionList.push(qsTr(`members of ${names}`))
                     }
 
@@ -116,7 +116,7 @@ SkyListView {
                         return qsTr("Replies are restricted")
                     }
 
-                    const restrictionListText = guiSettings.toWordSequence(restrictionList)
+                    const restrictionListText = GuiSettings.toWordSequence(restrictionList)
                     return qsTr(`Replies are restricted to ${restrictionListText}`)
                 }
             }
@@ -126,7 +126,7 @@ SkyListView {
 
     footer: Rectangle {
         width: parent.width
-        z: guiSettings.footerZLevel
+        z: GuiSettings.footerZLevel
 
         PostButton {
             y: -height - 10
@@ -176,9 +176,6 @@ SkyListView {
         onTriggered: sync()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getReplyToAuthor() {
         return model.getData(postEntryIndex, AbstractPostFeedModel.Author)

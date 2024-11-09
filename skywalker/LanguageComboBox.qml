@@ -8,8 +8,8 @@ ComboBox {
     property bool reversedColors: false
     property int radius: 3
     property int borderWidth: 2
-    property string borderColor: guiSettings.buttonColor
-    property string color: guiSettings.buttonColor
+    property string borderColor: GuiSettings.buttonColor
+    property string color: GuiSettings.buttonColor
     property bool addAnyLanguage: false
     property language anyLanguage
     property string initialLanguage
@@ -51,19 +51,16 @@ ComboBox {
             width: delegate.width
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
-            color: delegate.index === languageComboBox.currentIndex ? guiSettings.buttonColor : guiSettings.textColor
+            color: delegate.index === languageComboBox.currentIndex ? GuiSettings.buttonColor : GuiSettings.textColor
             text: delegate.modelData.shortCode ? `${delegate.modelData.nativeName} (${delegate.modelData.shortCode})` : qsTr("Any language")
         }
 
         background: Rectangle {
             implicitWidth: delegate.width
-            color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length + (addAnyLanguage ? 1 : 0) ? guiSettings.postHighLightColor : "transparent")
+            color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length + (addAnyLanguage ? 1 : 0) ? GuiSettings.postHighLightColor : "transparent")
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onCompleted: {
         if (addAnyLanguage) {

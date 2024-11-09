@@ -17,17 +17,17 @@ Rectangle {
 
     id: headerRect
     width: parent.width
-    height: guiSettings.headerHeight
-    z: guiSettings.headerZLevel
-    color: guiSettings.headerColor
+    height: GuiSettings.headerHeight
+    z: GuiSettings.headerZLevel
+    color: GuiSettings.headerColor
 
     RowLayout {
         width: parent.width
-        height: guiSettings.headerHeight
+        height: GuiSettings.headerHeight
 
         SvgButton {
             id: backButton
-            iconColor: guiSettings.headerTextColor
+            iconColor: GuiSettings.headerTextColor
             Material.background: "transparent"
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
@@ -38,7 +38,7 @@ Rectangle {
             radius: 5
             Layout.fillWidth: true
             height: searchText.height
-            color: guiSettings.backgroundColor
+            color: GuiSettings.backgroundColor
 
             TextInput {
                 id: searchText
@@ -48,8 +48,8 @@ Rectangle {
                 clip: true
                 padding: 5
                 rightPadding: clearButton.width
-                font.pointSize: guiSettings.scaledFont(9/8)
-                color: guiSettings.textColor
+                font.pointSize: GuiSettings.scaledFont(9/8)
+                color: GuiSettings.textColor
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 maximumLength: 2048
                 focus: true
@@ -88,7 +88,7 @@ Rectangle {
                 width: searchText.width
                 padding: searchText.padding
                 font.pointSize: searchText.font.pointSize
-                color: guiSettings.placeholderTextColor
+                color: GuiSettings.placeholderTextColor
                 text: headerRect.placeHolderText
                 visible: searchText.displayText.length === 0
 
@@ -101,8 +101,8 @@ Rectangle {
         // keyboard, nor can it set the icon to a search icon.
         SvgButton {
             id: searchButton
-            iconColor: enabled ? guiSettings.headerTextColor : guiSettings.disabledColor
-            Material.background: enabled ? guiSettings.buttonColor : guiSettings.headerColor
+            iconColor: enabled ? GuiSettings.headerTextColor : GuiSettings.disabledColor
+            Material.background: enabled ? GuiSettings.buttonColor : GuiSettings.headerColor
             svg: SvgOutline.search
             accessibleName: qsTr("start search for posts and users")
             onClicked: headerRect.search(searchText.displayText)
@@ -111,9 +111,6 @@ Rectangle {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function setSearchText(text) {
         searchText.text = text

@@ -34,7 +34,4 @@ ComboBox {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

@@ -41,9 +41,6 @@ SkyListView {
         running: model.inProgress
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onDestruction: {
         skywalker.deleteBookmarksModel()

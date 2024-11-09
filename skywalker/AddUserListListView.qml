@@ -13,9 +13,9 @@ ListView {
     id: view
     spacing: 0
     model: skywalker.getListListModel(modelId)
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
+    flickDeceleration: GuiSettings.flickDeceleration
+    maximumFlickVelocity: GuiSettings.maxFlickVelocity
+    pixelAligned: GuiSettings.flickPixelAligned
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -59,9 +59,6 @@ ListView {
 
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function refresh() {
         skywalker.getListList(modelId)

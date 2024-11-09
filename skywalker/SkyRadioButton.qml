@@ -13,12 +13,12 @@ RadioButton {
     contentItem: Label {
         padding: 5
         background: Rectangle {
-            color: radio.checked ? guiSettings.buttonColor : "transparent"
+            color: radio.checked ? GuiSettings.buttonColor : "transparent"
             border.width: radio.borderWidth
-            border.color: guiSettings.buttonColor
+            border.color: GuiSettings.buttonColor
         }
         horizontalAlignment: radio.horizontalAlignment
-        color: checked ? guiSettings.buttonTextColor : guiSettings.buttonColor
+        color: checked ? GuiSettings.buttonTextColor : GuiSettings.buttonColor
         text: radio.text
     }
 
@@ -26,7 +26,4 @@ RadioButton {
     Accessible.name: text
     Accessible.onToggleAction: toggle()
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

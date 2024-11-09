@@ -28,9 +28,9 @@ SkyPage {
 
     footer: Rectangle {
         width: parent.width
-        height: guiSettings.footerHeight
-        z: guiSettings.footerZLevel
-        color: guiSettings.backgroundColor
+        height: GuiSettings.footerHeight
+        z: GuiSettings.footerZLevel
+        color: GuiSettings.backgroundColor
 
         Image {
             id: tenorAttribution
@@ -55,9 +55,9 @@ SkyPage {
             model: []
             boundsBehavior: Flickable.StopAtBounds
             clip: true
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
+            flickDeceleration: GuiSettings.flickDeceleration
+            maximumFlickVelocity: GuiSettings.maxFlickVelocity
+            pixelAligned: GuiSettings.flickPixelAligned
 
             delegate: Rectangle {
                 required property int index
@@ -90,7 +90,7 @@ SkyPage {
                         background: Rectangle { color: "black"; opacity: 0.2; radius: 5 }
                         elide: Text.ElideRight
                         font.bold: true
-                        font.pointSize: guiSettings.scaledFont(9/8)
+                        font.pointSize: GuiSettings.scaledFont(9/8)
                         color: "white"
                         text: category.searchTerm
 
@@ -121,9 +121,9 @@ SkyPage {
             model: tenor.overviewModel
             spacing: tenor.spacing
             clip: true
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
+            flickDeceleration: GuiSettings.flickDeceleration
+            maximumFlickVelocity: GuiSettings.maxFlickVelocity
+            pixelAligned: GuiSettings.flickPixelAligned
 
             delegate: Row {
                 required property list<tenorgif> previewRow
@@ -194,9 +194,6 @@ SkyPage {
         running: tenor.searchInProgress
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function searchTenor(text) {
         tenor.searchGifs(text)

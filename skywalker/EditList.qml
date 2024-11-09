@@ -22,7 +22,7 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
-        text: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
+        text: list.isNull() ? qsTr(`New ${(GuiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(GuiSettings.listTypeName(purpose))}`)
         backIsCancel: true
         onBack: editListPage.cancel()
 
@@ -49,12 +49,12 @@ SkyPage {
         id: pageFooter
         width: editListPage.width
         height: getFooterHeight()
-        z: guiSettings.footerZLevel
-        color: guiSettings.footerColor
+        z: GuiSettings.footerZLevel
+        color: GuiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus
 
         function getFooterHeight() {
-            return guiSettings.footerHeight
+            return GuiSettings.footerHeight
         }
 
         TextLengthBar {
@@ -108,7 +108,7 @@ SkyPage {
             Text {
                 Layout.fillWidth: true
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("List Avatar")
             }
 
@@ -158,7 +158,7 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("List Name")
             }
 
@@ -167,7 +167,7 @@ SkyPage {
                 Layout.preferredHeight: nameField.height
                 radius: 5
                 border.width: 1
-                border.color: guiSettings.borderColor
+                border.color: GuiSettings.borderColor
                 color: "transparent"
 
                 SkyTextEdit {
@@ -187,7 +187,7 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("List Description")
             }
 
@@ -201,7 +201,7 @@ SkyPage {
 
                 radius: 5
                 border.width: 1
-                border.color: guiSettings.borderColor
+                border.color: GuiSettings.borderColor
                 color: "transparent"
 
                 SkyFormattedTextEdit {
@@ -270,9 +270,6 @@ SkyPage {
         onUpdateListOk: (uri, cid) => editListPage.updateListDone(uri, cid)
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function createListProgress(msg) {
         busyIndicator.running = true
@@ -333,7 +330,7 @@ SkyPage {
             return
         }
 
-        guiSettings.askYesNoQuestion(
+        GuiSettings.askYesNoQuestion(
                     editListPage,
                     qsTr("Do you really want to discard your changes?"),
                     () => editListPage.closed())

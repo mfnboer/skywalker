@@ -16,19 +16,19 @@ SkyPage {
 
     header: Rectangle {
         width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
+        height: GuiSettings.headerHeight
+        z: GuiSettings.headerZLevel
+        color: GuiSettings.headerColor
 
         Accessible.role: Accessible.Pane
 
         RowLayout {
             width: parent.width
-            height: guiSettings.headerHeight
+            height: GuiSettings.headerHeight
 
             SvgButton {
                 id: backButton
-                iconColor: guiSettings.headerTextColor
+                iconColor: GuiSettings.headerTextColor
                 Material.background: "transparent"
                 svg: SvgOutline.arrowBack
                 accessibleName: qsTr("go back")
@@ -38,8 +38,8 @@ SkyPage {
                 Layout.alignment: Qt.AlignVCenter
                 leftPadding: 10
                 font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
+                font.pointSize: GuiSettings.scaledFont(10/8)
+                color: GuiSettings.headerTextColor
                 text: qsTr("Sign in as")
 
                 Accessible.role: Accessible.TitleBar
@@ -57,12 +57,9 @@ SkyPage {
         onDeleteClicked: (profile) => { deleteUser(profile) }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function deleteUser(profile) {
-        guiSettings.askYesNoQuestion(
+        GuiSettings.askYesNoQuestion(
                     page,
                     qsTr(`Do you really want to delete account "${profile.name}"?`),
                     () => page.deletedUser(profile))

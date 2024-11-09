@@ -6,7 +6,7 @@ ScrollView {
     property var skywalker: root.getSkywalker()
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
-    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentLabels)
+    property list<contentlabel> labelsToShow: GuiSettings.filterContentLabelsToShow(contentLabels)
     property int parentWidth: parent.width
 
     id: labelView
@@ -23,7 +23,7 @@ ScrollView {
 
     Row {
         id: labelRow
-        topPadding: guiSettings.labelRowPadding
+        topPadding: GuiSettings.labelRowPadding
         spacing: 5
 
         Repeater {
@@ -32,10 +32,10 @@ ScrollView {
             SkyLabel {
                 required property contentlabel modelData
 
-                backgroundColor: modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
-                font.pointSize: guiSettings.scaledFont(5/8)
+                backgroundColor: modelData.did === contentAuthorDid ? GuiSettings.contentUserLabelColor : GuiSettings.contentLabelColor
+                font.pointSize: GuiSettings.scaledFont(5/8)
                 font.italic: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: getDisplayText(modelData)
 
                 Accessible.role: Accessible.StaticText
@@ -49,9 +49,6 @@ ScrollView {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getDisplayText(label) {
         const contentGroup = skywalker.getContentGroup(label.did, label.labelId)

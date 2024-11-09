@@ -30,7 +30,7 @@ VideoThumbnail {
     SkyLabel {
         y: parent.height - height
         width: parent.width
-        backgroundColor: guiSettings.errorColor
+        backgroundColor: GuiSettings.errorColor
         horizontalAlignment: Text.AlignHCenter
         color: "white"
         text: "ALT text missing"
@@ -53,12 +53,9 @@ VideoThumbnail {
         backgroundColor: "black"
         backgroundOpacity: 0.6
         color: "white"
-        text: guiSettings.videoDurationToString(videoEndMs - videoStartMs)
+        text: GuiSettings.videoDurationToString(videoEndMs - videoStartMs)
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function remove() {
         postUtils.dropVideo(video)

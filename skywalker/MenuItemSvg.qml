@@ -7,10 +7,7 @@ SkySvg {
     anchors.right: parent.right
     width: height
     height: parent.height - 10
-    color: guiSettings.textColor
+    color: GuiSettings.textColor
     visible: parent.enabled
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

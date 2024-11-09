@@ -62,9 +62,6 @@ SkyPage {
         skywalker: page.skywalker
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function forceDestroy() {
         searchUtils.clearAllSearchResults();

@@ -54,16 +54,16 @@ SkyPage {
             clip: true
             model: skywalker.favoriteFeeds.getSavedListsModel()
             boundsBehavior: Flickable.StopAtBounds
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
+            flickDeceleration: GuiSettings.flickDeceleration
+            maximumFlickVelocity: GuiSettings.maxFlickVelocity
+            pixelAligned: GuiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             header: Rectangle {
                 width: parent.width
                 height: headerText.height
-                z: guiSettings.headerZLevel
-                color: guiSettings.backgroundColor
+                z: GuiSettings.headerZLevel
+                color: GuiSettings.backgroundColor
 
                 Text {
                     id: headerText
@@ -71,7 +71,7 @@ SkyPage {
                     padding: 10
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                     text: qsTr("Saved lists from other users")
                 }
             }
@@ -98,9 +98,6 @@ SkyPage {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onDestruction: {
         skywalker.favoriteFeeds.removeSavedListsModel()

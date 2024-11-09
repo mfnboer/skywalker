@@ -25,13 +25,13 @@ Item {
         SkySvg {
             width: 30
             height: width
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             svg: menuItem.icon
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            font.pointSize: guiSettings.scaledFont(10/8)
-            color: guiSettings.textColor
+            font.pointSize: GuiSettings.scaledFont(10/8)
+            color: GuiSettings.textColor
             text: menuItem.text
         }
     }
@@ -41,7 +41,4 @@ Item {
         onClicked: menuItem.clicked()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

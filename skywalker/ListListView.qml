@@ -14,9 +14,9 @@ ListView {
     id: view
     spacing: 0
     model: skywalker.getListListModel(modelId)
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
+    flickDeceleration: GuiSettings.flickDeceleration
+    maximumFlickVelocity: GuiSettings.maxFlickVelocity
+    pixelAligned: GuiSettings.flickPixelAligned
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -25,8 +25,8 @@ ListView {
     header: Rectangle {
         width: parent.width
         height: headerRow.height
-        z: guiSettings.headerZLevel
-        color: guiSettings.backgroundColor
+        z: GuiSettings.headerZLevel
+        color: GuiSettings.backgroundColor
 
         RowLayout {
             id: headerRow
@@ -37,7 +37,7 @@ ListView {
                 padding: 10
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: view.description
             }
 
@@ -100,9 +100,6 @@ ListView {
         onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function newList() {
         let component = Qt.createComponent("EditList.qml")
@@ -152,7 +149,7 @@ ListView {
     }
 
     function deleteList(list, index) {
-        guiSettings.askYesNoQuestion(
+        GuiSettings.askYesNoQuestion(
                     view,
                     qsTr(`Do you really want to delete: ${(list.name)} ?`),
                     () => view.continueDeleteList(list, index))

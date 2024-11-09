@@ -5,9 +5,6 @@ Page {
     // Called when list gets covered by another page
     signal cover
 
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

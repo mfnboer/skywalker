@@ -32,7 +32,4 @@ SkyListView {
         list: view
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

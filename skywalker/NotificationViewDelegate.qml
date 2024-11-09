@@ -74,7 +74,7 @@ Rectangle {
 
     id: notification
     height: grid.height
-    color: notificationIsRead ? guiSettings.backgroundColor : guiSettings.postHighLightColor
+    color: notificationIsRead ? GuiSettings.backgroundColor : GuiSettings.postHighLightColor
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()
@@ -101,7 +101,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredWidth: GuiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -131,7 +131,7 @@ Rectangle {
                 y: height + 5
                 width: parent.width - 19
                 height: width
-                color: guiSettings.likeColor
+                color: GuiSettings.likeColor
                 svg: SvgFilled.like
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_LIKE
             }
@@ -140,7 +140,7 @@ Rectangle {
                 y: height + 5
                 width: parent.width - 19
                 height: width
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 svg: SvgOutline.repost
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_REPOST
             }
@@ -149,7 +149,7 @@ Rectangle {
                 y: height + 5
                 width: parent.width - 19
                 height: width
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 svg: SvgOutline.inviteCode
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
             }
@@ -158,8 +158,8 @@ Rectangle {
                 y: height + 5
                 width: parent.width - 19
                 height: width
-                color: guiSettings.moderatorIconColor
-                outlineColor: guiSettings.textColor
+                color: GuiSettings.moderatorIconColor
+                outlineColor: GuiSettings.textColor
                 svg: SvgFilled.moderator
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS
             }
@@ -169,7 +169,7 @@ Rectangle {
                 width: parent.width - 19
                 height: width
                 radius: height / 2
-                color: guiSettings.avatarDefaultColor
+                color: GuiSettings.avatarDefaultColor
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_FOLLOW
 
                 SkySvg {
@@ -185,7 +185,7 @@ Rectangle {
 
         Loader {
             id: postLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - GuiSettings.threadColumnWidth - notification.margin * 2
             active: showPost()
             visible: status == Loader.Ready
 
@@ -249,7 +249,7 @@ Rectangle {
                 Loader {
                     active: true
                     width: parent.width
-                    height: guiSettings.statsHeight + 10
+                    height: GuiSettings.statsHeight + 10
                     asynchronous: true
 
                     sourceComponent: PostStats {
@@ -324,7 +324,7 @@ Rectangle {
 
         Loader {
             id: aggregatableLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - GuiSettings.threadColumnWidth - notification.margin * 2
             active: isAggregatableReason()
             visible: status == Loader.Ready
 
@@ -376,7 +376,7 @@ Rectangle {
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        color: guiSettings.textColor
+                        color: GuiSettings.textColor
                         text: `+${(notificationOtherAuthors.length - 4)}`
                         visible: notificationOtherAuthors.length > 4
 
@@ -394,13 +394,13 @@ Rectangle {
                         Layout.fillWidth: true
                         textFormat: Text.RichText
                         wrapMode: Text.Wrap
-                        color: guiSettings.textColor
+                        color: GuiSettings.textColor
                         text: authorsAndReasonText()
                     }
                     Text {
                         Layout.fillHeight: true
-                        text: guiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
-                        font.pointSize: guiSettings.scaledFont(7/8)
+                        text: GuiSettings.durationToString((new Date() - notificationTimestamp) / 1000)
+                        font.pointSize: GuiSettings.scaledFont(7/8)
                         color: Material.color(Material.Grey)
                     }
                 }
@@ -446,7 +446,7 @@ Rectangle {
 
         Loader {
             id: inviteCodeLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: parent.width - GuiSettings.threadColumnWidth - notification.margin * 2
             active: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
             visible: status == Loader.Ready
             sourceComponent: Column {
@@ -482,7 +482,7 @@ Rectangle {
                     width: parent.width
                     textFormat: Text.RichText
                     wrapMode: Text.Wrap
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                     text: {
                         `<b>${(unicodeFonts.toCleanedHtml(notificationInviteCodeUsedBy.name))}</b> ` +
                         qsTr("used your invite code") + ": " + notificationInviteCode
@@ -496,7 +496,7 @@ Rectangle {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: 1
             Layout.columnSpan: 2
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
 
         // End of feed indication
@@ -506,7 +506,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             elide: Text.ElideRight
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfList
@@ -527,9 +527,6 @@ Rectangle {
         id: unicodeFonts
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function openNotification() {
         if (notificationPostUri)

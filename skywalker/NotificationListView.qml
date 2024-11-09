@@ -86,7 +86,4 @@ SkyListView {
         running: skywalker.getNotificationsInProgress
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

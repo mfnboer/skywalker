@@ -12,10 +12,10 @@ Dialog {
     x: (parent.width - width) / 2
     contentWidth: Math.max(yearComboBox.x + yearComboBox.width, monthGrid.width)
     contentHeight: monthColumn.y + monthColumn.height
-    topMargin: guiSettings.headerHeight + 10
+    topMargin: GuiSettings.headerHeight + 10
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     ComboBox {
         id: monthComboBox
@@ -72,13 +72,13 @@ Dialog {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 opacity: model.month === monthGrid.month ? 1 : 0
-                color: selected ? guiSettings.buttonTextColor : guiSettings.buttonColor
+                color: selected ? GuiSettings.buttonTextColor : GuiSettings.buttonColor
                 text: model.day
 
                 Rectangle {
                     anchors.fill: parent
                     z: parent.z - 1
-                    color: selected ? guiSettings.buttonColor : "transparent"
+                    color: selected ? GuiSettings.buttonColor : "transparent"
                 }
             }
 
@@ -99,9 +99,6 @@ Dialog {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function setSelectedDate() {
         if (!initialized)

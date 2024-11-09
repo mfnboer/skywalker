@@ -29,15 +29,15 @@ SkyPage {
             width: parent.width
             elide: Text.ElideRight
             font.bold: true
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             plainText: starterPack.name
         }
 
         AccessibleText {
             width: parent.width
             elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(7/8)
-            color: guiSettings.handleColor
+            font.pointSize: GuiSettings.scaledFont(7/8)
+            color: GuiSettings.handleColor
             text: qsTr(`by @${starterPack.creator.handle}`)
         }
 
@@ -57,7 +57,7 @@ SkyPage {
             elide: Text.ElideRight
             textFormat: Text.RichText
             maximumLineCount: 25
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             plainText: starterPack.formattedDescription
             visible: starterPack.description
         }
@@ -86,7 +86,7 @@ SkyPage {
         anchors.top: feedsBar.bottom
         width: parent.width
         height: 1
-        color: guiSettings.separatorColor
+        color: GuiSettings.separatorColor
     }
 
     StackLayout {
@@ -163,9 +163,6 @@ SkyPage {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onDestruction: {
         skywalker.removePostFeedModel(postFeedModelId)

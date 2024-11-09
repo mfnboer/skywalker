@@ -15,9 +15,9 @@ ListView {
     boundsBehavior: Flickable.StopAtBounds
     clip: true
     model: codes
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
+    flickDeceleration: GuiSettings.flickDeceleration
+    maximumFlickVelocity: GuiSettings.maxFlickVelocity
+    pixelAligned: GuiSettings.flickPixelAligned
 
     header: SimpleHeader {
         text: qsTr("Invite Codes")
@@ -45,13 +45,13 @@ ListView {
                     leftPadding: 10
                     topPadding: 10
                     font.strikeout: !modelData.available || modelData.disabled
-                    color: modelData.disabled ? Material.color(Material.Grey) : guiSettings.textColor
+                    color: modelData.disabled ? Material.color(Material.Grey) : GuiSettings.textColor
                     text: modelData.code
                 }
                 Text {
                     width: parent.width
                     leftPadding: 10
-                    font.pointSize: guiSettings.scaledFont(7/8)
+                    font.pointSize: GuiSettings.scaledFont(7/8)
                     color: Material.color(Material.Grey)
                     text: modelData.createdAt.toLocaleDateString(Qt.locale(), Locale.LongFormat)
                 }
@@ -61,7 +61,7 @@ ListView {
                 id: copyButton
                 svg: SvgOutline.copy
                 accessibleName: qsTr("copy invite code")
-                iconColor: guiSettings.textColor
+                iconColor: GuiSettings.textColor
                 Material.background: "transparent"
                 visible: modelData.available && !modelData.disabled
                 onClicked: modelData.copyToClipboard()
@@ -100,7 +100,7 @@ ListView {
                 topPadding: 5
                 Layout.fillWidth: true
                 elide: Text.ElideRight
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: modelData.usedBy.name
                 visible: modelData.used
             }
@@ -109,8 +109,8 @@ ListView {
                 id: handleText
                 Layout.fillWidth: true
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
+                font.pointSize: GuiSettings.scaledFont(7/8)
+                color: GuiSettings.handleColor
                 text: `@${modelData.usedBy.handle}`
                 visible: modelData.used
             }
@@ -119,7 +119,7 @@ ListView {
                 id: dateText
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                font.pointSize: guiSettings.scaledFont(7/8)
+                font.pointSize: GuiSettings.scaledFont(7/8)
                 color: Material.color(Material.Grey)
                 text: modelData.usedAt.toLocaleDateString(Qt.locale(), Locale.LongFormat)
                 visible: modelData.used
@@ -129,7 +129,7 @@ ListView {
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: guiSettings.separatorColor
+                color: GuiSettings.separatorColor
             }
         }
         MouseArea {
@@ -146,7 +146,7 @@ ListView {
         width: parent.width
         wrapMode: Text.WordWrap
         elide: Text.ElideRight
-        color: guiSettings.textColor
+        color: GuiSettings.textColor
         text: qsTr("Could not retrieve invite codes. To retrieve invite codes you need to sign in with your real password, not an app password.")
         visible: failedToLoad
     }
@@ -157,12 +157,9 @@ ListView {
         width: parent.width
         wrapMode: Text.WordWrap
         elide: Text.ElideRight
-        color: guiSettings.textColor
+        color: GuiSettings.textColor
         text: qsTr("You do not yet have any invide codes.")
         visible: !failedToLoad && inviteCodeList.count === 0
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

@@ -101,9 +101,6 @@ SkyListView {
         Accessible.role: Accessible.ProgressBar
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getFirstVisibleIndex() {
         let firstVisibleIndex = indexAt(0, contentY + headerItem.height)

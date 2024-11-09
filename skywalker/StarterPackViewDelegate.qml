@@ -22,15 +22,15 @@ Rectangle {
             width: parent.width
             elide: Text.ElideRight
             font.bold: true
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             plainText: starterPack.name
         }
 
         AccessibleText {
             width: parent.width
             elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(7/8)
-            color: guiSettings.handleColor
+            font.pointSize: GuiSettings.scaledFont(7/8)
+            color: GuiSettings.handleColor
             text: qsTr(`by @${starterPack.creator.handle}`)
         }
 
@@ -49,7 +49,7 @@ Rectangle {
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             maximumLineCount: maxTextLines
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             plainText: starterPack.description
             visible: starterPack.description
         }
@@ -63,7 +63,7 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
     }
 
@@ -73,7 +73,4 @@ Rectangle {
         onClicked: skywalker.getStarterPackView(starterPack.uri)
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

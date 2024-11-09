@@ -9,12 +9,9 @@ Item {
         id: gifUtils
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getTimeSpeech(date) {
-        const time = guiSettings.isToday(date) ?
+        const time = GuiSettings.isToday(date) ?
             date.toLocaleTimeString(Qt.locale(), Locale.ShortFormat) :
             date.toLocaleString(Qt.locale(), Locale.ShortFormat)
         return time
@@ -83,7 +80,7 @@ Item {
     }
 
     function getListSpeech(list) {
-        let speech = qsTr(`${(guiSettings.listTypeName(list.purpose))} by ${list.creator.name}\n\n${list.description}`)
+        let speech = qsTr(`${(GuiSettings.listTypeName(list.purpose))} by ${list.creator.name}\n\n${list.description}`)
         return speech
     }
 

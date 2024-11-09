@@ -65,15 +65,15 @@ SkyPage {
             anchors.top: parent.top
             width: parent.width
             height: width / 3
-            color: guiSettings.bannerDefaultColor
+            color: GuiSettings.bannerDefaultColor
             visible: !bannerImg.visible
         }
 
         SvgButton {
             anchors.top: parent.top
             anchors.left: parent.left
-            iconColor: guiSettings.headerTextColor
-            Material.background: guiSettings.headerColor
+            iconColor: GuiSettings.headerTextColor
+            Material.background: GuiSettings.headerColor
             opacity: 0.5
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
@@ -87,7 +87,7 @@ SkyPage {
             width: 104
             height: width
             radius: width / 2
-            color: guiSettings.backgroundColor
+            color: GuiSettings.backgroundColor
 
             Avatar {
                 anchors.centerIn: parent
@@ -132,9 +132,9 @@ SkyPage {
         spacing: 0
         model: 1
         boundsBehavior: Flickable.StopAtBounds
-        flickDeceleration: guiSettings.flickDeceleration
-        maximumFlickVelocity: guiSettings.maxFlickVelocity
-        pixelAligned: guiSettings.flickPixelAligned
+        flickDeceleration: GuiSettings.flickDeceleration
+        maximumFlickVelocity: GuiSettings.maxFlickVelocity
+        pixelAligned: GuiSettings.flickPixelAligned
 
         Accessible.role: Accessible.List
 
@@ -309,8 +309,8 @@ SkyPage {
                 wrapMode: Text.Wrap
                 maximumLineCount: 3
                 font.bold: true
-                font.pointSize: guiSettings.scaledFont(12/8)
-                color: guiSettings.textColor
+                font.pointSize: GuiSettings.scaledFont(12/8)
+                color: GuiSettings.textColor
                 plainText: authorName
 
                 Accessible.ignored: true
@@ -323,7 +323,7 @@ SkyPage {
                     id: handleText
                     Layout.fillWidth: true
                     elide: Text.ElideRight
-                    color: guiSettings.handleColor
+                    color: GuiSettings.handleColor
                     text: `@${author.handle}`
                 }
                 SkyLabel {
@@ -374,7 +374,7 @@ SkyPage {
                     authorListHeader: qsTr("Following")
                 }
                 Text {
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                     text: qsTr(`<b>${author.postsCount}</b> posts`)
 
                     Accessible.role: Accessible.StaticText
@@ -388,8 +388,8 @@ SkyPage {
                 topPadding: 10
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
-                color: guiSettings.textColor
-                text: postUtils.linkiFy(authorDescription, guiSettings.linkColor)
+                color: GuiSettings.textColor
+                text: postUtils.linkiFy(authorDescription, GuiSettings.linkColor)
                 visible: contentVisible()
 
                 onLinkActivated: (link) => root.openLink(link)
@@ -399,7 +399,7 @@ SkyPage {
                 id: firstAppearanceText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr(`🗓 First appearance: ${firstAppearanceDate}`)
                 visible: contentVisible()
             }
@@ -438,7 +438,7 @@ SkyPage {
                     wrapMode: Text.Wrap
                     textFormat: Text.RichText
                     maximumLineCount: 3
-                    color: guiSettings.linkColor
+                    color: GuiSettings.linkColor
                     plainText: qsTr(`Followed by ${getKnownFollowersText()}`)
 
                     MouseArea {
@@ -479,7 +479,7 @@ SkyPage {
 
                 StatIcon {
                     id: likeIcon
-                    iconColor: labelerLikeUri ? guiSettings.likeColor : guiSettings.statsColor
+                    iconColor: labelerLikeUri ? GuiSettings.likeColor : GuiSettings.statsColor
                     svg: labelerLikeUri ? SvgFilled.like : SvgOutline.like
                     onClicked: likeLabeler(labelerLikeUri, labeler.uri, labeler.cid)
                     Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(labelerLikeCount, qsTr("like"), qsTr("likes"))
@@ -548,7 +548,7 @@ SkyPage {
                 x: -parent.leftPadding
                 width: parent.width
                 height: 1
-                color: guiSettings.separatorColor
+                color: GuiSettings.separatorColor
             }
 
             function getFeedMenuBarHeight() {
@@ -578,9 +578,9 @@ SkyPage {
                 clip: true
                 spacing: 0
                 model: contentGroupListModel
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
+                flickDeceleration: GuiSettings.flickDeceleration
+                maximumFlickVelocity: GuiSettings.maxFlickVelocity
+                pixelAligned: GuiSettings.flickPixelAligned
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
 
@@ -597,7 +597,7 @@ SkyPage {
                         Layout.rightMargin: 10
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
-                        color: guiSettings.textColor
+                        color: GuiSettings.textColor
                         text: qsTr("Labels are annotations on users and content. They can be used to warn, hide and categorize content.")
                     }
 
@@ -607,7 +607,7 @@ SkyPage {
                         Layout.fillWidth: true
                         height: page.isSubscribed ? implicitHeight : 0
                         wrapMode: Text.Wrap
-                        color: guiSettings.textColor
+                        color: GuiSettings.textColor
                         text: qsTr(`Subscribe to ${author.handle} to use these labels`)
                         visible: !page.isSubscribed
                     }
@@ -616,7 +616,7 @@ SkyPage {
                         Layout.fillWidth: true
                         Layout.topMargin: 10
                         height: 1
-                        color: guiSettings.separatorColor
+                        color: GuiSettings.separatorColor
                     }
                 }
 
@@ -702,9 +702,9 @@ SkyPage {
                 clip: true
                 spacing: 0
                 model: skywalker.getFeedListModel(feedListModelId)
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
+                flickDeceleration: GuiSettings.flickDeceleration
+                maximumFlickVelocity: GuiSettings.maxFlickVelocity
+                pixelAligned: GuiSettings.flickPixelAligned
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
 
@@ -750,9 +750,9 @@ SkyPage {
                 clip: true
                 spacing: 0
                 model: skywalker.getStarterPackListModel(starterPackListModelId)
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
+                flickDeceleration: GuiSettings.flickDeceleration
+                maximumFlickVelocity: GuiSettings.maxFlickVelocity
+                pixelAligned: GuiSettings.flickPixelAligned
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
 
@@ -798,9 +798,9 @@ SkyPage {
                 clip: true
                 spacing: 0
                 model: skywalker.getListListModel(listListModelId)
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
+                flickDeceleration: GuiSettings.flickDeceleration
+                maximumFlickVelocity: GuiSettings.maxFlickVelocity
+                pixelAligned: GuiSettings.flickPixelAligned
                 ScrollIndicator.vertical: ScrollIndicator {}
                 interactive: !authorFeedView.interactive
 
@@ -1013,9 +1013,6 @@ SkyPage {
         id: accessibilityUtils
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function editAuthor(author) {
         let component = Qt.createComponent("EditProfile.qml")
@@ -1140,7 +1137,7 @@ SkyPage {
     }
 
     function contentVisible() {
-        return showWarnedMedia || guiSettings.contentVisible(author)
+        return showWarnedMedia || GuiSettings.contentVisible(author)
     }
 
     function contentVisibilityIsWarning() {
@@ -1173,14 +1170,14 @@ SkyPage {
     function getEmptyListIndicationText() {
         if (!author.viewer.blockingByList.isNull()) {
             const listName = unicodeFonts.toCleanedHtml(author.viewer.blockingByList.name)
-            return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
+            return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${GuiSettings.linkColor}">${listName}</a>`)
         } else if (blocking) {
             return qsTr("You blocked this account")
         } else if (author.viewer.blockedBy) {
             return qsTr("You are blocked")
         } else if (!author.viewer.mutedByList.isNull()) {
             const listName = unicodeFonts.toCleanedHtml(author.viewer.mutedByList.name)
-            return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
+            return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${GuiSettings.linkColor}">${listName}</a>`)
         } else if (authorMuted) {
             return qsTr("You muted this account")
         } else if (!contentVisible()) {

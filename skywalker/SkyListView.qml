@@ -6,9 +6,9 @@ ListView {
 
     spacing: 0
     clip: true
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
+    flickDeceleration: GuiSettings.flickDeceleration
+    maximumFlickVelocity: GuiSettings.maxFlickVelocity
+    pixelAligned: GuiSettings.flickPixelAligned
     cacheBuffer: 15000
     ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -39,7 +39,4 @@ ListView {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

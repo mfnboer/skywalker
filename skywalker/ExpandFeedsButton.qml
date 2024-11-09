@@ -7,7 +7,7 @@ import skywalker
 SvgButton {
     required property var skywalker
 
-    iconColor: guiSettings.headerTextColor
+    iconColor: GuiSettings.headerTextColor
     Material.background: "transparent"
     svg: SvgOutline.expandMore
     accessibleName: qsTr("select other feed")
@@ -23,7 +23,7 @@ SvgButton {
             contentItem: Text {
                 verticalAlignment: Text.AlignVCenter
                 rightPadding: homeAvatar.width + 5
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 elide: Text.ElideRight
                 text: qsTr("Following", "timeline title")
             }
@@ -56,7 +56,7 @@ SvgButton {
                 contentItem: SkyCleanedText {
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: feedAvatar.width + 5
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                     elide: Text.ElideRight
                     plainText: modelData.name
 
@@ -127,7 +127,4 @@ SvgButton {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

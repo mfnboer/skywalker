@@ -4,14 +4,14 @@ import QtQuick.Controls
 RoundButton {
     id: button
 
-    Material.background: flat ? guiSettings.labelColor : guiSettings.buttonColor
+    Material.background: flat ? GuiSettings.labelColor : GuiSettings.buttonColor
 
     contentItem: Text {
         leftPadding: 10
         rightPadding: 10
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        color: flat ? guiSettings.textColor : guiSettings.buttonTextColor
+        color: flat ? GuiSettings.textColor : GuiSettings.buttonTextColor
         text: button.text
     }
 
@@ -19,7 +19,4 @@ RoundButton {
     Accessible.name: button.text
     Accessible.onPressAction: if (enabled) clicked()
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

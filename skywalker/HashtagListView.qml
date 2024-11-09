@@ -12,9 +12,9 @@ ListView {
     spacing: 0
     boundsBehavior: Flickable.StopAtBounds
     clip: true
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
+    flickDeceleration: GuiSettings.flickDeceleration
+    maximumFlickVelocity: GuiSettings.maxFlickVelocity
+    pixelAligned: GuiSettings.flickPixelAligned
 
     Accessible.role: Accessible.List
 
@@ -25,7 +25,7 @@ ListView {
         id: hashtagEntry
         width: searchList.width
         height: hashtagText.height
-        color: guiSettings.backgroundColor
+        color: GuiSettings.backgroundColor
 
         Accessible.role: Accessible.Button
         Accessible.name: hashtag
@@ -34,7 +34,7 @@ ListView {
         Rectangle {
             width: parent.width
             height: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
 
         SkyCleanedText {
@@ -43,7 +43,7 @@ ListView {
             padding: 10
             elide: Text.ElideRight
             font.bold: true
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             plainText: `#${hashtagEntry.hashtag}`
 
             Accessible.ignored: true

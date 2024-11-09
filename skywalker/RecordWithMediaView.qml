@@ -7,7 +7,7 @@ Item {
     required property record_with_media_view record
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
-    property string backgroundColor: guiSettings.backgroundColor
+    property string backgroundColor: GuiSettings.backgroundColor
 
     id: recordItem
     width: parent.width
@@ -53,9 +53,6 @@ Item {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function movedOffScreen() {
         if (record.video && mediaLoader.item)

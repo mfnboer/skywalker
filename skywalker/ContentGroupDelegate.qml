@@ -14,7 +14,7 @@ Rectangle {
 
     id: contentGroupView
     height: contentGroupColumn.height
-    color: isNewLabel ? guiSettings.postHighLightColor : "transparent"
+    color: isNewLabel ? GuiSettings.postHighLightColor : "transparent"
 
     ColumnLayout {
         id: contentGroupColumn
@@ -36,7 +36,7 @@ Rectangle {
                 Layout.fillWidth: true
                 font.bold: true
                 elide: Text.ElideRight
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: contentGroup.title
             }
             SvgButton {
@@ -46,7 +46,7 @@ Rectangle {
                 Layout.rightMargin: contentGroupView.margin
                 svg: contentGroup.target === QEnums.LABEL_TARGET_CONTENT ? SvgOutline.chat : SvgOutline.image
                 accessibleName: qsTr("target of the label")
-                iconColor: guiSettings.textColor
+                iconColor: GuiSettings.textColor
                 Material.background: "transparent"
                 visible: !contentGroup.isBadge
 
@@ -67,7 +67,7 @@ Rectangle {
             maximumLineCount: 1000
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             text: contentGroup.formattedDescription
         }
 
@@ -122,7 +122,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 padding: 10
-                color: guiSettings.buttonColor
+                color: GuiSettings.buttonColor
                 horizontalAlignment: Qt.AlignHCenter
                 text: qsTr("Hide")
                 visible: contentGroup.isAdult && !adultContent
@@ -139,13 +139,10 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function setContentPrefVisibility(pref) {
         if (model.contentPrefVisibility !== pref)

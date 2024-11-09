@@ -51,9 +51,9 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: editProfilePage.width
-        height: guiSettings.footerHeight
-        z: guiSettings.footerZLevel
-        color: guiSettings.footerColor
+        height: GuiSettings.footerHeight
+        z: GuiSettings.footerZLevel
+        color: GuiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus
 
         TextLengthBar {
@@ -106,7 +106,7 @@ SkyPage {
             AccessibleText {
                 Layout.fillWidth: true
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("Avatar + Banner")
             }
 
@@ -114,7 +114,7 @@ SkyPage {
                 id: bannerBackground
                 Layout.fillWidth: true
                 height: parent.width * (bannerHeight / bannerWidth) + avatar.height / 2
-                color: guiSettings.bannerDefaultColor
+                color: GuiSettings.bannerDefaultColor
 
                 ImageAutoRetry {
                     property bool isUpdated: false
@@ -157,7 +157,7 @@ SkyPage {
                         y: parent.height
                         width: parent.width
                         height: bannerBackground.height - parent.height
-                        color: guiSettings.backgroundColor
+                        color: GuiSettings.backgroundColor
                     }
 
                     Rectangle {
@@ -167,7 +167,7 @@ SkyPage {
                         width: 104
                         height: width
                         radius: width / 2
-                        color: guiSettings.backgroundColor
+                        color: GuiSettings.backgroundColor
 
                         Avatar {
                             property bool isUpdated: false
@@ -210,7 +210,7 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("Name")
             }
 
@@ -219,7 +219,7 @@ SkyPage {
                 Layout.preferredHeight: nameField.height
                 radius: 5
                 border.width: 1
-                border.color: guiSettings.borderColor
+                border.color: GuiSettings.borderColor
                 color: "transparent"
 
                 SkyTextEdit {
@@ -239,7 +239,7 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: qsTr("Description")
             }
 
@@ -253,7 +253,7 @@ SkyPage {
 
                 radius: 5
                 border.width: 1
-                border.color: guiSettings.borderColor
+                border.color: GuiSettings.borderColor
                 color: "transparent"
 
                 SkyFormattedTextEdit {
@@ -311,9 +311,6 @@ SkyPage {
         onUpdateProfileOk: () => editProfilePage.updateProfileDone()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function updateProfileProgress(msg) {
         busyIndicator.running = true
@@ -439,7 +436,7 @@ SkyPage {
             return
         }
 
-        guiSettings.askYesNoQuestion(
+        GuiSettings.askYesNoQuestion(
                     editProfilePage,
                     qsTr("Do you really want to discard your changes?"),
                     () => editProfilePage.closed())

@@ -12,9 +12,9 @@ ListView {
     spacing: 0
     boundsBehavior: Flickable.StopAtBounds
     model: skywalker.focusHashtags.entries
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
+    flickDeceleration: GuiSettings.flickDeceleration
+    maximumFlickVelocity: GuiSettings.maxFlickVelocity
+    pixelAligned: GuiSettings.flickPixelAligned
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -58,8 +58,8 @@ ListView {
                     elide: Text.ElideRight
                     wrapMode: Text.Wrap
                     textFormat: Text.RichText
-                    font.pointSize: guiSettings.scaledFont(9/8)
-                    color: guiSettings.textColor
+                    font.pointSize: GuiSettings.scaledFont(9/8)
+                    color: GuiSettings.textColor
                     text: getEntryText(modelData)
 
                     onLinkActivated: (hashtag) => {
@@ -97,7 +97,7 @@ ListView {
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: guiSettings.textColor
+                    iconColor: GuiSettings.textColor
                     Material.background: "transparent"
                     svg: SvgOutline.palette
                     accessibleName: qsTr(`set hightlight color for ${entryText.text}`)
@@ -108,7 +108,7 @@ ListView {
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: guiSettings.textColor
+                    iconColor: GuiSettings.textColor
                     Material.background: "transparent"
                     svg: SvgOutline.add
                     accessibleName: qsTr(`edit ${entryText.text}`)
@@ -120,7 +120,7 @@ ListView {
                     Layout.rightMargin: 10
                     imageMargin: 0
                     id: deleteButton
-                    iconColor: guiSettings.textColor
+                    iconColor: GuiSettings.textColor
                     Material.background: "transparent"
                     svg: SvgOutline.delete
                     accessibleName: qsTr(`delete ${entryText.text}`)
@@ -132,14 +132,14 @@ ListView {
                 anchors.fill: parent
                 z: parent.z - 1
                 color: modelData.highlightColor
-                opacity: guiSettings.focusHighlightOpacity
+                opacity: GuiSettings.focusHighlightOpacity
             }
         }
 
         Rectangle {
             width: parent.width
             height: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
         }
     }
 
@@ -152,12 +152,9 @@ ListView {
         list: view
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function deleteHashtagEntry(entry) {
-        guiSettings.askYesNoQuestion(
+        GuiSettings.askYesNoQuestion(
                     view,
                     qsTr(`Do you really want to delete: #${entry.hashtags[0]} ?`),
                     () => skywalker.focusHashtags.removeEntry(entry.id))
@@ -247,7 +244,7 @@ ListView {
             if (i > 0)
                 text += ' '
 
-            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
+            text += `<a href="${tag}" style="color: ${GuiSettings.linkColor}; text-decoration: none">#${tag}</a>`
         }
 
         console.debug("TEXT:", text)

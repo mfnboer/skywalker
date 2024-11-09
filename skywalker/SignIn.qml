@@ -8,7 +8,7 @@ SkyPage {
 
     width: parent.width
     height: parent.height
-    background: Rectangle { color: guiSettings.skywalkerLogoColor }
+    background: Rectangle { color: GuiSettings.skywalkerLogoColor }
 
     Accessible.role: Accessible.Pane
     Accessible.name: "Skywalker"
@@ -24,7 +24,7 @@ SkyPage {
             padding: 10
             color: "white"
             font.bold: true
-            font.pointSize: guiSettings.scaledFont(3.5)
+            font.pointSize: GuiSettings.scaledFont(3.5)
             text: "Skywalker"
         }
         Text {
@@ -79,7 +79,4 @@ SkyPage {
         id: unicodeFonts
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

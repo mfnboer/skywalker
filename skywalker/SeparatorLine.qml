@@ -17,7 +17,7 @@ Item {
         anchors.top: spaceBefore.bottom
         width: parent.width
         height: parent.visible ? 1 : 0
-        color: guiSettings.separatorColor
+        color: GuiSettings.separatorColor
         visible: parent.visible
     }
 
@@ -30,7 +30,4 @@ Item {
         visible: parent.visible
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

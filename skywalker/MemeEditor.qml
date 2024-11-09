@@ -78,9 +78,6 @@ SkyPage {
         id: memeMaker
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onCompleted: {
         if (!memeMaker.setOrigImage(imgSource)) {

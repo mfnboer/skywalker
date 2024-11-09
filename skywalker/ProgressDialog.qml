@@ -9,7 +9,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     ColumnLayout {
         id: column
@@ -31,14 +31,11 @@ Dialog {
             Layout.fillWidth: true
             horizontalAlignment: Qt.AlignRight
             text: `${(Math.round(progressBar.value * 100))}%`
-            font.pointSize: guiSettings.scaledFont(7/8)
+            font.pointSize: GuiSettings.scaledFont(7/8)
             color: Material.color(Material.Grey)
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function show(msg) {
         progressText.text = msg

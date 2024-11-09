@@ -12,7 +12,7 @@ Rectangle {
     id: header
     width: parent.width
     height: headerColumn.height
-    z: guiSettings.headerZLevel
+    z: GuiSettings.headerZLevel
     color: "transparent"
 
     Column {
@@ -21,17 +21,17 @@ Rectangle {
 
         Rectangle {
             width: parent.width
-            height: guiSettings.headerHeight
-            color: guiSettings.headerColor
+            height: GuiSettings.headerHeight
+            color: GuiSettings.headerColor
 
             RowLayout {
                 id: headerRow
                 width: parent.width
-                height: guiSettings.headerHeight
+                height: GuiSettings.headerHeight
 
                 SvgButton {
                     id: backButton
-                    iconColor: guiSettings.headerTextColor
+                    iconColor: GuiSettings.headerTextColor
                     Material.background: "transparent"
                     svg: SvgOutline.arrowBack
                     accessibleName: qsTr("go back")
@@ -43,8 +43,8 @@ Rectangle {
                     Layout.fillWidth: true
                     leftPadding: 10
                     font.bold: true
-                    font.pointSize: guiSettings.scaledFont(10/8)
-                    color: guiSettings.headerTextColor
+                    font.pointSize: GuiSettings.scaledFont(10/8)
+                    color: GuiSettings.headerTextColor
                     text: title
 
                     Accessible.role: Accessible.TitleBar
@@ -56,7 +56,7 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: descriptionText.height
-            color: guiSettings.backgroundColor
+            color: GuiSettings.backgroundColor
             visible: description
 
             Accessible.role: Accessible.StaticText
@@ -69,7 +69,7 @@ Rectangle {
                 padding: 10
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 plainText: description
 
                 Accessible.ignored: true
@@ -78,12 +78,9 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: 1
-            color: guiSettings.separatorColor
+            color: GuiSettings.separatorColor
             visible: description
         }
 
-        GuiSettings {
-            id: guiSettings
-        }
     }
 }

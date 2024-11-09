@@ -90,9 +90,6 @@ SkyPage {
         skywalker: page.skywalker
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function resetAuthorTypeaheadList() {
         searchUtils.authorTypeaheadList = skywalker.chat.getAllConvoMembers()

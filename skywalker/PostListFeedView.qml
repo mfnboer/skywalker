@@ -74,9 +74,6 @@ SkyListView {
         running: skywalker.getFeedInProgress
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function forceDestroy() {
         if (modelId !== -1) {

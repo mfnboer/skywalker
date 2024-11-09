@@ -10,10 +10,10 @@ Dialog {
     id: page
     width: parent.width
     contentHeight: textInput.height + (hashtagTypeaheadView.visible ? hashtagTypeaheadView.height : 0)
-    topMargin: guiSettings.headerHeight
+    topMargin: GuiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     SkyTextInput {
         id: textInput
@@ -69,9 +69,6 @@ Dialog {
         skywalker: root.getSkywalker()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getText() {
         let text = textInput.text.trim()

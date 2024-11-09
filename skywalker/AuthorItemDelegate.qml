@@ -31,19 +31,16 @@ RowLayout {
             width: parent.width
             elide: Text.ElideRight
             font.bold: true
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             plainText: author.name
         }
         Text {
             width: parent.width
             elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(7/8)
-            color: guiSettings.handleColor
+            font.pointSize: GuiSettings.scaledFont(7/8)
+            color: GuiSettings.handleColor
             text: `@${author.handle}`
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

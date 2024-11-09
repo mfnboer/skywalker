@@ -7,8 +7,8 @@ ComboBox {
     property list<language> usedLanguages
     property list<string> checkedLangCodes
     property int radius: 0
-    property string borderColor: guiSettings.buttonColor
-    property string color: guiSettings.buttonColor
+    property string borderColor: GuiSettings.buttonColor
+    property string color: GuiSettings.buttonColor
 
     id: languageComboBox
     height: 34
@@ -52,14 +52,14 @@ ComboBox {
             implicitWidth: 20
             implicitHeight: 20
             color: "transparent"
-            border.color: guiSettings.textColor
+            border.color: GuiSettings.textColor
 
             Rectangle {
                 width: 14
                 height: 14
                 x: 3
                 y: 3
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 visible: delegate.checked
             }
         }
@@ -69,13 +69,13 @@ ComboBox {
             width: delegate.width
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
-            color: guiSettings.textColor
+            color: GuiSettings.textColor
             text: `${delegate.modelData.nativeName} (${delegate.modelData.shortCode})`
         }
 
         background: Rectangle {
             implicitWidth: delegate.width
-            color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length ? guiSettings.postHighLightColor : "transparent")
+            color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length ? GuiSettings.postHighLightColor : "transparent")
         }
 
         MouseArea {
@@ -108,9 +108,9 @@ ComboBox {
 
         footer: Rectangle {
             width: parent.width
-            height: guiSettings.footerHeight
+            height: GuiSettings.footerHeight
             color: languageComboBox.popup.background.color
-            z: guiSettings.footerZLevel
+            z: GuiSettings.footerZLevel
 
             SkyButton {
                 anchors.centerIn: parent
@@ -123,7 +123,4 @@ ComboBox {
         footerPositioning: ListView.OverlayFooter
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

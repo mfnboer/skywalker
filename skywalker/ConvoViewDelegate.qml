@@ -18,7 +18,7 @@ Rectangle {
 
     id: convoRect
     height: convoRow.height
-    color: guiSettings.backgroundColor
+    color: GuiSettings.backgroundColor
 
     RowLayout {
         id: convoRow
@@ -30,7 +30,7 @@ Rectangle {
         Rectangle {
             id: avatarRect
             height: avatar.height + 10
-            width: guiSettings.threadColumnWidth
+            width: GuiSettings.threadColumnWidth
             color: "transparent"
 
             Avatar {
@@ -62,7 +62,7 @@ Rectangle {
                     width: parent.width - mutedImg.width - timeText.width - parent.spacing * (convo.muted ? 2 : 1)
                     elide: Text.ElideRight
                     font.bold: true
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                     plainText: convo.memberNames
                 }
 
@@ -70,7 +70,7 @@ Rectangle {
                     id: mutedImg
                     height: convo.muted ? nameText.height : 0
                     width: height
-                    color: guiSettings.textColor
+                    color: GuiSettings.textColor
                     svg: SvgOutline.notificationsOff
                     visible: convo.muted
                 }
@@ -78,8 +78,8 @@ Rectangle {
                 AccessibleText {
                     id: timeText
                     rightPadding: margin
-                    font.pointSize: guiSettings.scaledFont(6/8)
-                    color: guiSettings.messageTimeColor
+                    font.pointSize: GuiSettings.scaledFont(6/8)
+                    color: GuiSettings.messageTimeColor
                     text: getConvoTimeIndication()
                 }
             }
@@ -94,8 +94,8 @@ Rectangle {
                     AccessibleText {
                         width: parent.width
                         elide: Text.ElideRight
-                        color: guiSettings.handleColor
-                        font.pointSize: guiSettings.scaledFont(7/8)
+                        color: GuiSettings.handleColor
+                        font.pointSize: GuiSettings.scaledFont(7/8)
                         text: `@${firstMember.handle}`
                         visible: convo.members.length <= 1
                     }
@@ -137,7 +137,7 @@ Rectangle {
                     id: moreButton
                     Layout.preferredWidth: 34
                     Layout.preferredHeight: 34
-                    iconColor: guiSettings.textColor
+                    iconColor: GuiSettings.textColor
                     Material.background: "transparent"
                     svg: SvgOutline.moreVert
                     accessibleName: qsTr("more options")
@@ -185,22 +185,19 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
         topPadding: 10
         elide: Text.ElideRight
-        color: guiSettings.textColor
+        color: GuiSettings.textColor
         text: qsTr("End of conversations")
         font.italic: true
         visible: endOfList
     }
 
     function getConvoTimeIndication() {
-        if (guiSettings.isToday(convo.lastMessageDate))
+        if (GuiSettings.isToday(convo.lastMessageDate))
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().timeFormat(Locale.ShortFormat))
-        else if (guiSettings.isYesterday(convo.lastMessageDate))
+        else if (GuiSettings.isYesterday(convo.lastMessageDate))
             return qsTr("Yesterday")
         else
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 }

@@ -28,10 +28,10 @@ ScrollView {
             SkyLabel {
                 required property language modelData
 
-                backgroundColor: guiSettings.contentLabelColor
-                font.pointSize: guiSettings.scaledFont(5/8)
+                backgroundColor: GuiSettings.contentLabelColor
+                font.pointSize: GuiSettings.scaledFont(5/8)
                 font.italic: true
-                color: guiSettings.textColor
+                color: GuiSettings.textColor
                 text: modelData.shortCode
 
                 Accessible.role: Accessible.StaticText
@@ -45,9 +45,6 @@ ScrollView {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function showInfo(language) {
         root.getSkywalker().showStatusMessage(language.nativeName, QEnums.STATUS_LEVEL_INFO)

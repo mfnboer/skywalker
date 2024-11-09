@@ -19,10 +19,10 @@ Dialog {
     id: searchPostScope
     width: parent.width
     contentHeight: Math.max(scopeGrid.height, (authorTypeaheadView.visible ? authorTypeaheadView.y + authorTypeaheadView.height : 0))
-    topMargin: guiSettings.headerHeight
+    topMargin: GuiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     GridLayout {
         id: scopeGrid
@@ -129,7 +129,7 @@ Dialog {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: SvgOutline.cancel
-                iconColor: guiSettings.textColor
+                iconColor: GuiSettings.textColor
                 Material.background: "transparent"
                 accessibleName: qsTr("clear since date")
                 visible: setSince
@@ -162,7 +162,7 @@ Dialog {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: SvgOutline.cancel
-                iconColor: guiSettings.textColor
+                iconColor: GuiSettings.textColor
                 Material.background: "transparent"
                 accessibleName: qsTr("clear until date")
                 visible: setUntil
@@ -183,8 +183,8 @@ Dialog {
             Layout.fillWidth: true
             background.implicitHeight: untilText.height
             radius: 5
-            color: guiSettings.textColor
-            borderColor: guiSettings.borderColor
+            color: GuiSettings.textColor
+            borderColor: GuiSettings.borderColor
             borderWidth: 1
             allLanguages: languageUtils.languages
             usedLanguages: languageUtils.usedLanguages
@@ -241,9 +241,6 @@ Dialog {
         skywalker: root.getSkywalker()
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function selectDate(textInput) {
         let component = Qt.createComponent("DatePicker.qml")

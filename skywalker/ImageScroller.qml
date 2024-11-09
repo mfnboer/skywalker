@@ -82,7 +82,7 @@ ScrollView {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
-                    backgroundColor: guiSettings.errorColor
+                    backgroundColor: GuiSettings.errorColor
                     horizontalAlignment: Text.AlignHCenter
                     color: "white"
                     text: "ALT text missing"
@@ -95,9 +95,6 @@ ScrollView {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function removeImage(index) {
         postUtils.dropPhoto(images[index])

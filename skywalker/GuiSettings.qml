@@ -1,9 +1,11 @@
-﻿import QtQuick
+﻿pragma Singleton
+import QtQuick
 import QtQuick.Controls
 import skywalker
 
 Item {
-    readonly property var userSettings: root.getSkywalker().getUserSettings()
+    property Skywalker skywalker
+    readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
 
     // Geometry
     readonly property int footerHeight: 50
@@ -20,7 +22,7 @@ Item {
     // Colors
     readonly property string accentColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string avatarDefaultColor: "blue"
-    readonly property string backgroundColor: userSettings.backgroundColor
+    readonly property string backgroundColor: userSettings ? userSettings.backgroundColor : Material.background
     readonly property string badgeBorderColor: backgroundColor
     readonly property string badgeColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
     readonly property string badgeTextColor: "white"
@@ -205,12 +207,12 @@ Item {
         if (author.viewer.blockedBy)
             return false
 
-        let visibility = root.getSkywalker().getContentVisibility(author.labels)
+        let visibility = skywalker.getContentVisibility(author.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
     function filterContentLabelsToShow(contentLabels) {
-        let contentFilter = root.getSkywalker().getContentFilter()
+        let contentFilter = skywalker.getContentFilter()
         let labels = []
 
         for (let i = 0; i < contentLabels.length; ++i) {

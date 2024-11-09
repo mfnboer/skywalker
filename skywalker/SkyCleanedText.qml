@@ -5,7 +5,7 @@ import skywalker
 Text {
     required property string plainText
     property string elidedText
-    property string ellipsisBackgroundColor: guiSettings.backgroundColor
+    property string ellipsisBackgroundColor: GuiSettings.backgroundColor
     property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
     property int capLineCount: initialShowMaxLineCount
@@ -15,8 +15,8 @@ Text {
     height: textFormat === Text.RichText && elide === Text.ElideRight && wrapMode !== Text.NoWrap ?
                 Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     clip: true
-    color: guiSettings.textColor
-    text: textMetrics.elidedText
+    color: GuiSettings.textColor
+    text: mustElideRich ? plainText : textMetrics.elidedText
 
     onPlainTextChanged: {
         determineTextFormat()
@@ -107,7 +107,7 @@ Text {
         anchors.bottom: parent.bottom
         leftPadding: theText.leftPadding
         background: Rectangle { color: ellipsisBackgroundColor }
-        text: qsTr(`<a href="show"style="color: ${guiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
+        text: qsTr(`<a href="show"style="color: ${GuiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
         visible: theText.height < theText.contentHeight && capLineCount < theText.maximumLineCount
 
         onLinkActivated:  capLineCount = theText.maximumLineCount
@@ -134,9 +134,6 @@ Text {
         id: unicodeFonts
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     Component.onCompleted: {
         determineTextFormat()

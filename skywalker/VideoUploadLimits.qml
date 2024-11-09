@@ -13,7 +13,7 @@ Dialog {
     contentHeight: limitsGrid.height
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
+    Material.background: GuiSettings.backgroundColor
 
     GridLayout {
         id: limitsGrid
@@ -51,9 +51,6 @@ Dialog {
         }
     }
 
-    GuiSettings {
-        id: guiSettings
-    }
 
     function getBytesString(bytes) {
         const mb = bytes / 1000000
