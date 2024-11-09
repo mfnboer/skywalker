@@ -10,6 +10,7 @@ Text {
     property int initialShowMaxLineCount: maximumLineCount
     property int capLineCount: initialShowMaxLineCount
     readonly property bool mustElideRich: elide === Text.ElideRight && wrapMode === Text.NoWrap && textFormat === Text.RichText
+    property bool isCompleted: false
 
     id: theText
     height: textFormat === Text.RichText && elide === Text.ElideRight && wrapMode !== Text.NoWrap ?
@@ -19,7 +20,9 @@ Text {
     text: mustElideRich ? plainText : textMetrics.elidedText
 
     onPlainTextChanged: {
-        determineTextFormat()
+        if (isCompleted) {
+            determineTextFormat()
+        }
     }
 
     onWidthChanged: resetText()
@@ -88,29 +91,42 @@ Text {
         }
     }
 
-    Label {
-        id: ellipsis
+    Loader {
+        active: theText.height > 0 && theText.height < theText.contentHeight
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        leftPadding: 10
-        font: theText.font
-        color: theText.color
-        background: Rectangle { color: ellipsisBackgroundColor }
-        text: "…"
-        visible: theText.height < theText.contentHeight
+        visible: status == Loader.Ready
+
+        sourceComponent: Label {
+            id: ellipsis
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            leftPadding: 10
+            font: theText.font
+            color: theText.color
+            background: Rectangle { color: ellipsisBackgroundColor }
+            text: "…"
+        }
     }
 
-    Label {
-        id: showMoreLabel
+    Loader {
+        active: theText.height > 0 && theText.height < theText.contentHeight && capLineCount < theText.maximumLineCount
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        leftPadding: theText.leftPadding
-        background: Rectangle { color: ellipsisBackgroundColor }
-        text: qsTr(`<a href="show"style="color: ${GuiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
-        visible: theText.height < theText.contentHeight && capLineCount < theText.maximumLineCount
+        visible: status == Loader.Ready
 
-        onLinkActivated:  capLineCount = theText.maximumLineCount
+        sourceComponent: Label {
+            id: showMoreLabel
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            leftPadding: theText.leftPadding
+            background: Rectangle { color: ellipsisBackgroundColor }
+            text: qsTr(`<a href="show"style="color: ${GuiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
+
+            onLinkActivated:  capLineCount = theText.maximumLineCount
+        }
     }
 
     function numLinesHidden() {
@@ -136,6 +152,7 @@ Text {
 
 
     Component.onCompleted: {
+        isCompleted = true
         determineTextFormat()
     }
 }
