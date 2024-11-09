@@ -26,7 +26,7 @@ Column {
         Column {
             Layout.fillWidth: true
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true

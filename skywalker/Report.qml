@@ -140,7 +140,7 @@ SkyPage {
                 Column {
                     Layout.fillWidth: true
 
-                    SkyCleanedText {
+                    SkyCleanedTextLine {
                         elide: Text.ElideRight
                         font.bold: true
                         color: GuiSettings.textColor

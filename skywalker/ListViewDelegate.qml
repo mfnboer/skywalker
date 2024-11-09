@@ -67,7 +67,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: view.margin
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
@@ -83,7 +83,7 @@ Rectangle {
                 text: GuiSettings.listTypeName(list.purpose)
             }
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight

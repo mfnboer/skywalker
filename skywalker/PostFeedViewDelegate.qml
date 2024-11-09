@@ -222,7 +222,7 @@ Rectangle {
             Layout.fillWidth: true
             active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
             visible: status == Loader.Ready
-            sourceComponent: SkyCleanedText {
+            sourceComponent: SkyCleanedTextLine {
                 id: repostedByText
                 width: parent.width
                 elide: Text.ElideRight

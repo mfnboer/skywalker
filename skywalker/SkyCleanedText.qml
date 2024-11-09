@@ -17,7 +17,6 @@ Text {
                 Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     clip: true
     color: GuiSettings.textColor
-    text: mustElideRich ? plainText : textMetrics.elidedText
 
     onPlainTextChanged: {
         if (isCompleted) {
@@ -58,29 +57,27 @@ Text {
             return
 
         elidedText = graphemeInfo.sliced(elidedText, 0, newLength) + "…"
-        setElidedText()
     }
 
     function resetText() {
         if (!mustElideRich)
             return
 
-        if (elidedText !== plainText) {
-            elidedText = plainText
-            setElidedText()
-        }
-
+        elidedText = plainText
         elideRichText()
+        setElidedText()
     }
 
     function determineTextFormat() {
         if (mustElideRich) {
-            text = plainText
             elidedText = plainText
             elideRichText()
+            setElidedText()
+            return
         }
 
         if (textFormat === Text.RichText) {
+            text = plainText
             return
         }
 
@@ -88,6 +85,9 @@ Text {
             mustClean = true
             textFormat = Text.RichText
             resetText()
+        }
+        else {
+            text = plainText
         }
     }
 
@@ -131,14 +131,6 @@ Text {
 
     function numLinesHidden() {
         return Math.floor((contentHeight - height) / fontMetrics.height + 1)
-    }
-
-    TextMetrics {
-        id: textMetrics
-        font: theText.font
-        elide:  (theText.wrapMode === Text.NoWrap && !mustElideRich) ? theText.elide : Text.ElideNone
-        elideWidth: theText.width
-        text: theText.plainText
     }
 
     FontMetrics {

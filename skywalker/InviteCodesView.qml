@@ -95,7 +95,7 @@ ListView {
                 }
             }
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 id: nameText
                 topPadding: 5
                 Layout.fillWidth: true

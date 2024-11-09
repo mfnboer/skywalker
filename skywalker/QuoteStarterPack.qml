@@ -11,7 +11,7 @@ Column {
     Accessible.role: Accessible.StaticText
     Accessible.name: accessibilityUtils.getStarterPackSpeech(starterPack)
 
-    SkyCleanedText {
+    SkyCleanedTextLine {
         width: parent.width - 2 * margin
         elide: Text.ElideRight
         font.bold: true

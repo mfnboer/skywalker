@@ -54,7 +54,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: generatorView.margin
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
@@ -62,7 +62,7 @@ Rectangle {
                 plainText: feed.displayName
             }
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight

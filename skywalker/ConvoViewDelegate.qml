@@ -57,7 +57,7 @@ Rectangle {
                 width: parent.width
                 spacing: 3
 
-                SkyCleanedText {
+                SkyCleanedTextLine {
                     id: nameText
                     width: parent.width - mutedImg.width - timeText.width - parent.spacing * (convo.muted ? 2 : 1)
                     elide: Text.ElideRight
@@ -120,7 +120,7 @@ Rectangle {
                         visible: convo.members.length > 1
                     }
 
-                    SkyCleanedText {
+                    SkyCleanedTextLine {
                         readonly property string deletedText: qsTr("message deleted")
                         readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
 

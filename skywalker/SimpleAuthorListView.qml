@@ -63,7 +63,7 @@ ListView {
                 }
             }
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 topPadding: rowPadding
                 Layout.fillWidth: true
                 elide: Text.ElideRight

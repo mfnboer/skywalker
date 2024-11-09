@@ -51,7 +51,7 @@ Rectangle {
             Layout.rightMargin: margin
             spacing: 0
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 width: parent.width
                 Layout.fillHeight: true
                 elide: Text.ElideRight

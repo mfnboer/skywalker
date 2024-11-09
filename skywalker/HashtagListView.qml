@@ -37,7 +37,7 @@ ListView {
             color: GuiSettings.separatorColor
         }
 
-        SkyCleanedText {
+        SkyCleanedTextLine {
             id: hashtagText
             width: parent.width
             padding: 10

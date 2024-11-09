@@ -56,7 +56,7 @@ Rectangle {
             Accessible.name: header.feedName
             Accessible.onPressAction: clicked()
         }
-        SkyCleanedText {
+        SkyCleanedTextLine {
             id: headerTexts
             Layout.fillWidth: true //!showAsHome
             Layout.alignment: Qt.AlignVCenter

@@ -29,7 +29,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 id: titleText
                 Layout.leftMargin: contentGroupView.margin
                 Layout.rightMargin: contentGroupView.margin

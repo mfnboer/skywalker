@@ -17,7 +17,7 @@ Rectangle {
         x: margin
         width: parent.width - 2 * margin
 
-        SkyCleanedText {
+        SkyCleanedTextLine {
             topPadding: 10
             width: parent.width
             elide: Text.ElideRight

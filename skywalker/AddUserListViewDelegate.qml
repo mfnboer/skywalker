@@ -49,7 +49,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: view.margin
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 id: listNameText
                 width: parent.width
                 elide: Text.ElideRight

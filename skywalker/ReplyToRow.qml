@@ -18,7 +18,7 @@ Row {
         svg: row.svg
     }
 
-    SkyCleanedText {
+    SkyCleanedTextLine {
         id: replyToText
         width: parent.width - replyImg.width
         anchors.verticalCenter: parent.verticalCenter

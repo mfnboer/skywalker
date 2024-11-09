@@ -62,7 +62,7 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 3
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true

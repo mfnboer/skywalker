@@ -53,7 +53,7 @@ SvgButton {
             delegate: MenuItem {
                 required property favoritefeedview modelData
 
-                contentItem: SkyCleanedText {
+                contentItem: SkyCleanedTextLine {
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: feedAvatar.width + 5
                     color: GuiSettings.textColor
