@@ -427,6 +427,7 @@ qt_add_qml_module(libskywalker
         SOURCES gif_to_video_converter.cpp
         QML_FILES ProgressDialog.qml
         QML_FILES ConvertGifDialog.qml
+        QML_FILES SkyCleanedTextLine.qml
 )
 
 if (NOT ANDROID)

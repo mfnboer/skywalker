@@ -21,7 +21,7 @@ Column {
             spacing: 10
             width: parent.width
 
-            SkyCleanedText {
+            SkyCleanedTextLine {
                 width: parent.width - durationText.width - parent.spacing
                 elide: Text.ElideRight
                 plainText: author.name
