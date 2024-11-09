@@ -226,7 +226,7 @@ SkyPage {
             radius: 10
             anchors.fill: quoteColumn
             border.width: 1
-            border.color: GuiSettings.borderColor
+            border.color: GuiSettings.borderHighLightColor
             color: GuiSettings.postHighLightColor
             visible: quoteColumn.visible
         }
@@ -253,7 +253,7 @@ SkyPage {
             radius: 10
             anchors.fill: quoteFeedColumn
             border.width: 1
-            border.color: GuiSettings.borderColor
+            border.color: GuiSettings.borderHighLightColor
             color: GuiSettings.postHighLightColor
             visible: quoteFeedColumn.visible
         }

@@ -99,7 +99,7 @@ SkyPage {
             radius: 3
             color: GuiSettings.postHighLightColor
             border.width: 1
-            border.color: GuiSettings.borderColor
+            border.color: GuiSettings.borderHighLightColor
 
             function calcHeight() {
                 if (quotePost.visible)

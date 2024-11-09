@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -22,7 +22,7 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            height: 5
+            Layout.preferredHeight: 5
             color: "transparent"
         }
 
@@ -138,8 +138,8 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            height: 1
-            color: GuiSettings.separatorColor
+            Layout.preferredHeight: 1
+            color: contentGroupView.isNewLabel ? GuiSettings.separatorHighLightColor : GuiSettings.separatorColor
         }
     }
 

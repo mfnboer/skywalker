@@ -496,7 +496,7 @@ Rectangle {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: 1
             Layout.columnSpan: 2
-            color: GuiSettings.separatorColor
+            color: notification.notificationIsRead ? GuiSettings.separatorColor : GuiSettings.separatorHighLightColor
         }
 
         // End of feed indication

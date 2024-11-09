@@ -74,7 +74,7 @@ Rectangle {
     height: grid.height
     color: postThreadType & QEnums.THREAD_ENTRY ? GuiSettings.postHighLightColor : GuiSettings.backgroundColor
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 1 : 0
-    border.color: GuiSettings.borderColor
+    border.color: postThreadType & QEnums.THREAD_ENTRY ? GuiSettings.borderHighLightColor : GuiSettings.borderColor
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()

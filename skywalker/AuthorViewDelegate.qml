@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -41,7 +40,7 @@ Rectangle {
         Rectangle {
             id: avatar
             Layout.rowSpan: 2
-            width: GuiSettings.threadColumnWidth
+            Layout.preferredWidth: GuiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -161,7 +160,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: GuiSettings.separatorColor
+            color: authorRect.highlight ? GuiSettings.separatorHighLightColor : GuiSettings.separatorColor
         }
     }
     MouseArea {
