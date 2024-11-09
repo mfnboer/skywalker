@@ -145,30 +145,39 @@ SkyListView {
 
     Timer {
         property int postIndex
+        property int moveAttempt
 
         id: moveToPostTimer
         interval: 200
-        onTriggered: doMoveToPost(postIndex)
+        onTriggered: doMoveToPost(postIndex, moveAttempt)
 
-        function go(index) {
+        function go(index, attempt) {
             postIndex = index
+            moveAttempt = attempt
             start()
         }
     }
 
-    function doMoveToPost(index) {
+    function doMoveToPost(index, attempt) {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        console.debug("Move to:", index, "first:", firstVisibleIndex, "attempt:", attempt)
         positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
         const last = getLastVisibleIndex()
         setAnchorItem(last + 1)
         updateUnreadPosts(index)
-    }
-
-    function moveToPost(index) {
-        doMoveToPost(index)
 
         // HACK: doing it again after a short interval makes the positioning work.
         // After the first time the positioning can be off.
-        moveToPostTimer.go(index)
+        if (firstVisibleIndex < index - 1 || firstVisibleIndex > index + 1) {
+            if (attempt < 5)
+                moveToPostTimer.go(index, attempt + 1)
+            else
+                console.debug("No exact move, index:", index, "first:", firstVisibleIndex)
+        }
+    }
+
+    function moveToPost(index) {
+        doMoveToPost(index, 1)
     }
 
     function calibrateUnreadPosts() {

@@ -219,7 +219,7 @@ Rectangle {
             }
         }
         Loader {
-            Layout.fillWidth: true
+            Layout.preferredWidth: parent.width - GuiSettings.threadColumnWidth - postEntry.margin * 2
             active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
             visible: status == Loader.Ready
             sourceComponent: SkyCleanedTextLine {

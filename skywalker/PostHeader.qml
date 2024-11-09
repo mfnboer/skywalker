@@ -74,15 +74,4 @@ Column {
             }
         }
     }
-
-    FontMetrics
-    {
-        id: fontMetrics
-        font: Application.font
-
-        Component.onCompleted: {
-            font.bold = true
-        }
-    }
-
 }
