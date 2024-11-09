@@ -2,17 +2,22 @@
 // License: GPLv3
 #pragma once
 #include <QSyntaxHighlighter>
+#include <QQuickTextDocument>
+#include <QtQmlIntegration>
 
 namespace Skywalker {
 
 class EmojiFixHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
+    QML_ELEMENT
 
 public:
     explicit EmojiFixHighlighter(QTextDocument* parent = nullptr);
     void setMaxLength(int maxLength, const QString& lengthExceededColor);
     void setMaxLength(int maxLength);
+
+    Q_INVOKABLE void setEmojiFixDocument(QQuickTextDocument* doc, int maxLength = -1, const QString& lengthExceededColor = {});
 
 protected:
     void highlightBlock(const QString& text) override;

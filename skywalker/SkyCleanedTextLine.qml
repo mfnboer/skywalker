@@ -3,7 +3,7 @@ import skywalker
 
 Text {
     required property string plainText
-    readonly property bool mustClean: unicodeFonts.hasCombinedEmojis(plainText)
+    property bool mustClean: false
     property bool isCompleted: false
 
     id: theText
@@ -18,31 +18,45 @@ Text {
             setPlainText()
     }
 
-    function elideText(txt) {
+    onWidthChanged: {
+        if (isCompleted)
+            setPlainText()
+    }
+
+    function elideText() {
         if (elide !== Text.ElideRight)
-            return txt
+            return
 
         if (contentWidth <= width)
-            return txt
+            return
 
-        if (txt.length < 2)
-            return txt
+        if (text.length < 2)
+            return
 
         if (contentWidth <= 0)
-            return txt
+            return
 
         const ratio = width / contentWidth
-        const graphemeInfo = unicodeFonts.getGraphemeInfo(txt)
+        const graphemeInfo = unicodeFonts.getGraphemeInfo(plainText)
         const newLength = Math.floor(graphemeInfo.length * ratio - 1)
 
         if (newLength < 1)
-            return txt
+            return
 
-        return graphemeInfo.sliced(txt, 0, newLength) + "…"
+        const elidedText = graphemeInfo.sliced(plainText, 0, newLength) + "…"
+        text = unicodeFonts.toCleanedHtml(elidedText)
     }
 
     function setPlainText() {
-        text = mustClean ? unicodeFonts.toCleanedHtml(elideText(plainText)) : plainText
+        mustClean = unicodeFonts.hasCombinedEmojis(plainText)
+
+        if (mustClean) {
+            text = unicodeFonts.toCleanedHtml(plainText)
+            elideText()
+        }
+        else {
+            text = plainText
+        }
     }
 
     UnicodeFonts {

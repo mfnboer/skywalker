@@ -250,12 +250,6 @@ bool UnicodeFonts::isHashtag(const QString& text)
     return ATProto::RichTextMaster::isHashtag(text);
 }
 
-void UnicodeFonts::setEmojiFixDocument(QQuickTextDocument* doc, int maxLength, const QString& lengthExceededColor)
-{
-    mEmojiFixer.setMaxLength(maxLength, lengthExceededColor);
-    mEmojiFixer.setDocument(doc->textDocument());
-}
-
 QString UnicodeFonts::setEmojiFontCombinedEmojis(const QString& text)
 {
     static const QString emojiSpanStart = QString("<span style=\"font-family:'%1'\">").arg(FontDownloader::getEmojiFontFamily());

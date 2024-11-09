@@ -9,7 +9,7 @@ Text {
     property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
     property int capLineCount: initialShowMaxLineCount
-    readonly property bool mustElideRich: elide === Text.ElideRight && wrapMode === Text.NoWrap && textFormat === Text.RichText
+    readonly property bool mustElideRich: elide === Text.ElideRight && textFormat === Text.RichText
     property bool isCompleted: false
 
     id: theText
@@ -37,9 +37,6 @@ Text {
     }
 
     function elideRichText() {
-        if (!mustElideRich)
-            return
-
         if (contentWidth <= width)
             return
 
@@ -63,12 +60,15 @@ Text {
         if (!mustElideRich)
             return
 
+        text = plainText
         elidedText = plainText
         elideRichText()
         setElidedText()
     }
 
     function determineTextFormat() {
+        text = plainText
+
         if (mustElideRich) {
             elidedText = plainText
             elideRichText()
@@ -76,18 +76,13 @@ Text {
             return
         }
 
-        if (textFormat === Text.RichText) {
-            text = plainText
+        if (textFormat === Text.RichText)
             return
-        }
 
         if (unicodeFonts.hasCombinedEmojis(plainText)) {
             mustClean = true
             textFormat = Text.RichText
             resetText()
-        }
-        else {
-            text = plainText
         }
     }
 

@@ -2,7 +2,6 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
-#include "emoji_fix_highlighter.h"
 #include "grapheme_info.h"
 #include <QQuickTextDocument>
 #include <QtQmlIntegration>
@@ -35,7 +34,6 @@ public:
     Q_INVOKABLE static bool hasCombinedEmojis(const QString& text);
     Q_INVOKABLE static bool isHashtag(const QString& text);
     Q_INVOKABLE static QStringList splitText(const QString& text, int maxLength, int minSplitLineLength, int maxParts = 1000000);
-    Q_INVOKABLE void setEmojiFixDocument(QQuickTextDocument* doc, int maxLength = -1, const QString& lengthExceededColor = {});
 
     static bool isEmoji(uint c);
     static bool isKeycapEmoji(const QString& grapheme);
@@ -43,8 +41,6 @@ public:
 
 private:
     static uint convertToSmallCaps(QChar c);
-
-    EmojiFixHighlighter mEmojiFixer;
 };
 
 }

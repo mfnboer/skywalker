@@ -28,6 +28,12 @@ void EmojiFixHighlighter::setMaxLength(int maxLength)
     }
 }
 
+void EmojiFixHighlighter::setEmojiFixDocument(QQuickTextDocument* doc, int maxLength, const QString& lengthExceededColor)
+{
+    setMaxLength(maxLength, lengthExceededColor);
+    setDocument(doc->textDocument());
+}
+
 void EmojiFixHighlighter::addFormat(int start, int sz, const QTextCharFormat& fmt)
 {
     const int end = start + sz;

@@ -73,13 +73,17 @@ TextEdit {
         return maxLength > -1 && graphemeLength > maxLength
     }
 
+    EmojiFixHighlighter {
+        id: emojiFixer
+    }
+
+    // TODO: singleton
     UnicodeFonts {
         id: unicodeFonts
     }
 
-
     Component.onCompleted: {
-        unicodeFonts.setEmojiFixDocument(textDocument, maxLength, GuiSettings.textLengthExceededColor)
+        emojiFixer.setEmojiFixDocument(textDocument, maxLength, GuiSettings.textLengthExceededColor)
         cursorPosition = text.length
     }
 }
