@@ -10,9 +10,9 @@ Rectangle {
 
     id: headerItem
     width: parent.width
-    height: GuiSettings.headerHeight
-    z: GuiSettings.headerZLevel
-    color: GuiSettings.headerColor
+    height: guiSettings.headerHeight
+    z: guiSettings.headerZLevel
+    color: guiSettings.headerColor
 
     Accessible.role: Accessible.Pane
 
@@ -21,8 +21,8 @@ Rectangle {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         font.bold: true
-        font.pointSize: GuiSettings.scaledFont(10/8)
-        color: GuiSettings.headerTextColor
+        font.pointSize: guiSettings.scaledFont(10/8)
+        color: guiSettings.headerTextColor
         text: headerItem.title
 
         Accessible.role: Accessible.TitleBar

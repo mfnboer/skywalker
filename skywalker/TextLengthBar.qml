@@ -18,7 +18,7 @@ ProgressBar {
         Rectangle {
             width: textLengthBar.visualPosition * parent.width
             height: parent.height
-            color: (textField && textField.graphemeLength <= textField.maxLength) ? GuiSettings.buttonColor : GuiSettings.errorColor
+            color: (textField && textField.graphemeLength <= textField.maxLength) ? guiSettings.buttonColor : guiSettings.errorColor
         }
     }
 

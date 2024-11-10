@@ -8,9 +8,11 @@ Column {
     required property var videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
-    property string controlColor: GuiSettings.textColor
-    property string disabledColor: GuiSettings.disabledColor
-    property string backgroundColor: GuiSettings.backgroundColor
+    property string controlColor: guiSettings.textColor
+    property string disabledColor: guiSettings.disabledColor
+    property string backgroundColor: "transparent"
+    property bool highlight: false
+    property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
     property int maxHeight: 0
     property bool isFullViewMode: false
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
@@ -86,7 +88,7 @@ Column {
                     x: (parent.width - width) / 2
                     width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
                     height: width / videoStack.getAspectRatio()
-                    color: GuiSettings.avatarDefaultColor
+                    color: guiSettings.avatarDefaultColor
                     visible: videoView.imageView.isNull() || thumbImg.status != Image.Ready && filter.imageVisible()
 
                     onHeightChanged: {
@@ -117,7 +119,7 @@ Column {
                     backgroundColor: "black"
                     backgroundOpacity: 0.6
                     color: "white"
-                    text: GuiSettings.videoDurationToString(videoPlayer.getDuration())
+                    text: guiSettings.videoDurationToString(videoPlayer.getDuration())
                     visible: !isFullViewMode
                 }
             }
@@ -392,9 +394,9 @@ Column {
             anchors.right: soundButton.left
             anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            font.pointSize: GuiSettings.scaledFont(6/8)
+            font.pointSize: guiSettings.scaledFont(6/8)
             color: controlColor
-            text: GuiSettings.videoDurationToString(videoPlayer.duration - videoPlayer.position)
+            text: guiSettings.videoDurationToString(videoPlayer.duration - videoPlayer.position)
         }
 
         SvgTransparentButton {
@@ -417,7 +419,7 @@ Column {
         height: errorText.height
         radius: 10
         border.width: 1
-        border.color: GuiSettings.borderColor
+        border.color: videoStack.borderColor
         color: "transparent"
         visible: !videoPlayer.videoFound && videoPlayer.error != MediaPlayer.NoError
 

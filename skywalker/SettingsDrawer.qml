@@ -7,7 +7,7 @@ Drawer {
     property basicprofile user
     property int inviteCodeCount: 0
     readonly property int iconSize: 30
-    readonly property real menuFontSize: GuiSettings.scaledFont(10/8)
+    readonly property real menuFontSize: guiSettings.scaledFont(10/8)
 
     signal profile()
     signal contentFiltering()
@@ -66,7 +66,7 @@ Drawer {
                     elide: Text.ElideRight
                     maximumLineCount: 2
                     font.bold: true
-                    color: GuiSettings.textColor
+                    color: guiSettings.textColor
                     ellipsisBackgroundColor: Material.dialogColor
                     plainText: user.name
 
@@ -77,8 +77,8 @@ Drawer {
                     id: handleText
                     width: parent.width
                     elide: Text.ElideRight
-                    font.pointSize: GuiSettings.scaledFont(7/8)
-                    color: GuiSettings.handleColor
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    color: guiSettings.handleColor
                     text: `@${user.handle}`
 
                     Accessible.ignored: true

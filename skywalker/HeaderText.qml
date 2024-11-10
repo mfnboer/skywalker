@@ -6,14 +6,14 @@ AccessibleText {
     width: parent.width
     Layout.fillWidth: true
     padding: 10
-    font.pointSize: GuiSettings.scaledFont(9/8)
+    font.pointSize: guiSettings.scaledFont(9/8)
     font.bold: true
-    color: GuiSettings.textColor
+    color: guiSettings.textColor
 
     Rectangle {
         anchors.fill: parent
         z: parent.z - 1
-        color: GuiSettings.headerHighLightColor
+        color: guiSettings.headerHighLightColor
     }
 
 }

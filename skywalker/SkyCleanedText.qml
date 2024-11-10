@@ -5,7 +5,7 @@ import skywalker
 Text {
     required property string plainText
     property string elidedText
-    property string ellipsisBackgroundColor: GuiSettings.backgroundColor
+    property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
     property int capLineCount: initialShowMaxLineCount
@@ -16,7 +16,7 @@ Text {
     height: textFormat === Text.RichText && elide === Text.ElideRight && wrapMode !== Text.NoWrap ?
                 Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     clip: true
-    color: GuiSettings.textColor
+    color: guiSettings.textColor
 
     onPlainTextChanged: {
         if (isCompleted) {
@@ -118,7 +118,7 @@ Text {
             anchors.bottom: parent.bottom
             leftPadding: theText.leftPadding
             background: Rectangle { color: ellipsisBackgroundColor }
-            text: qsTr(`<a href="show"style="color: ${GuiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
+            text: qsTr(`<a href="show"style="color: ${guiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
 
             onLinkActivated:  capLineCount = theText.maximumLineCount
         }

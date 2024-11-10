@@ -8,7 +8,7 @@ SkyPage {
 
     width: parent.width
     height: parent.height
-    background: Rectangle { color: GuiSettings.skywalkerLogoColor }
+    background: Rectangle { color: guiSettings.skywalkerLogoColor }
 
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr("Signing in, please wait")
@@ -23,7 +23,7 @@ SkyPage {
             padding: 10
             color: "white"
             font.bold: true
-            font.pointSize: GuiSettings.scaledFont(3.5)
+            font.pointSize: guiSettings.scaledFont(3.5)
             text: "Skywalker"
         }
         AccessibleText {
@@ -31,12 +31,12 @@ SkyPage {
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             color: "white"
-            font.pointSize: GuiSettings.scaledFont(2)
+            font.pointSize: guiSettings.scaledFont(2)
 
             SequentialAnimation on color {
                 loops: Animation.Infinite
-                ColorAnimation { from: "white"; to: GuiSettings.skywalkerLogoColor; duration: 1000 }
-                ColorAnimation { from: GuiSettings.skywalkerLogoColor; to: "white"; duration: 1000 }
+                ColorAnimation { from: "white"; to: guiSettings.skywalkerLogoColor; duration: 1000 }
+                ColorAnimation { from: guiSettings.skywalkerLogoColor; to: "white"; duration: 1000 }
             }
         }
         Image {

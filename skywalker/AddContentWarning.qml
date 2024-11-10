@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick.Controls.Material
 import skywalker
 
 Dialog {
@@ -16,7 +16,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: GuiSettings.backgroundColor
+    Material.background: guiSettings.backgroundColor
 
     Flickable {
         anchors.fill: parent

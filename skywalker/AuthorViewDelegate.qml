@@ -23,7 +23,7 @@ Rectangle {
 
     id: authorRect
     height: grid.height
-    color: highlight ? GuiSettings.postHighLightColor : GuiSettings.backgroundColor
+    color: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
 
     Accessible.role: Accessible.Button
     Accessible.name: author.name
@@ -40,7 +40,7 @@ Rectangle {
         Rectangle {
             id: avatar
             Layout.rowSpan: 2
-            Layout.preferredWidth: GuiSettings.threadColumnWidth
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
 
@@ -65,7 +65,7 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: author.name
 
                 Accessible.ignored: true
@@ -73,8 +73,8 @@ Rectangle {
             Text {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
                 text: `@${author.handle}`
 
                 Accessible.ignored: true
@@ -151,7 +151,7 @@ Rectangle {
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             maximumLineCount: authorRect.maximumDescriptionLineCount
-            color: GuiSettings.textColor
+            color: guiSettings.textColor
             plainText: author.description
             visible: showAuthor && author.description
         }
@@ -160,7 +160,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: authorRect.highlight ? GuiSettings.separatorHighLightColor : GuiSettings.separatorColor
+            color: authorRect.highlight ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
         }
     }
     MouseArea {
@@ -171,14 +171,14 @@ Rectangle {
 
 
     function confirmDelete() {
-        GuiSettings.askYesNoQuestion(
+        guiSettings.askYesNoQuestion(
                     authorRect,
                     qsTr(`Do you really want to delete: @${author.handle} ?`),
                     () => deleteItem(listItemUri))
     }
 
     function authorVisible() {
-        return GuiSettings.contentVisible(author)
+        return guiSettings.contentVisible(author)
     }
 
     function isUser(author) {

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -16,9 +17,9 @@ SkyPage {
 
     header: Rectangle {
         width: parent.width
-        height: GuiSettings.headerHeight
-        z: GuiSettings.headerZLevel
-        color: GuiSettings.headerColor
+        height: guiSettings.headerHeight
+        z: guiSettings.headerZLevel
+        color: guiSettings.headerColor
 
         RowLayout
         {
@@ -26,7 +27,7 @@ SkyPage {
 
             SvgButton {
                 id: backButton
-                iconColor: GuiSettings.headerTextColor
+                iconColor: guiSettings.headerTextColor
                 Material.background: "transparent"
                 svg: SvgOutline.arrowBack
                 accessibleName: qsTr("go back")
@@ -36,8 +37,8 @@ SkyPage {
                 id: headerTexts
                 Layout.alignment: Qt.AlignVCenter
                 font.bold: true
-                font.pointSize: GuiSettings.scaledFont(10/8)
-                color: GuiSettings.headerTextColor
+                font.pointSize: guiSettings.scaledFont(10/8)
+                color: guiSettings.headerTextColor
                 text: qsTr("Settings")
             }
         }
@@ -78,7 +79,7 @@ SkyPage {
                     imageMargin: 0
                     implicitWidth: height
                     implicitHeight: mailText.height
-                    iconColor: GuiSettings.buttonColor
+                    iconColor: guiSettings.buttonColor
                     Material.background: "transparent"
                     accessibleName: qsTr("E-mail address confirmed")
                     svg: SvgOutline.check
@@ -89,7 +90,7 @@ SkyPage {
                     imageMargin: 0
                     implicitWidth: height
                     implicitHeight: mailText.height
-                    iconColor: GuiSettings.textColor
+                    iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     accessibleName: qsTr("Two-factor authentication enabled")
                     svg: SvgOutline.confirmationCode
@@ -99,29 +100,29 @@ SkyPage {
             }
 
             AccessibleText {
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: qsTr("Birthday:")
             }
             AccessibleText {
                 Layout.fillWidth: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: userPrefs.birthDate
             }
 
             AccessibleText {
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: "PDS:"
             }
             AccessibleText {
                 Layout.fillWidth: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 elide: Text.ElideRight
                 text: userPrefs.pds
             }
 
             AccessibleText {
                 id: didLabel
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: "DID:"
             }
             RowLayout {
@@ -129,7 +130,7 @@ SkyPage {
 
                 AccessibleText {
                     Layout.fillWidth: true
-                    color: GuiSettings.textColor
+                    color: guiSettings.textColor
                     elide: Text.ElideRight
                     text: userPrefs.did
                 }
@@ -139,7 +140,7 @@ SkyPage {
                     implicitHeight: didLabel.height
                     svg: SvgOutline.copy
                     accessibleName: qsTr("copy") + " D I D"
-                    iconColor: GuiSettings.textColor
+                    iconColor: guiSettings.textColor
                     Material.background: "transparent"
                     onClicked: root.getSkywalker().copyToClipboard(userPrefs.did)
                 }
@@ -158,7 +159,7 @@ SkyPage {
 
                 contentItem: Text {
                     text: qsTr("Discourage apps from showing my account to logged-out users");
-                    color: GuiSettings.textColor
+                    color: guiSettings.textColor
                     wrapMode: Text.Wrap
                     verticalAlignment: Text.AlignVCenter
                     anchors.left: loggedoutSwitch.indicator.right
@@ -242,7 +243,7 @@ SkyPage {
             AccessibleText {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: qsTr("Allow new messages from:")
             }
 
@@ -290,7 +291,7 @@ SkyPage {
             AccessibleText {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: qsTr("Which languages do you want to see in feeds (other than home). If no languages are selected than all posts will be shown. Note that the language tags on posts may be wrong or missing.")
             }
 
@@ -384,8 +385,8 @@ SkyPage {
                     Layout.fillWidth: true
                     height: 30
                     border.width: 1
-                    border.color: GuiSettings.buttonColor
-                    color: GuiSettings.backgroundColor
+                    border.color: guiSettings.buttonColor
+                    color: guiSettings.backgroundColor
 
                     MouseArea {
                         anchors.fill: parent
@@ -444,13 +445,13 @@ SkyPage {
                     Layout.fillWidth: true
                     height: 30
                     border.width: 1
-                    border.color: GuiSettings.buttonColor
+                    border.color: guiSettings.buttonColor
 
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-                        GradientStop { position: 0.0; color: GuiSettings.threadStartColor(userSettings.threadColor) }
-                        GradientStop { position: 0.7; color: GuiSettings.threadMidColor(userSettings.threadColor) }
-                        GradientStop { position: 1.0; color: GuiSettings.threadEndColor(userSettings.threadColor) }
+                        GradientStop { position: 0.0; color: guiSettings.threadStartColor(userSettings.threadColor) }
+                        GradientStop { position: 0.7; color: guiSettings.threadMidColor(userSettings.threadColor) }
+                        GradientStop { position: 1.0; color: guiSettings.threadEndColor(userSettings.threadColor) }
                     }
 
                     MouseArea {
@@ -564,7 +565,7 @@ SkyPage {
     }
 
     function checkBackgroundColor(color) {
-        const allowed = GuiSettings.allowedBackgroundColors()
+        const allowed = guiSettings.allowedBackgroundColors()
 
         for (let i = 0; i < allowed.length; ++i)
         {

@@ -5,7 +5,7 @@ import skywalker
 Rectangle {
     property int statistic: -1
     property SvgImage svg
-    property string iconColor: GuiSettings.statsColor
+    property string iconColor: guiSettings.statsColor
     property var onClicked
 
     signal clicked()
@@ -21,7 +21,7 @@ Rectangle {
     SkySvg {
         id: statIcon
         anchors.left: parent.left
-        width: GuiSettings.statsHeight
+        width: guiSettings.statsHeight
         height: width
         color: iconColor
         svg: parent.svg
@@ -35,7 +35,7 @@ Rectangle {
             topPadding: 2
             bottomPadding: 2
             color: iconColor
-            font.pointSize: GuiSettings.scaledFont(7/8)
+            font.pointSize: guiSettings.scaledFont(7/8)
             text: statistic
         }
     }

@@ -13,7 +13,7 @@ Dialog {
     contentHeight: limitsGrid.height
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: GuiSettings.backgroundColor
+    Material.background: guiSettings.backgroundColor
 
     GridLayout {
         id: limitsGrid

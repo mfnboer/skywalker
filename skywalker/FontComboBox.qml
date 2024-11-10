@@ -10,7 +10,7 @@ ComboBox {
     background: Rectangle {
         radius: 3
         implicitWidth: 120
-        border.color: GuiSettings.buttonColor
+        border.color: guiSettings.buttonColor
         border.width: 2
         color: "transparent"
     }
@@ -27,7 +27,7 @@ ComboBox {
 
 
     Component.onCompleted: {
-        fontComboBox.contentItem.color = GuiSettings.buttonColor
+        fontComboBox.contentItem.color = guiSettings.buttonColor
     }
 }
 

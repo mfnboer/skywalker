@@ -14,7 +14,7 @@ ApplicationWindow {
     height: 960
     visible: true
     title: "Skywalker"
-    color: GuiSettings.backgroundColor
+    color: guiSettings.backgroundColor
 
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
@@ -77,7 +77,7 @@ ApplicationWindow {
 
     StatusPopup {
         id: statusPopup
-        y: GuiSettings.headerHeight
+        y: guiSettings.headerHeight
     }
 
     function syncTimelineToPost(postIndex) {
@@ -237,7 +237,7 @@ ApplicationWindow {
                 return
             }
 
-            GuiSettings.askConvertGif(
+            guiSettings.askConvertGif(
                 root,
                 "file://" + gifTempFileName,
                 () => gifToVideoConverter.start(gifTempFileName, text),
@@ -290,7 +290,7 @@ ApplicationWindow {
 
         onAnniversary: {
             const years = skywalker.getAnniversary().getAnniversaryYears()
-            GuiSettings.notice(root,
+            guiSettings.notice(root,
                 qsTr(`Today is your ${years} year Bluesky anniversary. On this day you can send an anniversary card. You can find it on the post page, when you click the button to send a post.`),
                 "🥳")
         }
@@ -325,7 +325,7 @@ ApplicationWindow {
         function start(fileName, text) {
             postText = text
             gifFileName = fileName
-            progressDialog = GuiSettings.showProgress(root, qsTr("Converting GIF to Video"), () => doCancel())
+            progressDialog = guiSettings.showProgress(root, qsTr("Converting GIF to Video"), () => doCancel())
             gifToVideoConverter.convert(fileName)
         }
 
@@ -747,7 +747,9 @@ ApplicationWindow {
     //     onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
     // }
 
-
+    GuiSettings {
+        id: guiSettings
+    }
 
     function enablePopupShield(enable) {
         popupShield.visible = enable
@@ -1060,7 +1062,7 @@ ApplicationWindow {
         const index = hidden.indexOf(uri)
 
         if (index < 0) {
-            GuiSettings.askYesNoQuestion(root,
+            guiSettings.askYesNoQuestion(root,
                 qsTr("Do you want to move this reply to the hidden section at the bottom of your thread (in next post thread views), and mute notifications both for yourself and others?"),
                 () => {
                     hidden.push(uri)
@@ -1640,8 +1642,8 @@ ApplicationWindow {
         let userSettings = skywalker.getUserSettings()
         userSettings.setDefaultBackgroundColor(Material.background)
         userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
-        userSettings.setLinkColor(GuiSettings.linkColor)
-        root.Material.accent = GuiSettings.accentColor
+        userSettings.setLinkColor(guiSettings.linkColor)
+        root.Material.accent = guiSettings.accentColor
     }
 
     function getSkywalker() {
@@ -1674,7 +1676,6 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        GuiSettings.skywalker = skywalker
         console.debug("DPR:", Screen.devicePixelRatio)
         console.debug("Font pt:", Qt.application.font.pointSize)
         console.debug("Font px:", Qt.application.font.pixelSize)

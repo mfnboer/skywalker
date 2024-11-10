@@ -19,21 +19,21 @@ Rectangle {
 
     id: header
     width: parent.width
-    height: GuiSettings.headerHeight
-    z: GuiSettings.headerZLevel
-    color: GuiSettings.headerColor
+    height: guiSettings.headerHeight
+    z: guiSettings.headerZLevel
+    color: guiSettings.headerColor
 
     Accessible.role: Accessible.Pane
 
     RowLayout {
         id: headerRow
         width: parent.width
-        height: GuiSettings.headerHeight
+        height: guiSettings.headerHeight
         spacing: 0
 
         SvgButton {
             id: backButton
-            iconColor: GuiSettings.headerTextColor
+            iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
@@ -64,8 +64,8 @@ Rectangle {
             rightPadding: showAsHome ? expandFeedsButton.width : 0
             elide: Text.ElideRight
             font.bold: true
-            font.pointSize: GuiSettings.scaledFont(10/8)
-            color: GuiSettings.headerTextColor
+            font.pointSize: guiSettings.scaledFont(10/8)
+            color: guiSettings.headerTextColor
             plainText: header.feedName
 
             Accessible.role: Accessible.ButtonDropDown
@@ -95,7 +95,7 @@ Rectangle {
 
         SvgButton {
             svg: SvgOutline.language
-            iconColor: GuiSettings.headerTextColor
+            iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
             accessibleName: qsTr("language filter active")
             visible: showLanguageFilter
@@ -164,6 +164,6 @@ Rectangle {
         else
             msg += qsTr("Posts without language tags will be shown.")
 
-        GuiSettings.notice(root, msg)
+        guiSettings.notice(root, msg)
     }
 }

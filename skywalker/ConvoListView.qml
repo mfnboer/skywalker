@@ -74,7 +74,7 @@ SkyListView {
     }
 
     function deleteConvo(convo) {
-        GuiSettings.askYesNoQuestion(conversationsView,
+        guiSettings.askYesNoQuestion(conversationsView,
                 qsTr(`Do you want to delete the conversation with <b>${convo.memberNames}</b>. Your messages will be deleted for you, but not for the other participant.`),
                 () => chat.leaveConvo(convo.id))
     }

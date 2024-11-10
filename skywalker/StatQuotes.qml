@@ -5,7 +5,7 @@ Text {
     required property string atUri
     required property int count
 
-    color: GuiSettings.linkColor
+    color: guiSettings.linkColor
     textFormat: Text.StyledText
     text: count > 1 ? qsTr(`<b>${count}</b> quotes`) : qsTr(`<b>${count}</b> quote`)
     visible: count

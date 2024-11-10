@@ -13,9 +13,9 @@ Rectangle {
 
     id: headerRect
     width: parent.width
-    height: GuiSettings.headerHeight
-    z: GuiSettings.headerZLevel
-    color: GuiSettings.headerColor
+    height: guiSettings.headerHeight
+    z: guiSettings.headerZLevel
+    color: guiSettings.headerColor
 
     Accessible.role: Accessible.Pane
 
@@ -27,7 +27,7 @@ Rectangle {
 
         SvgButton {
             id: backButton
-            iconColor: GuiSettings.headerTextColor
+            iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
@@ -56,15 +56,15 @@ Rectangle {
                 Layout.fillHeight: true
                 elide: Text.ElideRight
                 font.bold: true
-                color: GuiSettings.headerTextColor
+                color: guiSettings.headerTextColor
                 plainText: convo.memberNames
             }
 
             AccessibleText {
                 width: parent.width
                 Layout.preferredHeight: visible ? implicitHeight : 0
-                color: GuiSettings.handleColor
-                font.pointSize: GuiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
                 text: `@${firstMember.handle}`
                 visible: convo.members.length <= 1
             }

@@ -15,9 +15,9 @@ ListView {
     spacing: 0
     boundsBehavior: Flickable.StopAtBounds
     clip: true
-    flickDeceleration: GuiSettings.flickDeceleration
-    maximumFlickVelocity: GuiSettings.maxFlickVelocity
-    pixelAligned: GuiSettings.flickPixelAligned
+    flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
 
     Accessible.role: Accessible.List
 
@@ -28,7 +28,7 @@ ListView {
         id: authorEntry
         width: searchList.width
         height: grid.height
-        color: GuiSettings.backgroundColor
+        color: guiSettings.backgroundColor
 
         Accessible.role: Accessible.Button
         Accessible.name: author.name
@@ -68,7 +68,7 @@ ListView {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: author.name
 
                 Accessible.ignored: true
@@ -77,7 +77,7 @@ ListView {
             SvgButton {
                 id: deleteButton
                 Layout.rowSpan: 2
-                iconColor: GuiSettings.textColor
+                iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 svg: SvgOutline.delete
                 accessibleName: qsTr(`delete ${author.name}`)
@@ -94,8 +94,8 @@ ListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
                 text: author.handle ? `@${author.handle}` : ""
 
                 Accessible.ignored: true
@@ -122,7 +122,7 @@ ListView {
                 Layout.columnSpan: 3
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
-                color: GuiSettings.separatorColor
+                color: guiSettings.separatorColor
             }
         }
         MouseArea {

@@ -12,9 +12,9 @@ Rectangle {
 
     id: headerRect
     width: parent.width
-    height: GuiSettings.headerHeight
-    z: GuiSettings.headerZLevel
-    color: GuiSettings.headerColor
+    height: guiSettings.headerHeight
+    z: guiSettings.headerZLevel
+    color: guiSettings.headerColor
 
     Accessible.role: Accessible.Pane
 
@@ -26,8 +26,8 @@ Rectangle {
 
         SvgButton {
             id: backButton
-            iconColor: backIsCancel ? GuiSettings.buttonTextColor : GuiSettings.headerTextColor
-            Material.background: backIsCancel ? GuiSettings.buttonColor : "transparent"
+            iconColor: backIsCancel ? guiSettings.buttonTextColor : guiSettings.headerTextColor
+            Material.background: backIsCancel ? guiSettings.buttonColor : "transparent"
             svg: backIsCancel ? SvgOutline.cancel : SvgOutline.arrowBack
             accessibleName: backIsCancel ? qsTr("cancel") : qsTr("go back")
             onClicked: headerRect.back()
@@ -37,8 +37,8 @@ Rectangle {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
             font.bold: true
-            font.pointSize: GuiSettings.scaledFont(10/8)
-            color: GuiSettings.headerTextColor
+            font.pointSize: guiSettings.scaledFont(10/8)
+            color: guiSettings.headerTextColor
             elide: Text.ElideRight
             text: headerRect.text
 

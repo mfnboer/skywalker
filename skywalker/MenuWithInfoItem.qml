@@ -14,7 +14,7 @@ AccessibleMenuItem {
         imageMargin: 4
         svg: SvgOutline.info
         accessibleName: qsTr("info")
-        onClicked: GuiSettings.notice(root, info)
+        onClicked: guiSettings.notice(root, info)
     }
 
 }

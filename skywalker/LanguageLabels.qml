@@ -28,10 +28,10 @@ ScrollView {
             SkyLabel {
                 required property language modelData
 
-                backgroundColor: GuiSettings.contentLabelColor
-                font.pointSize: GuiSettings.scaledFont(5/8)
+                backgroundColor: guiSettings.contentLabelColor
+                font.pointSize: guiSettings.scaledFont(5/8)
                 font.italic: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: modelData.shortCode
 
                 Accessible.role: Accessible.StaticText

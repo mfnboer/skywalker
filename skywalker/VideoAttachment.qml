@@ -30,7 +30,7 @@ VideoThumbnail {
     SkyLabel {
         y: parent.height - height
         width: parent.width
-        backgroundColor: GuiSettings.errorColor
+        backgroundColor: guiSettings.errorColor
         horizontalAlignment: Text.AlignHCenter
         color: "white"
         text: "ALT text missing"
@@ -53,7 +53,7 @@ VideoThumbnail {
         backgroundColor: "black"
         backgroundOpacity: 0.6
         color: "white"
-        text: GuiSettings.videoDurationToString(videoEndMs - videoStartMs)
+        text: guiSettings.videoDurationToString(videoEndMs - videoStartMs)
     }
 
 

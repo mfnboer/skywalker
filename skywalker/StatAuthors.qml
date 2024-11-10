@@ -9,7 +9,7 @@ Text {
     required property int authorListType // QEnums.AuthorListType
     required property string authorListHeader
 
-    color: GuiSettings.linkColor
+    color: guiSettings.linkColor
     textFormat: Text.StyledText
     text: count > 1 ? qsTr(`<b>${count}</b> ${namePlural}`) : qsTr(`<b>${count}</b> ${nameSingular}`)
     visible: count

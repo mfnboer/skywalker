@@ -22,8 +22,8 @@ Rectangle {
     height: textField.height
     radius: 5
     border.width: 1
-    border.color: GuiSettings.borderColor
-    color: GuiSettings.backgroundColor
+    border.color: guiSettings.borderColor
+    color: guiSettings.backgroundColor
 
     Accessible.role: Accessible.Pane
 
@@ -35,9 +35,9 @@ Rectangle {
         leftPadding: icon.visible ? icon.width : 10
         activeFocusOnTab: true
         enabled: skyTextInput.enabled
-        font.pointSize: GuiSettings.scaledFont(9/8)
-        color: enabled ? GuiSettings.textColor : GuiSettings.disabledColor
-        selectionColor: GuiSettings.selectionColor
+        font.pointSize: guiSettings.scaledFont(9/8)
+        color: enabled ? guiSettings.textColor : guiSettings.disabledColor
+        selectionColor: guiSettings.selectionColor
         text: skyTextInput.initialText
 
         Accessible.role: Accessible.EditableText
@@ -90,7 +90,7 @@ Rectangle {
             padding: parent.padding
             leftPadding: parent.leftPadding
             font.pointSize: parent.font.pointSize
-            color: GuiSettings.placeholderTextColor
+            color: guiSettings.placeholderTextColor
             text: placeholderText
             visible: parent.displayText.length === 0
             Accessible.ignored: true

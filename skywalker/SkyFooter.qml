@@ -22,15 +22,15 @@ Rectangle {
     signal addConvoClicked()
 
     width: parent.width
-    height: GuiSettings.footerHeight
-    z: GuiSettings.footerZLevel
-    color: GuiSettings.footerColor
+    height: guiSettings.footerHeight
+    z: guiSettings.footerZLevel
+    color: guiSettings.footerColor
 
     Rectangle {
         id: separatorLine
         width: parent.width
         height: 1
-        color: GuiSettings.separatorColor
+        color: guiSettings.separatorColor
         Accessible.ignored: true
     }
 
@@ -42,7 +42,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
-            color: GuiSettings.backgroundColor
+            color: guiSettings.backgroundColor
 
             Accessible.role: Accessible.PageTab
             Accessible.name: getHomeSpeech()
@@ -54,7 +54,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 svg: homeActive ? SvgFilled.home : SvgOutline.home
 
                 BadgeCounter {
@@ -68,8 +68,8 @@ Rectangle {
                     width: 20
                     height: 20
                     radius: 10
-                    color: GuiSettings.textColor
-                    border.color: GuiSettings.backgroundColor
+                    color: guiSettings.textColor
+                    border.color: guiSettings.backgroundColor
                     border.width: 2
                     visible: showHomeFeedBadge
 
@@ -78,7 +78,7 @@ Rectangle {
                         y: height + 2
                         width: 14
                         height: width
-                        color: GuiSettings.backgroundColor
+                        color: guiSettings.backgroundColor
                         svg: SvgOutline.feed
                     }
                 }
@@ -93,7 +93,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
-            color: GuiSettings.backgroundColor
+            color: guiSettings.backgroundColor
 
             Accessible.role: Accessible.PageTab
             Accessible.name: qsTr("search")
@@ -105,7 +105,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 svg: searchActive ? SvgFilled.search : SvgOutline.search
             }
 
@@ -118,7 +118,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
-            color: GuiSettings.backgroundColor
+            color: guiSettings.backgroundColor
 
             Accessible.role: Accessible.PageTab
             Accessible.name: qsTr("feeds")
@@ -130,7 +130,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
             }
 
@@ -143,7 +143,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
-            color: GuiSettings.backgroundColor
+            color: guiSettings.backgroundColor
 
             Accessible.role: Accessible.PageTab
             Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
@@ -155,7 +155,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
                 Accessible.ignored: true
 
@@ -173,7 +173,7 @@ Rectangle {
         Rectangle {
             height: parent.height
             Layout.fillWidth: true
-            color: GuiSettings.backgroundColor
+            color: guiSettings.backgroundColor
 
             Accessible.role: Accessible.PageTab
             Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
@@ -185,7 +185,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
                 Accessible.ignored: true
 

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import skywalker
 
 RadioButton {
     property int horizontalAlignment: Qt.AlignLeft
@@ -13,12 +14,12 @@ RadioButton {
     contentItem: Label {
         padding: 5
         background: Rectangle {
-            color: radio.checked ? GuiSettings.buttonColor : "transparent"
+            color: radio.checked ? guiSettings.buttonColor : "transparent"
             border.width: radio.borderWidth
-            border.color: GuiSettings.buttonColor
+            border.color: guiSettings.buttonColor
         }
         horizontalAlignment: radio.horizontalAlignment
-        color: checked ? GuiSettings.buttonTextColor : GuiSettings.buttonColor
+        color: checked ? guiSettings.buttonTextColor : guiSettings.buttonColor
         text: radio.text
     }
 

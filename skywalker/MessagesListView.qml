@@ -12,7 +12,7 @@ SkyPage {
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
     property bool keyboardVisible: Qt.inputMethod.keyboardRectangle.y > 0
-    property int textInputToolbarHeight: keyboardVisible || !GuiSettings.isAndroid ? 24 : 0
+    property int textInputToolbarHeight: keyboardVisible || !guiSettings.isAndroid ? 24 : 0
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
 
@@ -139,7 +139,7 @@ SkyPage {
             bottomPadding: 2 * page.margin + textInputToolbarHeight + quotedContentHeight
             parentPage: page
             parentFlick: flick
-            color: GuiSettings.messageNewTextColor
+            color: guiSettings.messageNewTextColor
             placeholderText: qsTr("Say something nice")
             maxLength: page.maxMessageLength
             enableLinkShortening: false
@@ -217,17 +217,17 @@ SkyPage {
         width: newMessageText.width
         height: flick.height + newMessageText.bottomPadding
         radius: 10
-        color: GuiSettings.messageNewBackgroundColor
+        color: guiSettings.messageNewBackgroundColor
         border.width: newMessageText.activeFocus ? 1 : 0
-        border.color: GuiSettings.buttonColor
+        border.color: guiSettings.buttonColor
 
         // Quote post
         Rectangle {
             radius: 10
             anchors.fill: quoteColumn
             border.width: 1
-            border.color: GuiSettings.borderHighLightColor
-            color: GuiSettings.postHighLightColor
+            border.color: guiSettings.borderHighLightColor
+            color: guiSettings.postHighLightColor
             visible: quoteColumn.visible
         }
         QuotePost {
@@ -238,7 +238,7 @@ SkyPage {
             author: newMessageText.quoteAuthor
             postText: newMessageText.quoteText
             postDateTime: newMessageText.quoteDateTime
-            ellipsisBackgroundColor: GuiSettings.postHighLightColor
+            ellipsisBackgroundColor: guiSettings.postHighLightColor
             showCloseButton: newMessageText.quoteFixed
             visible: newMessageText.quoteUri
 
@@ -253,8 +253,8 @@ SkyPage {
             radius: 10
             anchors.fill: quoteFeedColumn
             border.width: 1
-            border.color: GuiSettings.borderHighLightColor
-            color: GuiSettings.postHighLightColor
+            border.color: guiSettings.borderHighLightColor
+            color: guiSettings.postHighLightColor
             visible: quoteFeedColumn.visible
         }
         QuoteFeed {
@@ -403,7 +403,7 @@ SkyPage {
     }
 
     function deleteMessage(messageId) {
-        GuiSettings.askYesNoQuestion(page,
+        guiSettings.askYesNoQuestion(page,
             qsTr("Do you want to delete the message? The message will be deleted for you, the other participant will still see it."),
             () => chat.deleteMessage(convo.id, messageId))
     }

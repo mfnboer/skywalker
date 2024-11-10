@@ -33,7 +33,7 @@ Rectangle {
         y: noListsImage.y
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
-        font.pointSize: GuiSettings.scaledFont(10/8)
+        font.pointSize: guiSettings.scaledFont(10/8)
         color: Material.color(Material.Grey)
         wrapMode: Text.Wrap
         elide: Text.ElideRight

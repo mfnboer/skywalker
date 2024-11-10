@@ -10,10 +10,10 @@ Dialog {
     id: page
     width: parent.width
     contentHeight: textInput.height + (hashtagTypeaheadView.visible ? hashtagTypeaheadView.height : 0)
-    topMargin: GuiSettings.headerHeight
+    topMargin: guiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: GuiSettings.backgroundColor
+    Material.background: guiSettings.backgroundColor
 
     SkyTextInput {
         id: textInput

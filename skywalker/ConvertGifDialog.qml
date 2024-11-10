@@ -9,7 +9,7 @@ Dialog {
     width: parent.width - 40
     modal: true
     anchors.centerIn: parent
-    Material.background: GuiSettings.backgroundColor
+    Material.background: guiSettings.backgroundColor
 
     footer: DialogButtonBox {
         Button {

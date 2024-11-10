@@ -14,9 +14,9 @@ ListView {
     id: view
     spacing: 0
     model: skywalker.getListListModel(modelId)
-    flickDeceleration: GuiSettings.flickDeceleration
-    maximumFlickVelocity: GuiSettings.maxFlickVelocity
-    pixelAligned: GuiSettings.flickPixelAligned
+    flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -25,8 +25,8 @@ ListView {
     header: Rectangle {
         width: parent.width
         height: headerRow.height
-        z: GuiSettings.headerZLevel
-        color: GuiSettings.backgroundColor
+        z: guiSettings.headerZLevel
+        color: guiSettings.backgroundColor
 
         RowLayout {
             id: headerRow
@@ -37,7 +37,7 @@ ListView {
                 padding: 10
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: view.description
             }
 
@@ -149,7 +149,7 @@ ListView {
     }
 
     function deleteList(list, index) {
-        GuiSettings.askYesNoQuestion(
+        guiSettings.askYesNoQuestion(
                     view,
                     qsTr(`Do you really want to delete: ${(list.name)} ?`),
                     () => view.continueDeleteList(list, index))

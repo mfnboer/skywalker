@@ -23,7 +23,7 @@ Rectangle {
 
     id: view
     width: viewWidth
-    color: GuiSettings.backgroundColor
+    color: guiSettings.backgroundColor
     height: messageTimeText.y + messageTimeText.height
 
     AccessibleText {
@@ -56,8 +56,8 @@ Rectangle {
         width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0)
         height: messageText.height + (embed.visible ? embed.height + 10 : 0)
         radius: 10
-        color: senderIsUser ? GuiSettings.messageUserBackgroundColor :
-                              GuiSettings.messageOtherBackgroundColor
+        color: senderIsUser ? guiSettings.messageUserBackgroundColor :
+                              guiSettings.messageOtherBackgroundColor
 
         // TODO: show ava/name for multi-person chat
         SkyCleanedText {
@@ -80,7 +80,7 @@ Rectangle {
             textFormat: Text.RichText
             font.italic: message.deleted
             font.pointSize: getMessageFontSize()
-            color: senderIsUser ? GuiSettings.messageUserTextColor : GuiSettings.messageOtherTextColor
+            color: senderIsUser ? guiSettings.messageUserTextColor : guiSettings.messageOtherTextColor
             plainText: getMessageDisplayText()
 
             onLinkActivated: (link) => root.openLink(link)
@@ -117,7 +117,7 @@ Rectangle {
             x: 10
             width: maxTextWidth - 20
             anchors.top: messageText.bottom
-            backgroundColor: GuiSettings.backgroundColor
+            backgroundColor: guiSettings.backgroundColor
             record: message.embed
             visible: !message.embed.isNull()
 
@@ -177,16 +177,16 @@ Rectangle {
         width: messageRect.width
         height: visible ? contentHeight : 0
         horizontalAlignment: senderIsUser ? Text.AlignRight : Text.AlignLeft
-        color: GuiSettings.messageTimeColor
-        font.pointSize: GuiSettings.scaledFont(6/8)
+        color: guiSettings.messageTimeColor
+        font.pointSize: guiSettings.scaledFont(6/8)
         text: Qt.locale().toString(message.sentAt, Qt.locale().timeFormat(Locale.ShortFormat))
         visible: !sameSenderAsNext || !sameTimeAsNext
     }
 
     function getMessageDateIndication() {
-        if (GuiSettings.isToday(message.sentAt))
+        if (guiSettings.isToday(message.sentAt))
             return qsTr("Today")
-        else if (GuiSettings.isYesterday(message.sentAt))
+        else if (guiSettings.isYesterday(message.sentAt))
             return qsTr("Yesterday")
         else
             return Qt.locale().toString(message.sentAt, Qt.locale().dateFormat(Locale.ShortFormat))
@@ -194,11 +194,11 @@ Rectangle {
 
     function getMessageFontSize() {
         if (!root.getSkywalker().getUserSettings().giantEmojis)
-            return GuiSettings.scaledFont(1)
+            return guiSettings.scaledFont(1)
 
         return onlyEmojisMessage() ?
-                    GuiSettings.scaledFont(UnicodeFonts.graphemeLength(message.text) === 1 ? 9 : 3) :
-                    GuiSettings.scaledFont(1)
+                    guiSettings.scaledFont(UnicodeFonts.graphemeLength(message.text) === 1 ? 9 : 3) :
+                    guiSettings.scaledFont(1)
     }
 
     function onlyEmojisMessage() {

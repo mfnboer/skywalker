@@ -6,7 +6,7 @@ SkyPage {
 
     width: parent.width
     height: parent.height
-    background: Rectangle { color: GuiSettings.skywalkerLogoColor }
+    background: Rectangle { color: guiSettings.skywalkerLogoColor }
 
     Accessible.role: Accessible.Pane
 
@@ -20,7 +20,7 @@ SkyPage {
             padding: 10
             color: "white"
             font.bold: true
-            font.pointSize: GuiSettings.scaledFont(3.5)
+            font.pointSize: guiSettings.scaledFont(3.5)
             text: "Skywalker"
         }
         AccessibleText {
@@ -42,11 +42,11 @@ SkyPage {
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             textFormat: Text.RichText
-            text: `<a href=\"did:plc:zzmeflm2wzrrgcaam6bw3kaf\" style=\"color: ivory; text-decoration: none\">${GuiSettings.skywalkerHandle}</a>`
+            text: `<a href=\"did:plc:zzmeflm2wzrrgcaam6bw3kaf\" style=\"color: ivory; text-decoration: none\">${guiSettings.skywalkerHandle}</a>`
             onLinkActivated: (link) => skywalker.getDetailedProfile(link)
 
             Accessible.role: Accessible.Link
-            Accessible.name: `${GuiSettings.skywalkerHandle}`
+            Accessible.name: `${guiSettings.skywalkerHandle}`
             Accessible.onPressAction: skywalker.getDetailedProfile("did:plc:zzmeflm2wzrrgcaam6bw3kaf")
         }
         Image {

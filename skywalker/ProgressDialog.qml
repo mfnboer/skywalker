@@ -9,7 +9,7 @@ Dialog {
     modal: true
     standardButtons: Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: GuiSettings.backgroundColor
+    Material.background: guiSettings.backgroundColor
 
     ColumnLayout {
         id: column
@@ -31,7 +31,7 @@ Dialog {
             Layout.fillWidth: true
             horizontalAlignment: Qt.AlignRight
             text: `${(Math.round(progressBar.value * 100))}%`
-            font.pointSize: GuiSettings.scaledFont(7/8)
+            font.pointSize: guiSettings.scaledFont(7/8)
             color: Material.color(Material.Grey)
         }
     }

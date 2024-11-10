@@ -12,7 +12,7 @@ Row {
 
     SkySvg {
         id: replyImg
-        width: parent.visible ? GuiSettings.appFontHeight * 7/8 : 0
+        width: parent.visible ? guiSettings.appFontHeight * 7/8 : 0
         height: width
         color: Material.color(Material.Grey)
         svg: row.svg
@@ -24,7 +24,7 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
         elide: Text.ElideRight
         color: Material.color(Material.Grey)
-        font.pointSize: GuiSettings.scaledFont(7/8)
+        font.pointSize: guiSettings.scaledFont(7/8)
         plainText: row.text
 
         Accessible.ignored: true

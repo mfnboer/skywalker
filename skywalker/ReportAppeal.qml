@@ -34,9 +34,9 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: page.width
-        height: GuiSettings.footerHeight
-        z: GuiSettings.footerZLevel
-        color: GuiSettings.footerColor
+        height: guiSettings.footerHeight
+        z: guiSettings.footerZLevel
+        color: guiSettings.footerColor
 
         TextLengthBar {
             textField: detailsText
@@ -68,8 +68,8 @@ SkyPage {
             elide: Text.ElideRight
             wrapMode: Text.Wrap
             font.bold: true
-            font.pointSize: GuiSettings.scaledFont(10/8)
-            color: GuiSettings.textColor
+            font.pointSize: guiSettings.scaledFont(10/8)
+            color: guiSettings.textColor
             plainText: contentGroup.title
         }
 

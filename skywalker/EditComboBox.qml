@@ -4,7 +4,7 @@ import QtQuick.Controls
 ComboBox {
     required property int editableIndex
     property string initialEditValue
-    property string textColor: GuiSettings.textColor
+    property string textColor: guiSettings.textColor
     property bool indexChangeEnabled: true
 
     signal inputTextChanged(var textInput)
@@ -36,7 +36,7 @@ ComboBox {
         clip: true
         color: comboBox.textColor
         enabled: comboBox.editable
-        font.pointSize: GuiSettings.scaledFont(9/8)
+        font.pointSize: guiSettings.scaledFont(9/8)
         inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
         text: comboBox.displayText
 
@@ -70,7 +70,7 @@ ComboBox {
         width: comboBox.width
         height: textInput.height
         radius: 5
-        border.color: GuiSettings.borderColor
+        border.color: guiSettings.borderColor
         border.width: 1
         color: "transparent"
     }

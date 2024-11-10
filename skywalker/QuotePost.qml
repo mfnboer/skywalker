@@ -6,7 +6,7 @@ Column {
     property basicprofile author
     property string postText
     property date postDateTime
-    property string ellipsisBackgroundColor: GuiSettings.backgroundColor
+    property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool showCloseButton: false
 
     signal closeClicked
@@ -28,7 +28,7 @@ Column {
 
         Avatar {
             id: avatar
-            width: 24
+            Layout.preferredWidth: 24
             author: quoteColumn.author
 
             onClicked: skywalker.getDetailedProfile(author.did)

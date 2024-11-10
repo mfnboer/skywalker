@@ -72,8 +72,8 @@ SkyPage {
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
-                font.pointSize: GuiSettings.scaledFont(12/8)
-                color: GuiSettings.textColor
+                font.pointSize: guiSettings.scaledFont(12/8)
+                color: guiSettings.textColor
                 plainText: feed.displayName
             }
 
@@ -81,7 +81,7 @@ SkyPage {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: feed.creator.name
 
                 Accessible.role: Accessible.Link
@@ -98,8 +98,8 @@ SkyPage {
                 topPadding: 2
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
                 text: "@" + feed.creator.handle
 
                 Accessible.role: Accessible.Link
@@ -155,7 +155,7 @@ SkyPage {
 
                     MenuItemSvg {
                         svg: isPinnedFeed ? SvgFilled.star : SvgOutline.star
-                        color: isPinnedFeed ? GuiSettings.favoriteColor : GuiSettings.textColor
+                        color: isPinnedFeed ? guiSettings.favoriteColor : guiSettings.textColor
                     }
                 }
                 AccessibleMenuItem {
@@ -195,7 +195,7 @@ SkyPage {
             maximumLineCount: 1000
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: GuiSettings.textColor
+            color: guiSettings.textColor
             text: feed.formattedDescription
 
             onLinkActivated: (link) => root.openLink(link)
@@ -227,7 +227,7 @@ SkyPage {
 
             StatIcon {
                 id: likeIcon
-                iconColor: feedLikeUri ? GuiSettings.likeColor : GuiSettings.statsColor
+                iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
                 svg: feedLikeUri ? SvgFilled.like : SvgOutline.like
                 onClicked: likeFeed(feedLikeUri, feed.uri, feed.cid)
                 Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(feedLikeCount, qsTr("like"), qsTr("likes"))

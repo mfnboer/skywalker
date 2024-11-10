@@ -18,7 +18,7 @@ Rectangle {
 
     id: view
     height: grid.height
-    color: GuiSettings.backgroundColor
+    color: guiSettings.backgroundColor
 
     signal updateList(listview list)
     signal deleteList(listview list)
@@ -45,7 +45,7 @@ Rectangle {
             Layout.rightMargin: view.margin
             x: 8
             y: 5
-            width: GuiSettings.threadBarWidth * 5
+            width: guiSettings.threadBarWidth * 5
             Layout.alignment: Qt.AlignTop
             avatarUrl: showList ? list.avatarThumb : ""
 
@@ -71,23 +71,23 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: list.name
             }
 
             AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
-                text: GuiSettings.listTypeName(list.purpose)
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: guiSettings.listTypeName(list.purpose)
             }
 
             SkyCleanedTextLine {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: listCreator.name
 
                 Accessible.role: Accessible.Link
@@ -103,8 +103,8 @@ Rectangle {
             Text {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
                 text: "@" + listCreator.handle
 
                 Accessible.role: Accessible.Link
@@ -193,7 +193,7 @@ Rectangle {
             maximumLineCount: maxTextLines
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: GuiSettings.textColor
+            color: guiSettings.textColor
             text: list.formattedDescription
             visible: text && showList
 
@@ -214,7 +214,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: GuiSettings.separatorColor
+            color: guiSettings.separatorColor
         }
     }
 
@@ -264,7 +264,7 @@ Rectangle {
 
             MenuItemSvg {
                 svg: listPinned ? SvgFilled.star : SvgOutline.star
-                color: listPinned ? GuiSettings.favoriteColor : GuiSettings.textColor
+                color: listPinned ? guiSettings.favoriteColor : guiSettings.textColor
             }
         }
 
@@ -325,7 +325,7 @@ Rectangle {
 
             MenuItemSvg {
                 svg: listPinned ? SvgFilled.star : SvgOutline.star
-                color: listPinned ? GuiSettings.favoriteColor : GuiSettings.textColor
+                color: listPinned ? guiSettings.favoriteColor : guiSettings.textColor
             }
         }
 
@@ -474,6 +474,6 @@ Rectangle {
     }
 
     function listVisible() {
-        return GuiSettings.contentVisible(list)
+        return guiSettings.contentVisible(list)
     }
 }

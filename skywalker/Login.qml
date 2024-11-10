@@ -44,7 +44,7 @@ SkyPage {
                 topPadding: 10
                 leftPadding: 10
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: qsTr("Sign into")
             }
 
@@ -71,7 +71,7 @@ SkyPage {
                 topPadding: 10
                 leftPadding: 10
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: qsTr("Account")
             }
 
@@ -117,7 +117,7 @@ SkyPage {
                 topPadding: 10
                 leftPadding: 10
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: qsTr("2FA Confirmation")
                 visible: authFactorTokenRequired()
             }
@@ -138,9 +138,9 @@ SkyPage {
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 Layout.fillWidth: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 wrapMode: Text.Wrap
-                font.pointSize: GuiSettings.scaledFont(7/8)
+                font.pointSize: guiSettings.scaledFont(7/8)
                 text: qsTr("Check your email for a login code and enter it here.")
                 visible: authFactorTokenRequired()
             }
@@ -150,7 +150,7 @@ SkyPage {
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 Layout.fillWidth: true
-                color: GuiSettings.errorColor
+                color: guiSettings.errorColor
                 wrapMode: Text.Wrap
                 text: errorMsg
                 visible: errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED

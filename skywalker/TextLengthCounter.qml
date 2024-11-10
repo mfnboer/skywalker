@@ -4,7 +4,7 @@ import QtQuick.Controls
 Text {
     required property var textField
 
-    color: textField.graphemeLength <= textField.maxLength ? Material.color(Material.Grey) : GuiSettings.errorColor
+    color: textField.graphemeLength <= textField.maxLength ? Material.color(Material.Grey) : guiSettings.errorColor
     text: textField.maxLength - textField.graphemeLength
 
     Accessible.role: Accessible.StaticText

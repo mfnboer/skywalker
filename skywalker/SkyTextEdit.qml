@@ -4,7 +4,7 @@ import skywalker
 TextEdit {
     property string initialText
     property string placeholderText
-    property double placeholderPointSize: GuiSettings.scaledFont(9/8)
+    property double placeholderPointSize: guiSettings.scaledFont(9/8)
     property bool singleLine: false
     property int graphemeLength: 0
     property int maxLength: -1
@@ -16,9 +16,9 @@ TextEdit {
     rightPadding: 10
     textFormat: TextEdit.PlainText
     wrapMode: TextEdit.Wrap
-    font.pointSize: GuiSettings.scaledFont(9/8)
-    color: GuiSettings.textColor
-    selectionColor: GuiSettings.selectionColor
+    font.pointSize: guiSettings.scaledFont(9/8)
+    color: guiSettings.textColor
+    selectionColor: guiSettings.selectionColor
     clip: true
     focus: true
     text: initialText
@@ -63,7 +63,7 @@ TextEdit {
         topPadding: parent.topPadding
         bottomPadding: parent.bottomPadding
         font.pointSize: placeholderPointSize
-        color: GuiSettings.placeholderTextColor
+        color: guiSettings.placeholderTextColor
         elide: Text.ElideRight
         text: placeholderText
         visible: skyTextEdit.length + skyTextEdit.preeditText.length === 0
@@ -78,7 +78,7 @@ TextEdit {
     }
 
     Component.onCompleted: {
-        emojiFixer.setEmojiFixDocument(textDocument, maxLength, GuiSettings.textLengthExceededColor)
+        emojiFixer.setEmojiFixDocument(textDocument, maxLength, guiSettings.textLengthExceededColor)
         cursorPosition = text.length
     }
 }

@@ -47,7 +47,7 @@ Item {
         id: replyIcon
         y: topPadding
         width: parent.width / 4
-        iconColor: enabled ? GuiSettings.statsColor : GuiSettings.disabledColor
+        iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
         svg: SvgOutline.reply
         statistic: replyCount
         visible: !bookmarkNotFound
@@ -61,7 +61,7 @@ Item {
         y: topPadding
         anchors.left: replyIcon.right
         width: parent.width / 4
-        iconColor: repostUri ? GuiSettings.likeColor : GuiSettings.statsColor
+        iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: SvgOutline.repost
         statistic: repostCount
         visible: !bookmarkNotFound
@@ -74,7 +74,7 @@ Item {
         y: topPadding
         anchors.left: repostIcon.right
         width: parent.width / 4
-        iconColor: likeUri ? GuiSettings.likeColor : GuiSettings.statsColor
+        iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
         visible: !bookmarkNotFound
@@ -92,7 +92,7 @@ Item {
         y: topPadding
         anchors.left: likeIcon.right
         width: parent.width / 8
-        iconColor: isBookmarked ? GuiSettings.buttonColor : GuiSettings.statsColor
+        iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
         svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
         onClicked: bookmark()
 

@@ -1,12 +1,12 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import skywalker
 
 Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property externalview postExternal
+    property bool highlight: false
+    property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
     readonly property bool isGif: gifUtils.isGif(postExternal.uri)
 
     id: view
@@ -33,6 +33,7 @@ Item {
             thumbUrl: postExternal.thumbUrl
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
+            borderColor: view.borderColor
         }
     }
 

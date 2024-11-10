@@ -21,7 +21,7 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
-        text: GuiSettings.listTypeName(list.purpose)
+        text: guiSettings.listTypeName(list.purpose)
         onBack: closed()
     }
 
@@ -72,24 +72,24 @@ SkyPage {
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
-                font.pointSize: GuiSettings.scaledFont(12/8)
-                color: GuiSettings.textColor
+                font.pointSize: guiSettings.scaledFont(12/8)
+                color: guiSettings.textColor
                 plainText: list.name
             }
 
             AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
-                text: GuiSettings.listTypeName(list.purpose)
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: guiSettings.listTypeName(list.purpose)
             }
 
             SkyCleanedTextLine {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: list.creator.name
 
                 Accessible.role: Accessible.Link
@@ -106,8 +106,8 @@ SkyPage {
                 topPadding: 2
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
                 text: "@" + list.creator.handle
 
                 Accessible.role: Accessible.Link
@@ -175,7 +175,7 @@ SkyPage {
             maximumLineCount: 1000
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: GuiSettings.textColor
+            color: guiSettings.textColor
             text: list.formattedDescription
 
             onLinkActivated: (link) => root.openLink(link)
@@ -230,7 +230,7 @@ SkyPage {
 
             MenuItemSvg {
                 svg: isPinnedList ? SvgFilled.star : SvgOutline.star
-                color: isPinnedList ? GuiSettings.favoriteColor : GuiSettings.textColor
+                color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
             }
         }
 
@@ -289,7 +289,7 @@ SkyPage {
 
             MenuItemSvg {
                 svg: isPinnedList ? SvgFilled.star : SvgOutline.star
-                color: isPinnedList ? GuiSettings.favoriteColor : GuiSettings.textColor
+                color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
             }
         }
 

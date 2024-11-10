@@ -1,13 +1,11 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import skywalker
 
 Item {
     required property record_with_media_view record
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
-    property string backgroundColor: GuiSettings.backgroundColor
+    property bool highlight: false
 
     id: recordItem
     width: parent.width
@@ -27,6 +25,7 @@ Item {
 
         RecordView {
             record: recordItem.record.record
+            highlight: recordItem.highlight
         }
 
         Component.onCompleted: {
@@ -42,13 +41,14 @@ Item {
                                           videoView: record.video,
                                           contentVisibility: recordItem.contentVisibility,
                                           contentWarning: recordItem.contentVisibility,
-                                          backgroundColor: recordItem.backgroundColor })
+                                          highlight: recordItem.highlight })
             }
             else if (record.external) {
                 mediaLoader.setSource("ExternalView.qml", {
-                                            postExternal: record.external,
-                                            contentVisibility: recordItem.contentVisibility,
-                                            contentWarning: recordItem.contentVisibility })
+                                          postExternal: record.external,
+                                          contentVisibility: recordItem.contentVisibility,
+                                          contentWarning: recordItem.contentVisibility,
+                                          highlight: recordItem.highlight })
             }
         }
     }

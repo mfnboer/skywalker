@@ -83,7 +83,7 @@ SkyPage {
     TabBar {
         id: searchBar
         width: parent.width
-        Material.background: GuiSettings.backgroundColor
+        Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
 
@@ -118,7 +118,7 @@ SkyPage {
         y: (searchBar.height - height) / 2
         width: height
         height: 30
-        iconColor: GuiSettings.linkColor
+        iconColor: guiSettings.linkColor
         Material.background: "transparent"
         svg: SvgOutline.block
         accessibleName: qsTr(`mute hashtag ${page.getSearchText()}`)
@@ -134,7 +134,7 @@ SkyPage {
         y: (searchBar.height - height) / 2
         width: height
         height: 30
-        iconColor: GuiSettings.linkColor
+        iconColor: guiSettings.linkColor
         Material.background: "transparent"
         svg: SvgOutline.hashtag
         accessibleName: qsTr(`set focus on hashtag ${page.getSearchText()}`)
@@ -147,7 +147,7 @@ SkyPage {
         anchors.top: searchBar.bottom
         width: parent.width
         height: 1
-        color: GuiSettings.separatorColor
+        color: guiSettings.separatorColor
     }
 
     Row {
@@ -155,7 +155,7 @@ SkyPage {
         anchors.top: searchBarSeparator.bottom
         width: parent.width
         height: page.isPostSearch ? implicitHeight : 0
-        Material.background: GuiSettings.backgroundColor
+        Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
         topPadding: 5
@@ -167,7 +167,7 @@ SkyPage {
             y: height
             width: height
             height: 20
-            color: GuiSettings.linkColor
+            color: guiSettings.linkColor
             svg: SvgOutline.noReplyRestrictions
             Accessible.ignored: true
 
@@ -187,7 +187,7 @@ SkyPage {
             rightPadding: 5
             elide: Text.ElideRight
             wrapMode: Text.Wrap
-            color: GuiSettings.linkColor
+            color: guiSettings.linkColor
             text: page.getSearchPostScopeText()
 
             MouseArea {
@@ -203,7 +203,7 @@ SkyPage {
         anchors.top: searchModeBar.bottom
         width: parent.width
         height: page.isPostSearch ? 1 : 0
-        color: GuiSettings.separatorColor
+        color: guiSettings.separatorColor
         visible: page.isPostSearch
     }
 
@@ -256,7 +256,7 @@ SkyPage {
             width: parent.width
             height: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
-            pixelAligned: GuiSettings.flickPixelAligned
+            pixelAligned: guiSettings.flickPixelAligned
 
             delegate: PostFeedViewDelegate {
                 width: postsViewTop.width
@@ -365,7 +365,7 @@ SkyPage {
                 bottomPadding: 10
                 horizontalAlignment: Text.AlignHCenter
                 font.bold: true
-                font.pointSize: GuiSettings.scaledFont(9/8)
+                font.pointSize: guiSettings.scaledFont(9/8)
                 text: qsTr("Suggestions")
                 visible: suggestedUsersView.count > 0
             }
@@ -406,7 +406,7 @@ SkyPage {
                 width: parent.width
                 padding: 10
                 font.bold: true
-                font.pointSize: GuiSettings.scaledFont(9/8)
+                font.pointSize: guiSettings.scaledFont(9/8)
                 text: qsTr("Recent searches")
                 visible: recentSearchesView.count > 0
 
@@ -437,7 +437,7 @@ SkyPage {
                     x: page.margin
                     width: 40
                     height: width
-                    color: GuiSettings.textColor
+                    color: guiSettings.textColor
                     svg: SvgOutline.search
                 }
 
@@ -647,9 +647,9 @@ SkyPage {
     }
 
     function muteWord(word) {
-        GuiSettings.askYesNoQuestion(
+        guiSettings.askYesNoQuestion(
                     page,
-                    qsTr(`Mute <font color="${GuiSettings.linkColor}">${word}</font> ?`),
+                    qsTr(`Mute <font color="${guiSettings.linkColor}">${word}</font> ?`),
                     () => {
                         skywalker.mutedWords.addEntry(word)
                         skywalker.saveMutedWords()
@@ -666,7 +666,7 @@ SkyPage {
     }
 
     function clearRecentSearches() {
-        GuiSettings.askYesNoQuestion(
+        guiSettings.askYesNoQuestion(
                     page,
                     qsTr("Are you sure to clear your recent searches?"),
                     () => {

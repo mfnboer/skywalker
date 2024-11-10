@@ -13,9 +13,9 @@ ListView {
     id: view
     spacing: 0
     model: skywalker.getListListModel(modelId)
-    flickDeceleration: GuiSettings.flickDeceleration
-    maximumFlickVelocity: GuiSettings.maxFlickVelocity
-    pixelAligned: GuiSettings.flickPixelAligned
+    flickDeceleration: guiSettings.flickDeceleration
+    maximumFlickVelocity: guiSettings.maxFlickVelocity
+    pixelAligned: guiSettings.flickPixelAligned
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 

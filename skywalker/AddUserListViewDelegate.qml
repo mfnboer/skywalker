@@ -15,7 +15,7 @@ Rectangle {
 
     id: view
     height: grid.height
-    color: GuiSettings.backgroundColor
+    color: guiSettings.backgroundColor
 
     Accessible.role: Accessible.StaticText
     Accessible.name: `${listTypeNameText.text} ${list.name} by ${listCreatorHandleText.text}`
@@ -54,7 +54,7 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: list.name
 
                 Accessible.ignored: true
@@ -64,9 +64,9 @@ Rectangle {
                 id: listTypeNameText
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
-                text: GuiSettings.listTypeName(list.purpose)
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: guiSettings.listTypeName(list.purpose)
 
                 Accessible.ignored: true
             }
@@ -76,8 +76,8 @@ Rectangle {
                 topPadding: 5
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
                 text: `@${listCreator.handle}`
 
                 Accessible.ignored: true
@@ -103,7 +103,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: GuiSettings.separatorColor
+            color: guiSettings.separatorColor
         }
     }
 

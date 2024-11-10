@@ -296,7 +296,7 @@ SkyPage {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             elide: Text.ElideRight
-            font.pointSize: GuiSettings.scaledFont(9/8)
+            font.pointSize: guiSettings.scaledFont(9/8)
             color: "white"
             text: qsTr("Zoom and drag photo into desired position.")
         }

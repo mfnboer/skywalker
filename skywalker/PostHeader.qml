@@ -5,7 +5,7 @@ import skywalker
 Column {
     required property basicprofile author
     required property int postIndexedSecondsAgo
-    readonly property list<contentlabel> labelsToShow: GuiSettings.filterContentLabelsToShow(author.labels)
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.labels)
 
     id: postHeader
 
@@ -13,7 +13,7 @@ Column {
     // more responsive.
     Loader {
         width: parent.width
-        height: GuiSettings.appFontHeight
+        height: guiSettings.appFontHeight
         active: true
         asynchronous: true
 
@@ -26,14 +26,14 @@ Column {
                 elide: Text.ElideRight
                 plainText: author.name
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
 
                 Accessible.ignored: true
             }
             Text {
                 id: durationText
-                text: GuiSettings.durationToString(postIndexedSecondsAgo)
-                font.pointSize: GuiSettings.scaledFont(7/8)
+                text: guiSettings.durationToString(postIndexedSecondsAgo)
+                font.pointSize: guiSettings.scaledFont(7/8)
                 color: Material.color(Material.Grey)
 
                 Accessible.ignored: true
@@ -46,8 +46,8 @@ Column {
         bottomPadding: 5
         elide: Text.ElideRight
         text: "@" + author.handle
-        font.pointSize: GuiSettings.scaledFont(7/8)
-        color: GuiSettings.handleColor
+        font.pointSize: guiSettings.scaledFont(7/8)
+        color: guiSettings.handleColor
 
         Accessible.ignored: true
     }
@@ -55,7 +55,7 @@ Column {
     Loader {
         active: labelsToShow.length > 0
         width: parent.width
-        height: active ? GuiSettings.labelHeight + GuiSettings.labelRowPadding : 0
+        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding : 0
         asynchronous: true
         visible: active
 

@@ -30,7 +30,7 @@ Column {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: labeler.creator.name
 
                 Accessible.ignored: true
@@ -39,8 +39,8 @@ Column {
             Text {
                 width: parent.width
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
-                color: GuiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
                 text: qsTr(`feed by @${labeler.creator.handle}`)
 
                 Accessible.ignored: true
@@ -53,7 +53,7 @@ Column {
         wrapMode: Text.Wrap
         maximumLineCount: 5
         elide: Text.ElideRight
-        color: GuiSettings.textColor
+        color: guiSettings.textColor
         text: labeler.creator.description
     }
 

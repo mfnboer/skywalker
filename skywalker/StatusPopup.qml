@@ -14,7 +14,7 @@ Popup {
         color: [Material.theme === Material.Light ? "lightcyan" : "teal",
                 Material.theme === Material.Light ? "crimson" : "darkred"][level]
         border.width: 1
-        border.color: GuiSettings.borderColor
+        border.color: guiSettings.borderColor
         radius: 5
     }
     closePolicy: Popup.CloseOnPressOutside
@@ -30,7 +30,7 @@ Popup {
         wrapMode: Text.Wrap
         maximumLineCount: 8
         elide: Text.ElideRight
-        color: GuiSettings.textColor
+        color: guiSettings.textColor
         text: "Status"
 
         Accessible.role: Accessible.StaticText

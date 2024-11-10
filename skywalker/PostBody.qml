@@ -20,7 +20,8 @@ Column {
     property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
     property int maxTextLines: 1000
-    property string bodyBackgroundColor: GuiSettings.backgroundColor
+    property string bodyBackgroundColor: guiSettings.backgroundColor
+    property string borderColor: guiSettings.borderColor
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property bool attachmentsInitialized: false
@@ -39,7 +40,7 @@ Column {
         ellipsisBackgroundColor: postBody.bodyBackgroundColor
         elide: Text.ElideRight
         textFormat: Text.RichText
-        color: GuiSettings.textColor
+        color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: postText
         bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia ? 5 : 0
@@ -54,7 +55,7 @@ Column {
             z: parent.z - 1
             radius: 5
             color: postHighlightColor
-            opacity: GuiSettings.focusHighlightOpacity
+            opacity: guiSettings.focusHighlightOpacity
         }
     }
 
@@ -98,7 +99,7 @@ Column {
                 elide: Text.ElideRight
                 textFormat: Text.RichText
                 color: Material.color(Material.Grey)
-                text: postContentWarning + `<br><a href=\"show\" style=\"color: ${GuiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                text: postContentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                 visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
                 onLinkActivated: {
                     showWarnedPost = true
@@ -118,7 +119,7 @@ Column {
                 elide: Text.ElideRight
                 textFormat: Text.RichText
                 color: Material.color(Material.Grey)
-                text: getMuteText() + `<br><a href=\"show\" style=\"color: ${GuiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                text: getMuteText() + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                 visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
                 onLinkActivated: {
                     mutePost = false
@@ -181,7 +182,7 @@ Column {
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
             text: postDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
-            font.pointSize: GuiSettings.scaledFont(7/8)
+            font.pointSize: guiSettings.scaledFont(7/8)
         }
     }
 
@@ -216,11 +217,11 @@ Column {
 
     function getPostFontSize() {
         if (!root.getSkywalker().getUserSettings().giantEmojis)
-            return GuiSettings.scaledFont(1)
+            return guiSettings.scaledFont(1)
 
         return onlyEmojisPost() ?
-                    GuiSettings.scaledFont(UnicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
-                    GuiSettings.scaledFont(1)
+                    guiSettings.scaledFont(UnicodeFonts.graphemeLength(postPlainText) === 1 ? 9 : 3) :
+                    guiSettings.scaledFont(1)
     }
 
     function onlyEmojisPost() {
@@ -263,14 +264,15 @@ Column {
                                           videoView: postBody.postVideo,
                                           contentVisibility: postContentVisibility,
                                           contentWarning: postContentWarning,
-                                          backgroundColor: bodyBackgroundColor })
+                                          highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
             }
         }
         else if (postExternal) {
             mediaLoader.setSource("ExternalView.qml", {
-                                        postExternal: postBody.postExternal,
-                                        contentVisibility: postContentVisibility,
-                                        contentWarning: postContentWarning })
+                                      postExternal: postBody.postExternal,
+                                      contentVisibility: postContentVisibility,
+                                      contentWarning: postContentWarning,
+                                      highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
         }
 
         if (postContentLabels.length > 0) {
@@ -280,29 +282,35 @@ Column {
                                         parentWidth: parent.width})
         }
 
-        if (postRecord)
-            recordLoader.setSource("RecordView.qml", {record: postRecord})
+        if (postRecord) {
+            recordLoader.setSource("RecordView.qml", {
+                                       record: postRecord,
+                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+        }
         else if (postRecordWithMedia) {
             recordLoader.setSource("RecordWithMediaView.qml", {
-                                                record: postRecordWithMedia,
-                                                contentVisibility: postContentVisibility,
-                                                contentWarning: postContentWarning,
-                                                backgroundColor: bodyBackgroundColor })
+                                       record: postRecordWithMedia,
+                                       contentVisibility: postContentVisibility,
+                                       contentWarning: postContentWarning,
+                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
         }
     }
 
     onPostRecordChanged: {
         if (postRecord)
-            recordLoader.setSource("RecordView.qml", {record: postRecord})
+            recordLoader.setSource("RecordView.qml", {
+                                       record: postRecord,
+                                       backgroundColor: bodyBackgroundColor,
+                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
     }
 
     onPostRecordWithMediaChanged: {
         if (postRecordWithMedia) {
             recordLoader.setSource("RecordWithMediaView.qml", {
-                                                record: postRecordWithMedia,
-                                                contentVisibility: postContentVisibility,
-                                                contentWarning: postContentWarning,
-                                                backgroundColor: bodyBackgroundColor})
+                                       record: postRecordWithMedia,
+                                       contentVisibility: postContentVisibility,
+                                       contentWarning: postContentWarning,
+                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
         }
     }
 

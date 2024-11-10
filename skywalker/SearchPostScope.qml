@@ -19,10 +19,10 @@ Dialog {
     id: searchPostScope
     width: parent.width
     contentHeight: Math.max(scopeGrid.height, (authorTypeaheadView.visible ? authorTypeaheadView.y + authorTypeaheadView.height : 0))
-    topMargin: GuiSettings.headerHeight
+    topMargin: guiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok
-    Material.background: GuiSettings.backgroundColor
+    Material.background: guiSettings.backgroundColor
 
     GridLayout {
         id: scopeGrid
@@ -129,7 +129,7 @@ Dialog {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: SvgOutline.cancel
-                iconColor: GuiSettings.textColor
+                iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 accessibleName: qsTr("clear since date")
                 visible: setSince
@@ -162,7 +162,7 @@ Dialog {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: SvgOutline.cancel
-                iconColor: GuiSettings.textColor
+                iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 accessibleName: qsTr("clear until date")
                 visible: setUntil
@@ -183,8 +183,8 @@ Dialog {
             Layout.fillWidth: true
             background.implicitHeight: untilText.height
             radius: 5
-            color: GuiSettings.textColor
-            borderColor: GuiSettings.borderColor
+            color: guiSettings.textColor
+            borderColor: guiSettings.borderColor
             borderWidth: 1
             allLanguages: languageUtils.languages
             usedLanguages: languageUtils.usedLanguages

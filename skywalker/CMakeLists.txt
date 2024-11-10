@@ -25,8 +25,6 @@ set(QML_IMPORT_PATH "${CMAKE_BINARY_DIR}" CACHE STRING "QML imports.")
 
 include_directories(..)
 
-set_source_files_properties(GuiSettings.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
-
 qt_add_qml_module(libskywalker
     URI skywalker
     VERSION ${PROJECT_VERSION}

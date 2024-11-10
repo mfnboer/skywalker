@@ -44,7 +44,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            width: GuiSettings.threadBarWidth * 5
+            width: guiSettings.threadBarWidth * 5
             height: avatarImg.height + 10
             Layout.fillHeight: true
             color: "transparent"
@@ -120,7 +120,7 @@ Rectangle {
             Layout.columnSpan: 2
             Layout.preferredHeight: 1
             Layout.fillWidth: true
-            color: GuiSettings.separatorColor
+            color: guiSettings.separatorColor
         }
 
         // End of feed indication
@@ -130,7 +130,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             elide: Text.ElideRight
-            color: GuiSettings.textColor
+            color: guiSettings.textColor
             text: qsTr("End of drafts")
             font.italic: true
             visible: endOfFeed

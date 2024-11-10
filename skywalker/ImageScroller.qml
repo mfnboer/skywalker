@@ -82,7 +82,7 @@ ScrollView {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
-                    backgroundColor: GuiSettings.errorColor
+                    backgroundColor: guiSettings.errorColor
                     horizontalAlignment: Text.AlignHCenter
                     color: "white"
                     text: "ALT text missing"

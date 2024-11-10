@@ -37,7 +37,7 @@ Row {
         elide: Text.ElideRight
         textFormat: Text.RichText
         color: Material.color(Material.Grey)
-        text: contentWarning + `<br><a href=\"show\" style=\"color: ${GuiSettings.linkColor};\">` +
+        text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
               (images.length === 1 || imageUrl ? showMsg : qsTr("Show pictures")) + "</a>"
         visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
         onLinkActivated: showWarnedMedia = true;

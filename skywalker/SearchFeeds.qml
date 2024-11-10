@@ -72,9 +72,9 @@ SkyPage {
             spacing: 0
             clip: true
             model: searchUtils.getSearchFeedsModel()
-            flickDeceleration: GuiSettings.flickDeceleration
-            maximumFlickVelocity: GuiSettings.maxFlickVelocity
-            pixelAligned: GuiSettings.flickPixelAligned
+            flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List
@@ -110,9 +110,9 @@ SkyPage {
             clip: true
             model: skywalker.favoriteFeeds.getSavedFeedsModel()
             boundsBehavior: Flickable.StopAtBounds
-            flickDeceleration: GuiSettings.flickDeceleration
-            maximumFlickVelocity: GuiSettings.maxFlickVelocity
-            pixelAligned: GuiSettings.flickPixelAligned
+            flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             Accessible.role: Accessible.List

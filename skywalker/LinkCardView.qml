@@ -1,6 +1,5 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick.Controls.Material
 import skywalker
 
 RoundedFrame {
@@ -10,12 +9,13 @@ RoundedFrame {
     property string thumbUrl
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    property string borderColor: guiSettings.borderColor
     property int columnHeight: externalColumn.height
 
     id: card
     objectToRound: externalColumn
     border.width: 1
-    border.color: GuiSettings.borderColor
+    border.color: borderColor
 
     FilteredImageWarning {
         id: filter
@@ -52,7 +52,7 @@ RoundedFrame {
             rightPadding: 5
             text: card.uri ? new URL(card.uri).hostname : ""
             elide: Text.ElideRight
-            color: GuiSettings.linkColor
+            color: guiSettings.linkColor
         }
         Text {
             id: titleText

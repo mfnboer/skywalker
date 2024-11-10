@@ -17,16 +17,16 @@ Drawer {
         onAuthorClicked: (profile) => { selectedUser(profile) }
 
         header: Rectangle {
-            height: GuiSettings.headerHeight
+            height: guiSettings.headerHeight
             width: parent.width
-            z: GuiSettings.headerZLevel
+            z: guiSettings.headerZLevel
             color: "transparent"
 
             AccessibleText {
                 anchors.centerIn: parent
                 font.bold: true
-                font.pointSize: GuiSettings.scaledFont(10/8)
-                color: GuiSettings.textColor
+                font.pointSize: guiSettings.scaledFont(10/8)
+                color: guiSettings.textColor
                 text: qsTr("Switch Account")
             }
 

@@ -41,7 +41,7 @@ SkyPage {
             bottomPadding: 20
             id: adultContentSwitch
             width: parent.width
-            Material.accent: GuiSettings.buttonColor
+            Material.accent: guiSettings.buttonColor
             text: qsTr("Adult content")
             checked: page.globalLabelModel.adultContent
             onCheckedChanged: page.globalLabelModel.adultContent = checked
@@ -98,7 +98,7 @@ SkyPage {
                     x: parent.width - 20
                     y: (parent.height + height) / 2
                     svg: SvgOutline.navigateNext
-                    color: GuiSettings.textColor
+                    color: guiSettings.textColor
                 }
 
                 MouseArea {

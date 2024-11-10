@@ -54,16 +54,16 @@ SkyPage {
             clip: true
             model: skywalker.favoriteFeeds.getSavedListsModel()
             boundsBehavior: Flickable.StopAtBounds
-            flickDeceleration: GuiSettings.flickDeceleration
-            maximumFlickVelocity: GuiSettings.maxFlickVelocity
-            pixelAligned: GuiSettings.flickPixelAligned
+            flickDeceleration: guiSettings.flickDeceleration
+            maximumFlickVelocity: guiSettings.maxFlickVelocity
+            pixelAligned: guiSettings.flickPixelAligned
             ScrollIndicator.vertical: ScrollIndicator {}
 
             header: Rectangle {
                 width: parent.width
                 height: headerText.height
-                z: GuiSettings.headerZLevel
-                color: GuiSettings.backgroundColor
+                z: guiSettings.headerZLevel
+                color: guiSettings.backgroundColor
 
                 Text {
                     id: headerText
@@ -71,7 +71,7 @@ SkyPage {
                     padding: 10
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
-                    color: GuiSettings.textColor
+                    color: guiSettings.textColor
                     text: qsTr("Saved lists from other users")
                 }
             }

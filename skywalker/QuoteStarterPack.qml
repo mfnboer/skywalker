@@ -15,15 +15,15 @@ Column {
         width: parent.width - 2 * margin
         elide: Text.ElideRight
         font.bold: true
-        color: GuiSettings.textColor
+        color: guiSettings.textColor
         plainText: starterPack.name
     }
 
     AccessibleText {
         width: parent.width - 2 * margin
         elide: Text.ElideRight
-        font.pointSize: GuiSettings.scaledFont(7/8)
-        color: GuiSettings.handleColor
+        font.pointSize: guiSettings.scaledFont(7/8)
+        color: guiSettings.handleColor
         text: qsTr(`Starter pack by @${starterPack.creator.handle}`)
     }
 
@@ -42,7 +42,7 @@ Column {
         wrapMode: Text.Wrap
         elide: Text.ElideRight
         maximumLineCount: maxTextLines
-        color: GuiSettings.textColor
+        color: guiSettings.textColor
         plainText: starterPack.description
         visible: starterPack.description
     }

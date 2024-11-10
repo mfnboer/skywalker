@@ -20,7 +20,7 @@ SkyListView {
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: postFeedView.model.feedName
-        feedAvatar: GuiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
+        feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
         showAsHome: postFeedView.showAsHome
         showLanguageFilter: postFeedView.model.languageFilterConfigured
         filteredLanguages: postFeedView.model.filteredLanguages

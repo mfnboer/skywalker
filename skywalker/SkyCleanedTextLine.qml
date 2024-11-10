@@ -7,7 +7,7 @@ Text {
     property bool isCompleted: false
 
     id: theText
-    color: GuiSettings.textColor
+    color: guiSettings.textColor
     textFormat: mustClean ? Text.RichText : Text.PlainText
 
     Accessible.role: Accessible.StaticText

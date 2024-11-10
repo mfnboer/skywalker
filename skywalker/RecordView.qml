@@ -1,11 +1,12 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
 Item {
     property recordview record
+    property bool highlight: false
     property string backgroundColor: "transparent"
+    property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
 
     signal opening
 
@@ -20,7 +21,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         border.width: 1
-        border.color: GuiSettings.borderColor
+        border.color: recordView.borderColor
         color: recordView.backgroundColor
         radius: 10
     }
@@ -125,7 +126,7 @@ Item {
 
             sourceComponent: Text {
                 width: parent.width
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: getDescription()
 
                 Accessible.ignored: true
@@ -148,9 +149,9 @@ Item {
 
             sourceComponent: Text {
                 width: parent.width
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 text: isUser(record.detachedByDid) ?
-                          qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${GuiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
+                          qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
                           qsTr("🗑 Detached by author")
 
                 Accessible.ignored: true
@@ -165,11 +166,11 @@ Item {
 
             sourceComponent: Text {
                 width: parent.width
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 elide: Text.ElideRight
-                font.pointSize: GuiSettings.scaledFont(7/8)
+                font.pointSize: guiSettings.scaledFont(7/8)
                 text: record.unsupportedType
 
                 Accessible.ignored: true

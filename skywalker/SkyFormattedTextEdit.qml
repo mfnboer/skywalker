@@ -32,9 +32,9 @@ TextEdit {
     activeFocusOnTab: true
     textFormat: TextEdit.PlainText
     wrapMode: TextEdit.Wrap
-    font.pointSize: GuiSettings.scaledFont(9/8)
-    color: GuiSettings.textColor
-    selectionColor: GuiSettings.selectionColor
+    font.pointSize: guiSettings.scaledFont(9/8)
+    color: guiSettings.textColor
+    selectionColor: guiSettings.selectionColor
     clip: true
     text: initialText
 
@@ -93,8 +93,8 @@ TextEdit {
     }
 
     onMaxLengthChanged: {
-        postUtils.setHighlightDocument(editText.textDocument, GuiSettings.linkColor,
-                                       editText.maxLength, GuiSettings.textLengthExceededColor)
+        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+                                       editText.maxLength, guiSettings.textLengthExceededColor)
     }
 
     // Keys.onReleased: (event) => {
@@ -238,7 +238,7 @@ TextEdit {
         bottomPadding: editText.bottomPadding
         font.pointSize: editText.font.pointSize
         wrapMode: Text.Wrap
-        color: GuiSettings.placeholderTextColor
+        color: guiSettings.placeholderTextColor
         text: placeholderText
         visible: editText.graphemeLength === 0
     }
@@ -339,8 +339,8 @@ TextEdit {
     Component.onCompleted: {
         createAuthorTypeaheadView()
         createHashtagTypeaheadView()
-        postUtils.setHighlightDocument(editText.textDocument, GuiSettings.linkColor,
-                                       editText.maxLength, GuiSettings.textLengthExceededColor)
+        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
+                                       editText.maxLength, guiSettings.textLengthExceededColor)
     }
 }
 

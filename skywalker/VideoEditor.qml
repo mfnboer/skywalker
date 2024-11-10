@@ -98,7 +98,7 @@ SkyPage {
             backgroundColor: "black"
             backgroundOpacity: 0.6
             color: "white"
-            text: GuiSettings.videoDurationToString(durationControl.duration)
+            text: guiSettings.videoDurationToString(durationControl.duration)
         }
 
         SvgButton {
@@ -144,15 +144,15 @@ SkyPage {
         Text {
             x: durationControl.first.handle.x - 5
             y: 0
-            font.pointSize: GuiSettings.scaledFont(6/8)
-            text: GuiSettings.videoDurationToString(durationControl.first.value)
+            font.pointSize: guiSettings.scaledFont(6/8)
+            text: guiSettings.videoDurationToString(durationControl.first.value)
         }
 
         Text {
             x: durationControl.second.handle.x - 5
             y: 0
-            font.pointSize: GuiSettings.scaledFont(6/8)
-            text: GuiSettings.videoDurationToString(durationControl.second.value)
+            font.pointSize: guiSettings.scaledFont(6/8)
+            text: guiSettings.videoDurationToString(durationControl.second.value)
         }
 
         Rectangle {
@@ -162,7 +162,7 @@ SkyPage {
             width: 10
             height: width
             radius: width / 2
-            color: GuiSettings.buttonColor
+            color: guiSettings.buttonColor
             visible: video.playbackState === MediaPlayer.PlayingState
         }
     }

@@ -14,7 +14,7 @@ Rectangle {
 
     id: contentGroupView
     height: contentGroupColumn.height
-    color: isNewLabel ? GuiSettings.postHighLightColor : "transparent"
+    color: isNewLabel ? guiSettings.postHighLightColor : "transparent"
 
     ColumnLayout {
         id: contentGroupColumn
@@ -36,7 +36,7 @@ Rectangle {
                 Layout.fillWidth: true
                 font.bold: true
                 elide: Text.ElideRight
-                color: GuiSettings.textColor
+                color: guiSettings.textColor
                 plainText: contentGroup.title
             }
             SvgButton {
@@ -46,7 +46,7 @@ Rectangle {
                 Layout.rightMargin: contentGroupView.margin
                 svg: contentGroup.target === QEnums.LABEL_TARGET_CONTENT ? SvgOutline.chat : SvgOutline.image
                 accessibleName: qsTr("target of the label")
-                iconColor: GuiSettings.textColor
+                iconColor: guiSettings.textColor
                 Material.background: "transparent"
                 visible: !contentGroup.isBadge
 
@@ -67,7 +67,7 @@ Rectangle {
             maximumLineCount: 1000
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: GuiSettings.textColor
+            color: guiSettings.textColor
             text: contentGroup.formattedDescription
         }
 
@@ -122,7 +122,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 padding: 10
-                color: GuiSettings.buttonColor
+                color: guiSettings.buttonColor
                 horizontalAlignment: Qt.AlignHCenter
                 text: qsTr("Hide")
                 visible: contentGroup.isAdult && !adultContent
@@ -139,7 +139,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: contentGroupView.isNewLabel ? GuiSettings.separatorHighLightColor : GuiSettings.separatorColor
+            color: contentGroupView.isNewLabel ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
         }
     }
 

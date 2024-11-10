@@ -38,7 +38,7 @@ Item {
         width: parent.width
         height: parent.height
         radius: parent.radius
-        color: GuiSettings.avatarDefaultColor
+        color: guiSettings.avatarDefaultColor
         visible: !avatarFrame.visible
 
         SkySvg {
@@ -67,6 +67,6 @@ Item {
 
 
     function contentVisible() {
-        return showWarnedMedia || GuiSettings.contentVisible(author)
+        return showWarnedMedia || guiSettings.contentVisible(author)
     }
 }

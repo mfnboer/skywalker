@@ -24,7 +24,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: ((list.headerItem && list.headerItem.visible) ? list.headerItem.height : 0) - verticalOvershoot - height
         font.italic: true
-        color: GuiSettings.textColor
+        color: guiSettings.textColor
         visible: verticalOvershoot < 0
         text: inTopOvershoot ? qsTr("Refreshing...") : topText
     }
@@ -35,8 +35,8 @@ Item {
         y: parent.height - height - ((list.footerItem && list.footerItem.visible) ? list.footerItem.height : 0) - 10
         width: 50
         height: width
-        iconColor: GuiSettings.textColor
-        Material.background: GuiSettings.buttonNeutralColor
+        iconColor: guiSettings.textColor
+        Material.background: guiSettings.buttonNeutralColor
         svg: SvgOutline.scrollToTop
         accessibleName: qsTr("Scroll to top")
         visible: scrollTopTopButtonVisible && !list.atYBeginning && enableScrollToTop

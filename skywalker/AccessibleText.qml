@@ -1,9 +1,9 @@
 import QtQuick
+import skywalker
 
 Text {
-    color: GuiSettings.textColor
+    color: guiSettings.textColor
     Accessible.role: Accessible.StaticText
     Accessible.name: text
     Accessible.description: text
-
 }
