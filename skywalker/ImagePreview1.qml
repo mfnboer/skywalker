@@ -18,7 +18,6 @@ RoundedFrame {
     ThumbImageView {
         id: img
         width: Math.min(implicitWidth, frame.parent.width)
-        Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
         imageView: filter.getImage(0)
 
@@ -31,7 +30,7 @@ RoundedFrame {
             settingSize = true
             const image = images[0]
 
-            if (image.width > 0 && image.height > 0) {
+            if (image.width > 0 && image.height > 0 && frame.parent.width > 0) {
                 const newWidth = Math.min(image.width, frame.parent.width)
                 let newHeight = (image.height / image.width) * newWidth
 
