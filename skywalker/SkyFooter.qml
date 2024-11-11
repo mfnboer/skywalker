@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -24,40 +24,37 @@ Rectangle {
     width: parent.width
     height: guiSettings.footerHeight
     z: guiSettings.footerZLevel
-    color: guiSettings.footerColor
+    color: "transparent"
 
-    Rectangle {
-        id: separatorLine
-        width: parent.width
-        height: 1
-        color: guiSettings.separatorColor
-        Accessible.ignored: true
+    // Shield to catch miss clicks.
+    MouseArea {
+        anchors.fill: parent
     }
 
     RowLayout {
-        anchors.top: separatorLine.bottom
         width: parent.width
-        height: parent.height - separatorLine.height
+        height: parent.height
 
         Rectangle {
-            height: parent.height
+            Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: guiSettings.backgroundColor
+            color: "transparent"
 
-            Accessible.role: Accessible.PageTab
-            Accessible.name: getHomeSpeech()
-            Accessible.onPressAction: homeClicked()
-
-            SkySvg {
+            SvgButton {
                 id: homeButton
-                y: height + 5
+                y: 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
+                Material.background: guiSettings.backgroundColor
+                iconColor: guiSettings.textColor
                 svg: homeActive ? SvgFilled.home : SvgOutline.home
+                accessibleName: getHomeSpeech()
+                onClicked: homeClicked()
 
                 BadgeCounter {
+                    color: guiSettings.backgroundColor
+                    counterColor: guiSettings.textColor
                     counter: timeline.unreadPosts
                 }
 
@@ -68,7 +65,7 @@ Rectangle {
                     width: 20
                     height: 20
                     radius: 10
-                    color: guiSettings.textColor
+                    color: guiSettings.backgroundColor
                     border.color: guiSettings.backgroundColor
                     border.width: 2
                     visible: showHomeFeedBadge
@@ -78,125 +75,98 @@ Rectangle {
                         y: height + 2
                         width: 14
                         height: width
-                        color: guiSettings.backgroundColor
+                        color: guiSettings.textColor
                         svg: SvgOutline.feed
                     }
                 }
             }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: homeClicked()
-            }
         }
 
         Rectangle {
-            height: parent.height
+            Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: guiSettings.backgroundColor
+            color: "transparent"
 
-            Accessible.role: Accessible.PageTab
-            Accessible.name: qsTr("search")
-            Accessible.onPressAction: searchClicked()
-
-            SkySvg {
+            SvgButton {
                 id: searchButton
-                y: height + 5
+                y: 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
+                Material.background: guiSettings.backgroundColor
+                iconColor: guiSettings.textColor
                 svg: searchActive ? SvgFilled.search : SvgOutline.search
-            }
+                accessibleName: qsTr("search")
 
-            MouseArea {
-                anchors.fill: parent
                 onClicked: searchClicked()
             }
         }
 
         Rectangle {
-            height: parent.height
+            Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: guiSettings.backgroundColor
+            color: "transparent"
 
-            Accessible.role: Accessible.PageTab
-            Accessible.name: qsTr("feeds")
-            Accessible.onPressAction: feedsClicked()
-
-            SkySvg {
+            SvgButton {
                 id: feedsButton
-                y: height + 5
+                y: 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
+                Material.background: guiSettings.backgroundColor
+                iconColor: guiSettings.textColor
                 svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
-            }
+                accessibleName: qsTr("feeds")
 
-            MouseArea {
-                anchors.fill: parent
                 onClicked: feedsClicked()
             }
         }
 
         Rectangle {
-            height: parent.height
+            Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: guiSettings.backgroundColor
+            color: "transparent"
 
-            Accessible.role: Accessible.PageTab
-            Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
-            Accessible.onPressAction: messagesClicked()
-
-            SkySvg {
+            SvgButton {
                 id: messagesButton
-                y: height + 5
+                y: 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
+                Material.background: guiSettings.backgroundColor
+                iconColor: guiSettings.textColor
                 svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
-                Accessible.ignored: true
+                accessibleName: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
+
+                onClicked: messagesClicked()
 
                 BadgeCounter {
                     counter: skywalker.chat.unreadCount
                 }
             }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: messagesClicked()
-            }
         }
 
         Rectangle {
-            height: parent.height
+            Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: guiSettings.backgroundColor
+            color: "transparent"
 
-            Accessible.role: Accessible.PageTab
-            Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
-            Accessible.onPressAction: notificationsClicked()
-
-            SkySvg {
+            SvgButton {
                 id: notificationsButton
-                y: height + 5
+                y: 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
+                Material.background: guiSettings.backgroundColor
+                iconColor: guiSettings.textColor
                 svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
-                Accessible.ignored: true
+                accessibleName: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
+
+                onClicked: notificationsClicked()
 
                 BadgeCounter {
                     counter: root.getSkywalker().unreadNotificationCount
                 }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: notificationsClicked()
             }
         }
     }
@@ -225,7 +195,6 @@ Rectangle {
             return SvgOutline.chat
         }
     }
-
 
     function isHashtagSearch() {
         if (!searchActive)

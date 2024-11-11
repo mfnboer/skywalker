@@ -1,5 +1,7 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Controls.Material.impl
 import skywalker
 
 RoundButton {
@@ -10,7 +12,6 @@ RoundButton {
 
     id: button
     Material.background: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
-    opacity: 1
 
     Accessible.role: Accessible.Button
     Accessible.name: accessibleName
@@ -25,5 +26,4 @@ RoundButton {
         color: button.iconColor
         Accessible.ignored: true
     }
-
 }

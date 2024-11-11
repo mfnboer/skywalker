@@ -2,6 +2,7 @@ import QtQuick
 
 Rectangle {
     required property int counter
+    property string counterColor: guiSettings.badgeTextColor
 
     x: parent.width - 17
     y: -parent.y + 6
@@ -18,7 +19,7 @@ Rectangle {
         anchors.centerIn: parent
         font.bold: true
         font.pointSize: guiSettings.scaledFont(6/8)
-        color: guiSettings.badgeTextColor
+        color: counterColor
         text: counter
     }
 
