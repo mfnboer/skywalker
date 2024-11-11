@@ -1,6 +1,5 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick.Controls.Material
 import skywalker
 
 Item {
@@ -14,6 +13,7 @@ Item {
     property int verticalOvershoot: list.verticalOvershoot
     property var scrollToTopFun: () => list.positionViewAtBeginning()
     property bool scrollTopTopButtonVisible: false
+    property int scrollToTopButtonMargin: 0
     property bool enableScrollToTop: true
 
     anchors.fill: parent
@@ -32,7 +32,7 @@ Item {
     SvgButton {
         id: scrollToTopButton
         x: 7
-        y: parent.height - height - ((list.footerItem && list.footerItem.visible) ? list.footerItem.height : 0) - 10
+        y: parent.height - height - ((list.footerItem && list.footerItem.visible) ? list.footerItem.height : scrollToTopButtonMargin) - 10
         width: 50
         height: width
         iconColor: guiSettings.textColor

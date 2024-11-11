@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 import atproto.lib
@@ -24,7 +25,6 @@ SkyPage {
     signal closed
 
     id: page
-    clip: true
 
     Accessible.role: Accessible.Pane
 
@@ -70,7 +70,12 @@ SkyPage {
         onSearch: (text) => { searchUtils.search(text) }
     }
 
-    footer: SkyFooter {
+    // Place footer explicitly on the bottom instead of using Page.footer
+    // This way the content goes all the way to the bottom underneath the footer.
+    SkyFooter {
+        id: pageFooter
+        width: parent.width
+        anchors.bottom: parent.bottom
         timeline: page.timeline
         skywalker: page.skywalker
         searchActive: true
@@ -253,8 +258,8 @@ SkyPage {
 
         SkyListView {
             id: postsViewTop
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
             pixelAligned: guiSettings.flickPixelAligned
 
@@ -268,6 +273,7 @@ SkyPage {
             }
 
             FlickableRefresher {
+                scrollToTopButtonMargin: pageFooter.height
                 inProgress: searchUtils.searchPostsTopInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
@@ -288,8 +294,8 @@ SkyPage {
 
         SkyListView {
             id: postsViewLatest
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
 
             delegate: PostFeedViewDelegate {
@@ -302,6 +308,7 @@ SkyPage {
             }
 
             FlickableRefresher {
+                scrollToTopButtonMargin: pageFooter.height
                 inProgress: searchUtils.searchPostsLatestInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
@@ -322,8 +329,8 @@ SkyPage {
 
         SkyListView {
             id: usersView
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             model: searchUtils.getSearchUsersModel()
 
             Accessible.role: Accessible.List
@@ -335,6 +342,7 @@ SkyPage {
             }
 
             FlickableRefresher {
+                scrollToTopButtonMargin: pageFooter.height
                 inProgress: searchUtils.searchActorsInProgress
                 bottomOvershootFun: () => searchUtils.getNextPageSearchActors(header.getDisplayText())
             }
@@ -353,8 +361,8 @@ SkyPage {
 
         SkyListView {
             id: suggestedUsersView
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             model: searchUtils.getSearchSuggestedUsersModel()
 
             Accessible.role: Accessible.List
@@ -377,6 +385,7 @@ SkyPage {
             }
 
             FlickableRefresher {
+                scrollToTopButtonMargin: pageFooter.height
                 inProgress: searchUtils.searchSuggestedActorsInProgress
                 bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
             }
@@ -397,8 +406,8 @@ SkyPage {
             property bool keepFocus: false
 
             id: recentSearchesView
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
 
             Accessible.role: Accessible.List
 
