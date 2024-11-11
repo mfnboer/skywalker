@@ -22,19 +22,19 @@ Item {
     readonly property int threadLineWidth: 2
 
     // Colors
-    readonly property string accentColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
-    readonly property string avatarDefaultColor: "blue"
+    readonly property string accentColor: userSettings ? userSettings.accentColor : (Material.theme === Material.Light ? "blue" : "#58a6ff")
+    readonly property string avatarDefaultColor: accentColor
     readonly property string backgroundColor: userSettings ? userSettings.backgroundColor : Material.background
     readonly property string badgeBorderColor: backgroundColor
-    readonly property string badgeColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string badgeColor: accentColor
     readonly property string badgeTextColor: "white"
-    readonly property string bannerDefaultColor: "blue"
+    readonly property string bannerDefaultColor: accentColor
     readonly property string borderColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string borderHighLightColor: Material.theme === Material.Light ? Qt.darker(borderColor, 1.1) : Qt.lighter(borderColor, 1.6)
-    readonly property string buttonColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string buttonColor: accentColor
     readonly property string buttonNeutralColor: Material.theme === Material.Light ? Material.background : "darkslategrey"
     readonly property string buttonTextColor: "white"
-    readonly property string contentLabelColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030" // "lightgrey" : "darkslategrey"
+    readonly property string contentLabelColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
     readonly property string contentUserLabelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
     readonly property string disabledColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
     readonly property string errorColor: Material.theme === Material.Light ? "darkred" : "palevioletred"
@@ -57,7 +57,7 @@ Item {
     readonly property string moderatorIconColor: "lightgrey"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
     readonly property string postHighLightColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
-    readonly property string selectionColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string selectionColor: accentColor
     readonly property string separatorColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
     readonly property string separatorHighLightColor: Material.theme === Material.Light ? Qt.darker(separatorColor, 1.1) : Qt.lighter(separatorColor, 1.6)
     readonly property string skywalkerLogoColor: "#0387c7"
@@ -245,7 +245,7 @@ Item {
         return Material.theme === Material.Light ? Qt.darker(threadStartColor(color), 1.2) : Qt.lighter(threadStartColor(color), 1.2)
     }
 
-    function allowedBackgroundColors() {
+    function forbiddenBackgroundColors() {
         return [textColor,
                 badgeColor,
                 buttonColor,
@@ -258,5 +258,11 @@ Item {
                 messageUserBackgroundColor,
                 messageOtherBackgroundColor,
                 statsColor]
+    }
+
+    function forbiddenAccentColors() {
+        return [backgroundColor,
+                buttonTextColor,
+                headerColor]
     }
 }

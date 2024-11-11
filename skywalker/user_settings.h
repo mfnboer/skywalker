@@ -22,6 +22,7 @@ class UserSettings : public QObject, public IUserSettings
 {
     Q_OBJECT
     Q_PROPERTY(QString backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged FINAL)
+    Q_PROPERTY(QString accentColor READ getAccentColor WRITE setAccentColor NOTIFY accentColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
@@ -98,6 +99,10 @@ public:
     Q_INVOKABLE void resetBackgroundColor();
     void setBackgroundColor(const QString& color);
     QString getBackgroundColor() const;
+
+    Q_INVOKABLE void resetAccentColor();
+    void setAccentColor(const QString& color);
+    QString getAccentColor() const;
 
     void setThreadStyle(QEnums::ThreadStyle threadStyle);
     QEnums::ThreadStyle getThreadStyle() const;
@@ -213,6 +218,7 @@ public:
 signals:
     void contentLanguageFilterChanged();
     void backgroundColorChanged();
+    void accentColorChanged();
     void threadStyleChanged();
     void threadColorChanged();
     void giantEmojisChanged();

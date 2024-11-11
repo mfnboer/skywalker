@@ -328,6 +328,27 @@ QString UserSettings::getBackgroundColor() const
     return mSettings.value(displayKey("backgroundColor"), getDefaultBackgroundColor()).toString();
 }
 
+void UserSettings::resetAccentColor()
+{
+    mSettings.remove(displayKey("accentColor"));
+    emit accentColorChanged();
+}
+
+void UserSettings::setAccentColor(const QString& color)
+{
+    if (getAccentColor() != color)
+    {
+        mSettings.setValue(displayKey("accentColor"), color);
+        emit accentColorChanged();
+    }
+}
+
+QString UserSettings::getAccentColor() const
+{
+    const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#58a6ff" : "blue";
+    return mSettings.value(displayKey("accentColor"), defaultColor).toString();
+}
+
 void UserSettings::setThreadStyle(QEnums::ThreadStyle threadStyle)
 {
     const auto oldStyle = getThreadStyle();

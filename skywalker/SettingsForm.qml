@@ -404,6 +404,54 @@ SkyPage {
                     }
                 }
 
+                Rectangle {
+                    Layout.preferredWidth: 120
+                    Layout.preferredHeight: accentColorLabel.height
+
+                    AccessibleText {
+                        id: accentColorLabel
+                        width: parent.width - accentColorInfoButton.width
+                        wrapMode: Text.Wrap
+                        text: qsTr("Accent color")
+                    }
+                    SvgButton {
+                        id: accentColorInfoButton
+                        anchors.right: parent.right
+                        width: 34
+                        height: width
+                        imageMargin: 4
+                        svg: SvgOutline.info
+                        accessibleName: qsTr("info")
+                        onClicked: guiSettings.notice(root, qsTr("Accent color is used for buttons, default avatar and counter badges"))
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 30
+                    border.width: 1
+                    border.color: guiSettings.accentColor
+                    color: guiSettings.accentColor
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: selectAccentColor()
+                    }
+
+                    SvgButton {
+                        y: -2
+                        anchors.right: parent.right
+                        width: height
+                        height: 34
+                        svg: SvgOutline.close
+                        accessibleName: qsTr("reset accent color to default")
+                        onClicked: {
+                            userSettings.resetAccentColor()
+                            root.Material.accent = userSettings.accentColor
+                        }
+                    }
+                }
+
                 AccessibleText {
                     Layout.preferredWidth: 120
                     wrapMode: Text.Wrap
@@ -555,7 +603,7 @@ SkyPage {
         cs.selectedColor = userSettings.backgroundColor
         cs.onRejected.connect(() => cs.destroy())
         cs.onAccepted.connect(() => {
-            if (checkBackgroundColor(cs.selectedColor))
+            if (checkColor(cs.selectedColor, guiSettings.forbiddenBackgroundColors()))
                 userSettings.backgroundColor = cs.selectedColor
             else
                 skywalker.showStatusMessage(qsTr("This color would make parts of the app invisible. Pick another color"), QEnums.STATUS_LEVEL_ERROR)
@@ -564,12 +612,28 @@ SkyPage {
         cs.open()
     }
 
-    function checkBackgroundColor(color) {
-        const allowed = guiSettings.allowedBackgroundColors()
+    function selectAccentColor() {
+        let component = Qt.createComponent("ColorSelector.qml")
+        let cs = component.createObject(page)
+        cs.selectedColor = userSettings.accentColor
+        cs.onRejected.connect(() => cs.destroy())
+        cs.onAccepted.connect(() => {
+            if (checkColor(cs.selectedColor, guiSettings.forbiddenAccentColors())) {
+                userSettings.accentColor = cs.selectedColor
+                root.Material.accent = cs.selectedColor
+            }
+            else {
+                skywalker.showStatusMessage(qsTr("This color would make parts of the app invisible. Pick another color"), QEnums.STATUS_LEVEL_ERROR)
+            }
+            cs.destroy()
+        })
+        cs.open()
+    }
 
-        for (let i = 0; i < allowed.length; ++i)
+    function checkColor(color, forbiddenColors) {
+        for (let i = 0; i < forbiddenColors.length; ++i)
         {
-            if (utils.similarColors(color, allowed[i]))
+            if (utils.similarColors(color, forbiddenColors[i]))
                 return false
         }
 
