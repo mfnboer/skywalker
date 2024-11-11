@@ -46,14 +46,14 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.backgroundColor
+                Material.background: guiSettings.buttonNeutralColor
                 iconColor: guiSettings.textColor
                 svg: homeActive ? SvgFilled.home : SvgOutline.home
                 accessibleName: getHomeSpeech()
                 onClicked: homeClicked()
 
                 BadgeCounter {
-                    color: guiSettings.backgroundColor
+                    color: guiSettings.buttonNeutralColor
                     counterColor: guiSettings.textColor
                     counter: timeline.unreadPosts
                 }
@@ -65,7 +65,7 @@ Rectangle {
                     width: 20
                     height: 20
                     radius: 10
-                    color: guiSettings.backgroundColor
+                    color: guiSettings.buttonNeutralColor
                     border.color: guiSettings.backgroundColor
                     border.width: 2
                     visible: showHomeFeedBadge
@@ -93,7 +93,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.backgroundColor
+                Material.background: guiSettings.buttonNeutralColor
                 iconColor: guiSettings.textColor
                 svg: searchActive ? SvgFilled.search : SvgOutline.search
                 accessibleName: qsTr("search")
@@ -113,7 +113,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.backgroundColor
+                Material.background: guiSettings.buttonNeutralColor
                 iconColor: guiSettings.textColor
                 svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
                 accessibleName: qsTr("feeds")
@@ -133,7 +133,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.backgroundColor
+                Material.background: guiSettings.buttonNeutralColor
                 iconColor: guiSettings.textColor
                 svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
                 accessibleName: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
@@ -157,7 +157,7 @@ Rectangle {
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.backgroundColor
+                Material.background: guiSettings.buttonNeutralColor
                 iconColor: guiSettings.textColor
                 svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
                 accessibleName: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)

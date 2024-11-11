@@ -407,6 +407,7 @@ SkyPage {
                 Rectangle {
                     Layout.preferredWidth: 120
                     Layout.preferredHeight: accentColorLabel.height
+                    color: "transparent"
 
                     AccessibleText {
                         id: accentColorLabel
@@ -449,6 +450,35 @@ SkyPage {
                             userSettings.resetAccentColor()
                             root.Material.accent = userSettings.accentColor
                         }
+                    }
+                }
+
+                AccessibleText {
+                    Layout.preferredWidth: 120
+                    wrapMode: Text.Wrap
+                    text: qsTr("Link color")
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 30
+                    border.width: 1
+                    border.color: guiSettings.buttonColor
+                    color: guiSettings.linkColor
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: selectLinkColor()
+                    }
+
+                    SvgButton {
+                        y: -2
+                        anchors.right: parent.right
+                        width: height
+                        height: 34
+                        svg: SvgOutline.close
+                        accessibleName: qsTr("reset link color to default")
+                        onClicked: userSettings.resetLinkColor()
                     }
                 }
 
@@ -625,6 +655,21 @@ SkyPage {
             else {
                 skywalker.showStatusMessage(qsTr("This color would make parts of the app invisible. Pick another color"), QEnums.STATUS_LEVEL_ERROR)
             }
+            cs.destroy()
+        })
+        cs.open()
+    }
+
+    function selectLinkColor() {
+        let component = Qt.createComponent("ColorSelector.qml")
+        let cs = component.createObject(page)
+        cs.selectedColor = userSettings.accentColor
+        cs.onRejected.connect(() => cs.destroy())
+        cs.onAccepted.connect(() => {
+            if (checkColor(cs.selectedColor, guiSettings.forbiddenLinkColors()))
+                userSettings.linkColor = cs.selectedColor
+            else
+                skywalker.showStatusMessage(qsTr("This color would make some links invisible. Pick another color"), QEnums.STATUS_LEVEL_ERROR)
             cs.destroy()
         })
         cs.open()

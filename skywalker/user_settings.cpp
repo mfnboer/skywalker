@@ -15,7 +15,7 @@ static constexpr int MAX_ATTEMPTS_DRAFT_MIGRATION = 10;
 
 QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
 QString UserSettings::sDefaultBackgroundColor("white");
-QString UserSettings::sLinkColor("blue");
+QString UserSettings::sCurrentLinkColor("blue");
 
 UserSettings::UserSettings(QObject* parent) :
     QObject(parent)
@@ -57,6 +57,8 @@ void UserSettings::setActiveDisplayMode(QEnums::DisplayMode mode)
         sActiveDisplayMode = mode;
         emit threadColorChanged();
         emit backgroundColorChanged();
+        emit accentColorChanged();
+        emit linkColorChanged();
     }
 }
 
@@ -347,6 +349,29 @@ QString UserSettings::getAccentColor() const
 {
     const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#58a6ff" : "blue";
     return mSettings.value(displayKey("accentColor"), defaultColor).toString();
+}
+
+void UserSettings::resetLinkColor()
+{
+    mSettings.remove(displayKey("linkColor"));
+    setCurrentLinkColor(getLinkColor());
+    emit linkColorChanged();
+}
+
+void UserSettings::setLinkColor(const QString& color)
+{
+    if (getLinkColor() != color)
+    {
+        mSettings.setValue(displayKey("linkColor"), color);
+        setCurrentLinkColor(color);
+        emit linkColorChanged();
+    }
+}
+
+QString UserSettings::getLinkColor() const
+{
+    const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#58a6ff" : "blue";
+    return mSettings.value(displayKey("linkColor"), defaultColor).toString();
 }
 
 void UserSettings::setThreadStyle(QEnums::ThreadStyle threadStyle)

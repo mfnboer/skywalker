@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -29,16 +30,17 @@ Rectangle {
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: 10
+            Layout.preferredHeight: 10
             color: "transparent"
         }
 
         FeedAvatar {
             Layout.leftMargin: generatorView.margin
             Layout.rightMargin: generatorView.margin
-            x: 8
-            y: 5
-            width: guiSettings.threadBarWidth * 5
+            Layout.alignment: Qt.AlignTop
+            //x: 8
+            //y: 5
+            Layout.preferredWidth: guiSettings.threadBarWidth * 5
             avatarUrl: showFeed ? feed.avatarThumb : ""
 
             onClicked: feedClicked(feed)
@@ -98,8 +100,9 @@ Rectangle {
         }
 
         Rectangle {
-            width: 80
+            Layout.preferredWidth: 80
             Layout.fillHeight: true
+            Layout.rightMargin: generatorView.margin
             color: "transparent"
 
             Rectangle {
@@ -132,8 +135,8 @@ Rectangle {
                 width: 40
                 height: width
                 flat: feedSaved
-                iconColor: flat ? guiSettings.textColor : guiSettings.buttonTextColor
-                Material.background: flat ? guiSettings.labelColor : guiSettings.buttonColor
+                iconColor: guiSettings.buttonTextColor
+                Material.background: flat ? guiSettings.buttonFlatColor : guiSettings.buttonColor
                 svg: feedSaved ? SvgOutline.remove : SvgOutline.add
                 accessibleName: feedSaved ? qsTr("remove from saved feeds") : qsTr("save feed")
                 onClicked: addClicked(feed, !feedSaved)
@@ -143,7 +146,7 @@ Rectangle {
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: contentLabels.height + 3
+            Layout.preferredHeight: contentLabels.height + 3
             color: "transparent"
 
             ContentLabels {
@@ -241,7 +244,7 @@ Rectangle {
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: 5
+            Layout.preferredHeight: 5
             color: "transparent"
         }
 

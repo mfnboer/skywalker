@@ -71,7 +71,7 @@ QString StarterPackViewBasic::getFormattedDescription() const
     if (!starterPack)
         return {};
 
-    return ATProto::RichTextMaster::getFormattedStarterPackDescription(*starterPack, UserSettings::getLinkColor());
+    return ATProto::RichTextMaster::getFormattedStarterPackDescription(*starterPack, UserSettings::getCurrentLinkColor());
 }
 
 ContentLabelList StarterPackViewBasic::getContentLabels() const

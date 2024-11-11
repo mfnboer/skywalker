@@ -1642,7 +1642,7 @@ ApplicationWindow {
         let userSettings = skywalker.getUserSettings()
         userSettings.setDefaultBackgroundColor(Material.background)
         userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
-        userSettings.setLinkColor(guiSettings.linkColor)
+        userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
     }
 

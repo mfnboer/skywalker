@@ -2,7 +2,7 @@
 ===
 * UI changes
 * Scrolling improvements
-* Customize accent color
+* Customize accent and link colors
 * Bug fixes
 
 3.6

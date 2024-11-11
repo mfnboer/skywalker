@@ -23,6 +23,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_OBJECT
     Q_PROPERTY(QString backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged FINAL)
     Q_PROPERTY(QString accentColor READ getAccentColor WRITE setAccentColor NOTIFY accentColorChanged FINAL)
+    Q_PROPERTY(QString linkColor READ getLinkColor WRITE setLinkColor NOTIFY linkColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
@@ -37,8 +38,11 @@ public:
     static QString getDefaultBackgroundColor() { return sDefaultBackgroundColor; }
     Q_INVOKABLE static void setDefaultBackgroundColor(const QString& color) { sDefaultBackgroundColor = color; }
 
-    static QString getLinkColor() { return sLinkColor; }
-    Q_INVOKABLE static void setLinkColor(const QString& color) { sLinkColor = color; }
+    Q_INVOKABLE void resetLinkColor();
+    QString getLinkColor() const;
+    Q_INVOKABLE void setLinkColor(const QString& color);
+    static QString getCurrentLinkColor() { return sCurrentLinkColor; }
+    Q_INVOKABLE static void setCurrentLinkColor(const QString& color) { sCurrentLinkColor = color; }
 
     explicit UserSettings(QObject* parent = nullptr);
     explicit UserSettings(const QString& fileName, QObject* parent = nullptr);
@@ -219,6 +223,7 @@ signals:
     void contentLanguageFilterChanged();
     void backgroundColorChanged();
     void accentColorChanged();
+    void linkColorChanged();
     void threadStyleChanged();
     void threadColorChanged();
     void giantEmojisChanged();
@@ -238,7 +243,7 @@ private:
     // Derived from display mode
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK
     static QString sDefaultBackgroundColor;
-    static QString sLinkColor;
+    static QString sCurrentLinkColor;
 };
 
 }

@@ -184,7 +184,7 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags) const
         if (record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty())
             return *record->mBridgyOriginalText;
 
-        return ATProto::RichTextMaster::getFormattedPostText(*record, UserSettings::getLinkColor(), emphasizeHashtags);
+        return ATProto::RichTextMaster::getFormattedPostText(*record, UserSettings::getCurrentLinkColor(), emphasizeHashtags);
     }
 
     QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;

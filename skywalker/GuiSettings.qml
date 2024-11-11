@@ -32,6 +32,7 @@ Item {
     readonly property string borderColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string borderHighLightColor: Material.theme === Material.Light ? Qt.darker(borderColor, 1.1) : Qt.lighter(borderColor, 1.6)
     readonly property string buttonColor: accentColor
+    readonly property string buttonFlatColor: Material.theme === Material.Light ? Qt.lighter(buttonColor, 1.8) : Qt.darker(buttonColor, 1.8)
     readonly property string buttonNeutralColor: Material.theme === Material.Light ? Material.background : "darkslategrey"
     readonly property string buttonTextColor: "white"
     readonly property string contentLabelColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
@@ -46,7 +47,7 @@ Item {
     readonly property string headerTextColor: "white"
     readonly property string labelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"
-    readonly property string linkColor: Material.theme === Material.Light ? "blue" : "#58a6ff"
+    readonly property string linkColor: userSettings ? userSettings.linkColor : (Material.theme === Material.Light ? "blue" : "#58a6ff")
     readonly property string messageTimeColor: Material.color(Material.Grey)
     readonly property string messageNewBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
     readonly property string messageNewTextColor: Material.theme === Material.Light ? "black" : "white"
@@ -264,5 +265,13 @@ Item {
         return [backgroundColor,
                 buttonTextColor,
                 headerColor]
+    }
+
+    function forbiddenLinkColors() {
+        return [backgroundColor,
+                messageNewBackgroundColor,
+                messageUserBackgroundColor,
+                messageOtherBackgroundColor,
+                postHighLightColor]
     }
 }

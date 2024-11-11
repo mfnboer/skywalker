@@ -142,22 +142,22 @@ QString RecordView::getFormattedText() const
         if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
             return *recordValue->mBridgyOriginalText;
 
-        return ATProto::RichTextMaster::getFormattedPostText(*recordValue, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedPostText(*recordValue, UserSettings::getCurrentLinkColor());
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mRecord->mValue);
-        return ATProto::RichTextMaster::getFormattedFeedDescription(*recordValue, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedFeedDescription(*recordValue, UserSettings::getCurrentLinkColor());
     }
     case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
     {
         const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mRecord->mValue);
-        return ATProto::RichTextMaster::getFormattedListDescription(*recordValue, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedListDescription(*recordValue, UserSettings::getCurrentLinkColor());
     }
     case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
     {
         const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mRecord->mValue);
-        return ATProto::RichTextMaster::getFormattedLabelerDescription(*recordValue, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::getFormattedLabelerDescription(*recordValue, UserSettings::getCurrentLinkColor());
 
     }
     default:

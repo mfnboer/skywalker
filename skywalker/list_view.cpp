@@ -199,12 +199,12 @@ QString ListView::getDescription() const
 QString ListView::getFormattedDescription() const
 {
     if (mDescription)
-        return ATProto::RichTextMaster::linkiFy(*mDescription, UserSettings::getLinkColor());
+        return ATProto::RichTextMaster::linkiFy(*mDescription, UserSettings::getCurrentLinkColor());
 
     if (!mListView || !mListView->mDescription)
         return {};
 
-    return ATProto::RichTextMaster::getFormattedListDescription(*mListView, UserSettings::getLinkColor());
+    return ATProto::RichTextMaster::getFormattedListDescription(*mListView, UserSettings::getCurrentLinkColor());
 }
 
 }

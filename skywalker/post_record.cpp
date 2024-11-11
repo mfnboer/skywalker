@@ -30,7 +30,7 @@ QString PostRecord::getFormattedText() const
     if (!mRecord)
         return {};
 
-    return ATProto::RichTextMaster::getFormattedPostText(*mRecord, UserSettings::getLinkColor());
+    return ATProto::RichTextMaster::getFormattedPostText(*mRecord, UserSettings::getCurrentLinkColor());
 }
 
 ATProto::ComATProtoRepo::StrongRef::SharedPtr PostRecord::getReplyToRef() const

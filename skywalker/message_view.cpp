@@ -10,7 +10,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::MessageView& msg) :
     mId(msg.mId),
     mRev(msg.mRev),
     mText(msg.mText),
-    mFormattedText(ATProto::RichTextMaster::getFormattedMessageText(msg, UserSettings::getLinkColor())),
+    mFormattedText(ATProto::RichTextMaster::getFormattedMessageText(msg, UserSettings::getCurrentLinkColor())),
     mEmbed(msg.mEmbed),
     mSenderDid(msg.mSender->mDid),
     mSentAt(msg.mSentAt)
@@ -42,7 +42,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
         mId = view->mId;
         mRev = view->mRev;
         mText = view->mText;
-        mFormattedText = ATProto::RichTextMaster::getFormattedMessageText(*view, UserSettings::getLinkColor());
+        mFormattedText = ATProto::RichTextMaster::getFormattedMessageText(*view, UserSettings::getCurrentLinkColor());
         mEmbed = view->mEmbed;
         mSenderDid = view->mSender->mDid;
         mSentAt = view->mSentAt;

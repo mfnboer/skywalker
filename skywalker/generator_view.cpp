@@ -60,7 +60,7 @@ QString GeneratorView::getFormattedDescription() const
     if (!mGeneratorView || !mGeneratorView->mDescription)
         return {};
 
-    return ATProto::RichTextMaster::getFormattedFeedDescription(*mGeneratorView, UserSettings::getLinkColor());
+    return ATProto::RichTextMaster::getFormattedFeedDescription(*mGeneratorView, UserSettings::getCurrentLinkColor());
 }
 
 QString GeneratorView::getAvatar() const
