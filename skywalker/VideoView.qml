@@ -223,18 +223,13 @@ Column {
                     play()
                 }
 
-                function restart() {
-                    position = 0
-                }
-
                 function stopPlaying() {
                     stop()
                     restartTimer.set(false)
                 }
 
                 function isLoading() {
-                    return [MediaPlayer.LoadingMedia,
-                            MediaPlayer.BufferingMedia].includes(mediaStatus)
+                    return mediaStatus === MediaPlayer.LoadingMedia
                 }
             }
             VideoOutput {
@@ -253,11 +248,19 @@ Column {
                 }
             }
 
+            // Adding the condition on transcoding to the first busy indicator
+            // did not work as there is short moment when loading has stopped
+            // and transcoding not started yet. Whem transcoding starts the busy
+            // inidcator will not restart anymore.
             BusyIndicator {
                 anchors.centerIn: parent
                 running: (videoPlayer.playing && videoPlayer.isLoading()) ||
                          videoPlayer.restarting ||
-                         ((m3u8Reader.loading || videoUtils.transcoding) && !autoLoad)
+                         (m3u8Reader.loading && !autoLoad)
+            }
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: videoUtils.transcoding && !autoLoad
             }
 
             Timer {
@@ -343,25 +346,12 @@ Column {
             onClicked: videoPlayer.stopPlaying()
         }
 
-        SvgTransparentButton {
-            id: replayButton
-            anchors.left: stopButton.right
-            anchors.leftMargin: 10
-            width: 32
-            height: width
-            svg: SvgOutline.refresh
-            accessibleName: qsTr("restart video")
-            color: controlColor
-
-            onClicked: videoPlayer.restart()
-        }
-
         ProgressBar {
             id: playProgress
-            anchors.left: replayButton.right
-            anchors.leftMargin: 10
+            anchors.left: stopButton.right
+            anchors.leftMargin: 15
             anchors.right: remainingTimeText.left
-            anchors.rightMargin: 10
+            anchors.rightMargin: 20
             anchors.verticalCenter: parent.verticalCenter
             from: 0
             to: videoPlayer.duration
@@ -383,6 +373,16 @@ Column {
                     color: controlColor
                 }
             }
+
+            Rectangle {
+                x: playProgress.visualPosition * playProgress.availableWidth
+                y: playProgress.topPadding + playProgress.availableHeight / 2 - height / 2
+
+                width: 10
+                height: width
+                radius: width / 2
+                color: controlColor
+            }
         }
 
         MouseArea {
@@ -390,6 +390,9 @@ Column {
             width: playProgress.width
             height: playControls.height
             onClicked: (event) => {
+                videoPlayer.position = (videoPlayer.duration / width) * event.x
+            }
+            onPositionChanged: (event) => {
                 videoPlayer.position = (videoPlayer.duration / width) * event.x
             }
         }
