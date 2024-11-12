@@ -1229,9 +1229,12 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewFullVideo(videoView, videoSource) {
+    function viewFullVideo(videoView, videoSource, transcodedSource) {
         let component = Qt.createComponent("FullVideoView.qml")
-        let view = component.createObject(root, { videoView: videoView, videoSource: videoSource })
+        let view = component.createObject(root, {
+                                              videoView: videoView,
+                                              videoSource: videoSource,
+                                              transcodedSource: transcodedSource })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }

@@ -123,6 +123,14 @@ SkyPage {
         }
     }
 
+    onCover: {
+        let feeds = authorFeedView.itemAtIndex(0)
+        let item = feeds.children[feeds.currentIndex] // qmllint disable missing-property
+
+        if (item instanceof AuthorPostsList)
+            item.cover()
+    }
+
     ListView {
         id: authorFeedView
         y: 10

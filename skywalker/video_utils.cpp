@@ -3,6 +3,7 @@
 #include "video_utils.h"
 #include "file_utils.h"
 #include "jni_callback.h"
+#include "post_utils.h"
 #include "temp_file_holder.h"
 
 namespace Skywalker {
@@ -32,8 +33,16 @@ void VideoUtils::setTranscoding(bool transcoding)
     }
 }
 
-void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int startMs, int endMs, bool removeAudio)
+bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int startMs, int endMs, bool removeAudio)
 {
+    qDebug() << "Transcode video:" << inputFileName;
+
+    if (mTranscoding)
+    {
+        qWarning() << "Transcoding still in progress";
+        return false;
+    }
+
     auto outputFile = FileUtils::makeTempFile("mp4");
     const QString outputFileName = outputFile->fileName();
     outputFile = nullptr;
@@ -42,7 +51,7 @@ void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     if (!QNativeInterface::QAndroidApplication::isActivityContext())
     {
         qWarning() << "Cannot find Android activity";
-        return;
+        return false;
     }
 
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
@@ -61,6 +70,7 @@ void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
         jiHeight, jiStartMs, jiEndMs, jbRemoveAudio);
 
     setTranscoding(true);
+    mTranscodingFileName = inputFileName;
 #else
     Q_UNUSED(height)
     Q_UNUSED(startMs)
@@ -70,18 +80,35 @@ void VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     QFile::copy(inputFileName, outputFileName);
     handleTranscodingOk(inputFileName, outputFileName);
 #endif
+    return true;
 }
 
 void VideoUtils::handleTranscodingOk(const QString& inputFileName, const QString& outputFileName)
 {
+    if (inputFileName != mTranscodingFileName)
+    {
+        qDebug() << "Not for this instance:" << inputFileName << "transcoding:" << mTranscodingFileName;
+        return;
+    }
+
+    qDebug() << "Transcoding ok:" << inputFileName;
     setTranscoding(false);
+    mTranscodingFileName.clear();
     TempFileHolder::instance().put(outputFileName);
     emit transcodingOk(inputFileName, outputFileName);
 }
 
 void VideoUtils::handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
+    if (inputFileName != mTranscodingFileName)
+    {
+        qDebug() << "Not for this instance:" << inputFileName << "transcoding:" << mTranscodingFileName;
+        return;
+    }
+
+    qWarning() << "Transcoding failed:" << inputFileName << error;
     setTranscoding(false);
+    mTranscodingFileName.clear();
     QFile::remove(outputFileName);
     emit transcodingFailed(inputFileName, error);
 }
@@ -154,6 +181,11 @@ void VideoUtils::indexGalleryFile(const QString& fileName)
 {
     qDebug() << "Index:" << fileName;
     FileUtils::scanMediaFile(fileName);
+}
+
+void VideoUtils::dropVideo(const QString& source)
+{
+    PostUtils::dropVideo(source);
 }
 
 }

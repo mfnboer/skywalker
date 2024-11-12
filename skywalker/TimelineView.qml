@@ -28,7 +28,7 @@ SkyListView {
         timeline: timelineView
         skywalker: timelineView.skywalker
         homeActive: true
-        onHomeClicked: skywalker.getTimeline(50) // was: moveToPost(0)
+        onHomeClicked: moveToPost(0)
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()

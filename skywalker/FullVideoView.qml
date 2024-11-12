@@ -1,11 +1,12 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick.Controls.Material
 import skywalker
 
 SkyPage {
     required property var videoView // videoview
     property string videoSource
+    property string transcodedSource
 
     signal closed
 
@@ -21,6 +22,7 @@ SkyPage {
         maxHeight: parent.height
         videoView: page.videoView
         videoSource: page.videoSource
+        transcodedSource: page.transcodedSource
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
         controlColor: "white"

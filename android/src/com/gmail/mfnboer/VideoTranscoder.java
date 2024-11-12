@@ -41,15 +41,18 @@ public class VideoTranscoder {
 
         Uri inputUri = Uri.fromFile(new File(inputFilePath));
 
-        MediaItem mediaItem = new MediaItem.Builder()
-                .setUri(inputUri)
-                .setClippingConfiguration(
-                    new MediaItem.ClippingConfiguration.Builder()
-                        .setStartPositionMs(startMs)
-                        .setEndPositionMs(endMs)
-                        .build())
-                .build();
+        MediaItem.Builder mediaItemBuilder = new MediaItem.Builder()
+                .setUri(inputUri);
 
+        if (startMs >= 0 && endMs > startMs) {
+            mediaItemBuilder.setClippingConfiguration(
+                new MediaItem.ClippingConfiguration.Builder()
+                    .setStartPositionMs(startMs)
+                    .setEndPositionMs(endMs)
+                    .build());
+        }
+
+        MediaItem mediaItem = mediaItemBuilder.build();
         EditedMediaItem.Builder emiBuilder = new EditedMediaItem.Builder(mediaItem);
 
         if (height > 0)

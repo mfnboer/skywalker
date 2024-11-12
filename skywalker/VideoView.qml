@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import QtMultimedia
 import skywalker
 
@@ -18,7 +17,11 @@ Column {
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
     property string videoSource
+    property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
     property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad
+
+    // Cache
+    property list<string> tmpVideos: []
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
@@ -162,7 +165,7 @@ Column {
                 property int m3u8DurationMs: 0
 
                 id: videoPlayer
-                source: videoSource
+                source: transcodedSource
                 loops: MediaPlayer.Infinite
                 videoOutput: videoOutput
                 audioOutput: audioOutput
@@ -252,7 +255,9 @@ Column {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: (videoPlayer.playing && videoPlayer.isLoading()) || videoPlayer.restarting || (m3u8Reader.loading && !autoLoad)
+                running: (videoPlayer.playing && videoPlayer.isLoading()) ||
+                         videoPlayer.restarting ||
+                         ((m3u8Reader.loading || videoUtils.transcoding) && !autoLoad)
             }
 
             Timer {
@@ -283,7 +288,7 @@ Column {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
                 else
-                    root.viewFullVideo(videoView, videoSource)
+                    root.viewFullVideo(videoView, videoSource, transcodedSource)
             }
         }
 
@@ -442,6 +447,7 @@ Column {
 
         onGetVideoStreamError: {
             videoSource = videoView.playlistUrl
+            transcodedSource = videoSource
             videoPlayer.mustKickPosition = true
 
             if (userSettings.videoAutoPlay)
@@ -451,8 +457,16 @@ Column {
         onLoadStreamOk: (videoStream) => {
             videoSource = videoStream
 
-            if (!autoLoad || userSettings.videoAutoPlay)
+            // TS streams do not loop well in the media player, also seeking works mediocre.
+            // Therefore we transcode to MP4
+            if (videoStream.endsWith(".ts")) {
+                console.debug("Transcode to MP4:", videoStream)
+                videoUtils.transcodeVideo(videoStream.slice(7), -1, -1, -1, false)
+            }
+            else if (!autoLoad || userSettings.videoAutoPlay) {
+                transcodedSource = videoSource
                 videoPlayer.start()
+            }
         }
 
         onLoadStreamError: {
@@ -460,6 +474,26 @@ Column {
         }
     }
 
+    VideoUtils {
+        id: videoUtils
+
+        onTranscodingOk: (inputFileName, outputFileName) => {
+            console.debug("Set MP4 source:", outputFileName)
+            transcodedSource = "file://" + outputFileName
+            videoStack.tmpVideos.push(transcodedSource)
+
+            if (!autoLoad || userSettings.videoAutoPlay)
+                videoPlayer.start()
+        }
+
+        onTranscodingFailed: (inputFileName, errorMsg) => {
+            console.debug("Could not transcode to MP4:", inputFileName, "error:", errorMsg)
+            transcodedSource = videoSource
+
+            if (!autoLoad || userSettings.videoAutoPlay)
+                videoPlayer.start()
+        }
+    }
 
     function pause() {
         if (videoPlayer.playing)
@@ -490,10 +524,15 @@ Column {
         }
         else {
             videoSource = videoView.playlistUrl
+            transcodedSource = videoSource
 
             if (userSettings.videoAutoPlay)
                 videoPlayer.start()
         }
+    }
+
+    Component.onDestruction: {
+        tmpVideos.forEach((value, index, array) => { videoUtils.dropVideo(value); })
     }
 
     Component.onCompleted: {
