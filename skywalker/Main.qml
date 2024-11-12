@@ -295,6 +295,8 @@ ApplicationWindow {
                 "🥳")
         }
 
+        onOldestUnreadNotificationIndex: (index) => getNotificationView().moveToNotification(index)
+
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
             skywalker.getUserProfileAndFollows()
@@ -1207,14 +1209,14 @@ ApplicationWindow {
     function viewPostThread(modelId, postEntryIndex) {
         let component = Qt.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
     function viewFullImage(imageList, currentIndex) {
         let component = Qt.createComponent("FullImageView.qml")
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         view.onSaveImage.connect((sourceUrl) => { postUtils.savePhoto(sourceUrl) })
         view.onShareImage.connect((sourceUrl) => { postUtils.sharePhotoToApp(sourceUrl) })
         pushStack(view)
@@ -1223,14 +1225,14 @@ ApplicationWindow {
     function viewFullAnimatedImage(imageUrl, imageTitle) {
         let component = Qt.createComponent("FullAnimatedImageView.qml")
         let view = component.createObject(root, { imageUrl: imageUrl, imageTitle: imageTitle })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
     function viewFullVideo(videoView, videoSource) {
         let component = Qt.createComponent("FullVideoView.qml")
         let view = component.createObject(root, { videoView: videoView, videoSource: videoSource })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
@@ -1577,6 +1579,10 @@ ApplicationWindow {
 
     function getTimelineView() {
         return timelineStack.get(0)
+    }
+
+    function getNotificationView() {
+        return notificationStack.get(0)
     }
 
     function getChatView() {

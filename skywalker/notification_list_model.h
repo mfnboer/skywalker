@@ -121,6 +121,7 @@ public:
     void setNotificationsSeen(bool seen);
     Q_INVOKABLE void updateRead();
 
+    int getIndexOldestUnread() const;
     const NotificationList& getNotifications() const { return mList; }
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
     void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }

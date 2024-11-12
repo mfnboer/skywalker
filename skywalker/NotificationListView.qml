@@ -85,4 +85,14 @@ SkyListView {
         running: skywalker.getNotificationsInProgress
     }
 
+    function doMoveToNotification(index) {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        console.debug("Move to notification:", index, "first:", firstVisibleIndex)
+        positionViewAtIndex(index, ListView.Beginning)
+        return (firstVisibleIndex >= index - 1 && firstVisibleIndex <= index + 1)
+    }
+
+    function moveToNotification(index) {
+        moveToIndex(index, doMoveToNotification)
+    }
 }

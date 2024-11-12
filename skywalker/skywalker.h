@@ -271,6 +271,7 @@ signals:
     void showDirectMessages(); // Action received from clicking an app notification
     void bskyClientDeleted();
     void anniversary();
+    void oldestUnreadNotificationIndex(int index);
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);

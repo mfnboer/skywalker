@@ -1555,7 +1555,17 @@ void Skywalker::getNotifications(int limit, bool updateSeen, const QString& curs
     mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {},
         [this, cursor](auto ouput){
             const bool clearFirst = cursor.isEmpty();
-            mNotificationListModel.addNotifications(std::move(ouput), *mBsky, clearFirst);
+            mNotificationListModel.addNotifications(std::move(ouput), *mBsky, clearFirst,
+                    [this, clearFirst]{
+                        if (clearFirst)
+                        {
+                            const int index = mNotificationListModel.getIndexOldestUnread();
+
+                            if (index >= 0)
+                                emit oldestUnreadNotificationIndex(index);
+                        }
+                    });
+
             setGetNotificationsInProgress(false);
         },
         [this](const QString& error, const QString& msg){

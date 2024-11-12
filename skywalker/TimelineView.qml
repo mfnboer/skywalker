@@ -101,25 +101,6 @@ SkyListView {
         Accessible.role: Accessible.ProgressBar
     }
 
-
-    function getFirstVisibleIndex() {
-        let firstVisibleIndex = indexAt(0, contentY + headerItem.height)
-
-        if (firstVisibleIndex < 0 && count > 0)
-            return 0
-
-        return firstVisibleIndex
-    }
-
-    function getLastVisibleIndex() {
-        let lastVisibleIndex = indexAt(0, contentY + height - 1)
-
-        if (lastVisibleIndex < 0 && count > 0)
-            return count
-
-        return lastVisibleIndex
-    }
-
     function calibratePosition() {
         timelineView.contentY += calibrationDy
         calibrationDy = 0
@@ -143,41 +124,18 @@ SkyListView {
             anchorItem.isAnchorItem = true
     }
 
-    Timer {
-        property int postIndex
-        property int moveAttempt
-
-        id: moveToPostTimer
-        interval: 200
-        onTriggered: doMoveToPost(postIndex, moveAttempt)
-
-        function go(index, attempt) {
-            postIndex = index
-            moveAttempt = attempt
-            start()
-        }
-    }
-
-    function doMoveToPost(index, attempt) {
+    function doMoveToPost(index) {
         const firstVisibleIndex = getFirstVisibleIndex()
-        console.debug("Move to:", index, "first:", firstVisibleIndex, "attempt:", attempt)
+        console.debug("Move to:", index, "first:", firstVisibleIndex)
         positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
         const last = getLastVisibleIndex()
         setAnchorItem(last + 1)
         updateUnreadPosts(index)
-
-        // HACK: doing it again after a short interval makes the positioning work.
-        // After the first time the positioning can be off.
-        if (firstVisibleIndex < index - 1 || firstVisibleIndex > index + 1) {
-            if (attempt < 5)
-                moveToPostTimer.go(index, attempt + 1)
-            else
-                console.debug("No exact move, index:", index, "first:", firstVisibleIndex)
-        }
+        return (firstVisibleIndex >= index - 1 && firstVisibleIndex <= index + 1)
     }
 
     function moveToPost(index) {
-        doMoveToPost(index, 1)
+        moveToIndex(index, doMoveToPost)
     }
 
     function calibrateUnreadPosts() {

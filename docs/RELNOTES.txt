@@ -5,6 +5,7 @@
 * Refresh timeline will not reorder posts already shown
 * Pressing home will rebuild timeline
 * Customize accent and link colors
+* Position notifications on oldest unread
 * Bug fixes
 
 3.6

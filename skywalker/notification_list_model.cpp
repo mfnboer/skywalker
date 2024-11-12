@@ -476,6 +476,22 @@ void NotificationListModel::updateRead()
     changeData({ int(Role::NotificationIsRead) });
 }
 
+int NotificationListModel::getIndexOldestUnread() const
+{
+    int index = -1;
+
+    for (int i = 0; i < (int)mList.size(); ++i)
+    {
+        if (mList[i].isRead())
+            break;
+
+        index = i;
+    }
+
+    qDebug() << "Oldest unread index:" << index;
+    return index;
+}
+
 int NotificationListModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
