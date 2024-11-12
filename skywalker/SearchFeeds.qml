@@ -36,7 +36,12 @@ SkyPage {
         }
     }
 
-    footer: SkyFooter {
+    // Place footer explicitly on the bottom instead of using Page.footer
+    // This way the content goes all the way to the bottom underneath the footer.
+    SkyFooter {
+        id: pageFooter
+        width: parent.width
+        anchors.bottom: parent.bottom
         timeline: page.timeline
         skywalker: page.skywalker
         feedsActive: true
@@ -67,8 +72,8 @@ SkyPage {
 
         ListView {
             id: feedListView
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             spacing: 0
             clip: true
             model: searchUtils.getSearchFeedsModel()
@@ -84,9 +89,10 @@ SkyPage {
             }
 
             FlickableRefresher {
+                scrollToTopButtonMargin: pageFooter.height
                 inProgress: searchUtils.searchFeedsInProgress
-                topOvershootFun: () => searchUtils.searchFeeds(page.header.getDisplayText())
-                bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.header.getDisplayText())
+                topOvershootFun: () => searchUtils.searchFeeds(page.header.getDisplayText()) // qmllint disable missing-property
+                bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.header.getDisplayText()) // qmllint disable missing-property
                 topText: qsTr("Pull down to refresh")
             }
 
@@ -104,8 +110,8 @@ SkyPage {
 
         ListView {
             id: savedFeedsView
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             spacing: 0
             clip: true
             model: skywalker.favoriteFeeds.getSavedFeedsModel()
@@ -122,7 +128,9 @@ SkyPage {
 
             }
 
-            FlickableRefresher {}
+            FlickableRefresher {
+                scrollToTopButtonMargin: pageFooter.height
+            }
 
             EmptyListIndication {
                 svg: SvgOutline.noPosts
@@ -145,7 +153,7 @@ SkyPage {
 
     SearchUtils {
         id: searchUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         Component.onDestruction: {
             // The destuctor of SearchUtils is called too late by the QML engine
@@ -172,7 +180,7 @@ SkyPage {
 
     function searchFeeds() {
         feedListView.positionViewAtBeginning()
-        const text = page.header.getDisplayText(page.header.getDisplayText())
+        const text = page.header.getDisplayText(page.header.getDisplayText()) // qmllint disable missing-property
         searchUtils.searchFeeds(text)
     }
 
@@ -186,11 +194,11 @@ SkyPage {
     }
 
     function hide() {
-        page.header.unfocus()
+        page.header.unfocus() // qmllint disable missing-property
     }
 
     function show() {
-        page.header.forceFocus()
+        page.header.forceFocus() // qmllint disable missing-property
     }
 
     Component.onCompleted: {

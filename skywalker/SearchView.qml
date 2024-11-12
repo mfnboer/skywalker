@@ -235,7 +235,7 @@ SkyPage {
 
         onHashtagClicked: (tag) => {
             const fullTag = `#${tag}`
-            page.header.setSearchText(fullTag)
+            page.header.setSearchText(fullTag) // qmllint disable missing-property
             searchUtils.search(fullTag)
         }
     }
@@ -502,7 +502,7 @@ SkyPage {
 
     SearchUtils {
         id: searchUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         function search(query) {
             page.isTyping = false
@@ -555,7 +555,7 @@ SkyPage {
 
     GraphUtils {
         id: graphUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -622,7 +622,7 @@ SkyPage {
     }
 
     function getSearchText() {
-        return page.header.getDisplayText()
+        return page.header.getDisplayText() // qmllint disable missing-property
     }
 
     function getSearchPostScopeText() {
@@ -669,7 +669,7 @@ SkyPage {
     function focusHashtag(hashtag) {
         let component = Qt.createComponent("FocusHashtags.qml")
         let focusPage = component.createObject(page)
-        focusPage.onClosed.connect(() => { root.popStack() })
+        focusPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
         skywalker.focusHashtags.addEntry(hashtag.slice(1)) // strip #-symbol
         root.pushStack(focusPage)
     }
@@ -700,7 +700,7 @@ SkyPage {
     }
 
     function hide() {
-        page.header.unfocus()
+        page.header.unfocus() // qmllint disable missing-property
     }
 
     function show(searchText = "", searchScope = "") {
