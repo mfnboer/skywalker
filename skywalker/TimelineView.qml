@@ -28,7 +28,7 @@ SkyListView {
         timeline: timelineView
         skywalker: timelineView.skywalker
         homeActive: true
-        onHomeClicked: moveToPost(0)
+        onHomeClicked: skywalker.getTimeline(50) // was: moveToPost(0)
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
@@ -79,7 +79,7 @@ SkyListView {
 
     FlickableRefresher {
         inProgress: skywalker.getTimelineInProgress
-        topOvershootFun: () => skywalker.getTimeline(50)
+        topOvershootFun: () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE) // was: skywalker.getTimeline(50)
         bottomOvershootFun: () => skywalker.getTimelineNextPage()
         scrollToTopFun: () => moveToPost(0)
         enabled: timelineView.inSync

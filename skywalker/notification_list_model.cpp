@@ -11,6 +11,8 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks,
                                              const MutedWords& mutedWords, QObject* parent) :
     QAbstractListModel(parent),
@@ -604,6 +606,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return reasonChange ? reasonChange->mPostDeleted : false;
     case Role::NotificationTimestamp:
         return notification.getTimestamp();
+    case Role::NotificationSecondsAgo:
+        return double((QDateTime::currentDateTimeUtc() - notification.getTimestamp()) / 1s);
     case Role::NotificationIsRead:
         return notification.isRead();
     case Role::NotificationPostUri:
@@ -877,6 +881,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostLabels), "notificationReasonPostLabels" },
         { int(Role::NotificationReasonPostLocallyDeleted), "notificationReasonPostLocallyDeleted" },
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
+        { int(Role::NotificationSecondsAgo), "notificationSecondsAgo" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
         { int(Role::NotificationPostUri), "notificationPostUri" },
         { int(Role::NotificationCid), "notificationCid" },
@@ -925,9 +930,9 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
     return roles;
 }
 
-void NotificationListModel::postIndexTimestampChanged()
+void NotificationListModel::postIndexedSecondsAgoChanged()
 {
-    changeData({ int(Role::NotificationTimestamp) });
+    changeData({ int(Role::NotificationSecondsAgo) });
 }
 
 void NotificationListModel::likeCountChanged()

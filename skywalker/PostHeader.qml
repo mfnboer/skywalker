@@ -4,7 +4,7 @@ import skywalker
 
 Column {
     required property basicprofile author
-    required property int postIndexedSecondsAgo
+    required property double postIndexedSecondsAgo
     readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.labels)
 
     id: postHeader

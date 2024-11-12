@@ -19,7 +19,7 @@ Column {
 
         FeedAvatar {
             id: avatar
-            width: 34
+            Layout.preferredWidth: 34
             Layout.alignment: Qt.AlignTop
             avatarUrl: feed.avatarThumb
 

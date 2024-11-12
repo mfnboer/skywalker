@@ -46,7 +46,7 @@ public:
     const Change* getLocalUriChange(const QString& uri) const;
     void clearLocalChanges();
 
-    void updatePostIndexTimestamps();
+    void updatePostIndexedSecondsAgo();
     void updateReplyCountDelta(const QString& cid, int delta);
     void updateRepostCountDelta(const QString& cid, int delta);
     void updateQuoteCountDelta(const QString& cid, int delta);
@@ -73,7 +73,7 @@ public:
     void updatePostDeleted(const QString& cid);
 
 protected:
-    virtual void postIndexTimestampChanged() = 0;
+    virtual void postIndexedSecondsAgoChanged() = 0;
     virtual void likeCountChanged() = 0;
     virtual void likeUriChanged() = 0;
     virtual void likeTransientChanged() = 0;

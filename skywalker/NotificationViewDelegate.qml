@@ -27,6 +27,7 @@ Rectangle {
     required property list<contentlabel> notificationReasonPostLabels
     required property bool notificationReasonPostLocallyDeleted
     required property date notificationTimestamp
+    required property double notificationSecondsAgo
     required property bool notificationIsRead
     required property string notificationPostUri
     required property string notificationCid
@@ -208,7 +209,7 @@ Rectangle {
                     width: parent.width
                     Layout.fillWidth: true
                     author: notificationPostAuthor
-                    postIndexedSecondsAgo: (new Date() - notificationTimestamp) / 1000
+                    postIndexedSecondsAgo: notificationSecondsAgo
                 }
 
                 // Reply to

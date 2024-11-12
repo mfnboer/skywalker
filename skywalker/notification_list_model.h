@@ -45,6 +45,7 @@ public:
         NotificationReasonPostLabels,
         NotificationReasonPostLocallyDeleted,
         NotificationTimestamp,
+        NotificationSecondsAgo,
         NotificationIsRead,
         NotificationPostUri,
         NotificationCid,
@@ -128,7 +129,7 @@ signals:
     void priorityChanged();
 
 protected:
-    virtual void postIndexTimestampChanged() override;
+    virtual void postIndexedSecondsAgoChanged() override;
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
     virtual void likeTransientChanged() override;

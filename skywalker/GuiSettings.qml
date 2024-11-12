@@ -255,6 +255,7 @@ Item {
                 handleColor,
                 likeColor,
                 linkColor,
+                messageTimeColor,
                 messageNewBackgroundColor,
                 messageUserBackgroundColor,
                 messageOtherBackgroundColor,

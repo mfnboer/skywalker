@@ -41,6 +41,7 @@ class Skywalker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
+    Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
@@ -83,6 +84,7 @@ public:
                 void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE);
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false);
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
+    Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize);
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
     Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
@@ -289,7 +291,7 @@ private:
     void syncTimeline(QDateTime tillTimestamp, int maxPages = 40, const QString& cursor = {});
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();
-    void updatePostIndexTimestamps();
+    void updatePostIndexedSecondsAgo();
     void startRefreshTimers();
     void stopRefreshTimers();
     void refreshSession(const std::function<void()>& cbOk = {});
@@ -313,7 +315,6 @@ private:
     void handleAppStateChange(Qt::ApplicationState state);
     void pauseApp();
     void resumeApp();
-    void updateTimeline(int autoGapFill, int pageSize);
     void migrateDraftPosts();
     void checkAnniversary();
 

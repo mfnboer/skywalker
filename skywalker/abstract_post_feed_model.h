@@ -34,6 +34,7 @@ public:
         PostPlainText,
         PostLanguages,
         PostIndexedDateTime,
+        PostIndexedSecondsAgo,
         PostRepostedByAuthor,
         PostImages,
         PostVideo,
@@ -112,7 +113,7 @@ protected:
     virtual bool mustHideContent(const Post& post) const;
 
     // LocalPostModelChanges
-    virtual void postIndexTimestampChanged() override;
+    virtual void postIndexedSecondsAgoChanged() override;
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
     virtual void likeTransientChanged() override;

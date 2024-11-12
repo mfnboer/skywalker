@@ -22,10 +22,10 @@ void LocalPostModelChanges::clearLocalChanges()
     mUriChanges.clear();
 }
 
-void LocalPostModelChanges::updatePostIndexTimestamps()
+void LocalPostModelChanges::updatePostIndexedSecondsAgo()
 {
     // No real changes, just signal change to refresh
-    postIndexTimestampChanged();
+    postIndexedSecondsAgoChanged();
 }
 
 void LocalPostModelChanges::updateReplyCountDelta(const QString& cid, int delta)

@@ -28,6 +28,8 @@ Column {
 
         Avatar {
             id: avatar
+            Layout.alignment: Qt.AlignTop
+            Layout.topMargin: 5
             Layout.preferredWidth: 24
             author: quoteColumn.author
 

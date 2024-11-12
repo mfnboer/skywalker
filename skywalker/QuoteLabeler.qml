@@ -16,7 +16,7 @@ Column {
 
         Avatar {
             id: avatar
-            width: 34
+            Layout.preferredWidth: 34
             Layout.alignment: Qt.AlignTop
             author: labeler.creator
 

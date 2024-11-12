@@ -151,6 +151,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getCid();
     case Role::PostIndexedDateTime:
         return post.getIndexedAt();
+    case Role::PostIndexedSecondsAgo:
+        return double((QDateTime::currentDateTimeUtc() - post.getIndexedAt()) / 1s);
     case Role::PostImages:
         return QVariant::fromValue(post.getImages());
     case Role::PostVideo:
@@ -423,6 +425,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostPlainText), "postPlainText" },
         { int(Role::PostLanguages), "postLanguages" },
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
+        { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },
         { int(Role::PostRepostedByAuthor), "postRepostedByAuthor" },
         { int(Role::PostImages), "postImages" },
         { int(Role::PostVideo), "postVideo" },
@@ -475,9 +478,9 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
     return roles;
 }
 
-void AbstractPostFeedModel::postIndexTimestampChanged()
+void AbstractPostFeedModel::postIndexedSecondsAgoChanged()
 {
-    changeData({ int(Role::PostIndexedDateTime) });
+    changeData({ int(Role::PostIndexedSecondsAgo) });
 }
 
 // For a change on a single post a single row change would be sufficient.

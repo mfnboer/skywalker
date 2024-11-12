@@ -862,6 +862,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
 
             if (cursor.isEmpty())
             {
+                mTimelineModel.clear(); // TODO: added for now, see TODO on topPostIndex below
                 topPostIndex = mTimelineModel.setFeed(std::move(feed));
                 addedPosts = mTimelineModel.rowCount();
             }
@@ -877,6 +878,9 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
             if (postsToAdd > 0)
                 getTimelineNextPage(maxPages - 1, postsToAdd);
 
+            // TODO: Trying to keep the current top while re-ordering the timeline
+            // did not work very well. We now just preprend on refresh. If that is
+            // good enough, the remove the topPostIndex code.
             if (topPostIndex >= 0)
                 emit timelineRefreshed(topPostIndex);
        },
@@ -1445,9 +1449,9 @@ void Skywalker::removePostThreadModel(int id)
     mPostThreadModels.remove(id);
 }
 
-void Skywalker::updatePostIndexTimestamps()
+void Skywalker::updatePostIndexedSecondsAgo()
 {
-    makeLocalModelChange([](LocalPostModelChanges* model){ model->updatePostIndexTimestamps(); });
+    makeLocalModelChange([](LocalPostModelChanges* model){ model->updatePostIndexedSecondsAgo(); });
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update)
@@ -3200,7 +3204,7 @@ void Skywalker::resumeApp()
 void Skywalker::updateTimeline(int autoGapFill, int pageSize)
 {
     getTimelinePrepend(autoGapFill, pageSize);
-    updatePostIndexTimestamps();
+    updatePostIndexedSecondsAgo();
 }
 
 void Skywalker::migrateDraftPosts()

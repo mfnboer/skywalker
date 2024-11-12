@@ -2,6 +2,8 @@
 ===
 * UI changes
 * Scrolling improvements
+* Refresh timeline will not reorder posts already shown
+* Pressing home will rebuild timeline
 * Customize accent and link colors
 * Bug fixes
 

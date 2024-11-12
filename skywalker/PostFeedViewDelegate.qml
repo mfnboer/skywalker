@@ -15,6 +15,7 @@ Rectangle {
     required property string postPlainText
     required property list<language> postLanguages
     required property date postIndexedDateTime
+    required property double postIndexedSecondsAgo
     required property basicprofile postRepostedByAuthor
     required property list<imageview> postImages
     required property var postVideo // videoView
@@ -334,7 +335,7 @@ Rectangle {
                 id: postHeader
                 width: parent.width
                 author: postEntry.author
-                postIndexedSecondsAgo: (new Date() - postEntry.postIndexedDateTime) / 1000
+                postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
             }
 
             // Reply to
