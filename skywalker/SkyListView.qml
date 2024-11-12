@@ -5,7 +5,6 @@ ListView {
     property bool enableOnScreenCheck: false
 
     spacing: 0
-    clip: true
     flickDeceleration: guiSettings.flickDeceleration
     maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned

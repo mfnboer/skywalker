@@ -20,6 +20,7 @@ SkyListView {
     height: parent.height
     model: modelId >= 0 ? skywalker.getAuthorFeedModel(page.modelId) : null
     interactive: !enclosingView.interactive
+    clip: true
 
     StackLayout.onIsCurrentItemChanged: {
         if (!StackLayout.isCurrentItem)

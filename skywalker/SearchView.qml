@@ -262,6 +262,7 @@ SkyPage {
             Layout.preferredHeight: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
             pixelAligned: guiSettings.flickPixelAligned
+            clip: true
 
             delegate: PostFeedViewDelegate {
                 width: postsViewTop.width
@@ -297,6 +298,7 @@ SkyPage {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
+            clip: true
 
             delegate: PostFeedViewDelegate {
                 width: postsViewLatest.width
@@ -332,6 +334,7 @@ SkyPage {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             model: searchUtils.getSearchUsersModel()
+            clip: true
 
             Accessible.role: Accessible.List
 
@@ -364,6 +367,7 @@ SkyPage {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             model: searchUtils.getSearchSuggestedUsersModel()
+            clip: true
 
             Accessible.role: Accessible.List
 
@@ -408,6 +412,7 @@ SkyPage {
             id: recentSearchesView
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
+            clip: true
 
             Accessible.role: Accessible.List
 

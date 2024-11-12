@@ -115,6 +115,7 @@ SkyPage {
             Layout.fillHeight: true
             model: skywalker.getFeedListModel(feedListModelId)
             boundsBehavior: Flickable.StopAtBounds
+            clip: true
 
             delegate: GeneratorViewDelegate {
                 width: feedListView.width
@@ -132,6 +133,7 @@ SkyPage {
             Layout.fillWidth: true
             Layout.fillHeight: true
             model: skywalker.getPostFeedModel(postFeedModelId)
+            clip: true
 
             delegate: PostFeedViewDelegate {
                 width: postListView.width
