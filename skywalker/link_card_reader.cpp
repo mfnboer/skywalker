@@ -194,8 +194,8 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     static const QString ogImageStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image[\"']? [^>]*content=%1(?<image>[^%1]+?)%1[^>]*>)");
     static const QString ogImageStr2(R"(<meta [^>]*content=%1(?<image>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?image[\"']?[^>]*>)");
-    static const QString ogImageStr3(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image[\"']? [^>]*content=(?<image>[^ ]+?)[^>]*>)");
-    static const QString ogImageStr4(R"(<meta [^>]*content=(?<image>[^ ]+?) [^<]*(property|name)=[\"']?(og:|twitter:)?image[\"']?[^>]*>)");
+    static const QString ogImageStr3(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image[\"']? [^>]*content=(?<image>[^ \"]+?)[^>]*>)");
+    static const QString ogImageStr4(R"(<meta [^>]*content=(?<image>[^ \"]+?) [^<]*(property|name)=[\"']?(og:|twitter:)?image[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogImageREs = {
         QRegularExpression(ogImageStr1.arg('"')),
@@ -253,10 +253,13 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
             {
                 card->setThumb(url.toString() + imgUrlString);
             }
+
+            qDebug() << "Relative img url:" << imgUrlString << "url:" << imgUrl << "valid:" << imgUrl.isValid() << "thumb:" << card->getThumb();
         }
         else
         {
             card->setThumb(imgUrlString);
+            qDebug() << "Full img url:" << imgUrlString << "url:" << imgUrl << "valid:" << imgUrl.isValid();
         }
     }
 
