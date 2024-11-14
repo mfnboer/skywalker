@@ -73,6 +73,7 @@ Item {
                 postContentVisibility: record.contentVisibility
                 postContentWarning: record.contentWarning
                 postMuted: record.mutedReason
+                postVideo: record.video
                 postExternal: record.external
                 postDateTime: record.postDateTime
             }

@@ -32,6 +32,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility FINAL)
     Q_PROPERTY(QString contentWarning READ getContentWarning FINAL)
     Q_PROPERTY(QEnums::MutedPostReason mutedReason READ getMutedReason FINAL)
+    Q_PROPERTY(QVariant video READ getVideo FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
@@ -68,6 +69,7 @@ public:
     BasicProfile getAuthor() const;
     QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;
+    QVariant getVideo() const;
     QVariant getExternal() const;
     const ContentLabelList& getContentLabels() const;
     const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
@@ -104,6 +106,8 @@ public:
     void setMutedReason(const IMatchWords& mutedWords);
 
 private:
+    ATProto::AppBskyEmbed::EmbedView::SharedPtr getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const;
+
     bool mValid = false;
     ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr mRecord;
     ATProto::AppBskyFeed::GeneratorView::SharedPtr mFeed;

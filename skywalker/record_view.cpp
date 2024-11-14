@@ -7,6 +7,7 @@
 #include "post_utils.h"
 #include "unicode_fonts.h"
 #include "user_settings.h"
+#include "video_view.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/rich_text_master.h>
 
@@ -179,14 +180,24 @@ QDateTime RecordView::getIndexedAt() const
     return {};
 }
 
-QList<ImageView> RecordView::getImages() const
+ATProto::AppBskyEmbed::EmbedView::SharedPtr RecordView::getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const
 {
     if (!mRecord || mRecord->mEmbeds.empty())
-        return {};
+        return nullptr;
 
     // TODO: there is a list of embeds; can there be more than 1?
     const auto& embed = mRecord->mEmbeds[0];
-    if (embed->mType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
+    if (embed->mType != embedViewType)
+        return nullptr;
+
+    return embed;
+}
+
+QList<ImageView> RecordView::getImages() const
+{
+    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW);
+
+    if (!embed)
         return {};
 
     const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(embed->mEmbed);
@@ -198,14 +209,22 @@ QList<ImageView> RecordView::getImages() const
     return images;
 }
 
-QVariant RecordView::getExternal() const
+QVariant RecordView::getVideo() const
 {
-    if (!mRecord || mRecord->mEmbeds.empty())
+    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW);
+
+    if (!embed)
         return {};
 
-    // TODO: there is a list of embeds; can there be more than 1?
-    const auto& embed = mRecord->mEmbeds[0];
-    if (embed->mType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
+    const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(embed->mEmbed);
+    return QVariant::fromValue(VideoView(videoView));
+}
+
+QVariant RecordView::getExternal() const
+{
+    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW);
+
+    if (!embed)
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mEmbed)->mExternal;
