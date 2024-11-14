@@ -1,13 +1,10 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import skywalker
 
 SkyListView {
     required property int modelId
     required property int postEntryIndex
     property bool syncToEntry: true
-    property int calibrationDy: 0
 
     signal closed
 
@@ -54,7 +51,7 @@ SkyListView {
                     anchors.right: parent.right
                     leftPadding: 5
                     color: restrictionIcon.color
-                    ellipsisBackgroundColor: restrictionRect.color
+                    ellipsisBackgroundColor: restrictionRect.color.toString()
                     font.italic: true
                     font.pointSize: guiSettings.scaledFont(7/8)
                     wrapMode: Text.Wrap
@@ -142,14 +139,6 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: view.width
-
-        onCalibratedPosition: (dy) => {
-            calibrationDy += dy
-
-            // Direct call sometimes causes the post to be not rendered
-            Qt.callLater(calibratePosition)
-        }
-
         onShowHiddenReplies: model.showHiddenReplies()
     }
 
@@ -208,11 +197,6 @@ SkyListView {
         root.composeVideoReply(postUri, postCid, postText, postIndexedDateTime,
                                author, postReplyRootUri, postReplyRootCid, lang,
                                initialText, videoSource)
-    }
-
-    function calibratePosition() {
-        view.contentY += calibrationDy
-        calibrationDy = 0
     }
 
     function sync() {

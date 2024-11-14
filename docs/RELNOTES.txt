@@ -1,7 +1,7 @@
 next
 ====
 * Show video in quoted post
-* Bug fixes
+* Fix post thread scrolling
 
 3.7
 ===
