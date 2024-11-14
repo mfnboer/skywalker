@@ -200,11 +200,6 @@ SkyListView {
     }
 
     function sync() {
-        const anchorItem = itemAtIndex(postEntryIndex)
-
-        if (anchorItem)
-            anchorItem.isAnchorItem = true
-
         positionViewAtIndex(postEntryIndex, ListView.Contain)
     }
 
