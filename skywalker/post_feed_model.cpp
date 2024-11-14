@@ -332,7 +332,7 @@ void PostFeedModel::removeTailPosts(int size)
     setEndOfFeed(false);
     endRemoveRows();
 
-    qDebug() << "Removed tail rows, new size:" << mFeed.size();
+    qDebug() << "Removed tail rows:" << size << "new size:" << mFeed.size();
     logIndices();
 }
 

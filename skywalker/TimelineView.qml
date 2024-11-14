@@ -8,7 +8,6 @@ SkyListView {
     property int unreadPosts: 0
     property var anchorItem // item used to calibrate list position on insert of new posts
     property int calibrationDy: 0
-    property date dbgTime
 
     id: timelineView
     width: parent.width
@@ -28,7 +27,7 @@ SkyListView {
         timeline: timelineView
         skywalker: timelineView.skywalker
         homeActive: true
-        onHomeClicked: moveToPost(0)
+        onHomeClicked: moveToHome()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
@@ -37,21 +36,11 @@ SkyListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
-        required property int index
-        property int dbgDuration: 0
-
         width: timelineView.width
 
         onCalibratedPosition: (dy) => {
             calibrationDy += dy
-            calibratePosition()
-        }
-
-        // TODO: remove debug code
-        Component.onCompleted: {
-            const ts = new Date()
-            dbgDuration = ts.getTime() - dbgTime.getTime()
-            dbgTime = ts
+            Qt.callLater(calibratePosition)
         }
     }
 
@@ -130,12 +119,18 @@ SkyListView {
         positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
         const last = getLastVisibleIndex()
         setAnchorItem(last + 1)
-        updateUnreadPosts(index)
+        updateUnreadPosts(firstVisibleIndex)
         return (firstVisibleIndex >= index - 1 && firstVisibleIndex <= index + 1)
     }
 
     function moveToPost(index) {
         moveToIndex(index, doMoveToPost)
+    }
+
+    function moveToHome() {
+        positionViewAtBeginning()
+        setAnchorItem(0)
+        updateUnreadPosts(0)
     }
 
     function calibrateUnreadPosts() {
