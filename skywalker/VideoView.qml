@@ -298,8 +298,7 @@ Column {
         RoundCornerMask {
             width: parent.width
             height: parent.height
-            color: "transparent"
-            maskColor: videoStack.backgroundColor
+            maskColor: videoStack.backgroundColor == "transparent" ? guiSettings.backgroundColor : videoStack.backgroundColor
             visible: !isFullViewMode
         }
     }
