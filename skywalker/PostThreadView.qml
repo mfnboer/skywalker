@@ -156,13 +156,6 @@ SkyListView {
         id: utils
     }
 
-    Timer {
-        id: syncTimer
-        interval: 200
-        onTriggered: sync()
-    }
-
-
     function getReplyToAuthor() {
         return model.getData(postEntryIndex, AbstractPostFeedModel.Author)
     }
@@ -200,7 +193,9 @@ SkyListView {
     }
 
     function sync() {
-        positionViewAtIndex(postEntryIndex, ListView.Contain)
+        const firstVisibleIndex = getFirstVisibleIndex()
+        positionViewAtIndex(postEntryIndex, ListView.Beginning)
+        return (firstVisibleIndex >= postEntryIndex - 1 && firstVisibleIndex <= postEntryIndex + 1)
     }
 
     function rowsInsertedHandler(parent, start, end) {
@@ -209,14 +204,13 @@ SkyListView {
     }
 
     Component.onDestruction: {
-        view.model.onRowsInserted.disconnect(rowsInsertedHandler)
+        // view.model.onRowsInserted.disconnect(rowsInsertedHandler)
         skywalker.removePostThreadModel(modelId)
     }
 
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
-        view.model.onRowsInserted.connect(rowsInsertedHandler)
-        view.sync()
-        syncTimer.start()
+        // view.model.onRowsInserted.connect(rowsInsertedHandler)
+        moveToIndex(postEntryIndex, sync)
     }
 }

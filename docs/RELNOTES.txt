@@ -1,7 +1,7 @@
 next
 ====
 * Show video in quoted post
-* Performance improvements
+* Profile pages open faster
 * Fix post thread scrolling
 * Fix potential crash at startup
 
