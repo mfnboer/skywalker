@@ -18,7 +18,7 @@ Item {
     Accessible.onPressAction: if (isLinkEnabled()) openExternalLink()
 
     Loader {
-        readonly property int cardHeight: status == Loader.Ready ? item.columnHeight : 0
+        readonly property int cardHeight: status == Loader.Ready ? item.columnHeight : 0 // qmllint disable missing-property
 
         id: cardLoader
         width: parent.width

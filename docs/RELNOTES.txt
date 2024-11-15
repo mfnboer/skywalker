@@ -1,5 +1,6 @@
 next
 ====
+* Reverted floating buttons to navigation bar
 * Show video in quoted post
 * Profile pages open faster
 * Fix post thread scrolling

@@ -189,7 +189,7 @@ Column {
 
     function movedOffScreen() {
         if (postVideo && mediaLoader.item)
-            mediaLoader.item.pause()
+            mediaLoader.item.pause() // qmllint disable missing-property
 
         if (postRecordWithMedia && recordLoader.item)
             recordLoader.item.movedOffScreen()

@@ -24,36 +24,33 @@ Rectangle {
     width: parent.width
     height: guiSettings.footerHeight
     z: guiSettings.footerZLevel
-    color: "transparent"
-
-    // Shield to catch miss clicks.
-    MouseArea {
-        anchors.fill: parent
-    }
+    color: guiSettings.backgroundColor
 
     RowLayout {
         width: parent.width
         height: parent.height
+        spacing: 0
 
         Rectangle {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
             color: "transparent"
 
-            SvgButton {
+            Accessible.role: Accessible.PageTab
+            Accessible.name: getHomeSpeech()
+            Accessible.onPressAction: homeClicked()
+
+            SkySvg {
                 id: homeButton
-                y: 5
+                y: height + 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.buttonNeutralColor
-                iconColor: guiSettings.textColor
+                color: guiSettings.textColor
                 svg: homeActive ? SvgFilled.home : SvgOutline.home
-                accessibleName: getHomeSpeech()
-                onClicked: homeClicked()
 
                 BadgeCounter {
-                    color: guiSettings.buttonNeutralColor
+                    color: guiSettings.backgroundColor
                     counterColor: guiSettings.textColor
                     counter: timeline.unreadPosts
                 }
@@ -65,7 +62,7 @@ Rectangle {
                     width: 20
                     height: 20
                     radius: 10
-                    color: guiSettings.buttonNeutralColor
+                    color: guiSettings.backgroundColor
                     border.color: guiSettings.backgroundColor
                     border.width: 2
                     visible: showHomeFeedBadge
@@ -80,6 +77,11 @@ Rectangle {
                     }
                 }
             }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: homeClicked()
+            }
         }
 
         Rectangle {
@@ -87,17 +89,22 @@ Rectangle {
             Layout.fillWidth: true
             color: "transparent"
 
-            SvgButton {
+            Accessible.role: Accessible.PageTab
+            Accessible.name: qsTr("search")
+            Accessible.onPressAction: searchClicked()
+
+            SkySvg {
                 id: searchButton
-                y: 5
+                y: height + 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.buttonNeutralColor
-                iconColor: guiSettings.textColor
+                color: guiSettings.textColor
                 svg: searchActive ? SvgFilled.search : SvgOutline.search
-                accessibleName: qsTr("search")
+            }
 
+            MouseArea {
+                anchors.fill: parent
                 onClicked: searchClicked()
             }
         }
@@ -107,17 +114,22 @@ Rectangle {
             Layout.fillWidth: true
             color: "transparent"
 
-            SvgButton {
+            Accessible.role: Accessible.PageTab
+            Accessible.name: qsTr("feeds")
+            Accessible.onPressAction: feedsClicked()
+
+            SkySvg {
                 id: feedsButton
-                y: 5
+                y: height + 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.buttonNeutralColor
-                iconColor: guiSettings.textColor
+                color: guiSettings.textColor
                 svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
-                accessibleName: qsTr("feeds")
+            }
 
+            MouseArea {
+                anchors.fill: parent
                 onClicked: feedsClicked()
             }
         }
@@ -127,22 +139,27 @@ Rectangle {
             Layout.fillWidth: true
             color: "transparent"
 
-            SvgButton {
+            Accessible.role: Accessible.PageTab
+            Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
+            Accessible.onPressAction: messagesClicked()
+
+            SkySvg {
                 id: messagesButton
-                y: 5
+                y: height + 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.buttonNeutralColor
-                iconColor: guiSettings.textColor
+                color: guiSettings.textColor
                 svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
-                accessibleName: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
-
-                onClicked: messagesClicked()
 
                 BadgeCounter {
                     counter: skywalker.chat.unreadCount
                 }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: messagesClicked()
             }
         }
 
@@ -151,22 +168,27 @@ Rectangle {
             Layout.fillWidth: true
             color: "transparent"
 
-            SvgButton {
+            Accessible.role: Accessible.PageTab
+            Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
+            Accessible.onPressAction: notificationsClicked()
+
+            SkySvg {
                 id: notificationsButton
-                y: 5
+                y: height + 5
                 width: height
                 height: parent.height - 10
                 anchors.horizontalCenter: parent.horizontalCenter
-                Material.background: guiSettings.buttonNeutralColor
-                iconColor: guiSettings.textColor
+                color: guiSettings.textColor
                 svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
-                accessibleName: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
-
-                onClicked: notificationsClicked()
 
                 BadgeCounter {
                     counter: root.getSkywalker().unreadNotificationCount
                 }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: notificationsClicked()
             }
         }
     }
