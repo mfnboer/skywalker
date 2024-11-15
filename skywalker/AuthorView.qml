@@ -179,99 +179,113 @@ SkyPage {
                     id: moreButton
                     svg: SvgOutline.moreVert
                     accessibleName: qsTr("more options")
-                    onClicked: moreMenu.open()
+                    onClicked: moreMenuLoader.open()
 
-                    Menu {
-                        id: moreMenu
-                        modal: true
+                    Loader {
+                        id: moreMenuLoader
+                        active: false
 
-                        onAboutToShow: root.enablePopupShield(true)
-                        onAboutToHide: root.enablePopupShield(false)
-
-                        CloseMenuItem {
-                            text: qsTr("<b>Account</b>")
-                            Accessible.name: qsTr("close more options menu")
+                        function open() {
+                            active = true
                         }
-                        AccessibleMenuItem {
-                            text: qsTr("Translate")
-                            visible: authorDescription
-                            onTriggered: root.translateText(authorDescription)
 
-                            MenuItemSvg { svg: SvgOutline.googleTranslate }
+                        onStatusChanged: {
+                            if (status == Loader.Ready)
+                                item.open() // qmllint disable missing-property
                         }
-                        AccessibleMenuItem {
-                            text: qsTr("Share")
-                            onTriggered: skywalker.shareAuthor(author)
 
-                            MenuItemSvg { svg: SvgOutline.share }
-                        }
-                        AccessibleMenuItem {
-                            text: following ? qsTr("Unfollow") : qsTr("Follow")
-                            visible: isLabeler && !isUser(author) && contentVisible()
-                            onClicked: {
-                                if (following)
-                                    graphUtils.unfollow(author.did, following)
-                                else
-                                    graphUtils.follow(author)
+                        sourceComponent: Menu {
+                            id: moreMenu
+                            modal: true
+
+                            onAboutToShow: root.enablePopupShield(true)
+                            onAboutToHide: root.enablePopupShield(false)
+
+                            CloseMenuItem {
+                                text: qsTr("<b>Account</b>")
+                                Accessible.name: qsTr("close more options menu")
+                            }
+                            AccessibleMenuItem {
+                                text: qsTr("Translate")
+                                visible: authorDescription
+                                onTriggered: root.translateText(authorDescription)
+
+                                MenuItemSvg { svg: SvgOutline.googleTranslate }
+                            }
+                            AccessibleMenuItem {
+                                text: qsTr("Share")
+                                onTriggered: skywalker.shareAuthor(author)
+
+                                MenuItemSvg { svg: SvgOutline.share }
+                            }
+                            AccessibleMenuItem {
+                                text: following ? qsTr("Unfollow") : qsTr("Follow")
+                                visible: isLabeler && !isUser(author) && contentVisible()
+                                onClicked: {
+                                    if (following)
+                                        graphUtils.unfollow(author.did, following)
+                                    else
+                                        graphUtils.follow(author)
+                                }
+
+                                MenuItemSvg { svg: following ? SvgOutline.noUsers : SvgOutline.addUser }
+                            }
+                            AccessibleMenuItem {
+                                text: qsTr("Search")
+                                onTriggered: root.viewSearchView("", author.handle)
+
+                                MenuItemSvg { svg: SvgOutline.search }
+                            }
+                            AccessibleMenuItem {
+                                text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
+                                visible: !isUser(author) && author.viewer.mutedByList.isNull()
+                                onTriggered: {
+                                    if (authorMuted)
+                                        graphUtils.unmute(author.did)
+                                    else
+                                        graphUtils.mute(author.did)
+                                }
+
+                                MenuItemSvg { svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute }
+                            }
+                            AccessibleMenuItem {
+                                text: blocking ? qsTr("Unblock account") : qsTr("Block account")
+                                visible: !isUser(author) && author.viewer.blockingByList.isNull()
+                                onTriggered: {
+                                    if (blocking)
+                                        graphUtils.unblock(author.did, blocking)
+                                    else
+                                        graphUtils.block(author.did)
+                                }
+
+                                MenuItemSvg { svg: blocking ? SvgOutline.unblock : SvgOutline.block }
+                            }
+                            AccessibleMenuItem {
+                               text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
+                               visible: !isUser(author)
+                               onTriggered: {
+                                   if (authorMutedReposts)
+                                       graphUtils.unmuteReposts(author.did)
+                                   else
+                                       graphUtils.muteReposts(author)
+                               }
+
+                               MenuItemSvg { svg: SvgOutline.repost }
                             }
 
-                            MenuItemSvg { svg: following ? SvgOutline.noUsers : SvgOutline.addUser }
-                        }
-                        AccessibleMenuItem {
-                            text: qsTr("Search")
-                            onTriggered: root.viewSearchView("", author.handle)
+                            AccessibleMenuItem {
+                                text: qsTr("Update lists")
+                                onTriggered: updateLists()
 
-                            MenuItemSvg { svg: SvgOutline.search }
-                        }
-                        AccessibleMenuItem {
-                            text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
-                            visible: !isUser(author) && author.viewer.mutedByList.isNull()
-                            onTriggered: {
-                                if (authorMuted)
-                                    graphUtils.unmute(author.did)
-                                else
-                                    graphUtils.mute(author.did)
+                                MenuItemSvg { svg: SvgOutline.list }
                             }
+                            AccessibleMenuItem {
+                                text: qsTr("Report account")
+                                visible: !isUser(author)
+                                onTriggered: root.reportAuthor(author)
 
-                            MenuItemSvg { svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute }
-                        }
-                        AccessibleMenuItem {
-                            text: blocking ? qsTr("Unblock account") : qsTr("Block account")
-                            visible: !isUser(author) && author.viewer.blockingByList.isNull()
-                            onTriggered: {
-                                if (blocking)
-                                    graphUtils.unblock(author.did, blocking)
-                                else
-                                    graphUtils.block(author.did)
+                                MenuItemSvg { svg: SvgOutline.report }
                             }
-
-                            MenuItemSvg { svg: blocking ? SvgOutline.unblock : SvgOutline.block }
-                        }
-                        AccessibleMenuItem {
-                           text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
-                           visible: !isUser(author)
-                           onTriggered: {
-                               if (authorMutedReposts)
-                                   graphUtils.unmuteReposts(author.did)
-                               else
-                                   graphUtils.muteReposts(author)
-                           }
-
-                           MenuItemSvg { svg: SvgOutline.repost }
-                        }
-
-                        AccessibleMenuItem {
-                            text: qsTr("Update lists")
-                            onTriggered: updateLists()
-
-                            MenuItemSvg { svg: SvgOutline.list }
-                        }
-                        AccessibleMenuItem {
-                            text: qsTr("Report account")
-                            visible: !isUser(author)
-                            onTriggered: root.reportAuthor(author)
-
-                            MenuItemSvg { svg: SvgOutline.report }
                         }
                     }
                 }

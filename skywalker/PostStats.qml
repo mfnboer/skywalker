@@ -121,7 +121,7 @@ Item {
 
             onStatusChanged: {
                 if (status == Loader.Ready)
-                    item.open()
+                    item.open() // qmllint disable missing-property
             }
 
             sourceComponent: Menu {
