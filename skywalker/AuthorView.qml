@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 import atproto.lib
@@ -147,7 +148,7 @@ SkyPage {
         Accessible.role: Accessible.List
 
         onContentYChanged: {
-            if (contentY > -headerItem.getFeedMenuBarHeight() + 10) {
+            if (contentY > -headerItem.getFeedMenuBarHeight() + 10) { // qmllint disable missing-property
                 contentY = -headerItem.getFeedMenuBarHeight() + 10
                 interactive = false
             }
@@ -158,6 +159,7 @@ SkyPage {
         }
 
         header: Column {
+            id: viewHeader
             width: parent.width
             leftPadding: 10
             rightPadding: 10
@@ -412,99 +414,106 @@ SkyPage {
                 visible: contentVisible()
             }
 
-            RowLayout {
-                id: knownOthersRow
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
-                spacing: 10
+            Loader {
+                active: author.viewer.knownFollowers.count > 0
 
-                Row {
-                    id: avatarRow
-                    topPadding: 10
-                    spacing: -20
+                sourceComponent: RowLayout {
+                    id: knownOthersRow
+                    width: viewHeader.width - (viewHeader.leftPadding + viewHeader.rightPadding)
+                    spacing: 10
 
-                    Repeater {
-                        model: author.viewer.knownFollowers.followers
+                    Row {
+                        id: avatarRow
+                        topPadding: 10
+                        spacing: -20
 
-                        Avatar {
-                            required property int index
-                            required property basicprofile modelData
+                        Repeater {
+                            model: author.viewer.knownFollowers.followers
 
-                            z: 5 - index
-                            width: 34
-                            height: width
-                            author: modelData
+                            Avatar {
+                                required property int index
+                                required property basicprofile modelData
+
+                                z: 5 - index
+                                width: 34
+                                height: width
+                                author: modelData
+                                onClicked: knownOthersRow.showKnownFollowers()
+                            }
+                        }
+                    }
+
+                    SkyCleanedText {
+                        id: knownFollowersText
+                        Layout.fillWidth: true
+                        topPadding: 10
+                        elide: Text.ElideRight
+                        wrapMode: Text.Wrap
+                        textFormat: Text.RichText
+                        maximumLineCount: 3
+                        color: guiSettings.linkColor
+                        plainText: qsTr(`Followed by ${getKnownFollowersText()}`)
+
+                        MouseArea {
+                            anchors.fill: parent
                             onClicked: knownOthersRow.showKnownFollowers()
                         }
                     }
-                }
 
-                SkyCleanedText {
-                    id: knownFollowersText
-                    Layout.fillWidth: true
+                    function showKnownFollowers() {
+                        let modelId = root.getSkywalker().createAuthorListModel(QEnums.AUTHOR_LIST_KNOWN_FOLLOWERS, author.did)
+                        root.viewAuthorList(modelId, qsTr(`Followers you follow`));
+                    }
+                }
+            }
+
+            Loader {
+                active: isLabeler
+
+                sourceComponent: Rectangle {
+                    width: viewHeader.width - (viewHeader.leftPadding + viewHeader.rightPadding)
+                    height: labelerContentLabels.height
+                    color: "transparent"
+
+                    ContentLabels {
+                        id: labelerContentLabels
+                        anchors.left: parent.left
+                        anchors.right: undefined
+                        contentLabels: labeler.contentLabels
+                        contentAuthorDid: author.did
+                    }
+                }
+            }
+
+            Loader {
+                active: isLabeler
+
+                sourceComponent: Row {
+                    width: viewHeader.width - (viewHeader.leftPadding + viewHeader.rightPadding)
                     topPadding: 10
-                    elide: Text.ElideRight
-                    wrapMode: Text.Wrap
-                    textFormat: Text.RichText
-                    maximumLineCount: 3
-                    color: guiSettings.linkColor
-                    plainText: qsTr(`Followed by ${getKnownFollowersText()}`)
+                    spacing: 10
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: knownOthersRow.showKnownFollowers()
+                    StatIcon {
+                        id: likeIcon
+                        iconColor: labelerLikeUri ? guiSettings.likeColor : guiSettings.statsColor
+                        svg: labelerLikeUri ? SvgFilled.like : SvgOutline.like
+                        onClicked: likeLabeler(labelerLikeUri, labeler.uri, labeler.cid)
+                        Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(labelerLikeCount, qsTr("like"), qsTr("likes"))
+
+                        BlinkingOpacity {
+                            target: likeIcon
+                            running: labelerLikeTransient
+                        }
                     }
-                }
 
-                visible: author.viewer.knownFollowers.count > 0
-
-                function showKnownFollowers() {
-                    let modelId = root.getSkywalker().createAuthorListModel(QEnums.AUTHOR_LIST_KNOWN_FOLLOWERS, author.did)
-                    root.viewAuthorList(modelId, qsTr(`Followers you follow`));
-                }
-            }
-
-            Rectangle {
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
-                height: labelerContentLabels.height
-                color: "transparent"
-                visible: isLabeler
-
-                ContentLabels {
-                    id: labelerContentLabels
-                    anchors.left: parent.left
-                    anchors.right: undefined
-                    contentLabels: labeler.contentLabels
-                    contentAuthorDid: author.did
-                }
-            }
-
-            Row {
-                // height: likeIcon.height
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
-                topPadding: 10
-                spacing: 10
-                visible: isLabeler
-
-                StatIcon {
-                    id: likeIcon
-                    iconColor: labelerLikeUri ? guiSettings.likeColor : guiSettings.statsColor
-                    svg: labelerLikeUri ? SvgFilled.like : SvgOutline.like
-                    onClicked: likeLabeler(labelerLikeUri, labeler.uri, labeler.cid)
-                    Accessible.name: qsTr("like") + accessibilityUtils.statSpeech(labelerLikeCount, qsTr("like"), qsTr("likes"))
-
-                    BlinkingOpacity {
-                        target: likeIcon
-                        running: labelerLikeTransient
+                    StatAuthors {
+                        atUri: labeler.uri
+                        count: labelerLikeCount
+                        nameSingular: qsTr("like")
+                        namePlural: qsTr("likes")
+                        authorListType: QEnums.AUTHOR_LIST_LIKES
+                        authorListHeader: qsTr("Liked by")
                     }
-                }
-
-                StatAuthors {
-                    atUri: labeler.uri
-                    count: labelerLikeCount
-                    nameSingular: qsTr("like")
-                    namePlural: qsTr("likes")
-                    authorListType: QEnums.AUTHOR_LIST_LIKES
-                    authorListHeader: qsTr("Liked by")
                 }
             }
 
@@ -578,72 +587,79 @@ SkyPage {
             currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 1
 
             // Labels
-            ListView {
-                id: labelList
-                width: parent.width
-                height: parent.height
-                topMargin: 10
-                clip: true
-                spacing: 0
-                model: contentGroupListModel
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
-                ScrollIndicator.vertical: ScrollIndicator {}
-                interactive: !authorFeedView.interactive
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: isLabeler
+                asynchronous: true
 
-                onVerticalOvershootChanged: {
-                    if (verticalOvershoot < 0)
-                        authorFeedView.interactive = true
-                }
+                ListView {
+                    id: labelList
+                    width: parent.width
+                    height: parent.height
+                    topMargin: 10
+                    clip: true
+                    spacing: 0
+                    model: contentGroupListModel
+                    flickDeceleration: guiSettings.flickDeceleration
+                    maximumFlickVelocity: guiSettings.maxFlickVelocity
+                    pixelAligned: guiSettings.flickPixelAligned
+                    ScrollIndicator.vertical: ScrollIndicator {}
+                    interactive: !authorFeedView.interactive
 
-                header: ColumnLayout {
-                    width: authorFeedView.width
-
-                    AccessibleText {
-                        Layout.leftMargin: 10
-                        Layout.rightMargin: 10
-                        Layout.fillWidth: true
-                        wrapMode: Text.Wrap
-                        color: guiSettings.textColor
-                        text: qsTr("Labels are annotations on users and content. They can be used to warn, hide and categorize content.")
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
                     }
 
-                    AccessibleText {
-                        Layout.leftMargin: 10
-                        Layout.rightMargin: 10
-                        Layout.fillWidth: true
-                        height: page.isSubscribed ? implicitHeight : 0
-                        wrapMode: Text.Wrap
-                        color: guiSettings.textColor
-                        text: qsTr(`Subscribe to ${author.handle} to use these labels`)
-                        visible: !page.isSubscribed
+                    header: ColumnLayout {
+                        width: authorFeedView.width
+
+                        AccessibleText {
+                            Layout.leftMargin: 10
+                            Layout.rightMargin: 10
+                            Layout.fillWidth: true
+                            wrapMode: Text.Wrap
+                            color: guiSettings.textColor
+                            text: qsTr("Labels are annotations on users and content. They can be used to warn, hide and categorize content.")
+                        }
+
+                        AccessibleText {
+                            Layout.leftMargin: 10
+                            Layout.rightMargin: 10
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: page.isSubscribed ? implicitHeight : 0
+                            wrapMode: Text.Wrap
+                            color: guiSettings.textColor
+                            text: qsTr(`Subscribe to ${author.handle} to use these labels`)
+                            visible: !page.isSubscribed
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 10
+                            Layout.preferredHeight: 1
+                            color: guiSettings.separatorColor
+                        }
                     }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.topMargin: 10
-                        height: 1
-                        color: guiSettings.separatorColor
+                    delegate: ContentGroupDelegate {
+                        width: authorFeedView.width
+                        isSubscribed: page.isSubscribed
+                        adultContent: labelList.model.adultContent
                     }
+
+                    FlickableRefresher {}
+
+                    EmptyListIndication {
+                        svg: SvgOutline.noLabels
+                        text: qsTr("No labels")
+                        list: labelList
+                    }
+
+                    function refresh() {}
+                    function clear() {}
                 }
-
-                delegate: ContentGroupDelegate {
-                    width: authorFeedView.width
-                    isSubscribed: page.isSubscribed
-                    adultContent: labelList.model.adultContent
-                }
-
-                FlickableRefresher {}
-
-                EmptyListIndication {
-                    svg: SvgOutline.noLabels
-                    text: qsTr("No labels")
-                    list: labelList
-                }
-
-                function refresh() {}
-                function clear() {}
             }
 
             // Posts
@@ -689,167 +705,195 @@ SkyPage {
             }
 
             // Likes
-            AuthorPostsList {
-                id: authorLikesList
-                author: page.author
-                enclosingView: authorFeedView
-                getFeed: (id) => skywalker.getAuthorLikes(id)
-                getFeedNextPage: (id) => skywalker.getAuthorLikesNextPage(id)
-                getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
-                getEmptyListIndicationText: () => page.getEmptyListIndicationText()
-                visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
-                disableWarning: () => page.disableWarning()
-                feedFilter: QEnums.AUTHOR_FEED_FILTER_NONE
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: isUser(author)
+                asynchronous: true
+
+                sourceComponent: AuthorPostsList {
+                    id: authorLikesList
+                    author: page.author
+                    enclosingView: authorFeedView
+                    getFeed: (id) => skywalker.getAuthorLikes(id)
+                    getFeedNextPage: (id) => skywalker.getAuthorLikesNextPage(id)
+                    getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
+                    getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                    disableWarning: () => page.disableWarning()
+                    feedFilter: QEnums.AUTHOR_FEED_FILTER_NONE
+                }
             }
 
             // Feeds
-            ListView {
-                id: authorFeedList
-                width: parent.width
-                height: parent.height
-                clip: true
-                spacing: 0
-                model: skywalker.getFeedListModel(feedListModelId)
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
-                ScrollIndicator.vertical: ScrollIndicator {}
-                interactive: !authorFeedView.interactive
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: hasFeeds
+                asynchronous: true
 
-                onVerticalOvershootChanged: {
-                    if (verticalOvershoot < 0)
-                        authorFeedView.interactive = true
-                }
+                sourceComponent: ListView {
+                    id: authorFeedList
+                    Layout.preferredWidth: parent.width
+                    Layout.preferredHeight: parent.height
+                    clip: true
+                    spacing: 0
+                    model: skywalker.getFeedListModel(feedListModelId)
+                    flickDeceleration: guiSettings.flickDeceleration
+                    maximumFlickVelocity: guiSettings.maxFlickVelocity
+                    pixelAligned: guiSettings.flickPixelAligned
+                    ScrollIndicator.vertical: ScrollIndicator {}
+                    interactive: !authorFeedView.interactive
 
-                delegate: GeneratorViewDelegate {
-                    width: authorFeedView.width
-                }
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
 
-                FlickableRefresher {
-                    inProgress: skywalker.getFeedInProgress
-                    bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
-                }
+                    delegate: GeneratorViewDelegate {
+                        width: authorFeedView.width
+                    }
 
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: skywalker.getFeedInProgress
-                }
+                    FlickableRefresher {
+                        inProgress: skywalker.getFeedInProgress
+                        bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
+                    }
 
-                EmptyListIndication {
-                    svg: SvgOutline.noPosts
-                    text: qsTr("No feeds")
-                    list: authorFeedList
-                }
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: skywalker.getFeedInProgress
+                    }
 
-                function refresh() {
-                    getFeedList(feedListModelId)
-                }
+                    EmptyListIndication {
+                        svg: SvgOutline.noPosts
+                        text: qsTr("No feeds")
+                        list: authorFeedList
+                    }
 
-                function clear() {
-                    model.clear()
+                    function refresh() {
+                        getFeedList(feedListModelId)
+                    }
+
+                    function clear() {
+                        model.clear()
+                    }
                 }
             }
 
             // Starter packs
-            ListView {
-                id: authorStarterPackList
-                width: parent.width
-                height: parent.height
-                clip: true
-                spacing: 0
-                model: skywalker.getStarterPackListModel(starterPackListModelId)
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
-                ScrollIndicator.vertical: ScrollIndicator {}
-                interactive: !authorFeedView.interactive
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: hasStarterPacks
+                asynchronous: true
 
-                onVerticalOvershootChanged: {
-                    if (verticalOvershoot < 0)
-                        authorFeedView.interactive = true
-                }
+                sourceComponent: ListView {
+                    id: authorStarterPackList
+                    Layout.preferredWidth: parent.width
+                    Layout.preferredHeight: parent.height
+                    clip: true
+                    spacing: 0
+                    model: skywalker.getStarterPackListModel(starterPackListModelId)
+                    flickDeceleration: guiSettings.flickDeceleration
+                    maximumFlickVelocity: guiSettings.maxFlickVelocity
+                    pixelAligned: guiSettings.flickPixelAligned
+                    ScrollIndicator.vertical: ScrollIndicator {}
+                    interactive: !authorFeedView.interactive
 
-                delegate: StarterPackViewDelegate {
-                    width: authorFeedView.width
-                }
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
 
-                FlickableRefresher {
-                    inProgress: skywalker.getStarterPackListInProgress
-                    bottomOvershootFun: () => getStarterPackListNextPage(starterPackListModelId)
-                }
+                    delegate: StarterPackViewDelegate {
+                        width: authorFeedView.width
+                    }
 
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: skywalker.getStarterPackListInProgress
-                }
+                    FlickableRefresher {
+                        inProgress: skywalker.getStarterPackListInProgress
+                        bottomOvershootFun: () => getStarterPackListNextPage(starterPackListModelId)
+                    }
 
-                EmptyListIndication {
-                    svg: SvgOutline.noLists
-                    text: qsTr("No starter packs")
-                    list: authorStarterPackList
-                }
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: skywalker.getStarterPackListInProgress
+                    }
 
-                function refresh() {
-                    getStarterPackList(starterPackListModelId)
-                }
+                    EmptyListIndication {
+                        svg: SvgOutline.noLists
+                        text: qsTr("No starter packs")
+                        list: authorStarterPackList
+                    }
 
-                function clear() {
-                    model.clear()
+                    function refresh() {
+                        getStarterPackList(starterPackListModelId)
+                    }
+
+                    function clear() {
+                        model.clear()
+                    }
                 }
             }
 
             // Lists
-            ListView {
-                id: authorListList
-                width: parent.width
-                height: parent.height
-                clip: true
-                spacing: 0
-                model: skywalker.getListListModel(listListModelId)
-                flickDeceleration: guiSettings.flickDeceleration
-                maximumFlickVelocity: guiSettings.maxFlickVelocity
-                pixelAligned: guiSettings.flickPixelAligned
-                ScrollIndicator.vertical: ScrollIndicator {}
-                interactive: !authorFeedView.interactive
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: hasLists
+                asynchronous: true
 
-                onVerticalOvershootChanged: {
-                    if (verticalOvershoot < 0)
-                        authorFeedView.interactive = true
-                }
+                sourceComponent: ListView {
+                    id: authorListList
+                    Layout.preferredWidth: parent.width
+                    Layout.preferredHeight: parent.height
+                    clip: true
+                    spacing: 0
+                    model: skywalker.getListListModel(listListModelId)
+                    flickDeceleration: guiSettings.flickDeceleration
+                    maximumFlickVelocity: guiSettings.maxFlickVelocity
+                    pixelAligned: guiSettings.flickPixelAligned
+                    ScrollIndicator.vertical: ScrollIndicator {}
+                    interactive: !authorFeedView.interactive
 
-                delegate: ListViewDelegate {
-                    width: authorFeedView.width
-                    ownLists: false
-                    allowEdit: false
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
 
-                    onBlockList: (list) => graphUtils.blockList(list.uri)
-                    onUnblockList: (list, blockedUri) => graphUtils.unblockList(list.uri, blockedUri)
-                    onMuteList: (list) => graphUtils.muteList(list.uri)
-                    onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
-                }
+                    delegate: ListViewDelegate {
+                        width: authorFeedView.width
+                        ownLists: false
+                        allowEdit: false
 
-                FlickableRefresher {
-                    inProgress: skywalker.getListListInProgress
-                    bottomOvershootFun: () => getListListNextPage(listListModelId)
-                }
+                        onBlockList: (list) => graphUtils.blockList(list.uri)
+                        onUnblockList: (list, blockedUri) => graphUtils.unblockList(list.uri, blockedUri)
+                        onMuteList: (list) => graphUtils.muteList(list.uri)
+                        onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
+                    }
 
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: skywalker.getListListInProgress
-                }
+                    FlickableRefresher {
+                        inProgress: skywalker.getListListInProgress
+                        bottomOvershootFun: () => getListListNextPage(listListModelId)
+                    }
 
-                EmptyListIndication {
-                    svg: SvgOutline.noLists
-                    text: qsTr("No lists")
-                    list: authorListList
-                }
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: skywalker.getListListInProgress
+                    }
 
-                function refresh() {
-                    getListList(listListModelId)
-                }
+                    EmptyListIndication {
+                        svg: SvgOutline.noLists
+                        text: qsTr("No lists")
+                        list: authorListList
+                    }
 
-                function clear() {
-                    model.clear()
+                    function refresh() {
+                        getListList(listListModelId)
+                    }
+
+                    function clear() {
+                        model.clear()
+                    }
                 }
             }
 
@@ -896,22 +940,22 @@ SkyPage {
         }
 
         function feedOk(modelId) {
-            itemAtIndex(0).feedOk(modelId)
+            itemAtIndex(0).feedOk(modelId) // qmllint disable missing-property
         }
 
         function retryGetFeed(modelId, error, msg) {
-            if (error === ATProtoErrorMsg.BLOCKED_ACTOR && itemAtIndex(0).retryGetFeed(modelId))
+            if (error === ATProtoErrorMsg.BLOCKED_ACTOR && itemAtIndex(0).retryGetFeed(modelId)) // qmllint disable missing-property
                 return
 
             statusPopup.show(msg, QEnums.STATUS_LEVEL_ERROR)
         }
 
         function refresh() {
-            itemAtIndex(0).refresh()
+            itemAtIndex(0).refresh() // qmllint disable missing-property
         }
 
         function clear() {
-            itemAtIndex(0).clear()
+            itemAtIndex(0).clear() // qmllint disable missing-property
         }
     }
 
@@ -921,12 +965,12 @@ SkyPage {
 
     PostUtils {
         id: postUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
     }
 
     GraphUtils {
         id: graphUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onFollowOk: (uri) => { following = uri }
         onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -981,7 +1025,7 @@ SkyPage {
 
     ProfileUtils {
         id: profileUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onGetLabelerViewDetailedOk: (view) => setLabeler(view)
         onGetLabelerViewDetailedFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
@@ -1132,7 +1176,7 @@ SkyPage {
         listModel.setExcludeInternalLists(true)
         let component = Qt.createComponent("AddUserListListView.qml")
         let view = component.createObject(page, { author: author, modelId: listModelId, skywalker: skywalker })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
         skywalker.getListList(listModelId)
     }

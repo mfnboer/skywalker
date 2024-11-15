@@ -234,12 +234,12 @@ Column {
         return UnicodeFonts.onlyEmojis(postPlainText)
     }
 
-    function mustShowLangaugess() {
+    function mustShowLangauges() {
         return root.getSkywalker().getUserSettings().getShowLanguageTags()
     }
 
     function showPostAttachements() {
-        if (postLanguageLabels.length > 0 && mustShowLangaugess()) {
+        if (postLanguageLabels.length > 0 && mustShowLangauges()) {
             languageLabelsLoader.setSource("LanguageLabels.qml", {
                                                languageLabels: postLanguageLabels,
                                                parentWidth: parent.width })
