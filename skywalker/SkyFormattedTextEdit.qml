@@ -110,13 +110,24 @@ TextEdit {
     // An alternative with TapHandler did not work
     MouseArea {
         anchors.fill: parent
-        onPressed: (mouse) => {
-                       Qt.inputMethod.reset()
-                       editText.forceActiveFocus()
-                       let position = editText.positionAt(mouse.x, mouse.y)
-                       editText.cursorPosition = position
-                       Qt.inputMethod.show()
-                   }
+        propagateComposedEvents: true
+        onPressed: (mouse) => handleEvent(mouse)
+        onPressAndHold: (mouse) => { mouse.accepted = false }
+        onReleased: (mouse) => { mouse.accepted = false }
+        onClicked: (mouse) => handleEvent(mouse)
+        onDoubleClicked: (mouse) => handleEvent(mouse)
+
+        function handleEvent(mouse) {
+            Qt.inputMethod.reset() // qmllint disable missing-property
+            // editText.forceActiveFocus()
+            // let position = editText.positionAt(mouse.x, mouse.y)
+            // editText.cursorPosition = position
+            Qt.inputMethod.show()
+
+            // Pass to TextEdit to handle the mouse event. This seems
+            // better than setting the position ourselves.
+            mouse.accepted = false
+        }
     }
 
     // Text can only be changed outside onPreeditTextChanged.
