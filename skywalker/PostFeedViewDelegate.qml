@@ -96,6 +96,7 @@ Rectangle {
 
         if (dy != 0) {
             prevY = y
+            console.debug("Calibration:", dy)
             calibratedPosition(dy)
         }
     }

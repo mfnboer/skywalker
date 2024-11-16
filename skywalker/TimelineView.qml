@@ -50,6 +50,10 @@ SkyListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
+
+        const index = getLastVisibleIndex()
+        console.debug("Calibration, count changed:", count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+
         // Adding/removing content changes the indices.
         skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
@@ -91,6 +95,7 @@ SkyListView {
     }
 
     function calibratePosition() {
+        console.debug("Calibration, calibrationDy:", calibrationDy)
         timelineView.contentY += calibrationDy
         calibrationDy = 0
         calibrateUnreadPosts()
@@ -139,11 +144,16 @@ SkyListView {
     }
 
     function rowsInsertedHandler(parent, start, end) {
+        let firstVisibleIndex = getFirstVisibleIndex()
+        const index = getLastVisibleIndex()
+        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index)
         calibrateUnreadPosts()
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
+        let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()
+        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index)
         setAnchorItem(index + 1)
     }
 

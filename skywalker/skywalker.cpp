@@ -1380,7 +1380,7 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
     }
 
     if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_DELETE_SIZE)
-        mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - TIMELINE_DELETE_SIZE);
+        mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - lastVisibleIndex - TIMELINE_DELETE_SIZE);
 
     if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && !mGetTimelineInProgress)
         getTimelineNextPage();
