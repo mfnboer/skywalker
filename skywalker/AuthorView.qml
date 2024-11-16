@@ -607,7 +607,7 @@ SkyPage {
                 active: isLabeler
                 asynchronous: true
 
-                ListView {
+                sourceComponent: ListView {
                     id: labelList
                     width: parent.width
                     height: parent.height
@@ -691,31 +691,45 @@ SkyPage {
             }
 
             // Replies
-            AuthorPostsList {
-                id: authorRepliesList
-                author: page.author
-                enclosingView: authorFeedView
-                getFeed: (id) => page.getFeed(id)
-                getFeedNextPage: (id) => page.getFeedNextPage(id)
-                getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
-                getEmptyListIndicationText: () => page.getEmptyListIndicationText()
-                visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
-                disableWarning: () => page.disableWarning()
-                feedFilter: QEnums.AUTHOR_FEED_FILTER_REPLIES
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: true
+                asynchronous: true
+
+                sourceComponent: AuthorPostsList {
+                    id: authorRepliesList
+                    author: page.author
+                    enclosingView: authorFeedView
+                    getFeed: (id) => page.getFeed(id)
+                    getFeedNextPage: (id) => page.getFeedNextPage(id)
+                    getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
+                    getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                    disableWarning: () => page.disableWarning()
+                    feedFilter: QEnums.AUTHOR_FEED_FILTER_REPLIES
+                }
             }
 
             // Media
-            AuthorPostsList {
-                id: authorMediaList
-                author: page.author
-                enclosingView: authorFeedView
-                getFeed: (id) => page.getFeed(id)
-                getFeedNextPage: (id) => page.getFeedNextPage(id)
-                getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
-                getEmptyListIndicationText: () => page.getEmptyListIndicationText()
-                visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
-                disableWarning: () => page.disableWarning()
-                feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: true
+                asynchronous: true
+
+                sourceComponent: AuthorPostsList {
+                    id: authorMediaList
+                    author: page.author
+                    enclosingView: authorFeedView
+                    getFeed: (id) => page.getFeed(id)
+                    getFeedNextPage: (id) => page.getFeedNextPage(id)
+                    getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
+                    getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                    disableWarning: () => page.disableWarning()
+                    feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
+                }
             }
 
             // Likes
