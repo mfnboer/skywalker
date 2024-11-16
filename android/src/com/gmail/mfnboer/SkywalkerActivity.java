@@ -13,6 +13,7 @@ import org.qtproject.qt.android.bindings.QtActivity;
 
 import java.lang.String;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -22,7 +23,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowInsets;
 import android.view.WindowInsetsController;
+
+// For EdgeToEdge
+// import androidx.core.view.WindowCompat;
 
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
@@ -44,6 +49,10 @@ public class SkywalkerActivity extends QtActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Enable EdgeToEdge mode, i.e. full screen.
+        // WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         Log.d(LOGTAG, "onCreate");
         setStatusBarColor();
 
@@ -211,6 +220,20 @@ public class SkywalkerActivity extends QtActivity {
         moveTaskToBack(true);
     }
 
+    public int getNavigationBarHeight() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Window window = this.getWindow();
+            WindowInsets insets = window.getDecorView().getRootWindowInsets();
+
+            if (insets != null)
+                return insets.getInsets(WindowInsets.Type.navigationBars()).bottom;
+            else
+                Log.w(LOGTAG, "Cannot get window insets controller");
+        }
+
+        return 0;
+    }
+
     private void setStatusBarColor() {
         if (Build.VERSION.SDK_INT >= 35) {
             Log.w(LOGTAG, "Not yet supported: " + Build.VERSION.SDK_INT);
@@ -229,6 +252,38 @@ public class SkywalkerActivity extends QtActivity {
                 insetsController.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
             else
                 Log.w(LOGTAG, "Cannot get window insets controller");
+        }
+    }
+
+    public void setNavigationBarColor(int color, boolean isLightMode) {
+        Log.d(LOGTAG, "Set navigation bar color: " + color + " light: " + isLightMode);
+        runOnUiThread(new NavigationBarColorSetter(this, color, isLightMode));
+    }
+
+    private static class NavigationBarColorSetter implements Runnable {
+        private Activity mActivity;
+        private int mColor;
+        private boolean mIsLightMode;
+
+        NavigationBarColorSetter(Activity activity, int color, boolean isLightMode) {
+            mActivity = activity;
+            mColor = color;
+            mIsLightMode = isLightMode;
+        }
+
+        @Override
+        public void run() {
+            Window window = mActivity.getWindow();
+            window.setNavigationBarColor(mColor);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController insetsController = window.getInsetsController();
+
+                if (insetsController != null)
+                    insetsController.setSystemBarsAppearance(mIsLightMode ? WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS : 0, WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+                else
+                    Log.w(LOGTAG, "Cannot get window insets controller");
+            }
         }
     }
 

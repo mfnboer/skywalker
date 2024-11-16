@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -13,6 +12,7 @@ Rectangle {
     property bool messagesActive: false
     property int unreadNotifications: 0
     property bool showHomeFeedBadge: false
+    property bool floatingButtons: false
 
     signal homeClicked()
     signal notificationsClicked()
@@ -24,188 +24,76 @@ Rectangle {
     width: parent.width
     height: guiSettings.footerHeight
     z: guiSettings.footerZLevel
-    color: guiSettings.backgroundColor
+    color: floatingButtons ? "transparent" : guiSettings.backgroundColor
 
     RowLayout {
         width: parent.width
         height: parent.height
         spacing: 0
 
-        Rectangle {
+        SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: "transparent"
-
-            Accessible.role: Accessible.PageTab
+            floating: floatingButtons
+            svg: homeActive ? SvgFilled.home : SvgOutline.home
+            counter: timeline.unreadPosts
+            counterBackgroundColor: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
+            counterTextColor: guiSettings.textColor
+            showAltBadge: showHomeFeedBadge
+            altBadgeSvg: SvgOutline.feed
             Accessible.name: getHomeSpeech()
-            Accessible.onPressAction: homeClicked()
-
-            SkySvg {
-                id: homeButton
-                y: height + 5
-                width: height
-                height: parent.height - 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
-                svg: homeActive ? SvgFilled.home : SvgOutline.home
-
-                BadgeCounter {
-                    color: guiSettings.backgroundColor
-                    counterColor: guiSettings.textColor
-                    counter: timeline.unreadPosts
-                }
-
-                // Feed badge
-                Rectangle {
-                    x: parent.width - 17
-                    y: -parent.y + 6
-                    width: 20
-                    height: 20
-                    radius: 10
-                    color: guiSettings.backgroundColor
-                    border.color: guiSettings.backgroundColor
-                    border.width: 2
-                    visible: showHomeFeedBadge
-
-                    SkySvg {
-                        x: 4
-                        y: height + 2
-                        width: 14
-                        height: width
-                        color: guiSettings.textColor
-                        svg: SvgOutline.feed
-                    }
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: homeClicked()
-            }
+            onClicked: homeClicked()
         }
 
-        Rectangle {
+        SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: "transparent"
-
-            Accessible.role: Accessible.PageTab
+            floating: floatingButtons
+            svg: searchActive ? SvgFilled.search : SvgOutline.search
             Accessible.name: qsTr("search")
-            Accessible.onPressAction: searchClicked()
-
-            SkySvg {
-                id: searchButton
-                y: height + 5
-                width: height
-                height: parent.height - 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
-                svg: searchActive ? SvgFilled.search : SvgOutline.search
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: searchClicked()
-            }
+            onClicked: searchClicked()
         }
 
-        Rectangle {
+        SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: "transparent"
-
-            Accessible.role: Accessible.PageTab
+            floating: floatingButtons
+            svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
             Accessible.name: qsTr("feeds")
-            Accessible.onPressAction: feedsClicked()
-
-            SkySvg {
-                id: feedsButton
-                y: height + 5
-                width: height
-                height: parent.height - 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
-                svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: feedsClicked()
-            }
+            onClicked: feedsClicked()
         }
 
-        Rectangle {
+        SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: "transparent"
-
-            Accessible.role: Accessible.PageTab
+            floating: floatingButtons
+            svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
+            counter: skywalker.chat.unreadCount
             Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
-            Accessible.onPressAction: messagesClicked()
-
-            SkySvg {
-                id: messagesButton
-                y: height + 5
-                width: height
-                height: parent.height - 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
-                svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
-
-                BadgeCounter {
-                    counter: skywalker.chat.unreadCount
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: messagesClicked()
-            }
+            onClicked: messagesClicked()
         }
 
-        Rectangle {
+        SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: "transparent"
-
-            Accessible.role: Accessible.PageTab
+            floating: floatingButtons
+            svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
+            counter: root.getSkywalker().unreadNotificationCount
             Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
-            Accessible.onPressAction: notificationsClicked()
-
-            SkySvg {
-                id: notificationsButton
-                y: height + 5
-                width: height
-                height: parent.height - 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: guiSettings.textColor
-                svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
-
-                BadgeCounter {
-                    counter: root.getSkywalker().unreadNotificationCount
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: notificationsClicked()
-            }
+            onClicked: notificationsClicked()
         }
     }
 
     PostButton {
         y: -height - 10
         svg: getSvg()
+        accessibleName: qsTr("post")
         overrideOnClicked: () => {
             if (messagesActive)
                 addConvoClicked()
             else
                 post()
         }
-
-        Accessible.role: Accessible.Button
-        Accessible.name: qsTr("post")
-        Accessible.onPressAction: clicked()
 
         function getSvg() {
             if (messagesActive)

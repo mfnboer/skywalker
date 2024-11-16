@@ -9,7 +9,7 @@ import android.util.Log;
 import androidx.work.Configuration;
 
 public class SkywalkerApplication extends QtApplication implements Configuration.Provider {
-    private static final String LOGTAG = "SkywalkerApplciation";
+    private static final String LOGTAG = "SkywalkerApplication";
 
     @Override
     public Configuration getWorkManagerConfiguration() {

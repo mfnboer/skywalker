@@ -426,6 +426,7 @@ qt_add_qml_module(libskywalker
         QML_FILES ProgressDialog.qml
         QML_FILES ConvertGifDialog.qml
         QML_FILES SkyCleanedTextLine.qml
+        QML_FILES SkyFooterButton.qml
 )
 
 if (NOT ANDROID)

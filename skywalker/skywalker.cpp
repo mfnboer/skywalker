@@ -68,6 +68,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(2, TIMELINE_PREPEND_PAGE_SIZE); });
+    connect(&mUserSettings, &UserSettings::backgroundColorChanged, this, [this]{ setNavigationBarColor(mUserSettings.getBackgroundColor()); });
 
     TempFileHolder::initTempDir();
     AuthorCache::instance().setSkywalker(this);
@@ -3012,6 +3013,24 @@ bool Skywalker::sendAppToBackground()
     return true;
 #else
     return false;
+#endif
+}
+
+void Skywalker::setNavigationBarColor(QColor color)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    int rgb = color.rgba();
+    bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
+    activity.callMethod<void>("setNavigationBarColor", "(IZ)V", (jint)rgb, (jboolean)isLightMode);
+#else
+    Q_UNUSED(color)
 #endif
 }
 

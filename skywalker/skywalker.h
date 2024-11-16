@@ -181,6 +181,7 @@ public:
 
     // TODO: refactor to separate App Utils class
     Q_INVOKABLE bool sendAppToBackground();
+    Q_INVOKABLE void setNavigationBarColor(QColor color);
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void signOut();

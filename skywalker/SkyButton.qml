@@ -19,5 +19,4 @@ RoundButton {
     Accessible.role: Accessible.Button
     Accessible.name: button.text
     Accessible.onPressAction: if (enabled) clicked()
-
 }

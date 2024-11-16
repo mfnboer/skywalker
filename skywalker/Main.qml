@@ -1653,6 +1653,7 @@ ApplicationWindow {
         userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
+        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
     }
 
     function getSkywalker() {
