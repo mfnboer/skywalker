@@ -172,7 +172,7 @@ SkyPage {
                 onCheckedChanged: userPrefs.loggedOutVisibility = !checked
 
                 Accessible.role: Accessible.Button
-                Accessible.name: contentItem.text
+                Accessible.name: contentItem.text // qmllint disable missing-property
                 Accessible.onPressAction: toggle()
 
                 Component.onCompleted: {
@@ -383,7 +383,7 @@ SkyPage {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 30
+                    Layout.preferredHeight: 30
                     border.width: 1
                     border.color: guiSettings.buttonColor
                     color: guiSettings.backgroundColor
@@ -429,7 +429,7 @@ SkyPage {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 30
+                    Layout.preferredHeight: 30
                     border.width: 1
                     border.color: guiSettings.accentColor
                     color: guiSettings.accentColor
@@ -461,7 +461,7 @@ SkyPage {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 30
+                    Layout.preferredHeight: 30
                     border.width: 1
                     border.color: guiSettings.buttonColor
                     color: guiSettings.linkColor
@@ -490,7 +490,6 @@ SkyPage {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    width: parent.width
                     spacing: -1
 
                     SkyRadioButton {
@@ -521,7 +520,7 @@ SkyPage {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 30
+                    Layout.preferredHeight: 30
                     border.width: 1
                     border.color: guiSettings.buttonColor
 
@@ -547,6 +546,12 @@ SkyPage {
                         onClicked: userSettings.resetThreadColor()
                     }
                 }
+            }
+
+            AccessibleSwitch {
+                text: qsTr("Floating navigation buttons")
+                checked: userSettings.floatingNavigationButtons
+                onCheckedChanged: userSettings.floatingNavigationButtons = checked
             }
 
             AccessibleSwitch {

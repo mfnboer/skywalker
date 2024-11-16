@@ -30,6 +30,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoAutoLoad READ getVideoAutoLoad WRITE setVideoAutoLoad NOTIFY videoAutoLoadChanged FINAL)
+    Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
 
 public:
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
@@ -133,6 +134,9 @@ public:
     void setGiantEmojis(bool giantEmojis);
     bool getGiantEmojis() const;
 
+    void setFloatingNavigationButtons(bool floating);
+    bool getFloatingNavigationButtons() const;
+
     Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
 
@@ -230,6 +234,7 @@ signals:
     void videoSoundChanged();
     void videoAutoPlayChanged();
     void videoAutoLoadChanged();
+    void floatingNavigationButtonsChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;

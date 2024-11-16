@@ -490,6 +490,20 @@ bool UserSettings::getGiantEmojis() const
     return mSettings.value("giantEmojis", true).toBool();
 }
 
+void UserSettings::setFloatingNavigationButtons(bool floating)
+{
+    if (floating == getFloatingNavigationButtons())
+        return;
+
+    mSettings.setValue("floatingNavButtons", floating);
+    emit floatingNavigationButtonsChanged();
+}
+
+bool UserSettings::getFloatingNavigationButtons() const
+{
+    return mSettings.value("floatingNavButtons", false).toBool();
+}
+
 void UserSettings::setRequireAltText(const QString& did, bool require)
 {
     mSettings.setValue(key(did, "requireAltText"), require);

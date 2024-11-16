@@ -12,7 +12,7 @@ Rectangle {
     property bool messagesActive: false
     property int unreadNotifications: 0
     property bool showHomeFeedBadge: false
-    property bool floatingButtons: false
+    property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
 
     signal homeClicked()
     signal notificationsClicked()
