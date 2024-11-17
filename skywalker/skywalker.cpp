@@ -928,10 +928,11 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
             }
         },
         [this](const QString& error, const QString& msg){
-            qDebug() << "getTimeline FAILED:" << error << " - " << msg;
+            qWarning() << "getTimelinePrepend FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
             setAutoUpdateTimelineInProgress(false);
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            // No need to bother the user with an error message.
+            // We will retry on next update/refresh attempt.
         }
         );
 }
