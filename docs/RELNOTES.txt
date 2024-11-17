@@ -1,10 +1,10 @@
-next
-====
+3.7.1
+=====
 * Floating navigation buttons can be enabled in settings
 * Show video in quoted post
 * Profile pages open faster
-* Fix post thread scrolling
-* Fix potential crash at startup
+* Fix long post thread (with pictures) scrolling
+* Fix bug that could crash the app
 
 3.7
 ===

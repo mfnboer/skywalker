@@ -40,7 +40,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="text/plain"/>
                 <data android:mimeType="image/*"/>
-                <data android:mimeType="video/mp4"/>
+                <data android:mimeType="video/*"/>
             </intent-filter>
         </activity>
         <activity
