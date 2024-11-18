@@ -435,6 +435,29 @@ int PostFeedModel::findTimestamp(QDateTime timestamp) const
     return it != mFeed.end() ? it - mFeed.begin() : -1;
 }
 
+void PostFeedModel::unfoldPosts(int startIndex)
+{
+    qDebug() << "Unfold posts:" << startIndex;
+
+    if (startIndex < 0 || startIndex >= (int)mFeed.size())
+    {
+        qWarning() << "Invalid index:" << startIndex << "size:" << mFeed.size();
+        return;
+    }
+
+    for (int i = startIndex; i < (int)mFeed.size(); ++i)
+    {
+        auto& post = mFeed[i];
+
+        if (post.getFoldedPostType() == QEnums::FOLDED_POST_NONE)
+            break;
+
+        post.setFoldedPostType(QEnums::FOLDED_POST_NONE);
+    }
+
+    changeData({ int(Role::PostFoldedType) });
+}
+
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 {
     mFeed.push_back(post);
@@ -664,6 +687,60 @@ void PostFeedModel::Page::setThreadgates()
     }
 }
 
+void PostFeedModel::Page::foldThreads()
+{
+    int threadStartIndex = -1;
+    int threadEndIndex = -1;
+
+    for (int i = 0; i < (int)mFeed.size(); ++i)
+    {
+        auto& post = mFeed[i];
+
+        switch (post.getPostType())
+        {
+        case QEnums::POST_ROOT:
+            threadStartIndex = i;
+            break;
+        case QEnums::POST_LAST_REPLY:
+            threadEndIndex = i;
+            foldPosts(threadStartIndex, threadEndIndex);
+            threadStartIndex = -1;
+            break;
+        case QEnums::POST_REPLY:
+        case QEnums::POST_STANDALONE:
+        case QEnums::POST_THREAD:
+            break;
+        }
+    }
+}
+
+void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
+{
+    if (startIndex < 0 || endIndex < 0 || startIndex > endIndex)
+    {
+        qWarning() << "Invalid thread:" << startIndex << endIndex;
+        return;
+    }
+
+    if (endIndex >= (int)mFeed.size())
+    {
+        qWarning() << "Thread out of range:" << startIndex << endIndex << "size:" << mFeed.size();
+        return;
+    }
+
+    // Do not fold short threads
+    if (endIndex - startIndex < 4)
+        return;
+
+    // The first and the last 2 posts will stay visible. The rest gets folded.
+    mFeed[startIndex + 1].setFoldedPostType(QEnums::FOLDED_POST_FIRST);
+
+    for (int i = startIndex + 2; i < endIndex - 1; ++i)
+    {
+        mFeed[i].setFoldedPostType(QEnums::FOLDED_POST_SUBSEQUENT);
+    }
+}
+
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
@@ -802,6 +879,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     }
 
     page->setThreadgates();
+    page->foldThreads();
     return page;
 }
 

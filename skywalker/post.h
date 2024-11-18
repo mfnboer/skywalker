@@ -101,6 +101,9 @@ public:
     void setParentInThread(bool parentInThread) { mParentInThread = parentInThread; }
     void setReplyToAuthor(const BasicProfile& profile) { mReplyToAuthor = profile; }
 
+    QEnums::FoldedPostType getFoldedPostType() const { return mFoldedPostType; }
+    void setFoldedPostType(QEnums::FoldedPostType foldedPostType) { mFoldedPostType = foldedPostType; }
+
     int getThreadType() const { return mThreadType; }
     void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
 
@@ -138,6 +141,7 @@ private:
 
     bool mEndOfFeed = false;
     QEnums::PostType mPostType = QEnums::POST_STANDALONE;
+    QEnums::FoldedPostType mFoldedPostType = QEnums::FOLDED_POST_NONE;
     int mThreadType = QEnums::THREAD_NONE;
 
     // Timestamp to keep reply references in time sequence for the timeline

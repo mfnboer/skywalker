@@ -36,12 +36,16 @@ SkyListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
+        required property int index
+
         width: timelineView.width
 
         onCalibratedPosition: (dy) => {
             calibrationDy += dy
             Qt.callLater(calibratePosition)
         }
+
+        onUnfoldPosts: skywalker.timelineModel.unfoldPosts(index)
     }
 
     onCountChanged: {

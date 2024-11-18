@@ -85,6 +85,8 @@ public:
 
     void clear();
 
+    Q_INVOKABLE void unfoldPosts(int startIndex);
+
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
@@ -113,6 +115,8 @@ private:
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
         void collectThreadgate(const Post& post);
         void setThreadgates();
+        void foldThreads();
+        void foldPosts(int startIndex, int endIndex);
     };
 
     virtual bool mustHideContent(const Post& post) const override;

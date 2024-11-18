@@ -238,6 +238,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostType:
         return post.getPostType();
+    case Role::PostFoldedType:
+        return post.getFoldedPostType();
     case Role::PostThreadType:
         return post.getThreadType();
     case Role::PostIsPlaceHolder:
@@ -433,6 +435,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostRecord), "postRecord" },
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
         { int(Role::PostType), "postType" },
+        { int(Role::PostFoldedType), "postFoldedType" },
         { int(Role::PostThreadType), "postThreadType" },
         { int(Role::PostIsPlaceHolder), "postIsPlaceHolder" },
         { int(Role::PostGapId), "postGapId" },

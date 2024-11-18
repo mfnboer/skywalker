@@ -42,6 +42,7 @@ public:
         PostRecord,
         PostRecordWithMedia,
         PostType,
+        PostFoldedType,
         PostThreadType,
         PostIsPlaceHolder,
         PostGapId,

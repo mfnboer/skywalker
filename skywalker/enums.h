@@ -31,9 +31,18 @@ public:
         POST_ROOT,
         POST_REPLY,
         POST_LAST_REPLY,
-        POST_THREAD
+        POST_THREAD // only in thread model
     };
     Q_ENUM(PostType)
+
+    // A sequence of thread posts can be folded up in the timeline.
+    enum FoldedPostType
+    {
+        FOLDED_POST_NONE,
+        FOLDED_POST_FIRST,
+        FOLDED_POST_SUBSEQUENT
+    };
+    Q_ENUM(FoldedPostType)
 
     enum ThreadPostType
     {

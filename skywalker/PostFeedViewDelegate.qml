@@ -23,6 +23,7 @@ Rectangle {
     required property var postRecord // recordview
     required property var postRecordWithMedia // record_with_media_view
     required property int postType // QEnums::PostType
+    required property int postFoldedType // QEnums::PostFoldedType
     required property int postThreadType // QEnums::ThreadPostType flags
     required property bool postIsPlaceHolder
     required property int postGapId;
@@ -70,12 +71,14 @@ Rectangle {
 
     signal calibratedPosition(int dy)
     signal showHiddenReplies
+    signal unfoldPosts
 
     id: postEntry
-    height: grid.height
+    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : grid.height
     color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 1 : 0
     border.color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.borderHighLightColor : guiSettings.borderColor
+    visible: postFoldedType !== QEnums.FOLDED_POST_SUBSEQUENT
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()
@@ -314,13 +317,32 @@ Rectangle {
                 y: postHeader.y + 5 // For some reason "avatar.y + 5" does not work when it is a repost
                 width: parent.width - 13
                 author: postEntry.author
-                visible: !postIsPlaceHolder && !postLocallyDeleted
+                visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
 
                 onClicked: skywalker.getDetailedProfile(author.did)
 
                 Accessible.role: Accessible.Button
                 Accessible.name: qsTr(`show profile of ${author.name}`)
                 Accessible.onPressAction: clicked()
+            }
+
+            // Mask to turn the threadbar into a dotted line
+            Loader {
+                width: parent.width
+                active: postFoldedType === QEnums.FOLDED_POST_FIRST
+
+                sourceComponent: Repeater {
+                    model: Math.floor(avatar.height / 8)
+
+                    Rectangle {
+                        required property int index
+
+                        y: 4 + index * 8
+                        width: parent.width
+                        height: 4
+                        color: guiSettings.backgroundColor
+                    }
+                }
             }
         }
         Column {
@@ -330,7 +352,7 @@ Rectangle {
             // things very slow :-(
             // This seems fixed on Qt 6.7.3
             Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
-            visible: !postIsPlaceHolder && !postLocallyDeleted
+            visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
 
             PostHeader {
                 id: postHeader
@@ -487,6 +509,26 @@ Rectangle {
                     onPin: root.pinPost(postUri, postCid)
                     onUnpin: root.unpinPost(postCid)
                 }
+            }
+        }
+
+        // Folded Posts
+        Loader {
+            Layout.fillWidth: true
+            active: postFoldedType === QEnums.FOLDED_POST_FIRST
+            visible: status == Loader.Ready
+            sourceComponent: Text {
+                topPadding: 10
+                bottomPadding: 10
+                width: parent.width
+                elide: Text.ElideRight
+                color: guiSettings.linkColor
+                text: qsTr("Unfold post thread")
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: unfoldPosts()
             }
         }
 
