@@ -13,7 +13,7 @@ ApplicationWindow {
     width: 480
     height: 960
     visible: true
-    title: "Skywalker"
+    title: skywalker.APP_NAME
     color: guiSettings.backgroundColor
 
     onPostButtonRelativeXChanged: {

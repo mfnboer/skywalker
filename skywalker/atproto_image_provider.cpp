@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "atproto_image_provider.h"
+#include "skywalker.h"
 #include <QTimer>
 
 namespace Skywalker {
@@ -143,6 +144,7 @@ void ATProtoImageResponse::loadImage(const QString &host, const QString& did, co
     qDebug() << "Load image, host:" << host << "did:" << did << "cid:" << cid;
 
     auto xrpc = std::make_unique<Xrpc::Client>(host);
+    xrpc->setUserAgent(Skywalker::getUserAgentString());
     mClient = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mClient->getBlob(did, cid,

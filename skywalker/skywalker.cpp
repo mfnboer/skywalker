@@ -121,6 +121,7 @@ void Skywalker::login(const QString user, QString password, const QString host, 
 {
     qDebug() << "Login:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
+    xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
@@ -196,6 +197,7 @@ bool Skywalker::resumeSession(bool retry)
     qInfo() << "Session:" << session.mDid << session.mAccessJwt << session.mRefreshJwt;
 
     auto xrpc = std::make_unique<Xrpc::Client>(host);
+    xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->resumeSession(session,

@@ -40,6 +40,7 @@ class FocusHashtags;
 class Skywalker : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString APP_NAME MEMBER APP_NAME CONSTANT)
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
@@ -63,7 +64,10 @@ class Skywalker : public QObject
     QML_ELEMENT
 
 public:
+    static constexpr const char* APP_NAME = "Skywalker";
     static constexpr const char* VERSION = APP_VERSION;
+    static QString getUserAgentString() { return QString("%1/%2").arg(APP_NAME, VERSION); }
+
     static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 20;
 
     explicit Skywalker(QObject* parent = nullptr);

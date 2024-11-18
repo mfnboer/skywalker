@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "link_card_reader.h"
 #include "definitions.h"
+#include "skywalker.h"
 #include "unicode_fonts.h"
 #include <QRegularExpression>
 #include <QNetworkCookie>
@@ -144,7 +145,7 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     request.setRawHeader("Accept-Encoding", "identity");
     request.setRawHeader("Accept-Language", mAcceptLanguage.toUtf8()); // For Reuters
     request.setRawHeader("Priority", "i"); // For Reuters
-    request.setRawHeader("User-Agent", "Skywalker"); // For NYT, Reuters
+    request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For NYT, Reuters
 
     QNetworkReply* reply = mNetwork.get(request);
     mInProgress = reply;

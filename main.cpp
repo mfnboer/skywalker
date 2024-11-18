@@ -3,6 +3,7 @@
 #include "atproto_image_provider.h"
 #include "font_downloader.h"
 #include "shared_image_provider.h"
+#include "skywalker.h"
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QFont>
@@ -12,8 +13,8 @@ int main(int argc, char *argv[])
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
 
     QGuiApplication app(argc, argv);
-    app.setOrganizationName("Skywalker");
-    app.setApplicationName("Skywalker");
+    app.setOrganizationName(Skywalker::Skywalker::APP_NAME);
+    app.setApplicationName(Skywalker::Skywalker::APP_NAME);
 
     Skywalker::FontDownloader::initAppFonts();
 

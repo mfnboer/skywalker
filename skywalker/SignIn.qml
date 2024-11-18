@@ -11,7 +11,7 @@ SkyPage {
     background: Rectangle { color: guiSettings.skywalkerLogoColor }
 
     Accessible.role: Accessible.Pane
-    Accessible.name: "Skywalker"
+    Accessible.name: skywalker.APP_NAME
 
     Column {
         width: parent.width
@@ -25,7 +25,7 @@ SkyPage {
             color: "white"
             font.bold: true
             font.pointSize: guiSettings.scaledFont(3.5)
-            text: "Skywalker"
+            text: skywalker.APP_NAME
         }
         Text {
             id: description

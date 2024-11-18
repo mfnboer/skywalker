@@ -3,6 +3,7 @@
 #include "offline_message_checker.h"
 #include "notification.h"
 #include "photo_picker.h"
+#include "skywalker.h"
 
 #ifdef Q_OS_ANDROID
 #include "android_utils.h"
@@ -70,7 +71,7 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
         qDebug() << "Start core app";
         QCoreApplication::addLibraryPath(libDir);
         int argc = 1;
-        const char* argv[] = {"Skywalker", NULL};
+        const char* argv[] = {Skywalker::Skywalker::APP_NAME, NULL};
         app = std::make_unique<QCoreApplication>(argc, (char**)argv);
         qDebug() << "LIBS:" << app->libraryPaths();
 
@@ -283,6 +284,7 @@ void OffLineMessageChecker::resumeSession(bool retry)
 
     mUserDid = session.mDid;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
+    xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->resumeSession(session,

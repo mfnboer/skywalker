@@ -21,7 +21,7 @@ SkyPage {
             color: "white"
             font.bold: true
             font.pointSize: guiSettings.scaledFont(3.5)
-            text: "Skywalker"
+            text: skywalker.APP_NAME
         }
         AccessibleText {
             id: version
