@@ -71,6 +71,7 @@ private:
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     bool isHiddenReply(const QString& uri) const;
     bool isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& reply) const;
+    bool isPinPost(const ATProto::AppBskyFeed::PostView& post) const;
 
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
     std::deque<Post> mHiddenRepliesFeed;

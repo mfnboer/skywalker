@@ -235,6 +235,17 @@ bool PostThreadModel::isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& r
     return isHiddenReply(post->mPost->mUri);
 }
 
+// Pin posts are used to fill the bookmark feed. They are annoying in the thread.
+bool PostThreadModel::isPinPost(const ATProto::AppBskyFeed::PostView& post) const
+{
+    if (post.mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return false;
+
+    const auto postRecord = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(post.mRecord).get();
+    Q_ASSERT(postRecord);
+    return postRecord->mText == "📌";
+}
+
 // Sort replies in this order:
 // 1. Reply from author
 // 2. Your replies
@@ -259,7 +270,7 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             }
 
             if (lhs->mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
-                return false;
+                return lhs < rhs; // no order here, just pick pointer order
 
             Q_ASSERT(lhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
             Q_ASSERT(rhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
@@ -274,6 +285,12 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             if (lhsHidden != rhsHidden)
                 return lhsHidden < rhsHidden;
 
+            // Non-pin before pin
+            const bool lhsPin = isPinPost(*lhsPost);
+            const bool rhsPin = isPinPost(*rhsPost);
+
+            if (lhsPin != rhsPin)
+                return lhsPin < rhsPin;
 
             const auto& lhsDid = lhsPost->mAuthor->mDid;
             const auto& rhsDid = rhsPost->mAuthor->mDid;
