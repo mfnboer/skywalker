@@ -1,3 +1,7 @@
+next
+====
+* Option to hide replies in threads started by an unfollowed user
+
 3.7.1
 =====
 * Floating navigation buttons can be enabled in settings

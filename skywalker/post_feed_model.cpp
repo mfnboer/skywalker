@@ -559,6 +559,27 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
     if (post.getAuthor().getDid() == mUserDid)
         return true;
 
+    if (mUserSettings.getHideRepliesInThreadFromUnfollowed(mUserDid))
+    {
+        // In case of blocked posts there is no reply ref.
+        // Surely someone that blocks you is not a friend of yours.
+        if (!replyRef)
+            return false;
+
+        const auto& parentDid = replyRef->mParent.getAuthor().getDid();
+
+        // Do not show replies in threads starting with blocked and not-found root posts.
+        // Unless the reply is directly to the user.
+        if (replyRef->mRoot.isPlaceHolder() && parentDid != mUserDid)
+            return false;
+
+        const auto& rootDid = replyRef->mRoot.getAuthor().getDid();
+
+        // Always show replies to the user
+        if (parentDid != mUserDid && !mFollowing.contains(rootDid))
+            return false;
+    }
+
     if (feedViewPref.mHideRepliesByUnfollowed)
     {
         // In case of blocked posts there is no reply ref.

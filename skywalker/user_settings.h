@@ -178,6 +178,9 @@ public:
     bool getShowQuotesWithBlockedPost(const QString& did) const;
     void setShowQuotesWithBlockedPost(const QString& did, bool show);
 
+    Q_INVOKABLE bool getHideRepliesInThreadFromUnfollowed(const QString did) const;
+    Q_INVOKABLE void setHideRepliesInThreadFromUnfollowed(const QString& did, bool hide);
+
     bool getRewindToLastSeenPost(const QString& did) const;
     void setRewindToLastSeenPost(const QString& did, bool rewind);
 

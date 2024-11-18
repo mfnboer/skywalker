@@ -645,6 +645,16 @@ void UserSettings::setShowQuotesWithBlockedPost(const QString& did, bool show)
     mSettings.setValue(key(did, "showQuotesWithBlockedPost"), show);
 }
 
+bool UserSettings::getHideRepliesInThreadFromUnfollowed(const QString did) const
+{
+    return mSettings.value(key(did, "hideRepliesInThreadFromUnfollowed"), false).toBool();
+}
+
+void UserSettings::setHideRepliesInThreadFromUnfollowed(const QString& did, bool hide)
+{
+    mSettings.setValue(key(did, "hideRepliesInThreadFromUnfollowed"), hide);
+}
+
 bool UserSettings::getRewindToLastSeenPost(const QString& did) const
 {
     return mSettings.value(key(did, "rewindToLastSeenPost"), true).toBool();

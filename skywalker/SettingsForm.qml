@@ -7,6 +7,7 @@ import skywalker
 SkyPage {
     required property EditUserPreferences userPrefs
     property var userSettings: root.getSkywalker().getUserSettings()
+    property string userDid: userSettings.getActiveUserDid()
 
     id: page
     padding: 10
@@ -196,6 +197,13 @@ SkyPage {
                 text: qsTr("Show replies")
                 checked: !userPrefs.hideReplies
                 onCheckedChanged: userPrefs.hideReplies = !checked
+            }
+
+            AccessibleSwitch {
+                text: qsTr("Replies in threads from followed users only")
+                checked: userSettings.getHideRepliesInThreadFromUnfollowed(userDid)
+                enabled: !userPrefs.hideReplies
+                onCheckedChanged: userSettings.setHideRepliesInThreadFromUnfollowed(userDid, checked)
             }
 
             AccessibleSwitch {

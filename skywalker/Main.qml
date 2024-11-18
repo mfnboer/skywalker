@@ -1509,6 +1509,10 @@ ApplicationWindow {
 
     function editSettings() {
         let component = Qt.createComponent("SettingsForm.qml")
+        if (component.status === Component.Error) {
+            console.warn(component.errorString())
+            return
+        }
         let userPrefs = skywalker.getEditUserPreferences()
         let form = component.createObject(root, { userPrefs: userPrefs })
         form.onClosed.connect(() => { popStack() })
