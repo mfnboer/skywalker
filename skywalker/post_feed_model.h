@@ -3,7 +3,7 @@
 #pragma once
 #include "abstract_post_feed_model.h"
 #include "generator_view.h"
-#include "muted_words.h"
+#include "post_filter.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
 #include <unordered_map>
@@ -26,9 +26,9 @@ public:
     explicit PostFeedModel(const QString& feedName,
                            const QString& userDid, const IProfileStore& following,
                            const IProfileStore& mutedReposts,
-                           const ContentFilter& contentFilter,
+                           const IContentFilter& contentFilter,
                            const Bookmarks& bookmarks,
-                           const MutedWords& mutedWords,
+                           const IMatchWords& mutedWords,
                            const FocusHashtags& focusHashtags,
                            HashtagIndex& hashtags,
                            const ATProto::UserPreferences& userPrefs,
@@ -85,19 +85,14 @@ public:
 
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
+    PostFeedModel* addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName);
+    void deleteFilteredPostFeedModel(PostFeedModel* postFeedModel);
+
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
 
-private:
-    struct CidTimestamp
-    {
-        QString mCid;
-        QDateTime mTimestamp;
-        QString mRepostedByDid;
-        QEnums::PostType mPostType;
-    };
-
+protected:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
@@ -117,14 +112,17 @@ private:
         void foldPosts(int startIndex, int endIndex);
     };
 
+    void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
+    void addPage(Page::Ptr page);
+    void prependPage(Page::Ptr page);
+
+private:
     virtual bool mustHideContent(const Post& post) const override;
     bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     bool mustShowQuotePost(const Post& post) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
-    void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
-    void addPage(Page::Ptr page);
 
     // Returns gap id if insertion created a gap in the feed.
     int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex);
@@ -154,6 +152,8 @@ private:
     GeneratorView mGeneratorView;
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
+
+    std::vector<std::unique_ptr<PostFeedModel>> mFilteredPostFeedModels;
 };
 
 }

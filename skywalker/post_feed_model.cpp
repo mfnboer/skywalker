@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
+#include "filtered_post_feed_model.h"
 #include "user_settings.h"
 #include <algorithm>
 
@@ -9,9 +10,9 @@ namespace Skywalker {
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
-                             const ContentFilter& contentFilter,
+                             const IContentFilter& contentFilter,
                              const Bookmarks& bookmarks,
-                             const MutedWords& mutedWords,
+                             const IMatchWords& mutedWords,
                              const FocusHashtags& focusHashtags,
                              HashtagIndex& hashtags,
                              const ATProto::UserPreferences& userPrefs,
@@ -262,6 +263,30 @@ void PostFeedModel::addPage(Page::Ptr page)
     logIndices();
 }
 
+void PostFeedModel::prependPage(Page::Ptr page)
+{
+    if (!page->mFeed.empty())
+    {
+        beginInsertRows({}, 0, page->mFeed.size() - 1);
+        insertPage(mFeed.begin(), *page, page->mFeed.size());
+        endInsertRows();
+
+        qDebug() << "New feed size:" << mFeed.size();
+    }
+    else
+    {
+        qDebug() << "All posts have been filtered from page";
+        return;
+    }
+
+    if (!page->mCursorNextPage.isEmpty())
+    {
+        mIndexCursorMap[page->mFeed.size() - 1] = page->mCursorNextPage;
+    }
+
+    logIndices();
+}
+
 void PostFeedModel::removeTailPosts(int size)
 {
     if (size <= 0 || size >= (int)mFeed.size())
@@ -424,6 +449,34 @@ void PostFeedModel::unfoldPosts(int startIndex)
     }
 
     changeData({ int(Role::PostFoldedType) });
+}
+
+PostFeedModel* PostFeedModel::addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName)
+{
+    qDebug() << "Add filtered post feed model:" << feedName;
+    auto model = std::make_unique<FilteredPostFeedModel>(postFilter, feedName, mUserDid, mFollowing,
+            mMutedReposts, mContentFilter, mBookmarks, mMutedWords, mFocusHashtags, mHashtags,
+            mUserPreferences, mUserSettings, this);
+
+    auto* retval = model.get();
+    mFilteredPostFeedModels.push_back(std::move(model));
+    return retval;
+}
+
+void PostFeedModel::deleteFilteredPostFeedModel(PostFeedModel* postFeedModel)
+{
+    for (auto it = mFilteredPostFeedModels.begin(); it != mFilteredPostFeedModels.end(); ++it)
+    {
+        if (it->get() == postFeedModel)
+        {
+            qDebug() << "Delete filtered post feed model:" << (*it)->getFeedName();
+            Q_ASSERT((*it)->getFeedName() == postFeedModel->getFeedName());
+            mFilteredPostFeedModels.erase(it);
+            return;
+        }
+    }
+
+    qWarning() << "Could not delete filtered post feed model:" << postFeedModel->getFeedName();
 }
 
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
