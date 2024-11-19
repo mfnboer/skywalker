@@ -195,12 +195,28 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr RecordView::getEmbedView(ATProto::Ap
 
 QList<ImageView> RecordView::getImages() const
 {
+    ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView;
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW);
 
-    if (!embed)
-        return {};
+    if (embed)
+    {
+        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(embed->mEmbed);
+    }
+    else
+    {
+        embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
 
-    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(embed->mEmbed);
+        if (!embed)
+            return {};
+
+        const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
+
+        if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
+            return {};
+
+        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia);
+    }
+
     QList<ImageView> images;
 
     for (const auto& img : imagesView->mImages)
@@ -213,7 +229,20 @@ QVariant RecordView::getVideo() const
 {
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW);
 
+    if (embed)
+    {
+        const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(embed->mEmbed);
+        return QVariant::fromValue(VideoView(videoView));
+    }
+
+    embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
+
     if (!embed)
+        return {};
+
+    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
+
+    if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
         return {};
 
     const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(embed->mEmbed);
@@ -224,7 +253,20 @@ QVariant RecordView::getExternal() const
 {
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW);
 
+    if (embed)
+    {
+        const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mEmbed)->mExternal;
+        return QVariant::fromValue(ExternalView(external));
+    }
+
+    embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
+
     if (!embed)
+        return {};
+
+    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
+
+    if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mEmbed)->mExternal;
