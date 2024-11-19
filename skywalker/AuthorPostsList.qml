@@ -22,11 +22,13 @@ SkyListView {
     interactive: !enclosingView.interactive
     clip: true
 
-    StackLayout.onIsCurrentItemChanged: {
-        if (!StackLayout.isCurrentItem)
+    StackLayout.onIsCurrentItemChanged: changeCurrentItem(StackLayout.isCurrentItem)
+
+    function changeCurrentItem(isCurrentItem) {
+        if (!isCurrentItem)
             cover()
 
-        if (StackLayout.isCurrentItem && modelId < 0 && !skywalker.getAuthorFeedInProgress) {
+        if (isCurrentItem && modelId < 0 && !skywalker.getAuthorFeedInProgress) {
             modelId = skywalker.createAuthorFeedModel(author, feedFilter)
             model = skywalker.getAuthorFeedModel(modelId)
             getFeed(modelId)
@@ -123,7 +125,7 @@ SkyListView {
 
     function refresh() {
         if (modelId >= 0)
-            getFeed(modelId)
+            getFeed(modelId) // qmllint disable use-proper-function
     }
 
     function clear() {

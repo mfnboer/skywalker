@@ -697,6 +697,11 @@ SkyPage {
                 active: true
                 asynchronous: true
 
+                StackLayout.onIsCurrentItemChanged: {
+                    if (item)
+                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                }
+
                 sourceComponent: AuthorPostsList {
                     id: authorRepliesList
                     author: page.author
@@ -718,6 +723,11 @@ SkyPage {
                 active: true
                 asynchronous: true
 
+                StackLayout.onIsCurrentItemChanged: {
+                    if (item)
+                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                }
+
                 sourceComponent: AuthorPostsList {
                     id: authorMediaList
                     author: page.author
@@ -738,6 +748,11 @@ SkyPage {
                 Layout.preferredHeight: parent.height
                 active: isUser(author)
                 asynchronous: true
+
+                StackLayout.onIsCurrentItemChanged: {
+                    if (item)
+                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                }
 
                 sourceComponent: AuthorPostsList {
                     id: authorLikesList

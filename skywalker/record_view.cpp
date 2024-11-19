@@ -245,7 +245,7 @@ QVariant RecordView::getVideo() const
     if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
         return {};
 
-    const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(embed->mEmbed);
+    const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia);
     return QVariant::fromValue(VideoView(videoView));
 }
 
@@ -269,7 +269,7 @@ QVariant RecordView::getExternal() const
     if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 
-    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mEmbed)->mExternal;
+    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia)->mExternal;
     return QVariant::fromValue(ExternalView(external));
 }
 
