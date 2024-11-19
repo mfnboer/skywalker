@@ -162,8 +162,8 @@ SkyListView {
     }
 
     function setInSync(index) {
-        moveToPost(index)
         inSync = true
+        moveToPost(index)
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
     }
