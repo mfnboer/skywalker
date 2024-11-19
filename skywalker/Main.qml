@@ -185,13 +185,6 @@ ApplicationWindow {
             syncTimelineToPost(0)
         }
 
-        onTimelineRefreshed: (prevTopPostIndex) => {
-            console.debug("Time line refreshed, prev top post index:", prevTopPostIndex)
-
-            if (prevTopPostIndex > 0)
-                getTimelineView().moveToPost(prevTopPostIndex - 1)
-        }
-
         onGapFilled: (gapEndIndex) => {
             console.debug("Gap filled, end index:", gapEndIndex)
             getTimelineView().moveToPost(gapEndIndex)

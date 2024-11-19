@@ -28,8 +28,7 @@ private slots:
 
     void setFeed()
     {
-        int newTopIndex = mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
-        QCOMPARE(newTopIndex, -1);
+        mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
         QCOMPARE(mPostFeedModel->rowCount(), 1);
         QVERIFY(mPostFeedModel->getLastCursor().isEmpty());
         QCOMPARE(mPostFeedModel->lastTimestamp(), TEST_DATE);
@@ -49,13 +48,11 @@ private slots:
 
     void refreshFeedWithSame()
     {
-        int newTopIndex = mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
-        QCOMPARE(newTopIndex, -1);
+        mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
         QCOMPARE(mPostFeedModel->rowCount(), 1);
 
         mNextPostId = 1;
-        newTopIndex = mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
-        QCOMPARE(newTopIndex, 0);
+        mPostFeedModel->setFeed(getFeed(1, TEST_DATE));
         QCOMPARE(mPostFeedModel->rowCount(), 1);
     }
 

@@ -52,36 +52,10 @@ bool PostFeedModel::showPostWithMissingLanguage() const
     return mUserSettings.getShowUnknownContentLanguage(mUserDid);
 }
 
-int PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
+void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    if (mFeed.empty())
-    {
-        mPrependPostCount = 0;
-        addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
-        return -1;
-    }
-
-    const QString topCid = mFeed.front().getCid();
-    setTopNCids();
     clear();
     addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
-
-    int prevTopIndex = -1;
-
-    if (!topCid.isEmpty())
-    {
-        for (int i = 0; i < (int)mFeed.size(); ++i)
-        {
-            if (topCid == mFeed[i].getCid())
-            {
-                prevTopIndex = i;
-                break;
-            }
-        }
-    }
-
-    mTopNCids.clear();
-    return prevTopIndex;
 }
 
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed)
@@ -98,16 +72,10 @@ int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     if (mFeed.empty())
     {
         setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
-        mPrependPostCount = mFeed.size();
-        qDebug() << "Prepended post count:" << mPrependPostCount;
         return 0;
     }
 
-    const size_t prevSize = mFeed.size();
     const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), 0);
-    mPrependPostCount += mFeed.size() - prevSize;
-    qDebug() << "Prepended post count:" << mPrependPostCount;
-
     return gapId;
 }
 
@@ -794,30 +762,13 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 const auto& rootCid = replyRef->mRoot.getCid();
                 const auto& parentCid = replyRef->mParent.getCid();
 
-                const int postTopNIndex = topNPostIndex(post, true);
-
-                // Do not check the timestamp of root and parent as these are set
-                // to the timestamp of the post itself and not the timestamp that they
-                // may have had before.
-                const int rootTopNIndex = topNPostIndex(replyRef->mRoot, false);
-                const int parentTopNIndex = topNPostIndex(replyRef->mParent, false);
-                const bool allOutSideTopN = postTopNIndex == -1 && rootTopNIndex == -1 && parentTopNIndex == -1;
-                const bool allInTopN = postTopNIndex >=0 && rootTopNIndex >= 0 && parentTopNIndex >= 0;
-
                 if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid) &&
                     !mustHideContent(replyRef->mRoot))
                 {
-                    // Do not allow reordering (replies/parent/root) for the top-N posts.
-                    // These were visible to the user before refreshing the timeline.
-                    // Changing the order of these posts is annoying to the user.
-
-                    if (allOutSideTopN || (allInTopN && rootTopNIndex < postTopNIndex))
-                    {
-                        preprocess(replyRef->mRoot);
-                        page->addPost(replyRef->mRoot);
-                        page->mFeed.back().setPostType(QEnums::POST_ROOT);
-                        rootAdded = true;
-                    }
+                    preprocess(replyRef->mRoot);
+                    page->addPost(replyRef->mRoot);
+                    page->mFeed.back().setPostType(QEnums::POST_ROOT);
+                    rootAdded = true;
                 }
 
                 // If the parent was seen already, but the root not, then show the parent
@@ -825,23 +776,20 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 if (((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded) &&
                     !mustHideContent(replyRef->mParent))
                 {
-                    if (allOutSideTopN || (allInTopN && parentTopNIndex < postTopNIndex))
+                    preprocess(replyRef->mParent);
+                    page->addPost(replyRef->mParent, true);
+                    auto& parentPost = page->mFeed.back();
+                    parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
+
+                    // Determine author of the parent's parent
+                    if (parentPost.getReplyToCid() == rootCid)
                     {
-                        preprocess(replyRef->mParent);
-                        page->addPost(replyRef->mParent, true);
-                        auto& parentPost = page->mFeed.back();
-                        parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
-
-                        // Determine author of the parent's parent
-                        if (parentPost.getReplyToCid() == rootCid)
-                        {
-                            parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
-                            parentPost.setParentInThread(rootAdded);
-                        }
-
-                        post.setPostType(QEnums::POST_LAST_REPLY);
-                        post.setParentInThread(true);
+                        parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
+                        parentPost.setParentInThread(rootAdded);
                     }
+
+                    post.setPostType(QEnums::POST_LAST_REPLY);
+                    post.setParentInThread(true);
                 }
             }
             else if (post.isReply() && !post.isRepost())
@@ -1027,60 +975,6 @@ void PostFeedModel::logIndices() const
     qDebug() << "GAP INDEX MAP:";
     for (const auto& [gapId, index] : mGapIdIndexMap)
         qDebug() << "Gap:" << gapId << "Index:" << index;
-}
-
-void PostFeedModel::setTopNCids()
-{
-    mTopNCids.clear();
-
-    for (int i = 0; i < std::min({10, (int)mFeed.size(), (int)mPrependPostCount}); ++i)
-    {
-        const auto& post = mFeed[i];
-        const QString& cid = post.getCid();
-
-        if (!cid.isEmpty())
-        {
-            const auto repostedBy = post.getRepostedBy();
-            const QString didRepostedBy = repostedBy ? repostedBy->getDid() : QString();
-            mTopNCids.push_back(CidTimestamp{
-                                             cid,
-                                             post.getTimelineTimestamp(),
-                                             didRepostedBy,
-                                             post.getPostType() });
-        }
-    }
-}
-
-int PostFeedModel::topNPostIndex(const Post& post, bool checkTimestamp) const
-{
-    if (mTopNCids.empty())
-        return -1;
-
-    if (checkTimestamp)
-    {
-        const auto timestamp = post.getTimelineTimestamp();
-
-        if (timestamp > mTopNCids.front().mTimestamp)
-            return -1;
-
-        if (timestamp < mTopNCids.back().mTimestamp)
-            return -1;
-    }
-
-    for (int i = 0; i < (int)mTopNCids.size(); ++i)
-    {
-        const auto& topNPost = mTopNCids[i];
-        const auto repostedBy = post.getRepostedBy();
-        const QString didRepostedBy = repostedBy ? repostedBy->getDid() : QString();
-
-        if (topNPost.mCid == post.getCid() && topNPost.mRepostedByDid == didRepostedBy)
-            return i;
-    }
-
-    if (checkTimestamp)
-        qDebug() << "Post is in top-N time interval, but not present:" << post.getCid() << post.isReply() << post.getText();
-
-    return -1;
 }
 
 }

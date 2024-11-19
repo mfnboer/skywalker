@@ -52,9 +52,7 @@ public:
     LanguageList getFilterdLanguages() const;
     bool showPostWithMissingLanguage() const;
 
-    // Return the new index of the current top post.
-    // If the feed was empty then -1 is returned.
-    int setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
+    void setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
 
     // Returns gap id if prepending created a gap in the feed.
@@ -139,8 +137,6 @@ private:
 
     void addToIndices(size_t offset, size_t startAtIndex);
     void logIndices() const;
-    void setTopNCids();
-    int topNPostIndex(const Post& post, bool checkTimestamp) const;
 
     const ATProto::UserPreferences& mUserPreferences;
     const UserSettings& mUserSettings;
@@ -152,12 +148,6 @@ private:
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;
-
-    // The top N cids from the posts in the feed before last clear.
-    std::vector<CidTimestamp> mTopNCids;
-
-    // Number of posts that have been prepended to the feed since the last clear.
-    size_t mPrependPostCount = 0;
 
     int mLastInsertedRowIndex = -1;
     QString mFeedName;

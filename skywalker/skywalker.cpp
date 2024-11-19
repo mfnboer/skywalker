@@ -860,13 +860,11 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     mBsky->getTimeline(limit, Utils::makeOptionalString(cursor),
        [this, maxPages, minEntries, cursor](auto feed){
             setGetTimelineInProgress(false);
-            int topPostIndex = -1;
             int addedPosts = 0;
 
             if (cursor.isEmpty())
             {
-                mTimelineModel.clear(); // TODO: added for now, see TODO on topPostIndex below
-                topPostIndex = mTimelineModel.setFeed(std::move(feed));
+                mTimelineModel.setFeed(std::move(feed));
                 addedPosts = mTimelineModel.rowCount();
             }
             else
@@ -880,12 +878,6 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
 
             if (postsToAdd > 0)
                 getTimelineNextPage(maxPages - 1, postsToAdd);
-
-            // TODO: Trying to keep the current top while re-ordering the timeline
-            // did not work very well. We now just preprend on refresh. If that is
-            // good enough, the remove the topPostIndex code.
-            if (topPostIndex >= 0)
-                emit timelineRefreshed(topPostIndex);
        },
        [this](const QString& error, const QString& msg){
             qInfo() << "getTimeline FAILED:" << error << " - " << msg;
