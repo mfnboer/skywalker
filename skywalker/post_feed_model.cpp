@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
-#include "filtered_post_feed_model.h"
 #include "user_settings.h"
 #include <algorithm>
 
@@ -263,30 +262,6 @@ void PostFeedModel::addPage(Page::Ptr page)
     logIndices();
 }
 
-void PostFeedModel::prependPage(Page::Ptr page)
-{
-    if (!page->mFeed.empty())
-    {
-        beginInsertRows({}, 0, page->mFeed.size() - 1);
-        insertPage(mFeed.begin(), *page, page->mFeed.size());
-        endInsertRows();
-
-        qDebug() << "New feed size:" << mFeed.size();
-    }
-    else
-    {
-        qDebug() << "All posts have been filtered from page";
-        return;
-    }
-
-    if (!page->mCursorNextPage.isEmpty())
-    {
-        mIndexCursorMap[page->mFeed.size() - 1] = page->mCursorNextPage;
-    }
-
-    logIndices();
-}
-
 void PostFeedModel::removeTailPosts(int size)
 {
     if (size <= 0 || size >= (int)mFeed.size())
@@ -451,19 +426,20 @@ void PostFeedModel::unfoldPosts(int startIndex)
     changeData({ int(Role::PostFoldedType) });
 }
 
-PostFeedModel* PostFeedModel::addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName)
+FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName)
 {
     qDebug() << "Add filtered post feed model:" << feedName;
-    auto model = std::make_unique<FilteredPostFeedModel>(postFilter, feedName, mUserDid, mFollowing,
+    auto model = std::make_unique<FilteredPostFeedModel>(postFilter, mUserDid, mFollowing,
             mMutedReposts, mContentFilter, mBookmarks, mMutedWords, mFocusHashtags, mHashtags,
-            mUserPreferences, mUserSettings, this);
+            this);
 
+    model->setPosts(mFeed, "TODO");
     auto* retval = model.get();
     mFilteredPostFeedModels.push_back(std::move(model));
     return retval;
 }
 
-void PostFeedModel::deleteFilteredPostFeedModel(PostFeedModel* postFeedModel)
+void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
 {
     for (auto it = mFilteredPostFeedModels.begin(); it != mFilteredPostFeedModels.end(); ++it)
     {

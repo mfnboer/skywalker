@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "filtered_post_feed_model.h"
 #include "generator_view.h"
 #include "post_filter.h"
 #include <atproto/lib/user_preferences.h>
@@ -85,14 +86,14 @@ public:
 
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
-    PostFeedModel* addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName);
-    void deleteFilteredPostFeedModel(PostFeedModel* postFeedModel);
+    FilteredPostFeedModel* addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName);
+    void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
 
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
 
-protected:
+private:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
@@ -114,9 +115,7 @@ protected:
 
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void addPage(Page::Ptr page);
-    void prependPage(Page::Ptr page);
 
-private:
     virtual bool mustHideContent(const Post& post) const override;
     bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
@@ -153,7 +152,7 @@ private:
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
 
-    std::vector<std::unique_ptr<PostFeedModel>> mFilteredPostFeedModels;
+    std::vector<std::unique_ptr<FilteredPostFeedModel>> mFilteredPostFeedModels;
 };
 
 }
