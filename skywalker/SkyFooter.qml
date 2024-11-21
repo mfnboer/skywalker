@@ -124,10 +124,10 @@ Rectangle {
         if (!homeActive)
             return qsTr("show feed")
 
-        if (unreadPosts === 0)
+        if (timeline.unreadPosts === 0)
             return qsTr("You are at the top of your time line")
 
-        if (unreadPosts === 1)
+        if (timeline.unreadPosts === 1)
             return qsTr("1 post from the top of your time line")
 
         return qsTr(`${timeline.unreadPosts} posts from top of your timeline, press to go to top`)

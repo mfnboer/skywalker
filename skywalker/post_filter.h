@@ -9,6 +9,8 @@ namespace Skywalker {
 class IPostFilter
 {
 public:
+    using Ptr = std::unique_ptr<IPostFilter>;
+
     virtual ~IPostFilter() = default;
     virtual QString getName() const = 0;
     virtual bool match(const Post& post) const = 0;
@@ -17,6 +19,8 @@ public:
 class FocusHashtagsPostFilter : public IPostFilter
 {
 public:
+    using Ptr = std::unique_ptr<FocusHashtagsPostFilter>;
+
     explicit FocusHashtagsPostFilter(const FocusHashtagEntry& focusHashtaghEntry);
     QString getName() const override;
     bool match(const Post& post) const override;
@@ -28,6 +32,8 @@ private:
 class AuthorPostFilter : public IPostFilter
 {
 public:
+    using Ptr = std::unique_ptr<AuthorPostFilter>;
+
     AuthorPostFilter(const QString& did, const QString& handle);
     QString getName() const override;
     bool match(const Post& post) const override;

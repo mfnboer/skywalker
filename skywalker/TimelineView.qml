@@ -5,35 +5,28 @@ import skywalker
 SkyListView {
     required property var skywalker
     property bool inSync: false
+    property bool isView: false
     property int unreadPosts: 0
     property var anchorItem // item used to calibrate list position on insert of new posts
     property int calibrationDy: 0
+    property bool viewPositionSynced: false
 
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
 
-    Accessible.name: qsTr("Following")
+    Accessible.name: model ? model.feedName : ""
 
-    header: PostFeedHeader {
-        skywalker: timelineView.skywalker
-        feedName: qsTr("Following")
-        showAsHome: true
-        isHomeFeed: true
+    // TODO: create footer in onCompleted
+    footer: AccessibleText {
+        width: timelineView.width
+        horizontalAlignment: Text.AlignHCenter
+        topPadding: 10
+        bottomPadding: 10
+        elide: Text.ElideRight
+        font.italic: true
+        text: (isView && model) ? qsTr(`No more posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`) : ""
     }
-    headerPositioning: ListView.OverlayHeader
-
-    footer: SkyFooter {
-        timeline: timelineView
-        skywalker: timelineView.skywalker
-        homeActive: true
-        onHomeClicked: moveToHome()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
-    }
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         required property int index
@@ -49,8 +42,15 @@ SkyListView {
     }
 
     onCountChanged: {
+        console.debug((model ? model.feedName : "no feed yet"), count)
+
         if (!inSync)
             return
+
+        if (isView && !viewPositionSynced) {
+            moveToEnd()
+            viewPositionSynced = true
+        }
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
@@ -59,7 +59,9 @@ SkyListView {
         console.debug("Calibration, count changed:", count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
 
         // Adding/removing content changes the indices.
-        skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        if (!isView)
+            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+
         updateUnreadPosts(firstVisibleIndex)
     }
 
@@ -69,7 +71,10 @@ SkyListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
-        skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+
+        if (!isView)
+            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+
         setAnchorItem(lastVisibleIndex + 1)
         updateUnreadPosts(firstVisibleIndex)
     }
@@ -87,7 +92,7 @@ SkyListView {
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.noPosts
-        text: qsTr("No posts, follow more people")
+        text: timelineView.isView ? qsTr("No posts") : qsTr("No posts, follow more people")
         list: timelineView
     }
 
@@ -142,6 +147,11 @@ SkyListView {
         updateUnreadPosts(0)
     }
 
+    function moveToEnd() {
+        console.debug("Move to end:", count - 1)
+        moveToPost(count - 1)
+    }
+
     function calibrateUnreadPosts() {
         const firstVisibleIndex = getFirstVisibleIndex()
         updateUnreadPosts(firstVisibleIndex)
@@ -162,7 +172,9 @@ SkyListView {
     }
 
     function setInSync(index) {
-        moveToPost(index)
+        if (index >= 0)
+            moveToPost(index)
+
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
@@ -172,5 +184,10 @@ SkyListView {
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+    }
+
+    Component.onCompleted: {
+        if (!isView)
+            footer = null
     }
 }

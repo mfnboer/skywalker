@@ -86,8 +86,9 @@ public:
 
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
-    FilteredPostFeedModel* addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName);
-    void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
+    bool hasFilters() const { return !mFilteredPostFeedModels.empty(); }
+    Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const QString& did, const QString& handle);
+    Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
 
 signals:
     void languageFilterConfiguredChanged();
@@ -97,7 +98,7 @@ private:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
-        std::vector<Post> mFeed;
+        TimelineFeed mFeed;
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
@@ -113,8 +114,15 @@ private:
         void foldPosts(int startIndex, int endIndex);
     };
 
-    void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
+    void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId = 0);
     void addPage(Page::Ptr page);
+    void addPageToFilteredPostModel(const Page& page, int pageSize);
+    void prependPageToFilteredPostModel(const Page& page, int pageSize);
+    void gapFillFilteredPostModel(const Page& page, int gapId);
+    void removeHeadFromFilteredPostModel(size_t headSize);
+    void removeTailFromFilteredPostModel(size_t tailSize);
+
+    FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
 
     virtual bool mustHideContent(const Post& post) const override;
     bool passLanguageFilter(const Post& post) const;
@@ -124,7 +132,7 @@ private:
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
 
     // Returns gap id if insertion created a gap in the feed.
-    int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex);
+    int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
 
     // Returns an index in the page feed
     std::optional<size_t> findOverlapStart(const Page& page, size_t feedIndex) const;
@@ -132,7 +140,7 @@ private:
     // Return an index in mFeed
     std::optional<size_t> findOverlapEnd(const Page& page, size_t feedIndex) const;
 
-    void addToIndices(size_t offset, size_t startAtIndex);
+    void addToIndices(int offset, size_t startAtIndex);
     void logIndices() const;
 
     const ATProto::UserPreferences& mUserPreferences;
@@ -152,7 +160,7 @@ private:
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
 
-    std::vector<std::unique_ptr<FilteredPostFeedModel>> mFilteredPostFeedModels;
+    std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
 };
 
 }

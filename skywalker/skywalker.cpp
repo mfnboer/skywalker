@@ -58,7 +58,7 @@ Skywalker::Skywalker(QObject* parent) :
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                    mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, this)
 {
@@ -830,6 +830,10 @@ void Skywalker::finishTimelineSync(int index)
     JNICallbackListener::handlePendingIntent();
 
     checkAnniversary();
+
+    // TODO TEST
+    mTestTimelineViewModel = mTimelineModel.addAuthorFilter("did:plc:qvozofw44d4ick44g3nmzoc4", "henkbulder.nl");
+    emit testTimelineViewModelChanged();
 }
 
 void Skywalker::finishTimelineSyncFailed()
@@ -1374,8 +1378,10 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
             saveSyncTimestamp(lastVisibleIndex);
     }
 
-    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_DELETE_SIZE)
-        mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - lastVisibleIndex - TIMELINE_DELETE_SIZE);
+    const int maxTailSize = mTimelineModel.hasFilters() ? PostFeedModel::MAX_TIMELINE_SIZE * 0.6 : TIMELINE_DELETE_SIZE * 2;
+
+    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > maxTailSize)
+        mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - lastVisibleIndex - (maxTailSize - TIMELINE_DELETE_SIZE));
 
     if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && !mGetTimelineInProgress)
         getTimelineNextPage();

@@ -74,7 +74,7 @@ ListView {
     }
 
     function getFirstVisibleIndex() {
-        let firstVisibleIndex = indexAt(0, contentY + headerItem.height)
+        let firstVisibleIndex = indexAt(0, contentY + (headerItem ? headerItem.height : 0))
 
         if (firstVisibleIndex < 0 && count > 0)
             return 0

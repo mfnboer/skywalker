@@ -92,7 +92,7 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     const int gapIndex = mGapIdIndexMap[gapId];
     mGapIdIndexMap.erase(gapId);
 
-    if (gapIndex > (int)mFeed.size())
+    if (gapIndex > (int)mFeed.size() - 1)
     {
         qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
         return 0;
@@ -109,11 +109,18 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     qDebug() << "Removed place holder post:" << gapIndex;
     logIndices();
 
-    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex);
+    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex, gapId);
 }
 
-void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
+void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId)
 {
+    if (fillGapId > 0)
+        gapFillFilteredPostModel(page, fillGapId);
+    if (feedInsertIt == mFeed.begin())
+        prependPageToFilteredPostModel(page, pageSize);
+    else if (feedInsertIt == mFeed.end())
+        addPageToFilteredPostModel(page, pageSize);
+
     mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
 
     for (const auto& post : page.mFeed)
@@ -126,7 +133,47 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
     cleanupStoredCids();
 }
 
-int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex)
+void PostFeedModel::addPageToFilteredPostModel(const Page& page, int pageSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        model->addPosts(page.mFeed, pageSize);
+    }
+}
+
+void PostFeedModel::prependPageToFilteredPostModel(const Page& page, int pageSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        model->prependPosts(page.mFeed, pageSize);
+    }
+}
+
+void PostFeedModel::gapFillFilteredPostModel(const Page& page, int gapId)
+{
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        model->gapFill(page.mFeed, gapId);
+    }
+}
+
+void PostFeedModel::removeHeadFromFilteredPostModel(size_t headSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        model->removeHeadPosts(mFeed, headSize);
+    }
+}
+
+void PostFeedModel::removeTailFromFilteredPostModel(size_t tailSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        model->removeTailPosts(mFeed, tailSize);
+    }
+}
+
+int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
 {
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
@@ -151,7 +198,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
 
         beginInsertRows({}, insertIndex, lastInsertIndex);
-        insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size());
+        insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size(), fillGapId);
         addToIndices(page->mFeed.size(), insertIndex);
 
         size_t indexOffset = 0;
@@ -285,8 +332,11 @@ void PostFeedModel::removeTailPosts(int size)
         return;
     }
 
+    const size_t removeCount = mFeed.size() - removeIndex;
+    removeTailFromFilteredPostModel(removeCount);
+
     beginRemoveRows({}, removeIndex, mFeed.size() - 1);
-    removePosts(removeIndex, mFeed.size() - removeIndex);
+    removePosts(removeIndex, removeCount);
     mIndexCursorMap.erase(std::next(removeIndexCursorIt), mIndexCursorMap.end());
 
     for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
@@ -321,7 +371,8 @@ void PostFeedModel::removeHeadPosts(int size)
     }
 
     const auto removeEndIndexCursorIt = mIndexCursorMap.upper_bound(removeEndIndex);
-    const size_t removeSize = removeEndIndex + 1;
+    const int removeSize = removeEndIndex + 1;
+    removeHeadFromFilteredPostModel(removeSize);
 
     beginRemoveRows({}, 0, removeEndIndex);
     removePosts(0, removeSize);
@@ -426,14 +477,21 @@ void PostFeedModel::unfoldPosts(int startIndex)
     changeData({ int(Role::PostFoldedType) });
 }
 
-FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(const IPostFilter& postFilter, const QString& feedName)
+Q_INVOKABLE FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const QString& did, const QString& handle)
 {
-    qDebug() << "Add filtered post feed model:" << feedName;
-    auto model = std::make_unique<FilteredPostFeedModel>(postFilter, mUserDid, mFollowing,
-            mMutedReposts, mContentFilter, mBookmarks, mMutedWords, mFocusHashtags, mHashtags,
-            this);
+    auto apf = std::make_unique<AuthorPostFilter>(did, handle);
+    return addFilteredPostFeedModel(std::move(apf));
+}
 
-    model->setPosts(mFeed, "TODO");
+FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)
+{
+    Q_ASSERT(postFilter);
+    qDebug() << "Add filtered post feed model:" << postFilter->getName();
+    auto model = std::make_unique<FilteredPostFeedModel>(
+            std::move(postFilter), mUserDid, mFollowing, mMutedReposts, mContentFilter,
+            mBookmarks, mMutedWords, mFocusHashtags, mHashtags, this);
+
+    model->setPosts(mFeed, mFeed.size());
     auto* retval = model.get();
     mFilteredPostFeedModels.push_back(std::move(model));
     return retval;
@@ -975,7 +1033,7 @@ std::optional<size_t> PostFeedModel::findOverlapEnd(const Page& page, size_t fee
     return {};
 }
 
-void PostFeedModel::addToIndices(size_t offset, size_t startAtIndex)
+void PostFeedModel::addToIndices(int offset, size_t startAtIndex)
 {
     std::map<size_t, QString> newCursorMap;
     for (const auto& [index, cursor] : mIndexCursorMap)

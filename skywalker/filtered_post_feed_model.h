@@ -8,8 +8,14 @@ namespace Skywalker {
 
 class FilteredPostFeedModel : public AbstractPostFeedModel
 {
+    Q_OBJECT
+    Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QDateTime checkedTillTimestamp READ getCheckedTillTimestamp NOTIFY checkedTillTimestampChanged FINAL)
+
 public:
-    explicit FilteredPostFeedModel(const IPostFilter& postFilter,
+    using Ptr = std::unique_ptr<FilteredPostFeedModel>;
+
+    explicit FilteredPostFeedModel(IPostFilter::Ptr postFilter,
                                    const QString& userDid, const IProfileStore& following,
                                    const IProfileStore& mutedReposts,
                                    const IContentFilter& contentFilter,
@@ -19,30 +25,44 @@ public:
                                    HashtagIndex& hashtags,
                                    QObject* parent = nullptr);
 
-    QString getFeedName() const { return mPostFilter.getName(); }
+    QString getFeedName() const { return mPostFilter->getName(); }
 
     void clear();
-    void setPosts(const TimelineFeed& posts, const QString& cursor);
-    void addPosts(const TimelineFeed& posts, const QString& cursor);
-    void prependPosts(const TimelineFeed& posts, const QString& cursor);
+    void setPosts(const TimelineFeed& posts, size_t numPosts);
+    void addPosts(const TimelineFeed& posts, size_t numPosts);
+    void prependPosts(const TimelineFeed& posts, size_t numPosts);
+    void gapFill(const TimelineFeed& posts, int gapId);
+    void removeHeadPosts(const TimelineFeed& posts, size_t numPosts);
+    void removeTailPosts(const TimelineFeed& posts, size_t numPosts);
+    void setCheckedTillTimestamp(QDateTime timestamp);
+    QDateTime getCheckedTillTimestamp() const { return mCheckedTillTimestamp; }
+
+signals:
+    void checkedTillTimestampChanged();
 
 private:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
         std::vector<const Post*> mFeed;
-        QString mCursorNextPage;
+        std::unordered_map<int, size_t> mGapIdIndexMap;
 
         void addPost(const Post* post);
-        int addThread(const TimelineFeed& posts, int matchedPostIndex);
+        int addThread(const TimelineFeed& posts, int startIndex, size_t numPosts, int matchedPostIndex);
     };
 
-    Page::Ptr createPage(const TimelineFeed& posts, const QString& cursor);
+    Page::Ptr createPage(const TimelineFeed& posts, int startIndex, size_t numPosts);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page);
     void addPage(Page::Ptr page);
     void prependPage(Page::Ptr page);
+    void removePosts(size_t startIndex, size_t count);
+    void addToIndices(int offset, size_t startAtIndex);
 
-    const IPostFilter& mPostFilter;
+    IPostFilter::Ptr mPostFilter;
+    QDateTime mCheckedTillTimestamp{QDateTime::currentDateTimeUtc()};
+
+    // Index of each gap
+    std::unordered_map<int, size_t> mGapIdIndexMap;
 };
 
 }

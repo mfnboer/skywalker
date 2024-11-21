@@ -34,7 +34,16 @@ QString FocusHashtagsPostFilter::getName() const
 
 bool FocusHashtagsPostFilter::match(const Post& post) const
 {
+    if (post.isPlaceHolder())
+        return false;
+
     return mFocusHashtags.match(post);
+}
+
+AuthorPostFilter::AuthorPostFilter(const QString& did, const QString& handle) :
+    mDid(did),
+    mHandle(handle)
+{
 }
 
 QString AuthorPostFilter::getName() const
@@ -44,6 +53,9 @@ QString AuthorPostFilter::getName() const
 
 bool AuthorPostFilter::match(const Post& post) const
 {
+    if (post.isPlaceHolder())
+        return false;
+
     return post.getAuthor().getDid() == mDid;
 }
 

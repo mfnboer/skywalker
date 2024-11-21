@@ -44,6 +44,7 @@ class Skywalker : public QObject
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
+    Q_PROPERTY(const FilteredPostFeedModel* testTimelineViewModel READ getTestTimelineViewModel NOTIFY testTimelineViewModelChanged FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
@@ -197,6 +198,7 @@ public:
     void makeLocalModelChange(const std::function<void(LocalListModelChanges*)>& update);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
+    const FilteredPostFeedModel* getTestTimelineViewModel() const { return mTestTimelineViewModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
     Chat* getChat();
     Bookmarks* getBookmarks() { return &mBookmarks; }
@@ -277,6 +279,7 @@ signals:
     void bskyClientDeleted();
     void anniversary();
     void oldestUnreadNotificationIndex(int index);
+    void testTimelineViewModelChanged();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
@@ -385,6 +388,7 @@ private:
     Anniversary mAnniversary;
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;
+    FilteredPostFeedModel* mTestTimelineViewModel = nullptr;
     bool mTimelineSynced = false;
     bool mDebugLogging = false;
 };

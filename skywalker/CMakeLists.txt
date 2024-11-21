@@ -431,6 +431,7 @@ qt_add_qml_module(libskywalker
         SOURCES post_filter.cpp
         SOURCES filtered_post_feed_model.h
         SOURCES filtered_post_feed_model.cpp
+        QML_FILES TimelinePage.qml
 )
 
 if (NOT ANDROID)
