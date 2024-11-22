@@ -89,6 +89,7 @@ public:
 
     bool hasFilters() const { return !mFilteredPostFeedModels.empty(); }
     Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const QString& did, const QString& handle);
+    Q_INVOKABLE FilteredPostFeedModel* addFocusHashtagFilter(FocusHashtagEntry* focusHashtag);
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
 

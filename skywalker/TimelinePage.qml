@@ -26,6 +26,7 @@ SkyPage {
         showMoreOptions: true
 
         onAddUserView: page.addUserView()
+        onAddFocusHashtagView: page.addFocusHashtagView()
     }
 
     footer: SkyFooter {
@@ -43,9 +44,11 @@ SkyPage {
         id: viewBar
         z: guiSettings.headerZLevel
         width: parent.width
+        height: visible ? implicitHeight : 0
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
+        visible: count > 1
 
         AccessibleTabButton {
             id: tabTimeline
@@ -68,8 +71,9 @@ SkyPage {
         z: guiSettings.headerZLevel
         anchors.top: viewBar.bottom
         width: parent.width
-        height: 1
+        height: visible ? 1 : 0
         color: guiSettings.separatorColor
+        visible: viewBar.visible
     }
 
     StackLayout {
@@ -133,9 +137,25 @@ SkyPage {
         pushStack(addViewPage)
     }
 
+    function addFocusHashtagView() {
+        let component = Qt.createComponent("AddFocusHashtagTimelineView.qml")
+        let addViewPage = component.createObject(page, { skywalker: skywalker })
+        addViewPage.onSelected.connect((focusHashtagEntry) => { // qmllint disable missing-property
+                page.showFocusHashtagView(focusHashtagEntry)
+                root.popStack()
+        })
+        addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
+        pushStack(addViewPage)
+    }
+
     function showUserView(profile) {
-        let authorPostFilterModel = skywalker.timelineModel.addAuthorFilter(profile.did, profile.handle)
-        viewStack.addTimelineView(authorPostFilterModel)
+        let postFilterModel = skywalker.timelineModel.addAuthorFilter(profile.did, profile.handle)
+        viewStack.addTimelineView(postFilterModel)
+    }
+
+    function showFocusHashtagView(focusHashtagEntry) {
+        let postFilterModel = skywalker.timelineModel.addFocusHashtagFilter(focusHashtagEntry)
+        viewStack.addTimelineView(postFilterModel)
     }
 
     function closeView(tab) {

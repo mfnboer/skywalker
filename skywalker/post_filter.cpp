@@ -29,7 +29,7 @@ QString FocusHashtagsPostFilter::getName() const
         return "no hashtag";
     }
 
-    return hashtags[0];
+    return "#" + hashtags[0];
 }
 
 bool FocusHashtagsPostFilter::match(const Post& post) const

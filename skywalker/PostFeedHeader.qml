@@ -18,6 +18,7 @@ Rectangle {
     signal closed
     signal feedAvatarClicked
     signal addUserView
+    signal addFocusHashtagView
 
     id: header
     width: parent.width
@@ -56,6 +57,7 @@ Rectangle {
             Menu {
                 id: moreMenu
                 modal: true
+                width: focusMenuItem.width // TODO
 
                 onAboutToShow: root.enablePopupShield(true)
                 onAboutToHide: root.enablePopupShield(false)
@@ -69,6 +71,13 @@ Rectangle {
                     text: qsTr("Add user view")
                     onTriggered: addUserView()
                     MenuItemSvg { svg: SvgOutline.user }
+                }
+
+                AccessibleMenuItem {
+                    id: focusMenuItem
+                    text: qsTr("Add focus hashtag view")
+                    onTriggered: addFocusHashtagView()
+                    MenuItemSvg { svg: SvgOutline.hashtag }
                 }
             }
         }

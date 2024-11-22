@@ -181,6 +181,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     if (page->mFeed.empty())
     {
         qDebug() << "Page has no posts";
+        gapFillFilteredPostModel(*page, fillGapId);
         return 0;
     }
 
@@ -230,7 +231,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     const auto overlapEnd = findOverlapEnd(*page, insertIndex);
 
     beginInsertRows({}, insertIndex, insertIndex + *overlapStart - 1);
-    insertPage(mFeed.begin() + insertIndex, *page, *overlapStart);
+    insertPage(mFeed.begin() + insertIndex, *page, *overlapStart, fillGapId);
     addToIndices(*overlapStart, insertIndex);
 
     if (!page->mCursorNextPage.isEmpty() && overlapEnd)
@@ -478,10 +479,16 @@ void PostFeedModel::unfoldPosts(int startIndex)
     changeData({ int(Role::PostFoldedType) });
 }
 
-Q_INVOKABLE FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const QString& did, const QString& handle)
+FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const QString& did, const QString& handle)
 {
-    auto apf = std::make_unique<AuthorPostFilter>(did, handle);
-    return addFilteredPostFeedModel(std::move(apf));
+    auto filter = std::make_unique<AuthorPostFilter>(did, handle);
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
+FilteredPostFeedModel* PostFeedModel::addFocusHashtagFilter(FocusHashtagEntry* focusHashtag)
+{
+    auto filter = std::make_unique<FocusHashtagsPostFilter>(*focusHashtag);
+    return addFilteredPostFeedModel(std::move(filter));
 }
 
 FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)

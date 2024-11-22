@@ -434,6 +434,7 @@ qt_add_qml_module(libskywalker
         QML_FILES TimelinePage.qml
         QML_FILES AddUserTimelineView.qml
         QML_FILES SkyTabWithCloseButton.qml
+        QML_FILES AddFocusHashtagTimelineView.qml
 )
 
 if (NOT ANDROID)
