@@ -75,6 +75,7 @@ Rectangle {
 
                 AccessibleMenuItem {
                     id: focusMenuItem
+                    width: 250
                     text: qsTr("Add focus hashtag view")
                     onTriggered: addFocusHashtagView()
                     MenuItemSvg { svg: SvgOutline.hashtag }

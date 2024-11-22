@@ -683,7 +683,6 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
 
     if (feedViewPref.mHideRepliesByUnfollowed)
     {
-        qDebug() << "MICHEL";
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.
         if (!replyRef)
