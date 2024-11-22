@@ -432,6 +432,8 @@ qt_add_qml_module(libskywalker
         SOURCES filtered_post_feed_model.h
         SOURCES filtered_post_feed_model.cpp
         QML_FILES TimelinePage.qml
+        QML_FILES AddUserTimelineView.qml
+        QML_FILES SkyTabWithCloseButton.qml
 )
 
 if (NOT ANDROID)

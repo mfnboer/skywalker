@@ -9,7 +9,6 @@ SkyListView {
     property int unreadPosts: 0
     property var anchorItem // item used to calibrate list position on insert of new posts
     property int calibrationDy: 0
-    property bool viewPositionSynced: false
 
     id: timelineView
     width: parent.width
@@ -21,11 +20,13 @@ SkyListView {
     footer: AccessibleText {
         width: timelineView.width
         horizontalAlignment: Text.AlignHCenter
-        topPadding: 10
+        topPadding: count > 0 ? 10 : emptyListIndication.height + 10
         bottomPadding: 10
         elide: Text.ElideRight
         font.italic: true
-        text: (isView && model) ? qsTr(`No more posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`) : ""
+        textFormat: Text.RichText
+        text: (isView && model) ? qsTr(`No more posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}<br><a href="load" style="color: ${guiSettings.linkColor};">Load more</a>`) : ""
+        onLinkActivated: skywalker.getTimelineNextPage()
     }
 
     delegate: PostFeedViewDelegate {
@@ -47,16 +48,11 @@ SkyListView {
         if (!inSync)
             return
 
-        if (isView && !viewPositionSynced) {
-            moveToEnd()
-            viewPositionSynced = true
-        }
-
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
 
         const index = getLastVisibleIndex()
-        console.debug("Calibration, count changed:", count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
 
         // Adding/removing content changes the indices.
         if (!isView)
@@ -90,6 +86,7 @@ SkyListView {
     }
 
     EmptyListIndication {
+        id: emptyListIndication
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.noPosts
         text: timelineView.isView ? qsTr("No posts") : qsTr("No posts, follow more people")
@@ -172,8 +169,12 @@ SkyListView {
     }
 
     function setInSync(index) {
+        console.debug("Sync:", model.feedName)
+
         if (index >= 0)
             moveToPost(index)
+        else
+            moveToEnd()
 
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)

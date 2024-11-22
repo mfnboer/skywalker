@@ -3,6 +3,7 @@
 #include "post_feed_model.h"
 #include "user_settings.h"
 #include <algorithm>
+#include <ranges>
 
 namespace Skywalker {
 
@@ -494,6 +495,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     model->setPosts(mFeed, mFeed.size());
     auto* retval = model.get();
     mFilteredPostFeedModels.push_back(std::move(model));
+    emit filteredPostFeedModelsChanged();
     return retval;
 }
 
@@ -506,11 +508,18 @@ void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedM
             qDebug() << "Delete filtered post feed model:" << (*it)->getFeedName();
             Q_ASSERT((*it)->getFeedName() == postFeedModel->getFeedName());
             mFilteredPostFeedModels.erase(it);
+            emit filteredPostFeedModelsChanged();
             return;
         }
     }
 
     qWarning() << "Could not delete filtered post feed model:" << postFeedModel->getFeedName();
+}
+
+QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const
+{
+    auto models = mFilteredPostFeedModels | std::views::transform([](auto& m){ return m.get(); });
+    return QList<FilteredPostFeedModel*>(models.begin(), models.end());
 }
 
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)

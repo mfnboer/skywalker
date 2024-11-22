@@ -830,10 +830,6 @@ void Skywalker::finishTimelineSync(int index)
     JNICallbackListener::handlePendingIntent();
 
     checkAnniversary();
-
-    // TODO TEST
-    mTestTimelineViewModel = mTimelineModel.addAuthorFilter("did:plc:qvozofw44d4ick44g3nmzoc4", "henkbulder.nl");
-    emit testTimelineViewModelChanged();
 }
 
 void Skywalker::finishTimelineSyncFailed()

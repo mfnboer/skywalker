@@ -19,7 +19,8 @@ class PostFeedModel : public AbstractPostFeedModel
     Q_PROPERTY(bool languageFilterConfigured READ isLanguageFilterConfigured NOTIFY languageFilterConfiguredChanged FINAL)
     Q_PROPERTY(bool languageFilterEnabled READ isLanguageFilterEnabled WRITE enableLanguageFilter NOTIFY languageFilterEnabledChanged FINAL)
     Q_PROPERTY(LanguageList filteredLanguages READ getFilterdLanguages NOTIFY languageFilterConfiguredChanged FINAL)
-    Q_PROPERTY(bool showPostWithMissingLanguage READ showPostWithMissingLanguage NOTIFY languageFilterConfiguredChanged)
+    Q_PROPERTY(bool showPostWithMissingLanguage READ showPostWithMissingLanguage NOTIFY languageFilterConfiguredChanged FINAL)
+    Q_PROPERTY(QList<FilteredPostFeedModel*> filteredPostFeedModels READ getFilteredPostFeedModels NOTIFY filteredPostFeedModelsChanged FINAL)
 
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
@@ -89,10 +90,12 @@ public:
     bool hasFilters() const { return !mFilteredPostFeedModels.empty(); }
     Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const QString& did, const QString& handle);
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
+    QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
 
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
+    void filteredPostFeedModelsChanged();
 
 private:
     struct Page

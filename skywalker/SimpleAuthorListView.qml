@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -45,8 +45,8 @@ ListView {
             Rectangle {
                 id: avatar
                 Layout.rowSpan: 2
-                width: 44
-                height: avatarImg.height + rowPadding + 2
+                Layout.preferredWidth: 44
+                Layout.preferredHeight: avatarImg.height + rowPadding + 2
                 Layout.fillHeight: true
                 color: "transparent"
 
@@ -106,7 +106,7 @@ ListView {
             Rectangle {
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
-                height: contentLabels.height + 5
+                Layout.preferredHeight: contentLabels.height + 5
                 color: "transparent"
 
                 ContentLabels {

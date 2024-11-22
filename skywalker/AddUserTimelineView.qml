@@ -3,33 +3,17 @@ import skywalker
 
 SkyPage {
     property var skywalker: root.getSkywalker()
-    property bool isTyping: false
 
     signal closed
-    signal selected(string did)
+    signal selected(basicprofile profile)
 
     id: page
     clip: true
 
     header: SimpleHeader {
-        text: qsTr("Start conversation")
+        text: qsTr("Add user view")
         backIsCancel: true
         onBack: closed()
-
-        Avatar {
-            anchors.right: parent.right
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            height: parent.height - 10
-            width: height
-            author: skywalker.user
-            onClicked: skywalker.showStatusMessage(qsTr("Yes, you're fabulous!"), QEnums.STATUS_LEVEL_INFO)
-            onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really fabulous!"), QEnums.STATUS_LEVEL_INFO)
-
-            Accessible.role: Accessible.Button
-            Accessible.name: qsTr("your avatar")
-            Accessible.onPressAction: clicked()
-        }
     }
 
     SkyTextInput {
@@ -40,12 +24,10 @@ SkyPage {
         inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
 
         onDisplayTextChanged: {
-            page.isTyping = true
             authorTypeaheadSearchTimer.start()
         }
 
         onEditingFinished: {
-            page.isTyping = false
             authorTypeaheadSearchTimer.stop()
         }
     }
@@ -58,15 +40,17 @@ SkyPage {
         anchors.bottom: parent.bottom
         model: searchUtils.authorTypeaheadList
 
-        onAuthorClicked: (profile) => selected(profile.did)
+        onAuthorClicked: (profile) => selected(profile)
     }
 
     AccessibleText {
-        anchors.centerIn: parent
-        width: parent.width - 60
+        x: 10
+        anchors.top: searchInput.bottom
+        topPadding: 10
+        width: parent.width - 20
         font.italic: true
         wrapMode: Text.Wrap
-        text: qsTr("Users that do not allow to be messaged are not shown in the search results.")
+        text: qsTr("A user view shows posts from a specific user from your timeline.")
         visible: typeaheadView.count === 0
     }
 
@@ -77,9 +61,9 @@ SkyPage {
             const text = searchInput.displayText
 
             if (text.length > 0)
-                searchUtils.searchAuthorsTypeahead(text, 100, true)
+                searchUtils.searchAuthorsTypeahead(text, 100)
             else
-                resetAuthorTypeaheadList()
+                searchUtils.authorTypeaheadList = []
         }
     }
 
@@ -88,13 +72,7 @@ SkyPage {
         skywalker: page.skywalker // qmllint disable missing-type
     }
 
-
-    function resetAuthorTypeaheadList() {
-        searchUtils.authorTypeaheadList = skywalker.chat.getAllConvoMembers()
-    }
-
     Component.onCompleted: {
-        resetAuthorTypeaheadList()
         searchInput.forceActiveFocus()
     }
 }
