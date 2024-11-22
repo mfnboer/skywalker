@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
+#include "definitions.h"
 #include "user_settings.h"
 #include <algorithm>
 #include <ranges>
@@ -25,6 +26,12 @@ PostFeedModel::PostFeedModel(const QString& feedName,
 {
     connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
             [this]{ emit languageFilterConfiguredChanged(); });
+}
+
+const QString& PostFeedModel::getPreferencesFeedKey() const
+{
+    static const QString HOME_KEY = HOME_FEED;
+    return mIsHomeFeed ? HOME_KEY : mFeedName;
 }
 
 bool PostFeedModel::isLanguageFilterConfigured() const
@@ -644,7 +651,7 @@ bool PostFeedModel::passLanguageFilter(const Post& post) const
 
 bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideReplies)
         return false;
@@ -676,6 +683,7 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
 
     if (feedViewPref.mHideRepliesByUnfollowed)
     {
+        qDebug() << "MICHEL";
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.
         if (!replyRef)
@@ -707,7 +715,7 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
 bool PostFeedModel::mustShowQuotePost(const Post& post) const
 {
     Q_ASSERT(post.isQuotePost());
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideQuotePosts)
         return false;
@@ -814,7 +822,7 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
     auto page = std::make_unique<Page>();
 
     for (size_t i = 0; i < feed->mFeed.size(); ++i)

@@ -63,6 +63,7 @@ Skywalker::Skywalker(QObject* parent) :
                    mUserPreferences, mUserSettings, this)
 {
     mBookmarks.setSkywalker(this);
+    mTimelineModel.setIsHomeFeed(true);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });

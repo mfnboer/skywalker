@@ -38,6 +38,8 @@ public:
                            QObject* parent = nullptr);
 
     const QString& getFeedName() const { return mFeedName; }
+    void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
+    const QString& getPreferencesFeedKey() const;
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
@@ -147,6 +149,7 @@ private:
     void addToIndices(int offset, size_t startAtIndex);
     void logIndices() const;
 
+    bool mIsHomeFeed = false;
     const ATProto::UserPreferences& mUserPreferences;
     const UserSettings& mUserSettings;
     bool mLanguageFilterEnabled = false;
