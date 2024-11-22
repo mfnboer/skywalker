@@ -48,7 +48,7 @@ AuthorPostFilter::AuthorPostFilter(const QString& did, const QString& handle) :
 
 QString AuthorPostFilter::getName() const
 {
-    return mHandle;
+    return "@" + mHandle;
 }
 
 bool AuthorPostFilter::match(const Post& post) const

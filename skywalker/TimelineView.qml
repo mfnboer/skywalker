@@ -21,8 +21,8 @@ SkyListView {
         horizontalAlignment: Text.AlignHCenter
         topPadding: count > 0 ? 10 : emptyListIndication.height + 10
         bottomPadding: 50
-        elide: Text.ElideRight
         textFormat: Text.RichText
+        wrapMode: Text.Wrap
         text: (isView && model) ? qsTr(`${timelineView.getViewFooterText()}<br><a href="load" style="color: ${guiSettings.linkColor};">Load more</a>`) : ""
         onLinkActivated: skywalker.getTimelineNextPage()
     }
