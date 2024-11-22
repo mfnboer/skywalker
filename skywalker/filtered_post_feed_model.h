@@ -11,6 +11,7 @@ class FilteredPostFeedModel : public AbstractPostFeedModel
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
     Q_PROPERTY(QDateTime checkedTillTimestamp READ getCheckedTillTimestamp NOTIFY checkedTillTimestampChanged FINAL)
+    Q_PROPERTY(int numPostsChecked READ getNumPostsChecked NOTIFY numPostsCheckedChanged FINAL)
 
 public:
     using Ptr = std::unique_ptr<FilteredPostFeedModel>;
@@ -36,9 +37,12 @@ public:
     void removeTailPosts(const TimelineFeed& posts, size_t numPosts);
     void setCheckedTillTimestamp(QDateTime timestamp);
     QDateTime getCheckedTillTimestamp() const { return mCheckedTillTimestamp; }
+    void setNumPostsChecked(int numPostsChecked);
+    int getNumPostsChecked() const { return mNumPostsChecked; }
 
 signals:
     void checkedTillTimestampChanged();
+    void numPostsCheckedChanged();
 
 private:
     struct Page
@@ -60,6 +64,7 @@ private:
 
     IPostFilter::Ptr mPostFilter;
     QDateTime mCheckedTillTimestamp{QDateTime::currentDateTimeUtc()};
+    int mNumPostsChecked = 0;
 
     // Index of each gap
     std::unordered_map<int, size_t> mGapIdIndexMap;

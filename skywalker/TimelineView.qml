@@ -16,16 +16,14 @@ SkyListView {
 
     Accessible.name: model ? model.feedName : ""
 
-    // TODO: create footer in onCompleted
     footer: AccessibleText {
         width: timelineView.width
         horizontalAlignment: Text.AlignHCenter
         topPadding: count > 0 ? 10 : emptyListIndication.height + 10
-        bottomPadding: 10
+        bottomPadding: 50
         elide: Text.ElideRight
-        font.italic: true
         textFormat: Text.RichText
-        text: (isView && model) ? qsTr(`No more posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}<br><a href="load" style="color: ${guiSettings.linkColor};">Load more</a>`) : ""
+        text: (isView && model) ? qsTr(`${timelineView.getViewFooterText()}<br><a href="load" style="color: ${guiSettings.linkColor};">Load more</a>`) : ""
         onLinkActivated: skywalker.getTimelineNextPage()
     }
 
@@ -185,6 +183,13 @@ SkyListView {
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+    }
+
+    function getViewFooterText() {
+        if (model.numPostsChecked === 0)
+            return qsTr(`No more posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+
+        return qsTr(`No more posts in ${model.numPostsChecked} timeline posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
     }
 
     Component.onCompleted: {
