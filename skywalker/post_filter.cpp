@@ -11,17 +11,27 @@ FocusHashtagsPostFilter::FocusHashtagsPostFilter(const FocusHashtagEntry& focusH
     mFocusHashtags.addEntry(newEntry);
 }
 
-QString FocusHashtagsPostFilter::getName() const
+const FocusHashtagEntry* FocusHashtagsPostFilter::getFocusHashtagEntry() const
 {
     const auto& entries = mFocusHashtags.getEntries();
 
     if (entries.empty())
     {
         qWarning() << "No entries";
-        return "unknown";
+        return nullptr;
     }
 
-    const auto& hashtags = entries[0]->getHashtags();
+    return entries[0];
+}
+
+QString FocusHashtagsPostFilter::getName() const
+{
+    const auto* entry = getFocusHashtagEntry();
+
+    if (!entry)
+        return "unknown";
+
+    const auto& hashtags = entry->getHashtags();
 
     if (hashtags.empty())
     {
@@ -29,7 +39,27 @@ QString FocusHashtagsPostFilter::getName() const
         return "no hashtag";
     }
 
-    return "#" + hashtags[0];
+    QString name;
+
+    for (const auto& tag : hashtags)
+    {
+        if (!name.isEmpty())
+            name += ' ';
+
+        name += "#" + tag;
+    }
+
+    return name;
+}
+
+QColor FocusHashtagsPostFilter::getBackgroundColor() const
+{
+    const auto* entry = getFocusHashtagEntry();
+
+    if (!entry)
+        return IPostFilter::getBackgroundColor();
+
+    return entry->getHightlightColor();
 }
 
 bool FocusHashtagsPostFilter::match(const Post& post) const
@@ -40,15 +70,19 @@ bool FocusHashtagsPostFilter::match(const Post& post) const
     return mFocusHashtags.match(post);
 }
 
-AuthorPostFilter::AuthorPostFilter(const QString& did, const QString& handle) :
-    mDid(did),
-    mHandle(handle)
+AuthorPostFilter::AuthorPostFilter(const BasicProfile& profile) :
+    mProfile(profile)
 {
 }
 
 QString AuthorPostFilter::getName() const
 {
-    return "@" + mHandle;
+    return "@" + mProfile.getHandle();
+}
+
+BasicProfile AuthorPostFilter::getAuthor() const
+{
+    return mProfile;
 }
 
 bool AuthorPostFilter::match(const Post& post) const
@@ -56,7 +90,7 @@ bool AuthorPostFilter::match(const Post& post) const
     if (post.isPlaceHolder())
         return false;
 
-    return post.getAuthor().getDid() == mDid;
+    return post.getAuthor().getDid() == mProfile.getDid();
 }
 
 }

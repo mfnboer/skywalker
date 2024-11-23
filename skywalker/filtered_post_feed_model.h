@@ -10,6 +10,8 @@ class FilteredPostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QColor backgroundColor READ getBackgroundColor CONSTANT FINAL)
+    Q_PROPERTY(BasicProfile profile READ getProfile CONSTANT FINAL)
     Q_PROPERTY(QDateTime checkedTillTimestamp READ getCheckedTillTimestamp NOTIFY checkedTillTimestampChanged FINAL)
     Q_PROPERTY(int numPostsChecked READ getNumPostsChecked NOTIFY numPostsCheckedChanged FINAL)
 
@@ -27,6 +29,8 @@ public:
                                    QObject* parent = nullptr);
 
     QString getFeedName() const { return mPostFilter->getName(); }
+    QColor getBackgroundColor() const { return mPostFilter->getBackgroundColor(); }
+    BasicProfile getProfile() const { return mPostFilter->getAuthor(); }
 
     void clear();
     void setPosts(const TimelineFeed& posts, size_t numPosts);

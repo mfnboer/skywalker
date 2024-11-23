@@ -6,7 +6,7 @@ import skywalker
 
 SkyPage {
     required property var skywalker
-    property int unreadPosts: viewStack.children[viewStack.currentIndex].unreadPosts
+    property int unreadPosts: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex].unreadPosts : 0
     property int margin: 10
 
     id: page
@@ -64,9 +64,12 @@ SkyPage {
             }
         }
 
-        function addTab(name) {
+        function addTab(name, backgroundColor, profile) {
             let component = Qt.createComponent("SkyTabWithCloseButton.qml")
-            let tab = component.createObject(viewBar, { text: name })
+            let tab = component.createObject(viewBar, {
+                                                 text: name,
+                                                 backgroundColor: backgroundColor,
+                                                 profile: profile })
             tab.onClosed.connect(() => page.closeView(tab))
             addItem(tab)
             setCurrentIndex(count - 1)
@@ -123,7 +126,9 @@ SkyPage {
         }
 
         function addTimelineView(filteredPostFeedModel) {
-            viewBar.addTab(filteredPostFeedModel.feedName)
+            viewBar.addTab(filteredPostFeedModel.feedName,
+                           filteredPostFeedModel.backgroundColor,
+                           filteredPostFeedModel.profile)
             children[count - 1].setInSync(-1)
         }
     }
@@ -167,7 +172,7 @@ SkyPage {
     }
 
     function showUserView(profile) {
-        let postFilterModel = skywalker.timelineModel.addAuthorFilter(profile.did, profile.handle)
+        let postFilterModel = skywalker.timelineModel.addAuthorFilter(profile)
         viewStack.addTimelineView(postFilterModel)
     }
 

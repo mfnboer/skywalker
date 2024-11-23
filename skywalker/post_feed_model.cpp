@@ -489,9 +489,9 @@ void PostFeedModel::unfoldPosts(int startIndex)
     changeData({ int(Role::PostFoldedType) });
 }
 
-FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const QString& did, const QString& handle)
+FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profile)
 {
-    auto filter = std::make_unique<AuthorPostFilter>(did, handle);
+    auto filter = std::make_unique<AuthorPostFilter>(profile);
     return addFilteredPostFeedModel(std::move(filter));
 }
 

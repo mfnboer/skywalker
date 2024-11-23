@@ -4,6 +4,8 @@ import QtQuick.Controls.Material
 import skywalker
 
 TabButton {
+    property color backgroundColor: "transparent"
+    property basicprofile profile
     property bool showDot: false
 
     signal closed
@@ -16,8 +18,24 @@ TabButton {
     contentItem: Row {
         id: tabRow
 
-        Text {
+        Avatar {
             anchors.verticalCenter: parent.verticalCenter
+            width: 24
+            author: profile
+            visible: !profile.isNull()
+        }
+
+        Rectangle {
+            width: 5
+            height: 30
+            color: "transparent"
+            visible: !profile.isNull()
+        }
+
+        Text {
+            width: Math.min(implicitWidth, 150)
+            anchors.verticalCenter: parent.verticalCenter
+            elide: Text.ElideRight
             font: button.font
             color: button.checked ? guiSettings.accentColor : guiSettings.textColor
             text: button.text
@@ -39,5 +57,12 @@ TabButton {
     SkyDot {
         anchors.rightMargin: 22
         visible: showDot
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        z: contentItem.z - 1
+        color: parent.backgroundColor
+        opacity: guiSettings.focusHighlightOpacity
     }
 }
