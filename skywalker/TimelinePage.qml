@@ -26,6 +26,7 @@ SkyPage {
         showMoreOptions: true
 
         onAddUserView: page.addUserView()
+        onAddHashtagView: page.addHashtagView()
         onAddFocusHashtagView: page.addFocusHashtagView()
     }
 
@@ -160,6 +161,17 @@ SkyPage {
         pushStack(addViewPage)
     }
 
+    function addHashtagView() {
+        let component = Qt.createComponent("AddHashtagTimelineView.qml")
+        let addViewPage = component.createObject(page, { skywalker: skywalker })
+        addViewPage.onSelected.connect((hashtag) => { // qmllint disable missing-property
+                page.showHashtagView(hashtag)
+                root.popStack()
+        })
+        addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
+        pushStack(addViewPage)
+    }
+
     function addFocusHashtagView() {
         let component = Qt.createComponent("AddFocusHashtagTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })
@@ -173,6 +185,11 @@ SkyPage {
 
     function showUserView(profile) {
         let postFilterModel = skywalker.timelineModel.addAuthorFilter(profile)
+        viewStack.addTimelineView(postFilterModel)
+    }
+
+    function showHashtagView(hashtag) {
+        let postFilterModel = skywalker.timelineModel.addHashtagFilter(hashtag)
         viewStack.addTimelineView(postFilterModel)
     }
 

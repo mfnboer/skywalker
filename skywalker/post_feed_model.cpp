@@ -495,6 +495,12 @@ FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profil
     return addFilteredPostFeedModel(std::move(filter));
 }
 
+Q_INVOKABLE FilteredPostFeedModel* PostFeedModel::addHashtagFilter(const QString& hashtag)
+{
+    auto filter = std::make_unique<HashtagPostFilter>(hashtag);
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
 FilteredPostFeedModel* PostFeedModel::addFocusHashtagFilter(FocusHashtagEntry* focusHashtag)
 {
     auto filter = std::make_unique<FocusHashtagsPostFilter>(*focusHashtag);

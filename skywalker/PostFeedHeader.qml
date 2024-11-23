@@ -18,6 +18,7 @@ Rectangle {
     signal closed
     signal feedAvatarClicked
     signal addUserView
+    signal addHashtagView
     signal addFocusHashtagView
 
     id: header
@@ -71,6 +72,12 @@ Rectangle {
                     text: qsTr("Add user view")
                     onTriggered: addUserView()
                     MenuItemSvg { svg: SvgOutline.user }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add hashtag view")
+                    onTriggered: addHashtagView()
+                    MenuItemSvg { svg: SvgOutline.hashtag }
                 }
 
                 AccessibleMenuItem {

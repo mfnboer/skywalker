@@ -4,6 +4,27 @@
 
 namespace Skywalker {
 
+HashtagPostFilter::HashtagPostFilter(const QString& hashtag)
+{
+    if (hashtag.startsWith('#'))
+        mFocusHashtags.addEntry(hashtag.sliced(1));
+    else
+        mFocusHashtags.addEntry(hashtag);
+}
+
+QString HashtagPostFilter::getName() const
+{
+    return "#" + mFocusHashtags.getEntries().first()->getHashtags().first();
+}
+
+bool HashtagPostFilter::match(const Post& post) const
+{
+    if (post.isPlaceHolder())
+        return false;
+
+    return mFocusHashtags.match(post);
+}
+
 FocusHashtagsPostFilter::FocusHashtagsPostFilter(const FocusHashtagEntry& focusHashtaghEntry)
 {
     const auto json = focusHashtaghEntry.toJson();

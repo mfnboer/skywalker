@@ -18,6 +18,19 @@ public:
     virtual bool match(const Post& post) const = 0;
 };
 
+class HashtagPostFilter : public IPostFilter
+{
+public:
+    using Ptr = std::unique_ptr<HashtagPostFilter>;
+
+    explicit HashtagPostFilter(const QString& hashtag);
+    QString getName() const override;
+    bool match(const Post& post) const override;
+
+private:
+    FocusHashtags mFocusHashtags;
+};
+
 class FocusHashtagsPostFilter : public IPostFilter
 {
 public:
