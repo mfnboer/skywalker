@@ -49,7 +49,7 @@ Rectangle {
             id: moreButton
             iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
-            svg: SvgOutline.moreVert
+            svg: SvgOutline.menu
             accessibleName: qsTr("more options")
             visible: showMoreOptions
 

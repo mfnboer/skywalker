@@ -22,11 +22,13 @@ SkyListView {
     footer: AccessibleText {
         width: timelineView.width
         horizontalAlignment: Text.AlignHCenter
+        leftPadding: 10
+        rightPadding: 10
         topPadding: count > 0 ? 10 : emptyListIndication.height + 10
         bottomPadding: 50
         textFormat: Text.RichText
         wrapMode: Text.Wrap
-        text: (isView && model) ? qsTr(`${timelineView.getViewFooterText()}<br><a href="load" style="color: ${guiSettings.linkColor};">Load more</a>`) : ""
+        text: (isView && model) ? qsTr(`${timelineView.getViewFooterText()}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`) : ""
         onLinkActivated: skywalker.getTimelineNextPage()
     }
 
