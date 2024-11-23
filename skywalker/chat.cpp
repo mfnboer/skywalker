@@ -63,9 +63,6 @@ void Chat::initSettings()
 
             qWarning() << "Failed to get chat settings:" << error << "-" << msg;
             mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
-
-            if (error != ATProto::ATProtoErrorMsg::INVALID_REQUEST)
-                emit settingsFailed(msg);
         });
 }
 
