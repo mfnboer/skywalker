@@ -50,7 +50,7 @@ SkyPage {
         width: parent.width - 20
         font.italic: true
         wrapMode: Text.Wrap
-        text: qsTr("A user view shows posts from a specific user from your timeline.")
+        text: qsTr("A user view shows posts from your timeline posted by a specific user.")
         visible: typeaheadView.count === 0
     }
 

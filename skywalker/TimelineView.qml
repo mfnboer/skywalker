@@ -9,6 +9,9 @@ SkyListView {
     property int unreadPosts: 0
     property var anchorItem // item used to calibrate list position on insert of new posts
     property int calibrationDy: 0
+    property int prevCount: 0
+
+    signal newPosts
 
     id: timelineView
     width: parent.width
@@ -43,8 +46,10 @@ SkyListView {
     onCountChanged: {
         console.debug((model ? model.feedName : "no feed yet"), count)
 
-        if (!inSync)
+        if (!inSync) {
+            prevCount = count
             return
+        }
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
@@ -57,6 +62,11 @@ SkyListView {
             skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
 
         updateUnreadPosts(firstVisibleIndex)
+
+        if (count > prevCount)
+            newPosts()
+
+        prevCount = count
     }
 
     onMovementEnded: {

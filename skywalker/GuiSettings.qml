@@ -207,6 +207,22 @@ Item {
         }
     }
 
+    function getFocusHashtagEntryText(entry) {
+        let text = ""
+
+        for (let i = 0; i < entry.hashtags.length; ++i) {
+            const tag = entry.hashtags[i]
+
+            if (i > 0)
+                text += ' '
+
+            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
+        }
+
+        console.debug("TEXT:", text)
+        return text
+    }
+
     function contentVisible(author)
     {
         if (author.viewer.blockedBy)

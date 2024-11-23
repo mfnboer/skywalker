@@ -123,11 +123,11 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
 void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId)
 {
     if (fillGapId > 0)
-        gapFillFilteredPostModel(page, fillGapId);
+        gapFillFilteredPostModels(page, fillGapId);
     if (feedInsertIt == mFeed.begin())
-        prependPageToFilteredPostModel(page, pageSize);
+        prependPageToFilteredPostModels(page, pageSize);
     else if (feedInsertIt == mFeed.end())
-        addPageToFilteredPostModel(page, pageSize);
+        addPageToFilteredPostModels(page, pageSize);
 
     mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
 
@@ -141,44 +141,42 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
     cleanupStoredCids();
 }
 
-void PostFeedModel::addPageToFilteredPostModel(const Page& page, int pageSize)
+void PostFeedModel::addPageToFilteredPostModels(const Page& page, int pageSize)
 {
     for (auto& model : mFilteredPostFeedModels)
-    {
         model->addPosts(page.mFeed, pageSize);
-    }
 }
 
-void PostFeedModel::prependPageToFilteredPostModel(const Page& page, int pageSize)
+void PostFeedModel::prependPageToFilteredPostModels(const Page& page, int pageSize)
 {
     for (auto& model : mFilteredPostFeedModels)
-    {
         model->prependPosts(page.mFeed, pageSize);
-    }
 }
 
-void PostFeedModel::gapFillFilteredPostModel(const Page& page, int gapId)
+void PostFeedModel::gapFillFilteredPostModels(const Page& page, int gapId)
 {
     for (auto& model : mFilteredPostFeedModels)
-    {
         model->gapFill(page.mFeed, gapId);
-    }
 }
 
-void PostFeedModel::removeHeadFromFilteredPostModel(size_t headSize)
+void PostFeedModel::removeHeadFromFilteredPostModels(size_t headSize)
 {
     for (auto& model : mFilteredPostFeedModels)
-    {
         model->removeHeadPosts(mFeed, headSize);
-    }
 }
 
-void PostFeedModel::removeTailFromFilteredPostModel(size_t tailSize)
+void PostFeedModel::removeTailFromFilteredPostModels(size_t tailSize)
 {
     for (auto& model : mFilteredPostFeedModels)
     {
         model->removeTailPosts(mFeed, tailSize);
     }
+}
+
+void PostFeedModel::clearFilteredPostModels()
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->clear();
 }
 
 int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
@@ -188,7 +186,10 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     if (page->mFeed.empty())
     {
         qDebug() << "Page has no posts";
-        gapFillFilteredPostModel(*page, fillGapId);
+
+        if (fillGapId > 0)
+            gapFillFilteredPostModels(*page, fillGapId);
+
         return 0;
     }
 
@@ -254,6 +255,8 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
 
 void PostFeedModel::clear()
 {
+    clearFilteredPostModels();
+
     if (!mFeed.empty())
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
@@ -342,7 +345,7 @@ void PostFeedModel::removeTailPosts(int size)
     }
 
     const size_t removeCount = mFeed.size() - removeIndex;
-    removeTailFromFilteredPostModel(removeCount);
+    removeTailFromFilteredPostModels(removeCount);
 
     beginRemoveRows({}, removeIndex, mFeed.size() - 1);
     removePosts(removeIndex, removeCount);
@@ -381,7 +384,7 @@ void PostFeedModel::removeHeadPosts(int size)
 
     const auto removeEndIndexCursorIt = mIndexCursorMap.upper_bound(removeEndIndex);
     const int removeSize = removeEndIndex + 1;
-    removeHeadFromFilteredPostModel(removeSize);
+    removeHeadFromFilteredPostModels(removeSize);
 
     beginRemoveRows({}, 0, removeEndIndex);
     removePosts(0, removeSize);
@@ -534,6 +537,18 @@ QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const
 {
     auto models = mFilteredPostFeedModels | std::views::transform([](auto& m){ return m.get(); });
     return QList<FilteredPostFeedModel*>(models.begin(), models.end());
+}
+
+void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        update(model.get());
+}
+
+void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        update(model.get());
 }
 
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)

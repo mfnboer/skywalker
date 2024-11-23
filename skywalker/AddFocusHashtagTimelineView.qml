@@ -17,9 +17,18 @@ SkyPage {
     }
 
     SkyListView {
+        id: focusHashtagView
         anchors.fill: parent
         boundsBehavior: Flickable.StopAtBounds
         model: skywalker.focusHashtags.entries
+
+        header: AccessibleText {
+            width: parent.width
+            padding: 10
+            font.italic: true
+            wrapMode: Text.Wrap
+            text: qsTr("A focus hashtag view shows posts from your timeline that have one of the has tags from the focus.")
+        }
 
         delegate: Rectangle {
             required property var modelData // FocusHashtagEntry
@@ -37,7 +46,7 @@ SkyPage {
                 textFormat: Text.RichText
                 font.pointSize: guiSettings.scaledFont(9/8)
                 color: guiSettings.textColor
-                text: getEntryText(modelData)
+                text: guiSettings.getFocusHashtagEntryText(modelData)
             }
 
             Rectangle {
@@ -52,22 +61,13 @@ SkyPage {
                 onClicked: page.selected(modelData)
             }
         }
-    }
 
-    // TODO: move to GuiSettings?
-    function getEntryText(entry) {
-        let text = ""
-
-        for (let i = 0; i < entry.hashtags.length; ++i) {
-            const tag = entry.hashtags[i]
-
-            if (i > 0)
-                text += ' '
-
-            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
+        EmptyListIndication {
+            id: emptyListIndication
+            y: parent.headerItem ? parent.headerItem.height : 0
+            svg: SvgOutline.hashtag
+            text: qsTr("You have no focus hashtags. Create them in Settings > Moderation")
+            list: focusHashtagView
         }
-
-        console.debug("TEXT:", text)
-        return text
     }
 }

@@ -95,6 +95,9 @@ public:
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
 
+    void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
+    void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
+
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
@@ -122,11 +125,13 @@ private:
 
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId = 0);
     void addPage(Page::Ptr page);
-    void addPageToFilteredPostModel(const Page& page, int pageSize);
-    void prependPageToFilteredPostModel(const Page& page, int pageSize);
-    void gapFillFilteredPostModel(const Page& page, int gapId);
-    void removeHeadFromFilteredPostModel(size_t headSize);
-    void removeTailFromFilteredPostModel(size_t tailSize);
+
+    void addPageToFilteredPostModels(const Page& page, int pageSize);
+    void prependPageToFilteredPostModels(const Page& page, int pageSize);
+    void gapFillFilteredPostModels(const Page& page, int gapId);
+    void removeHeadFromFilteredPostModels(size_t headSize);
+    void removeTailFromFilteredPostModels(size_t tailSize);
+    void clearFilteredPostModels();
 
     FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
 

@@ -4,6 +4,8 @@ import QtQuick.Controls.Material
 import skywalker
 
 TabButton {
+    property bool showDot: false
+
     signal closed
 
     id: button
@@ -12,6 +14,8 @@ TabButton {
     Accessible.name: qsTr(`Press to show ${text}`)
 
     contentItem: Row {
+        id: tabRow
+
         Text {
             anchors.verticalCenter: parent.verticalCenter
             font: button.font
@@ -30,5 +34,10 @@ TabButton {
             accessibleName: qsTr(`close ${button.text}`)
             onClicked: button.closed()
         }
+    }
+
+    SkyDot {
+        anchors.rightMargin: 22
+        visible: showDot
     }
 }

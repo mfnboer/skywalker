@@ -44,22 +44,29 @@ SkyPage {
         id: viewBar
         z: guiSettings.headerZLevel
         width: parent.width
-        height: visible ? implicitHeight : 0
+        contentHeight: 40
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
         visible: count > 1
 
+        onCurrentItemChanged: currentItem.showDot = false
+
         AccessibleTabButton {
+            property bool showDot: false
+
             id: tabTimeline
-            implicitHeight: 30
             text: qsTr("Full feed")
-            width: implicitWidth;
+            width: implicitWidth
+
+            SkyDot {
+                visible: tabTimeline.showDot
+            }
         }
 
         function addTab(name) {
             let component = Qt.createComponent("SkyTabWithCloseButton.qml")
-            let tab = component.createObject(viewBar, { implicitHeight: 30, text: name })
+            let tab = component.createObject(viewBar, { text: name })
             tab.onClosed.connect(() => page.closeView(tab))
             addItem(tab)
             setCurrentIndex(count - 1)
@@ -88,6 +95,11 @@ SkyPage {
             Layout.preferredWidth: viewStack.width
             Layout.preferredHeight: viewStack.height
             skywalker: page.skywalker
+
+            onNewPosts: {
+                if (!StackLayout.isCurrentItem)
+                    tabTimeline.showDot = true
+            }
         }
 
         Repeater {
@@ -101,6 +113,12 @@ SkyPage {
                 skywalker: page.skywalker
                 isView: true
                 model: modelData
+
+                onNewPosts: {
+                    if (!StackLayout.isCurrentItem) {
+                        viewBar.itemAt(StackLayout.index).showDot = true
+                    }
+                }
             }
         }
 

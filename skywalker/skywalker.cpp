@@ -1459,6 +1459,7 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
     // or deleted, then the local changes will disapper.
 
     update(&mTimelineModel);
+    mTimelineModel.makeLocalFilteredModelChange(update);
 
     for (auto& [_, model] : mPostThreadModels.items())
         update(model.get());
@@ -1470,7 +1471,10 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
         update(model.get());
 
     for (auto& [_, model] : mPostFeedModels.items())
+    {
         update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
 
     if (mBookmarksModel)
         update(mBookmarksModel.get());
@@ -1488,6 +1492,7 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
     // or deleted, then the local changes will disapper.
 
     update(&mTimelineModel);
+    mTimelineModel.makeLocalFilteredModelChange(update);
     update(&mNotificationListModel);
 
     for (auto& [_, model] : mPostThreadModels.items())
@@ -1500,7 +1505,10 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
         update(model.get());
 
     for (auto& [_, model] : mPostFeedModels.items())
+    {
         update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
 
     if (mBookmarksModel)
         update(mBookmarksModel.get());

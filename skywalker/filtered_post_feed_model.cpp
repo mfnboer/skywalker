@@ -31,6 +31,8 @@ void FilteredPostFeedModel::clear()
         endRemoveRows();
     }
 
+    setNumPostsChecked(0);
+    setCheckedTillTimestamp(QDateTime::currentDateTimeUtc());
     qDebug() << "All posts removed";
 }
 
@@ -46,7 +48,12 @@ void FilteredPostFeedModel::addPosts(const TimelineFeed& posts, size_t numPosts)
     Q_ASSERT(numPosts <= posts.size());
     qDebug() << "Add posts:" << getFeedName() << "posts:" << numPosts;
     auto page = createPage(posts, 0, numPosts);
-    setNumPostsChecked(mNumPostsChecked + numPosts - page->mFeed.size());
+
+    if (page->mFeed.empty())
+        setNumPostsChecked(mNumPostsChecked + numPosts);
+    else
+        setNumPostsChecked(numPosts - page->mFeed.size());
+
     addPage(std::move(page));
 
     for (const auto& post : posts | std::ranges::views::reverse)

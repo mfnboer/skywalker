@@ -61,7 +61,7 @@ ListView {
                     textFormat: Text.RichText
                     font.pointSize: guiSettings.scaledFont(9/8)
                     color: guiSettings.textColor
-                    text: getEntryText(modelData)
+                    text: guiSettings.getFocusHashtagEntryText(modelData)
 
                     onLinkActivated: (hashtag) => {
                         hashtagMenu.selectedTag = hashtag
@@ -234,22 +234,6 @@ ListView {
             cs.destroy()
         })
         cs.open()
-    }
-
-    function getEntryText(entry) {
-        let text = ""
-
-        for (let i = 0; i < entry.hashtags.length; ++i) {
-            const tag = entry.hashtags[i]
-
-            if (i > 0)
-                text += ' '
-
-            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
-        }
-
-        console.debug("TEXT:", text)
-        return text
     }
 
     Component.onDestruction: {
