@@ -74,9 +74,9 @@ void FilteredPostFeedModel::prependPosts(const TimelineFeed& posts, size_t numPo
     prependPage(std::move(page));
 }
 
-void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, int gapId)
+void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, size_t numPosts, int gapId)
 {
-    qDebug() << "Fill gap:" << getFeedName() << gapId;
+    qDebug() << "Fill gap:" << getFeedName() << gapId << "posts:" << numPosts;
 
     if (!mGapIdIndexMap.count(gapId))
     {
@@ -101,9 +101,18 @@ void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, int gapId)
     addToIndices(-1, gapIndex);
     endRemoveRows();
 
-    qDebug() << "Removed place holder post:" << getFeedName() << gapIndex;
-    auto page = createPage(posts, 0, posts.size());
+    qDebug() << "Removed place holder gap post:" << getFeedName() << gapIndex;
+    auto page = createPage(posts, 0, numPosts);
+
+    if (page->mFeed.empty())
+    {
+        qDebug() << "All posts have been filtered:" << getFeedName();
+        return;
+    }
+
+    beginInsertRows({}, gapIndex, gapIndex + page->mFeed.size() - 1);
     insertPage(mFeed.begin() + gapIndex, *page);
+    endInsertRows();
 }
 
 void FilteredPostFeedModel::removeHeadPosts(const TimelineFeed& posts, size_t numPosts)

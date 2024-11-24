@@ -123,8 +123,8 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
 void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId)
 {
     if (fillGapId > 0)
-        gapFillFilteredPostModels(page, fillGapId);
-    if (feedInsertIt == mFeed.begin())
+        gapFillFilteredPostModels(page, pageSize, fillGapId);
+    else if (feedInsertIt == mFeed.begin())
         prependPageToFilteredPostModels(page, pageSize);
     else if (feedInsertIt == mFeed.end())
         addPageToFilteredPostModels(page, pageSize);
@@ -153,10 +153,10 @@ void PostFeedModel::prependPageToFilteredPostModels(const Page& page, int pageSi
         model->prependPosts(page.mFeed, pageSize);
 }
 
-void PostFeedModel::gapFillFilteredPostModels(const Page& page, int gapId)
+void PostFeedModel::gapFillFilteredPostModels(const Page& page, int pageSize, int gapId)
 {
     for (auto& model : mFilteredPostFeedModels)
-        model->gapFill(page.mFeed, gapId);
+        model->gapFill(page.mFeed, pageSize, gapId);
 }
 
 void PostFeedModel::removeHeadFromFilteredPostModels(size_t headSize)
@@ -188,7 +188,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         qDebug() << "Page has no posts";
 
         if (fillGapId > 0)
-            gapFillFilteredPostModels(*page, fillGapId);
+            gapFillFilteredPostModels(*page, 0, fillGapId);
 
         return 0;
     }
@@ -233,6 +233,13 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     if (*overlapStart == 0)
     {
         qDebug() << "Full overlap, no new posts";
+
+        if (fillGapId > 0)
+        {
+            const Page emptyPage;
+            gapFillFilteredPostModels(emptyPage, 0, fillGapId);
+        }
+
         return 0;
     }
 

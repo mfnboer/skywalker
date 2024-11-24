@@ -36,7 +36,7 @@ public:
     void setPosts(const TimelineFeed& posts, size_t numPosts);
     void addPosts(const TimelineFeed& posts, size_t numPosts);
     void prependPosts(const TimelineFeed& posts, size_t numPosts);
-    void gapFill(const TimelineFeed& posts, int gapId);
+    void gapFill(const TimelineFeed& posts, size_t numPosts, int gapId);
     void removeHeadPosts(const TimelineFeed& posts, size_t numPosts);
     void removeTailPosts(const TimelineFeed& posts, size_t numPosts);
     void setCheckedTillTimestamp(QDateTime timestamp);

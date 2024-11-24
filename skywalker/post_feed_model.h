@@ -129,7 +129,7 @@ private:
 
     void addPageToFilteredPostModels(const Page& page, int pageSize);
     void prependPageToFilteredPostModels(const Page& page, int pageSize);
-    void gapFillFilteredPostModels(const Page& page, int gapId);
+    void gapFillFilteredPostModels(const Page& page, int pageSize, int gapId);
     void removeHeadFromFilteredPostModels(size_t headSize);
     void removeTailFromFilteredPostModels(size_t tailSize);
     void clearFilteredPostModels();
