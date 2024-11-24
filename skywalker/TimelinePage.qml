@@ -104,6 +104,11 @@ SkyPage {
                 if (!StackLayout.isCurrentItem)
                     tabTimeline.showDot = true
             }
+
+            StackLayout.onIsCurrentItemChanged: {
+                if (!StackLayout.isCurrentItem)
+                    cover()
+            }
         }
 
         Repeater {
@@ -123,6 +128,11 @@ SkyPage {
                         viewBar.itemAt(StackLayout.index).showDot = true
                     }
                 }
+
+                StackLayout.onIsCurrentItemChanged: {
+                    if (!StackLayout.isCurrentItem)
+                        cover()
+                }
             }
         }
 
@@ -131,6 +141,15 @@ SkyPage {
                            filteredPostFeedModel.backgroundColor,
                            filteredPostFeedModel.profile)
             children[count - 1].setInSync(-1)
+        }
+
+        function cover() {
+            for (let i = 0; i < children.length; ++i) {
+                let item = children[i]
+
+                if (item)
+                    item.cover()
+            }
         }
     }
 
@@ -207,5 +226,9 @@ SkyPage {
         let view = skywalker.timelineModel.filteredPostFeedModels[index - 1]
         skywalker.timelineModel.deleteFilteredPostFeedModel(view)
         viewBar.removeItem(tab)
+    }
+
+    function cover() {
+        viewStack.cover()
     }
 }
