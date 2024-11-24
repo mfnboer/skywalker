@@ -42,27 +42,22 @@ SkyPage {
     }
 
     TabBar {
+        property int numDots: 0
+
         id: viewBar
         z: guiSettings.headerZLevel
         width: parent.width
         contentHeight: 40
         Material.background: guiSettings.backgroundColor
-        leftPadding: page.margin
-        rightPadding: page.margin
         visible: count > 1
 
         onCurrentItemChanged: currentItem.showDot = false
 
-        AccessibleTabButton {
-            property bool showDot: false
-
+        SkyTabWithCloseButton {
             id: tabTimeline
             text: qsTr("Full feed")
-            width: implicitWidth
-
-            SkyDot {
-                visible: tabTimeline.showDot
-            }
+            showCloseButton: false
+            onShowDotChanged: viewBar.numDots += showDot ? 1 : -1
         }
 
         function addTab(name, backgroundColor, profile) {
@@ -71,6 +66,7 @@ SkyPage {
                                                  text: name,
                                                  backgroundColor: backgroundColor,
                                                  profile: profile })
+            tab.onShowDotChanged.connect(() => viewBar.numDots += tab.showDot ? 1 : -1)
             tab.onClosed.connect(() => page.closeView(tab))
             addItem(tab)
             setCurrentIndex(count - 1)
@@ -83,7 +79,7 @@ SkyPage {
         anchors.top: viewBar.bottom
         width: parent.width
         height: visible ? 1 : 0
-        color: guiSettings.separatorColor
+        color: viewBar.numDots > 0 ? guiSettings.accentColor : guiSettings.separatorColor
         visible: viewBar.visible
     }
 
