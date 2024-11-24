@@ -93,6 +93,7 @@ void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, size_t numPosts, 
         return;
     }
 
+    qDebug() << "Gap id:" << gapId << "index:" << gapIndex << "post.gapId:" << mFeed[gapIndex].getGapId();
     Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
 
     // Remove gap place holder
@@ -325,9 +326,9 @@ void FilteredPostFeedModel::removePosts(size_t startIndex, size_t count)
     }
 
     if (endIndex < mFeed.size() - 1)
-        addToIndices(mFeed.size() - 1 - endIndex, endIndex + 1);
+        addToIndices(-count, endIndex + 1);
 
-    mFeed.erase(mFeed.begin() + startIndex, mFeed.begin() + count);
+    mFeed.erase(mFeed.begin() + startIndex, mFeed.begin() + startIndex + count);
     endRemoveRows();
 
     qDebug() << "Removed posts:" << count << getFeedName() << mFeed.size();
