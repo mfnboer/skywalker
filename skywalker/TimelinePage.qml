@@ -15,7 +15,7 @@ SkyPage {
     Accessible.name: skywalker.timelineModel.feedName
 
     onCover: {
-        timelineView.cover()
+        viewStack.cover()
     }
 
     header: PostFeedHeader {
@@ -144,12 +144,10 @@ SkyPage {
         }
 
         function cover() {
-            for (let i = 0; i < children.length; ++i) {
-                let item = children[i]
+            let item = children[currentIndex]
 
-                if (item)
-                    item.cover()
-            }
+            if (item)
+                item.cover()
         }
     }
 
@@ -226,9 +224,5 @@ SkyPage {
         let view = skywalker.timelineModel.filteredPostFeedModels[index - 1]
         skywalker.timelineModel.deleteFilteredPostFeedModel(view)
         viewBar.removeItem(tab)
-    }
-
-    function cover() {
-        viewStack.cover()
     }
 }
