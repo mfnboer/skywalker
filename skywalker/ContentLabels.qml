@@ -52,7 +52,11 @@ ScrollView {
 
     function getDisplayText(label) {
         const contentGroup = skywalker.getContentGroup(label.did, label.labelId)
-        return contentGroup.titleWithSeverity
+
+        if (contentGroup)
+            return contentGroup.titleWithSeverity
+
+        return "unknown"
     }
 
     function appeal(contentLabel, contentGroup, labelerHandle) {

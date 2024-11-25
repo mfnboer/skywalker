@@ -642,7 +642,7 @@ SkyPage {
                             Layout.leftMargin: 10
                             Layout.rightMargin: 10
                             Layout.fillWidth: true
-                            Layout.preferredHeight: page.isSubscribed ? implicitHeight : 0
+                            Layout.preferredHeight: page.isSubscribed ? 0 : implicitHeight
                             wrapMode: Text.Wrap
                             color: guiSettings.textColor
                             text: qsTr(`Subscribe to ${author.handle} to use these labels`)
