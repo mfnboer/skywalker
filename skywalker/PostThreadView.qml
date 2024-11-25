@@ -138,6 +138,8 @@ SkyListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
+        required property int index
+
         width: view.width
         onShowHiddenReplies: model.showHiddenReplies()
     }
@@ -194,23 +196,18 @@ SkyListView {
 
     function sync() {
         const firstVisibleIndex = getFirstVisibleIndex()
-        positionViewAtIndex(postEntryIndex, ListView.Beginning)
-        return (firstVisibleIndex >= postEntryIndex - 1 && firstVisibleIndex <= postEntryIndex + 1)
-    }
-
-    function rowsInsertedHandler(parent, start, end) {
-        if (syncToEntry)
-            sync()
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Move to:", postEntryIndex, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "content:", contentHeight)
+        positionViewAtIndex(postEntryIndex, ListView.End)
+        return (lastVisibleIndex >= postEntryIndex - 1 && lastVisibleIndex <= postEntryIndex + 1)
     }
 
     Component.onDestruction: {
-        // view.model.onRowsInserted.disconnect(rowsInsertedHandler)
         skywalker.removePostThreadModel(modelId)
     }
 
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
-        // view.model.onRowsInserted.connect(rowsInsertedHandler)
         moveToIndex(postEntryIndex, sync)
     }
 }

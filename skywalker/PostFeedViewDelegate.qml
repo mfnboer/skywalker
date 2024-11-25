@@ -74,7 +74,10 @@ Rectangle {
     signal unfoldPosts
 
     id: postEntry
-    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : grid.height
+    // HACK
+    // Setting the default size to 300 if the grid is not sized yet, seems to fix
+    // positioning issued with viewPositionAtIndex
+    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > 30 ? grid.height : 300)
     color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 1 : 0
     border.color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.borderHighLightColor : guiSettings.borderColor

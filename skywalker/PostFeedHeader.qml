@@ -58,7 +58,7 @@ Rectangle {
             Menu {
                 id: moreMenu
                 modal: true
-                width: focusMenuItem.width // TODO
+                width: focusMenuItem.width
 
                 onAboutToShow: root.enablePopupShield(true)
                 onAboutToHide: root.enablePopupShield(false)
