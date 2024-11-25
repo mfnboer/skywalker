@@ -82,7 +82,7 @@ public:
     // Get the timestamp of the last post in the feed
     QDateTime lastTimestamp() const;
 
-    // Returns the index of the first post <= timestamp
+    // Returns the index of the last post >= timestamp, 0 if no such post exists
     int findTimestamp(QDateTime timestamp) const;
 
     void clear();

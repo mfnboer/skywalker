@@ -136,12 +136,12 @@ SkyListView {
 
     function doMoveToPost(index) {
         const firstVisibleIndex = getFirstVisibleIndex()
-        console.debug("Move to:", index, "first:", firstVisibleIndex)
-        positionViewAtIndex(Math.max(index, 0), ListView.Beginning)
-        const last = getLastVisibleIndex()
-        setAnchorItem(last + 1)
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
+        positionViewAtIndex(Math.max(index, 0), ListView.End)
+        setAnchorItem(lastVisibleIndex + 1)
         updateUnreadPosts(firstVisibleIndex)
-        return (firstVisibleIndex >= index - 1 && firstVisibleIndex <= index + 1)
+        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
     function moveToPost(index) {
@@ -179,7 +179,7 @@ SkyListView {
     }
 
     function setInSync(index) {
-        console.debug("Sync:", model.feedName)
+        console.debug("Sync:", model.feedName, "index:", index, "count:", count)
 
         if (index >= 0)
             moveToPost(index)

@@ -366,7 +366,7 @@ private slots:
         QCOMPARE(index, 0);
 
         index = mPostFeedModel->findTimestamp(TEST_DATE - 500ms);
-        QCOMPARE(index, 1);
+        QCOMPARE(index, 0);
 
         index = mPostFeedModel->findTimestamp(TEST_DATE - 1s);
         QCOMPARE(index, 1);
@@ -375,7 +375,7 @@ private slots:
         QCOMPARE(index, 4);
 
         index = mPostFeedModel->findTimestamp(TEST_DATE - 5s);
-        QCOMPARE(index, -1);
+        QCOMPARE(index, 4);
 
         index = mPostFeedModel->findTimestamp(TEST_DATE + 1s);
         QCOMPARE(index, 0);

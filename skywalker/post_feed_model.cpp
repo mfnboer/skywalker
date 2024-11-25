@@ -461,16 +461,15 @@ QDateTime PostFeedModel::lastTimestamp() const
 
 int PostFeedModel::findTimestamp(QDateTime timestamp) const
 {
-    const Post dummy;
-    auto it = std::lower_bound(mFeed.begin(), mFeed.end(), dummy,
-            [timestamp](const Post& post, const Post&){
-                if (post.isPlaceHolder())
-                    return true; // place holder has no timestamp
+    for (int i = mFeed.size() - 1; i >= 0; --i)
+    {
+        const Post& post = mFeed[i];
 
-                return post.getTimelineTimestamp() > timestamp;
-            });
+        if (!post.isPlaceHolder() && post.getTimelineTimestamp() >= timestamp)
+            return i;
+    }
 
-    return it != mFeed.end() ? it - mFeed.begin() : -1;
+    return 0;
 }
 
 void PostFeedModel::unfoldPosts(int startIndex)

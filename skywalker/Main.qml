@@ -136,7 +136,11 @@ ApplicationWindow {
             signIn()
         }
 
-        onStatusMessage: (msg, level) => statusPopup.show(msg, level, level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
+        onStatusMessage: (msg, level, seconds) => { // qmllint disable signal-handler-parameters
+                const period = seconds > 0 ? seconds : (level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
+                statusPopup.show(msg, level, period)
+        }
+
         onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
         onGetUserProfileOK: () => skywalker.getUserPreferences()
 

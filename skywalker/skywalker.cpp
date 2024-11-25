@@ -782,6 +782,8 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
                 restoreDebugLogging();
                 qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
                 finishTimelineSync(mTimelineModel.rowCount() - 1);
+                emit statusMessage(tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
+                                       tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
                 return;
             }
 
