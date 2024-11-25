@@ -86,7 +86,7 @@ SkyPage {
 
     StackLayout {
         id: viewStack
-        anchors.top: viewBarSeparator.bottom
+        anchors.top: viewBar.visible ? viewBarSeparator.bottom : parent.top
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: viewBar.currentIndex
