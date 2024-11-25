@@ -1,6 +1,7 @@
 next
 ====
 * Timeline views (filter on users or hashtags)
+* On startup show last viewed feed from favorites (includes Following feed)
 * Option to hide replies in threads started by an unfollowed user
 * Fold up long threads in timeline
 * Sort 📌 posts to the bottom of a thread

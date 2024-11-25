@@ -23,6 +23,7 @@ public:
     explicit FavoriteFeedView(const GeneratorView& generatorView);
     explicit FavoriteFeedView(const ListView& listView);
 
+    Q_INVOKABLE bool isNull() const { return mGeneratorView.isNull() && mListView.isNull(); }
     bool isGeneratorView() const { return !mGeneratorView.isNull(); }
     QString getUri() const;
     QString getName() const;

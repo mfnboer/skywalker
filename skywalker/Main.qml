@@ -84,6 +84,28 @@ ApplicationWindow {
         closeStartupStatus()
         getTimelineView().setInSync(postIndex)
         skywalker.startTimelineAutoUpdate()
+        showLastViewedFeed()
+    }
+
+    function showLastViewedFeed() {
+        let userSettings = skywalker.getUserSettings()
+        const lastViewed = userSettings.getLastViewedFeed(skywalker.getUserDid())
+
+        if (lastViewed == "home")
+            return
+
+        const favorite = skywalker.favoriteFeeds.getPinnedFeed(lastViewed)
+
+        if (favorite.isNull())
+        {
+            console.debug("Last viewed feed not in favorites:", lastViewed)
+            return
+        }
+
+        if (favorite.isGeneratorView)
+            viewFeed(favorite.generatorView)
+        else
+            viewListFeed(favorite.listView)
     }
 
     Skywalker {
@@ -293,6 +315,14 @@ ApplicationWindow {
         }
 
         onOldestUnreadNotificationIndex: (index) => getNotificationView().moveToNotification(index)
+
+        function saveLastViewedFeed(feedUri) {
+            let userSettings = skywalker.getUserSettings()
+            const userDid = skywalker.getUserDid()
+
+            if (feedUri == "home" || skywalker.favoriteFeeds.isPinnedFeed(feedUri))
+                userSettings.setLastViewedFeed(userDid, feedUri)
+        }
 
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
@@ -1323,6 +1353,12 @@ ApplicationWindow {
         currentStackItem().show()
     }
 
+    function viewHomeFeed() {
+        viewTimeline()
+        unwindStack()
+        skywalker.saveLastViewedFeed("home")
+    }
+
     function viewFeed(generatorView) {
         let view = null
 
@@ -1352,6 +1388,7 @@ ApplicationWindow {
         viewTimeline()
         unwindStack()
         pushStack(view)
+        skywalker.saveLastViewedFeed(generatorView.uri)
     }
 
     function viewListFeed(listView) {
@@ -1383,6 +1420,7 @@ ApplicationWindow {
         viewTimeline()
         unwindStack()
         pushStack(view)
+        skywalker.saveLastViewedFeed(listView.uri)
     }
 
     function viewPostFeed(feed) {

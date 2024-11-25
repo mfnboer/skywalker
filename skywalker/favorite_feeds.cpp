@@ -310,6 +310,17 @@ void FavoriteFeeds::unpinList(const ListView& list)
     emit listPinned();
 }
 
+FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const
+{
+    for (const auto& feed : mPinnedFeeds)
+    {
+        if (feed.getUri() == uri)
+            return feed;
+    }
+
+    return {};
+}
+
 std::vector<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, char const* collection) const
 {
     std::vector<QString> filtered;

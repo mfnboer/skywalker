@@ -40,6 +40,7 @@ public:
     Q_INVOKABLE void pinList(const ListView& list, bool pin);
 
     Q_INVOKABLE QList<FavoriteFeedView> getPinnedFeeds() const { return mPinnedFeeds; }
+    Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
     void setUpdateSavedFeedsModelInProgress(bool inProgress);

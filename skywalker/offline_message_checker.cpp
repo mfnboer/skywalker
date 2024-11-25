@@ -581,7 +581,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
 bool OffLineMessageChecker::checkNotificationPermission()
 {
 #if defined(Q_OS_ANDROID)
-    static constexpr char const* POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
+    static const QString POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
 
     const auto osVersion = QOperatingSystemVersion::current();
 

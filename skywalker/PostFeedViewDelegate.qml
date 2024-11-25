@@ -516,7 +516,9 @@ Rectangle {
 
             Loader {
                 width: parent.width
-                active: (postThreadType & QEnums.THREAD_LEAF) && postReplyCount > 0
+                active: (postThreadType & QEnums.THREAD_LEAF) &&
+                        !(postThreadType & QEnums.THREAD_ENTRY) &&
+                        postReplyCount > 0
                 visible: status == Loader.Ready
 
                 sourceComponent: AccessibleText {

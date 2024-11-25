@@ -273,6 +273,16 @@ QDateTime UserSettings::getLastSignInTimestamp(const QString& did) const
     return mSettings.value(key(did, "lastSignInTimestamp")).toDateTime();
 }
 
+void UserSettings::setLastViewedFeed(const QString& did, const QString& uri)
+{
+    mSettings.setValue(key(did, "lastViewedFeed"), uri);
+}
+
+QString UserSettings::getLastViewedFeed(const QString& did) const
+{
+    return mSettings.value(key(did, "lastViewedFeed"), HOME_FEED).toString();
+}
+
 void UserSettings::setBookmarks(const QString& did, const QStringList& bookmarks)
 {
     mSettings.setValue(key(did, "bookmarks"), bookmarks);

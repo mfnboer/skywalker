@@ -91,6 +91,10 @@ public:
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
 
+    // For the home feed, the URI is "home"
+    Q_INVOKABLE void setLastViewedFeed(const QString& did, const QString& uri);
+    Q_INVOKABLE QString getLastViewedFeed(const QString& did) const;
+
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
 
