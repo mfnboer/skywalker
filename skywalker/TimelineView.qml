@@ -42,7 +42,7 @@ SkyListView {
             Qt.callLater(calibratePosition)
         }
 
-        onUnfoldPosts: skywalker.timelineModel.unfoldPosts(index)
+        onUnfoldPosts: model.unfoldPosts(index)
     }
 
     onCountChanged: {

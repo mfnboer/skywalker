@@ -48,7 +48,7 @@ SkyPage {
         id: viewBar
         z: guiSettings.headerZLevel
         width: parent.width
-        contentHeight: 40
+        // contentHeight: 40
         Material.background: guiSettings.backgroundColor
         visible: count > 1
 

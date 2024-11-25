@@ -513,6 +513,26 @@ Rectangle {
                     onUnpin: root.unpinPost(postCid)
                 }
             }
+
+            Loader {
+                width: parent.width
+                active: (postThreadType & QEnums.THREAD_LEAF) && postReplyCount > 0
+                visible: status == Loader.Ready
+
+                sourceComponent: AccessibleText {
+                    topPadding: 10
+                    bottomPadding: 10
+                    width: parent.width
+                    elide: Text.ElideRight
+                    color: guiSettings.linkColor
+                    text: qsTr("Read more...")
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: openPostThread()
+                    }
+                }
+            }
         }
 
         // Folded Posts
@@ -527,11 +547,11 @@ Rectangle {
                 elide: Text.ElideRight
                 color: guiSettings.linkColor
                 text: qsTr("Unfold post thread")
-            }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: unfoldPosts()
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: unfoldPosts()
+                }
             }
         }
 

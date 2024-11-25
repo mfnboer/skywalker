@@ -472,29 +472,6 @@ int PostFeedModel::findTimestamp(QDateTime timestamp) const
     return 0;
 }
 
-void PostFeedModel::unfoldPosts(int startIndex)
-{
-    qDebug() << "Unfold posts:" << startIndex;
-
-    if (startIndex < 0 || startIndex >= (int)mFeed.size())
-    {
-        qWarning() << "Invalid index:" << startIndex << "size:" << mFeed.size();
-        return;
-    }
-
-    for (int i = startIndex; i < (int)mFeed.size(); ++i)
-    {
-        auto& post = mFeed[i];
-
-        if (post.getFoldedPostType() == QEnums::FOLDED_POST_NONE)
-            break;
-
-        post.setFoldedPostType(QEnums::FOLDED_POST_NONE);
-    }
-
-    changeData({ int(Role::PostFoldedType) });
-}
-
 FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profile)
 {
     auto filter = std::make_unique<AuthorPostFilter>(profile);

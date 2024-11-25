@@ -101,6 +101,8 @@ public:
     const Post& getPost(int index) const { return mFeed.at(index); }
     void preprocess(const Post& post);
 
+    Q_INVOKABLE void unfoldPosts(int startIndex);
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
     void clearFeed();

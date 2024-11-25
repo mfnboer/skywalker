@@ -26,7 +26,7 @@ TabButton {
         Avatar {
             id: avatar
             anchors.verticalCenter: parent.verticalCenter
-            width: visible ? 24 : 0
+            width: visible ? 34 : 0
             author: profile
             visible: !profile.isNull()
         }

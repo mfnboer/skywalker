@@ -117,6 +117,29 @@ void AbstractPostFeedModel::preprocess(const Post& post)
         mHashtags.insert(tag);
 }
 
+void AbstractPostFeedModel::unfoldPosts(int startIndex)
+{
+    qDebug() << "Unfold posts:" << startIndex;
+
+    if (startIndex < 0 || startIndex >= (int)mFeed.size())
+    {
+        qWarning() << "Invalid index:" << startIndex << "size:" << mFeed.size();
+        return;
+    }
+
+    for (int i = startIndex; i < (int)mFeed.size(); ++i)
+    {
+        auto& post = mFeed[i];
+
+        if (post.getFoldedPostType() == QEnums::FOLDED_POST_NONE)
+            break;
+
+        post.setFoldedPostType(QEnums::FOLDED_POST_NONE);
+    }
+
+    changeData({ int(Role::PostFoldedType) });
+}
+
 int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
