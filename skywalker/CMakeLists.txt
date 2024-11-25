@@ -427,6 +427,16 @@ qt_add_qml_module(libskywalker
         QML_FILES ConvertGifDialog.qml
         QML_FILES SkyCleanedTextLine.qml
         QML_FILES SkyFooterButton.qml
+        SOURCES post_filter.h
+        SOURCES post_filter.cpp
+        SOURCES filtered_post_feed_model.h
+        SOURCES filtered_post_feed_model.cpp
+        QML_FILES TimelinePage.qml
+        QML_FILES AddUserTimelineView.qml
+        QML_FILES SkyTabWithCloseButton.qml
+        QML_FILES AddFocusHashtagTimelineView.qml
+        QML_FILES SkyDot.qml
+        QML_FILES AddHashtagTimelineView.qml
 )
 
 if (NOT ANDROID)

@@ -3,7 +3,9 @@
 #pragma once
 #include <definitions.h>
 #include <focus_hashtags.h>
+#include <muted_words.h>
 #include <post_feed_model.h>
+#include <user_settings.h>
 #include <QtTest/QTest>
 
 using namespace Skywalker;

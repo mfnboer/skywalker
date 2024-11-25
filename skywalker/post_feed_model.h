@@ -2,8 +2,9 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "filtered_post_feed_model.h"
 #include "generator_view.h"
-#include "muted_words.h"
+#include "post_filter.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
 #include <unordered_map>
@@ -18,7 +19,8 @@ class PostFeedModel : public AbstractPostFeedModel
     Q_PROPERTY(bool languageFilterConfigured READ isLanguageFilterConfigured NOTIFY languageFilterConfiguredChanged FINAL)
     Q_PROPERTY(bool languageFilterEnabled READ isLanguageFilterEnabled WRITE enableLanguageFilter NOTIFY languageFilterEnabledChanged FINAL)
     Q_PROPERTY(LanguageList filteredLanguages READ getFilterdLanguages NOTIFY languageFilterConfiguredChanged FINAL)
-    Q_PROPERTY(bool showPostWithMissingLanguage READ showPostWithMissingLanguage NOTIFY languageFilterConfiguredChanged)
+    Q_PROPERTY(bool showPostWithMissingLanguage READ showPostWithMissingLanguage NOTIFY languageFilterConfiguredChanged FINAL)
+    Q_PROPERTY(QList<FilteredPostFeedModel*> filteredPostFeedModels READ getFilteredPostFeedModels NOTIFY filteredPostFeedModelsChanged FINAL)
 
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
@@ -26,9 +28,9 @@ public:
     explicit PostFeedModel(const QString& feedName,
                            const QString& userDid, const IProfileStore& following,
                            const IProfileStore& mutedReposts,
-                           const ContentFilter& contentFilter,
+                           const IContentFilter& contentFilter,
                            const Bookmarks& bookmarks,
-                           const MutedWords& mutedWords,
+                           const IMatchWords& mutedWords,
                            const FocusHashtags& focusHashtags,
                            HashtagIndex& hashtags,
                            const ATProto::UserPreferences& userPrefs,
@@ -36,6 +38,8 @@ public:
                            QObject* parent = nullptr);
 
     const QString& getFeedName() const { return mFeedName; }
+    void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
+    const QString& getPreferencesFeedKey() const;
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
@@ -85,23 +89,26 @@ public:
 
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
+    bool hasFilters() const { return !mFilteredPostFeedModels.empty(); }
+    Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const BasicProfile& profile);
+    Q_INVOKABLE FilteredPostFeedModel* addHashtagFilter(const QString& hashtag);
+    Q_INVOKABLE FilteredPostFeedModel* addFocusHashtagFilter(FocusHashtagEntry* focusHashtag);
+    Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
+    QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
+
+    void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
+    void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
+
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
+    void filteredPostFeedModelsChanged();
 
 private:
-    struct CidTimestamp
-    {
-        QString mCid;
-        QDateTime mTimestamp;
-        QString mRepostedByDid;
-        QEnums::PostType mPostType;
-    };
-
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
-        std::vector<Post> mFeed;
+        TimelineFeed mFeed;
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
@@ -117,17 +124,27 @@ private:
         void foldPosts(int startIndex, int endIndex);
     };
 
+    void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId = 0);
+    void addPage(Page::Ptr page);
+
+    void addPageToFilteredPostModels(const Page& page, int pageSize);
+    void prependPageToFilteredPostModels(const Page& page, int pageSize);
+    void gapFillFilteredPostModels(const Page& page, int pageSize, int gapId);
+    void removeHeadFromFilteredPostModels(size_t headSize);
+    void removeTailFromFilteredPostModels(size_t tailSize);
+    void clearFilteredPostModels();
+
+    FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
+
     virtual bool mustHideContent(const Post& post) const override;
     bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     bool mustShowQuotePost(const Post& post) const;
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
-    void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
-    void addPage(Page::Ptr page);
 
     // Returns gap id if insertion created a gap in the feed.
-    int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex);
+    int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
 
     // Returns an index in the page feed
     std::optional<size_t> findOverlapStart(const Page& page, size_t feedIndex) const;
@@ -135,9 +152,10 @@ private:
     // Return an index in mFeed
     std::optional<size_t> findOverlapEnd(const Page& page, size_t feedIndex) const;
 
-    void addToIndices(size_t offset, size_t startAtIndex);
+    void addToIndices(int offset, size_t startAtIndex);
     void logIndices() const;
 
+    bool mIsHomeFeed = false;
     const ATProto::UserPreferences& mUserPreferences;
     const UserSettings& mUserSettings;
     bool mLanguageFilterEnabled = false;
@@ -154,6 +172,8 @@ private:
     GeneratorView mGeneratorView;
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
+
+    std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
 };
 
 }

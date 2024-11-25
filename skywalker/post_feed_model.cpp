@@ -1,17 +1,19 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_feed_model.h"
+#include "definitions.h"
 #include "user_settings.h"
 #include <algorithm>
+#include <ranges>
 
 namespace Skywalker {
 
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
-                             const ContentFilter& contentFilter,
+                             const IContentFilter& contentFilter,
                              const Bookmarks& bookmarks,
-                             const MutedWords& mutedWords,
+                             const IMatchWords& mutedWords,
                              const FocusHashtags& focusHashtags,
                              HashtagIndex& hashtags,
                              const ATProto::UserPreferences& userPrefs,
@@ -24,6 +26,12 @@ PostFeedModel::PostFeedModel(const QString& feedName,
 {
     connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
             [this]{ emit languageFilterConfiguredChanged(); });
+}
+
+const QString& PostFeedModel::getPreferencesFeedKey() const
+{
+    static const QString HOME_KEY = HOME_FEED;
+    return mIsHomeFeed ? HOME_KEY : mFeedName;
 }
 
 bool PostFeedModel::isLanguageFilterConfigured() const
@@ -92,7 +100,7 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     const int gapIndex = mGapIdIndexMap[gapId];
     mGapIdIndexMap.erase(gapId);
 
-    if (gapIndex > (int)mFeed.size())
+    if (gapIndex > (int)mFeed.size() - 1)
     {
         qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
         return 0;
@@ -109,11 +117,18 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     qDebug() << "Removed place holder post:" << gapIndex;
     logIndices();
 
-    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex);
+    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex, gapId);
 }
 
-void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
+void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId)
 {
+    if (fillGapId > 0)
+        gapFillFilteredPostModels(page, pageSize, fillGapId);
+    else if (feedInsertIt == mFeed.begin())
+        prependPageToFilteredPostModels(page, pageSize);
+    else if (feedInsertIt == mFeed.end())
+        addPageToFilteredPostModels(page, pageSize);
+
     mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
 
     for (const auto& post : page.mFeed)
@@ -126,13 +141,55 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
     cleanupStoredCids();
 }
 
-int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex)
+void PostFeedModel::addPageToFilteredPostModels(const Page& page, int pageSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->addPosts(page.mFeed, pageSize);
+}
+
+void PostFeedModel::prependPageToFilteredPostModels(const Page& page, int pageSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->prependPosts(page.mFeed, pageSize);
+}
+
+void PostFeedModel::gapFillFilteredPostModels(const Page& page, int pageSize, int gapId)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->gapFill(page.mFeed, pageSize, gapId);
+}
+
+void PostFeedModel::removeHeadFromFilteredPostModels(size_t headSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->removeHeadPosts(mFeed, headSize);
+}
+
+void PostFeedModel::removeTailFromFilteredPostModels(size_t tailSize)
+{
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        model->removeTailPosts(mFeed, tailSize);
+    }
+}
+
+void PostFeedModel::clearFilteredPostModels()
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->clear();
+}
+
+int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
 {
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     if (page->mFeed.empty())
     {
         qDebug() << "Page has no posts";
+
+        if (fillGapId > 0)
+            gapFillFilteredPostModels(*page, 0, fillGapId);
+
         return 0;
     }
 
@@ -151,7 +208,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
 
         beginInsertRows({}, insertIndex, lastInsertIndex);
-        insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size());
+        insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size(), fillGapId);
         addToIndices(page->mFeed.size(), insertIndex);
 
         size_t indexOffset = 0;
@@ -176,13 +233,20 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     if (*overlapStart == 0)
     {
         qDebug() << "Full overlap, no new posts";
+
+        if (fillGapId > 0)
+        {
+            const Page emptyPage;
+            gapFillFilteredPostModels(emptyPage, 0, fillGapId);
+        }
+
         return 0;
     }
 
     const auto overlapEnd = findOverlapEnd(*page, insertIndex);
 
     beginInsertRows({}, insertIndex, insertIndex + *overlapStart - 1);
-    insertPage(mFeed.begin() + insertIndex, *page, *overlapStart);
+    insertPage(mFeed.begin() + insertIndex, *page, *overlapStart, fillGapId);
     addToIndices(*overlapStart, insertIndex);
 
     if (!page->mCursorNextPage.isEmpty() && overlapEnd)
@@ -198,6 +262,8 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
 
 void PostFeedModel::clear()
 {
+    clearFilteredPostModels();
+
     if (!mFeed.empty())
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
@@ -285,8 +351,11 @@ void PostFeedModel::removeTailPosts(int size)
         return;
     }
 
+    const size_t removeCount = mFeed.size() - removeIndex;
+    removeTailFromFilteredPostModels(removeCount);
+
     beginRemoveRows({}, removeIndex, mFeed.size() - 1);
-    removePosts(removeIndex, mFeed.size() - removeIndex);
+    removePosts(removeIndex, removeCount);
     mIndexCursorMap.erase(std::next(removeIndexCursorIt), mIndexCursorMap.end());
 
     for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
@@ -321,7 +390,8 @@ void PostFeedModel::removeHeadPosts(int size)
     }
 
     const auto removeEndIndexCursorIt = mIndexCursorMap.upper_bound(removeEndIndex);
-    const size_t removeSize = removeEndIndex + 1;
+    const int removeSize = removeEndIndex + 1;
+    removeHeadFromFilteredPostModels(removeSize);
 
     beginRemoveRows({}, 0, removeEndIndex);
     removePosts(0, removeSize);
@@ -424,6 +494,74 @@ void PostFeedModel::unfoldPosts(int startIndex)
     }
 
     changeData({ int(Role::PostFoldedType) });
+}
+
+FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profile)
+{
+    auto filter = std::make_unique<AuthorPostFilter>(profile);
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
+Q_INVOKABLE FilteredPostFeedModel* PostFeedModel::addHashtagFilter(const QString& hashtag)
+{
+    auto filter = std::make_unique<HashtagPostFilter>(hashtag);
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
+FilteredPostFeedModel* PostFeedModel::addFocusHashtagFilter(FocusHashtagEntry* focusHashtag)
+{
+    auto filter = std::make_unique<FocusHashtagsPostFilter>(*focusHashtag);
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
+FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)
+{
+    Q_ASSERT(postFilter);
+    qDebug() << "Add filtered post feed model:" << postFilter->getName();
+    auto model = std::make_unique<FilteredPostFeedModel>(
+            std::move(postFilter), mUserDid, mFollowing, mMutedReposts, mContentFilter,
+            mBookmarks, mMutedWords, mFocusHashtags, mHashtags, this);
+
+    model->setPosts(mFeed, mFeed.size());
+    auto* retval = model.get();
+    mFilteredPostFeedModels.push_back(std::move(model));
+    emit filteredPostFeedModelsChanged();
+    return retval;
+}
+
+void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
+{
+    for (auto it = mFilteredPostFeedModels.begin(); it != mFilteredPostFeedModels.end(); ++it)
+    {
+        if (it->get() == postFeedModel)
+        {
+            qDebug() << "Delete filtered post feed model:" << (*it)->getFeedName();
+            Q_ASSERT((*it)->getFeedName() == postFeedModel->getFeedName());
+            mFilteredPostFeedModels.erase(it);
+            emit filteredPostFeedModelsChanged();
+            return;
+        }
+    }
+
+    qWarning() << "Could not delete filtered post feed model:" << postFeedModel->getFeedName();
+}
+
+QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const
+{
+    auto models = mFilteredPostFeedModels | std::views::transform([](auto& m){ return m.get(); });
+    return QList<FilteredPostFeedModel*>(models.begin(), models.end());
+}
+
+void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        update(model.get());
+}
+
+void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        update(model.get());
 }
 
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
@@ -541,7 +679,7 @@ bool PostFeedModel::passLanguageFilter(const Post& post) const
 
 bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideReplies)
         return false;
@@ -604,7 +742,7 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
 bool PostFeedModel::mustShowQuotePost(const Post& post) const
 {
     Q_ASSERT(post.isQuotePost());
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideQuotePosts)
         return false;
@@ -711,7 +849,7 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(mFeedName);
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
     auto page = std::make_unique<Page>();
 
     for (size_t i = 0; i < feed->mFeed.size(); ++i)
@@ -946,7 +1084,7 @@ std::optional<size_t> PostFeedModel::findOverlapEnd(const Page& page, size_t fee
     return {};
 }
 
-void PostFeedModel::addToIndices(size_t offset, size_t startAtIndex)
+void PostFeedModel::addToIndices(int offset, size_t startAtIndex)
 {
     std::map<size_t, QString> newCursorMap;
     for (const auto& [index, cursor] : mIndexCursorMap)

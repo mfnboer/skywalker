@@ -199,7 +199,7 @@ SkyPage {
                             modal: true
 
                             onAboutToShow: root.enablePopupShield(true)
-                            onAboutToHide: root.enablePopupShield(false)
+                            onAboutToHide: { root.enablePopupShield(false); parent.active = false }
 
                             CloseMenuItem {
                                 text: qsTr("<b>Account</b>")

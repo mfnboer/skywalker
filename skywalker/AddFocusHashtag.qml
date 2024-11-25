@@ -66,7 +66,7 @@ Dialog {
 
     SearchUtils {
         id: searchUtils
-        skywalker: root.getSkywalker()
+        skywalker: root.getSkywalker() // qmllint disable missing-type
     }
 
 

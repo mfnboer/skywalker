@@ -133,7 +133,7 @@ Item {
 
                 CloseMenuItem {
                     text: qsTr("<b>Post</b>")
-                    Accessible.name: qsTr("close more options menu")
+                    Accessible.name: qsTr("close options menu")
                 }
                 AccessibleMenuItem {
                     text: qsTr("Translate")

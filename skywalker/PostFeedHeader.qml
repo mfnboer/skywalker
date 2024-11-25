@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -13,9 +13,13 @@ Rectangle {
     property bool showLanguageFilter: false
     property list<language> filteredLanguages
     property bool showPostWithMissingLanguage: true
+    property bool showMoreOptions: false
 
     signal closed
     signal feedAvatarClicked
+    signal addUserView
+    signal addHashtagView
+    signal addFocusHashtagView
 
     id: header
     width: parent.width
@@ -41,11 +45,55 @@ Rectangle {
 
             onClicked: header.closed()
         }
+        SvgButton {
+            id: moreButton
+            iconColor: guiSettings.headerTextColor
+            Material.background: "transparent"
+            svg: SvgOutline.menu
+            accessibleName: qsTr("more options")
+            visible: showMoreOptions
+
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+                width: focusMenuItem.width // TODO
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>Options</b>")
+                    Accessible.name: qsTr("close options menu")
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add user view")
+                    onTriggered: addUserView()
+                    MenuItemSvg { svg: SvgOutline.user }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add hashtag view")
+                    onTriggered: addHashtagView()
+                    MenuItemSvg { svg: SvgOutline.hashtag }
+                }
+
+                AccessibleMenuItem {
+                    id: focusMenuItem
+                    width: 250
+                    text: qsTr("Add focus hashtag view")
+                    onTriggered: addFocusHashtagView()
+                    MenuItemSvg { svg: SvgOutline.hashtag }
+                }
+            }
+        }
         FeedAvatar {
             Layout.leftMargin: 10
             Layout.rightMargin: 10
-            height: parent.height - 10
-            width: height
+            Layout.preferredHeight: parent.height - 10
+            Layout.preferredWidth: height
             avatarUrl: header.feedAvatar
             unknownSvg: defaultSvg
             visible: showAsHome && !isHomeFeed
@@ -89,7 +137,7 @@ Rectangle {
 
             function expandFeeds() {
                 if (expandFeedsButton.visible)
-                    expandFeedsButton.onClicked()
+                    expandFeedsButton.onClicked() // qmllint disable missing-proprety
             }
         }
 

@@ -5,35 +5,32 @@ import skywalker
 SkyListView {
     required property var skywalker
     property bool inSync: false
+    property bool isView: false
     property int unreadPosts: 0
     property var anchorItem // item used to calibrate list position on insert of new posts
     property int calibrationDy: 0
+    property int prevCount: 0
+
+    signal newPosts
 
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
 
-    Accessible.name: qsTr("Following")
+    Accessible.name: model ? model.feedName : ""
 
-    header: PostFeedHeader {
-        skywalker: timelineView.skywalker
-        feedName: qsTr("Following")
-        showAsHome: true
-        isHomeFeed: true
+    footer: AccessibleText {
+        width: timelineView.width
+        horizontalAlignment: Text.AlignHCenter
+        leftPadding: 10
+        rightPadding: 10
+        topPadding: count > 0 ? 10 : emptyListIndication.height + 10
+        bottomPadding: 50
+        textFormat: Text.RichText
+        wrapMode: Text.Wrap
+        text: (isView && model) ? qsTr(`${timelineView.getViewFooterText()}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`) : ""
+        onLinkActivated: skywalker.getTimelineNextPage()
     }
-    headerPositioning: ListView.OverlayHeader
-
-    footer: SkyFooter {
-        timeline: timelineView
-        skywalker: timelineView.skywalker
-        homeActive: true
-        onHomeClicked: moveToHome()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
-    }
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         required property int index
@@ -49,18 +46,29 @@ SkyListView {
     }
 
     onCountChanged: {
-        if (!inSync)
+        console.debug((model ? model.feedName : "no feed yet"), count)
+
+        if (!inSync) {
+            prevCount = count
             return
+        }
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
 
         const index = getLastVisibleIndex()
-        console.debug("Calibration, count changed:", count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
 
         // Adding/removing content changes the indices.
-        skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        if (!isView)
+            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+
         updateUnreadPosts(firstVisibleIndex)
+
+        if (count > prevCount)
+            newPosts()
+
+        prevCount = count
     }
 
     onMovementEnded: {
@@ -69,7 +77,10 @@ SkyListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
-        skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+
+        if (!isView)
+            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+
         setAnchorItem(lastVisibleIndex + 1)
         updateUnreadPosts(firstVisibleIndex)
     }
@@ -85,9 +96,10 @@ SkyListView {
     }
 
     EmptyListIndication {
+        id: emptyListIndication
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.noPosts
-        text: qsTr("No posts, follow more people")
+        text: timelineView.isView ? qsTr("No posts") : qsTr("No posts, follow more people")
         list: timelineView
     }
 
@@ -142,6 +154,11 @@ SkyListView {
         updateUnreadPosts(0)
     }
 
+    function moveToEnd() {
+        console.debug("Move to end:", count - 1)
+        moveToPost(count - 1)
+    }
+
     function calibrateUnreadPosts() {
         const firstVisibleIndex = getFirstVisibleIndex()
         updateUnreadPosts(firstVisibleIndex)
@@ -162,8 +179,14 @@ SkyListView {
     }
 
     function setInSync(index) {
+        console.debug("Sync:", model.feedName)
+
+        if (index >= 0)
+            moveToPost(index)
+        else
+            moveToEnd()
+
         inSync = true
-        moveToPost(index)
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
     }
@@ -172,5 +195,17 @@ SkyListView {
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+    }
+
+    function getViewFooterText() {
+        if (model.numPostsChecked === 0)
+            return qsTr(`No more posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+
+        return qsTr(`No more posts in ${model.numPostsChecked} timeline posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+    }
+
+    Component.onCompleted: {
+        if (!isView)
+            footer = null
     }
 }

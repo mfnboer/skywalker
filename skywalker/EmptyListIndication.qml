@@ -32,6 +32,8 @@ Rectangle {
         id: noListsText
         y: noListsImage.y
         width: parent.width
+        leftPadding: 10
+        rightPadding: 10
         horizontalAlignment: Text.AlignHCenter
         font.pointSize: guiSettings.scaledFont(10/8)
         color: Material.color(Material.Grey)

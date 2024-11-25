@@ -1691,13 +1691,17 @@ ApplicationWindow {
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
 
-        let timelineComponent = Qt.createComponent("TimelineView.qml")
-        let timelineView = timelineComponent.createObject(root, { skywalker: skywalker })
-        timelineStack.push(timelineView)
+        let timelineComponent = Qt.createComponent("TimelinePage.qml")
+
+        if (timelineComponent.status === Component.Error)
+            console.warn(timelineComponent.errorString())
+
+        let timelinePage = timelineComponent.createObject(root, { skywalker: skywalker })
+        timelineStack.push(timelinePage)
 
         let notificationsComponent = Qt.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,
-                { skywalker: skywalker, timeline: timelineView })
+                { skywalker: skywalker, timeline: timelinePage })
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         notificationStack.push(notificationsView)
 

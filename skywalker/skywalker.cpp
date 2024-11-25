@@ -3,7 +3,6 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "chat.h"
-#include "definitions.h"
 #include "file_utils.h"
 #include "focus_hashtags.h"
 #include "jni_callback.h"
@@ -33,7 +32,7 @@ static constexpr auto TIMELINE_UPDATE_INTERVAL = 91s;
 
 static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 29s;
-static constexpr int TIMELINE_ADD_PAGE_SIZE = 50;
+static constexpr int TIMELINE_ADD_PAGE_SIZE = 100;
 static constexpr int TIMELINE_GAP_FILL_SIZE = 100;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
@@ -58,11 +57,12 @@ Skywalker::Skywalker(QObject* parent) :
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(HOME_FEED, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                    mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, this)
 {
     mBookmarks.setSkywalker(this);
+    mTimelineModel.setIsHomeFeed(true);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
@@ -1374,8 +1374,10 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
             saveSyncTimestamp(lastVisibleIndex);
     }
 
-    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > 2 * TIMELINE_DELETE_SIZE)
-        mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - lastVisibleIndex - TIMELINE_DELETE_SIZE);
+    const int maxTailSize = mTimelineModel.hasFilters() ? PostFeedModel::MAX_TIMELINE_SIZE * 0.6 : TIMELINE_DELETE_SIZE * 2;
+
+    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > maxTailSize)
+        mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - lastVisibleIndex - (maxTailSize - TIMELINE_DELETE_SIZE));
 
     if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && !mGetTimelineInProgress)
         getTimelineNextPage();
@@ -1456,6 +1458,7 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
     // or deleted, then the local changes will disapper.
 
     update(&mTimelineModel);
+    mTimelineModel.makeLocalFilteredModelChange(update);
 
     for (auto& [_, model] : mPostThreadModels.items())
         update(model.get());
@@ -1467,7 +1470,10 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
         update(model.get());
 
     for (auto& [_, model] : mPostFeedModels.items())
+    {
         update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
 
     if (mBookmarksModel)
         update(mBookmarksModel.get());
@@ -1485,6 +1491,7 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
     // or deleted, then the local changes will disapper.
 
     update(&mTimelineModel);
+    mTimelineModel.makeLocalFilteredModelChange(update);
     update(&mNotificationListModel);
 
     for (auto& [_, model] : mPostThreadModels.items())
@@ -1497,7 +1504,10 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
         update(model.get());
 
     for (auto& [_, model] : mPostFeedModels.items())
+    {
         update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
 
     if (mBookmarksModel)
         update(mBookmarksModel.get());
