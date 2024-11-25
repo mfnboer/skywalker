@@ -3,7 +3,6 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "chat.h"
-#include "definitions.h"
 #include "file_utils.h"
 #include "focus_hashtags.h"
 #include "jni_callback.h"

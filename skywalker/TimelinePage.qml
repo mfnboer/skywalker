@@ -6,7 +6,8 @@ import skywalker
 
 SkyPage {
     required property var skywalker
-    property int unreadPosts: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex].unreadPosts : 0
+    property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
+    property int unreadPosts: currentViewItem ? currentViewItem.unreadPosts : 0
     property int margin: 10
 
     id: page
@@ -34,7 +35,7 @@ SkyPage {
         timeline: page
         skywalker: page.skywalker
         homeActive: true
-        onHomeClicked: getCurrentView().moveToHome()
+        onHomeClicked: currentViewItem.moveToHome()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
@@ -145,10 +146,6 @@ SkyPage {
             if (item)
                 item.cover()
         }
-    }
-
-    function getCurrentView() {
-        return viewStack.children[viewStack.currentIndex]
     }
 
     function setInSync(index) {
