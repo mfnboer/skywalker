@@ -39,7 +39,7 @@ SvgButton {
                 onClicked: parent.triggered()
             }
 
-            onTriggered: { highlighted = false; root.viewTimeline() }
+            onTriggered: { highlighted = false; root.viewTimeline(); root.unwindStack() }
 
             Accessible.role: Accessible.MenuItem
             Accessible.name: contentItem.text

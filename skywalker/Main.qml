@@ -1237,12 +1237,10 @@ ApplicationWindow {
     }
 
     function viewTimeline() {
-        unwindStack()
         stackLayout.currentIndex = stackLayout.timelineIndex
     }
 
     function viewNotifications() {
-        unwindStack()
         stackLayout.currentIndex = stackLayout.notificationIndex
 
         let loadCount = 25
@@ -1258,7 +1256,6 @@ ApplicationWindow {
     }
 
     function viewChat() {
-        unwindStack()
         stackLayout.currentIndex = stackLayout.chatIndex
 
         if (!skywalker.chat.convosLoaded())
@@ -1287,7 +1284,6 @@ ApplicationWindow {
     }
 
     function viewSearchView(searchText = "", searchScope = "") {
-        unwindStack()
         stackLayout.currentIndex = stackLayout.searchIndex
 
         if (searchStack.depth === 0)
@@ -1319,7 +1315,6 @@ ApplicationWindow {
     }
 
     function viewFeedsView() {
-        unwindStack()
         stackLayout.currentIndex = stackLayout.feedsIndex
 
         if (feedsStack.depth === 0)
@@ -1355,6 +1350,7 @@ ApplicationWindow {
         }
 
         viewTimeline()
+        unwindStack()
         pushStack(view)
     }
 
@@ -1385,6 +1381,7 @@ ApplicationWindow {
         }
 
         viewTimeline()
+        unwindStack()
         pushStack(view)
     }
 

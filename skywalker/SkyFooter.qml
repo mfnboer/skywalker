@@ -36,7 +36,7 @@ Rectangle {
             Layout.fillWidth: true
             floating: floatingButtons
             svg: homeActive ? SvgFilled.home : SvgOutline.home
-            counter: timeline.unreadPosts
+            counter: homeActive ? timeline.unreadPosts : 0
             counterBackgroundColor: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
             counterTextColor: guiSettings.textColor
             showAltBadge: showHomeFeedBadge
