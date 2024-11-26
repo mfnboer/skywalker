@@ -395,10 +395,10 @@ void UserSettings::setThreadStyle(QEnums::ThreadStyle threadStyle)
 
 QEnums::ThreadStyle UserSettings::getThreadStyle() const
 {
-    const int style = mSettings.value("threadStyle", (int)QEnums::THREAD_STYLE_BAR).toInt();
+    const int style = mSettings.value("threadStyle", (int)QEnums::THREAD_STYLE_LINE).toInt();
 
     if (style < QEnums::THREAD_STYLE_BAR || style > QEnums::THREAD_STYLE_LINE)
-        return QEnums::THREAD_STYLE_BAR;
+        return QEnums::THREAD_STYLE_LINE;
 
     return QEnums::ThreadStyle(style);
 }
