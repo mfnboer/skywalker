@@ -1,5 +1,5 @@
-next
-====
+3.8
+===
 * Timeline views (filter on users or hashtags)
 * On startup show last viewed feed from favorites (includes Following feed)
 * Option to hide replies in threads started by an unfollowed user
