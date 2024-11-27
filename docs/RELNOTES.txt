@@ -1,3 +1,7 @@
+next
+====
+* Increase maximum scrolling velocity
+
 3.8
 ===
 * Timeline views (filter on users or hashtags)
