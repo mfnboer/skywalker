@@ -44,6 +44,7 @@ public:
         PostType,
         PostFoldedType,
         PostThreadType,
+        PostThreadIndentLevel,
         PostIsPlaceHolder,
         PostGapId,
         PostHiddenPosts,

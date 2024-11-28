@@ -17,8 +17,7 @@ Item {
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
     readonly property int statsHeight: appFontHeight + 4
-    readonly property int threadBarWidth: 12 // In 5px units
-    readonly property int threadColumnWidth: threadBarWidth * 5
+    readonly property int threadColumnWidth: 60
     readonly property int threadLineWidth: 2
 
     // Colors

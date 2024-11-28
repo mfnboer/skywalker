@@ -44,7 +44,7 @@ Rectangle {
         // Author and content
         Rectangle {
             id: avatar
-            width: guiSettings.threadBarWidth * 5
+            width: guiSettings.threadColumnWidth
             height: avatarImg.height + 10
             Layout.fillHeight: true
             color: "transparent"

@@ -165,10 +165,11 @@ Post& PostThreadModel::Page::prependPost(const Post& post)
 }
 
 void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply,
-                                           bool directReply, bool firstDirectReply)
+                                           bool directReply, bool firstDirectReply, int indentLevel)
 {
     auto threadPost = Post::createPost(reply, mPostFeedModel.mThreadgateView);
     threadPost.addThreadType(QEnums::THREAD_CHILD);
+    threadPost.setThreadIndentLevel(indentLevel);
 
     if (directReply)
     {
@@ -190,14 +191,14 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
         if (!post->mReplies.empty())
         {
             mPostFeedModel.sortReplies(post.get());
-            auto nextReply = post->mReplies[0];
+            const auto& nextReply = post->mReplies[0];
             Q_ASSERT(nextReply);
 
             // Hide a reply that is not a direct reply of then thread entry post.
             // The user will see the current post as a post with a non-zero reply count.
             // By clicking on this post the hidden replies can be accessed.
             if (!mPostFeedModel.isHiddenReply(*nextReply))
-                addReplyThread(*nextReply, false, false);
+                addReplyThread(*nextReply, false, false, indentLevel);
             else
                 mFeed.back().addThreadType(QEnums::THREAD_LEAF);
         }
@@ -390,6 +391,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
         bool firstReply = true;
         sortReplies(viewPost);
+        const int indentLevel = viewPost->mReplies.size() > 1 ? 1 : 0;
 
         for (const auto& reply : viewPost->mReplies)
         {
@@ -401,7 +403,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
                 qDebug() << "First hidden reply:" << page->mFirstHiddenReplyIndex;
             }
 
-            page->addReplyThread(*reply, true, firstReply);
+            page->addReplyThread(*reply, true, firstReply, indentLevel);
             firstReply = false;
         }
     }

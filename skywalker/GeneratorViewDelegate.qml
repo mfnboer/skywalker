@@ -40,7 +40,7 @@ Rectangle {
             Layout.alignment: Qt.AlignTop
             //x: 8
             //y: 5
-            Layout.preferredWidth: guiSettings.threadBarWidth * 5
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             avatarUrl: showFeed ? feed.avatarThumb : ""
 
             onClicked: feedClicked(feed)

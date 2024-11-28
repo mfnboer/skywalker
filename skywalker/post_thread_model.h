@@ -61,7 +61,7 @@ private:
 
         Post& addPost(const Post& post);
         Post& prependPost(const Post& post);
-        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply, bool directReply, bool firstDirectReply);
+        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply, bool directReply, bool firstDirectReply, int indentLevel);
     };
 
     void clear();

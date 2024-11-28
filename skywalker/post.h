@@ -106,6 +106,8 @@ public:
 
     int getThreadType() const { return mThreadType; }
     void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
+    int getThreadIndentLevel() const { return mThreadIndentLevel; }
+    void setThreadIndentLevel(int indentLevel) { mThreadIndentLevel = indentLevel; }
 
     bool isHiddenPosts() const { return mHiddenPosts; }
     bool isNotFound() const { return mNotFound; }
@@ -143,6 +145,7 @@ private:
     QEnums::PostType mPostType = QEnums::POST_STANDALONE;
     QEnums::FoldedPostType mFoldedPostType = QEnums::FOLDED_POST_NONE;
     int mThreadType = QEnums::THREAD_NONE;
+    int mThreadIndentLevel = 0;
 
     // Timestamp to keep reply references in time sequence for the timeline
     QDateTime mReplyRefTimestamp;

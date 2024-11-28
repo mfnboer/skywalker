@@ -535,6 +535,29 @@ Rectangle {
                     }
                 }
             }
+
+            Loader {
+                width: parent.width
+                active: postType == QEnums.POST_THREAD &&
+                        !(postThreadType & QEnums.THREAD_LEAF) &&
+                        !(postThreadType & QEnums.THREAD_ENTRY) &&
+                        postReplyCount > 1
+                visible: status == Loader.Ready
+
+                sourceComponent: AccessibleText {
+                    topPadding: 10
+                    bottomPadding: 10
+                    width: parent.width
+                    elide: Text.ElideRight
+                    color: guiSettings.linkColor
+                    text: qsTr("Show more replies...")
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: openPostThread()
+                    }
+                }
+            }
         }
 
         // Folded Posts

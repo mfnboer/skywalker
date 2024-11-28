@@ -45,7 +45,7 @@ Rectangle {
             Layout.rightMargin: view.margin
             x: 8
             y: 5
-            width: guiSettings.threadBarWidth * 5
+            width: guiSettings.threadColumnWidth
             Layout.alignment: Qt.AlignTop
             avatarUrl: showList ? list.avatarThumb : ""
 

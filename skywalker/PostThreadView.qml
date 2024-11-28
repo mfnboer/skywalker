@@ -32,7 +32,7 @@ SkyListView {
 
             Rectangle {
                 id: restrictionRow
-                x: guiSettings.threadBarWidth * 5 - restrictionIcon.width
+                x: guiSettings.threadColumnWidth - restrictionIcon.width
                 anchors.bottom: parent.bottom
                 width: parent.width - x - 10
                 height: restrictionText.height + 10
