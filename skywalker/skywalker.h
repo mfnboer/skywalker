@@ -307,6 +307,7 @@ private:
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
+    void saveSyncTimelineState();
     QDateTime getSyncTimestamp() const;
     void shareImage(const QString& contentUri, const QString& text);
     void shareVideo(const QString& contentUri, const QString& text);
@@ -386,6 +387,7 @@ private:
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;
+    int mSyncPostIndex = -1;
     bool mDebugLogging = false;
 };
 

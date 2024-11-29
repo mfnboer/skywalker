@@ -43,6 +43,7 @@ static constexpr int AUTHOR_LIKES_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
 static constexpr int USER_HASHTAG_INDEX_SIZE = 100;
 static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
+static constexpr char const* HOME_FEED_STATE = "home_state";
 
 Skywalker::Skywalker(QObject* parent) :
     QObject(parent),
@@ -106,6 +107,7 @@ Skywalker::Skywalker(QObject* parent) :
 Skywalker::~Skywalker()
 {
     saveHashtags();
+    saveSyncTimelineState();
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
@@ -3083,11 +3085,68 @@ void Skywalker::saveSyncTimestamp(int postIndex)
 
     const auto& post = mTimelineModel.getPost(postIndex);
     mUserSettings.saveSyncTimestamp(mUserDid, post.getTimelineTimestamp());
+    mSyncPostIndex = postIndex;
 }
 
 QDateTime Skywalker::getSyncTimestamp() const
 {
     return mUserSettings.getSyncTimestamp(mUserDid);
+}
+
+void Skywalker::saveSyncTimelineState()
+{
+    if (mSyncPostIndex < 0 || mSyncPostIndex >= mTimelineModel.rowCount())
+    {
+        qWarning() << "Invalid sync index:" << mSyncPostIndex << "size:" << mTimelineModel.rowCount();
+        return;
+    }
+
+    if (mUserDid.isEmpty())
+    {
+        qDebug() << "No user active";
+        return;
+    }
+
+    const auto& post = mTimelineModel.getPost(mSyncPostIndex);
+    const auto timestamp = post.getTimelineTimestamp();
+    const auto savedTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
+
+    if (timestamp != savedTimestamp)
+    {
+        qWarning() << "Timestamp mismatch, sync index:" << mSyncPostIndex << "sync:" << timestamp << "saved:" << savedTimestamp;
+        return;
+    }
+
+    const QString path = FileUtils::getAppDataPath(mUserDid);
+
+    if (path.isEmpty())
+        return;
+
+    const QString fileName = QString("%1/%2.json").arg(path, HOME_FEED_STATE);
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qWarning() << "Cannot create file:" << fileName;
+        return;
+    }
+
+    QJsonObject json;
+    json.insert("syncIndex", mSyncPostIndex);
+    json.insert("syncTimestamp", timestamp.toString(Qt::ISODateWithMs));
+    auto timelineJson = mTimelineModel.toJson();
+    json.insert("feed", timelineJson);
+
+    const QJsonDocument jsonDoc(json);
+    const QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
+
+    if (file.write(data) == -1)
+    {
+        qWarning() << "Failed to write:" << fileName;
+        return;
+    }
+
+    file.close();
 }
 
 Chat* Skywalker::getChat()
@@ -3186,6 +3245,7 @@ void Skywalker::pauseApp()
     }
 
     saveHashtags();
+    saveSyncTimelineState();
     mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
     mUserSettings.setOffLineChatCheckRev(mUserDid, mChat->getLastRev());
@@ -3301,6 +3361,7 @@ void Skywalker::signOut()
     qDebug() << "Logout:" << mUserDid;
     mSignOutInProgress = true;
     saveHashtags();
+    saveSyncTimelineState();
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();
@@ -3338,6 +3399,7 @@ void Skywalker::signOut()
     mContentFilter.clear();
     mUserSettings.setActiveUserDid({});
     mTimelineSynced = false;
+    mSyncPostIndex = -1;
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);
     setGetFeedInProgress(false);

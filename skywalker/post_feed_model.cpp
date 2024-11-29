@@ -540,6 +540,64 @@ void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalP
         update(model.get());
 }
 
+QJsonObject PostFeedModel::toJson() const
+{
+    QJsonObject json;
+    json.insert("feed", AbstractPostFeedModel::toJson());
+
+    QJsonArray indexCursorJson;
+
+    for (const auto& [index, cursor] : mIndexCursorMap)
+    {
+        QJsonObject icJson;
+        icJson.insert("index", (int)index);
+        icJson.insert("cursor", cursor);
+        indexCursorJson.push_back(icJson);
+    }
+
+    json.insert("indexCursorMap", indexCursorJson);
+
+    return json;
+}
+
+void PostFeedModel::setJson(const QJsonObject& json)
+{
+    clear();
+    AbstractPostFeedModel::setJson(json);
+
+    const ATProto::XJsonObject xjson(json);
+    QJsonArray indexCursorJson = xjson.getRequiredArray("indexCursorMap");
+
+    for (const auto& icJson : indexCursorJson)
+    {
+        const ATProto::XJsonObject icXJson(icJson.toObject());
+        int index = icXJson.getRequiredInt("index");
+        QString cursor = icXJson.getRequiredString("cursor");
+        mIndexCursorMap[index] = cursor;
+    }
+
+    int nextGapId = 1;
+
+    for (size_t i = 0; i < mFeed.size(); ++i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.isGap())
+        {
+            mGapIdIndexMap[post.getGapId()] = i;
+            nextGapId = std::max(nextGapId, post.getGapId());
+        }
+
+        const QString& cid = post.getCid();
+
+        if (!cid.isEmpty())
+            storeCid(cid);
+    }
+
+    Post::initNextGapId(nextGapId);
+    logIndices();
+}
+
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 {
     mFeed.push_back(post);

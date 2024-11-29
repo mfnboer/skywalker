@@ -10,6 +10,7 @@
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/xjson.h>
 #include <atproto/lib/rich_text_master.h>
+#include <atproto/lib/xjson.h>
 
 namespace Skywalker {
 
@@ -785,6 +786,87 @@ std::vector<QString> Post::getHashtags() const
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     return ATProto::RichTextMaster::getFacetTags(*record);
+}
+
+QJsonObject Post::toJson() const
+{
+    QJsonObject json;
+
+    if (mFeedViewPost)
+        json.insert("feedViewPost", mFeedViewPost->toJson());
+    else if (mPost)
+        json.insert("post", mPost->toJson());
+
+    if (mGapId)
+        json.insert("gapId", mGapId);
+    if (!mGapCursor.isEmpty())
+        json.insert("gapCursor", mGapCursor);
+    if (mEndOfFeed)
+        json.insert("endOfFeed", mEndOfFeed);
+    if (mPostType != QEnums::POST_STANDALONE)
+        json.insert("postType", QEnums::postTypeToString(mPostType));
+    if (mFoldedPostType != QEnums::FOLDED_POST_NONE)
+        json.insert("foldedPostType", QEnums::foldedPostTypeToString(mFoldedPostType));
+    if (mThreadIndentLevel)
+        json.insert("threadIndentLevel", mThreadIndentLevel);
+    if (!mReplyRefTimestamp.isNull())
+        json.insert("replyRefTimestamp", mReplyRefTimestamp.toString(Qt::ISODateWithMs));
+    if (mReplyToAuthor && mReplyToAuthor->getProfileBasicView())
+        json.insert("replyToAuthor", mReplyToAuthor->getProfileBasicView()->toJson());
+    if (mParentInThread)
+        json.insert("parentInThread", mParentInThread);
+    if (mBlocked)
+        json.insert("blocked", mBlocked);
+    if (mNotFound)
+        json.insert("notFound", mNotFound);
+    if (mNotSupported)
+        json.insert("notSupported", mNotSupported);
+    if (!mUnsupportedType.isEmpty())
+        json.insert("unsupportedType", mUnsupportedType);
+    ATProto::XJsonObject::insertOptionalJsonObject<ATProto::AppBskyFeed::ThreadgateView>(json, "threadgateView", mThreadgateView);
+
+    return json;
+}
+
+Post Post::fromJson(const QJsonObject& json)
+{
+    Post post;
+
+    const ATProto::XJsonObject xjson(json);
+    auto feedViewPost = xjson.getOptionalObject<ATProto::AppBskyFeed::FeedViewPost>("feedViewPost");
+
+    if (feedViewPost)
+    {
+        post = Post(feedViewPost);
+    }
+    else
+    {
+        auto postView = xjson.getOptionalObject<ATProto::AppBskyFeed::PostView>("post");
+
+        if (postView)
+            post = Post(postView);
+    }
+
+    post.mGapId = xjson.getOptionalInt("gapId", 0);
+    post.mGapCursor = xjson.getOptionalString("gapCursor", {});
+    post.mEndOfFeed = xjson.getOptionalBool("endOfFeed", false);
+    post.mPostType = QEnums::stringToPostType(xjson.getOptionalString("postType", "standalone"));
+    post.mFoldedPostType = QEnums::stringToFoldedPostType(xjson.getOptionalString("foldedPostType", "none"));
+    post.mThreadIndentLevel = xjson.getOptionalInt("threadIndentLevel", 0);
+    post.mReplyRefTimestamp = xjson.getOptionalDateTime("replyRefTImestamp", {});
+    auto profileBasicView = xjson.getOptionalObject<ATProto::AppBskyActor::ProfileViewBasic>("replyToAuthor");
+
+    if (profileBasicView)
+        post.mReplyToAuthor = BasicProfile(profileBasicView);
+
+    post.mParentInThread = xjson.getOptionalBool("parentInThread", false);
+    post.mBlocked = xjson.getOptionalBool("blocked", false);
+    post.mNotFound = xjson.getOptionalBool("notFound", false);
+    post.mNotSupported = xjson.getOptionalBool("notSupported", false);
+    post.mUnsupportedType = xjson.getOptionalString("unsupportedType", {});
+    post.mThreadgateView = xjson.getOptionalObject<ATProto::AppBskyFeed::ThreadgateView>("threadgateView");
+
+    return post;
 }
 
 }
