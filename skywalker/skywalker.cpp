@@ -946,7 +946,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
 void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get timeline for gap:" << gapId;
+    qDebug() << "Get timeline for gap:" << gapId << "autoGapFill" << autoGapFill;
 
     if (mGetTimelineInProgress)
     {

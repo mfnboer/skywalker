@@ -588,10 +588,18 @@ Rectangle {
             visible: status == Loader.Ready
             sourceComponent: Text {
                 width: parent.width
+                topPadding: 50
+                bottomPadding: 50
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 color: guiSettings.linkColor
                 text: qsTr("Show more posts")
+
+                Rectangle {
+                    anchors.fill: parent
+                    z: parent.z - 1
+                    color: guiSettings.postHighLightColor
+                }
 
                 MouseArea {
                     anchors.fill: parent

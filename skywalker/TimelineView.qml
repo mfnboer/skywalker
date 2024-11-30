@@ -152,6 +152,9 @@ SkyListView {
         positionViewAtBeginning()
         setAnchorItem(0)
         updateUnreadPosts(0)
+
+        if (!isView)
+            skywalker.getTimeline(100)
     }
 
     function moveToEnd(afterMoveCb = () => {}) {
@@ -182,9 +185,9 @@ SkyListView {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count)
 
         if (index >= 0)
-            moveToPost(index, () => { skywalker.updateTimeline(5, 100) })
+            moveToPost(index, () => { skywalker.updateTimeline(15, 100) })
         else
-            moveToEnd(() => { skywalker.updateTimeline(5, 100) })
+            moveToEnd(() => { skywalker.updateTimeline(15, 100) })
 
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)

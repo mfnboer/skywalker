@@ -9,7 +9,7 @@
 namespace Skywalker {
 
 static const int JSON_SAVE_TAIL_SIZE = 50;
-static const int JSON_SAVE_HEAD_SIZE = 150;
+static const int JSON_SAVE_HEAD_SIZE = 250;
 
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
@@ -186,6 +186,7 @@ void PostFeedModel::clearFilteredPostModels()
 
 int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
 {
+    qDebug() << "Insert feed:" << feed->mFeed.size() << "index:" << insertIndex << "fillGap:" << fillGapId;
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     if (page->mFeed.empty())
@@ -202,13 +203,9 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
 
     if (!overlapStart)
     {
-        int gapId = 0;
-
-        if (!page->mOverlapsWithFeed)
-        {
-            page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
-            gapId = page->mFeed.back().getGapId();
-        }
+        page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
+        int gapId = page->mFeed.back().getGapId();
+        qDebug() << "Create new gap:" << gapId;
 
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
 
@@ -216,16 +213,11 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size(), fillGapId);
         addToIndices(page->mFeed.size(), insertIndex);
 
-        size_t indexOffset = 0;
+        mGapIdIndexMap[gapId] = lastInsertIndex;
 
-        if (gapId != 0)
-        {
-            mGapIdIndexMap[gapId] = lastInsertIndex;
-            indexOffset = 1; // offset for the place holder post.
-        }
-
+        // - 1 is offset for the place holder post.
         if (!page->mCursorNextPage.isEmpty())
-            mIndexCursorMap[lastInsertIndex - indexOffset] = page->mCursorNextPage;
+            mIndexCursorMap[lastInsertIndex - 1] = page->mCursorNextPage;
 
         endInsertRows();
 
@@ -650,7 +642,7 @@ void PostFeedModel::setJson(const QJsonObject& json)
         if (post.isGap())
         {
             mGapIdIndexMap[post.getGapId()] = i;
-            nextGapId = std::max(nextGapId, post.getGapId());
+            nextGapId = std::max(nextGapId, post.getGapId() + 1);
         }
 
         const QString& cid = post.getCid();
@@ -961,14 +953,10 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             page->collectThreadgate(post);
 
             // Due to reposting a post can show up multiple times in the feed.
-            // Also overlapping pages can come in as we look for new posts.
+            // Also overlapping pages (on prepend) can come in as we look for new posts.
+            // On gap fill, some posts may already neem showm, e.g. as parent on a reply.
             if (cidIsStored(post.getCid()))
-            {
-                if (!post.isRepost())
-                    page->mOverlapsWithFeed = true;
-
                 continue;
-            }
 
             if (feedViewPref.mHideReposts && post.isRepost())
                 continue;
