@@ -87,7 +87,7 @@ SkyListView {
 
     FlickableRefresher {
         inProgress: skywalker.getTimelineInProgress
-        topOvershootFun: () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE) // was: skywalker.getTimeline(50)
+        topOvershootFun: () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE)
         bottomOvershootFun: () => skywalker.getTimelineNextPage()
         scrollToTopFun: () => moveToPost(0)
         enabled: timelineView.inSync
@@ -144,8 +144,8 @@ SkyListView {
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
-    function moveToPost(index) {
-        moveToIndex(index, doMoveToPost)
+    function moveToPost(index, afterMoveCb = () => {}) {
+        moveToIndex(index, doMoveToPost, afterMoveCb)
     }
 
     function moveToHome() {
@@ -154,9 +154,9 @@ SkyListView {
         updateUnreadPosts(0)
     }
 
-    function moveToEnd() {
+    function moveToEnd(afterMoveCb = () => {}) {
         console.debug("Move to end:", count - 1)
-        moveToPost(count - 1)
+        moveToPost(count - 1, afterMoveCb)
     }
 
     function calibrateUnreadPosts() {
@@ -182,9 +182,9 @@ SkyListView {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count)
 
         if (index >= 0)
-            moveToPost(index)
+            moveToPost(index, () => { skywalker.updateTimeline(5, 100) })
         else
-            moveToEnd()
+            moveToEnd(() => { skywalker.updateTimeline(5, 100) })
 
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)

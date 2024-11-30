@@ -29,6 +29,7 @@ ListView {
         property int listIndex
         property int moveAttempt
         property var callback
+        property var afterMoveCallback
 
         id: moveToIndexTimer
         interval: 200
@@ -40,24 +41,32 @@ ListView {
                 }
                 else {
                     console.debug("No exact move, no more attempts")
+                    afterMoveCallback()
                 }
+            }
+            else {
+                afterMoveCallback()
             }
         }
 
-        function go(index, callbackFunc) {
+        function go(index, callbackFunc, afterMoveCb = () =>{}) {
             if (!callbackFunc(index)) {
                 // HACK: doing it again after a short interval makes the positioning work.
                 // After the first time the positioning can be off.
                 listIndex = index
                 moveAttempt = 2
                 callback = callbackFunc
+                afterMoveCallback = afterMoveCb
                 start()
+            }
+            else {
+                afterMoveCb()
             }
         }
     }
 
-    function moveToIndex(index, callbackFunc) {
-        moveToIndexTimer.go(index, callbackFunc)
+    function moveToIndex(index, callbackFunc, afterMoveCb = () => {}) {
+        moveToIndexTimer.go(index, callbackFunc, afterMoveCb)
     }
 
     // Called when list gets covered by another page

@@ -106,6 +106,7 @@ Skywalker::Skywalker(QObject* parent) :
 
 Skywalker::~Skywalker()
 {
+    qDebug() << "Destructor";
     saveHashtags();
     saveSyncTimelineState();
     Q_ASSERT(mPostThreadModels.empty());
@@ -732,6 +733,13 @@ void Skywalker::syncTimeline(int maxPages)
         return;
     }
 
+    if (restoreSyncTimelineState())
+    {
+        finishTimelineSync(mSyncPostIndex);
+        return;
+    }
+
+    // If we cannot restore from saved state, fallback to slow rewind.
     disableDebugLogging(); // sync can cause a lot of logging
     syncTimeline(timestamp, maxPages);
 }
@@ -894,17 +902,17 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
 void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
 {
     Q_ASSERT(mBsky);
-    qInfo() << "Get timeline prepend";
+    qDebug() << "Get timeline prepend, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
 
     if (mGetTimelineInProgress)
     {
-        qInfo() << "Get timeline still in progress";
+        qDebug() << "Get timeline still in progress";
         return;
     }
 
     if (mTimelineModel.rowCount() >= PostFeedModel::MAX_TIMELINE_SIZE)
     {
-        qInfo() << "Timeline is full:" << mTimelineModel.rowCount();
+        qDebug() << "Timeline is full:" << mTimelineModel.rowCount();
         return;
     }
 
@@ -963,8 +971,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
     qDebug() << "Set gap cursor:" << *cur;
 
     setGetTimelineInProgress(true);
-    const int pageSize = userInitiated ? TIMELINE_GAP_FILL_SIZE : TIMELINE_ADD_PAGE_SIZE;
-    mBsky->getTimeline(pageSize, cur,
+    mBsky->getTimeline(TIMELINE_GAP_FILL_SIZE, cur,
         [this, gapId, autoGapFill, userInitiated](auto feed){
             mTimelineModel.clearLastInsertedRowIndex();
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
@@ -1367,23 +1374,20 @@ void Skywalker::addToUnreadNotificationCount(int addUnread)
 // NOTE: indices can be -1 if the UI cannot determine the index
 void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
 {
+    Q_UNUSED(firstVisibleIndex)
+
     if (mSignOutInProgress)
         return;
 
     if (lastVisibleIndex > -1)
-    {
-        if (firstVisibleIndex > -1)
-            saveSyncTimestamp((lastVisibleIndex + firstVisibleIndex) / 2);
-        else
-            saveSyncTimestamp(lastVisibleIndex);
-    }
+        saveSyncTimestamp(lastVisibleIndex);
 
     const int maxTailSize = mTimelineModel.hasFilters() ? PostFeedModel::MAX_TIMELINE_SIZE * 0.6 : TIMELINE_DELETE_SIZE * 2;
 
     if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > maxTailSize)
         mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - lastVisibleIndex - (maxTailSize - TIMELINE_DELETE_SIZE));
 
-    if (lastVisibleIndex > mTimelineModel.rowCount() - 5 && !mGetTimelineInProgress)
+    if (lastVisibleIndex > mTimelineModel.rowCount() - 20 && !mGetTimelineInProgress)
         getTimelineNextPage();
 }
 
@@ -3093,8 +3097,20 @@ QDateTime Skywalker::getSyncTimestamp() const
     return mUserSettings.getSyncTimestamp(mUserDid);
 }
 
+static QString getTimelineStateFileName(const QString& userDid)
+{
+    const QString path = FileUtils::getAppDataPath(userDid);
+
+    if (path.isEmpty())
+        return {};
+
+    return QString("%1/%2.json").arg(path, HOME_FEED_STATE);
+}
+
 void Skywalker::saveSyncTimelineState()
 {
+    qDebug() << "Save sync timeline state:" << mUserDid;
+
     if (mSyncPostIndex < 0 || mSyncPostIndex >= mTimelineModel.rowCount())
     {
         qWarning() << "Invalid sync index:" << mSyncPostIndex << "size:" << mTimelineModel.rowCount();
@@ -3117,13 +3133,19 @@ void Skywalker::saveSyncTimelineState()
         return;
     }
 
-    const QString path = FileUtils::getAppDataPath(mUserDid);
+    const QString fileName = getTimelineStateFileName(mUserDid);
 
-    if (path.isEmpty())
+    if (fileName.isEmpty())
         return;
 
-    const QString fileName = QString("%1/%2.json").arg(path, HOME_FEED_STATE);
     QFile file(fileName);
+
+    if (!mUserSettings.getRewindToLastSeenPost(mUserDid))
+    {
+        qDebug() << "No need to save state. Remove:" << fileName;
+        file.remove();
+        return;
+    }
 
     if (!file.open(QIODevice::WriteOnly))
     {
@@ -3132,10 +3154,11 @@ void Skywalker::saveSyncTimelineState()
     }
 
     QJsonObject json;
-    json.insert("syncIndex", mSyncPostIndex);
-    json.insert("syncTimestamp", timestamp.toString(Qt::ISODateWithMs));
-    auto timelineJson = mTimelineModel.toJson();
+    int savedSyncIndex = mSyncPostIndex;
+    auto timelineJson = mTimelineModel.toJsonAroundIndex(mSyncPostIndex, savedSyncIndex);
     json.insert("feed", timelineJson);
+    json.insert("syncIndex", savedSyncIndex);
+    json.insert("syncTimestamp", timestamp.toString(Qt::ISODateWithMs));
 
     const QJsonDocument jsonDoc(json);
     const QByteArray data = jsonDoc.toJson(QJsonDocument::Compact);
@@ -3147,6 +3170,66 @@ void Skywalker::saveSyncTimelineState()
     }
 
     file.close();
+    qDebug() << "Timeline sync state saved";
+}
+
+bool Skywalker::restoreSyncTimelineState()
+{
+    qDebug() << "Restore timeline";
+
+    if (mUserDid.isEmpty())
+    {
+        qDebug() << "No user active";
+        return false;
+    }
+
+    const QString fileName = getTimelineStateFileName(mUserDid);
+
+    if (fileName.isEmpty())
+        return false;
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qWarning() << "Cannot open file:" << fileName;
+        return false;
+    }
+
+    const QByteArray data = file.readAll();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+
+    if (jsonDoc.isNull())
+    {
+        qWarning() << "Not valid JSON:" << fileName;
+        return false;
+    }
+
+    const auto savedTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
+
+    try {
+        const auto json = jsonDoc.object();
+        const ATProto::XJsonObject xjson(json);
+        const int syncIndex = xjson.getRequiredInt("syncIndex");
+        const QDateTime syncTimestamp = xjson.getRequiredDateTime("syncTimestamp");
+
+        if (syncTimestamp != savedTimestamp)
+        {
+            qDebug() << "Timestamp mismatch, sync index:" << syncIndex << "sync:" << syncTimestamp << "saved:" << savedTimestamp;
+            return false;
+        }
+
+        const auto feedJson = xjson.getRequiredJsonObject("feed");
+        mTimelineModel.setJson(feedJson);
+        mSyncPostIndex = syncIndex;
+    }
+    catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "Invalid json:" << e.msg();
+        return false;
+    }
+
+    qDebug() << "Timeline restored from saved state";
+    return true;
 }
 
 Chat* Skywalker::getChat()
@@ -3292,13 +3375,14 @@ void Skywalker::resumeApp()
     refreshSession([this]{
         startRefreshTimers();
         startTimelineAutoUpdate();
-        updateTimeline(4, 100);
+        updateTimeline(5, 100);
         mChat->resume();
     });
 }
 
 void Skywalker::updateTimeline(int autoGapFill, int pageSize)
 {
+    qDebug() << "Update timeline, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
     getTimelinePrepend(autoGapFill, pageSize);
     updatePostIndexedSecondsAgo();
 }
@@ -3349,6 +3433,7 @@ void Skywalker::checkAnniversary()
 
 void Skywalker::signOut()
 {
+    qDebug() << "Sign out:" << mUserDid;
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
@@ -3361,10 +3446,10 @@ void Skywalker::signOut()
     qDebug() << "Logout:" << mUserDid;
     mSignOutInProgress = true;
     saveHashtags();
-    saveSyncTimelineState();
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();
+    saveSyncTimelineState();
     mTimelineUpdatePaused = false;
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();

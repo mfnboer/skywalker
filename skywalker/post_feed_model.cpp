@@ -8,6 +8,9 @@
 
 namespace Skywalker {
 
+static const int JSON_SAVE_TAIL_SIZE = 50;
+static const int JSON_SAVE_HEAD_SIZE = 150;
+
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
@@ -74,6 +77,8 @@ void PostFeedModel::setFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& f
 
 int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
+    qDebug() << "Prepend feed:" << feed->mFeed.size() << "current size:" << mFeed.size();
+
     if (feed->mFeed.empty())
         return 0;
 
@@ -89,7 +94,7 @@ int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
 
 int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int gapId)
 {
-    qDebug() << "Fill gap:" << gapId;
+    qDebug() << "Fill gap:" << gapId << "feed:" << feed->mFeed.size() << "current size:" << mFeed.size();
 
     if (!mGapIdIndexMap.count(gapId))
     {
@@ -330,6 +335,8 @@ void PostFeedModel::addPage(Page::Ptr page)
 
 void PostFeedModel::removeTailPosts(int size)
 {
+    qDebug() << "Remove tail posts:" << size << "current size:" << mFeed.size();
+
     if (size <= 0 || size >= (int)mFeed.size())
         return;
 
@@ -375,6 +382,8 @@ void PostFeedModel::removeTailPosts(int size)
 
 void PostFeedModel::removeHeadPosts(int size)
 {
+    qDebug() << "Remove head posts:" << size << "current size:" << mFeed.size();
+
     if (size <= 0 || size >= (int)mFeed.size())
         return;
 
@@ -540,14 +549,67 @@ void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalP
         update(model.get());
 }
 
-QJsonObject PostFeedModel::toJson() const
+QJsonObject PostFeedModel::toJsonAroundIndex(int currentIndex, int& modifiedIndex) const
 {
+    qDebug() << "To json, index:" << currentIndex << "feed:" << mFeed.size();
+
+    int startIndex = 0;
+    int endIndex = mFeed.size();
+    auto saveIndexCursorMap{mIndexCursorMap};
+
+    // Determine tail posts to save
+    const int tailSize = (int)mFeed.size() - currentIndex;
+    const int removeTailSize = tailSize > JSON_SAVE_TAIL_SIZE ? tailSize - JSON_SAVE_HEAD_SIZE : 0;
+
+    if (removeTailSize > 0)
+    {
+        const auto removeIndexCursorIt = saveIndexCursorMap.lower_bound(mFeed.size() - removeTailSize - 1);
+
+        if (removeIndexCursorIt != saveIndexCursorMap.end())
+        {
+            endIndex = removeIndexCursorIt->first + 1;
+
+            if (endIndex < (int)mFeed.size())
+                saveIndexCursorMap.erase(std::next(removeIndexCursorIt), saveIndexCursorMap.end());
+        }
+    }
+
+    // Determine head posts to save
+    const int headSize = currentIndex;
+    const int removeHeadSize = headSize > JSON_SAVE_HEAD_SIZE ? headSize - JSON_SAVE_HEAD_SIZE : 0;
+
+    if (removeHeadSize > 0)
+    {
+        size_t removeEndIndex = removeHeadSize - 1;
+        while (removeEndIndex < mFeed.size() - 1 && mFeed[removeEndIndex + 1].isGap())
+            ++removeEndIndex;
+
+        if (removeEndIndex < mFeed.size() - 1)
+        {
+            const auto removeEndIndexCursorIt = saveIndexCursorMap.upper_bound(removeEndIndex);
+            const int removeSize = removeEndIndex + 1;
+            startIndex = removeSize;
+            saveIndexCursorMap.erase(saveIndexCursorMap.begin(), removeEndIndexCursorIt);
+
+            std::map<size_t, QString> newCursorMap;
+            for (const auto& [index, cursor] : saveIndexCursorMap)
+            {
+                if ((int)index >= removeSize)
+                    newCursorMap[index - removeSize] = cursor;
+                else
+                    newCursorMap[index] = cursor;
+            }
+
+            saveIndexCursorMap = std::move(newCursorMap);
+        }
+    }
+
     QJsonObject json;
-    json.insert("feed", AbstractPostFeedModel::toJson());
+    json.insert("feed", AbstractPostFeedModel::toJson(startIndex, endIndex));
 
     QJsonArray indexCursorJson;
 
-    for (const auto& [index, cursor] : mIndexCursorMap)
+    for (const auto& [index, cursor] : saveIndexCursorMap)
     {
         QJsonObject icJson;
         icJson.insert("index", (int)index);
@@ -557,15 +619,18 @@ QJsonObject PostFeedModel::toJson() const
 
     json.insert("indexCursorMap", indexCursorJson);
 
+    modifiedIndex = currentIndex - startIndex;
+    qDebug() << "To json, start:" << startIndex << "end:" << endIndex << "modified:" << modifiedIndex;
     return json;
 }
 
 void PostFeedModel::setJson(const QJsonObject& json)
 {
+    qDebug() << "Set JSON";
     clear();
-    AbstractPostFeedModel::setJson(json);
-
     const ATProto::XJsonObject xjson(json);
+    const auto feedJson = xjson.getRequiredJsonObject("feed");
+    AbstractPostFeedModel::setJson(feedJson);
     QJsonArray indexCursorJson = xjson.getRequiredArray("indexCursorMap");
 
     for (const auto& icJson : indexCursorJson)

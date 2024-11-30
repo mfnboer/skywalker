@@ -140,13 +140,14 @@ void AbstractPostFeedModel::unfoldPosts(int startIndex)
     changeData({ int(Role::PostFoldedType) });
 }
 
-QJsonObject AbstractPostFeedModel::toJson() const
+QJsonObject AbstractPostFeedModel::toJson(int startIndex, int endIndex) const
 {
     QJsonObject json;
     QJsonArray feedJson;
 
-    for (const auto& post : mFeed)
+    for (int i = startIndex; i < endIndex; ++i)
     {
+        const auto& post = mFeed[i];
         auto postJson = post.toJson();
         feedJson.push_back(postJson);
     }

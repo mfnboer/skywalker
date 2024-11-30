@@ -97,7 +97,7 @@ public:
     void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
-    QJsonObject toJson() const override;
+    QJsonObject toJsonAroundIndex(int currentIndex, int& modifiedIndex) const;
     void setJson(const QJsonObject& json) override;
 
 signals:
