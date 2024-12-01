@@ -18,7 +18,6 @@ const BasicProfile* ProfileStore::get(const QString& did) const
 
 void ProfileStore::add(const BasicProfile& profile)
 {
-    qDebug() << "Add profile:" << profile.getDid() << profile.getHandle();
     const QString& did = profile.getDid();
     Q_ASSERT(!did.isEmpty());
     if (did.isEmpty())

@@ -199,13 +199,18 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         return 0;
     }
 
-    const auto overlapStart = findOverlapStart(*page, insertIndex);
+    const auto [overlapStart, overlapDiscardedPost] = findOverlapStart(*page, insertIndex);
 
     if (!overlapStart)
     {
-        page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
-        int gapId = page->mFeed.back().getGapId();
-        qDebug() << "Create new gap:" << gapId;
+        int gapId = 0;
+
+        if (!overlapDiscardedPost)
+        {
+            page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
+            gapId = page->mFeed.back().getGapId();
+            qDebug() << "Create new gap:" << gapId;
+        }
 
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
 
@@ -213,11 +218,16 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size(), fillGapId);
         addToIndices(page->mFeed.size(), insertIndex);
 
-        mGapIdIndexMap[gapId] = lastInsertIndex;
+        size_t indexOffset = 0;
 
-        // - 1 is offset for the place holder post.
+        if (gapId != 0)
+        {
+            mGapIdIndexMap[gapId] = lastInsertIndex;
+            indexOffset = 1; // offset for the place holder post.
+        }
+
         if (!page->mCursorNextPage.isEmpty())
-            mIndexCursorMap[lastInsertIndex - 1] = page->mCursorNextPage;
+            mIndexCursorMap[lastInsertIndex - indexOffset] = page->mCursorNextPage;
 
         endInsertRows();
 
@@ -623,6 +633,7 @@ void PostFeedModel::setJson(const QJsonObject& json)
     const ATProto::XJsonObject xjson(json);
     const auto feedJson = xjson.getRequiredJsonObject("feed");
     AbstractPostFeedModel::setJson(feedJson);
+    // TODO: update filter models
     QJsonArray indexCursorJson = xjson.getRequiredArray("indexCursorMap");
 
     for (const auto& icJson : indexCursorJson)
@@ -954,9 +965,19 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
             // Due to reposting a post can show up multiple times in the feed.
             // Also overlapping pages (on prepend) can come in as we look for new posts.
-            // On gap fill, some posts may already neem showm, e.g. as parent on a reply.
+            // On gap fill, some posts may already been shown, e.g. as parent on a reply.
             if (cidIsStored(post.getCid()))
+            {
+                if (!post.isRepost() &&
+                    (page->mOldestDiscaredTimestamp.isNull() ||
+                        post.getTimelineTimestamp() < page->mOldestDiscaredTimestamp))
+                {
+                    qDebug() << "Discard post:" << post.getTimelineTimestamp();
+                    page->mOldestDiscaredTimestamp = post.getTimelineTimestamp();
+                }
+
                 continue;
+            }
 
             if (feedViewPref.mHideReposts && post.isRepost())
                 continue;
@@ -1090,11 +1111,12 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
     return page;
 }
 
-std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const
+std::tuple<std::optional<size_t>, bool> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const
 {
     Q_ASSERT(mFeed.size() > feedIndex);
     QString cidFirstStoredPost;
     QDateTime timestampFirstStoredPost;
+    bool overlapDiscardedPost = false;
 
     for (size_t i = feedIndex; i < mFeed.size(); ++i)
     {
@@ -1110,8 +1132,14 @@ std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t f
 
     if (cidFirstStoredPost.isEmpty())
     {
-        qWarning() << "There are not real posts in the feed!";
+        qWarning() << "There are no real posts in the feed!";
         return {};
+    }
+
+    if (!page.mOldestDiscaredTimestamp.isNull() && !timestampFirstStoredPost.isNull() &&
+        page.mOldestDiscaredTimestamp < timestampFirstStoredPost)
+    {
+        overlapDiscardedPost = true;
     }
 
     for (size_t i = 0; i < page.mFeed.size(); ++i)
@@ -1125,20 +1153,20 @@ std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t f
         if (cidFirstStoredPost == post.getCid() && timestampFirstStoredPost == post.getTimelineTimestamp())
         {
             qDebug() << "Matching overlap index found:" << i;
-            return i;
+            return {i, overlapDiscardedPost};
         }
 
         if (timestampFirstStoredPost > post.getTimelineTimestamp())
         {
             qDebug() << "Overlap start on timestamp found:" << i << timestampFirstStoredPost << post.getTimelineTimestamp();
-            return i;
+            return {i, overlapDiscardedPost};
         }
     }
 
     // NOTE: the gap may be empty when the last post in the page is the predecessor of
     // the first post the stored feed. There is no way of knowing.
     qDebug() << "No overlap found, there is a gap";
-    return {};
+    return {std::nullopt, overlapDiscardedPost};
 }
 
 std::optional<size_t> PostFeedModel::findOverlapEnd(const Page& page, size_t feedIndex) const

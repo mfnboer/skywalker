@@ -108,7 +108,6 @@ Skywalker::~Skywalker()
 {
     qDebug() << "Destructor";
     saveHashtags();
-    saveSyncTimelineState();
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
@@ -733,13 +732,15 @@ void Skywalker::syncTimeline(int maxPages)
         return;
     }
 
-    if (restoreSyncTimelineState())
-    {
-        finishTimelineSync(mSyncPostIndex);
-        return;
-    }
+    // Instant restore does not work well if there are no newer posts saved
+    // then the restore points. Timline must still be loaded then, and ListView
+    // positioning is when entries get prepended before the timeline that was saved.
+    // if (restoreSyncTimelineState())
+    // {
+    //     finishTimelineSync(mSyncPostIndex);
+    //     return;
+    // }
 
-    // If we cannot restore from saved state, fallback to slow rewind.
     disableDebugLogging(); // sync can cause a lot of logging
     syncTimeline(timestamp, maxPages);
 }
@@ -3225,10 +3226,11 @@ bool Skywalker::restoreSyncTimelineState()
     }
     catch (ATProto::InvalidJsonException& e) {
         qWarning() << "Invalid json:" << e.msg();
+        mTimelineModel.clear();
         return false;
     }
 
-    qDebug() << "Timeline restored from saved state";
+    qDebug() << "Timeline restored from saved state, sync index:" << mSyncPostIndex;
     return true;
 }
 
@@ -3328,7 +3330,6 @@ void Skywalker::pauseApp()
     }
 
     saveHashtags();
-    saveSyncTimelineState();
     mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
     mUserSettings.setOffLineChatCheckRev(mUserDid, mChat->getLastRev());
@@ -3449,7 +3450,6 @@ void Skywalker::signOut()
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();
-    saveSyncTimelineState();
     mTimelineUpdatePaused = false;
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();

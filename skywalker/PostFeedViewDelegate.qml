@@ -595,12 +595,6 @@ Rectangle {
                 color: guiSettings.linkColor
                 text: qsTr("Show more posts")
 
-                Rectangle {
-                    anchors.fill: parent
-                    z: parent.z - 1
-                    color: guiSettings.postHighLightColor
-                }
-
                 MouseArea {
                     anchors.fill: parent
                     onClicked: getGapPosts()

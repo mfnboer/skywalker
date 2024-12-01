@@ -39,7 +39,6 @@ void AuthorCache::put(const BasicProfile& author)
 
     auto* entry = new Entry(author);
     mCache.insert(did, entry);
-    qDebug() << "Cached:" << did << "size:" << mCache.size();
 }
 
 void AuthorCache::putProfile(const QString& did)

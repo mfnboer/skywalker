@@ -114,6 +114,7 @@ private:
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
         std::unordered_map<QString, ATProto::AppBskyFeed::ThreadgateView::SharedPtr> mRootUriToThreadgate;
+        QDateTime mOldestDiscaredTimestamp;
 
         void addPost(const Post& post, bool isParent = false);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
@@ -146,8 +147,8 @@ private:
     // Returns gap id if insertion created a gap in the feed.
     int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
 
-    // Returns an index in the page feed
-    std::optional<size_t> findOverlapStart(const Page& page, size_t feedIndex) const;
+    // Returns an index in the page feed and a boolean indicating if there was an overlap on discarded posts.
+    std::tuple<std::optional<size_t>, bool> findOverlapStart(const Page& page, size_t feedIndex) const;
 
     // Return an index in mFeed
     std::optional<size_t> findOverlapEnd(const Page& page, size_t feedIndex) const;

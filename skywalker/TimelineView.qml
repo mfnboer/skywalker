@@ -57,7 +57,7 @@ SkyListView {
         let lastVisibleIndex = getLastVisibleIndex()
 
         const index = getLastVisibleIndex()
-        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
         // Adding/removing content changes the indices.
         if (!isView)
@@ -170,24 +170,23 @@ SkyListView {
     function rowsInsertedHandler(parent, start, end) {
         let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()
-        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index)
+        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
         calibrateUnreadPosts()
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
         let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()
-        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index)
-        setAnchorItem(index + 1)
+        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
     }
 
     function setInSync(index) {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count)
 
         if (index >= 0)
-            moveToPost(index, () => { skywalker.updateTimeline(15, 100) })
+            moveToPost(index)
         else
-            moveToEnd(() => { skywalker.updateTimeline(15, 100) })
+            moveToEnd()
 
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)
