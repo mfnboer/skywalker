@@ -178,6 +178,7 @@ SkyListView {
         let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()
         console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+        setAnchorItem(index + 1)
     }
 
     function setInSync(index) {
