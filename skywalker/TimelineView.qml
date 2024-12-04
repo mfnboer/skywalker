@@ -55,13 +55,7 @@ SkyListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
-
-        const index = getLastVisibleIndex()
         console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        // Adding/removing content changes the indices.
-        if (!isView)
-            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
 
         updateUnreadPosts(firstVisibleIndex)
 
@@ -81,7 +75,7 @@ SkyListView {
         if (!isView)
             skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
 
-        setAnchorItem(lastVisibleIndex + 1)
+        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
     }
 
@@ -111,6 +105,9 @@ SkyListView {
     }
 
     function calibratePosition() {
+        if (calibrationDy === 0)
+            return
+
         console.debug("Calibration, calibrationDy:", calibrationDy)
         timelineView.contentY += calibrationDy
         calibrationDy = 0
@@ -121,14 +118,16 @@ SkyListView {
         timelineView.unreadPosts = Math.max(firstIndex, 0)
     }
 
-    function setAnchorItem(index) {
+    function setAnchorItem(firstIndex, lastIndex) {
+        const index = firstIndex >= 0 ? firstIndex : lastIndex
+
+        if (index < 0)
+            return
+
         if (anchorItem)
             anchorItem.isAnchorItem = false
 
-        if (index < 0)
-            anchorItem = null
-        else
-            anchorItem = itemAtIndex(index)
+        anchorItem = itemAtIndex(index)
 
         if (anchorItem)
             anchorItem.isAnchorItem = true
@@ -139,7 +138,7 @@ SkyListView {
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
         positionViewAtIndex(Math.max(index, 0), ListView.End)
-        setAnchorItem(lastVisibleIndex + 1)
+        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
@@ -150,7 +149,7 @@ SkyListView {
 
     function moveToHome() {
         positionViewAtBeginning()
-        setAnchorItem(0)
+        setAnchorItem(0, 0)
         updateUnreadPosts(0)
 
         if (!isView)
@@ -175,10 +174,21 @@ SkyListView {
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
+        // The Qt.callLater may still be pending when this code executes.
+        // Incoming network events have higher prio than callLater.
+        calibratePosition()
+
         let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()
         console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-        setAnchorItem(index + 1)
+    }
+
+    function rowsRemovedHandler(parent, start, end) {
+        calibrateUnreadPosts()
+    }
+
+    function rowsAboutToBeRemovedHandler(parent, start, end) {
+        calibratePosition()
     }
 
     function setInSync(index) {
@@ -192,12 +202,16 @@ SkyListView {
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
+        model.onRowsRemoved.connect(rowsRemovedHandler)
+        model.onRowsAboutToBeRemoved.connect(rowsAboutToBeRemovedHandler)
     }
 
     function stopSync() {
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+        model.onRowsRemoved.disconnect(rowsRemovedHandler)
+        model.onRowsAboutToBeRemoved.disconnect(rowsAboutToBeRemovedHandler)
     }
 
     function getViewFooterText() {

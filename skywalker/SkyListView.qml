@@ -83,20 +83,10 @@ ListView {
     }
 
     function getFirstVisibleIndex() {
-        let firstVisibleIndex = indexAt(0, contentY + (headerItem ? headerItem.height : 0))
-
-        if (firstVisibleIndex < 0 && count > 0)
-            return 0
-
-        return firstVisibleIndex
+        return indexAt(0, contentY + (headerItem ? headerItem.height : 0))
     }
 
     function getLastVisibleIndex() {
-        let lastVisibleIndex = indexAt(0, contentY + height - 1)
-
-        if (lastVisibleIndex < 0 && count > 0)
-            return count
-
-        return lastVisibleIndex
+        return indexAt(0, contentY + height - 1)
     }
 }
