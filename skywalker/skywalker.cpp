@@ -3391,13 +3391,17 @@ void Skywalker::resumeApp()
 
     mTimelineUpdatePaused = false;
     const auto lastSyncTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
+    const auto postCount = mTimelineModel.rowCount();
 
-    refreshSession([this, lastSyncTimestamp]{
+    refreshSession([this, lastSyncTimestamp, postCount]{
         startRefreshTimers();
         startTimelineAutoUpdate();
-        updateTimeline(5, 100, [this, lastSyncTimestamp]{
-            const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp);
-            emit timelineResumed(lastSyncIndex);
+        updateTimeline(5, 100, [this, lastSyncTimestamp, postCount]{
+            if (postCount != mTimelineModel.rowCount())
+            {
+                const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp);
+                emit timelineResumed(lastSyncIndex);
+            }
         });
         mChat->resume();
     });

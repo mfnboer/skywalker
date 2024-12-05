@@ -33,18 +33,29 @@ ScrollView {
                 required property contentlabel modelData
                 property basicprofile labeler
 
-                width: label.width + label.height
+                width: label.width + (labelerAvatar.active ? label.height : 0)
                 height: label.height
                 radius: 2
                 color: modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
 
-                Avatar {
+                Loader {
                     id: labelerAvatar
-                    x: 2
-                    y: 2
-                    width: parent.height - 4
-                    author: labeler
-                    showModeratorIcon: false
+                    active: labeler.avatarThumbUrl
+                    asynchronous: true
+
+                    sourceComponent: Rectangle {
+                        width: height
+                        height: label.height
+                        color: "transparent"
+
+                        Avatar {
+                            x: 2
+                            y: 2
+                            width: parent.width - 4
+                            author: labeler
+                            showModeratorIcon: false
+                        }
+                    }
                 }
 
                 SkyLabel {
