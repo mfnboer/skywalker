@@ -123,7 +123,7 @@ Column {
                     backgroundOpacity: 0.6
                     color: "white"
                     text: guiSettings.videoDurationToString(videoPlayer.getDuration())
-                    visible: !isFullViewMode
+                    visible: !isFullViewMode && filter.imageVisible()
                 }
             }
         }
@@ -219,6 +219,9 @@ Column {
                 }
 
                 function start() {
+                    if (!filter.imageVisible())
+                        return
+
                     restartTimer.set(true)
                     play()
                 }
@@ -287,6 +290,8 @@ Column {
             width: parent.width
             height: parent.height
             z: -1
+            enabled: filter.imageVisible()
+
             onClicked: {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
