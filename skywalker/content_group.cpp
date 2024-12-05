@@ -110,10 +110,11 @@ QString ContentGroup::getTitleWithSeverity() const
     case QEnums::LABEL_SEVERITY_ALERT:
         return QString("⚠️ %1").arg(mTitle);
     case QEnums::LABEL_SEVERITY_INFO:
-        return QString("ℹ️ %1").arg(mTitle);
-    default:
+    case QEnums::LABEL_SEVERITY_NONE:
         return mTitle;
     }
+
+    return mTitle;
 }
 
 QString ContentGroup::getFormattedDescription() const

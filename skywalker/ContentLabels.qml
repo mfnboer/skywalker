@@ -29,26 +29,53 @@ ScrollView {
         Repeater {
             model: labelsToShow
 
-            SkyLabel {
+            Rectangle {
                 required property contentlabel modelData
+                property basicprofile labeler
 
-                backgroundColor: modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
-                font.pointSize: guiSettings.scaledFont(5/8)
-                font.italic: true
-                color: guiSettings.textColor
-                text: getDisplayText(modelData)
+                width: label.width + label.height
+                height: label.height
+                radius: 2
+                color: modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
 
-                Accessible.role: Accessible.StaticText
-                Accessible.name: qsTr(`content label: ${text}`)
+                Avatar {
+                    id: labelerAvatar
+                    x: 2
+                    y: 2
+                    width: parent.height - 4
+                    author: labeler
+                    showModeratorIcon: false
+                }
+
+                SkyLabel {
+                    id: label
+                    anchors.left: labelerAvatar.right
+                    backgroundColor: "transparent"
+                    font.pointSize: guiSettings.scaledFont(6/8)
+                    font.italic: true
+                    color: guiSettings.textColor
+                    text: getDisplayText(modelData)
+
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: qsTr(`content label: ${text}`)
+                }
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: showInfo(modelData)
                 }
+
+                ProfileUtils {
+                    id: profileUtils
+                    skywalker: root.getSkywalker() // qmllint disable missing-type
+
+                    onBasicProfileOk: (profile) => labeler = profile // qmllint disable signal-handler-parameters
+                }
+
+                Component.onCompleted: profileUtils.getBasicProfile(modelData.did)
             }
         }
     }
-
 
     function getDisplayText(label) {
         const contentGroup = skywalker.getContentGroup(label.did, label.labelId)
@@ -81,5 +108,10 @@ ScrollView {
             infoPage.destroy()
         })
         infoPage.open()
+    }
+
+    Component.onCompleted: {
+        for (let i = 0; i < labelsToShow.length; ++i)
+            profileUtils.getBasicProfile(labelsToShow[i].did)
     }
 }

@@ -1,5 +1,6 @@
 next
 ====
+* Show labeler avatar on labels
 * Retain timeline position over app pause/resume
 * Increase maximum scrolling velocity
 

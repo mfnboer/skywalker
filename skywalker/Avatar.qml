@@ -9,6 +9,7 @@ Item {
     property bool showWarnedMedia: false
     readonly property bool showThumb: width < 90 // from bsky client code
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
+    property bool showModeratorIcon: true
 
     signal clicked
     signal pressAndHold
@@ -60,7 +61,7 @@ Item {
 
     ModeratorIcon {
         width: parent.width * 0.6
-        visible: author.associated.isLabeler
+        visible: author.associated.isLabeler && showModeratorIcon
     }
 
 

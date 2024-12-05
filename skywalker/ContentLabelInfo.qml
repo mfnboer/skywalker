@@ -8,6 +8,7 @@ Dialog {
     required property contentlabel label
     readonly property contentgroup contentGroup: skywalker.getContentGroup(label.did, label.labelId)
     property string labelerHandle: ""
+    property basicprofile labeler
 
     id: contentLabelInfo
     width: parent.width
@@ -26,7 +27,14 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
 
+            Avatar {
+                Layout.preferredHeight: 20
+                Layout.preferredWidth: height
+                author: labeler
+            }
+
             SkyCleanedText {
+                id: titleText
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
@@ -53,7 +61,6 @@ Dialog {
             color: guiSettings.textColor
             text: contentGroup.formattedDescription
         }
-
 
         AccessibleText {
             id: creatorHandle
@@ -92,8 +99,9 @@ Dialog {
         id: profileUtils
         skywalker: root.getSkywalker()
 
-        onHandle: (handle, displayName, did) => {
-            labelerHandle = `<a href="${did}" style="color: ${guiSettings.linkColor}">@${handle}</a>`
+        onBasicProfileOk: (profile) => {
+            labeler = profile
+            labelerHandle = `<a href="${profile.did}" style="color: ${guiSettings.linkColor}">@${profile.handle}</a>`
         }
     }
 
@@ -105,6 +113,6 @@ Dialog {
     }
 
     Component.onCompleted: {
-        profileUtils.getHandle(label.did)
+        profileUtils.getBasicProfile(label.did)
     }
 }

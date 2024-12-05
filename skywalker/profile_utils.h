@@ -18,7 +18,7 @@ class ProfileUtils : public WrappedSkywalker, public Presence
 public:
     explicit ProfileUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void getHandle(const QString& did);
+    Q_INVOKABLE void getBasicProfile(const QString& did);
 
     // The token will be returned in the emitted signal
     // atId is handle or did.
@@ -37,7 +37,7 @@ public:
     Q_INVOKABLE void clearPinnedPost(const QString& did, const QString& cid);
 
 signals:
-    void handle(QString handle, QString displayName, QString did);
+    void basicProfileOk(BasicProfile profile);
     void profileViewOk(Profile profile, const QString& token);
     void profileViewFailed(QString error);
     void updateProfileProgress(QString msg);

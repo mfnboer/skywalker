@@ -57,13 +57,13 @@ ATProto::PostMaster* ProfileUtils::postMaster()
     return mPostMaster.get();
 }
 
-void ProfileUtils::getHandle(const QString& did)
+void ProfileUtils::getBasicProfile(const QString& did)
 {
     const auto* profile = AuthorCache::instance().get(did);
 
     if (profile)
     {
-        emit handle(profile->getHandle(), profile->getDisplayName(), did);
+        emit basicProfileOk(*profile);
         return;
     }
 
@@ -75,11 +75,12 @@ void ProfileUtils::getHandle(const QString& did)
             if (!presence)
                 return;
 
-            AuthorCache::instance().put(BasicProfile(profile));
-            emit handle(profile->mHandle, profile->mDisplayName.value_or(""), profile->mDid);
+            const BasicProfile basicProfile(profile);
+            AuthorCache::instance().put(basicProfile);
+            emit basicProfileOk(basicProfile);
         },
         [](const QString& error, const QString& msg){
-            qDebug() << "getProfileView failed:" << error << " - " << msg;
+            qDebug() << "getBasicProfile failed:" << error << " - " << msg;
         });
 }
 
