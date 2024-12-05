@@ -900,7 +900,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     );
 }
 
-void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
+void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const std::function<void()>& cb)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline prepend, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
@@ -921,7 +921,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
     setGetTimelineInProgress(true);
 
     mBsky->getTimeline(pageSize, {},
-        [this, autoGapFill](auto feed){
+        [this, autoGapFill, cb](auto feed){
             const int gapId = mTimelineModel.prependFeed(std::move(feed));
             setGetTimelineInProgress(false);
             setAutoUpdateTimelineInProgress(false);
@@ -929,10 +929,18 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
             if (gapId > 0)
             {
                 if (autoGapFill > 0)
-                    getTimelineForGap(gapId, autoGapFill - 1);
+                {
+                    getTimelineForGap(gapId, autoGapFill - 1, false, cb);
+                    return;
+                }
                 else
+                {
                     qDebug() << "Gap created, no auto gap fill";
+                }
             }
+
+            if (cb)
+                cb();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "getTimelinePrepend FAILED:" << error << " - " << msg;
@@ -944,7 +952,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize)
         );
 }
 
-void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated)
+void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated, const std::function<void()>& cb)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline for gap:" << gapId << "autoGapFill" << autoGapFill;
@@ -973,7 +981,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_GAP_FILL_SIZE, cur,
-        [this, gapId, autoGapFill, userInitiated](auto feed){
+        [this, gapId, autoGapFill, userInitiated, cb](auto feed){
             mTimelineModel.clearLastInsertedRowIndex();
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
             setGetTimelineInProgress(false);
@@ -989,10 +997,18 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
             if (newGapId > 0)
             {
                 if (autoGapFill > 0)
-                    getTimelineForGap(newGapId, autoGapFill - 1, userInitiated);
+                {
+                    getTimelineForGap(newGapId, autoGapFill - 1, userInitiated, cb);
+                    return;
+                }
                 else
+                {
                     qDebug() << "Gap created, no auto gap fill";
+                }
             }
+
+            if (cb)
+                cb();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "getTimelineForGap FAILED:" << error << " - " << msg;
@@ -3372,19 +3388,23 @@ void Skywalker::resumeApp()
     }
 
     mTimelineUpdatePaused = false;
+    const auto lastSyncTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
 
-    refreshSession([this]{
+    refreshSession([this, lastSyncTimestamp]{
         startRefreshTimers();
         startTimelineAutoUpdate();
-        updateTimeline(5, 100);
+        updateTimeline(5, 100, [this, lastSyncTimestamp]{
+            const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp);
+            emit timelineResumed(lastSyncIndex);
+        });
         mChat->resume();
     });
 }
 
-void Skywalker::updateTimeline(int autoGapFill, int pageSize)
+void Skywalker::updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb)
 {
     qDebug() << "Update timeline, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
-    getTimelinePrepend(autoGapFill, pageSize);
+    getTimelinePrepend(autoGapFill, pageSize, cb);
     updatePostIndexedSecondsAgo();
 }
 

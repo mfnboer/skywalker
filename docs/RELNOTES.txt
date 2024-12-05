@@ -1,5 +1,6 @@
 next
 ====
+* Retain timeline position over app pause/resume
 * Increase maximum scrolling velocity
 
 3.8

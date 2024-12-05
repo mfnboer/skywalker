@@ -160,6 +160,10 @@ SkyPage {
         timelineView.moveToPost(index)
     }
 
+    function resumeTimeline(index) {
+        timelineView.resumeTimeline(index)
+    }
+
     function addUserView() {
         let component = Qt.createComponent("AddUserTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })

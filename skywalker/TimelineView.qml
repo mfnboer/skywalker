@@ -166,6 +166,19 @@ SkyListView {
         updateUnreadPosts(firstVisibleIndex)
     }
 
+    function resumeTimeline(index) {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Resume timeline:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+
+        if (index >= firstVisibleIndex && index <= lastVisibleIndex) {
+            console.debug("Index visible:", index)
+            return
+        }
+
+        moveToPost(index)
+    }
+
     function rowsInsertedHandler(parent, start, end) {
         let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()

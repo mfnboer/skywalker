@@ -216,6 +216,11 @@ ApplicationWindow {
             getTimelineView().moveToPost(gapEndIndex)
         }
 
+        onTimelineResumed: (postIndex) => {
+            console.debug("Timeline resumed, index:", postIndex)
+            getTimelineView().resumeTimeline(postIndex)
+        }
+
         onGetDetailedProfileOK: (profile) => {
             let modelId = skywalker.createAuthorFeedModel(profile)
             viewAuthor(profile, modelId)

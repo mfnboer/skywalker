@@ -85,10 +85,10 @@ public:
     Q_INVOKABLE void startTimelineAutoUpdate();
     Q_INVOKABLE void stopTimelineAutoUpdate();
     Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
-                void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE);
-    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false);
+    void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE, const std::function<void()>& cb = {});
+    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false, const std::function<void()>& cb = {});
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
-    Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize);
+    Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {});
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
     Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
@@ -241,7 +241,7 @@ signals:
     void sessionDeleted();
     void timelineSyncOK(int index);
     void timelineSyncFailed();
-    void timelineRefreshed(int prevTopPostIndex);
+    void timelineResumed(int index);
     void gapFilled(int gapEndIndex);
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
