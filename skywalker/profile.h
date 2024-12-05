@@ -173,6 +173,8 @@ public:
     // or being blocked by it.
     Q_INVOKABLE bool isBlocked() const;
 
+    ATProto::AppBskyActor::ProfileViewBasic::SharedPtr getProfileBasicView() const;
+
 protected:
     ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mProfileDetailedView;
     ATProto::AppBskyActor::ProfileView::SharedPtr mProfileView;

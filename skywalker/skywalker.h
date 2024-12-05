@@ -85,10 +85,10 @@ public:
     Q_INVOKABLE void startTimelineAutoUpdate();
     Q_INVOKABLE void stopTimelineAutoUpdate();
     Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
-                void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE);
-    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false);
+    void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE, const std::function<void()>& cb = {});
+    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false, const std::function<void()>& cb = {});
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
-    Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize);
+    Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {});
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
     Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
@@ -239,9 +239,11 @@ signals:
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
     void sessionDeleted();
+    void timelineSyncStart(int pages, QDateTime rewindTimestamp);
+    void timelineSyncProgress(int pages, QDateTime timestamp);
     void timelineSyncOK(int index);
     void timelineSyncFailed();
-    void timelineRefreshed(int prevTopPostIndex);
+    void timelineResumed(int index);
     void gapFilled(int gapEndIndex);
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
@@ -308,6 +310,8 @@ private:
     bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex);
     QDateTime getSyncTimestamp() const;
+    void saveSyncTimelineState();
+    bool restoreSyncTimelineState();
     void shareImage(const QString& contentUri, const QString& text);
     void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
@@ -386,6 +390,7 @@ private:
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;
+    int mSyncPostIndex = -1;
     bool mDebugLogging = false;
 };
 

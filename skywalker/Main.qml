@@ -202,6 +202,14 @@ ApplicationWindow {
             signIn()
         }
 
+        onTimelineSyncStart: (maxPages, rewindTimestamp) => {
+            setStartupRewindStart(maxPages, rewindTimestamp)
+        }
+
+        onTimelineSyncProgress: (pages, timestamp) => {
+            setStartupRewindProgress(pages, timestamp)
+        }
+
         onTimelineSyncOK: (index) => {
             syncTimelineToPost(index)
         }
@@ -214,6 +222,11 @@ ApplicationWindow {
         onGapFilled: (gapEndIndex) => {
             console.debug("Gap filled, end index:", gapEndIndex)
             getTimelineView().moveToPost(gapEndIndex)
+        }
+
+        onTimelineResumed: (postIndex) => {
+            console.debug("Timeline resumed, index:", postIndex)
+            getTimelineView().resumeTimeline(postIndex)
         }
 
         onGetDetailedProfileOK: (profile) => {
@@ -817,17 +830,29 @@ ApplicationWindow {
     function setStartupStatus(msg) {
         let item = currentStackItem()
 
-        if (item instanceof StartupStatus) {
+        if (item instanceof StartupStatus)
             item.setStatus(msg)
-        }
+    }
+
+    function setStartupRewindStart(pages, timestamp) {
+        let item = currentStackItem()
+
+        if (item instanceof StartupStatus)
+            item.startRewind(pages, timestamp)
+    }
+
+    function setStartupRewindProgress(pages, timestamp) {
+        let item = currentStackItem()
+
+        if (item instanceof StartupStatus)
+            item.updateRewindProgress(pages, timestamp)
     }
 
     function closeStartupStatus() {
         let item = currentStackItem()
 
-        if (item instanceof StartupStatus) {
+        if (item instanceof StartupStatus)
             popStack()
-        }
     }
 
     function showAbout() {

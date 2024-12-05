@@ -55,22 +55,20 @@ Item {
             return
 
         if (topOvershootFun && verticalOvershoot < -refreshText.height - 10)  {
-            if (!inTopOvershoot && !inProgress) {
-                topOvershootFun()
-            }
-
             inTopOvershoot = true
         } else if (verticalOvershoot >= 0) {
+            if (inTopOvershoot && !inProgress)
+                topOvershootFun()
+
             inTopOvershoot = false
         }
 
         if (bottomOvershootFun && verticalOvershoot > 0) {
-            if (!inBottomOvershoot && !inProgress) {
-                bottomOvershootFun()
-            }
-
             inBottomOvershoot = true;
         } else {
+            if (inBottomOvershoot && !inProgress)
+                bottomOvershootFun()
+
             inBottomOvershoot = false;
         }
     }

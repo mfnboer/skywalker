@@ -8,6 +8,9 @@
 
 namespace Skywalker {
 
+static const int JSON_SAVE_TAIL_SIZE = 50;
+static const int JSON_SAVE_HEAD_SIZE = 250;
+
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
@@ -74,6 +77,8 @@ void PostFeedModel::setFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& f
 
 int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
+    qDebug() << "Prepend feed:" << feed->mFeed.size() << "current size:" << mFeed.size();
+
     if (feed->mFeed.empty())
         return 0;
 
@@ -89,7 +94,7 @@ int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
 
 int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int gapId)
 {
-    qDebug() << "Fill gap:" << gapId;
+    qDebug() << "Fill gap:" << gapId << "feed:" << feed->mFeed.size() << "current size:" << mFeed.size();
 
     if (!mGapIdIndexMap.count(gapId))
     {
@@ -181,6 +186,7 @@ void PostFeedModel::clearFilteredPostModels()
 
 int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
 {
+    qDebug() << "Insert feed:" << feed->mFeed.size() << "index:" << insertIndex << "fillGap:" << fillGapId;
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
     if (page->mFeed.empty())
@@ -193,16 +199,17 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         return 0;
     }
 
-    const auto overlapStart = findOverlapStart(*page, insertIndex);
+    const auto [overlapStart, overlapDiscardedPost] = findOverlapStart(*page, insertIndex);
 
     if (!overlapStart)
     {
         int gapId = 0;
 
-        if (!page->mOverlapsWithFeed)
+        if (!overlapDiscardedPost)
         {
             page->mFeed.push_back(Post::createGapPlaceHolder(page->mCursorNextPage));
             gapId = page->mFeed.back().getGapId();
+            qDebug() << "Create new gap:" << gapId;
         }
 
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
@@ -330,6 +337,8 @@ void PostFeedModel::addPage(Page::Ptr page)
 
 void PostFeedModel::removeTailPosts(int size)
 {
+    qDebug() << "Remove tail posts:" << size << "current size:" << mFeed.size();
+
     if (size <= 0 || size >= (int)mFeed.size())
         return;
 
@@ -375,6 +384,8 @@ void PostFeedModel::removeTailPosts(int size)
 
 void PostFeedModel::removeHeadPosts(int size)
 {
+    qDebug() << "Remove head posts:" << size << "current size:" << mFeed.size();
+
     if (size <= 0 || size >= (int)mFeed.size())
         return;
 
@@ -538,6 +549,121 @@ void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalP
 {
     for (auto& model : mFilteredPostFeedModels)
         update(model.get());
+}
+
+QJsonObject PostFeedModel::toJsonAroundIndex(int currentIndex, int& modifiedIndex) const
+{
+    qDebug() << "To json, index:" << currentIndex << "feed:" << mFeed.size();
+
+    int startIndex = 0;
+    int endIndex = mFeed.size();
+    auto saveIndexCursorMap{mIndexCursorMap};
+
+    // Determine tail posts to save
+    const int tailSize = (int)mFeed.size() - currentIndex;
+    const int removeTailSize = tailSize > JSON_SAVE_TAIL_SIZE ? tailSize - JSON_SAVE_HEAD_SIZE : 0;
+
+    if (removeTailSize > 0)
+    {
+        const auto removeIndexCursorIt = saveIndexCursorMap.lower_bound(mFeed.size() - removeTailSize - 1);
+
+        if (removeIndexCursorIt != saveIndexCursorMap.end())
+        {
+            endIndex = removeIndexCursorIt->first + 1;
+
+            if (endIndex < (int)mFeed.size())
+                saveIndexCursorMap.erase(std::next(removeIndexCursorIt), saveIndexCursorMap.end());
+        }
+    }
+
+    // Determine head posts to save
+    const int headSize = currentIndex;
+    const int removeHeadSize = headSize > JSON_SAVE_HEAD_SIZE ? headSize - JSON_SAVE_HEAD_SIZE : 0;
+
+    if (removeHeadSize > 0)
+    {
+        size_t removeEndIndex = removeHeadSize - 1;
+        while (removeEndIndex < mFeed.size() - 1 && mFeed[removeEndIndex + 1].isGap())
+            ++removeEndIndex;
+
+        if (removeEndIndex < mFeed.size() - 1)
+        {
+            const auto removeEndIndexCursorIt = saveIndexCursorMap.upper_bound(removeEndIndex);
+            const int removeSize = removeEndIndex + 1;
+            startIndex = removeSize;
+            saveIndexCursorMap.erase(saveIndexCursorMap.begin(), removeEndIndexCursorIt);
+
+            std::map<size_t, QString> newCursorMap;
+            for (const auto& [index, cursor] : saveIndexCursorMap)
+            {
+                if ((int)index >= removeSize)
+                    newCursorMap[index - removeSize] = cursor;
+                else
+                    newCursorMap[index] = cursor;
+            }
+
+            saveIndexCursorMap = std::move(newCursorMap);
+        }
+    }
+
+    QJsonObject json;
+    json.insert("feed", AbstractPostFeedModel::toJson(startIndex, endIndex));
+
+    QJsonArray indexCursorJson;
+
+    for (const auto& [index, cursor] : saveIndexCursorMap)
+    {
+        QJsonObject icJson;
+        icJson.insert("index", (int)index);
+        icJson.insert("cursor", cursor);
+        indexCursorJson.push_back(icJson);
+    }
+
+    json.insert("indexCursorMap", indexCursorJson);
+
+    modifiedIndex = currentIndex - startIndex;
+    qDebug() << "To json, start:" << startIndex << "end:" << endIndex << "modified:" << modifiedIndex;
+    return json;
+}
+
+void PostFeedModel::setJson(const QJsonObject& json)
+{
+    qDebug() << "Set JSON";
+    clear();
+    const ATProto::XJsonObject xjson(json);
+    const auto feedJson = xjson.getRequiredJsonObject("feed");
+    AbstractPostFeedModel::setJson(feedJson);
+    // TODO: update filter models
+    QJsonArray indexCursorJson = xjson.getRequiredArray("indexCursorMap");
+
+    for (const auto& icJson : indexCursorJson)
+    {
+        const ATProto::XJsonObject icXJson(icJson.toObject());
+        int index = icXJson.getRequiredInt("index");
+        QString cursor = icXJson.getRequiredString("cursor");
+        mIndexCursorMap[index] = cursor;
+    }
+
+    int nextGapId = 1;
+
+    for (size_t i = 0; i < mFeed.size(); ++i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.isGap())
+        {
+            mGapIdIndexMap[post.getGapId()] = i;
+            nextGapId = std::max(nextGapId, post.getGapId() + 1);
+        }
+
+        const QString& cid = post.getCid();
+
+        if (!cid.isEmpty())
+            storeCid(cid);
+    }
+
+    Post::initNextGapId(nextGapId);
+    logIndices();
 }
 
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
@@ -838,11 +964,17 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             page->collectThreadgate(post);
 
             // Due to reposting a post can show up multiple times in the feed.
-            // Also overlapping pages can come in as we look for new posts.
+            // Also overlapping pages (on prepend) can come in as we look for new posts.
+            // On gap fill, some posts may already been shown, e.g. as parent on a reply.
             if (cidIsStored(post.getCid()))
             {
-                if (!post.isRepost())
-                    page->mOverlapsWithFeed = true;
+                if (!post.isRepost() &&
+                    (page->mOldestDiscaredTimestamp.isNull() ||
+                        post.getTimelineTimestamp() < page->mOldestDiscaredTimestamp))
+                {
+                    qDebug() << "Discard post:" << post.getTimelineTimestamp();
+                    page->mOldestDiscaredTimestamp = post.getTimelineTimestamp();
+                }
 
                 continue;
             }
@@ -979,11 +1111,12 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
     return page;
 }
 
-std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const
+std::tuple<std::optional<size_t>, bool> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const
 {
     Q_ASSERT(mFeed.size() > feedIndex);
     QString cidFirstStoredPost;
     QDateTime timestampFirstStoredPost;
+    bool overlapDiscardedPost = false;
 
     for (size_t i = feedIndex; i < mFeed.size(); ++i)
     {
@@ -999,8 +1132,14 @@ std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t f
 
     if (cidFirstStoredPost.isEmpty())
     {
-        qWarning() << "There are not real posts in the feed!";
+        qWarning() << "There are no real posts in the feed!";
         return {};
+    }
+
+    if (!page.mOldestDiscaredTimestamp.isNull() && !timestampFirstStoredPost.isNull() &&
+        page.mOldestDiscaredTimestamp < timestampFirstStoredPost)
+    {
+        overlapDiscardedPost = true;
     }
 
     for (size_t i = 0; i < page.mFeed.size(); ++i)
@@ -1014,20 +1153,20 @@ std::optional<size_t> PostFeedModel::findOverlapStart(const Page& page, size_t f
         if (cidFirstStoredPost == post.getCid() && timestampFirstStoredPost == post.getTimelineTimestamp())
         {
             qDebug() << "Matching overlap index found:" << i;
-            return i;
+            return {i, overlapDiscardedPost};
         }
 
         if (timestampFirstStoredPost > post.getTimelineTimestamp())
         {
             qDebug() << "Overlap start on timestamp found:" << i << timestampFirstStoredPost << post.getTimelineTimestamp();
-            return i;
+            return {i, overlapDiscardedPost};
         }
     }
 
     // NOTE: the gap may be empty when the last post in the page is the predecessor of
     // the first post the stored feed. There is no way of knowing.
     qDebug() << "No overlap found, there is a gap";
-    return {};
+    return {std::nullopt, overlapDiscardedPost};
 }
 
 std::optional<size_t> PostFeedModel::findOverlapEnd(const Page& page, size_t feedIndex) const

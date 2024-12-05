@@ -104,6 +104,9 @@ public:
 
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
+    virtual QJsonObject toJson(int startIndex, int endIndex) const;
+    virtual void setJson(const QJsonObject& json);
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
     void clearFeed();

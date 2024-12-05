@@ -442,6 +442,11 @@ bool BasicProfile::isBlocked() const
     return viewer.isBlockedBy() || !viewer.getBlocking().isEmpty() || !viewer.getBlockingByList().isNull();
 }
 
+ATProto::AppBskyActor::ProfileViewBasic::SharedPtr BasicProfile::getProfileBasicView() const
+{
+    return mPrivate ? mPrivate->mProfileBasicView : nullptr;
+}
+
 Profile::Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile) :
     BasicProfile(profile)
 {

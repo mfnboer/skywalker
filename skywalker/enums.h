@@ -35,6 +35,9 @@ public:
     };
     Q_ENUM(PostType)
 
+    static QString postTypeToString(PostType postType);
+    static PostType stringToPostType(const QString& str);
+
     // A sequence of thread posts can be folded up in the timeline.
     enum FoldedPostType
     {
@@ -43,6 +46,9 @@ public:
         FOLDED_POST_SUBSEQUENT
     };
     Q_ENUM(FoldedPostType)
+
+    static QString foldedPostTypeToString(FoldedPostType foldedPostType);
+    static FoldedPostType stringToFoldedPostType(const QString& str);
 
     enum ThreadPostType
     {

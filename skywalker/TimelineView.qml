@@ -55,13 +55,7 @@ SkyListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
-
-        const index = getLastVisibleIndex()
-        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
-
-        // Adding/removing content changes the indices.
-        if (!isView)
-            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
         updateUnreadPosts(firstVisibleIndex)
 
@@ -81,13 +75,13 @@ SkyListView {
         if (!isView)
             skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
 
-        setAnchorItem(lastVisibleIndex + 1)
+        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
     }
 
     FlickableRefresher {
         inProgress: skywalker.getTimelineInProgress
-        topOvershootFun: () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE) // was: skywalker.getTimeline(50)
+        topOvershootFun: () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE)
         bottomOvershootFun: () => skywalker.getTimelineNextPage()
         scrollToTopFun: () => moveToPost(0)
         enabled: timelineView.inSync
@@ -111,6 +105,9 @@ SkyListView {
     }
 
     function calibratePosition() {
+        if (calibrationDy === 0)
+            return
+
         console.debug("Calibration, calibrationDy:", calibrationDy)
         timelineView.contentY += calibrationDy
         calibrationDy = 0
@@ -121,14 +118,16 @@ SkyListView {
         timelineView.unreadPosts = Math.max(firstIndex, 0)
     }
 
-    function setAnchorItem(index) {
+    function setAnchorItem(firstIndex, lastIndex) {
+        const index = firstIndex >= 0 ? firstIndex : lastIndex
+
+        if (index < 0)
+            return
+
         if (anchorItem)
             anchorItem.isAnchorItem = false
 
-        if (index < 0)
-            anchorItem = null
-        else
-            anchorItem = itemAtIndex(index)
+        anchorItem = itemAtIndex(index)
 
         if (anchorItem)
             anchorItem.isAnchorItem = true
@@ -139,24 +138,27 @@ SkyListView {
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
         positionViewAtIndex(Math.max(index, 0), ListView.End)
-        setAnchorItem(lastVisibleIndex + 1)
+        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
-    function moveToPost(index) {
-        moveToIndex(index, doMoveToPost)
+    function moveToPost(index, afterMoveCb = () => {}) {
+        moveToIndex(index, doMoveToPost, afterMoveCb)
     }
 
     function moveToHome() {
         positionViewAtBeginning()
-        setAnchorItem(0)
+        setAnchorItem(0, 0)
         updateUnreadPosts(0)
+
+        if (!isView)
+            skywalker.getTimeline(100)
     }
 
-    function moveToEnd() {
+    function moveToEnd(afterMoveCb = () => {}) {
         console.debug("Move to end:", count - 1)
-        moveToPost(count - 1)
+        moveToPost(count - 1, afterMoveCb)
     }
 
     function calibrateUnreadPosts() {
@@ -164,18 +166,42 @@ SkyListView {
         updateUnreadPosts(firstVisibleIndex)
     }
 
+    function resumeTimeline(index) {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Resume timeline:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+
+        if (index >= firstVisibleIndex && index <= lastVisibleIndex) {
+            console.debug("Index visible:", index)
+            return
+        }
+
+        moveToPost(index)
+    }
+
     function rowsInsertedHandler(parent, start, end) {
         let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()
-        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index)
+        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
         calibrateUnreadPosts()
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
+        // The Qt.callLater may still be pending when this code executes.
+        // Incoming network events have higher prio than callLater.
+        calibratePosition()
+
         let firstVisibleIndex = getFirstVisibleIndex()
         const index = getLastVisibleIndex()
-        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index)
-        setAnchorItem(index + 1)
+        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+    }
+
+    function rowsRemovedHandler(parent, start, end) {
+        calibrateUnreadPosts()
+    }
+
+    function rowsAboutToBeRemovedHandler(parent, start, end) {
+        calibratePosition()
     }
 
     function setInSync(index) {
@@ -189,12 +215,16 @@ SkyListView {
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
+        model.onRowsRemoved.connect(rowsRemovedHandler)
+        model.onRowsAboutToBeRemoved.connect(rowsAboutToBeRemovedHandler)
     }
 
     function stopSync() {
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+        model.onRowsRemoved.disconnect(rowsRemovedHandler)
+        model.onRowsAboutToBeRemoved.disconnect(rowsAboutToBeRemovedHandler)
     }
 
     function getViewFooterText() {

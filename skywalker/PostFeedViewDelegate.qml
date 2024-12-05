@@ -588,6 +588,8 @@ Rectangle {
             visible: status == Loader.Ready
             sourceComponent: Text {
                 width: parent.width
+                topPadding: 50
+                bottomPadding: 50
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 color: guiSettings.linkColor

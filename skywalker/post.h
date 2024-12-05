@@ -29,6 +29,8 @@ public:
     static Post createNotSupported(const QString& unsupportedType);
     static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
+    static Post fromJson(const QJsonObject& json);
+    static void initNextGapId(int gapId) { sNextGapId = gapId; }
 
     explicit Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost = nullptr);
     explicit Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView);
@@ -128,6 +130,8 @@ public:
 
     bool isPinned() const { return mPinned; }
     void setPinned(bool pinned) { mPinned = pinned; }
+
+    QJsonObject toJson() const;
 
 private:
     // null is place holder for more posts (gap)

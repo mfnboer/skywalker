@@ -276,8 +276,6 @@ void LanguageUtils::initLanguages()
             continue;
 
         codes.insert(lang.getShortCode());
-
-        qDebug() << i << "CODE:" << lang.getShortCode() << "NAME:" << lang.getNativeName();
         sLanguages.push_back(lang);
         sLanguageShortCodeToNameMap[lang.getShortCode()] = lang.getNativeName();
     }
