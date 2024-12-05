@@ -742,6 +742,7 @@ void Skywalker::syncTimeline(int maxPages)
     // }
 
     disableDebugLogging(); // sync can cause a lot of logging
+    emit timelineSyncStart(maxPages, timestamp);
     syncTimeline(timestamp, maxPages);
 }
 
@@ -816,6 +817,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             }
 
             qInfo() << "Last timestamp:" << lastTimestamp;
+            emit timelineSyncProgress(maxPages - 1, lastTimestamp);
             syncTimeline(tillTimestamp, maxPages - 1, newCursor);
         },
         [this](const QString& error, const QString& msg){

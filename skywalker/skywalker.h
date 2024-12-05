@@ -239,6 +239,8 @@ signals:
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
     void sessionDeleted();
+    void timelineSyncStart(int pages, QDateTime rewindTimestamp);
+    void timelineSyncProgress(int pages, QDateTime timestamp);
     void timelineSyncOK(int index);
     void timelineSyncFailed();
     void timelineResumed(int index);
