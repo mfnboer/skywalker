@@ -17,15 +17,6 @@ SkyPage {
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
 
-    // TODO: use messagesView.moveToIndex
-    StackView.onVisibleChanged: {
-        // For some reason, the list scrolls to some "random" position when an embed is
-        // opened. Immediately scrolling back to that item does not work. With a delay
-        // of 100ms it does work???
-        if (StackView.visible)
-            positionTimer.gotoIndex(lastIndex)
-    }
-
     signal closed
 
     id: page
@@ -295,30 +286,11 @@ SkyPage {
         running: false
     }
 
-    Timer {
-        property int messageIndex: -1
-
-        id: positionTimer
-        interval: 300
-        onTriggered: {
-            if (messageIndex === -1 || messageIndex === messagesView.count - 1)
-                messagesView.moveToEnd()
-            else
-                messagesView.positionViewAtIndex(messageIndex, ListView.Contain)
-        }
-
-        function gotoIndex(index) {
-            console.debug("GOTO INDEX:", index)
-            messageIndex = index
-            start()
-        }
-    }
-
     PostUtils {
         id: postUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
-        onQuotePost: (uri, cid, text, author, timestamp) => {
+        onQuotePost: (uri, cid, text, author, timestamp) => { // qmllint disable signal-handler-parameters
             if (!newMessageText.firstPostLink)
                 return
 
@@ -452,11 +424,22 @@ SkyPage {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    function doMoveToMessage(index) {
+        const firstVisibleIndex = messagesView.getFirstVisibleIndex()
+        const lastVisibleIndex = messagesView.getLastVisibleIndex()
+        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", messagesView.count)
+        messagesView.positionViewAtIndex(Math.max(index, 0), ListView.End)
+        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+    }
+
+    function moveToMessage(index) {
+        const destination = index >= 0 ? index : messagesView.count - 1
+        messagesView.moveToIndex(destination, doMoveToMessage)
+    }
+
     function rowsInsertedHandler(parent, start, end) {
-        if (end === messagesView.count - 1) {
-            messagesView.moveToEnd()
-            positionTimer.gotoIndex(-1)
-        }
+        if (end === messagesView.count - 1)
+            moveToMessage(-1)
     }
 
     function initHandlers() {
@@ -493,7 +476,7 @@ SkyPage {
     Component.onCompleted: {
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
         maxInputTextHeight = 5 * inputTextHeight
-        positionTimer.gotoIndex(-1)
+        moveToMessage(-1)
         initHandlers()
         sendButton.forceActiveFocus()
     }
