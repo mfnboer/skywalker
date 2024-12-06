@@ -3383,7 +3383,7 @@ void Skywalker::resumeApp()
             qWarning() << "No tokens";
     }
 
-    if (!mTimelineUpdatePaused.isNull())
+    if (mTimelineUpdatePaused.isNull())
     {
         qDebug() << "Timeline update was not paused.";
         return;
