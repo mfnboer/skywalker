@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import skywalker
 
 SkyPage {
@@ -11,7 +10,7 @@ SkyPage {
     readonly property int maxMessageLength: 1000
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
-    property bool keyboardVisible: Qt.inputMethod.keyboardRectangle.y > 0
+    property bool keyboardVisible: Qt.inputMethod.keyboardRectangle.y > 0 // qmllint disable missing-property
     property int textInputToolbarHeight: keyboardVisible || !guiSettings.isAndroid ? 24 : 0
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
@@ -387,14 +386,14 @@ SkyPage {
     }
 
     function addMessage(msgText) {
-        Qt.inputMethod.commit()
+        Qt.inputMethod.commit() // qmllint disable missing-property
         newMessageText.insert(newMessageText.length, msgText)
         newMessageText.cursorPosition = newMessageText.length
         newMessageText.forceActiveFocus()
     }
 
     function sendMessage() {
-        Qt.inputMethod.commit()
+        Qt.inputMethod.commit() // qmllint disable missing-property
         isSending = true
         const qUri = newMessageText.getQuoteUri()
         const qCid = newMessageText.getQuoteCid()

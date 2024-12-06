@@ -7,7 +7,7 @@ Connections {
 
     // Resize the page when the Android virtual keyboard is shown
     function onKeyboardRectangleChanged() {
-        if (Qt.inputMethod.keyboardRectangle.y > 0) {
+        if (Qt.inputMethod.keyboardRectangle.y > 0) { // qmllint disable missing-property
             // Sometimes the page height gets changed automatically but most times not...
             // Setting to to keyboard-y seems reliable.
             const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
