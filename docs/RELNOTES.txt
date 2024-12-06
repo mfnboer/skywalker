@@ -3,6 +3,7 @@ next
 * Show labeler avatar on labels
 * Retain timeline position over app pause/resume
 * Increase maximum scrolling velocity
+* Improve keyboard handling in direct message view
 * Fix bug with video hiding
 
 3.8

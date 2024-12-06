@@ -11,10 +11,13 @@ SkyPage {
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
     property bool keyboardVisible: Qt.inputMethod.keyboardRectangle.y > 0 // qmllint disable missing-property
-    property int textInputToolbarHeight: keyboardVisible || !guiSettings.isAndroid ? 24 : 0
+    property int keyboardY: Qt.inputMethod.keyboardRectangle.y / Screen.devicePixelRatio // qmllint disable missing-property
+    property int keyboardHeight: keyboardVisible ? parent.height - keyboardY : 0
+    property int textInputToolbarHeight: (keyboardVisible || !guiSettings.isAndroid) ? 24 : 0
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
 
+    // TODO: use messagesView.moveToIndex
     StackView.onVisibleChanged: {
         // For some reason, the list scrolls to some "random" position when an embed is
         // opened. Immediately scrolling back to that item does not work. With a delay
@@ -49,7 +52,7 @@ SkyPage {
     SkyListView {
         id: messagesView
         width: parent.width
-        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding
+        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding - page.keyboardHeight
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
         clip: true
@@ -99,7 +102,7 @@ SkyPage {
         width: parent.width
         height: Math.min(newMessageText.height - newMessageText.padding - newMessageText.bottomPadding, maxInputTextHeight)
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: newMessageText.bottomPadding
+        anchors.bottomMargin: newMessageText.bottomPadding + page.keyboardHeight
         clip: true
         contentWidth: parent.width
         contentHeight: newMessageText.contentHeight + page.margin
@@ -381,9 +384,11 @@ SkyPage {
     // }
 
     // This works since Qt 6.7.3
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
-    }
+    // Seems not to work on every phone. Replaced this with adding keyboard height
+    // to the bottom margin of flick.
+    // VirtualKeyboardPageResizer {
+    //     id: virtualKeyboardPageResizer
+    // }
 
     function addMessage(msgText) {
         Qt.inputMethod.commit() // qmllint disable missing-property
@@ -486,7 +491,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
         maxInputTextHeight = 5 * inputTextHeight
         positionTimer.gotoIndex(-1)
