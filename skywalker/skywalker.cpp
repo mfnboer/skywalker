@@ -3361,7 +3361,7 @@ void Skywalker::pauseApp()
         qDebug() << "Pause timeline auto update";
         stopTimelineAutoUpdate();
         stopRefreshTimers();
-        mTimelineUpdatePaused = true;
+        mTimelineUpdatePaused = QDateTime::currentDateTimeUtc();
     }
 
     mChat->pause();
@@ -3383,26 +3383,33 @@ void Skywalker::resumeApp()
             qWarning() << "No tokens";
     }
 
-    if (!mTimelineUpdatePaused)
+    if (!mTimelineUpdatePaused.isNull())
     {
         qDebug() << "Timeline update was not paused.";
         return;
     }
 
-    mTimelineUpdatePaused = false;
+    const auto pauseInterval = QDateTime::currentDateTimeUtc() - mTimelineUpdatePaused;
+    mTimelineUpdatePaused = {};
     const auto lastSyncTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
     const auto postCount = mTimelineModel.rowCount();
+    qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << "post count:" << postCount;
 
-    refreshSession([this, lastSyncTimestamp, postCount]{
+    refreshSession([this, pauseInterval, lastSyncTimestamp, postCount]{
         startRefreshTimers();
         startTimelineAutoUpdate();
-        updateTimeline(5, 100, [this, lastSyncTimestamp, postCount]{
-            if (postCount != mTimelineModel.rowCount())
-            {
-                const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp);
-                emit timelineResumed(lastSyncIndex);
-            }
-        });
+
+        if (pauseInterval > 60s)
+        {
+            updateTimeline(5, 100, [this, lastSyncTimestamp, postCount]{
+                if (postCount != mTimelineModel.rowCount())
+                {
+                    const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp);
+                    emit timelineResumed(lastSyncIndex);
+                }
+            });
+        }
+
         mChat->resume();
     });
 }
@@ -3476,7 +3483,7 @@ void Skywalker::signOut()
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();
-    mTimelineUpdatePaused = false;
+    mTimelineUpdatePaused = {};
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();
     mSearchPostFeedModels.clear();

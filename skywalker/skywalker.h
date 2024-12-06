@@ -365,7 +365,7 @@ private:
     QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
     QTimer mTimelineUpdateTimer;
-    bool mTimelineUpdatePaused = false;
+    QDateTime mTimelineUpdatePaused;
 
     // NOTE: update makeLocalModelChange() when you add models
     ItemStore<PostThreadModel::Ptr> mPostThreadModels;
