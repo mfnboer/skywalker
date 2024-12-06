@@ -1,6 +1,7 @@
 next
 ====
 * Show labeler avatar on labels
+* Show labels in conversation list
 * Retain timeline position over app pause/resume
 * Increase maximum scrolling velocity
 * Improve keyboard handling in direct message view

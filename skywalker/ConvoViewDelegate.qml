@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -9,6 +10,7 @@ Rectangle {
     required property bool endOfList
     property var skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember.labels)
     readonly property int margin: 10
 
     signal viewConvo(convoview convo)
@@ -29,8 +31,8 @@ Rectangle {
 
         Rectangle {
             id: avatarRect
-            height: avatar.height + 10
-            width: guiSettings.threadColumnWidth
+            Layout.preferredHeight: avatar.height + 10
+            Layout.preferredWidth: guiSettings.threadColumnWidth
             color: "transparent"
 
             Avatar {
@@ -120,6 +122,29 @@ Rectangle {
                         visible: convo.members.length > 1
                     }
 
+                    Loader {
+                        active: convoRect.labelsToShow.length > 0 && convo.members.length <= 1
+                        width: parent.width
+                        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding : 0
+                        asynchronous: true
+                        visible: active
+
+                        sourceComponent: Rectangle {
+                            width: parent.width
+                            height: parent.height
+                            color: "transparent"
+
+                            ContentLabels {
+                                id: contentLabels
+                                anchors.left: parent.left
+                                anchors.right: undefined
+                                contentLabels: firstMember.labels
+                                labelsToShow: convoRect.labelsToShow
+                                contentAuthorDid: firstMember.did
+                            }
+                        }
+                    }
+
                     SkyCleanedText {
                         readonly property string deletedText: qsTr("message deleted")
                         readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
@@ -199,5 +224,4 @@ Rectangle {
         else
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
     }
-
 }
