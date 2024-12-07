@@ -24,21 +24,63 @@ SkyPage {
         x: margin
         width: parent.width - 2 * margin
 
-        SkyCleanedTextLine {
-            topPadding: 10
+        GridLayout {
             width: parent.width
-            elide: Text.ElideRight
-            font.bold: true
-            color: guiSettings.textColor
-            plainText: starterPack.name
-        }
+            columns: 2
 
-        AccessibleText {
-            width: parent.width
-            elide: Text.ElideRight
-            font.pointSize: guiSettings.scaledFont(7/8)
-            color: guiSettings.handleColor
-            text: qsTr(`by @${starterPack.creator.handle}`)
+            SkyCleanedTextLine {
+                topPadding: 10
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                font.bold: true
+                color: guiSettings.textColor
+                plainText: starterPack.name
+            }
+
+            SvgButton {
+                id: moreButton
+                Layout.rowSpan: 2
+                svg: SvgOutline.moreVert
+                accessibleName: qsTr("more options")
+                onClicked: moreMenu.open()
+
+                Menu {
+                    id: moreMenu
+                    modal: true
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Starter pack</b>")
+                        Accessible.name: qsTr("close more options menu")
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Translate")
+                        enabled: starterPack.description
+                        onTriggered: root.translateText(starterPack.description)
+
+                        MenuItemSvg { svg: SvgOutline.googleTranslate }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Share")
+                        onTriggered: skywalker.shareStarterPack(starterPack)
+
+                        MenuItemSvg { svg: SvgOutline.share }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Report starter pack")
+                        onTriggered: root.reportStarterPack(starterPack)
+
+                        MenuItemSvg { svg: SvgOutline.report }
+                    }
+                }
+            }
+
+            AccessibleText {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: qsTr(`by @${starterPack.creator.handle}`)
+            }
         }
 
         ContentLabels {

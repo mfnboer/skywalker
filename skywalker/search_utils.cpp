@@ -269,7 +269,7 @@ QString SearchUtils::preProcessSearchText(const QString& text) const
     if (index < text.length() - FROM_ME_SIZE && !text.at(index + FROM_ME_SIZE).isSpace())
         return text;
 
-    const auto& user = getSkywalker()->getUser();
+    const auto user = getSkywalker()->getUser();
     const QString& handle = user.getHandle();
     const QString newText = text.sliced(0, index + 5) + handle + text.sliced(index + FROM_ME_SIZE);
     qDebug() << text << " --> " << newText;

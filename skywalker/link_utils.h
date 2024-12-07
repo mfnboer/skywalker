@@ -24,16 +24,19 @@ signals:
     void postLink(QString atUri);
     void feedLink(QString atUri);
     void listLink(QString atUri);
+    void starterPackLink(QString atUri);
 
 private:
     void openLink(const ATProto::ATUri& atUri, const std::function<void(const QString& uri)>& openFun);
     void openPostLink(const ATProto::ATUri& atUri);
     void openFeedLink(const ATProto::ATUri& atUri);
     void openListLink(const ATProto::ATUri& atUri);
+    void openStarterPackLink(const ATProto::ATUri& atUri);
     QString isAuthorLink(const QString& link) const;
     ATProto::ATUri getPostUri(const QString& link) const;
     ATProto::ATUri getFeedUri(const QString& link) const;
     ATProto::ATUri getListUri(const QString& link) const;
+    ATProto::ATUri getStarterPackUri(const QString& link) const;
 };
 
 }

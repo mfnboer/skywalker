@@ -179,6 +179,7 @@ ReportReasonList ReportUtils::getReportReasons(QEnums::ReportTarget target)
     case QEnums::ReportTarget::REPORT_TARGET_FEED:
         return FEED_REASONS;
     case QEnums::ReportTarget::REPORT_TARGET_LIST:
+    case QEnums::ReportTarget::REPORT_TARGET_STARTERPACK:
         return LIST_REASONS;
     case QEnums::ReportTarget::REPORT_TARGET_DIRECT_MESSAGE:
         return DIRECT_MESSAGE_REASONS;

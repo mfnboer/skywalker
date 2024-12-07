@@ -50,6 +50,14 @@ void LinkUtils::openLink(const QString& link)
         return;
     }
 
+    const auto starterPackAtUri = getStarterPackUri(link);
+
+    if (starterPackAtUri.isValid())
+    {
+        openStarterPackLink(starterPackAtUri);
+        return;
+    }
+
     const auto handleOrDid = isAuthorLink(link);
 
     if (!handleOrDid.isEmpty())
@@ -103,6 +111,11 @@ void LinkUtils::openListLink(const ATProto::ATUri& atUri)
     openLink(atUri, [this](const QString& uri){ emit listLink(uri); });
 }
 
+void LinkUtils::openStarterPackLink(const ATProto::ATUri& atUri)
+{
+    openLink(atUri, [this](const QString& uri){ emit starterPackLink(uri); });
+}
+
 QString LinkUtils::isAuthorLink(const QString& link) const
 {
     static const QRegularExpression authorHandleRE(
@@ -144,6 +157,15 @@ ATProto::ATUri LinkUtils::getFeedUri(const QString& link) const
 ATProto::ATUri LinkUtils::getListUri(const QString& link) const
 {
     const auto atUri = ATProto::ATUri::fromHttpsListUri(link);
+    if (atUri.isValid())
+        return atUri;
+
+    return {};
+}
+
+ATProto::ATUri LinkUtils::getStarterPackUri(const QString& link) const
+{
+    const auto atUri = ATProto::ATUri::fromHttpsStarterPackUri(link);
     if (atUri.isValid())
         return atUri;
 

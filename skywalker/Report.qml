@@ -12,6 +12,7 @@ SkyPage {
     property date postDateTime
     property generatorview feed
     property listview list
+    property starterpackview starterPack
     property string convoId
     property messageview message
     property int reasonType: QEnums.REPORT_REASON_TYPE_NULL // QEnums.ReasonType
@@ -116,6 +117,9 @@ SkyPage {
 
                 if (quoteList.visible)
                     return quoteList.height
+
+                if (quoteStarterPack.visible)
+                    return quoteStarterPack.height
             }
 
             RowLayout {
@@ -125,8 +129,8 @@ SkyPage {
                 visible: !postUri && message.isNull() && !page.author.isNull()
 
                 Rectangle {
-                    width: 60
-                    height: 60
+                    Layout.preferredWidth: 60
+                    Layout.preferredHeight: 60
                     color: "transparent"
 
                     Avatar {
@@ -165,7 +169,7 @@ SkyPage {
                 author: page.author
                 postText: page.postText
                 postDateTime: page.postDateTime
-                ellipsisBackgroundColor: parent.color
+                ellipsisBackgroundColor: parent.color.toString()
                 visible: page.postUri
             }
 
@@ -175,7 +179,7 @@ SkyPage {
                 author: page.author
                 postText: page.message.formattedText
                 postDateTime: message.sentAt
-                ellipsisBackgroundColor: parent.color
+                ellipsisBackgroundColor: parent.color.toString()
                 visible: !page.message.isNull()
             }
 
@@ -191,6 +195,13 @@ SkyPage {
                 width: parent.width
                 list: page.list
                 visible: !page.list.isNull();
+            }
+
+            QuoteStarterPack {
+                id: quoteStarterPack
+                width: parent.width
+                starterPack: page.starterPack
+                visible: !page.starterPack.isNull()
             }
         }
         headerPositioning: ListView.OverlayHeader
@@ -260,7 +271,7 @@ SkyPage {
 
     ReportUtils {
         id: reportUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onReportOk: {
             skywalker.showStatusMessage(qsTr("Report sent. Thank you for your report!"), QEnums.STATUS_LEVEL_INFO)
@@ -274,7 +285,7 @@ SkyPage {
     function editDetails() {
         let component = Qt.createComponent("ReportDetailsEditor.qml")
         let detailsPage = component.createObject(page, { text: page.details })
-        detailsPage.onDetailsChanged.connect((text) => {
+        detailsPage.onDetailsChanged.connect((text) => { // qmllint disable missing-property
                 page.details = text
                 root.popStack()
         })
@@ -302,6 +313,9 @@ SkyPage {
         else if (!list.isNull()) {
             reportUtils.reportPostOrFeed(list.uri, list.cid, reasonType, details, labelerDid)
         }
+        else if (!starterPack.isNull()) {
+            reportUtils.reportPostOrFeed(starterPack.uri, starterPack.cid, reasonType, details, labelerDid)
+        }
     }
 
     function getReportTitle() {
@@ -315,6 +329,8 @@ SkyPage {
             return "Report feed"
         if (!list.isNull())
             return "Report list"
+        if (!starterPack.isNull())
+            return "Report starter pack"
 
         console.warn("UKNOWN REPORT")
         return "Report"
@@ -331,6 +347,8 @@ SkyPage {
             return QEnums.REPORT_TARGET_FEED
         if (!list.isNull())
             return QEnums.REPORT_TARGET_LIST
+        if (!starterPack.isNull())
+            return QEnums.REPORT_TARGET_STARTERPACK
 
         console.warn("UKNOWN REPORT TARGET")
         return QEnums.REPORT_TARGET_POST

@@ -824,6 +824,8 @@ SkyPage {
                             postItem.getPostText().forceActiveFocus()
                         }
                     }
+
+                    // TODO: quote starter pack
                 }
 
                 function newComposePostItem() {

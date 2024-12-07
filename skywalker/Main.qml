@@ -229,7 +229,7 @@ ApplicationWindow {
             getTimelineView().resumeTimeline(postIndex)
         }
 
-        onGetDetailedProfileOK: (profile) => {
+        onGetDetailedProfileOK: (profile) => { // qmllint disbale signal-handler-parameters
             let modelId = skywalker.createAuthorFeedModel(profile)
             viewAuthor(profile, modelId)
         }
@@ -237,14 +237,14 @@ ApplicationWindow {
         onGetAuthorFeedOk: (modelId) => authorFeedOk(modelId)
         onGetAuthorFeedFailed: (modelId, error, msg) => authorFeedError(modelId, error, msg)
 
-        onGetFeedGeneratorOK: (generatorView, viewPosts) => {
+        onGetFeedGeneratorOK: (generatorView, viewPosts) => { // qmllint disbale signal-handler-parameters
             if (viewPosts)
                 viewPostFeed(generatorView)
             else
                 viewFeedDescription(generatorView)
         }
 
-        onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack)
+        onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack) // qmllint disbale signal-handler-parameters
 
         onSharedTextReceived: (text) => {
             closeStartupStatus() // close startup status if sharing started the app                      
@@ -742,7 +742,7 @@ ApplicationWindow {
 
     ProfileUtils {
         id: profileUtils
-        skywalker: skywalker
+        skywalker: skywalker // qmllint disable missing-type
 
         onSetPinnedPostOk: statusPopup.show(qsTr("Post pinned"), QEnums.STATUS_LEVEL_INFO, 2)
         onSetPinnedPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
@@ -752,7 +752,7 @@ ApplicationWindow {
 
     FeedUtils {
         id: feedUtils
-        skywalker: skywalker
+        skywalker: skywalker // qmllint disable missing-type
 
         onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
@@ -760,20 +760,21 @@ ApplicationWindow {
 
     LinkUtils {
         id: linkUtils
-        skywalker: skywalker
+        skywalker: skywalker // qmllint disable missing-type
 
         onWebLink: (link) => Qt.openUrlExternally(link)
         onPostLink: (atUri) => skywalker.getPostThread(atUri)
         onFeedLink: (atUri) => skywalker.getFeedGenerator(atUri, true)
         onListLink: (atUri) => viewListByUri(atUri, true)
+        onStarterPackLink: (atUri) => skywalker.getStarterPackView(atUri)
         onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
     }
 
     GraphUtils {
         id: graphUtils
-        skywalker: skywalker
+        skywalker: skywalker // qmllint disable missing-type
 
-        onGetListOk: (list, viewPosts) => {
+        onGetListOk: (list, viewPosts) => { // qmllint disable signal-handler-parameters
             if (viewPosts)
                 viewList(list)
             else
@@ -1462,7 +1463,7 @@ ApplicationWindow {
         skywalker.getQuotesFeed(modelId)
         let component = Qt.createComponent("QuotePostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmlllint disable missing-property
         root.pushStack(view)
     }
 
@@ -1591,7 +1592,7 @@ ApplicationWindow {
     function reportAuthor(author) {
         let component = Qt.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, author: author })
-        form.onClosed.connect(() => { popStack() })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
@@ -1604,21 +1605,28 @@ ApplicationWindow {
                 postText: postText,
                 postDateTime: postDateTime,
                 author: author })
-        form.onClosed.connect(() => { popStack() })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
     function reportFeed(feed) {
         let component = Qt.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, feed: feed })
-        form.onClosed.connect(() => { popStack() })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
     function reportList(list) {
         let component = Qt.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, list: list })
-        form.onClosed.connect(() => { popStack() })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(form)
+    }
+
+    function reportStarterPack(starterPack) {
+        let component = Qt.createComponent("Report.qml")
+        let form = component.createObject(root, { skywalker: skywalker, starterPack: starterPack })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
@@ -1629,7 +1637,7 @@ ApplicationWindow {
                 message: message,
                 convoId: convoId,
                 author: sender })
-        form.onClosed.connect(() => { popStack() })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 

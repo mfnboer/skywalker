@@ -2690,7 +2690,7 @@ void Skywalker::removeListListModel(int id)
     mListListModels.remove(id);
 }
 
-const BasicProfile& Skywalker::getUser() const
+BasicProfile Skywalker::getUser() const
 {
     return AuthorCache::instance().getUser();
 }
@@ -2774,6 +2774,33 @@ void Skywalker::shareList(const ListView& list)
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
     emit statusMessage(tr("List link copied to clipboard"));
+#endif
+}
+
+void Skywalker::shareStarterPack(const StarterPackViewBasic& starterPack)
+{
+    qDebug() << "Share starter pack:" << starterPack.getName();
+    ATProto::ATUri atUri(starterPack.getUri());
+
+    if (!atUri.isValid())
+        return;
+
+    const QString shareUri = atUri.toHttpsUri();
+    Q_ASSERT(!shareUri.isEmpty());
+
+#ifdef Q_OS_ANDROID
+    QJniObject jShareUri = QJniObject::fromString(shareUri);
+    QJniObject jSubject = QJniObject::fromString("starter pack");
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareLink",
+                                       "(Ljava/lang/String;Ljava/lang/String;)V",
+                                       jShareUri.object<jstring>(),
+                                       jSubject.object<jstring>());
+#else
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(shareUri);
+    emit statusMessage(tr("Starter pack link copied to clipboard"));
 #endif
 }
 

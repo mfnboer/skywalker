@@ -1,5 +1,5 @@
 import QtQuick
-import QtQuick.Controls
+import skywalker
 
 SkyPage {
     property alias text: detailsText.text
