@@ -674,7 +674,8 @@ void Skywalker::loadLabelSettings()
                 const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(v->mView));
                 const auto& policies = view.getPolicies();
                 const auto& groupMap = policies.getLabelContentGroupMap();
-                const auto& did = view.getCreator().getDid();
+                const auto creator = view.getCreator();
+                const auto& did = creator.getDid();
                 qDebug() << "Add label policies for:" << did << view.getCreator().getHandle();
                 mContentFilter.addContentGroupMap(did, groupMap);
                 remainingDids.erase(did);
@@ -2689,7 +2690,7 @@ void Skywalker::removeListListModel(int id)
     mListListModels.remove(id);
 }
 
-BasicProfile Skywalker::getUser() const
+const BasicProfile& Skywalker::getUser() const
 {
     return AuthorCache::instance().getUser();
 }

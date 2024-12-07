@@ -149,7 +149,7 @@ public:
     Q_INVOKABLE void removeListListModel(int id);
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
     Q_INVOKABLE Profile getUserProfile() const { return mUserProfile; }
-    Q_INVOKABLE BasicProfile getUser() const;
+    Q_INVOKABLE const BasicProfile& getUser() const;
     Q_INVOKABLE void sharePost(const QString& postUri);
     Q_INVOKABLE void shareFeed(const GeneratorView& feed);
     Q_INVOKABLE void shareList(const ListView& list);

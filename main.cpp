@@ -8,6 +8,8 @@
 #include <QQmlApplicationEngine>
 #include <QFont>
 
+using namespace Qt::Literals::StringLiterals;
+
 int main(int argc, char *argv[])
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
@@ -28,7 +30,7 @@ int main(int argc, char *argv[])
         &app, []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
 
-    const QUrl url(u"qrc:/skywalker/Main.qml"_qs);
+    const QUrl url(u"qrc:/skywalker/Main.qml"_s);
     engine.load(url);
 
     return app.exec();

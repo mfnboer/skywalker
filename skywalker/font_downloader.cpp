@@ -15,17 +15,17 @@
 
 namespace Skywalker {
 
-static constexpr char const* EMOJI_FONT_FAMILY = "Noto Color Emoji";
+QString FontDownloader::sEmojiFontFamily = "Noto Color Emoji";
 
 QString FontDownloader::getEmojiFontFamily()
 {
-    return EMOJI_FONT_FAMILY;
+    return sEmojiFontFamily;
 }
 
 QFont FontDownloader::getEmojiFont()
 {
     QFont font = QGuiApplication::font();
-    font.setFamily(EMOJI_FONT_FAMILY);
+    font.setFamily(sEmojiFontFamily);
     return font;
 }
 
@@ -38,7 +38,7 @@ void FontDownloader::initAppFonts()
     const float fontScale = getFontScale();
 
     auto fontFamilies = font.families();
-    fontFamilies.push_back(EMOJI_FONT_FAMILY);
+    fontFamilies.push_back(sEmojiFontFamily);
     font.setFamilies(fontFamilies);
     font.setWeight(QFont::Weight(350));
     font.setPixelSize(std::roundf(16 * fontScale));
@@ -96,7 +96,24 @@ void FontDownloader::downloadEmojiFont()
     qDebug() << "Font added ID:" << fontId;
 
     if (fontId >= 0)
-        qDebug() << "FONT FAMILIES:" << QFontDatabase::applicationFontFamilies(fontId);
+    {
+        const auto fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
+        qInfo() << "Emoji font families:" << fontFamilies;
+
+        if (!fontFamilies.empty())
+        {
+            sEmojiFontFamily = fontFamilies[0];
+            qInfo() << "Set emoji font family:" << sEmojiFontFamily;
+        }
+        else
+        {
+            qWarning() << "No emoji font families found:" << fontId;
+        }
+    }
+    else
+    {
+        qWarning() << "Failed to add emoji font:" << fontId;
+    }
 #endif
 }
 

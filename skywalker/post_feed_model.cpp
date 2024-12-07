@@ -797,14 +797,16 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         if (!replyRef)
             return false;
 
-        const auto& parentDid = replyRef->mParent.getAuthor().getDid();
+        const auto parentAuthor = replyRef->mParent.getAuthor();
+        const auto& parentDid = parentAuthor.getDid();
 
         // Do not show replies in threads starting with blocked and not-found root posts.
         // Unless the reply is directly to the user.
         if (replyRef->mRoot.isPlaceHolder() && parentDid != mUserDid)
             return false;
 
-        const auto& rootDid = replyRef->mRoot.getAuthor().getDid();
+        const auto rootAuthor = replyRef->mRoot.getAuthor();
+        const auto& rootDid = rootAuthor.getDid();
 
         // Always show replies to the user
         if (parentDid != mUserDid && !mFollowing.contains(rootDid))
@@ -822,13 +824,15 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         if (replyRef->mParent.isPlaceHolder())
             return false;
 
-        const auto& parentDid = replyRef->mParent.getAuthor().getDid();
+        const auto parentAuthor = replyRef->mParent.getAuthor();
+        const auto& parentDid = parentAuthor.getDid();
 
         // Always show replies to the user
         if (parentDid == mUserDid)
             return true;
 
-        const auto& rootDid = replyRef->mRoot.getAuthor().getDid();
+        const auto rootAuthor = replyRef->mRoot.getAuthor();
+        const auto& rootDid = rootAuthor.getDid();
 
         // Always show replies in a thread from the user
         if (rootDid == mUserDid)

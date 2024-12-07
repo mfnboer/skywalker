@@ -17,6 +17,7 @@ public:
 
 private:
     static void addFont(const QString& fontFileName);
+    static QString sEmojiFontFamily;
 };
 
 }
