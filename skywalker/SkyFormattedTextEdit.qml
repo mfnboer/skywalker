@@ -118,11 +118,13 @@ TextEdit {
         onDoubleClicked: (mouse) => handleEvent(mouse)
 
         function handleEvent(mouse) {
-            Qt.inputMethod.reset() // qmllint disable missing-property
-            // editText.forceActiveFocus()
-            // let position = editText.positionAt(mouse.x, mouse.y)
-            // editText.cursorPosition = position
-            Qt.inputMethod.show()
+            if (Qt.inputMethod.visible) { // qmllint disable missing-property
+                Qt.inputMethod.reset() // qmllint disable missing-property
+                // editText.forceActiveFocus()
+                // let position = editText.positionAt(mouse.x, mouse.y)
+                // editText.cursorPosition = position
+                Qt.inputMethod.show()
+            }
 
             // Pass to TextEdit to handle the mouse event. This seems
             // better than setting the position ourselves.
