@@ -1,5 +1,5 @@
-next
-====
+3.8.1
+=====
 * Show labeler avatar on labels
 * Show labels in conversation list
 * Retain timeline position over app pause/resume
