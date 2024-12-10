@@ -1,3 +1,7 @@
+next
+====
+* Retain timeline position on refresh
+
 3.8.1
 =====
 * Show labeler avatar on labels

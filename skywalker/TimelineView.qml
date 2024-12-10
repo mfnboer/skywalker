@@ -10,6 +10,7 @@ SkyListView {
     property var anchorItem // item used to calibrate list position on insert of new posts
     property int calibrationDy: 0
     property int prevCount: 0
+    property int newLastVisibleIndex: -1
 
     signal newPosts
 
@@ -50,6 +51,7 @@ SkyListView {
 
         if (!inSync) {
             prevCount = count
+            newLastVisibleIndex = -1
             return
         }
 
@@ -63,6 +65,11 @@ SkyListView {
             newPosts()
 
         prevCount = count
+
+        if (newLastVisibleIndex >= 0)
+            resumeTimeline(newLastVisibleIndex)
+
+        newLastVisibleIndex = -1
     }
 
     onMovementEnded: {
@@ -181,8 +188,8 @@ SkyListView {
 
     function rowsInsertedHandler(parent, start, end) {
         let firstVisibleIndex = getFirstVisibleIndex()
-        const index = getLastVisibleIndex()
-        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
         calibrateUnreadPosts()
     }
 
@@ -192,12 +199,24 @@ SkyListView {
         calibratePosition()
 
         let firstVisibleIndex = getFirstVisibleIndex()
-        const index = getLastVisibleIndex()
-        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", index, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        if (start <= firstVisibleIndex)
+            newLastVisibleIndex = lastVisibleIndex + (end - start + 1)
+        else
+            newLastVisibleIndex = -1
     }
 
     function rowsRemovedHandler(parent, start, end) {
         calibrateUnreadPosts()
+        let firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        if (start <= firstVisibleIndex)
+            newLastVisibleIndex = lastVisibleIndex - (end - start + 1)
+        else
+            newLastVisibleIndex = -1
     }
 
     function rowsAboutToBeRemovedHandler(parent, start, end) {
