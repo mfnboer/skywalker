@@ -202,7 +202,7 @@ SkyListView {
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
-        if (start <= firstVisibleIndex)
+        if (start <= lastVisibleIndex)
             newLastVisibleIndex = lastVisibleIndex + (end - start + 1)
         else
             newLastVisibleIndex = -1
@@ -213,7 +213,7 @@ SkyListView {
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
 
-        if (start <= firstVisibleIndex)
+        if (start <= lastVisibleIndex)
             newLastVisibleIndex = lastVisibleIndex - (end - start + 1)
         else
             newLastVisibleIndex = -1
