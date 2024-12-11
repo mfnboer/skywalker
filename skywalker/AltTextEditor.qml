@@ -1,6 +1,4 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 import skywalker
 
 SkyPage {
@@ -63,6 +61,15 @@ SkyPage {
             autoTransform: true
             source: !sourceIsVideo ? page.imgSource : ""
             visible: !sourceIsVideo
+
+            SkyButton {
+                x: parent.width - width
+                y: parent.height - height
+                height: 34
+                text: qsTr("Extract text")
+                enabled: altText.text.length === 0 && !imageUtils.extractingText
+                onClicked: imageUtils.extractText(imgSource)
+            }
         }
 
         VideoThumbnail {
@@ -75,6 +82,21 @@ SkyPage {
             height: 180
             videoSource: sourceIsVideo ? page.imgSource : ""
             visible: sourceIsVideo
+        }
+    }
+
+    ImageUtils {
+        id: imageUtils
+
+        onExtractTextOk: (source, extractedText) => {
+            if (extractedText)
+                altText.text = extractedText
+            else
+                skywalker.showStatusMessage(qsTr("No text found"), QEnums.STATUS_LEVEL_INFO)
+        }
+
+        onExtractTextFailed: (source, error) => {
+            skywalker.showStatusMessage(qsTr(`Failed to extract text: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
     }
 

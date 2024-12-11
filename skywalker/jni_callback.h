@@ -19,6 +19,8 @@ public:
     void handlePhotoPickCanceled();
     void handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName);
     void handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error);
+    void handleExtractTextOk(const QString& imgSource, const QString& text);
+    void handleExtractTextFailed(const QString& imgSource, const QString& error);
     void handleSharedTextReceived(const QString& sharedText);
     void handleSharedImageReceived(const QString& contentUri, const QString& text);
     void handleSharedVideoReceived(const QString& contentUri, const QString& text);
@@ -31,6 +33,8 @@ signals:
     void photoPickCanceled();
     void videoTranscodingOk(QString inputFileName, QString outputFileName);
     void videoTranscodingFailed(QString inputFileName, QString outputFileName, QString error);
+    void extractTextOk(QString imgSource, QString text);
+    void extractTextFailed(QString imgSource, QString error);
     void sharedTextReceived(QString sharedText);
     void sharedImageReceived(QString contentUri, QString text);
     void sharedVideoReceived(QString contentUri, QString text);

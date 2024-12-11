@@ -29,6 +29,7 @@ dependencies {
     implementation "androidx.media3:media3-effect:1.4.1" 
     implementation "androidx.media3:media3-common:1.4.1" 
     implementation "androidx.media3:media3-muxer:1.4.1" 
+    implementation "com.google.android.gms:play-services-mlkit-text-recognition:19.0.1"
 
     constraints {
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {

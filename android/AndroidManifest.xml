@@ -103,6 +103,10 @@
                 tools:node="remove" />
         </provider>
 
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ocr"/>
+
     </application>
     <uses-sdk android:minSdkVersion="28"/>
 

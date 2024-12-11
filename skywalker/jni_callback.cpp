@@ -55,6 +55,28 @@ void _handleVideoTranscodingFailed(JNIEnv* env, jobject, jstring jsInputFileName
         instance->handleVideoTranscodingFailed(inputFileName, outputFileName, error);
 }
 
+void _handleExtractTextOk(JNIEnv* env, jobject, jstring jsToken, jstring jsText)
+{
+    QString token = jsToken ? env->GetStringUTFChars(jsToken, nullptr) : QString();
+    QString text = jsText ? env->GetStringUTFChars(jsText, nullptr) : QString();
+    qDebug() << "Extract text ok:" << token << "text:" << text;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextOk(token, text);
+}
+
+void _handleExtractTextFailed(JNIEnv* env, jobject, jstring jsToken, jstring jsError)
+{
+    QString token = jsToken ? env->GetStringUTFChars(jsToken, nullptr) : QString();
+    QString error = jsError ? env->GetStringUTFChars(jsError, nullptr) : QString();
+    qDebug() << "Extract text failed:" << token << "error:" << error;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextFailed(token, error);
+}
+
 void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
 {
     QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
@@ -159,6 +181,12 @@ JNICallbackListener::JNICallbackListener() : QObject()
     };
     jni.registerNativeMethods("com/gmail/mfnboer/VideoTranscoder", videoTranscoderCallbacks, 2);
 
+    const JNINativeMethod textExtractorCallbacks[] = {
+        {"emitExtractOk", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleExtractTextOk) },
+        {"emitExtractFailed", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleExtractTextFailed) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/TextExtractor", textExtractorCallbacks, 2);
+
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
@@ -189,6 +217,16 @@ void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName,
 void JNICallbackListener::handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
     emit videoTranscodingFailed(inputFileName, outputFileName, error);
+}
+
+void JNICallbackListener::handleExtractTextOk(const QString& imgSource, const QString& text)
+{
+    emit extractTextOk(imgSource, text);
+}
+
+void JNICallbackListener::handleExtractTextFailed(const QString& imgSource, const QString& error)
+{
+    emit extractTextFailed(imgSource, error);
 }
 
 void JNICallbackListener::handleSharedTextReceived(const QString& sharedText)
