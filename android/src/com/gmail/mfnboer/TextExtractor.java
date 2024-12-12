@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 import androidx.annotation.NonNull;
 
@@ -26,15 +27,13 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
-class TextBlockComparator implements Comparator<Text.TextBlock> {
-    public int compare(Text.TextBlock lhs, Text.TextBlock rhs) {
-        Point lhsPoint = lhs.getCornerPoints()[0];
-        Point rhsPoint = rhs.getCornerPoints()[0];
+class TextGroup {
+    public boolean mNewGroup;
+    public Text.TextBlock mTextBlock;
 
-        if (lhsPoint.y != rhsPoint.y)
-            return lhsPoint.y - rhsPoint.y;
-
-        return lhsPoint.x - rhsPoint.x;
+    TextGroup(boolean newGroup, Text.TextBlock textBlock) {
+        mNewGroup = newGroup;
+        mTextBlock = textBlock;
     }
 }
 
@@ -79,20 +78,107 @@ public class TextExtractor {
             return visionText.getText().replace('\n', ' ');
 
         String fullText = "";
-        List<Text.TextBlock> sortedTextBlocks = new ArrayList(visionText.getTextBlocks());
-        Collections.sort(sortedTextBlocks, new TextBlockComparator());
+        ArrayList<Text.TextBlock> textBlocks = new ArrayList(visionText.getTextBlocks());
+        removeEmptyBlocks(textBlocks);
 
-        for (Text.TextBlock block : sortedTextBlocks) {
-            Log.d(LOGTAG, "Block: " + block.getText());
+        if (textBlocks.isEmpty())
+            return "";
 
-            String blockText = block.getText().replace('\n', ' ');
+        List<TextGroup> sortedTextGroups = spatialSort(textBlocks);
+
+        for (TextGroup group : sortedTextGroups) {
+            Log.d(LOGTAG, "Block: " + group.mTextBlock.getText());
+
+            String blockText = group.mTextBlock.getText().replace('\n', ' ');
 
             if (fullText.isEmpty())
                 fullText = blockText;
             else
-                fullText = fullText + "\n\n" + blockText;
+                fullText = fullText + (group.mNewGroup ? "\n\n" : "\n") + blockText;
         }
 
         return fullText;
+    }
+
+    private static void removeEmptyBlocks(ArrayList<Text.TextBlock> blocks) {
+        Iterator<Text.TextBlock> it = blocks.iterator();
+
+        while (it.hasNext()) {
+            Text.TextBlock block = it.next();
+
+            if (block.getCornerPoints() == null || block.getCornerPoints().length < 4)
+                it.remove();
+            else if (block.getLines().isEmpty())
+                it.remove();
+            else if (block.getLines().get(0).getCornerPoints() == null || block.getLines().get(0).getCornerPoints().length < 4)
+                it.remove();
+        }
+    }
+
+    private static ArrayList<TextGroup> spatialSort(ArrayList<Text.TextBlock> blocks) {
+        ArrayList<TextGroup> sortedGroups = new ArrayList<TextGroup>();
+        Point anchor = new Point(0, 0);
+
+        while (!blocks.isEmpty()) {
+            Text.TextBlock block = removeClosest(anchor, blocks);
+            TextGroup group;
+
+            if (block == null) {
+                block = removeClosest(new Point(0, 0), blocks);
+                group = new TextGroup(true, block);
+            } else {
+                group = new TextGroup(false, block);
+            }
+
+            anchor = block.getCornerPoints()[3]; // bottom-left
+            sortedGroups.add(group);
+        }
+
+        return sortedGroups;
+    }
+
+    private static Text.TextBlock removeClosest(Point p, ArrayList<Text.TextBlock> blocks) {
+        int minDistance = Integer.MAX_VALUE;
+        int closestIndex = 0;
+
+        for (int i = 0; i < blocks.size(); ++i) {
+            Text.TextBlock block = blocks.get(i);
+
+            // Taking the distance to the top-left corner of the first line instead of
+            // the top-left corner of the block gives better results with indented lines.
+            int d = distance(p, block.getLines().get(0).getCornerPoints()[0]);
+
+            if (d < minDistance) {
+                minDistance = d;
+                closestIndex = i;
+            }
+        }
+
+        Text.TextBlock closestBlock = blocks.get(closestIndex);
+
+        if (p.equals(new Point(0, 0))) {
+            Log.d(LOGTAG, "New group, distance: " + minDistance + " corner: " + closestBlock.getCornerPoints()[0] + " " + closestBlock.getLines().get(0).getCornerPoints()[0] + " " + closestBlock.getText());
+            blocks.remove(closestIndex);
+            return closestBlock;
+        }
+
+        Text.Line line = closestBlock.getLines().get(0);
+        Point[] linePoints = line.getCornerPoints();
+        int lineHeight = distance(linePoints[0], linePoints[3]);
+        Log.d(LOGTAG, "Closest to: " + p + " distance: " + minDistance + " lineHeight: " + lineHeight + " " + line.getText());
+
+        if (minDistance > 2 * lineHeight) {
+            Log.d(LOGTAG, "Search for new group of blocks");
+            return null;
+        }
+
+        blocks.remove(closestIndex);
+        return closestBlock;
+    }
+
+    private static int distance(Point p, Point q) {
+        int dx = q.x - p.x;
+        int dy = q.y - p.y;
+        return (int)Math.sqrt(dx * dx + dy * dy);
     }
 }

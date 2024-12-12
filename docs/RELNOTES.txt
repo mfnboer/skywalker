@@ -1,5 +1,6 @@
 next
 ====
+* Extract printed text from a picture to alt-text
 * Retain timeline position on refresh
 
 3.8.1
