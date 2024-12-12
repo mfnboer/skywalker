@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 SkyPage {
@@ -6,6 +7,7 @@ SkyPage {
     property bool sourceIsVideo: false
     property alias text: altText.text
     property var skywalker: root.getSkywalker()
+    property var userSettings: skywalker.getUserSettings()
     readonly property int margin: 10
 
     signal altTextChanged(string text)
@@ -62,11 +64,53 @@ SkyPage {
             source: !sourceIsVideo ? page.imgSource : ""
             visible: !sourceIsVideo
 
+            SvgButton {
+                x: parent.width - width
+                width: 34
+                height: width
+                svg: SvgOutline.moreVert
+                accessibleName: qsTr("change script to extract")
+                onClicked: moreMenu.open()
+
+                Menu {
+                    id: moreMenu
+                    modal: true
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Scripts</b>")
+                        Accessible.name: qsTr("close scripts menu")
+                    }
+
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_LATIN
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_CHINESE
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_DEVANAGARI
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_JAPANESE
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_KOREAN
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                }
+
+                ButtonGroup { id: scriptButtonGroup }
+            }
+
             SkyButton {
                 x: parent.width - width
                 y: parent.height - height
                 height: 34
-                text: qsTr("Extract text")
+                text: qsTr(`Extract text (${(qEnums.scriptToString(userSettings.scriptRecognition))})`)
                 enabled: altText.text.length === 0 && !imageUtils.extractingText
                 onClicked: imageUtils.extractText(imgSource)
             }
@@ -98,6 +142,10 @@ SkyPage {
         onExtractTextFailed: (source, error) => {
             skywalker.showStatusMessage(qsTr(`Failed to extract text: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
+    }
+
+    QEnums {
+        id: qEnums
     }
 
     VirtualKeyboardPageResizer {

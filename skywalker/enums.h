@@ -252,6 +252,20 @@ public:
         THREAD_STYLE_LINE
     };
     Q_ENUM(ThreadStyle)
+
+    enum Script
+    {
+        SCRIPT_LATIN = 0,
+        SCRIPT_CHINESE = 1,
+        SCRIPT_DEVANAGARI = 2,
+        SCRIPT_JAPANESE = 3,
+        SCRIPT_KOREAN = 4,
+
+        SCRIPT_LAST = SCRIPT_KOREAN
+    };
+    Q_ENUM(Script)
+
+    Q_INVOKABLE static QString scriptToString(Script script);
 };
 
 }

@@ -90,4 +90,23 @@ QEnums::ContentPrefVisibility QEnums::toContentPrefVisibility(ContentVisibility 
     return CONTENT_PREF_VISIBILITY_HIDE;
 }
 
+QString QEnums::scriptToString(Script script)
+{
+    static const std::unordered_map<Script, QString> mapping = {
+        { SCRIPT_LATIN, tr("Latin") },
+        { SCRIPT_CHINESE, tr("Chinese") },
+        { SCRIPT_DEVANAGARI, tr("Devanagari") },
+        { SCRIPT_JAPANESE, tr("Japanese") },
+        { SCRIPT_KOREAN, tr("Korean") }
+    };
+
+    const auto it = mapping.find(script);
+    Q_ASSERT(it != mapping.end());
+
+    if (it != mapping.end())
+        return it->second;
+
+    return "Latin";
+}
+
 }
