@@ -120,6 +120,10 @@ ScrollView {
 
     function editAltText(index) {
         let component = Qt.createComponent("AltTextEditor.qml")
+
+        if (component.status === Component.Error)
+            console.warn(component.errorString())
+
         let altPage = component.createObject(page, {
             imgSource: images[index],
             text: altTexts[index] })

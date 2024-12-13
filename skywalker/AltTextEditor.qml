@@ -111,8 +111,8 @@ SkyPage {
                 y: parent.height - height
                 height: 34
                 text: qsTr(`Extract text (${(qEnums.scriptToString(userSettings.scriptRecognition))})`)
-                enabled: altText.text.length === 0 && !imageUtils.extractingText
-                onClicked: imageUtils.extractText(imgSource)
+                enabled: altText.text.length === 0 && !imageUtils.extractingText && !imageUtils.installing
+                onClicked: imageUtils.installModule(userSettings.scriptRecognition)
             }
         }
 
@@ -131,6 +131,18 @@ SkyPage {
 
     ImageUtils {
         id: imageUtils
+
+        onInstallModuleProgress: (script, progressPercentage) => { // qmllint disable signal-handler-parameters
+            skywalker.showStatusMessage(qstr(`Installing ${(qEnums.scriptToString(script))}: ${progressPercentage}%`), QEnums.STATUS_LEVEL_INFO)
+        }
+
+        onInstallModuleOk: (script) => { // qmllint disable signal-handler-parameters
+            imageUtils.extractText(script, imgSource)
+        }
+
+        onInstallModuleFailed: (script, error) => { // qmllint disable signal-handler-parameters
+            skywalker.showStatusMessage(qstr(`Failed to install module for ${(qEnums.scriptToString(script))} text recognition: ${error}`), QEnums.STATUS_LEVEL_INFO)
+        }
 
         onExtractTextOk: (source, extractedText) => {
             if (extractedText)

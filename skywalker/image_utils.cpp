@@ -15,6 +15,31 @@ ImageUtils::ImageUtils(QObject* parent) :
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
+    connect(&jniCallbackListener, &JNICallbackListener::extractTextAvailabilityOk,
+            this, [this](QEnums::Script script, bool available){
+                handleCheckAvailabilityOk(script, available);
+            });
+
+    connect(&jniCallbackListener, &JNICallbackListener::extractTextAvailabilityFailed,
+            this, [this](QEnums::Script script, QString error){
+                handleCheckAvailabilityFailed(script, error);
+            });
+
+    connect(&jniCallbackListener, &JNICallbackListener::extractTextInstallProgress,
+            this, [this](QEnums::Script script, int progress){
+                handleInstallModuleProgress(script, progress);
+            });
+
+    connect(&jniCallbackListener, &JNICallbackListener::extractTextInstallOk,
+            this, [this](QEnums::Script script){
+                handleInstallModuleOk(script);
+            });
+
+    connect(&jniCallbackListener, &JNICallbackListener::extractTextInstallFailed,
+            this, [this](QEnums::Script script, QString error){
+                handleInstallModuleFailed(script, error);
+            });
+
     connect(&jniCallbackListener, &JNICallbackListener::extractTextOk,
             this, [this](QString imgSource, QString text){
                 handleExtractTextOk(imgSource, text);
@@ -26,6 +51,15 @@ ImageUtils::ImageUtils(QObject* parent) :
             });
 }
 
+void ImageUtils::setInstalling(bool installing)
+{
+    if (installing != mInstalling)
+    {
+        mInstalling = installing;
+        emit installingChanged();
+    }
+}
+
 void ImageUtils::setExtractingText(bool extractingText)
 {
     if (extractingText != mExtractingText)
@@ -35,9 +69,53 @@ void ImageUtils::setExtractingText(bool extractingText)
     }
 }
 
-bool ImageUtils::extractText(const QString& imgSource)
+void ImageUtils::checkAvailability(QEnums::Script script)
 {
-    qDebug() << "Extract text from image:" << imgSource;
+    qDebug() << "Check availability: " << script;
+
+    if (mInstalling)
+    {
+        qWarning() << "Installation in progress";
+        return;
+    }
+
+#if defined(Q_OS_ANDROID)
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/TextExtractor",
+        "checkAvailability",
+        "(I)V",
+        (jint)script);
+    setInstalling(true);
+#else
+    qDebug() << "Text extraction not supported";
+#endif
+}
+
+void ImageUtils::installModule(QEnums::Script script)
+{
+    qDebug() << "Install module: " << script;
+
+    if (mInstalling)
+    {
+        qWarning() << "Installation in progress";
+        return;
+    }
+
+#if defined(Q_OS_ANDROID)
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/TextExtractor",
+        "installModule",
+        "(I)V",
+        (jint)script);
+    setInstalling(true);
+#else
+    qDebug() << "Text extraction not supported";
+#endif
+}
+
+bool ImageUtils::extractText(QEnums::Script script, const QString& imgSource)
+{
+    qDebug() << "Extract text from image:" << imgSource << "script:" << script;
 
     if (mExtractingText)
     {
@@ -61,8 +139,8 @@ bool ImageUtils::extractText(const QString& imgSource)
     QJniObject::callStaticMethod<void>(
         "com/gmail/mfnboer/TextExtractor",
         "extractText",
-        "([BIILjava/lang/String;)V",
-        jsImg, (jint)img.width(), (jint)img.height(),
+        "(I[BIILjava/lang/String;)V",
+        (jint)script, jsImg, (jint)img.width(), (jint)img.height(),
         jsToken.object<jstring>());
 
     env->DeleteLocalRef(jsImg);
@@ -74,6 +152,35 @@ bool ImageUtils::extractText(const QString& imgSource)
     qDebug() << "Text extraction not supported";
     return false;
 #endif
+}
+
+void ImageUtils::handleCheckAvailabilityOk(QEnums::Script script, bool available)
+{
+    setInstalling(false);
+    emit checkAvailabilityOk(script, available);
+}
+
+void ImageUtils::handleCheckAvailabilityFailed(QEnums::Script script, QString error)
+{
+    setInstalling(false);
+    emit checkAvailabilityFailed(script, error);
+}
+
+void ImageUtils::handleInstallModuleProgress(QEnums::Script script, int progressPercentage)
+{
+    emit installModuleProgress(script, progressPercentage);
+}
+
+void ImageUtils::handleInstallModuleOk(QEnums::Script script)
+{
+    setInstalling(false);
+    emit installModuleOk(script);
+}
+
+void ImageUtils::handleInstallModuleFailed(QEnums::Script script, QString error)
+{
+    setInstalling(false);
+    emit installModuleFailed(script, error);
 }
 
 void ImageUtils::handleExtractTextOk(const QString& source, const QString& text)

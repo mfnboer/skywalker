@@ -1343,7 +1343,7 @@ SkyPage {
         property var callbackCannotUploadVideo: (error) => {}
 
         id: postUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onPostOk: (uri, cid) => {
             postedUris.push(uri)
