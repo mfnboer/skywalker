@@ -70,6 +70,7 @@ SkyPage {
                 height: width
                 svg: SvgOutline.moreVert
                 accessibleName: qsTr("change script to extract")
+                enabled: extractButton.enabled
                 onClicked: moreMenu.open()
 
                 Menu {
@@ -107,6 +108,7 @@ SkyPage {
             }
 
             SkyButton {
+                id: extractButton
                 x: parent.width - width
                 y: parent.height - height
                 height: 34
@@ -133,22 +135,26 @@ SkyPage {
         id: imageUtils
 
         onInstallModuleProgress: (script, progressPercentage) => { // qmllint disable signal-handler-parameters
-            skywalker.showStatusMessage(qstr(`Installing ${(qEnums.scriptToString(script))}: ${progressPercentage}%`), QEnums.STATUS_LEVEL_INFO)
+            skywalker.showStatusMessage(qsTr(`Installing ${(qEnums.scriptToString(script))} recognition: ${progressPercentage}%`), QEnums.STATUS_LEVEL_INFO, 30)
         }
 
         onInstallModuleOk: (script) => { // qmllint disable signal-handler-parameters
+            skywalker.showStatusMessage(qsTr("Extracting text"), QEnums.STATUS_LEVEL_INFO, 30)
             imageUtils.extractText(script, imgSource)
         }
 
         onInstallModuleFailed: (script, error) => { // qmllint disable signal-handler-parameters
-            skywalker.showStatusMessage(qstr(`Failed to install module for ${(qEnums.scriptToString(script))} text recognition: ${error}`), QEnums.STATUS_LEVEL_INFO)
+            skywalker.showStatusMessage(qsTr(`Failed to install module for ${(qEnums.scriptToString(script))} text recognition: ${error}`), QEnums.STATUS_LEVEL_INFO)
         }
 
         onExtractTextOk: (source, extractedText) => {
-            if (extractedText)
+            if (extractedText) {
+                root.clearStatusMessage()
                 altText.text = extractedText
-            else
+            }
+            else {
                 skywalker.showStatusMessage(qsTr("No text found"), QEnums.STATUS_LEVEL_INFO)
+            }
         }
 
         onExtractTextFailed: (source, error) => {

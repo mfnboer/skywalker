@@ -79,6 +79,10 @@ ApplicationWindow {
         y: guiSettings.headerHeight
     }
 
+    function clearStatusMessage() {
+        statusPopup.close()
+    }
+
     function syncTimelineToPost(postIndex) {
         closeStartupStatus()
         getTimelineView().setInSync(postIndex)

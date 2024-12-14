@@ -21,7 +21,12 @@ public:
     void setInstalling(bool installing);
     bool isExtractingText() const { return mExtractingText; }
     void setExtractingText(bool extractingText);
+
+    // NOTE: not used as checking for availability triggers automatic
+    // installation when the module is not installed. That is rather
+    // useless.
     Q_INVOKABLE void checkAvailability(QEnums::Script script);
+
     Q_INVOKABLE void installModule(QEnums::Script script);
     Q_INVOKABLE bool extractText(QEnums::Script script, const QString& imgSource);
 

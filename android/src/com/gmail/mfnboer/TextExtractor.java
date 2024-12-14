@@ -154,8 +154,8 @@ public class TextExtractor {
 
                     ModuleInstallStatusUpdate.ProgressInfo progressInfo = update.getProgressInfo();
 
-                    if (progressInfo != null) {
-                        double progress = progressInfo.getBytesDownloaded() / progressInfo.getTotalBytesToDownload();
+                    if (progressInfo != null && progressInfo.getTotalBytesToDownload() > 0) {
+                        double progress = (double)progressInfo.getBytesDownloaded() / (double)progressInfo.getTotalBytesToDownload();
                         emitInstallModuleProgress(script, (int)(progress * 100));
                     }
                 }
@@ -283,7 +283,8 @@ public class TextExtractor {
             Text.TextBlock block = blocks.get(i);
 
             // Taking the distance to the top-left corner of the first line instead of
-            // the top-left corner of the block gives better results with indented lines.
+            // the top-left corner of the block gives better results with indented lines
+            // at the start of a paragraph.
             int d = distance(p, block.getLines().get(0).getCornerPoints()[0]);
 
             if (d < minDistance) {
@@ -305,6 +306,8 @@ public class TextExtractor {
         int lineHeight = distance(linePoints[0], linePoints[3]);
         Log.d(LOGTAG, "Closest to: " + p + " distance: " + minDistance + " lineHeight: " + lineHeight + " " + line.getText());
 
+        // Heuristic: assume the text belongs to another block if
+        // the distance is more than this.
         if (minDistance > 2 * lineHeight) {
             Log.d(LOGTAG, "Search for new group of blocks");
             return null;
