@@ -723,7 +723,7 @@ void Skywalker::dataMigration()
 
 void Skywalker::syncTimeline(int maxPages)
 {
-    const auto timestamp = getSyncTimestamp();
+    const auto timestamp = mUserSettings.getSyncTimestamp(mUserDid);
 
     if (!timestamp.isValid() || !mUserSettings.getRewindToLastSeenPost(mUserDid))
     {
@@ -837,7 +837,8 @@ void Skywalker::finishTimelineSync(int index)
 
     // Inform the GUI about the timeline sync.
     // This will show the timeline to the user.
-    emit timelineSyncOK(index);
+    const int offsetY = mUserSettings.getSyncOffsetY(mUserDid);
+    emit timelineSyncOK(index, offsetY);
     OffLineMessageChecker::checkNotificationPermission();
 
     // Now we can handle pending intent (content share).
@@ -1392,7 +1393,7 @@ void Skywalker::addToUnreadNotificationCount(int addUnread)
 }
 
 // NOTE: indices can be -1 if the UI cannot determine the index
-void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex)
+void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY)
 {
     Q_UNUSED(firstVisibleIndex)
 
@@ -1400,7 +1401,7 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
         return;
 
     if (lastVisibleIndex > -1)
-        saveSyncTimestamp(lastVisibleIndex);
+        saveSyncTimestamp(lastVisibleIndex, lastVisibleOffsetY);
 
     const int maxTailSize = mTimelineModel.hasFilters() ? PostFeedModel::MAX_TIMELINE_SIZE * 0.6 : TIMELINE_DELETE_SIZE * 2;
 
@@ -3126,7 +3127,7 @@ bool Skywalker::getSavedSession(QString& host, ATProto::ComATProtoServer::Sessio
     return true;
 }
 
-void Skywalker::saveSyncTimestamp(int postIndex)
+void Skywalker::saveSyncTimestamp(int postIndex, int offsetY)
 {
     if (postIndex < 0 || postIndex >= mTimelineModel.rowCount())
     {
@@ -3136,12 +3137,8 @@ void Skywalker::saveSyncTimestamp(int postIndex)
 
     const auto& post = mTimelineModel.getPost(postIndex);
     mUserSettings.saveSyncTimestamp(mUserDid, post.getTimelineTimestamp());
+    mUserSettings.saveSyncOffsetY(mUserDid, offsetY);
     mSyncPostIndex = postIndex;
-}
-
-QDateTime Skywalker::getSyncTimestamp() const
-{
-    return mUserSettings.getSyncTimestamp(mUserDid);
 }
 
 static QString getTimelineStateFileName(const QString& userDid)
@@ -3420,20 +3417,21 @@ void Skywalker::resumeApp()
     const auto pauseInterval = QDateTime::currentDateTimeUtc() - mTimelineUpdatePaused;
     mTimelineUpdatePaused = {};
     const auto lastSyncTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
+    const int lastSyncOffsetY = mUserSettings.getSyncOffsetY(mUserDid);
     const auto postCount = mTimelineModel.rowCount();
     qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << "post count:" << postCount;
 
-    refreshSession([this, pauseInterval, lastSyncTimestamp, postCount]{
+    refreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncOffsetY, postCount]{
         startRefreshTimers();
         startTimelineAutoUpdate();
 
         if (pauseInterval > 60s)
         {
-            updateTimeline(5, 100, [this, lastSyncTimestamp, postCount]{
+            updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncOffsetY, postCount]{
                 if (postCount != mTimelineModel.rowCount())
                 {
                     const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp);
-                    emit timelineResumed(lastSyncIndex);
+                    emit timelineResumed(lastSyncIndex, lastSyncOffsetY);
                 }
             });
         }

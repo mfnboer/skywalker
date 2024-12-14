@@ -83,9 +83,9 @@ ApplicationWindow {
         statusPopup.close()
     }
 
-    function syncTimelineToPost(postIndex) {
+    function syncTimelineToPost(postIndex, offsetY = 0) {
         closeStartupStatus()
-        getTimelineView().setInSync(postIndex)
+        getTimelineView().setInSync(postIndex, offsetY)
         skywalker.startTimelineAutoUpdate()
         showLastViewedFeed()
     }
@@ -213,8 +213,8 @@ ApplicationWindow {
             setStartupRewindProgress(pages, timestamp)
         }
 
-        onTimelineSyncOK: (index) => {
-            syncTimelineToPost(index)
+        onTimelineSyncOK: (index, offsetY) => {
+            syncTimelineToPost(index, offsetY)
         }
 
         onTimelineSyncFailed: {
@@ -227,12 +227,12 @@ ApplicationWindow {
             getTimelineView().moveToPost(gapEndIndex)
         }
 
-        onTimelineResumed: (postIndex) => {
-            console.debug("Timeline resumed, index:", postIndex)
-            getTimelineView().resumeTimeline(postIndex)
+        onTimelineResumed: (postIndex, offsetY) => {
+            console.debug("Timeline resumed, index:", postIndex, "offsetY:", offsetY)
+            getTimelineView().resumeTimeline(postIndex, offsetY)
         }
 
-        onGetDetailedProfileOK: (profile) => { // qmllint disbale signal-handler-parameters
+        onGetDetailedProfileOK: (profile) => { // qmllint disable signal-handler-parameters
             let modelId = skywalker.createAuthorFeedModel(profile)
             viewAuthor(profile, modelId)
         }
@@ -240,14 +240,14 @@ ApplicationWindow {
         onGetAuthorFeedOk: (modelId) => authorFeedOk(modelId)
         onGetAuthorFeedFailed: (modelId, error, msg) => authorFeedError(modelId, error, msg)
 
-        onGetFeedGeneratorOK: (generatorView, viewPosts) => { // qmllint disbale signal-handler-parameters
+        onGetFeedGeneratorOK: (generatorView, viewPosts) => { // qmllint disable signal-handler-parameters
             if (viewPosts)
                 viewPostFeed(generatorView)
             else
                 viewFeedDescription(generatorView)
         }
 
-        onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack) // qmllint disbale signal-handler-parameters
+        onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack) // qmllint disable signal-handler-parameters
 
         onSharedTextReceived: (text) => {
             closeStartupStatus() // close startup status if sharing started the app                      

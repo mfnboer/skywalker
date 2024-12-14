@@ -89,7 +89,7 @@ public:
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false, const std::function<void()>& cb = {});
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {});
-    Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex);
+    Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
     Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getListFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
@@ -242,9 +242,9 @@ signals:
     void sessionDeleted();
     void timelineSyncStart(int pages, QDateTime rewindTimestamp);
     void timelineSyncProgress(int pages, QDateTime timestamp);
-    void timelineSyncOK(int index);
+    void timelineSyncOK(int index, int offsetY);
     void timelineSyncFailed();
-    void timelineResumed(int index);
+    void timelineResumed(int index, int offsetY);
     void gapFilled(int gapEndIndex);
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
@@ -309,8 +309,7 @@ private:
     ATProto::ProfileMaster& getProfileMaster();
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
-    void saveSyncTimestamp(int postIndex);
-    QDateTime getSyncTimestamp() const;
+    void saveSyncTimestamp(int postIndex, int offsetY);
     void saveSyncTimelineState();
     bool restoreSyncTimelineState();
     void shareImage(const QString& contentUri, const QString& text);

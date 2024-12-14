@@ -11,6 +11,7 @@ SkyListView {
     property int calibrationDy: 0
     property int prevCount: 0
     property int newLastVisibleIndex: -1
+    property int newLastVisibleOffsetY: 0
 
     signal newPosts
 
@@ -55,8 +56,8 @@ SkyListView {
             return
         }
 
-        let firstVisibleIndex = getFirstVisibleIndex()
-        let lastVisibleIndex = getLastVisibleIndex()
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
         updateUnreadPosts(firstVisibleIndex)
@@ -67,7 +68,7 @@ SkyListView {
         prevCount = count
 
         if (newLastVisibleIndex >= 0)
-            resumeTimeline(newLastVisibleIndex)
+            resumeTimeline(newLastVisibleIndex, newLastVisibleOffsetY)
 
         newLastVisibleIndex = -1
     }
@@ -76,11 +77,13 @@ SkyListView {
         if (!inSync)
             return
 
-        let firstVisibleIndex = getFirstVisibleIndex()
-        let lastVisibleIndex = getLastVisibleIndex()
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
 
-        if (!isView)
-            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex)
+        if (!isView) {
+            const lastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+            skywalker.timelineMovementEnded(firstVisibleIndex, lastVisibleIndex, lastVisibleOffsetY)
+        }
 
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
@@ -173,7 +176,7 @@ SkyListView {
         updateUnreadPosts(firstVisibleIndex)
     }
 
-    function resumeTimeline(index) {
+    function resumeTimeline(index, offsetY = 0) {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Resume timeline:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
@@ -183,7 +186,7 @@ SkyListView {
             return
         }
 
-        moveToPost(index)
+        moveToPost(index, () => { contentY -= offsetY })
     }
 
     function rowsInsertedHandler(parent, start, end) {
@@ -202,10 +205,13 @@ SkyListView {
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
-        if (start <= lastVisibleIndex)
+        if (start <= lastVisibleIndex) {
             newLastVisibleIndex = lastVisibleIndex + (end - start + 1)
-        else
+            newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+        }
+        else {
             newLastVisibleIndex = -1
+        }
     }
 
     function rowsRemovedHandler(parent, start, end) {
@@ -213,21 +219,24 @@ SkyListView {
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
 
-        if (start <= lastVisibleIndex)
+        if (start <= lastVisibleIndex) {
             newLastVisibleIndex = lastVisibleIndex - (end - start + 1)
-        else
+            newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+        }
+        else {
             newLastVisibleIndex = -1
+        }
     }
 
     function rowsAboutToBeRemovedHandler(parent, start, end) {
         calibratePosition()
     }
 
-    function setInSync(index) {
-        console.debug("Sync:", model.feedName, "index:", index, "count:", count)
+    function setInSync(index, offsetY = 0) {
+        console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
 
         if (index >= 0)
-            moveToPost(index)
+            moveToPost(index, () => { contentY -= offsetY })
         else
             moveToEnd()
 

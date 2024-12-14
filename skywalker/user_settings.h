@@ -89,6 +89,9 @@ public:
     void saveSyncTimestamp(const QString& did, QDateTime timestamp);
     QDateTime getSyncTimestamp(const QString& did) const;
 
+    void saveSyncOffsetY(const QString& did, int offsetY);
+    int getSyncOffsetY(const QString& did) const;
+
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
 

@@ -89,4 +89,16 @@ ListView {
     function getLastVisibleIndex() {
         return indexAt(0, contentY + height - 1)
     }
+
+    // Calculate offset from bottom of visible section.
+    // A positive offset means that the item is partly scrolled down the bottom.
+    function calcVisibleOffsetY(index) {
+        const item = itemAtIndex(index)
+
+        if (!item)
+            return 0
+
+        const hiddenY = contentY + height - item.y
+        return item.height - hiddenY
+    }
 }

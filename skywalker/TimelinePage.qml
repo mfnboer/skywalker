@@ -148,8 +148,8 @@ SkyPage {
         }
     }
 
-    function setInSync(index) {
-        timelineView.setInSync(index)
+    function setInSync(index, offsetY = 0) {
+        timelineView.setInSync(index, offsetY)
     }
 
     function stopSync() {
@@ -160,8 +160,8 @@ SkyPage {
         timelineView.moveToPost(index)
     }
 
-    function resumeTimeline(index) {
-        timelineView.resumeTimeline(index)
+    function resumeTimeline(index, offsetY) {
+        timelineView.resumeTimeline(index, offsetY)
     }
 
     function addUserView() {

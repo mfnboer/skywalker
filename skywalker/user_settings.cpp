@@ -263,6 +263,16 @@ QDateTime UserSettings::getSyncTimestamp(const QString& did) const
     return mSettings.value(key(did, "syncTimestamp")).toDateTime();
 }
 
+void UserSettings::saveSyncOffsetY(const QString& did, int offsetY)
+{
+    mSettings.setValue(key(did, "syncOffsetY"), offsetY);
+}
+
+int UserSettings::getSyncOffsetY(const QString& did) const
+{
+    return mSettings.value(key(did, "syncOffsetY"), 0).toInt();
+}
+
 void UserSettings::updateLastSignInTimestamp(const QString& did)
 {
     mSettings.setValue(key(did, "lastSignInTimestamp"), QDateTime::currentDateTime());
