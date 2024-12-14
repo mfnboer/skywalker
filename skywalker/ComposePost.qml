@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import QtQuick.Window 2.2
-import QtMultimedia
 import skywalker
 
 SkyPage {
@@ -1345,7 +1343,7 @@ SkyPage {
         property var callbackCannotUploadVideo: (error) => {}
 
         id: postUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onPostOk: (uri, cid) => {
             postedUris.push(uri)

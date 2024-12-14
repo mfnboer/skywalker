@@ -1,4 +1,3 @@
-import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -78,6 +77,10 @@ ApplicationWindow {
     StatusPopup {
         id: statusPopup
         y: guiSettings.headerHeight
+    }
+
+    function clearStatusMessage() {
+        statusPopup.close()
     }
 
     function syncTimelineToPost(postIndex) {

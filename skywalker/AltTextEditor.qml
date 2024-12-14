@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import skywalker
 
 SkyPage {
@@ -8,6 +7,7 @@ SkyPage {
     property bool sourceIsVideo: false
     property alias text: altText.text
     property var skywalker: root.getSkywalker()
+    property var userSettings: skywalker.getUserSettings()
     readonly property int margin: 10
 
     signal altTextChanged(string text)
@@ -63,6 +63,59 @@ SkyPage {
             autoTransform: true
             source: !sourceIsVideo ? page.imgSource : ""
             visible: !sourceIsVideo
+
+            SvgButton {
+                x: parent.width - width
+                width: 34
+                height: width
+                svg: SvgOutline.moreVert
+                accessibleName: qsTr("change script to extract")
+                enabled: extractButton.enabled
+                onClicked: moreMenu.open()
+
+                Menu {
+                    id: moreMenu
+                    modal: true
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Scripts</b>")
+                        Accessible.name: qsTr("close scripts menu")
+                    }
+
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_LATIN
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_CHINESE
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_DEVANAGARI
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_JAPANESE
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                    ScriptRecognitionMenuItem {
+                        script: QEnums.SCRIPT_KOREAN
+                        ButtonGroup.group: scriptButtonGroup
+                    }
+                }
+
+                ButtonGroup { id: scriptButtonGroup }
+            }
+
+            SkyButton {
+                id: extractButton
+                x: parent.width - width
+                y: parent.height - height
+                height: 34
+                text: qsTr(`Extract text (${(qEnums.scriptToString(userSettings.scriptRecognition))})`)
+                enabled: altText.text.length === 0 && !imageUtils.extractingText && !imageUtils.installing
+                onClicked: imageUtils.installModule(userSettings.scriptRecognition)
+            }
         }
 
         VideoThumbnail {
@@ -76,6 +129,41 @@ SkyPage {
             videoSource: sourceIsVideo ? page.imgSource : ""
             visible: sourceIsVideo
         }
+    }
+
+    ImageUtils {
+        id: imageUtils
+
+        onInstallModuleProgress: (script, progressPercentage) => { // qmllint disable signal-handler-parameters
+            skywalker.showStatusMessage(qsTr(`Installing ${(qEnums.scriptToString(script))} recognition: ${progressPercentage}%`), QEnums.STATUS_LEVEL_INFO, 30)
+        }
+
+        onInstallModuleOk: (script) => { // qmllint disable signal-handler-parameters
+            skywalker.showStatusMessage(qsTr("Extracting text"), QEnums.STATUS_LEVEL_INFO, 30)
+            imageUtils.extractText(script, imgSource)
+        }
+
+        onInstallModuleFailed: (script, error) => { // qmllint disable signal-handler-parameters
+            skywalker.showStatusMessage(qsTr(`Failed to install module for ${(qEnums.scriptToString(script))} text recognition: ${error}`), QEnums.STATUS_LEVEL_INFO)
+        }
+
+        onExtractTextOk: (source, extractedText) => {
+            if (extractedText) {
+                root.clearStatusMessage()
+                altText.text = extractedText
+            }
+            else {
+                skywalker.showStatusMessage(qsTr("No text found"), QEnums.STATUS_LEVEL_INFO)
+            }
+        }
+
+        onExtractTextFailed: (source, error) => {
+            skywalker.showStatusMessage(qsTr(`Failed to extract text: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        }
+    }
+
+    QEnums {
+        id: qEnums
     }
 
     VirtualKeyboardPageResizer {

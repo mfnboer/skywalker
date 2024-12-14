@@ -524,6 +524,25 @@ bool UserSettings::getRequireAltText(const QString& did) const
     return mSettings.value(key(did, "requireAltText"), false).toBool();
 }
 
+void UserSettings::setScriptRecognition(QEnums::Script script)
+{
+    const auto oldScript = getScriptRecognition();
+    mSettings.setValue("scriptRecognition", (int)script);
+
+    if (script != oldScript)
+        emit scriptRecognitionChanged();
+}
+
+QEnums::Script UserSettings::getScriptRecognition() const
+{
+    int script = mSettings.value("scriptRecognition", (int)QEnums::SCRIPT_LATIN).toInt();
+
+    if (script < 0 || script > (int)QEnums::SCRIPT_LAST)
+        return QEnums::SCRIPT_LATIN;
+
+    return QEnums::Script(script);
+}
+
 QString UserSettings::getMutedRepostsListUri(const QString& did) const
 {
     const ATProto::ATUri uri(did, ATProto::ATUri::COLLECTION_GRAPH_LIST, RKEY_MUTED_REPOSTS);

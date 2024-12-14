@@ -437,6 +437,9 @@ qt_add_qml_module(libskywalker
         QML_FILES AddFocusHashtagTimelineView.qml
         QML_FILES SkyDot.qml
         QML_FILES AddHashtagTimelineView.qml
+        SOURCES image_utils.h
+        SOURCES image_utils.cpp
+        QML_FILES ScriptRecognitionMenuItem.qml
 )
 
 if (NOT ANDROID)

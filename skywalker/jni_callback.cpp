@@ -55,6 +55,76 @@ void _handleVideoTranscodingFailed(JNIEnv* env, jobject, jstring jsInputFileName
         instance->handleVideoTranscodingFailed(inputFileName, outputFileName, error);
 }
 
+void _handleExtractTextAvailabilityOk(JNIEnv*, jobject, jint script, jboolean available)
+{
+    qDebug() << "Extract text availability ok, script:" << (int)script << "available:" << (bool)available;
+    Q_ASSERT((int)script >= 0 && (int)script <= QEnums::Script::SCRIPT_LAST);
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextAvailabilityOk(QEnums::Script((int)script), (bool)available);
+}
+
+void _handleExtractTextAvailabilityFailed(JNIEnv* env, jobject, jint script, jstring jsError)
+{
+    Q_ASSERT(script >= 0 && script <= QEnums::Script::SCRIPT_LAST);
+    QString error = jsError ? env->GetStringUTFChars(jsError, nullptr) : QString();
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextAvailabilityFailed(QEnums::Script((int)script), error);
+}
+
+void _handleExtractTextInstallProgress(JNIEnv*, jobject, jint script,  jint progressPercentage)
+{
+    Q_ASSERT(script >= 0 && script <= QEnums::Script::SCRIPT_LAST);
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextInstallProgress(QEnums::Script((int)script), progressPercentage);
+}
+
+void _handleExtractTextInstallOk(JNIEnv*, jobject, jint script)
+{
+    Q_ASSERT(script >= 0 && script <= QEnums::Script::SCRIPT_LAST);
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextInstallOk(QEnums::Script((int)script));
+}
+
+void _handleExtractTextInstallFailed(JNIEnv* env, jobject, jint script, jstring jsError)
+{
+    Q_ASSERT(script >= 0 && script <= QEnums::Script::SCRIPT_LAST);
+    QString error = jsError ? env->GetStringUTFChars(jsError, nullptr) : QString();
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextInstallFailed(QEnums::Script((int)script), error);
+}
+
+void _handleExtractTextOk(JNIEnv* env, jobject, jstring jsToken, jstring jsText)
+{
+    QString token = jsToken ? env->GetStringUTFChars(jsToken, nullptr) : QString();
+    QString text = jsText ? env->GetStringUTFChars(jsText, nullptr) : QString();
+    qDebug() << "Extract text ok:" << token << "text:" << text;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextOk(token, text);
+}
+
+void _handleExtractTextFailed(JNIEnv* env, jobject, jstring jsToken, jstring jsError)
+{
+    QString token = jsToken ? env->GetStringUTFChars(jsToken, nullptr) : QString();
+    QString error = jsError ? env->GetStringUTFChars(jsError, nullptr) : QString();
+    qDebug() << "Extract text failed:" << token << "error:" << error;
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleExtractTextFailed(token, error);
+}
+
 void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
 {
     QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
@@ -159,6 +229,17 @@ JNICallbackListener::JNICallbackListener() : QObject()
     };
     jni.registerNativeMethods("com/gmail/mfnboer/VideoTranscoder", videoTranscoderCallbacks, 2);
 
+    const JNINativeMethod textExtractorCallbacks[] = {
+        {"emitCheckAvailabilityOk", "(IZ)V", reinterpret_cast<void *>(_handleExtractTextAvailabilityOk) },
+        {"emitCheckAvailabilityFailed", "(ILjava/lang/String;)V", reinterpret_cast<void *>(_handleExtractTextAvailabilityFailed) },
+        {"emitInstallModuleProgress", "(II)V", reinterpret_cast<void *>(_handleExtractTextInstallProgress) },
+        {"emitInstallModuleOk", "(I)V", reinterpret_cast<void *>(_handleExtractTextInstallOk) },
+        {"emitInstallModuleFailed", "(ILjava/lang/String;)V", reinterpret_cast<void *>(_handleExtractTextInstallFailed) },
+        {"emitExtractOk", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleExtractTextOk) },
+        {"emitExtractFailed", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleExtractTextFailed) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/TextExtractor", textExtractorCallbacks, 7);
+
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
@@ -189,6 +270,41 @@ void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName,
 void JNICallbackListener::handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
     emit videoTranscodingFailed(inputFileName, outputFileName, error);
+}
+
+void JNICallbackListener::handleExtractTextAvailabilityOk(QEnums::Script script, bool available)
+{
+    emit extractTextAvailabilityOk(script, available);
+}
+
+void JNICallbackListener::handleExtractTextAvailabilityFailed(QEnums::Script script, const QString& error)
+{
+    emit extractTextAvailabilityFailed(script, error);
+}
+
+void JNICallbackListener::handleExtractTextInstallProgress(QEnums::Script script, int progressPercentage)
+{
+    emit extractTextInstallProgress(script, progressPercentage);
+}
+
+void JNICallbackListener::handleExtractTextInstallOk(QEnums::Script script)
+{
+    emit extractTextInstallOk(script);
+}
+
+void JNICallbackListener::handleExtractTextInstallFailed(QEnums::Script script, const QString& error)
+{
+    emit extractTextInstallFailed(script, error);
+}
+
+void JNICallbackListener::handleExtractTextOk(const QString& imgSource, const QString& text)
+{
+    emit extractTextOk(imgSource, text);
+}
+
+void JNICallbackListener::handleExtractTextFailed(const QString& imgSource, const QString& error)
+{
+    emit extractTextFailed(imgSource, error);
 }
 
 void JNICallbackListener::handleSharedTextReceived(const QString& sharedText)

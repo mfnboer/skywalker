@@ -31,6 +31,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoAutoLoad READ getVideoAutoLoad WRITE setVideoAutoLoad NOTIFY videoAutoLoadChanged FINAL)
     Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
+    Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged)
 
 public:
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
@@ -144,6 +145,9 @@ public:
     Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
 
+    void setScriptRecognition(QEnums::Script script);
+    QEnums::Script getScriptRecognition() const;
+
     Q_INVOKABLE void setThreadAutoNumber(bool autoNumber);
     Q_INVOKABLE bool getThreadAutoNumber() const;
 
@@ -242,6 +246,7 @@ signals:
     void videoAutoPlayChanged();
     void videoAutoLoadChanged();
     void floatingNavigationButtonsChanged();
+    void scriptRecognitionChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;

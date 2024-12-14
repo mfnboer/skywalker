@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import skywalker
 
 Popup {
@@ -41,7 +42,7 @@ Popup {
         id: closeButton
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        iconColor: statusText.color
+        iconColor: statusText.color.toString()
         Material.background: "transparent"
         svg: SvgOutline.close
         accessibleName: qsTr("close status message")
@@ -57,7 +58,6 @@ Popup {
         id: closeTimer
         onTriggered: statusPopup.close()
     }
-
 
     function show(msg, level = QEnums.STATUS_LEVEL_INFO, intervalSec = 30) {
         console.debug("Level:", level, "Msg:", msg);

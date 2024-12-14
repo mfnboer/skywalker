@@ -182,7 +182,7 @@ public:
     Q_INVOKABLE void deleteBookmarksModel();
 
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
-    Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
+    Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
 
     // TODO: refactor to separate App Utils class
     Q_INVOKABLE bool sendAppToBackground();
