@@ -7,6 +7,7 @@
 #include <QRegularExpression>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
+#include <QUrlQuery>
 
 namespace Skywalker {
 
@@ -229,6 +230,26 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     QString imgUrlString = matchRegexes(ogImageREs, data, "image");
     qDebug() << "img url:" << imgUrlString;
     const auto& url = reply->request().url();
+
+    // Washington post wraps the IMG url in a PHP query like this:
+    // https://www.washingtonpost.com/wp-apps/imrs.php?src=https://<img-url>&w=1440
+    if (imgUrlString.contains(".php?src=http"))
+    {
+        const QUrl phpUrl(imgUrlString);
+        const QString queryString = phpUrl.query();
+
+        if (!queryString.isEmpty())
+        {
+            const QUrlQuery query(queryString);
+            const QString src = query.queryItemValue("src");
+            imgUrlString = src;
+            qDebug() << "php scr img url:" << imgUrlString;
+        }
+        else
+        {
+            imgUrlString.clear();
+        }
+    }
 
     if (!imgUrlString.isEmpty())
     {

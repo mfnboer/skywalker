@@ -3,6 +3,7 @@ next
 * Extract printed text from a picture to alt-text
   Supported scripts: Latin, Chinese, Devanagari, Japanese, Korean
 * Retain timeline position on refresh
+* Linkcard improvement
 
 3.8.1
 =====
