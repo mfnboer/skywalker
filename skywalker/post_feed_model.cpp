@@ -470,14 +470,29 @@ QDateTime PostFeedModel::lastTimestamp() const
     return !mFeed.empty() ? mFeed.back().getTimelineTimestamp() : QDateTime();
 }
 
-int PostFeedModel::findTimestamp(QDateTime timestamp) const
+int PostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
 {
+    int foundIndex = 0;
+
     for (int i = mFeed.size() - 1; i >= 0; --i)
     {
         const Post& post = mFeed[i];
 
-        if (!post.isPlaceHolder() && post.getTimelineTimestamp() >= timestamp)
-            return i;
+        if (post.isPlaceHolder())
+            continue;
+
+        if (post.getTimelineTimestamp() == timestamp)
+        {
+            if (!cid.isEmpty() && post.getCid() == cid)
+                return i;
+
+            if (foundIndex == 0)
+                foundIndex = i;
+        }
+        else if (post.getTimelineTimestamp() > timestamp)
+        {
+            return foundIndex > 0 ? foundIndex : i;
+        }
     }
 
     return 0;

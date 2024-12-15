@@ -263,6 +263,16 @@ QDateTime UserSettings::getSyncTimestamp(const QString& did) const
     return mSettings.value(key(did, "syncTimestamp")).toDateTime();
 }
 
+void UserSettings::saveSyncCid(const QString& did, const QString& cid)
+{
+    mSettings.setValue(key(did, "syncCid"), cid);
+}
+
+QString UserSettings::getSyncCid(const QString& did) const
+{
+    return mSettings.value(key(did, "syncCid")).toString();
+}
+
 void UserSettings::saveSyncOffsetY(const QString& did, int offsetY)
 {
     mSettings.setValue(key(did, "syncOffsetY"), offsetY);

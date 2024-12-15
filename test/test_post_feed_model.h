@@ -362,23 +362,80 @@ private slots:
     {
         mPostFeedModel->addFeed(getFeed(5, TEST_DATE, "CUR1"));
 
-        int index = mPostFeedModel->findTimestamp(TEST_DATE);
+        int index = mPostFeedModel->findTimestamp(TEST_DATE, "");
         QCOMPARE(index, 0);
 
-        index = mPostFeedModel->findTimestamp(TEST_DATE - 500ms);
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 500ms, "");
         QCOMPARE(index, 0);
 
-        index = mPostFeedModel->findTimestamp(TEST_DATE - 1s);
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 1s, "");
         QCOMPARE(index, 1);
 
-        index = mPostFeedModel->findTimestamp(TEST_DATE - 4s);
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 4s, "");
         QCOMPARE(index, 4);
 
-        index = mPostFeedModel->findTimestamp(TEST_DATE - 5s);
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 5s, "");
         QCOMPARE(index, 4);
 
-        index = mPostFeedModel->findTimestamp(TEST_DATE + 1s);
+        index = mPostFeedModel->findTimestamp(TEST_DATE + 1s, "");
         QCOMPARE(index, 0);
+    }
+
+    void findTimestampWithCid()
+    {
+        mPostFeedModel->addFeed(getFeed(5, TEST_DATE, "CUR1"));
+
+        int index = mPostFeedModel->findTimestamp(TEST_DATE, "cid1");
+        QCOMPARE(index, 0);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 500ms, "cid1");
+        QCOMPARE(index, 0);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 1s, "cid2");
+        QCOMPARE(index, 1);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 4s, "cid5");
+        QCOMPARE(index, 4);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 5s, "cid5");
+        QCOMPARE(index, 4);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE + 1s, "cid6");
+        QCOMPARE(index, 0);
+    }
+
+    void findTimestampWithNonMatchingCid()
+    {
+        mPostFeedModel->addFeed(getFeed(5, TEST_DATE, "CUR1"));
+
+        int index = mPostFeedModel->findTimestamp(TEST_DATE, "cid42");
+        QCOMPARE(index, 0);
+    }
+
+    void findTimestampFromEqualTimestamps()
+    {
+        auto feed = getFeed(5, TEST_DATE, "CUR1");
+        feed->mFeed[1]->mPost->mIndexedAt = TEST_DATE;
+        feed->mFeed[2]->mPost->mIndexedAt = TEST_DATE;
+        mPostFeedModel->addFeed(std::move(feed));
+
+        int index = mPostFeedModel->findTimestamp(TEST_DATE, "cid1");
+        QCOMPARE(index, 0);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE, "cid2");
+        QCOMPARE(index, 1);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE, "cid3");
+        QCOMPARE(index, 2);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE, "cidX");
+        QCOMPARE(index, 0);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE, "");
+        QCOMPARE(index, 0);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE - 4s, "cid5");
+        QCOMPARE(index, 4);
     }
 
 private:

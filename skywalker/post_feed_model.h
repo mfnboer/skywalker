@@ -83,7 +83,9 @@ public:
     QDateTime lastTimestamp() const;
 
     // Returns the index of the last post >= timestamp, 0 if no such post exists
-    int findTimestamp(QDateTime timestamp) const;
+    // If  there are multiple posts with the same timestamp, then pick the one with
+    // matching cid.
+    int findTimestamp(QDateTime timestamp, const QString& cid) const;
 
     void clear();
 

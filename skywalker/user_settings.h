@@ -89,6 +89,9 @@ public:
     void saveSyncTimestamp(const QString& did, QDateTime timestamp);
     QDateTime getSyncTimestamp(const QString& did) const;
 
+    void saveSyncCid(const QString& did, const QString& cid);
+    QString getSyncCid(const QString& did) const;
+
     void saveSyncOffsetY(const QString& did, int offsetY);
     int getSyncOffsetY(const QString& did) const;
 

@@ -192,7 +192,7 @@ SkyListView {
     function rowsInsertedHandler(parent, start, end) {
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
         calibrateUnreadPosts()
     }
 
@@ -203,9 +203,11 @@ SkyListView {
 
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
-        if (start <= lastVisibleIndex) {
+        // When all posts are removed because of a refresh, then count is zero, but
+        // first and list visible index are still non-zero
+        if (start <= lastVisibleIndex && count > lastVisibleIndex) {
             newLastVisibleIndex = lastVisibleIndex + (end - start + 1)
             newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
         }
@@ -218,18 +220,22 @@ SkyListView {
         calibrateUnreadPosts()
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Calibration, rows removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+    }
 
-        if (start <= lastVisibleIndex) {
+    function rowsAboutToBeRemovedHandler(parent, start, end) {
+        calibratePosition()
+        let firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Calibration, rows to be removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        if (end < lastVisibleIndex) {
             newLastVisibleIndex = lastVisibleIndex - (end - start + 1)
             newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
         }
         else {
             newLastVisibleIndex = -1
         }
-    }
-
-    function rowsAboutToBeRemovedHandler(parent, start, end) {
-        calibratePosition()
     }
 
     function setInSync(index, offsetY = 0) {

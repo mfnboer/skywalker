@@ -744,10 +744,11 @@ void Skywalker::syncTimeline(int maxPages)
 
     disableDebugLogging(); // sync can cause a lot of logging
     emit timelineSyncStart(maxPages, timestamp);
-    syncTimeline(timestamp, maxPages);
+    const auto cid = mUserSettings.getSyncCid(mUserDid);
+    syncTimeline(timestamp, cid, maxPages);
 }
 
-void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QString& cursor)
+void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
     Q_ASSERT(tillTimestamp.isValid());
@@ -761,7 +762,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor),
-        [this, tillTimestamp, maxPages, cursor](auto feed){
+        [this, tillTimestamp, cid, maxPages, cursor](auto feed){
             mTimelineModel.addFeed(std::move(feed));
             setGetTimelineInProgress(false);
             const auto lastTimestamp = mTimelineModel.lastTimestamp();
@@ -777,7 +778,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
             if (lastTimestamp < tillTimestamp)
             {
                 restoreDebugLogging();
-                const auto index = mTimelineModel.findTimestamp(tillTimestamp);
+                const auto index = mTimelineModel.findTimestamp(tillTimestamp, cid);
                 qDebug() << "Timeline synced, last timestamp:" << lastTimestamp << "index:"
                         << index << ",feed size:" << mTimelineModel.rowCount()
                         << ",pages left:" << maxPages;
@@ -819,7 +820,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, int maxPages, const QStrin
 
             qInfo() << "Last timestamp:" << lastTimestamp;
             emit timelineSyncProgress(maxPages - 1, lastTimestamp);
-            syncTimeline(tillTimestamp, maxPages - 1, newCursor);
+            syncTimeline(tillTimestamp, cid, maxPages - 1, newCursor);
         },
         [this](const QString& error, const QString& msg){
             restoreDebugLogging();
@@ -3137,6 +3138,7 @@ void Skywalker::saveSyncTimestamp(int postIndex, int offsetY)
 
     const auto& post = mTimelineModel.getPost(postIndex);
     mUserSettings.saveSyncTimestamp(mUserDid, post.getTimelineTimestamp());
+    mUserSettings.saveSyncCid(mUserDid, post.getCid());
     mUserSettings.saveSyncOffsetY(mUserDid, offsetY);
     mSyncPostIndex = postIndex;
 }
@@ -3417,20 +3419,21 @@ void Skywalker::resumeApp()
     const auto pauseInterval = QDateTime::currentDateTimeUtc() - mTimelineUpdatePaused;
     mTimelineUpdatePaused = {};
     const auto lastSyncTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
+    const auto lastSyncCid = mUserSettings.getSyncCid(mUserDid);
     const int lastSyncOffsetY = mUserSettings.getSyncOffsetY(mUserDid);
     const auto postCount = mTimelineModel.rowCount();
-    qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << "post count:" << postCount;
+    qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << lastSyncCid << "post count:" << postCount;
 
-    refreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncOffsetY, postCount]{
+    refreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
         startRefreshTimers();
         startTimelineAutoUpdate();
 
         if (pauseInterval > 60s)
         {
-            updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncOffsetY, postCount]{
+            updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
                 if (postCount != mTimelineModel.rowCount())
                 {
-                    const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp);
+                    const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
                     emit timelineResumed(lastSyncIndex, lastSyncOffsetY);
                 }
             });
