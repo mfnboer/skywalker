@@ -1,9 +1,11 @@
-next
-====
+3.9
+===
 * Extract printed text from a picture to alt-text
   Supported scripts: Latin, Chinese, Devanagari, Japanese, Korean
 * Retain timeline position on refresh
+* Option to disable post thread assembly in following feed
 * Linkcard improvement
+* Bug fixes
 
 3.8.1
 =====

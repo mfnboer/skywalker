@@ -704,6 +704,16 @@ void UserSettings::setHideRepliesInThreadFromUnfollowed(const QString& did, bool
     mSettings.setValue(key(did, "hideRepliesInThreadFromUnfollowed"), hide);
 }
 
+bool UserSettings::getAssembleThreads(const QString& did) const
+{
+    return mSettings.value(key(did, "assembleThreads"), true).toBool();
+}
+
+void UserSettings::setAssembleThreads(const QString& did, bool assemble)
+{
+    mSettings.setValue(key(did, "assembleThreads"), assemble);
+}
+
 bool UserSettings::getRewindToLastSeenPost(const QString& did) const
 {
     return mSettings.value(key(did, "rewindToLastSeenPost"), true).toBool();

@@ -971,6 +971,7 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
+    const bool assembleThreads = mUserSettings.getAssembleThreads(mUserDid);
     auto page = std::make_unique<Page>();
 
     for (size_t i = 0; i < feed->mFeed.size(); ++i)
@@ -1017,7 +1018,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // If a reply fits in an existing thread then always show it as it provides
                 // context to the user. The leaf of this thread is a reply that passed
                 // through the filter settings.
-                if (page->tryAddToExistingThread(post, *replyRef))
+                if (assembleThreads && page->tryAddToExistingThread(post, *replyRef))
                     continue;
 
                 if (!mustShowReply(post, replyRef))
@@ -1027,7 +1028,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 const auto& rootCid = replyRef->mRoot.getCid();
                 const auto& parentCid = replyRef->mParent.getCid();
 
-                if (!rootCid.isEmpty() && rootCid != parentCid && !cidIsStored(rootCid) && !page->cidAdded(rootCid) &&
+                if (assembleThreads && !rootCid.isEmpty() && rootCid != parentCid &&
+                    !cidIsStored(rootCid) && !page->cidAdded(rootCid) &&
                     !mustHideContent(replyRef->mRoot))
                 {
                     preprocess(replyRef->mRoot);
@@ -1038,7 +1040,8 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                 // If the parent was seen already, but the root not, then show the parent
                 // again for consistency of the thread.
-                if (((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded) &&
+                if (assembleThreads &&
+                    ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded) &&
                     !mustHideContent(replyRef->mParent))
                 {
                     preprocess(replyRef->mParent);

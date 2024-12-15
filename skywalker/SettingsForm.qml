@@ -214,6 +214,13 @@ SkyPage {
             }
 
             AccessibleSwitch {
+                text: qsTr("Assemble post threads")
+                checked: userSettings.getAssembleThreads(userDid)
+                enabled: !userPrefs.hideReplies
+                onCheckedChanged: userSettings.setAssembleThreads(userDid, checked)
+            }
+
+            AccessibleSwitch {
                 text: qsTr("Show reposts")
                 checked: !userPrefs.hideReposts
                 onCheckedChanged: userPrefs.hideReposts = !checked

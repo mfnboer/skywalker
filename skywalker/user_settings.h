@@ -195,6 +195,9 @@ public:
     Q_INVOKABLE bool getHideRepliesInThreadFromUnfollowed(const QString did) const;
     Q_INVOKABLE void setHideRepliesInThreadFromUnfollowed(const QString& did, bool hide);
 
+    Q_INVOKABLE bool getAssembleThreads(const QString& did) const;
+    Q_INVOKABLE void setAssembleThreads(const QString& did, bool assemble);
+
     bool getRewindToLastSeenPost(const QString& did) const;
     void setRewindToLastSeenPost(const QString& did, bool rewind);
 
