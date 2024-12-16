@@ -1,3 +1,7 @@
+next
+====
+* Bug fix: crash when trying to extract text from non-RGB32 image
+
 3.9
 ===
 * Extract printed text from a picture to alt-text

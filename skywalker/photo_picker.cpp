@@ -101,7 +101,7 @@ QImage loadImage(const QString& imgName)
 
         if (!FileUtils::checkReadMediaPermission())
         {
-            qWarning() << "No permission toe read:" << fileName;
+            qWarning() << "No permission to read:" << fileName;
             return {};
         }
 
