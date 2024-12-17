@@ -67,6 +67,7 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/NetworkUtils.java
         RESOURCES android/src/com/gmail/mfnboer/QVideoEncoder.java
         RESOURCES android/src/com/gmail/mfnboer/TextExtractor.java
+        RESOURCES android/src/com/gmail/mfnboer/LanguageDetection.java
 )
 
 if (ANDROID)

@@ -265,6 +265,14 @@ public:
     };
     Q_ENUM(Script)
 
+    enum LanguageSource
+    {
+        LANGUAGE_SOURCE_NONE,
+        LANGUAGE_SOURCE_USER,
+        LANGUAGE_SOURCE_AUTO
+    };
+    Q_ENUM(LanguageSource)
+
     Q_INVOKABLE static QString scriptToString(Script script);
 };
 

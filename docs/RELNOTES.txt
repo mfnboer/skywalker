@@ -1,6 +1,7 @@
 next
 ====
-* Bug fix: crash when trying to extract text from non-RGB32 image
+* Identify language of a post while you type
+* Bug fix: crash when trying to extract text from an non 32-bit color image
 
 3.9
 ===

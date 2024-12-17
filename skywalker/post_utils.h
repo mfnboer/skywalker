@@ -15,6 +15,7 @@
 #include <atproto/lib/post_master.h>
 #include <QImage>
 #include <QQuickTextDocument>
+#include <unordered_map>
 
 namespace Skywalker {
 
@@ -95,6 +96,8 @@ public:
     Q_INVOKABLE void getVideoUploadLimits();
     Q_INVOKABLE void checkVideoUploadLimits();
 
+    Q_INVOKABLE void identifyLanguage(QString text, int index);
+
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);
     const QString& getEditTag() const { return mEditTag; }
@@ -172,6 +175,7 @@ signals:
     void videoUploadLimits(VideoUploadLimits limits);
     void checkVideoLimitsOk(VideoUploadLimits limits);
     void checkVideoLimitsFailed(QString error);
+    void languageIdentified(QString languageCode, int index);
 
 private:
     void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
@@ -193,6 +197,9 @@ private:
     void cancelPhotoPicking();
     void getVideoUploadLimits(const std::function<void(const VideoUploadLimits&)>& cb);
     void continueSharePhotoToApp(const QString& fileName);
+    void handleLanguageIdentified(const QString& languageCode, int requestId);
+    void addIndexLanguageIdentificationRequestId(int index, int requestId);
+    void removeIndexLanguageIdentificationRequestId(int index, int requestId);
 
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
@@ -213,6 +220,11 @@ private:
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;
     bool mPickingPhoto = false;
+
+    std::unordered_map<int, int> mIndexLanguageIdentificationRequestIdMap;
+    std::unordered_map<int, int> mLanguageIdentificationRequestIdIndexMap;
+
+    static int sNextRequestId;
 };
 
 }

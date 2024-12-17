@@ -27,6 +27,7 @@ public:
     void handleExtractTextInstallFailed(QEnums::Script script, const QString& error);
     void handleExtractTextOk(const QString& imgSource, const QString& text);
     void handleExtractTextFailed(const QString& imgSource, const QString& error);
+    void handleLanguageIdentified(const QString& languageCode, int requestId);
     void handleSharedTextReceived(const QString& sharedText);
     void handleSharedImageReceived(const QString& contentUri, const QString& text);
     void handleSharedVideoReceived(const QString& contentUri, const QString& text);
@@ -46,6 +47,7 @@ signals:
     void extractTextInstallFailed(QEnums::Script script, QString error);
     void extractTextOk(QString imgSource, QString text);
     void extractTextFailed(QString imgSource, QString error);
+    void languageIdentified(QString languageCode, int requestId);
     void sharedTextReceived(QString sharedText);
     void sharedImageReceived(QString contentUri, QString text);
     void sharedVideoReceived(QString contentUri, QString text);

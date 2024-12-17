@@ -38,6 +38,12 @@ QString LanguageUtils::languageCodeToShortCode(const QString& languageCode)
     return languageCode.split('_').front();
 }
 
+bool LanguageUtils::existsShortCode(const QString& shortCode)
+{
+    initLanguages();
+    return sLanguageShortCodeToNameMap.contains(shortCode);
+}
+
 QString LanguageUtils::getLanguageName(const QString& languageCode)
 {
     initLanguages();

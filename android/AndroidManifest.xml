@@ -105,7 +105,7 @@
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
-            android:value="ocr"/>
+            android:value="ocr,langid"/>
 
     </application>
     <uses-sdk android:minSdkVersion="28"/>

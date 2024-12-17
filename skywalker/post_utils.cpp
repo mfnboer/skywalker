@@ -15,6 +15,10 @@
 
 namespace Skywalker {
 
+static constexpr int MIN_LANGUAGE_IDENTIFICATION_LENGTH = 20;
+
+int PostUtils::sNextRequestId = 1;
+
 PostUtils::PostUtils(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
@@ -26,6 +30,9 @@ PostUtils::PostUtils(QObject* parent) :
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
         this, [this]{ cancelPhotoPicking(); });
+
+    connect(&jniCallbackListener, &JNICallbackListener::languageIdentified,
+            this, [this](QString languageCode, int requestId){ handleLanguageIdentified(languageCode, requestId); });
 
     connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
         if (!mSkywalker)
@@ -1581,6 +1588,27 @@ void PostUtils::checkVideoUploadLimits()
         });
 }
 
+void PostUtils::identifyLanguage(QString text, int index)
+{
+    if (text.length() < MIN_LANGUAGE_IDENTIFICATION_LENGTH)
+        return;
+
+#if defined(Q_OS_ANDROID)
+    auto jsText  = QJniObject::fromString(text);
+    const int requestId = sNextRequestId++;
+    addIndexLanguageIdentificationRequestId(index, requestId);
+
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/LanguageDetection",
+        "detectLanguage",
+        "(Ljava/lang/String;I)V",
+        jsText,
+        (jint)requestId);
+#else
+    qDebug() << "Language identification not supported:" << text;
+#endif
+}
+
 void PostUtils::shareMedia(int fd, const QString& mimeType)
 {
     if (!mPickingPhoto)
@@ -1683,6 +1711,35 @@ void PostUtils::dropVideo(const QString& source)
         const QString fileName = source.sliced(7);
         TempFileHolder::instance().remove(fileName);
     }
+}
+
+void PostUtils::handleLanguageIdentified(const QString& languageCode, int requestId)
+{
+    if (!mLanguageIdentificationRequestIdIndexMap.contains(requestId))
+        return;
+
+    const int index = mLanguageIdentificationRequestIdIndexMap[requestId];
+    removeIndexLanguageIdentificationRequestId(index, requestId);
+
+    if (!languageCode.isEmpty() && languageCode != "und")
+    {
+        if (LanguageUtils::existsShortCode(languageCode))
+            emit languageIdentified(languageCode, index);
+        else
+            qWarning() << "Unknown language code:" << languageCode;
+    }
+}
+
+void PostUtils::addIndexLanguageIdentificationRequestId(int index, int requestId)
+{
+    mIndexLanguageIdentificationRequestIdMap[index] = requestId;
+    mLanguageIdentificationRequestIdIndexMap[requestId] = index;
+}
+
+void PostUtils::removeIndexLanguageIdentificationRequestId(int index, int requestId)
+{
+    mIndexLanguageIdentificationRequestIdMap.erase(index);
+    mLanguageIdentificationRequestIdIndexMap.erase(requestId);
 }
 
 }

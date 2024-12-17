@@ -1,11 +1,11 @@
 import QtQuick
 import QtQuick.Controls
-import skywalker
 
 ComboBox {
     property list<language> allLanguages
     property list<language> usedLanguages
     property bool reversedColors: false
+    property bool autoDetectColor: false
     property int radius: 3
     property int borderWidth: 2
     property string borderColor: guiSettings.buttonColor
@@ -22,11 +22,26 @@ ComboBox {
     popup.width: 220
 
     background: Rectangle {
+        id: backgroundRect
         implicitWidth: 46
         radius: languageComboBox.radius
         border.color: languageComboBox.borderColor
         border.width: languageComboBox.borderWidth
         color: reversedColors ? languageComboBox.borderColor : "transparent"
+
+        states: State {
+            name: "autoDetected"; when: autoDetectColor
+            PropertyChanges { target: backgroundRect; color: guiSettings.labelColor }
+        }
+
+        transitions: Transition {
+            to: "autoDetected"
+            SequentialAnimation {
+                ColorAnimation { to: guiSettings.labelColor; duration: 500 }
+                ColorAnimation { from: guiSettings.labelColor; to: guiSettings.backgroundColor; duration: 500 }
+                ColorAnimation { from: guiSettings.backgroundColor; to: guiSettings.labelColor; duration: 500 }
+            }
+        }
     }
 
     indicator: Item {}
@@ -35,7 +50,7 @@ ComboBox {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
-        color: reversedColors ? "white" : languageComboBox.color
+        color: reversedColors && !autoDetectColor ? "white" : languageComboBox.color
         text: languageComboBox.displayText ? languageComboBox.displayText : qsTr("Any lanuage")
     }
 

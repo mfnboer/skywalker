@@ -125,6 +125,15 @@ void _handleExtractTextFailed(JNIEnv* env, jobject, jstring jsToken, jstring jsE
         instance->handleExtractTextFailed(token, error);
 }
 
+void _handleLanguageIdentified(JNIEnv* env, jobject, jstring jsLanguageCode, jint requestId)
+{
+    QString languageCode = jsLanguageCode ? env->GetStringUTFChars(jsLanguageCode, nullptr) : QString();
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleLanguageIdentified(languageCode, (int)requestId);
+}
+
 void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
 {
     QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
@@ -240,6 +249,11 @@ JNICallbackListener::JNICallbackListener() : QObject()
     };
     jni.registerNativeMethods("com/gmail/mfnboer/TextExtractor", textExtractorCallbacks, 7);
 
+    const JNINativeMethod languageDetectorCallbacks[] = {
+        {"emitLanguageIdentified", "(Ljava/lang/String;I)V", reinterpret_cast<void *>(_handleLanguageIdentified) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/LanguageDetection", languageDetectorCallbacks, 1);
+
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
         { "emitSharedImageReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedImageReceived) },
@@ -305,6 +319,11 @@ void JNICallbackListener::handleExtractTextOk(const QString& imgSource, const QS
 void JNICallbackListener::handleExtractTextFailed(const QString& imgSource, const QString& error)
 {
     emit extractTextFailed(imgSource, error);
+}
+
+void JNICallbackListener::handleLanguageIdentified(const QString& languageCode, int requestId)
+{
+    emit languageIdentified(languageCode, requestId);
 }
 
 void JNICallbackListener::handleSharedTextReceived(const QString& sharedText)

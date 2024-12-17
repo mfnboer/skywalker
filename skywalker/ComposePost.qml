@@ -10,6 +10,7 @@ SkyPage {
     property string initialVideo: ""
     property int margin: 15
 
+    readonly property int maxLanguageIdentificationLength: 200
     readonly property int maxPostLength: 300
     readonly property int maxThreadPosts: 99
     readonly property int minPostSplitLineLength: 30
@@ -82,6 +83,8 @@ SkyPage {
     contentHeight: flick.height
     topPadding: 0
     bottomPadding: 10
+
+    onCurrentPostIndexChanged: languageIdentificationTimer.reset()
 
     header: Rectangle {
         width: parent.width
@@ -303,6 +306,7 @@ SkyPage {
                     property bool cwPorn: false
                     property bool cwGore: false
                     property string language
+                    property int languageSource
                     property string video
                     property string videoAltText
                     property int videoNewHeight
@@ -331,6 +335,7 @@ SkyPage {
                         threadPosts.postList[index].cwPorn = cwPorn
                         threadPosts.postList[index].cwGore = cwGore
                         threadPosts.postList[index].language = language
+                        threadPosts.postList[index].languageSource = languageSource
                         threadPosts.postList[index].video = video
                         threadPosts.postList[index].videoAltText = videoAltText
                         threadPosts.postList[index].videoNewHeight = videoNewHeight
@@ -364,6 +369,7 @@ SkyPage {
                         cwPorn = threadPosts.postList[index].cwPorn
                         cwGore = threadPosts.postList[index].cwGore
                         language = threadPosts.postList[index].language
+                        languageSource = threadPosts.postList[index].languageSource
                         video = threadPosts.postList[index].video
                         videoAltText = threadPosts.postList[index].videoAltText
                         videoNewHeight = threadPosts.postList[index].videoNewHeight
@@ -448,9 +454,13 @@ SkyPage {
                         fontSelectorCombo: fontSelector
 
                         onTextChanged: {
+                            const textHasChanged = Boolean(postItem.text !== text)
                             postItem.text = text
 
-                            if (threadAutoSplit && graphemeLength > maxLength && !splitting) {
+                            if (splitting)
+                                return
+
+                            if (threadAutoSplit && graphemeLength > maxLength) {
                                 console.debug("SPLIT:", index)
 
                                 // Avoid to re-split when the post count text becomes visible or longer
@@ -468,6 +478,7 @@ SkyPage {
                                         cursorPosition = oldCursorPosition
 
                                     splitting = false
+                                    postUtils.identifyLanguage(text, index)
 
                                     if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
                                         threadPosts.addPost(index, parts[1], moveCursor)
@@ -484,6 +495,12 @@ SkyPage {
                                             currentPostIndex = index + 1
                                     }
                                 }
+                            }
+                            else if (textHasChanged) {
+                                if (index === currentPostIndex)
+                                    languageIdentificationTimer.start()
+                                else
+                                    postUtils.identifyLanguage(text, index)
                             }
                         }
 
@@ -1186,10 +1203,12 @@ SkyPage {
             popup.height: Math.min(page.height - 20, popup.contentHeight)
             currentIndex: find(currentPostLanguage())
             reversedColors: languageUtils.isDefaultPostLanguageSet && currentValue === languageUtils.defaultPostLanguage
+            autoDetectColor: currentPostLanguageSource() === QEnums.LANGUAGE_SOURCE_AUTO
             focusPolicy: Qt.NoFocus
 
             onActivated: (index) => {
                 currentPostItem().language = valueAt(index)
+                currentPostItem().languageSource = QEnums.LANGUAGE_SOURCE_USER
                 console.debug("ACTIVATED LANG:", valueAt(index))
 
                 if (!languageUtils.getDefaultLanguageNoticeSeen()) {
@@ -1404,7 +1423,7 @@ SkyPage {
             currentPostItem().getPostText().forceActiveFocus()
         }
 
-        onQuotePost: (uri, cid, text, author, timestamp) => {
+        onQuotePost: (uri, cid, text, author, timestamp) => { // qmllint disable signal-handler-parameters
             let postItem = currentPostItem()
             let postText = postItem.getPostText()
 
@@ -1425,7 +1444,7 @@ SkyPage {
                 postText.cutLinkIfJustAdded(postText.firstPostLink, () => postItem.fixQuoteLink(true))
         }
 
-        onQuoteFeed: (feed) => {
+        onQuoteFeed: (feed) => { // qmllint disable signal-handler-parameters
             let postItem = currentPostItem()
             let postText = postItem.getPostText()
 
@@ -1444,7 +1463,7 @@ SkyPage {
                 postText.cutLinkIfJustAdded(postText.firstFeedLink, () => postItem.fixQuoteLink(true))
         }
 
-        onQuoteList: (list) => {
+        onQuoteList: (list) => { // qmllint disable signal-handler-parameters
             let postItem = currentPostItem()
             let postText = postItem.getPostText()
 
@@ -1462,7 +1481,7 @@ SkyPage {
                 postText.cutLinkIfJustAdded(postText.firstListLink, () => postItem.fixQuoteLink(true))
         }
 
-        onVideoUploadLimits: (limits) => {
+        onVideoUploadLimits: (limits) => { // qmllint disable signal-handler-parameters
             busyIndicator.running = false
             showVideoUploadLimits(limits)
         }
@@ -1473,16 +1492,60 @@ SkyPage {
             checkVideoUploadLimits()
         }
 
-        onCheckVideoLimitsOk: {
-            callbackCanUploadVideo()
+        onCheckVideoLimitsOk: { // qmllint disable signal-handler-parameters
+            callbackCanUploadVideo() // qmllint disable use-proper-function
             callbackCanUploadVideo = () => {}
             callbackCannotUploadVideo = (error) => {}
         }
 
         onCheckVideoLimitsFailed: (error) => {
-            callbackCannotUploadVideo(error)
+            callbackCannotUploadVideo(error) // qmllint disable use-proper-function
             callbackCanUploadVideo = () => {}
             callbackCannotUploadVideo = (error) => {}
+        }
+
+        onLanguageIdentified: (languageCode, postIndex) => {
+            let postItem = threadPosts.itemAt(postIndex)
+
+            if (postItem && postItem.languageSource !== QEnums.LANGUAGE_SOURCE_USER && postItem.language !== languageCode) {
+                postItem.language = languageCode
+
+                // Trigger language source state change.
+                if (postItem.languageSource === QEnums.LANGUAGE_SOURCE_AUTO)
+                    postItem.languageSource = QEnums.LANGUAGE_SOURCE_NONE
+
+                postItem.languageSource = QEnums.LANGUAGE_SOURCE_AUTO
+            }
+        }
+    }
+
+    Timer {
+        property string prevText: ""
+
+        id: languageIdentificationTimer
+        interval: 500
+
+        onTriggered: {
+            let postItem = currentPostItem()
+
+            if (!postItem)
+                return
+
+            if (postItem.langaugeSource === QEnums.LANGUAGE_SOURCE_USER)
+                return
+
+            let postText = postItem.getPostText()
+
+            if (postText.text.length <= maxLanguageIdentificationLength ||
+                    postText.text.slice(0, maxLanguageIdentificationLength) !== prevText) {
+                prevText = postText.text.slice(0, maxLanguageIdentificationLength)
+                postUtils.identifyLanguage(prevText, currentPostIndex)
+            }
+        }
+
+        function reset() {
+            stop()
+            prevText = ""
         }
     }
 
@@ -2277,6 +2340,15 @@ SkyPage {
             return languageUtils.defaultPostLanguage
 
         return postItem.language ? postItem.language : languageUtils.defaultPostLanguage
+    }
+
+    function currentPostLanguageSource() {
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return QEnums.LANGUAGE_SOURCE_NONE
+
+        return postItem.languageSource
     }
 
     function hasContentWarning() {

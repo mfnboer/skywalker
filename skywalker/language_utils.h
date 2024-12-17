@@ -50,6 +50,7 @@ class LanguageUtils : public WrappedSkywalker
 
 public:
     static QString languageCodeToShortCode(const QString& languageCode);
+    static bool existsShortCode(const QString& shortCode);
     static QString getLanguageName(const QString& languageCode);
     static LanguageList getLanguages(const std::vector<QString>& langCodes);
     static LanguageList getLanguages(const QStringList& langCodes);

@@ -18,6 +18,7 @@ Item {
     property tenorgif gif
     property var card: null
     property string language: ""
+    property int languageSource: QEnums.LANGUAGE_SOURCE_NONE
     property string video: ""
     property string videoAltText: ""
     property int videoNewHeight: 0
