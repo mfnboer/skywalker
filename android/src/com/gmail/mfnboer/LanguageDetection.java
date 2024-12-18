@@ -23,11 +23,12 @@ public class LanguageDetection {
     public static native void emitLanguageIdentified(String languageCode, int requestId);
 
     public static void detectLanguage(String text, int requestId) {
-        Log.d(LOGTAG, "Identify language: " + text + " request: " + requestId);
+        Log.d(LOGTAG, "Identify language: " + text + " request: " + requestId + " length:" + text.length());
+        float confidenceThreshold = calcConfidenceThreshold(text);
 
         LanguageIdentifier languageIdentifier = LanguageIdentification.getClient(
             new LanguageIdentificationOptions.Builder()
-                .setConfidenceThreshold(0.8f)
+                .setConfidenceThreshold(confidenceThreshold)
                 .build());
 
         languageIdentifier.identifyLanguage(text)
@@ -47,5 +48,24 @@ public class LanguageDetection {
                         emitLanguageIdentified(null, requestId);
                     }
                 });
+    }
+
+    private static float calcConfidenceThreshold(String text) {
+        int l = text.length();
+
+        if (l < 30)
+            return 0.99f;
+        if (l < 35)
+            return 0.98f;
+        if (l < 40)
+            return 0.97;
+        if (l < 50)
+            return 0.95f;
+        if (l < 60)
+            return 0.90f;
+        if (l < 70)
+            return 0.85f;
+
+        return 0.80f;
     }
 }
