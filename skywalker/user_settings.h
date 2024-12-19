@@ -189,8 +189,8 @@ public:
     void setNotificationsWifiOnly(bool enable);
     bool getNotificationsWifiOnly() const;
 
-    bool getShowQuotesWithBlockedPost(const QString& did) const;
-    void setShowQuotesWithBlockedPost(const QString& did, bool show);
+    Q_INVOKABLE bool getShowQuotesWithBlockedPost(const QString& did) const;
+    Q_INVOKABLE void setShowQuotesWithBlockedPost(const QString& did, bool show);
 
     Q_INVOKABLE bool getHideRepliesInThreadFromUnfollowed(const QString did) const;
     Q_INVOKABLE void setHideRepliesInThreadFromUnfollowed(const QString& did, bool hide);
@@ -198,8 +198,8 @@ public:
     Q_INVOKABLE bool getAssembleThreads(const QString& did) const;
     Q_INVOKABLE void setAssembleThreads(const QString& did, bool assemble);
 
-    bool getRewindToLastSeenPost(const QString& did) const;
-    void setRewindToLastSeenPost(const QString& did, bool rewind);
+    Q_INVOKABLE bool getRewindToLastSeenPost(const QString& did) const;
+    Q_INVOKABLE void setRewindToLastSeenPost(const QString& did, bool rewind);
 
     QStringList getRecentGifs(const QString& did) const; // Returns list of GIF id's
     void setRecentGifs(const QString& did, const QStringList& gifIds);
@@ -214,17 +214,17 @@ public:
     void setUsedPostLanguages(const QString& did, const QStringList& languages);
 
     // Returns a sorted list
-    QStringList getContentLanguages(const QString& did) const;
-    void setContentLanguages(const QString& did, const QStringList& languages);
+    Q_INVOKABLE QStringList getContentLanguages(const QString& did) const;
+    Q_INVOKABLE void setContentLanguages(const QString& did, const QStringList& languages);
 
-    bool getShowUnknownContentLanguage(const QString& did) const;
-    void setShowUnknownContentLanguage(const QString& did, bool show);
+    Q_INVOKABLE bool getShowUnknownContentLanguage(const QString& did) const;
+    Q_INVOKABLE void setShowUnknownContentLanguage(const QString& did, bool show);
 
     bool getDefaultLanguageNoticeSeen() const;
     void setDefautlLanguageNoticeSeen(bool seen);
 
     Q_INVOKABLE bool getShowLanguageTags() const;
-    void setShowLanguageTags(bool show);
+    Q_INVOKABLE void setShowLanguageTags(bool show);
 
     QDate getAnniversaryNoticeDate(const QString& did) const override;
     void setAnniversaryNoticeDate(const QString& did, QDate date) override;

@@ -234,14 +234,14 @@ SkyPage {
 
             AccessibleSwitch {
                 text: qsTr("Show quotes with blocked post")
-                checked: userPrefs.showQuotesWithBlockedPost
-                onCheckedChanged: userPrefs.showQuotesWithBlockedPost = checked
+                checked: userSettings.getShowQuotesWithBlockedPost(userDid)
+                onCheckedChanged: userSettings.setShowQuotesWithBlockedPost(userDid, checked)
             }
 
             AccessibleSwitch {
                 text: qsTr("Rewind to last seen post at startup")
-                checked: userPrefs.rewindToLastSeenPost
-                onCheckedChanged: userPrefs.rewindToLastSeenPost = checked
+                checked: userSettings.getRewindToLastSeenPost(userDid)
+                onCheckedChanged: userSettings.setRewindToLastSeenPost(userDid, checked)
             }
         }
 
@@ -314,20 +314,20 @@ SkyPage {
                 Layout.fillWidth: true
                 allLanguages: languageUtils.languages
                 usedLanguages: languageUtils.usedLanguages
-                checkedLangCodes: userPrefs.contentLanguages
-                onCheckedLangCodesChanged: userPrefs.contentLanguages = checkedLangCodes
+                checkedLangCodes: userSettings.getContentLanguages(userDid)
+                onCheckedLangCodesChanged: userSettings.setContentLanguages(userDid, checkedLangCodes)
             }
 
             AccessibleSwitch {
                 text: qsTr("Show posts without language tag")
-                checked: userPrefs.showUnknownContentLanguage
-                onCheckedChanged: userPrefs.showUnknownContentLanguage = checked
+                checked: userSettings.getShowUnknownContentLanguage(userDid)
+                onCheckedChanged: userSettings.setShowUnknownContentLanguage(userDid, checked)
             }
 
             AccessibleSwitch {
                 text: qsTr("Show language tags on post")
-                checked: userPrefs.showLanguageTags
-                onCheckedChanged: userPrefs.showLanguageTags = checked
+                checked: userSettings.getShowLanguageTags(userDid)
+                onCheckedChanged: userSettings.setShowLanguageTags(userDid, checked)
             }
         }
 

@@ -1605,7 +1605,7 @@ void PostUtils::identifyLanguage(QString text, int index)
         jsText,
         (jint)requestId);
 #else
-    qDebug() << "Language identification not supported:" << text;
+    qDebug() << "Language identification not supported:" << index << text;
 #endif
 }
 

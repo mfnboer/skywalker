@@ -79,56 +79,6 @@ void EditUserPreferences::setHideQuotePosts(bool hide)
     }
 }
 
-void EditUserPreferences::setShowQuotesWithBlockedPost(bool show)
-{
-    if (show != mShowQuotesWithBlockedPost)
-    {
-        mShowQuotesWithBlockedPost = show;
-        setLocalSettingsModified(true);
-        emit showQuotesWithBlockedPostChanged();
-    }
-}
-
-void EditUserPreferences::setRewindToLastSeenPost(bool rewind)
-{
-    if (rewind != mRewindToLastSeenPost)
-    {
-        mRewindToLastSeenPost = rewind;
-        setLocalSettingsModified(true);
-        emit rewindToLastSeenPostChanged();
-    }
-}
-
-void EditUserPreferences::setContentLanguages(const QStringList& contentLanguages)
-{
-    if (contentLanguages != mContentLanguages)
-    {
-        mContentLanguages = contentLanguages;
-        setLocalSettingsModified(true);
-        emit contentLanguagesChanged();
-    }
-}
-
-void EditUserPreferences::setShowUnknownContentLanguage(bool show)
-{
-    if (show != mShowUnknownContentLanguage)
-    {
-        mShowUnknownContentLanguage = show;
-        setLocalSettingsModified(true);
-        emit showUnknownContentLanguageChanged();
-    }
-}
-
-void EditUserPreferences::setShowLanguageTags(bool show)
-{
-    if (show != mShowLanguageTags)
-    {
-        mShowLanguageTags = show;
-        setLocalSettingsModified(true);
-        emit showLanguageTagsChanged();
-    }
-}
-
 void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
 {
     if (displayMode != mDisplayMode)
