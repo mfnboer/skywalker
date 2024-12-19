@@ -326,8 +326,8 @@ SkyPage {
 
             AccessibleSwitch {
                 text: qsTr("Show language tags on post")
-                checked: userSettings.getShowLanguageTags(userDid)
-                onCheckedChanged: userSettings.setShowLanguageTags(userDid, checked)
+                checked: userSettings.getShowLanguageTags()
+                onCheckedChanged: userSettings.setShowLanguageTags(checked)
             }
         }
 
@@ -357,34 +357,34 @@ SkyPage {
 
                     SkyRadioButton {
                         Layout.fillWidth: true
-                        checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_SYSTEM
+                        checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_SYSTEM
                         text: qsTr("System");
                         onCheckedChanged: {
                             if (checked) {
-                                userPrefs.displayMode = QEnums.DISPLAY_MODE_SYSTEM
-                                root.setDisplayMode(userPrefs.displayMode)
+                                userSettings.setDisplayMode(QEnums.DISPLAY_MODE_SYSTEM)
+                                root.setDisplayMode(userSettings.getDisplayMode())
                             }
                         }
                     }
                     SkyRadioButton {
                         Layout.fillWidth: true
-                        checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_LIGHT
+                        checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_LIGHT
                         text: qsTr("Light");
                         onCheckedChanged: {
                             if (checked) {
-                                userPrefs.displayMode = QEnums.DISPLAY_MODE_LIGHT
-                                root.setDisplayMode(userPrefs.displayMode)
+                                userSettings.setDisplayMode(QEnums.DISPLAY_MODE_LIGHT)
+                                root.setDisplayMode(userSettings.getDisplayMode())
                             }
                         }
                     }
                     SkyRadioButton {
                         Layout.fillWidth: true
-                        checked: userPrefs.displayMode === QEnums.DISPLAY_MODE_DARK
+                        checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_DARK
                         text: qsTr("Dark");
                         onCheckedChanged: {
                             if (checked) {
-                                userPrefs.displayMode = QEnums.DISPLAY_MODE_DARK
-                                root.setDisplayMode(userPrefs.displayMode)
+                                userSettings.setDisplayMode(QEnums.DISPLAY_MODE_DARK)
+                                root.setDisplayMode(userSettings.getDisplayMode())
                             }
                         }
                     }
@@ -577,8 +577,8 @@ SkyPage {
 
             AccessibleSwitch {
                 text: qsTr("GIF auto play")
-                checked: userPrefs.gifAutoPlay
-                onCheckedChanged: userPrefs.gifAutoPlay = checked
+                checked: userSettings.getGifAutoPlay()
+                onCheckedChanged: userSettings.setGifAutoPlay(checked)
             }
 
             AccessibleSwitch {
@@ -619,8 +619,8 @@ SkyPage {
 
             AccessibleSwitch {
                 text: qsTr("WiFi only")
-                checked: userPrefs.notificationsWifiOnly
-                onCheckedChanged: userPrefs.notificationsWifiOnly = checked
+                checked: userSettings.getNotificationsWifiOnly()
+                onCheckedChanged: userSettings.setNotificationsWifiOnly(checked)
             }
         }
     }

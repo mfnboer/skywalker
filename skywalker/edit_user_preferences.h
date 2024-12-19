@@ -22,9 +22,6 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool hideRepliesByUnfollowed READ getHideRepliesByUnfollowed WRITE setHideRepliesByUnfollowed NOTIFY hideRepliesByUnfollowedChanged FINAL)
     Q_PROPERTY(bool hideReposts READ getHideReposts WRITE setHideReposts NOTIFY hideRepostsChanged FINAL)
     Q_PROPERTY(bool hideQuotePosts READ getHideQuotePosts WRITE setHideQuotePosts NOTIFY hideQuotePostsChanged FINAL)
-    Q_PROPERTY(QEnums::DisplayMode displayMode READ getDisplayMode WRITE setDisplayMode NOTIFY displayModeChanged FINAL)
-    Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
-    Q_PROPERTY(bool notificationsWifiOnly READ getNotificationsWifiOnly WRITE setNotificationsWifiOnly NOTIFY notificationsWifiOnlyChanged FINAL)
     Q_PROPERTY(QEnums::AllowIncomingChat allowIncomingChat READ getAllowIncomingChat WRITE setAllowIncomingChat NOTIFY allowIncomingChatChanged FINAL)
     QML_ELEMENT
 
@@ -68,20 +65,8 @@ public:
 
     bool isModified() const { return mModified; }
 
-    QEnums::DisplayMode getDisplayMode() const { return mDisplayMode; }
-    void setDisplayMode(QEnums::DisplayMode displayMode);
-
-    bool getGifAutoPlay() const { return mGifAutoPlay; }
-    void setGifAutoPlay(bool autoPlay);
-
-    bool getNotificationsWifiOnly() const { return mNotificationsWifiOnly; }
-    void setNotificationsWifiOnly(bool wifiOnly);
-
     QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
     void setAllowIncomingChat(QEnums::AllowIncomingChat allowIncomingChat);
-
-    bool isLocalSettingsModified() const { return mLocalSettingsModified; }
-    void setLocalSettingsModified(bool modified) { mLocalSettingsModified = modified; }
 
 signals:
     void loggedOutVisibilityChanged();
@@ -89,9 +74,6 @@ signals:
     void hideRepliesByUnfollowedChanged();
     void hideRepostsChanged();
     void hideQuotePostsChanged();
-    void displayModeChanged();
-    void gifAutoPlayChanged();
-    void notificationsWifiOnlyChanged();
     void allowIncomingChatChanged();
 
 private:
@@ -104,18 +86,12 @@ private:
     bool mLoggedOutVisibility = true;
 
     ATProto::UserPreferences::FeedViewPref mHomeFeedPref;
+    QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 
     // Content filtering
     bool mAdultContent = false;
 
     bool mModified = false;
-
-    // Local app settings
-    QEnums::DisplayMode mDisplayMode = QEnums::DISPLAY_MODE_SYSTEM;
-    bool mGifAutoPlay = true;
-    bool mNotificationsWifiOnly = false;
-    QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
-    bool mLocalSettingsModified = false;
 };
 
 }

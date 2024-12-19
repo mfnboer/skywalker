@@ -79,36 +79,6 @@ void EditUserPreferences::setHideQuotePosts(bool hide)
     }
 }
 
-void EditUserPreferences::setDisplayMode(QEnums::DisplayMode displayMode)
-{
-    if (displayMode != mDisplayMode)
-    {
-        mDisplayMode = displayMode;
-        setLocalSettingsModified(true);
-        emit displayModeChanged();
-    }
-}
-
-void EditUserPreferences::setGifAutoPlay(bool autoPlay)
-{
-    if (autoPlay != mGifAutoPlay)
-    {
-        mGifAutoPlay = autoPlay;
-        setLocalSettingsModified(true);
-        emit gifAutoPlayChanged();
-    }
-}
-
-void EditUserPreferences::setNotificationsWifiOnly(bool wifiOnly)
-{
-    if (wifiOnly != mNotificationsWifiOnly)
-    {
-        mNotificationsWifiOnly = wifiOnly;
-        setLocalSettingsModified(true);
-        emit notificationsWifiOnlyChanged();
-    }
-}
-
 void EditUserPreferences::setAllowIncomingChat(QEnums::AllowIncomingChat allowIncomingChat)
 {
     if (allowIncomingChat != mAllowIncomingChat)

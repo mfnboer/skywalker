@@ -109,7 +109,7 @@ public:
     QStringList getMutedWords(const QString& did) const;
     void removeMutedWords(const QString& did);
 
-    void setDisplayMode(QEnums::DisplayMode displayMode);
+    Q_INVOKABLE void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
 
     Q_INVOKABLE void resetBackgroundColor();
@@ -130,7 +130,7 @@ public:
     Q_INVOKABLE void setPostButtonRelativeX(double x);
     Q_INVOKABLE double getPostButtonRelativeX() const;
 
-    void setGifAutoPlay(bool autoPlay);
+    Q_INVOKABLE void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
 
     void setVideoAutoPlay(bool autoPlay);
@@ -186,8 +186,8 @@ public:
     void resetNextNotificationId();
     int getNextNotificationId();
 
-    void setNotificationsWifiOnly(bool enable);
-    bool getNotificationsWifiOnly() const;
+    Q_INVOKABLE void setNotificationsWifiOnly(bool enable);
+    Q_INVOKABLE bool getNotificationsWifiOnly() const;
 
     Q_INVOKABLE bool getShowQuotesWithBlockedPost(const QString& did) const;
     Q_INVOKABLE void setShowQuotesWithBlockedPost(const QString& did, bool show);

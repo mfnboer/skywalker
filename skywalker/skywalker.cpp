@@ -2947,11 +2947,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setDID(mUserDid);
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
-    mEditUserPreferences->setDisplayMode(mUserSettings.getDisplayMode());
-    mEditUserPreferences->setGifAutoPlay(mUserSettings.getGifAutoPlay());
-    mEditUserPreferences->setNotificationsWifiOnly(mUserSettings.getNotificationsWifiOnly());
     mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
-    mEditUserPreferences->setLocalSettingsModified(false);
 
     if (session->getPDS())
     {
@@ -2975,18 +2971,6 @@ void Skywalker::saveUserPreferences()
     {
         qWarning() << "No preferences to save";
         return;
-    }
-
-    if (mEditUserPreferences->isLocalSettingsModified())
-    {
-        qDebug() << "Display mode:" << mEditUserPreferences->getDisplayMode();
-        mUserSettings.setDisplayMode(mEditUserPreferences->getDisplayMode());
-
-        qDebug() << "GIF auto play:" << mEditUserPreferences->getGifAutoPlay();
-        mUserSettings.setGifAutoPlay(mEditUserPreferences->getGifAutoPlay());
-
-        qDebug() << "Notifications wifi only:" << mEditUserPreferences->getNotificationsWifiOnly();
-        mUserSettings.setNotificationsWifiOnly(mEditUserPreferences->getNotificationsWifiOnly());
     }
 
     const bool loggedOutVisibility = mEditUserPreferences->getLoggedOutVisiblity();
