@@ -58,7 +58,7 @@ public class LanguageDetection {
         if (l < 35)
             return 0.98f;
         if (l < 40)
-            return 0.97;
+            return 0.97f;
         if (l < 50)
             return 0.95f;
         if (l < 60)

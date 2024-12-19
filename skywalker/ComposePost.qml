@@ -1207,9 +1207,14 @@ SkyPage {
             focusPolicy: Qt.NoFocus
 
             onActivated: (index) => {
-                currentPostItem().language = valueAt(index)
+                const value = valueAt(index)
+
+                if (currentPostLanguage() === value)
+                    return
+
+                currentPostItem().language = value
                 currentPostItem().languageSource = QEnums.LANGUAGE_SOURCE_USER
-                console.debug("ACTIVATED LANG:", valueAt(index))
+                console.debug("ACTIVATED LANG:", value)
 
                 if (!languageUtils.getDefaultLanguageNoticeSeen()) {
                     guiSettings.notice(page,
