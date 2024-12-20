@@ -1160,6 +1160,15 @@ QString PostUtils::cutPhotoRect(const QString& source, const QRect& rect, const 
     return imgProvider->addImage(img);
 }
 
+void PostUtils::setTextWithoutLinks(const QString& text)
+{
+    if (text == mTextWithoutLinks)
+        return;
+
+    mTextWithoutLinks = text;
+    emit textWithoutLinksChanged();
+}
+
 void PostUtils::setEditMention(const QString& mention)
 {
     if (mention == mEditMention)
@@ -1320,6 +1329,8 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
     bool feedLinkFound = false;
     bool listLinkFound = false;
     mLinkShorteningReduction = 0;
+    QString textWithoutLinks = "";
+    int textIndex = 0;
 
     for (const auto& facet : facets)
     {
@@ -1381,6 +1392,8 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
             const int reduction = UnicodeFonts::graphemeLength(facet.mMatch) - UnicodeFonts::graphemeLength(shortLink);
             qDebug() << "SHORT:" << shortLink << "reduction:" << reduction;
             mLinkShorteningReduction += reduction;
+            textWithoutLinks += fullText.sliced(textIndex, facet.mStartIndex - textIndex);
+            textIndex = facet.mEndIndex;
             break;
         }
         case ATProto::RichTextMaster::ParsedMatch::Type::PARTIAL_MENTION:
@@ -1391,6 +1404,9 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                 setEditMention(facet.mMatch.sliced(1)); // strip @-symbol
                 editMentionFound = true;
             }
+
+            textWithoutLinks += fullText.sliced(textIndex, facet.mStartIndex - textIndex);
+            textIndex = facet.mEndIndex;
             break;
         case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
             if (facet.mStartIndex < preeditCursor && preeditCursor <= facet.mEndIndex)
@@ -1404,6 +1420,9 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
             break;
         }
     }
+
+    textWithoutLinks += fullText.sliced(textIndex);
+    setTextWithoutLinks(textWithoutLinks);
 
     if (!editMentionFound)
         setEditMention({});

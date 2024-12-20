@@ -22,6 +22,7 @@ namespace Skywalker {
 class PostUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
+    Q_PROPERTY(QString textWithoutLinks READ getTextWithoutLinks WRITE setTextWithoutLinks NOTIFY textWithoutLinksChanged FINAL)
     Q_PROPERTY(QString editMention READ getEditMention WRITE setEditMention NOTIFY editMentionChanged FINAL)
     Q_PROPERTY(QString editTag READ getEditTag WRITE setEditTag NOTIFY editTagChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
@@ -98,6 +99,8 @@ public:
 
     Q_INVOKABLE void identifyLanguage(QString text, int index);
 
+    const QString& getTextWithoutLinks() const { return mTextWithoutLinks; }
+    void setTextWithoutLinks(const QString& text);
     const QString& getEditMention() const { return mEditMention; }
     void setEditMention(const QString& mention);
     const QString& getEditTag() const { return mEditTag; }
@@ -157,6 +160,7 @@ signals:
     void photoPickCanceled();
     void videoPicked(QUrl url);
     void videoPickedFailed(QString error);
+    void textWithoutLinksChanged();
     void editMentionChanged();
     void editTagChanged();
     void firstWebLinkChanged();
@@ -217,6 +221,7 @@ private:
     QString mFirstWebLink;
     bool mCursorInFirstWebLink = false;
     int mLinkShorteningReduction = 0;
+    QString mTextWithoutLinks;
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;
     bool mPickingPhoto = false;

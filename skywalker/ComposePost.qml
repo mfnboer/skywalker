@@ -478,7 +478,7 @@ SkyPage {
                                         cursorPosition = oldCursorPosition
 
                                     splitting = false
-                                    postUtils.identifyLanguage(text, index)
+                                    postUtils.identifyLanguage(textWithoutLinks, index)
 
                                     if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
                                         threadPosts.addPost(index, parts[1], moveCursor)
@@ -500,7 +500,7 @@ SkyPage {
                                 if (index === currentPostIndex)
                                     languageIdentificationTimer.start()
                                 else
-                                    postUtils.identifyLanguage(text, index)
+                                    postUtils.identifyLanguage(textWithoutLinks, index)
                             }
                         }
 
@@ -1540,10 +1540,10 @@ SkyPage {
                 return
 
             let postText = postItem.getPostText()
+            const text = postText.textWithoutLinks.trim().slice(0, maxLanguageIdentificationLength)
 
-            if (postText.text.length <= maxLanguageIdentificationLength ||
-                    postText.text.slice(0, maxLanguageIdentificationLength) !== prevText) {
-                prevText = postText.text.slice(0, maxLanguageIdentificationLength)
+            if (text !== prevText) {
+                prevText = text
                 postUtils.identifyLanguage(prevText, currentPostIndex)
             }
         }

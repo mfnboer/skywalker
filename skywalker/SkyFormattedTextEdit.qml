@@ -13,6 +13,7 @@ TextEdit {
     property bool enableLinkShortening: true
     property var fontSelectorCombo
     property bool textChangeInProgress: false
+    property string textWithoutLinks: ""
     property string firstWebLink
     property bool cursorInFirstWebLink: false
     property string firstPostLink
@@ -304,6 +305,7 @@ TextEdit {
             hashtagTypeaheadSearchTimer.start()
         }
 
+        onTextWithoutLinksChanged: editText.textWithoutLinks = textWithoutLinks;
         onFirstWebLinkChanged: editText.firstWebLink = firstWebLink
         onCursorInFirstWebLinkChanged: editText.cursorInFirstWebLink = cursorInFirstWebLink
         onFirstPostLinkChanged: editText.firstPostLink = firstPostLink
