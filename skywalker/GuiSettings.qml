@@ -89,6 +89,15 @@ Item {
         font: Application.font
     }
 
+    function createComponent(qmlFileName) {
+        let component = Qt.createComponent(qmlFileName)
+
+        if (component.status === Component.Error)
+            console.warn(component.errorString())
+
+        return component
+    }
+
     function scaledFont(scaleFactor) {
         return Application.font.pointSize * scaleFactor;
     }

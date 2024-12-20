@@ -330,13 +330,13 @@ ApplicationWindow {
                 "🥳")
         }
 
-        onOldestUnreadNotificationIndex: (index) => getNotificationView().moveToNotification(index)
+        onOldestUnreadNotificationIndex: (index, mentions) => getNotificationView().moveToNotification(index, mentions)
 
         function saveLastViewedFeed(feedUri) {
             let userSettings = skywalker.getUserSettings()
             const userDid = skywalker.getUserDid()
 
-            if (feedUri == "home" || skywalker.favoriteFeeds.isPinnedFeed(feedUri))
+            if (feedUri === "home" || skywalker.favoriteFeeds.isPinnedFeed(feedUri))
                 userSettings.setLastViewedFeed(userDid, feedUri)
         }
 
@@ -997,13 +997,7 @@ ApplicationWindow {
     }
 
     function composePost(initialText = "", imageSource = "") {
-        let component = Qt.createComponent("ComposePost.qml")
-
-        if (component.status === Component.Error) {
-            console.warn(component.errorString())
-            return
-        }
-
+        let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 initialText: initialText,
@@ -1307,10 +1301,12 @@ ApplicationWindow {
             if (skywalker.unreadNotificationCount > loadCount)
                 loadCount = Math.min(skywalker.unreadNotificationCount + 5, 100)
 
-            skywalker.getNotifications(loadCount, true)
+            skywalker.getNotifications(loadCount, true, false)
+            skywalker.getNotifications(loadCount, false, true)
         }
         else if (!skywalker.notificationListModel.notificationsLoaded()) {
-            skywalker.getNotifications(loadCount)
+            skywalker.getNotifications(loadCount, false, false)
+            skywalker.getNotifications(loadCount, false, true)
         }
     }
 
@@ -1569,11 +1565,7 @@ ApplicationWindow {
     }
 
     function editSettings() {
-        let component = Qt.createComponent("SettingsForm.qml")
-        if (component.status === Component.Error) {
-            console.warn(component.errorString())
-            return
-        }
+        let component = guiSettings.createComponent("SettingsForm.qml")
         let userPrefs = skywalker.getEditUserPreferences()
         let form = component.createObject(root, { userPrefs: userPrefs })
         form.onClosed.connect(() => { popStack() })
@@ -1766,21 +1758,17 @@ ApplicationWindow {
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
 
-        let timelineComponent = Qt.createComponent("TimelinePage.qml")
-
-        if (timelineComponent.status === Component.Error)
-            console.warn(timelineComponent.errorString())
-
+        let timelineComponent = guiSettings.createComponent("TimelinePage.qml")
         let timelinePage = timelineComponent.createObject(root, { skywalker: skywalker })
         timelineStack.push(timelinePage)
 
-        let notificationsComponent = Qt.createComponent("NotificationListView.qml")
+        let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,
                 { skywalker: skywalker, timeline: timelinePage })
         notificationsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         notificationStack.push(notificationsView)
 
-        let chatComponent = Qt.createComponent("ConvoListView.qml")
+        let chatComponent = guiSettings.createComponent("ConvoListView.qml")
         let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
         chatView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         chatStack.push(chatView)

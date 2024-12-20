@@ -396,7 +396,7 @@ void OffLineMessageChecker::getNotifications(int toRead)
     qDebug() << "Get notifications:" << toRead;
     const int limit = std::min(toRead, 100); // 100 is max that can be retreived in 1 request
 
-    mBsky->listNotifications(limit, {}, {}, false,
+    mBsky->listNotifications(limit, {}, {}, false, {},
         [this, toRead](auto notifications){
             const bool added = mNotificationListModel.addNotifications(std::move(notifications), *mBsky, false,
                 [this]{ getChatNotifications(); });
@@ -564,6 +564,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         iconType = IconType::CHAT;
         msg = notification.getDirectMessage().getFormattedText();
         break;
+    case Notification::Reason::NOTIFICATION_REASON_STARTERPACK_JOINED:
     case Notification::Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
     case Notification::Reason::NOTIFICATION_REASON_NEW_LABELS:
     case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:

@@ -161,6 +161,7 @@ QString Notification::getPostUri() const
     case Reason::NOTIFICATION_REASON_LIKE:
     case Reason::NOTIFICATION_REASON_FOLLOW:
     case Reason::NOTIFICATION_REASON_REPOST:
+    case Reason::NOTIFICATION_REASON_STARTERPACK_JOINED:
         return getReasonSubjectUri();
     case Reason::NOTIFICATION_REASON_REPLY:
     case Reason::NOTIFICATION_REASON_MENTION:

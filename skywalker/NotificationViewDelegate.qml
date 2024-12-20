@@ -164,6 +164,15 @@ Rectangle {
                 svg: SvgFilled.moderator
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS
             }
+            SkySvg {
+                x: parent.x + 14
+                y: height + 5
+                width: parent.width - 19
+                height: width
+                color: guiSettings.textColor
+                svg: SvgOutline.starterpack
+                visible: notificationReason === QEnums.NOTIFICATION_REASON_STARTERPACK_JOINED
+            }
             Rectangle {
                 x: parent.x + 14
                 y: parent.y + 5
@@ -186,7 +195,7 @@ Rectangle {
 
         Loader {
             id: postLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: notification.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: showPost()
             visible: status == Loader.Ready
 
@@ -197,7 +206,7 @@ Rectangle {
 
             sourceComponent: Column {
                 id: postColumn
-                width: parent.width
+                width: postLoader.width
                 topPadding: 5
 
                 function movedOffScreen() {
@@ -326,7 +335,7 @@ Rectangle {
 
         Loader {
             id: aggregatableLoader
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.preferredWidth: notification.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: isAggregatableReason()
             visible: status == Loader.Ready
 
@@ -336,7 +345,7 @@ Rectangle {
             }
 
             sourceComponent: Column {
-                width: parent.width
+                width: aggregatableLoader.width
                 topPadding: 5
 
                 function movedOffScreen() {
@@ -593,6 +602,8 @@ Rectangle {
             return qsTr("replied to you")
         case QEnums.NOTIFICATION_REASON_QUOTE:
             return qsTr("quoted you")
+        case QEnums.NOTIFICATION_REASON_STARTERPACK_JOINED:
+            return qsTr("joined via starter pack")
         case QEnums.NOTIFICATION_REASON_NEW_LABELS:
             return qsTr("published new labels. Visit the labeler profile to see which labels are new.")
         default:

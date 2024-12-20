@@ -45,6 +45,7 @@ class Skywalker : public QObject
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
+    Q_PROPERTY(NotificationListModel* mentionListModel READ getMentionListModel CONSTANT FINAL)
     Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
     Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
     Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
@@ -54,6 +55,7 @@ class Skywalker : public QObject
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
+    Q_PROPERTY(bool getMentionsInProgress READ isGetMentionsInProgress NOTIFY getMentionsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
@@ -100,8 +102,8 @@ public:
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
-    Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, const QString& cursor = {});
-    Q_INVOKABLE void getNotificationsNextPage();
+    Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, const QString& cursor = {});
+    Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
     Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
 
@@ -199,6 +201,7 @@ public:
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
+    NotificationListModel* getMentionListModel() { return &mMentionListModel; }
     Chat* getChat();
     Bookmarks* getBookmarks() { return &mBookmarks; }
     MutedWords* getMutedWords() { return &mMutedWords; }
@@ -213,6 +216,8 @@ public:
     bool isGetPostThreadInProgress() const { return mGetPostThreadInProgress; }
     void setGetNotificationsInProgress(bool inProgress);
     bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
+    void setGetMentionsInProgress(bool inProgress);
+    bool isGetMentionsInProgress() const { return mGetMentionsInProgress; }
     void setGetAuthorFeedInProgress(bool inProgress);
     bool isGetAuthorFeedInProgress() const { return mGetAuthorFeedInProgress; }
     void setGetAuthorListInProgress(bool inProgress);
@@ -256,6 +261,7 @@ signals:
     void getTimeLineInProgressChanged();
     void getFeedInProgressChanged();
     void getNotificationsInProgressChanged();
+    void getMentionsInProgressChanged();
     void sessionExpired(QString error);
     void getAuthorFeedOk(int modelId);
     void getAuthorFeedFailed(int modelId, QString error, QString msg);
@@ -279,7 +285,7 @@ signals:
     void showDirectMessages(); // Action received from clicking an app notification
     void bskyClientDeleted();
     void anniversary();
-    void oldestUnreadNotificationIndex(int index);
+    void oldestUnreadNotificationIndex(int index, bool mentions);
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
@@ -377,10 +383,12 @@ private:
     ItemStore<StarterPackListModel::Ptr> mStarterPackListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
-    NotificationListModel mNotificationListModel;
+    NotificationListModel mNotificationListModel; // All notifications
+    NotificationListModel mMentionListModel; // Mentions only
     std::unique_ptr<Chat> mChat;
 
     bool mGetNotificationsInProgress = false;
+    bool mGetMentionsInProgress = false;
     int mUnreadNotificationCount = 0;
 
     HashtagIndex mUserHashtags;

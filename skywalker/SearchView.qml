@@ -261,7 +261,6 @@ SkyPage {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
-            pixelAligned: guiSettings.flickPixelAligned
             clip: true
 
             delegate: PostFeedViewDelegate {

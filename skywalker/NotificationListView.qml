@@ -1,19 +1,20 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
-SkyListView {
+SkyPage {
     required property var skywalker
     required property var timeline
+    readonly property int margin: 10
 
     signal closed
 
-    id: notificationListView
-    model: skywalker.notificationListModel
+    id: page
 
     header: SimpleHeader {
         text: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
-        onBack: notificationListView.closed()
+        onBack: page.closed()
 
         SvgButton {
             id: moreOptions
@@ -47,11 +48,10 @@ SkyListView {
             }
         }
     }
-    headerPositioning: ListView.OverlayHeader
 
     footer: SkyFooter {
-        timeline: notificationListView.timeline
-        skywalker: notificationListView.skywalker
+        timeline: page.timeline
+        skywalker: page.skywalker
         notificationsActive: true
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: positionViewAtBeginning()
@@ -59,40 +59,139 @@ SkyListView {
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
     }
-    footerPositioning: ListView.OverlayFooter
 
-    delegate: NotificationViewDelegate {
-        width: notificationListView.width
+    TabBar {
+        id: tabBar
+        width: parent.width
+        Material.background: guiSettings.backgroundColor
+        leftPadding: page.margin
+        rightPadding: page.margin
+
+        AccessibleTabButton {
+            id: tabAll
+            text: qsTr("All")
+            width: implicitWidth;
+        }
+        AccessibleTabButton {
+            id: tabMentions
+            text: qsTr("Mentions")
+            width: implicitWidth;
+        }
     }
 
-    FlickableRefresher {
-        inProgress: skywalker.getNotificationsInProgress
-        topOvershootFun: () => skywalker.getNotifications(25, true)
-        bottomOvershootFun: () => skywalker.getNotificationsNextPage()
-        topText: qsTr("Pull down to refresh notifications")
+    Rectangle {
+        id: tabSeparator
+        anchors.top: tabBar.bottom
+        width: parent.width
+        height: 1
+        color: guiSettings.separatorColor
     }
 
-    EmptyListIndication {
-        y: parent.headerItem ? parent.headerItem.height : 0
-        svg: SvgOutline.noPosts
-        text: skywalker.notificationListModel.priority ? qsTr("No priority notifications") : qsTr("No notifications")
-        list: notificationListView
+    StackLayout {
+        anchors.top: tabSeparator.bottom
+        anchors.bottom: parent.bottom
+        width: parent.width
+        currentIndex: tabBar.currentIndex
+
+        SkyListView {
+            id: allList
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
+            model: skywalker.notificationListModel
+            clip: true
+
+            delegate: NotificationViewDelegate {
+                width: page.width
+            }
+
+            StackLayout.onIsCurrentItemChanged: {
+                if (!StackLayout.isCurrentItem)
+                    cover()
+            }
+
+            FlickableRefresher {
+                inProgress: skywalker.getNotificationsInProgress
+                topOvershootFun: () => {
+                    skywalker.getNotifications(25, true, false)
+                    skywalker.getNotifications(25, false, true)
+                }
+                bottomOvershootFun: () => skywalker.getNotificationsNextPage(false)
+                topText: qsTr("Pull down to refresh")
+            }
+
+            EmptyListIndication {
+                y: parent.headerItem ? parent.headerItem.height : 0
+                svg: SvgOutline.noPosts
+                text: skywalker.notificationListModel.priority ? qsTr("No priority notifications") : qsTr("No notifications")
+                list: page
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: skywalker.getNotificationsInProgress
+            }
+
+            function doMoveToNotification(index) {
+                const lastVisibleIndex = getLastVisibleIndex()
+                console.debug("Move to notification:", index, "last:", lastVisibleIndex)
+                positionViewAtIndex(index, ListView.End)
+                return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+            }
+        }
+
+        SkyListView {
+            id: mentionList
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
+            model: skywalker.mentionListModel
+            clip: true
+
+            delegate: NotificationViewDelegate {
+                width: page.width
+            }
+
+            StackLayout.onIsCurrentItemChanged: {
+                if (!StackLayout.isCurrentItem)
+                    cover()
+            }
+
+            FlickableRefresher {
+                inProgress: skywalker.getMentionsInProgress
+                topOvershootFun: () => {
+                    skywalker.getNotifications(25, true, false)
+                    skywalker.getNotifications(25, false, true)
+                }
+                bottomOvershootFun: () => skywalker.getNotificationsNextPage(true)
+                topText: qsTr("Pull down to refresh")
+            }
+
+            EmptyListIndication {
+                y: parent.headerItem ? parent.headerItem.height : 0
+                svg: SvgOutline.noPosts
+                text: qsTr("No mentions")
+                list: page
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: skywalker.getMentionsInProgress
+            }
+
+            function doMoveToMention(index) {
+                const lastVisibleIndex = getLastVisibleIndex()
+                console.debug("Move to mention:", index, "last:", lastVisibleIndex)
+                positionViewAtIndex(index, ListView.End)
+                return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+            }
+        }
     }
 
-    BusyIndicator {
-        id: busyIndicator
-        anchors.centerIn: parent
-        running: skywalker.getNotificationsInProgress
-    }
 
-    function doMoveToNotification(index) {
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Move to notification:", index, "last:", lastVisibleIndex)
-        positionViewAtIndex(index, ListView.End)
-        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
-    }
 
-    function moveToNotification(index) {
-        moveToIndex(index, doMoveToNotification)
+    function moveToNotification(index, mentions) {
+        if (mentions)
+            mentionList.moveToIndex(index, mentionList.doMoveToMention)
+        else
+            allList.moveToIndex(index, allList.doMoveToNotification)
     }
 }

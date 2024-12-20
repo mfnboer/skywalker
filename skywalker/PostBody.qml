@@ -238,12 +238,25 @@ Column {
         return root.getSkywalker().getUserSettings().getShowLanguageTags()
     }
 
-    function showPostAttachements() {
+    function showLanguageLabels() {
         if (postLanguageLabels.length > 0 && mustShowLangauges()) {
             languageLabelsLoader.setSource("LanguageLabels.qml", {
                                                languageLabels: postLanguageLabels,
                                                parentWidth: parent.width })
         }
+    }
+
+    function showContentLabels() {
+        if (postContentLabels.length > 0) {
+            contentLabelsLoader.setSource("ContentLabels.qml", {
+                                        contentLabels: postContentLabels,
+                                        contentAuthorDid: postAuthor.did,
+                                        parentWidth: parent.width})
+        }
+    }
+
+    function showPostAttachements() {
+        showLanguageLabels()
 
         if (postImages.length > 0) {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
@@ -275,48 +288,48 @@ Column {
                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
         }
 
-        if (postContentLabels.length > 0) {
-            contentLabelsLoader.setSource("ContentLabels.qml", {
-                                        contentLabels: postContentLabels,
-                                        contentAuthorDid: postAuthor.did,
-                                        parentWidth: parent.width})
-        }
+        showContentLabels()
 
-        if (postRecord) {
-            recordLoader.setSource("RecordView.qml", {
-                                       record: postRecord,
-                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
-        }
-        else if (postRecordWithMedia) {
-            recordLoader.setSource("RecordWithMediaView.qml", {
-                                       record: postRecordWithMedia,
-                                       contentVisibility: postContentVisibility,
-                                       contentWarning: postContentWarning,
-                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
-        }
+        if (postRecord)
+            showPostRecord()
+        else if (postRecordWithMedia)
+            showPostRecordWidthMedia()
+    }
+
+    function showPostRecord() {
+        recordLoader.setSource("RecordView.qml", {
+                                   record: postRecord,
+                                   backgroundColor: bodyBackgroundColor,
+                                   highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+    }
+
+    function showPostRecordWidthMedia() {
+        recordLoader.setSource("RecordWithMediaView.qml", {
+                                   record: postRecordWithMedia,
+                                   contentVisibility: postContentVisibility,
+                                   contentWarning: postContentWarning,
+                                   highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
     }
 
     onPostRecordChanged: {
         if (postRecord)
-            recordLoader.setSource("RecordView.qml", {
-                                       record: postRecord,
-                                       backgroundColor: bodyBackgroundColor,
-                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+            showPostRecord()
     }
 
     onPostRecordWithMediaChanged: {
-        if (postRecordWithMedia) {
-            recordLoader.setSource("RecordWithMediaView.qml", {
-                                       record: postRecordWithMedia,
-                                       contentVisibility: postContentVisibility,
-                                       contentWarning: postContentWarning,
-                                       highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
-        }
+        if (postRecordWithMedia)
+            showPostRecordWidthMedia()
     }
 
     onVisibleChanged: {
         if (postBody.visible && !postBody.attachmentsInitialized)
             initAttachments()
+    }
+
+    onWidthChanged: {
+        // The disaply of these labels depend on the width of the post body
+        showLanguageLabels()
+        showContentLabels()
     }
 
     function initAttachments() {

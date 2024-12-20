@@ -53,6 +53,7 @@ Skywalker::Skywalker(QObject* parent) :
     mMutedWords(this),
     mFocusHashtags(new FocusHashtags(this)),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
+    mMentionListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mChat(std::make_unique<Chat>(mBsky, mUserDid, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
@@ -1349,6 +1350,12 @@ void Skywalker::setGetNotificationsInProgress(bool inProgress)
     emit getNotificationsInProgressChanged();
 }
 
+void Skywalker::setGetMentionsInProgress(bool inProgress)
+{
+    mGetNotificationsInProgress = inProgress;
+    emit getMentionsInProgressChanged();
+}
+
 void Skywalker::setGetAuthorFeedInProgress(bool inProgress)
 {
     mGetAuthorFeedInProgress = inProgress;
@@ -1523,6 +1530,7 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
     update(&mTimelineModel);
     mTimelineModel.makeLocalFilteredModelChange(update);
     update(&mNotificationListModel);
+    update(&mMentionListModel);
 
     for (auto& [_, model] : mPostThreadModels.items())
         update(model.get());
@@ -1568,7 +1576,8 @@ void Skywalker::updateNotificationPreferences(bool priority)
 
     mBsky->putNotificationPreferences(priority,
         [this]{
-            getNotifications();
+            getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, false);
+            getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, true);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "updateNotificationPreferences FAILED:" << error << " - " << msg;
@@ -1576,58 +1585,84 @@ void Skywalker::updateNotificationPreferences(bool priority)
         });
 }
 
-void Skywalker::getNotifications(int limit, bool updateSeen, const QString& cursor)
+void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get notifications:" << cursor;
+    qDebug() << "Get notifications:" << cursor << "mentionsOnly:" << mentionsOnly;
+    const bool progress = mentionsOnly ? mGetMentionsInProgress : mGetNotificationsInProgress;
 
-    if (mGetNotificationsInProgress)
+    if (progress)
     {
         qDebug() << "Get notifications still in progress";
         return;
     }
 
-    setGetNotificationsInProgress(true);
-    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {},
-        [this, cursor](auto ouput){
+    if (mentionsOnly)
+        setGetMentionsInProgress(true);
+    else
+        setGetNotificationsInProgress(true);
+
+    const auto reasons = mentionsOnly ?
+        std::vector<ATProto::AppBskyNotification::NotificationReason>{
+            ATProto::AppBskyNotification::NotificationReason::MENTION,
+            ATProto::AppBskyNotification::NotificationReason::REPLY,
+            ATProto::AppBskyNotification::NotificationReason::QUOTE } :
+        std::vector<ATProto::AppBskyNotification::NotificationReason>{};
+
+    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {}, reasons,
+        [this, mentionsOnly, cursor](auto ouput){
             const bool clearFirst = cursor.isEmpty();
-            mNotificationListModel.addNotifications(std::move(ouput), *mBsky, clearFirst,
-                    [this, clearFirst]{
+            auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
+
+            model.addNotifications(std::move(ouput), *mBsky, clearFirst,
+                    [this, mentionsOnly, clearFirst]{
                         if (clearFirst)
                         {
-                            const int index = mNotificationListModel.getIndexOldestUnread();
+                            const auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
+                            const int index = model.getIndexOldestUnread();
 
                             if (index >= 0)
-                                emit oldestUnreadNotificationIndex(index);
+                                emit oldestUnreadNotificationIndex(index, mentionsOnly);
                         }
                     });
 
-            setGetNotificationsInProgress(false);
+            if (mentionsOnly)
+                setGetMentionsInProgress(false);
+            else
+                setGetNotificationsInProgress(false);
         },
-        [this](const QString& error, const QString& msg){
+        [this, mentionsOnly](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
-            setGetNotificationsInProgress(false);
+
+            if (mentionsOnly)
+                setGetMentionsInProgress(false);
+            else
+                setGetNotificationsInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         },
         updateSeen);
 
     if (updateSeen)
     {
-        mNotificationListModel.setNotificationsSeen(true);
+        auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
+        model.setNotificationsSeen(true);
         setUnreadNotificationCount(0);
     }
 }
 
-void Skywalker::getNotificationsNextPage()
+void Skywalker::getNotificationsNextPage(bool mentionsOnly)
 {
-    const QString& cursor = mNotificationListModel.getCursor();
+    const auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
+    const QString& cursor = model.getCursor();
+
     if (cursor.isEmpty())
     {
         qDebug() << "Last page reached, no more cursor";
         return;
     }
 
-    getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, cursor);
+    getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, mentionsOnly, cursor);
 }
 
 void Skywalker::getBookmarksPage(bool clearModel)
@@ -3487,6 +3522,7 @@ void Skywalker::signOut()
     mPostFeedModels.clear();
     mContentGroupListModels.clear();
     mNotificationListModel.clear();
+    mMentionListModel.clear();
     mChat->reset();
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;
