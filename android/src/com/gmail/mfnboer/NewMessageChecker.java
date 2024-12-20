@@ -48,8 +48,9 @@ public class NewMessageChecker extends Worker {
                 Log.d(LOGTAG, "Load appskywalker_armeabi-v7a");
                 System.loadLibrary("appskywalker_armeabi-v7a");
                 Log.d(LOGTAG, "Loaded appskywalker_armeabi-v7a");
-            }
-            catch (Exception e) {
+            } catch (UnsatisfiedLinkError ule7a) {
+                Log.w(LOGTAG, "Cannot link appskywalker_armeabi-v7a lib: " + ule7a.getMessage());
+            } catch (Exception e) {
                 Log.w(LOGTAG, "Cannot load appskywalker_armeabi-v7a lib: " + e.getMessage());
             }
         } catch (Exception e) {

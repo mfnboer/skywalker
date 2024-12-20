@@ -348,6 +348,27 @@ bool UnicodeFonts::hasCombinedEmojis(const QString& text)
     return false;
 }
 
+QStringList UnicodeFonts::getUniqueEmojis(const QString& text)
+{
+    std::set<QString> emojiSet;
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int prev = 0;
+    int next;
+
+    while ((next = boundaryFinder.toNextBoundary()) != -1)
+    {
+        const int len = next - prev;
+        const QString grapheme = text.sliced(prev, len);
+
+        if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
+            emojiSet.insert(grapheme);
+
+        prev = next;
+    }
+
+    return QStringList{emojiSet.begin(), emojiSet.end()};
+}
+
 void moveShortLineToNextPart(QString& part, int maxLength, int minSplitLineLength)
 {
     if (part.back() == '\n')

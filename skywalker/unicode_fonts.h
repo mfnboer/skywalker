@@ -33,6 +33,7 @@ public:
     Q_INVOKABLE static GraphemeInfo getGraphemeInfo(const QString& text);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
     Q_INVOKABLE static bool hasCombinedEmojis(const QString& text);
+    Q_INVOKABLE static QStringList getUniqueEmojis(const QString& text);
     Q_INVOKABLE static bool isHashtag(const QString& text);
     Q_INVOKABLE static QStringList splitText(const QString& text, int maxLength, int minSplitLineLength, int maxParts = 1000000);
 
