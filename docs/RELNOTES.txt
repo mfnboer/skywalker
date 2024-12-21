@@ -1,6 +1,8 @@
 next
 ====
 * Identify language of a post while you type
+* Notification mentions tab
+* Recognize flags for giant emoji display
 * Bug fix: crash when trying to extract text from an non 32-bit color image
 
 3.9
