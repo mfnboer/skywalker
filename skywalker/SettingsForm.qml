@@ -360,7 +360,10 @@ SkyPage {
                         checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_SYSTEM
                         text: qsTr("System");
                         onCheckedChanged: {
-                            if (checked) {
+                            // Avoid setting display mode on initialization of the form.
+                            // Sometimes root.setDisplayMode crashes then when it sets the
+                            // navigation bar color??
+                            if (checked && userSettings.getDisplayMode() !== QEnums.DISPLAY_MODE_SYSTEM) {
                                 userSettings.setDisplayMode(QEnums.DISPLAY_MODE_SYSTEM)
                                 root.setDisplayMode(userSettings.getDisplayMode())
                             }
@@ -371,7 +374,7 @@ SkyPage {
                         checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_LIGHT
                         text: qsTr("Light");
                         onCheckedChanged: {
-                            if (checked) {
+                            if (checked && userSettings.getDisplayMode() !== QEnums.DISPLAY_MODE_LIGHT) {
                                 userSettings.setDisplayMode(QEnums.DISPLAY_MODE_LIGHT)
                                 root.setDisplayMode(userSettings.getDisplayMode())
                             }
@@ -382,7 +385,7 @@ SkyPage {
                         checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_DARK
                         text: qsTr("Dark");
                         onCheckedChanged: {
-                            if (checked) {
+                            if (checked && userSettings.getDisplayMode() !== QEnums.DISPLAY_MODE_DARK) {
                                 userSettings.setDisplayMode(QEnums.DISPLAY_MODE_DARK)
                                 root.setDisplayMode(userSettings.getDisplayMode())
                             }
