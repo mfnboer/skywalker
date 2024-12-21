@@ -241,6 +241,9 @@ public:
     void setDraftRepoToFileMigrationDone(const QString& did);
     bool isDraftRepoToFileMigrationDone(const QString& did) const;
 
+    Q_INVOKABLE bool getDebugDisableEmojiFont() const;
+    Q_INVOKABLE void setDebugDisableEmojiFont(bool disable);
+
     void sync() { mSettings.sync(); }
 
 signals:

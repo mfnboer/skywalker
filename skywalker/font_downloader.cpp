@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "font_downloader.h"
 #include "unicode_fonts.h"
+#include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QFontDatabase>
 #include <QGuiApplication>
@@ -16,6 +17,7 @@
 namespace Skywalker {
 
 QString FontDownloader::sEmojiFontFamily = "Noto Color Emoji";
+bool FontDownloader::sDebugDisableEmojiFont = false;
 
 QString FontDownloader::getEmojiFontFamily()
 {
@@ -29,30 +31,48 @@ QFont FontDownloader::getEmojiFont()
     return font;
 }
 
+bool FontDownloader::isEmojiFontDebugDisabled()
+{
+    return sDebugDisableEmojiFont;
+}
+
 void FontDownloader::initAppFonts()
 {
+    UserSettings userSettings;
+
+    sDebugDisableEmojiFont = userSettings.getDebugDisableEmojiFont();
     addApplicationFonts();
-    downloadEmojiFont();
+
+    if (!sDebugDisableEmojiFont)
+        downloadEmojiFont();
+    else
+        sEmojiFontFamily = QGuiApplication::font().family();
 
     QFont font = QGuiApplication::font();
     const float fontScale = getFontScale();
 
-    auto fontFamilies = font.families();
-    fontFamilies.push_back(sEmojiFontFamily);
-    font.setFamilies(fontFamilies);
+    if (!sDebugDisableEmojiFont)
+    {
+        auto fontFamilies = font.families();
+        fontFamilies.push_back(sEmojiFontFamily);
+        font.setFamilies(fontFamilies);
+    }
+
     font.setWeight(QFont::Weight(350));
     font.setPixelSize(std::roundf(16 * fontScale));
     QGuiApplication::setFont(font);
 
-    qDebug() << "Font:" << font;
-    qDebug() << "Font pt size:" << font.pointSize();
-    qDebug() << "Font px size:" << font.pixelSize();
-    qDebug() << "Font families:" << font.families();
-    qDebug() << "Font family:" << font.family();
-    qDebug() << "Font default family:" << font.defaultFamily();
-    qDebug() << "Font style hint:" << font.styleHint();
-    qDebug() << "Font style strategy:" << font.styleStrategy();
-    qDebug() << "Font scale:" << fontScale;
+    qInfo() << "Font:" << font;
+    qInfo() << "Font pt size:" << font.pointSize();
+    qInfo() << "Font px size:" << font.pixelSize();
+    qInfo() << "Font families:" << font.families();
+    qInfo() << "Font family:" << font.family();
+    qInfo() << "Font default family:" << font.defaultFamily();
+    qInfo() << "Font style hint:" << font.styleHint();
+    qInfo() << "Font style strategy:" << font.styleStrategy();
+    qInfo() << "Font scale:" << fontScale;
+    qInfo() << "Font family emoji:" << getEmojiFontFamily();
+    qInfo() << "Debug disable emoji font:" << isEmojiFontDebugDisabled();
 
     ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
 }
@@ -63,7 +83,7 @@ void FontDownloader::addFont(const QString& fontFileName)
     qDebug() << fontFileName << "fontId:" << fontId;
 
     if (fontId >= 0)
-        qDebug() << "FONT FAMILIES:" << QFontDatabase::applicationFontFamilies(fontId);
+        qInfo() << "FONT FAMILIES:" << QFontDatabase::applicationFontFamilies(fontId);
     else
         qWarning() << "Failed to add:" << fontFileName;
 }
@@ -93,7 +113,7 @@ void FontDownloader::downloadEmojiFont()
     file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle);
 
     const int fontId = QFontDatabase::addApplicationFontFromData(file.readAll());
-    qDebug() << "Font added ID:" << fontId;
+    qInfo() << "Font added ID:" << fontId;
 
     if (fontId >= 0)
     {

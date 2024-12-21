@@ -14,10 +14,13 @@ public:
     static float getFontScale();
     static QString getEmojiFontFamily();
     static QFont getEmojiFont();
+    static bool isEmojiFontDebugDisabled();
 
 private:
     static void addFont(const QString& fontFileName);
     static QString sEmojiFontFamily;
+
+    static bool sDebugDisableEmojiFont;
 };
 
 }

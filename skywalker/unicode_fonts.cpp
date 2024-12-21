@@ -270,6 +270,9 @@ QString UnicodeFonts::setEmojiFontCombinedEmojis(const QString& text)
     // Force Combining Enclosing Keycap character to be rendered by the emoji font.
     // The primary Roboto font renders it as 2 glyphs
 
+    if (FontDownloader::isEmojiFontDebugDisabled())
+        return text;
+
     QString result;
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
     int prev = 0;
@@ -329,6 +332,9 @@ QString UnicodeFonts::setEmojiFontCombinedEmojis(const QString& text)
 
 bool UnicodeFonts::hasCombinedEmojis(const QString& text)
 {
+    if (FontDownloader::isEmojiFontDebugDisabled())
+        return false;
+
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
     int prev = 0;
     int next;

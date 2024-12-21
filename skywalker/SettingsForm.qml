@@ -49,7 +49,7 @@ SkyPage {
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
-        contentHeight: notificationsColumn.y + notificationsColumn.height
+        contentHeight: debugColumn.y + debugColumn.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
@@ -621,6 +621,23 @@ SkyPage {
                 text: qsTr("WiFi only")
                 checked: userSettings.getNotificationsWifiOnly()
                 onCheckedChanged: userSettings.setNotificationsWifiOnly(checked)
+            }
+        }
+
+        ColumnLayout {
+            id: debugColumn
+            anchors.top: notificationsColumn.bottom
+            width: parent.width
+
+            HeaderText {
+                Layout.topMargin: 10
+                text: qsTr("Debug")
+            }
+
+            AccessibleSwitch {
+                text: qsTr("Disable emoji font")
+                checked: userSettings.getDebugDisableEmojiFont()
+                onCheckedChanged: userSettings.setDebugDisableEmojiFont(checked)
             }
         }
     }
