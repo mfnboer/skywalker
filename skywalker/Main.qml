@@ -1566,8 +1566,7 @@ ApplicationWindow {
 
     function editSettings() {
         let component = guiSettings.createComponent("SettingsForm.qml")
-        let userPrefs = skywalker.getEditUserPreferences()
-        let form = component.createObject(root, { userPrefs: userPrefs })
+        let form = component.createObject(root)
         form.onClosed.connect(() => { popStack() })
         pushStack(form)
     }

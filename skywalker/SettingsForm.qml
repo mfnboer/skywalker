@@ -5,8 +5,9 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property EditUserPreferences userPrefs
-    property var userSettings: root.getSkywalker().getUserSettings()
+    property var skywalker: root.getSkywalker()
+    property var userPrefs: skywalker.getEditUserPreferences()
+    property var userSettings: skywalker.getUserSettings()
     property string userDid: userSettings.getActiveUserDid()
 
     id: page
@@ -49,7 +50,7 @@ SkyPage {
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
-        contentHeight: debugColumn.y + debugColumn.height
+        contentHeight: contentItem.childrenRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
