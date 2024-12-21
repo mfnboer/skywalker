@@ -169,7 +169,7 @@ Rectangle {
                 y: height + 5
                 width: parent.width - 19
                 height: width
-                color: guiSettings.textColor
+                color: guiSettings.starterpackColor
                 svg: SvgOutline.starterpack
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_STARTERPACK_JOINED
             }

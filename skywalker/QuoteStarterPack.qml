@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import skywalker
 
 Column {
@@ -11,20 +12,43 @@ Column {
     Accessible.role: Accessible.StaticText
     Accessible.name: accessibilityUtils.getStarterPackSpeech(starterPack)
 
-    SkyCleanedTextLine {
-        width: parent.width - 2 * margin
-        elide: Text.ElideRight
-        font.bold: true
-        color: guiSettings.textColor
-        plainText: starterPack.name
-    }
+    GridLayout {
+        columns: 2
+        rowSpacing: 0
+        width: parent.width
 
-    AccessibleText {
-        width: parent.width - 2 * margin
-        elide: Text.ElideRight
-        font.pointSize: guiSettings.scaledFont(7/8)
-        color: guiSettings.handleColor
-        text: qsTr(`Starter pack by @${starterPack.creator.handle}`)
+        Rectangle {
+            Layout.rowSpan: 2
+            Layout.preferredWidth: 34
+            Layout.preferredHeight: 34
+            color: "transparent"
+
+            SkySvg {
+                width: parent.width
+                height: parent.height
+                color: guiSettings.starterpackColor
+                svg: SvgOutline.starterpack
+            }
+        }
+
+        SkyCleanedTextLine {
+            Layout.fillWidth: true
+            Layout.rightMargin: margin
+            elide: Text.ElideRight
+            font.bold: true
+            color: guiSettings.textColor
+            plainText: starterPack.name
+        }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.rightMargin: margin
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: guiSettings.handleColor
+            text: qsTr(`Starter pack by @${starterPack.creator.handle}`)
+        }
     }
 
     ContentLabels {

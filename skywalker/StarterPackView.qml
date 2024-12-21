@@ -17,6 +17,43 @@ SkyPage {
     header: SimpleHeader {
         text: qsTr("Starter pack")
         onBack: page.closed()
+
+        SvgButton {
+            id: moreButton
+            anchors.right: parent.right
+            svg: SvgOutline.moreVert
+            accessibleName: qsTr("more options")
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                CloseMenuItem {
+                    text: qsTr("<b>Starter pack</b>")
+                    Accessible.name: qsTr("close more options menu")
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Translate")
+                    enabled: starterPack.description
+                    onTriggered: root.translateText(starterPack.description)
+
+                    MenuItemSvg { svg: SvgOutline.googleTranslate }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Share")
+                    onTriggered: skywalker.shareStarterPack(starterPack)
+
+                    MenuItemSvg { svg: SvgOutline.share }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Report starter pack")
+                    onTriggered: root.reportStarterPack(starterPack)
+
+                    MenuItemSvg { svg: SvgOutline.report }
+                }
+            }
+        }
     }
 
     Column {
@@ -27,6 +64,21 @@ SkyPage {
         GridLayout {
             width: parent.width
             columns: 2
+            rowSpacing: 0
+
+            Rectangle {
+                Layout.rowSpan: 2
+                Layout.preferredWidth: guiSettings.threadColumnWidth
+                Layout.preferredHeight: guiSettings.threadColumnWidth
+                color: "transparent"
+
+                SkySvg {
+                    width: parent.width
+                    height: parent.height
+                    color: guiSettings.starterpackColor
+                    svg: SvgOutline.starterpack
+                }
+            }
 
             SkyCleanedTextLine {
                 topPadding: 10
@@ -37,45 +89,9 @@ SkyPage {
                 plainText: starterPack.name
             }
 
-            SvgButton {
-                id: moreButton
-                Layout.rowSpan: 2
-                svg: SvgOutline.moreVert
-                accessibleName: qsTr("more options")
-                onClicked: moreMenu.open()
-
-                Menu {
-                    id: moreMenu
-                    modal: true
-
-                    CloseMenuItem {
-                        text: qsTr("<b>Starter pack</b>")
-                        Accessible.name: qsTr("close more options menu")
-                    }
-                    AccessibleMenuItem {
-                        text: qsTr("Translate")
-                        enabled: starterPack.description
-                        onTriggered: root.translateText(starterPack.description)
-
-                        MenuItemSvg { svg: SvgOutline.googleTranslate }
-                    }
-                    AccessibleMenuItem {
-                        text: qsTr("Share")
-                        onTriggered: skywalker.shareStarterPack(starterPack)
-
-                        MenuItemSvg { svg: SvgOutline.share }
-                    }
-                    AccessibleMenuItem {
-                        text: qsTr("Report starter pack")
-                        onTriggered: root.reportStarterPack(starterPack)
-
-                        MenuItemSvg { svg: SvgOutline.report }
-                    }
-                }
-            }
-
             AccessibleText {
                 Layout.fillWidth: true
+                Layout.fillHeight: true
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor

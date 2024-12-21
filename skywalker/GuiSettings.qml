@@ -61,6 +61,7 @@ Item {
     readonly property string separatorColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
     readonly property string separatorHighLightColor: Material.theme === Material.Light ? Qt.darker(separatorColor, 1.1) : Qt.lighter(separatorColor, 1.6)
     readonly property string skywalkerLogoColor: "#0387c7"
+    readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)
     readonly property string textColor: Material.foreground
     readonly property string textLengthExceededColor: "palevioletred"
