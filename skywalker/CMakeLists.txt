@@ -440,6 +440,12 @@ qt_add_qml_module(libskywalker
         SOURCES image_utils.h
         SOURCES image_utils.cpp
         QML_FILES ScriptRecognitionMenuItem.qml
+        QML_FILES SettingsAccount.qml
+        QML_FILES SettingsHomeFeed.qml
+        QML_FILES SettingsChat.qml
+        QML_FILES SettingsLanguage.qml
+        QML_FILES SettingsAppearance.qml
+        QML_FILES SettingsNotifications.qml
 )
 
 if (NOT ANDROID)

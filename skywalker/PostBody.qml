@@ -242,7 +242,7 @@ Column {
         if (postLanguageLabels.length > 0 && mustShowLangauges()) {
             languageLabelsLoader.setSource("LanguageLabels.qml", {
                                                languageLabels: postLanguageLabels,
-                                               parentWidth: parent.width })
+                                               parentWidth: width })
         }
     }
 
@@ -251,7 +251,7 @@ Column {
             contentLabelsLoader.setSource("ContentLabels.qml", {
                                         contentLabels: postContentLabels,
                                         contentAuthorDid: postAuthor.did,
-                                        parentWidth: parent.width})
+                                        parentWidth: width})
         }
     }
 
