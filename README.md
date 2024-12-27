@@ -5,4 +5,4 @@ A fast, alternative client for the Bluesky social media network.
 
 Bluesky: @skywalkerapp.bsky.social
 
-This project is tested with BrowserStack
+This project is tested with BrowserStack.
