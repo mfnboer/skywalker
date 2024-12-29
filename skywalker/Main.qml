@@ -94,7 +94,7 @@ ApplicationWindow {
         let userSettings = skywalker.getUserSettings()
         const lastViewed = userSettings.getLastViewedFeed(skywalker.getUserDid())
 
-        if (lastViewed == "home")
+        if (lastViewed === "home")
             return
 
         const favorite = skywalker.favoriteFeeds.getPinnedFeed(lastViewed)

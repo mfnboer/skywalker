@@ -908,15 +908,4 @@ void UserSettings::cleanup()
     mSettings.remove("userHashtags");
 }
 
-
-bool UserSettings::getDebugDisableEmojiFont() const
-{
-    return mSettings.value("debugDisableEmojiFont", false).toBool();
-}
-
-void UserSettings::setDebugDisableEmojiFont(bool disable)
-{
-    mSettings.setValue("debugDisableEmojiFont", disable);
-}
-
 }

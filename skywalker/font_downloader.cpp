@@ -17,7 +17,6 @@
 namespace Skywalker {
 
 QString FontDownloader::sEmojiFontFamily = "Noto Color Emoji";
-bool FontDownloader::sDebugDisableEmojiFont = false;
 
 QString FontDownloader::getEmojiFontFamily()
 {
@@ -31,33 +30,18 @@ QFont FontDownloader::getEmojiFont()
     return font;
 }
 
-bool FontDownloader::isEmojiFontDebugDisabled()
-{
-    return sDebugDisableEmojiFont;
-}
-
 void FontDownloader::initAppFonts()
 {
     UserSettings userSettings;
 
-    sDebugDisableEmojiFont = userSettings.getDebugDisableEmojiFont();
     addApplicationFonts();
-
-    if (!sDebugDisableEmojiFont)
-        downloadEmojiFont();
-    else
-        sEmojiFontFamily = QGuiApplication::font().family();
+    downloadEmojiFont();
 
     QFont font = QGuiApplication::font();
     const float fontScale = getFontScale();
-
-    if (!sDebugDisableEmojiFont)
-    {
-        auto fontFamilies = font.families();
-        fontFamilies.push_back(sEmojiFontFamily);
-        font.setFamilies(fontFamilies);
-    }
-
+    auto fontFamilies = font.families();
+    fontFamilies.push_back(sEmojiFontFamily);
+    font.setFamilies(fontFamilies);
     font.setWeight(QFont::Weight(350));
     font.setPixelSize(std::roundf(16 * fontScale));
     QGuiApplication::setFont(font);
@@ -72,7 +56,6 @@ void FontDownloader::initAppFonts()
     qInfo() << "Font style strategy:" << font.styleStrategy();
     qInfo() << "Font scale:" << fontScale;
     qInfo() << "Font family emoji:" << getEmojiFontFamily();
-    qInfo() << "Debug disable emoji font:" << isEmojiFontDebugDisabled();
 
     ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
 }

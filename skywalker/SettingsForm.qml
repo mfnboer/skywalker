@@ -91,23 +91,6 @@ SkyPage {
             anchors.top: settingsAppearance.bottom
             width: parent.width
         }
-
-        ColumnLayout {
-            id: settingsDebug
-            anchors.top: settingsNotifications.bottom
-            width: parent.width
-
-            HeaderText {
-                Layout.topMargin: 10
-                text: qsTr("Debug")
-            }
-
-            AccessibleSwitch {
-                text: qsTr("Disable emoji font")
-                checked: userSettings.getDebugDisableEmojiFont()
-                onCheckedChanged: userSettings.setDebugDisableEmojiFont(checked)
-            }
-        }
     }
 
     Component.onDestruction: {
