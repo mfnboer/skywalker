@@ -3,7 +3,7 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -14,7 +14,7 @@ public class FontUtils {
     private static final String LOGTAG = "FontUtils";
 
     public static float getFontScale() {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
         Configuration config = context.getResources().getConfiguration();
         Log.d(LOGTAG, "Font scale: " + config.fontScale);
         return config.fontScale;

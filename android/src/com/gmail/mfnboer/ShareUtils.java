@@ -3,7 +3,8 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
+import com.gmail.mfnboer.SkywalkerActivity;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import java.io.File;
 
@@ -18,9 +19,6 @@ public class ShareUtils {
     private static final String LOGTAG = "ShareUtils";
 
     public static void shareLink(String uriString, String subject) {
-        if (QtNative.activity() == null)
-            return;
-
         Uri uri;
         try {
             uri = Uri.parse(uriString);
@@ -38,12 +36,12 @@ public class ShareUtils {
         intent.setAction(Intent.ACTION_SEND);
         intent.putExtra(Intent.EXTRA_TEXT, uriString);
         intent.setType("text/plain");
-        QtNative.activity().startActivity(
-                Intent.createChooser(intent, "Share " + subject + " using:"));
+        SkywalkerActivity activity = SkywalkerActivity.getInstance();
+        activity.startContentChooser(intent, "Share " + subject + " using:");
     }
 
     public static void shareMedia(String fileName) {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context to share media: " + fileName);
@@ -71,6 +69,7 @@ public class ShareUtils {
         intent.setClipData(ClipData.newRawUri(null, uri)); // show thumbnail on chooser
         intent.setType("image/jpg");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        context.startActivity(Intent.createChooser(intent, "Share image"));
+        SkywalkerActivity activity = SkywalkerActivity.getInstance();
+        activity.startContentChooser(intent, "Share image");
     }
 }

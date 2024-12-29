@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 
 project(appskywalker VERSION 3.10 LANGUAGES CXX)
 set(VERSION_CODE 57)

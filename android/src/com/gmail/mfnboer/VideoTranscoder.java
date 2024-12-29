@@ -3,7 +3,7 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import java.io.File;
 
@@ -32,7 +32,7 @@ public class VideoTranscoder {
     public static void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
         Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height + " start: " + startMs + " end: " + endMs + " remove audio: " + removeAudio);
 
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context");

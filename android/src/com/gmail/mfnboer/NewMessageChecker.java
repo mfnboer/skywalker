@@ -3,9 +3,8 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
-
 import com.gmail.mfnboer.NewMessageNotifier;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import androidx.annotation.NonNull;
 import androidx.work.BackoffPolicy;
@@ -110,7 +109,7 @@ public class NewMessageChecker extends Worker {
         String taskName = getTaskName(id);
         Log.d(LOGTAG, "Start checker: " + taskName + " wifiOnly: " + wifiOnly);
 
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context. Cannot start message checker");
@@ -151,7 +150,7 @@ public class NewMessageChecker extends Worker {
         String taskName = getTaskName(id);
         Log.d(LOGTAG, "Stop checker: " + taskName);
 
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context. Cannot stop message checker");

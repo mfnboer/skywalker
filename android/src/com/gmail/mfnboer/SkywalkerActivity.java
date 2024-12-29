@@ -32,6 +32,9 @@ import android.view.WindowInsetsController;
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
     private static final int MAX_TEXT_LEN = 32768;
+
+    private static SkywalkerActivity sActivity = null;
+
     public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
     public static final String INTENT_ACTION_SHOW_DIRECT_MESSAGES = "com.gmail.mfnboer.skywalker.showDirectMessages";
     public static final String INTENT_EXTRA_DIRECT_MESSAGE = "com.gmail.mfnboer.skywalker.directMessage";
@@ -49,6 +52,7 @@ public class SkywalkerActivity extends QtActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sActivity = this;
 
         // Enable EdgeToEdge mode, i.e. full screen.
         // WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
@@ -294,5 +298,13 @@ public class SkywalkerActivity extends QtActivity {
                 VideoTranscoder.transcodeVideo(inputFilePath, outputFilePath, height, startMs, endMs, removeAudio);
             }
         });
+    }
+
+    public static SkywalkerActivity getInstance() {
+        return sActivity;
+    }
+
+    public void startContentChooser(Intent intent, String title) {
+        startActivity(Intent.createChooser(intent, title));
     }
 }

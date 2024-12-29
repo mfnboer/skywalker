@@ -3,9 +3,8 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
-
 import com.gmail.mfnboer.skywalker.R;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -69,7 +68,7 @@ public class NewMessageNotifier {
             NotificationChannel channel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription(description);
             channel.setShowBadge(true);
-            Context context = QtNative.getContext();
+            Context context = SkywalkerApplication.getContext();
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
@@ -115,7 +114,7 @@ public class NewMessageNotifier {
 
     public static void clearNotifications() {
         Log.d(LOGTAG, "Clear notifications");
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
         NotificationManagerCompat.from(context).cancelAll();
     }
 }

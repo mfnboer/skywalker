@@ -3,7 +3,7 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import java.lang.String;
 import java.io.FileNotFoundException;
@@ -31,7 +31,7 @@ public class GMSEmojiFontDownloader {
     private static final String FONT_CERTIFICATE_TYPE = "array";
 
     public static int getFontFileDescriptor() {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         // obtain id for the font_certs.xml
         int certificateId = context.getResources().getIdentifier(
