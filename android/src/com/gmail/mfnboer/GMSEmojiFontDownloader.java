@@ -55,10 +55,18 @@ public class GMSEmojiFontDownloader {
             return -1;
         }
 
+        if (result.getStatusCode() != FontsContractCompat.FontFamilyResult.STATUS_OK) {
+            Log.w(LOGTAG, "Failed to fetch font: " + result.getStatusCode());
+            return -1;
+        }
+
         final FontsContractCompat.FontInfo[] fontInfos = result.getFonts();
+        Log.d(LOGTAG, "#fonts: " + fontInfos.length);
         final Uri emojiFontUri = fontInfos[0].getUri();
 
         final ContentResolver resolver = context.getContentResolver();
+        Log.d(LOGTAG, "Font uri: " + emojiFontUri + " MIME type: " + resolver.getType(emojiFontUri));
+
         // in this case the Font URI is always a content scheme file, made
         // so the app requesting it has permissions to open
         final ParcelFileDescriptor fileDescriptor;

@@ -19,6 +19,8 @@ public:
     void remove(const QString& fileName);
 
 private:
+    static void removeAllFiles();
+
     std::unordered_map<QString, std::unique_ptr<QTemporaryFile>> mFiles;
 
     // These are temp files that are not created with QTemporaryFile

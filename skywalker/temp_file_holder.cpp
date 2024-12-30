@@ -29,6 +29,12 @@ void TempFileHolder::initTempDir()
         sTempPath = ".";
 
     qDebug() << "Temp dir:" << sTempPath;
+    removeAllFiles();
+}
+
+void TempFileHolder::removeAllFiles()
+{
+    qDebug() << "Remove all files in:" << sTempPath;
 
     QDir tmpDir(sTempPath);
     const QString tmpFilePattern = QString("%1*").arg(TMP_FILENAME_PREFIX);

@@ -1,6 +1,8 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "font_downloader.h"
+#include "file_utils.h"
+#include "temp_file_holder.h"
 #include "unicode_fonts.h"
 #include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
@@ -17,6 +19,7 @@
 namespace Skywalker {
 
 QString FontDownloader::sEmojiFontFamily = "Noto Color Emoji";
+QString FontDownloader::sEmojiFontFile;
 
 QString FontDownloader::getEmojiFontFamily()
 {
@@ -95,7 +98,9 @@ void FontDownloader::downloadEmojiFont()
     QFile file;
     file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle);
 
-    const int fontId = QFontDatabase::addApplicationFontFromData(file.readAll());
+    const QByteArray fileData = file.readAll();
+    qDebug() << "Data size:" << fileData.size();
+    const int fontId = QFontDatabase::addApplicationFontFromData(fileData);
     qInfo() << "Font added ID:" << fontId;
 
     if (fontId >= 0)
@@ -117,6 +122,29 @@ void FontDownloader::downloadEmojiFont()
     {
         qWarning() << "Failed to add emoji font:" << fontId;
     }
+#endif
+}
+
+void FontDownloader::downloadEmojiFontFile()
+{
+#ifdef Q_OS_ANDROID
+    sEmojiFontFile.clear();
+
+    auto fd = QJniObject::callStaticMethod<jint>("com/gmail/mfnboer/GMSEmojiFontDownloader",
+                                                 "getFontFileDescriptor",
+                                                 "()I");
+
+    if (fd < 0)
+    {
+        qWarning() << "Failed to get file descriptor to download emoji font";
+        return;
+    }
+
+    auto fontFile = FileUtils::createTempFile(fd, "ttf");
+    sEmojiFontFile = fontFile->fileName();
+    TempFileHolder::instance().put(std::move(fontFile));
+
+    qInfo() << "Created emoji font file:" << sEmojiFontFile;
 #endif
 }
 

@@ -4,6 +4,7 @@
 #include "font_downloader.h"
 #include "shared_image_provider.h"
 #include "skywalker.h"
+#include "temp_file_holder.h"
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QFont>
@@ -18,6 +19,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName(Skywalker::Skywalker::APP_NAME);
     app.setApplicationName(Skywalker::Skywalker::APP_NAME);
 
+    Skywalker::TempFileHolder::initTempDir();
     Skywalker::FontDownloader::initAppFonts();
 
     QQmlApplicationEngine engine;

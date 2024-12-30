@@ -239,15 +239,10 @@ public class SkywalkerActivity extends QtActivity {
     }
 
     private void setStatusBarColor() {
-        if (Build.VERSION.SDK_INT >= 35) {
-            Log.w(LOGTAG, "Not yet supported: " + Build.VERSION.SDK_INT);
-            return;
-        }
-
         Window window = this.getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.setStatusBarColor(Color.BLACK);
+        window.setStatusBarColor(Color.BLACK); // TODO: change when targetting Android 15
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowInsetsController insetsController = window.getInsetsController();

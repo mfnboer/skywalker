@@ -20,6 +20,11 @@ struct FontCodePoint
 };
 }
 
+QString UnicodeFonts::getEmojiFontSource()
+{
+    return "file://" + FontDownloader::getEmojiFontFile();
+}
+
 bool UnicodeFonts::isAlpha(QChar c)
 {
     return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');

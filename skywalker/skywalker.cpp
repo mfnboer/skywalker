@@ -5,6 +5,7 @@
 #include "chat.h"
 #include "file_utils.h"
 #include "focus_hashtags.h"
+#include "font_downloader.h"
 #include "jni_callback.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
@@ -72,7 +73,6 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(5, TIMELINE_PREPEND_PAGE_SIZE); });
     connect(&mUserSettings, &UserSettings::backgroundColorChanged, this, [this]{ setNavigationBarColor(mUserSettings.getBackgroundColor()); });
 
-    TempFileHolder::initTempDir();
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
     OffLineMessageChecker::createNotificationChannels();
@@ -109,6 +109,10 @@ Skywalker::~Skywalker()
 {
     qDebug() << "Destructor";
     saveHashtags();
+
+    if (!FontDownloader::getEmojiFontFile().isEmpty())
+        TempFileHolder::instance().remove(FontDownloader::getEmojiFontFile());
+
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());

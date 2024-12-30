@@ -26,6 +26,7 @@ public:
 
     static bool convertLastCharsToFont(QString& text, int numChars, FontType font);
 
+    Q_INVOKABLE static QString getEmojiFontSource();
     Q_INVOKABLE static QString toPlainText(const QString& text);
     Q_INVOKABLE static QString toCleanedHtml(const QString& text);
     Q_INVOKABLE static QString normalizeToNFKD(const QString& text);
