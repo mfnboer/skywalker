@@ -3,7 +3,7 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ public class TextExtractor {
     // not yet installed.
     public static void checkAvailability(int script) {
         Log.d(LOGTAG, "Check availability: " + script);
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context");
@@ -116,7 +116,7 @@ public class TextExtractor {
 
     public static void installModule(int script) {
         Log.d(LOGTAG, "Install module: " + script);
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context");

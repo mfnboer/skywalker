@@ -31,9 +31,11 @@ public class QPhotoPicker extends AppCompatActivity {
     public static native void emitPhotoPicked(int fd, String mimeType);
     public static native void emitPhotoPickCanceled();
 
+    // Alternative is to put this in SkywalkerActivity itself to start the
+    // activity from there without FLAG_ACTIVITY_NEW_TASK
     public static void start(boolean video) {
         pickVideo = video;
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
         Intent intent = new Intent(context, QPhotoPicker.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
@@ -62,7 +64,7 @@ public class QPhotoPicker extends AppCompatActivity {
             Uri uri = data.getData();
 
             if (uri != null) {
-                Context context = QtNative.getContext();
+                Context context = SkywalkerApplication.getContext();
                 String mimeType = context.getContentResolver().getType(uri);
                 Log.d("PhotoPicker", "Selected URI: " + uri + " mimetype: " + mimeType);
                 int fd = FileUtils.openContentUri(uri);
@@ -92,7 +94,7 @@ public class QPhotoPicker extends AppCompatActivity {
     //             @Override
     //             public void onActivityResult(Uri uri) {
     //                 if (uri != null) {
-    //                     Context context = QtNative.getContext();
+    //                     Context context = SkywalkerApplication.getContext();
     //                     String mimeType = context.getContentResolver().getType(uri);
     //                     Log.d("PhotoPicker", "Selected URI: " + uri + " mimetype: " + mimeType);
     //                     int fd = FileUtils.openContentUri(uri);

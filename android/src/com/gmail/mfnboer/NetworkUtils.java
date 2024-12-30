@@ -3,7 +3,7 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -16,7 +16,7 @@ public class NetworkUtils {
     private static final String LOGTAG = "NetworkUtils";
 
     public static int getBandwidthKbps() {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context.");

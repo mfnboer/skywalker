@@ -3,7 +3,7 @@
 
 package com.gmail.mfnboer;
 
-import org.qtproject.qt.android.QtNative;
+import com.gmail.mfnboer.SkywalkerApplication;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,7 +34,7 @@ public class FileUtils {
     }
 
     public static String resolveContentUriToFile(String uriString) {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context to resolve content URI: " + uriString);
@@ -56,7 +56,7 @@ public class FileUtils {
     }
 
     public static int openContentUri(Uri contentUri) {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context to open content: " + contentUri);
@@ -104,7 +104,7 @@ public class FileUtils {
     }
 
     public static String getAppDataPath(String subDir) {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context to get app data path: " + subDir);
@@ -117,7 +117,7 @@ public class FileUtils {
     }
 
     public static String getCachePath(String subDir) {
-        Context context = QtNative.getContext();
+        Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context to get cache path: " + subDir);
@@ -132,7 +132,7 @@ public class FileUtils {
     public static void scanMediaFile(String fileName) {
         Log.d(LOGTAG, "Scan media file=" + fileName);
 
-        MediaScannerConnection.scanFile(QtNative.getContext(),
+        MediaScannerConnection.scanFile(SkywalkerApplication.getContext(),
                 new String[]{ fileName }, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri) {
