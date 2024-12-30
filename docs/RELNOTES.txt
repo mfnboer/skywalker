@@ -1,3 +1,7 @@
+next
+====
+* Bug fix: crash when posting a video with a quoted post
+
 3.10
 ====
 * Identify language of a post while you type
