@@ -67,10 +67,10 @@ ApplicationWindow {
         }
     }
 
-    // FontLoader {
-    //     source: "https://github.com/googlefonts/noto-emoji/raw/refs/heads/main/fonts/NotoColorEmoji.ttf"
-    //     onStatusChanged: console.debug("FONT LOADER STATUS:", status, name, source)
-    // }
+    FontLoader {
+        source: UnicodeFonts.getEmojiFontSource()
+        onStatusChanged: console.debug("Font loader status:", status, name, source)
+    }
 
     BusyIndicator {
         id: busyIndicator

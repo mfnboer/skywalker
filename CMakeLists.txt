@@ -47,6 +47,7 @@ qt_add_qml_module(appskywalker
         qtquickcontrols2.conf
         fonts/unicode.impact.ttf
         fonts/NotoSansMath-Regular.ttf
+        fonts/NotoColorEmoji.ttf
         images/skywalker.png
         images/PB_tenor_logo_blue_horizontal.svg
         images/via_tenor_logo_blue.svg

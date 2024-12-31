@@ -17,16 +17,18 @@ public:
     // Download and create a temp ttf file.
     static void downloadEmojiFontFile();
 
+    static void installBundleEmojiFontSource();
+
     static float getFontScale();
     static QString getEmojiFontFamily();
     static QFont getEmojiFont();
-    static QString getEmojiFontFile() { return sEmojiFontFile; }
+    static const QString& getEmojiFontSource() { return sEmojiFontSource; }
 
 private:
     static void addFont(const QString& fontFileName);
 
     static QString sEmojiFontFamily;
-    static QString sEmojiFontFile;
+    static QString sEmojiFontSource;
 };
 
 }

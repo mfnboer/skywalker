@@ -22,7 +22,7 @@ struct FontCodePoint
 
 QString UnicodeFonts::getEmojiFontSource()
 {
-    return "file://" + FontDownloader::getEmojiFontFile();
+    return FontDownloader::getEmojiFontSource();
 }
 
 bool UnicodeFonts::isAlpha(QChar c)

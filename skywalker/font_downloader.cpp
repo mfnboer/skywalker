@@ -19,7 +19,7 @@
 namespace Skywalker {
 
 QString FontDownloader::sEmojiFontFamily = "Noto Color Emoji";
-QString FontDownloader::sEmojiFontFile;
+QString FontDownloader::sEmojiFontSource;
 
 QString FontDownloader::getEmojiFontFamily()
 {
@@ -38,7 +38,7 @@ void FontDownloader::initAppFonts()
     UserSettings userSettings;
 
     addApplicationFonts();
-    downloadEmojiFont();
+    installBundleEmojiFontSource();
 
     QFont font = QGuiApplication::font();
     const float fontScale = getFontScale();
@@ -59,6 +59,7 @@ void FontDownloader::initAppFonts()
     qInfo() << "Font style strategy:" << font.styleStrategy();
     qInfo() << "Font scale:" << fontScale;
     qInfo() << "Font family emoji:" << getEmojiFontFamily();
+    qInfo() << "Font emoji source:" << getEmojiFontSource();
 
     ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
 }
@@ -128,7 +129,7 @@ void FontDownloader::downloadEmojiFont()
 void FontDownloader::downloadEmojiFontFile()
 {
 #ifdef Q_OS_ANDROID
-    sEmojiFontFile.clear();
+    sEmojiFontSource.clear();
 
     auto fd = QJniObject::callStaticMethod<jint>("com/gmail/mfnboer/GMSEmojiFontDownloader",
                                                  "getFontFileDescriptor",
@@ -141,11 +142,16 @@ void FontDownloader::downloadEmojiFontFile()
     }
 
     auto fontFile = FileUtils::createTempFile(fd, "ttf");
-    sEmojiFontFile = fontFile->fileName();
+    sEmojiFontSource = "file://" + fontFile->fileName();
     TempFileHolder::instance().put(std::move(fontFile));
 
-    qInfo() << "Created emoji font file:" << sEmojiFontFile;
+    qInfo() << "Created emoji font file:" << sEmojiFontSource;
 #endif
+}
+
+void FontDownloader::installBundleEmojiFontSource()
+{
+    sEmojiFontSource = "qrc:/fonts/NotoColorEmoji.ttf";
 }
 
 float FontDownloader::getFontScale()

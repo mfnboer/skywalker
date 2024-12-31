@@ -110,8 +110,9 @@ Skywalker::~Skywalker()
     qDebug() << "Destructor";
     saveHashtags();
 
-    if (!FontDownloader::getEmojiFontFile().isEmpty())
-        TempFileHolder::instance().remove(FontDownloader::getEmojiFontFile());
+    const auto& emojiFontSource = FontDownloader::getEmojiFontSource();
+    if (emojiFontSource.startsWith("file://"))
+        TempFileHolder::instance().remove(emojiFontSource.sliced(7));
 
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());

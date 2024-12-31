@@ -1,5 +1,6 @@
 next
 ====
+* Bug fix: emoji were invisible on Android 15
 * Bug fix: crash when posting a video with a quoted post
 
 3.10
