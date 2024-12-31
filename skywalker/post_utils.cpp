@@ -89,6 +89,33 @@ QString PostUtils::extractDidFromUri(const QString& uri)
     return atUri.getAuthority();
 }
 
+void PostUtils::checkPostExists(const QString& uri, const QString& cid)
+{
+    qDebug() << "Check post exists, uri:" << uri << "cid:" << cid;
+
+    if (!postMaster())
+        return;
+
+    postMaster()->checkRecordExists(uri, cid,
+        [this, presence=getPresence(), uri, cid]{
+            if (!presence)
+                return;
+
+            emit checkPostExistsOk(uri, cid);
+        },
+        [this, presence=getPresence(), uri, cid] (const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Check post exists failed:" << error << " - " << msg;
+
+            if (error == ATProto::ATProtoErrorMsg::RECORD_NOT_FOUND)
+                emit checkPostExistsFailed(uri, cid, tr("Post is deleted"));
+            else
+                emit checkPostExistsFailed(uri, cid, msg);
+    });
+}
+
 void PostUtils::post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,

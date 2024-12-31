@@ -667,7 +667,9 @@ ApplicationWindow {
                 text: qsTr("Quote post")
                 enabled: !repostDrawer.repostEmbeddingDisabled
                 onClicked: {
-                    root.composeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
+                    // No need to check if post still exist. Already checked before
+                    // opening this drawer
+                    root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
                                       repostDrawer.repostText, repostDrawer.repostDateTime,
                                       repostDrawer.repostAuthor)
                     repostDrawer.close()
@@ -704,6 +706,9 @@ ApplicationWindow {
         property list<bool> allowLists: [false, false, false]
         property list<string> allowListUris: []
         property list<listviewbasic> allowListViews: []
+        property string checkPostUri
+        property string checkPostCid
+        property var checkPostCallback
 
         id: postUtils
         skywalker: skywalker
@@ -745,6 +750,33 @@ ApplicationWindow {
                 allowLists[i] = true
                 allowListUris.push(replyRestrictionLists[i].uri)
             }
+        }
+
+        onCheckPostExistsOk: (uri, cid) => {
+            if (uri !== checkPostUri || cid !== checkPostCid)
+                return
+
+            checkPostUri = ""
+            checkPostCid = ""
+            checkPostCallback()
+            checkPostCallback = null
+        }
+
+        onCheckPostExistsFailed: (uri, cid, error) => {
+            if (uri !== checkPostUri || cid !== checkPostCid)
+                return
+
+            checkPostUri = ""
+            checkPostCid = ""
+            checkPostCallback = null
+            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        function checkPost(uri, cid, callback) {
+            checkPostUri = uri
+            checkPostCid = cid
+            checkPostCallback = callback
+            postUtils.checkPostExists(uri, cid)
         }
     }
 
@@ -1026,6 +1058,14 @@ ApplicationWindow {
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, initialText = "", imageSource = "")
     {
+        postUtils.checkPost(replyToUri, replyToCid,
+            () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                 replyRootUri, replyRootCid, replyToLanguage, initialText, imageSource))
+    }
+
+    function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                          replyRootUri, replyRootCid, replyToLanguage, initialText = "", imageSource = "")
+    {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
@@ -1047,6 +1087,14 @@ ApplicationWindow {
     function composeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource)
     {
+        postUtils.checkPost(replyToUri, replyToCid,
+            () => doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                      replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource))
+    }
+
+    function doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                               replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource)
+    {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
@@ -1066,6 +1114,11 @@ ApplicationWindow {
     }
 
     function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
+        postUtils.checkPost(quoteUri, quoteCid,
+            () => doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor))
+    }
+
+    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
@@ -1081,6 +1134,11 @@ ApplicationWindow {
     }
 
     function repost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled) {
+        postUtils.checkPost(uri, cid,
+            () => doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled))
+    }
+
+    function doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled) {
         repostDrawer.show(repostUri, uri, cid, text, dateTime, author, embeddingDisabled)
     }
 
