@@ -621,8 +621,6 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(ContentFilter::getContentLabels(notification.getReasonPost(mReasonPostCache).getLabels()));
     case Role::NotificationReasonPostLocallyDeleted:
         return reasonChange ? reasonChange->mPostDeleted : false;
-    case Role::NotificationReasonPostLocallyBlocked:
-        return getLocallyBlocked(notification.getAuthor().getDid());
     case Role::NotificationTimestamp:
         return notification.getTimestamp();
     case Role::NotificationSecondsAgo:
@@ -817,6 +815,11 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return mBookmarks.isBookmarked(notification.getPostUri());
     case Role::NotificationPostNotFound:
         return notification.getNotificationPost(mPostCache).isNotFound();
+    case Role::NotificationPostBlocked:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        return post.isBlocked() || getLocallyBlocked(post.getAuthor().getDid());
+    }
     case Role::NotificationPostLabels:
         return QVariant::fromValue(ContentFilter::getContentLabels(notification.getNotificationPost(mPostCache).getLabels()));
     case Role::NotificationPostContentVisibility:
@@ -899,7 +902,6 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostNotFound), "notificationReasonPostNotFound" },
         { int(Role::NotificationReasonPostLabels), "notificationReasonPostLabels" },
         { int(Role::NotificationReasonPostLocallyDeleted), "notificationReasonPostLocallyDeleted" },
-        { int(Role::NotificationReasonPostLocallyBlocked), "notificationReasonPostLocallyBlocked" },
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
         { int(Role::NotificationSecondsAgo), "notificationSecondsAgo" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
@@ -936,6 +938,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
         { int(Role::NotificationPostBookmarked), "notificationPostBookmarked" },
         { int(Role::NotificationPostNotFound), "notificationPostNotFound" },
+        { int(Role::NotificationPostBlocked), "notificationPostBlocked" },
         { int(Role::NotificationPostLabels), "notificationPostLabels" },
         { int(Role::NotificationPostContentVisibility), "notificationPostContentVisibility" },
         { int(Role::NotificationPostContentWarning), "notificationPostContentWarning" },
@@ -1037,7 +1040,7 @@ void NotificationListModel::postDeletedChanged()
 
 void NotificationListModel::locallyBlockedChanged()
 {
-    changeData({ int(Role::NotificationReasonPostLocallyBlocked) });
+    changeData({ int(Role::NotificationPostBlocked) });
 }
 
 void NotificationListModel::postBookmarkedChanged()

@@ -26,7 +26,6 @@ Rectangle {
     required property list<language> notificationReasonPostLanguages
     required property list<contentlabel> notificationReasonPostLabels
     required property bool notificationReasonPostLocallyDeleted
-    required property bool notificationReasonPostLocallyBlocked
     required property date notificationTimestamp
     required property double notificationSecondsAgo
     required property bool notificationIsRead
@@ -62,6 +61,7 @@ Rectangle {
     required property int notificationPostReplyCount
     required property bool notificationPostBookmarked
     required property bool notificationPostNotFound
+    required property bool notificationPostBlocked
     required property list<language> notificationPostLanguages
     required property list<contentlabel> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
@@ -241,8 +241,8 @@ Rectangle {
                     width: parent.width
                     Layout.fillWidth: true
                     postAuthor: notificationAuthor
-                    postText: notificationPostText
-                    postPlainText: notificationPostPlainText
+                    postText: notificationPostBlocked ? qsTr("🚫 Blocked") : notificationPostText
+                    postPlainText: notificationPostBlocked ? "" : notificationPostPlainText
                     postImages: notificationPostImages
                     postLanguageLabels: notificationPostLanguages
                     postContentLabels: notificationPostLabels
@@ -282,7 +282,7 @@ Rectangle {
                         isReply: notificationPostIsReply
                         replyRootAuthorDid: notificationPostReplyRootAuthorDid
                         replyRootUri: notificationPostReplyRootUri
-                        visible: !notificationPostNotFound
+                        visible: !notificationPostNotFound && !notificationPostBlocked
                         authorIsUser: false
                         isBookmarked: notificationPostBookmarked
                         bookmarkNotFound: false
@@ -435,12 +435,10 @@ Rectangle {
                             return qsTr("🗑 Deleted")
                         else if (notificationReasonPostNotFound)
                             return qsTr("🗑 Not found")
-                        else if (notificationReasonPostLocallyBlocked)
-                            return qsTr("🚫 Blocked")
 
                         return notificationReasonPostText
                     }
-                    postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound && !notificationReasonPostLocallyBlocked ?
+                    postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
                                        notificationReasonPostPlainText : ""
                     postImages: notificationReasonPostImages
                     postLanguageLabels: notificationReasonPostLanguages
@@ -631,9 +629,6 @@ Rectangle {
 
         if (notificationReasonPostNotFound)
             return qsTr("not found")
-
-        if (notificationReasonPostLocallyBlocked)
-            return qsTr("blocked")
 
         return accessibilityUtils.getPostSpeech(notificationReasonPostTimestamp,
                 skywalker.getUser(), notificationReasonPostPlainText, notificationReasonPostImages,
