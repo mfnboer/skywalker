@@ -19,13 +19,17 @@ public:
     void clearLocalProfileChanges();
     const Profile* getProfileChange(const QString& did) const;
     void updateProfile(const Profile& profile);
+    void setLocallyBlocked(const QString& did, bool blocked);
+    bool getLocallyBlocked(const QString& did) const;
 
 protected:
     virtual void profileChanged() = 0;
+    virtual void locallyBlockedChanged() = 0;
 
 private:
     // Mapping from DID to change
     std::unordered_map<QString, Profile> mChanges;
+    std::unordered_map<QString, bool> mLocallyBlocked;
 };
 
 }

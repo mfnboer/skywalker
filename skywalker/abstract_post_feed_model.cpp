@@ -308,7 +308,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostNotFound:
         return post.isNotFound();
     case Role::PostBlocked:
-        return post.isBlocked();
+        return post.isBlocked() || getLocallyBlocked(post.getAuthor().getDid());
     case Role::PostNotSupported:
         return post.isNotSupported();
     case Role::PostUnsupportedType:
@@ -448,6 +448,9 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.isPinned();
     case Role::PostLocallyDeleted:
     {
+        if (getLocallyBlocked(post.getAuthor().getDid()))
+            return true;
+
         if (!change)
             return false;
 
@@ -460,6 +463,9 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         auto repostedBy = post.getRepostedBy();
         if (!repostedBy)
             return false;
+
+        if (getLocallyBlocked(repostedBy->getDid()))
+            return true;
 
         if (repostedBy->getDid() != mUserDid)
             return false;
@@ -632,6 +638,11 @@ void AbstractPostFeedModel::postDeletedChanged()
 void AbstractPostFeedModel::profileChanged()
 {
     changeData({ int(Role::Author), int(Role::PostReplyToAuthor), int(Role::PostRepostedByAuthor) });
+}
+
+void AbstractPostFeedModel::locallyBlockedChanged()
+{
+    changeData({ int(Role::PostBlocked), int(Role::PostLocallyDeleted) });
 }
 
 void AbstractPostFeedModel::postBookmarkedChanged()

@@ -46,6 +46,7 @@ void NotificationListModel::clearLocalState()
     mCursor.clear();
     mPostCache.clear();
     clearLocalChanges();
+    clearLocalProfileChanges();
 }
 
 void NotificationListModel::clearRows()
@@ -620,6 +621,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(ContentFilter::getContentLabels(notification.getReasonPost(mReasonPostCache).getLabels()));
     case Role::NotificationReasonPostLocallyDeleted:
         return reasonChange ? reasonChange->mPostDeleted : false;
+    case Role::NotificationReasonPostLocallyBlocked:
+        return getLocallyBlocked(notification.getAuthor().getDid());
     case Role::NotificationTimestamp:
         return notification.getTimestamp();
     case Role::NotificationSecondsAgo:
@@ -896,6 +899,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostNotFound), "notificationReasonPostNotFound" },
         { int(Role::NotificationReasonPostLabels), "notificationReasonPostLabels" },
         { int(Role::NotificationReasonPostLocallyDeleted), "notificationReasonPostLocallyDeleted" },
+        { int(Role::NotificationReasonPostLocallyBlocked), "notificationReasonPostLocallyBlocked" },
         { int(Role::NotificationTimestamp), "notificationTimestamp" },
         { int(Role::NotificationSecondsAgo), "notificationSecondsAgo" },
         { int(Role::NotificationIsRead), "notificationIsRead" },
@@ -1029,6 +1033,11 @@ void NotificationListModel::viewerStatePinnedChanged()
 void NotificationListModel::postDeletedChanged()
 {
     changeData({ int(Role::NotificationReasonPostLocallyDeleted) });
+}
+
+void NotificationListModel::locallyBlockedChanged()
+{
+    changeData({ int(Role::NotificationReasonPostLocallyBlocked) });
 }
 
 void NotificationListModel::postBookmarkedChanged()

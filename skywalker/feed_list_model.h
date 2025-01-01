@@ -51,6 +51,7 @@ protected:
 
     // LocalProfileChanges
     virtual void profileChanged() override;
+    virtual void locallyBlockedChanged() override {}
 
 private:
     void feedSavedChanged();

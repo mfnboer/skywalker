@@ -968,16 +968,27 @@ SkyPage {
                 for (let i = 0; i < children.length; ++i) {
                     let c = children[i]
 
-                    if (c instanceof AuthorPostsList && c.modelId !== page.modelId)
-                        c.removeModel()
-                    else
-                        children[i].refresh()
+                    if (c instanceof AuthorPostsList) {
+                        if (c.modelId !== page.modelId)
+                            c.removeModel()
+                        else
+                            c.refresh()
+                    }
+                    else {
+                        if (c.sourceItem)
+                            c.sourceItem.refresh()
+                    }
                 }
             }
 
             function clear() {
                 for (let i = 0; i < children.length; ++i) {
-                    children[i].clear()
+                    let c = children[i]
+
+                    if (c instanceof AuthorPostsList)
+                        c.clear()
+                    else if (c.sourceItem)
+                        c.sourceItem.clear()
                 }
             }
         }
@@ -1023,6 +1034,7 @@ SkyPage {
         onBlockOk: (uri) => {
                        blocking = uri
                        authorFeedView.clear()
+                       statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
                    }
 
         onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1030,6 +1042,7 @@ SkyPage {
         onUnblockOk: {
             blocking = ""
             authorFeedView.refresh()
+            statusPopup.show(qsTr("Unblocked"), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
         onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1037,6 +1050,7 @@ SkyPage {
         onMuteOk: {
             authorMuted = true
             authorFeedView.clear()
+            statusPopup.show(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
         onMuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1044,6 +1058,7 @@ SkyPage {
         onUnmuteOk: {
             authorMuted = false
             authorFeedView.refresh()
+            statusPopup.show(qsTr("Unmuted"), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
         onUnmuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1056,12 +1071,14 @@ SkyPage {
         onMuteRepostsOk: {
             authorMutedReposts = graphUtils.areRepostsMuted(author.did)
             authorFeedView.refresh()
+            statusPopup.show(qsTr("Muted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
         }
         onMuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
 
         onUnmuteRepostsOk: {
             authorMutedReposts = graphUtils.areRepostsMuted(author.did)
             authorFeedView.refresh()
+            statusPopup.show(qsTr("Unmuted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
         }
         onUnmuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }

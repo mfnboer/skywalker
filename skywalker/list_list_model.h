@@ -73,6 +73,7 @@ protected:
 
     // LocalProfileChanges
     virtual void profileChanged() override;
+    virtual void locallyBlockedChanged() override {}
 
 private:
     using ListList = std::deque<ListView>;

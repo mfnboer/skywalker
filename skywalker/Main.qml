@@ -821,6 +821,9 @@ ApplicationWindow {
                 viewListFeedDescription(list)
         }
         onGetListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onBlockOk: (uri) => statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+        onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
     // InviteCodeStore {
@@ -1317,6 +1320,10 @@ ApplicationWindow {
     function unpinPost(cid) {
         const did = skywalker.getUserDid()
         profileUtils.clearPinnedPost(did, cid)
+    }
+
+    function blockAuthor(did) {
+        graphUtils.block(did)
     }
 
     function viewPostThread(modelId, postEntryIndex) {

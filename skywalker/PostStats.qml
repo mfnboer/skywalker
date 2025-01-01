@@ -40,6 +40,7 @@ Item {
     signal detachQuote(string uri, bool detach)
     signal pin()
     signal unpin()
+    signal blockAuthor()
 
     height: replyIcon.height + topPadding
 
@@ -214,6 +215,13 @@ Item {
                     onTriggered: reportPost()
 
                     MenuItemSvg { svg: SvgOutline.report }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Block author")
+                    visible: !authorIsUser
+                    onTriggered: blockAuthor()
+
+                    MenuItemSvg { svg: SvgOutline.block }
                 }
             }
         }

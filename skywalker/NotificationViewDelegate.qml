@@ -26,6 +26,7 @@ Rectangle {
     required property list<language> notificationReasonPostLanguages
     required property list<contentlabel> notificationReasonPostLabels
     required property bool notificationReasonPostLocallyDeleted
+    required property bool notificationReasonPostLocallyBlocked
     required property date notificationTimestamp
     required property double notificationSecondsAgo
     required property bool notificationIsRead
@@ -328,6 +329,7 @@ Rectangle {
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach)
                         onPin: root.pinPost(notificationPostUri, notificationCid)
                         onUnpin: root.unpinPost(notificationCid)
+                        onBlockAuthor: root.blockAuthor(notificationPostAuthor.did)
                     }
                 }
             }
@@ -430,13 +432,15 @@ Rectangle {
                     postAuthor: skywalker.getUser()
                     postText: {
                         if (notificationReasonPostLocallyDeleted)
-                            return "DELETED"
+                            return qsTr("🗑 Deleted")
                         else if (notificationReasonPostNotFound)
-                            return "NOT FOUND"
+                            return qsTr("🗑 Not found")
+                        else if (notificationReasonPostLocallyBlocked)
+                            return qsTr("🚫 Blocked")
 
                         return notificationReasonPostText
                     }
-                    postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
+                    postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound && !notificationReasonPostLocallyBlocked ?
                                        notificationReasonPostPlainText : ""
                     postImages: notificationReasonPostImages
                     postLanguageLabels: notificationReasonPostLanguages
@@ -627,6 +631,9 @@ Rectangle {
 
         if (notificationReasonPostNotFound)
             return qsTr("not found")
+
+        if (notificationReasonPostLocallyBlocked)
+            return qsTr("blocked")
 
         return accessibilityUtils.getPostSpeech(notificationReasonPostTimestamp,
                 skywalker.getUser(), notificationReasonPostPlainText, notificationReasonPostImages,

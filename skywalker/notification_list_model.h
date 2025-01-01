@@ -4,6 +4,7 @@
 #include "bookmarks.h"
 #include "content_filter.h"
 #include "local_post_model_changes.h"
+#include "local_profile_changes.h"
 #include "muted_words.h"
 #include "notification.h"
 #include "post_cache.h"
@@ -15,7 +16,9 @@ namespace Skywalker {
 
 class InviteCodeStore;
 
-class NotificationListModel : public QAbstractListModel, public LocalPostModelChanges
+class NotificationListModel : public QAbstractListModel,
+                              public LocalPostModelChanges,
+                              public LocalProfileChanges
 {
     Q_OBJECT
     Q_PROPERTY(bool priority READ getPriority NOTIFY priorityChanged FINAL)
@@ -44,6 +47,7 @@ public:
         NotificationReasonPostNotFound,
         NotificationReasonPostLabels,
         NotificationReasonPostLocallyDeleted,
+        NotificationReasonPostLocallyBlocked,
         NotificationTimestamp,
         NotificationSecondsAgo,
         NotificationIsRead,
@@ -130,6 +134,7 @@ signals:
     void priorityChanged();
 
 protected:
+    // LocalPostModelChanges
     virtual void postIndexedSecondsAgoChanged() override;
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
@@ -147,6 +152,10 @@ protected:
     virtual void reAttachedRecordChanged() override;
     virtual void viewerStatePinnedChanged() override;
     virtual void postDeletedChanged() override;
+
+    // LocalProfileChanges
+    virtual void profileChanged() override {};
+    virtual void locallyBlockedChanged() override;
 
     QHash<int, QByteArray> roleNames() const override;
 

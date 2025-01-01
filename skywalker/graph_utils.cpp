@@ -111,6 +111,11 @@ void GraphUtils::block(const QString& did)
                     model->updateBlockingUri(did, blockingUri);
                 });
 
+            mSkywalker->makeLocalModelChange(
+                [did](LocalProfileChanges* model){
+                    model->setLocallyBlocked(did, true);
+                });
+
             emit blockOk(blockingUri);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -135,6 +140,11 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
             mSkywalker->makeLocalModelChange(
                 [did](LocalAuthorModelChanges* model){
                     model->updateBlockingUri(did, "");
+                });
+
+            mSkywalker->makeLocalModelChange(
+                [did](LocalProfileChanges* model){
+                    model->setLocallyBlocked(did, false);
                 });
 
             emit unblockOk();

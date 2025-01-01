@@ -1501,6 +1501,8 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
 
     update(&mTimelineModel);
     mTimelineModel.makeLocalFilteredModelChange(update);
+    update(&mNotificationListModel);
+    update(&mMentionListModel);
 
     for (auto& [_, model] : mPostThreadModels.items())
         update(model.get());
