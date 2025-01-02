@@ -11,13 +11,26 @@ namespace Skywalker::AndroidUtils {
 #if defined(Q_OS_ANDROID)
 bool checkPermission(const QString& permission)
 {
-    auto checkResult = QtAndroidPrivate::checkPermission(permission);
-    if (checkResult.result() != QtAndroidPrivate::Authorized)
+    auto checkFuture = QtAndroidPrivate::checkPermission(permission);
+
+    if (!checkFuture.isValid())
+    {
+        qWarning() << "Invalid check future";
+        return false;
+    }
+
+    if (checkFuture.result() != QtAndroidPrivate::Authorized)
     {
         qDebug() << "Permission check failed:" << permission;
-        auto requestResult = QtAndroidPrivate::requestPermission(permission);
+        auto requestFuture = QtAndroidPrivate::requestPermission(permission);
 
-        if (requestResult.result() != QtAndroidPrivate::Authorized)
+        if (!requestFuture.isValid())
+        {
+            qWarning() << "Invalid request future";
+            return false;
+        }
+
+        if (requestFuture.result() != QtAndroidPrivate::Authorized)
         {
             qWarning() << "No permission:" << permission;
             return false;
