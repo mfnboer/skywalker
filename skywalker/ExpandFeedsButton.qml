@@ -71,7 +71,7 @@ SvgButton {
                     width: height
                     height: parent.height - 10
                     avatarUrl: modelData.avatarThumb
-                    unknownSvg: modelData.isGeneratorView ? SvgFilled.feed : SvgFilled.list
+                    unknownSvg: modelData.isGeneratorView ? guiSettings.feedDefaultAvatar(modelData.generatorView) : SvgFilled.list
                     onClicked: parent.triggered()
                 }
 

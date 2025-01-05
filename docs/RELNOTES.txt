@@ -1,3 +1,8 @@
+next
+====
+* Bluesky trending topics
+* Bug fixes
+
 3.10.1
 ======
 * Check if post is not deleted before replying or quoting

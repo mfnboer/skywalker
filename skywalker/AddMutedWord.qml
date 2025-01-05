@@ -16,8 +16,6 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     Material.background: guiSettings.backgroundColor
 
-    Accessible.role: Accessible.Dialog
-
     SkyTextInput {
         id: textInput
         width: parent.width

@@ -45,6 +45,7 @@ SkyPage {
             y: 5
             width: 100
             avatarUrl: !contentVisible() ? "" : feed.avatar
+            unknownSvg: guiSettings.feedDefaultAvatar(feed)
             onClicked: {
                 if (feed.avatar)
                     root.viewFullImage([feed.imageView], 0)

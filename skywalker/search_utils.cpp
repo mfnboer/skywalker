@@ -701,4 +701,36 @@ void SearchUtils::clearLastSearches() const
     settings->setLastSearches(did, {});
 }
 
+TrendingTopicListModel& SearchUtils::createTrendingTopicsListModel()
+{
+    if (!mTrendingTopicsListModel)
+    {
+        Q_ASSERT(mSkywalker);
+        mTrendingTopicsListModel = std::make_unique<TrendingTopicListModel>(*mSkywalker->getMutedWords(), this);
+        emit trendingTopicsListModelChanged();
+    }
+
+    return *mTrendingTopicsListModel;
+}
+
+void SearchUtils::getTrendingTopics()
+{
+    qDebug() << "Get trending topics";
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+
+    bskyClient()->getTrendingTopics(did, 10,
+        [this, presence=getPresence()](auto output){
+            if (!presence)
+                return;
+
+            auto& model = createTrendingTopicsListModel();
+            model.clear();
+            model.addTopics(output->mTopics);
+        },
+        [](const QString& error, const QString& msg){
+            qDebug() << "getTrendingTopics failed:" << error << " - " << msg;
+        });
+}
+
 }

@@ -20,6 +20,7 @@ Column {
         ListAvatar {
             id: avatar
             Layout.preferredWidth: 34
+            Layout.preferredHeight: 34
             Layout.alignment: Qt.AlignTop
             avatarUrl: list.avatarThumb
 

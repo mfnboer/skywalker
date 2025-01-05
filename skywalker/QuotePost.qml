@@ -31,6 +31,7 @@ Column {
             Layout.alignment: Qt.AlignTop
             Layout.topMargin: 5
             Layout.preferredWidth: 24
+            Layout.preferredHeight: 24
             author: quoteColumn.author
 
             onClicked: skywalker.getDetailedProfile(author.did)

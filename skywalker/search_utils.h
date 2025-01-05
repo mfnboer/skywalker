@@ -7,6 +7,7 @@
 #include "profile.h"
 #include "profile_matcher.h"
 #include "search_post_feed_model.h"
+#include "trending_topic_list_model.h"
 #include "wrapped_skywalker.h"
 #include <vector>
 
@@ -17,6 +18,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_OBJECT
     Q_PROPERTY(BasicProfileList authorTypeaheadList READ getAuthorTypeaheadList WRITE setAuthorTypeaheadList NOTIFY authorTypeaheadListChanged FINAL)
     Q_PROPERTY(QStringList hashtagTypeaheadList READ getHashtagTypeaheadList WRITE setHashtagTypeaheadList NOTIFY hashtagTypeaheadListChanged FINAL)
+    Q_PROPERTY(TrendingTopicListModel* trendingTopicsListModel READ getTrendingTopicsListModel NOTIFY trendingTopicsListModelChanged FINAL)
     Q_PROPERTY(bool searchPostsTopInProgress READ getSearchPostsTopInProgress NOTIFY searchPostsTopInProgressChanged FINAL)
     Q_PROPERTY(bool searchPostsLatestInProgress READ getSearchPostsLatestInProgress NOTIFY searchPostsLatestInProgressChanged FINAL)
     Q_PROPERTY(bool searchActorsInProgress READ getSearchActorsInProgress WRITE setSearchActorsInProgress NOTIFY searchActorsInProgressChanged FINAL)
@@ -62,6 +64,7 @@ public:
     Q_INVOKABLE QStringList getLastSearches() const;
     Q_INVOKABLE void addLastSearch(const QString& search);
     Q_INVOKABLE void clearLastSearches() const;
+    Q_INVOKABLE void getTrendingTopics();
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);
@@ -77,6 +80,7 @@ public:
     void setSearchSuggestedActorsInProgress(bool inProgress);
     bool getSearchFeedsInProgress() const { return mSearchFeedsInProgress; }
     void setSearchFeedsInProgress(bool inProgress);
+    TrendingTopicListModel* getTrendingTopicsListModel() { return mTrendingTopicsListModel.get(); }
 
 signals:
     void authorTypeaheadListChanged();
@@ -86,11 +90,13 @@ signals:
     void searchActorsInProgressChanged();
     void searchSuggestedActorsInProgressChanged();
     void searchFeedsInProgressChanged();
+    void trendingTopicsListModelChanged();
 
 private:
     void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList, const IProfileMatcher& matcher = AnyProfileMatcher{});
     void localSearchAuthorsTypeahead(const QString& typed, int limit, const IProfileMatcher& matcher = AnyProfileMatcher{});
     QString preProcessSearchText(const QString& text) const;
+    TrendingTopicListModel& createTrendingTopicsListModel();
 
     BasicProfileList mAuthorTypeaheadList;
     QStringList mHashtagTypeaheadList;
@@ -104,6 +110,7 @@ private:
     bool mSearchFeedsInProgress = false;
     AnyProfileMatcher mAnyProfileMatcher;
     CanChatProfileMatcher mCanChatProfileMatcher;
+    TrendingTopicListModel::Ptr mTrendingTopicsListModel;
 };
 
 }

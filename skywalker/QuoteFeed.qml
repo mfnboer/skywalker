@@ -20,8 +20,10 @@ Column {
         FeedAvatar {
             id: avatar
             Layout.preferredWidth: 34
+            Layout.preferredHeight: 34
             Layout.alignment: Qt.AlignTop
             avatarUrl: feed.avatarThumb
+            unknownSvg: guiSettings.feedDefaultAvatar(feed)
 
             onClicked: skywalker.getFeedGenerator(feed.uri)
         }

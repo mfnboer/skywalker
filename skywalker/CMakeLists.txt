@@ -446,6 +446,10 @@ qt_add_qml_module(libskywalker
         QML_FILES SettingsLanguage.qml
         QML_FILES SettingsAppearance.qml
         QML_FILES SettingsNotifications.qml
+        SOURCES trending_topic.h
+        SOURCES trending_topic.cpp
+        SOURCES trending_topic_list_model.h
+        SOURCES trending_topic_list_model.cpp
 )
 
 if (NOT ANDROID)

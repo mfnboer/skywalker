@@ -38,10 +38,10 @@ Rectangle {
             Layout.leftMargin: generatorView.margin
             Layout.rightMargin: generatorView.margin
             Layout.alignment: Qt.AlignTop
-            //x: 8
-            //y: 5
             Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredHeight: guiSettings.threadColumnWidth
             avatarUrl: showFeed ? feed.avatarThumb : ""
+            unknownSvg: guiSettings.feedDefaultAvatar(feed)
 
             onClicked: feedClicked(feed)
 

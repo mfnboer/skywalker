@@ -82,6 +82,7 @@ Item {
 
     // Identity
     readonly property string skywalkerHandle: "@skywalker.thereforeiam.eu"
+    readonly property string blueskyTrendingDid: "did:plc:qrz3lhbyuxbeilrc6nekdqme"
 
     Accessible.ignored: true
 
@@ -230,6 +231,10 @@ Item {
 
         console.debug("TEXT:", text)
         return text
+    }
+
+    function feedDefaultAvatar(feed) {
+        return feed.creator.did === guiSettings.blueskyTrendingDid ? SvgOutline.trending : SvgFilled.feed
     }
 
     function contentVisible(author)

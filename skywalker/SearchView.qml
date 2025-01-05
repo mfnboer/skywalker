@@ -57,7 +57,7 @@ SkyPage {
                 searchUtils.authorTypeaheadList = []
                 searchUtils.hashtagTypeaheadList = []
                 page.isHashtagSearch = false
-                searchUtils.suggestUsers()
+                searchUtils.getSuggestions()
             }
         }
 
@@ -248,7 +248,7 @@ SkyPage {
         currentIndex: currentText ? searchBar.currentIndex :
                                     ((page.header.hasFocus() || recentSearchesView.keepFocus) ?
                                          recentSearchesView.StackLayout.index :
-                                         suggestedUsersView.StackLayout.index)
+                                         suggestionsView.StackLayout.index)
         visible: !page.isTyping || !currentText
 
         onCurrentIndexChanged: {
@@ -361,47 +361,121 @@ SkyPage {
             }
         }
 
-        SkyListView {
-            id: suggestedUsersView
+        Flickable {
+            id: suggestionsView
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchSuggestedUsersModel()
             clip: true
+            contentWidth: page.width
+            contentHeight: suggestedUsersView.y + suggestedUsersView.height
+            flickableDirection: Flickable.VerticalFlick
+            boundsBehavior: Flickable.StopAtBounds
+            interactive: trendingTopicsColumn.visible && contentY < trendingTopicsColumn.y + trendingTopicsColumn.height
 
-            Accessible.role: Accessible.List
-
-            header: AccessibleText {
+            AccessibleText {
+                id: trendingTopicsText
                 width: parent.width
-                topPadding: 10
-                bottomPadding: 10
-                horizontalAlignment: Text.AlignHCenter
+                padding: 10
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(9/8)
-                text: qsTr("Suggestions")
-                visible: suggestedUsersView.count > 0
+                text: qsTr("Trending topics")
+                visible: topicRepeater.count > 0
             }
 
-            delegate: AuthorViewDelegate {
-                width: suggestedUsersView.width
-                onFollow: (profile) => { graphUtils.follow(profile) }
-                onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
+            Column {
+                id: trendingTopicsColumn
+                anchors.top: trendingTopicsText.bottom
+                width: parent.width
+                visible: trendingTopicsText.visible
+
+                Repeater {
+                    id: topicRepeater
+                    model: searchUtils.trendingTopicsListModel
+
+                    Rectangle {
+                        required property var modelData
+
+                        width: parent.width
+                        height: Math.max(topicIcon.height, topicTitle.height)
+                        color: "transparent"
+
+
+                        SkySvg {
+                            id: topicIcon
+                            x: page.margin
+                            width: 34
+                            height: width
+                            color: guiSettings.textColor
+                            svg: SvgOutline.trending
+                        }
+
+                        SkyCleanedTextLine {
+                            id: topicTitle
+                            anchors.left: topicIcon.right
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.leftMargin: guiSettings.threadColumnWidth - topicIcon.width
+                            anchors.rightMargin: page.margin
+                            elide: Text.ElideRight
+                            color: guiSettings.linkColor
+                            plainText: modelData.topic
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: root.openLink(modelData.link)
+                        }
+                    }
+                }
             }
 
-            FlickableRefresher {
-                scrollToTopButtonMargin: pageFooter.height
-                inProgress: searchUtils.searchSuggestedActorsInProgress
-                bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
-            }
+            SkyListView {
+                id: suggestedUsersView
+                anchors.top: trendingTopicsColumn.visible ? trendingTopicsColumn.bottom : parent.top
+                width: suggestionsView.width
+                height: suggestionsView.height
+                model: searchUtils.getSearchSuggestedUsersModel()
+                clip: true
+                interactive: !suggestionsView.interactive
 
-            EmptyListIndication {
-                svg: SvgOutline.noUsers
-                text: qsTr("No suggestions")
-                list: suggestedUsersView
-            }
+                onVerticalOvershootChanged: {
+                    if (interactive && trendingTopicsColumn.visible)
+                        suggestionsView.contentY = y + verticalOvershoot
+                }
 
-            BusyIndicator {
-                anchors.centerIn: parent
-                running: searchUtils.searchSuggestedActorsInProgress
+                Accessible.role: Accessible.List
+
+                header: AccessibleText {
+                    width: parent.width
+                    padding: 10
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(9/8)
+                    text: qsTr("Suggested accounts")
+                    visible: suggestedUsersView.count > 0
+                }
+
+                delegate: AuthorViewDelegate {
+                    width: suggestedUsersView.width
+                    onFollow: (profile) => { graphUtils.follow(profile) }
+                    onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
+                }
+
+                FlickableRefresher {
+                    scrollToTopButtonMargin: pageFooter.height
+                    inProgress: searchUtils.searchSuggestedActorsInProgress
+                    bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
+                }
+
+                EmptyListIndication {
+                    svg: SvgOutline.noUsers
+                    text: qsTr("No suggestions")
+                    list: suggestedUsersView
+                }
+
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: searchUtils.searchSuggestedActorsInProgress
+                }
             }
         }
 
@@ -448,7 +522,7 @@ SkyPage {
                 SkySvg {
                     id: recentSearchIcon
                     x: page.margin
-                    width: 40
+                    width: 34
                     height: width
                     color: guiSettings.textColor
                     svg: SvgOutline.search
@@ -548,6 +622,11 @@ SkyPage {
                 getSuggestedActors()
             else
                 getSuggestedFollows(postAuthorUser)
+        }
+
+        function getSuggestions() {
+            suggestUsers()
+            getTrendingTopics()
         }
 
         Component.onDestruction: {
@@ -721,10 +800,13 @@ SkyPage {
             if (searchText)
                 searchUtils.search(searchText)
             else
-                searchUtils.suggestUsers()
+                searchUtils.getSuggestions()
         }
         else if (firstSearch) {
-            searchUtils.suggestUsers()
+            searchUtils.getSuggestions()
+        }
+        else {
+            searchUtils.getTrendingTopics()
         }
 
         firstSearch = false
