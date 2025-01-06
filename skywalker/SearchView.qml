@@ -7,6 +7,7 @@ import atproto.lib
 
 SkyPage {
     required property var skywalker
+    property var userSettings: skywalker.getUserSettings()
     property var timeline
     property bool isTyping: true
     property bool isHashtagSearch: false
@@ -248,10 +249,11 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         width: parent.width
-        currentIndex: currentText ? searchBar.currentIndex :
-                                    ((page.header.hasFocus() || recentSearchesView.keepFocus) ?
-                                         recentSearchesView.StackLayout.index :
-                                         suggestionsView.StackLayout.index)
+        currentIndex: currentText ?
+            searchBar.currentIndex :
+            ((page.header.hasFocus() || recentSearchesView.keepFocus || (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers)) ?
+                recentSearchesView.StackLayout.index :
+                suggestionsView.StackLayout.index)
         visible: !page.isTyping || !currentText
 
         onCurrentIndexChanged: {
@@ -383,7 +385,19 @@ SkyPage {
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(9/8)
                 text: qsTr("Trending topics")
-                visible: topicRepeater.count > 0
+                visible: userSettings.showTrendingTopics && topicRepeater.count > 0
+
+                SvgButton {
+                    anchors.right: parent.right
+                    width: height
+                    height: parent.height
+                    svg: SvgOutline.close
+                    accessibleName: qsTr("disable trending topics")
+                    onPressed: {
+                        guiSettings.notice(page, qsTr("You can enable trending topics again in settings."))
+                        userSettings.showTrendingTopics = false
+                    }
+                }
             }
 
             Column {
@@ -437,10 +451,11 @@ SkyPage {
                 id: suggestedUsersView
                 anchors.top: trendingTopicsColumn.visible ? trendingTopicsColumn.bottom : parent.top
                 width: suggestionsView.width
-                height: suggestionsView.height
+                height: visible ? suggestionsView.height : 0
                 model: searchUtils.getSearchSuggestedUsersModel()
                 clip: true
                 interactive: !suggestionsView.interactive
+                visible: userSettings.showSuggestedUsers
 
                 onVerticalOvershootChanged: {
                     if (interactive && trendingTopicsColumn.visible)
@@ -455,7 +470,18 @@ SkyPage {
                     font.bold: true
                     font.pointSize: guiSettings.scaledFont(9/8)
                     text: qsTr("Suggested accounts")
-                    visible: suggestedUsersView.count > 0
+
+                    SvgButton {
+                        anchors.right: parent.right
+                        width: height
+                        height: parent.height
+                        svg: SvgOutline.close
+                        accessibleName: qsTr("disable suggested accounts")
+                        onPressed: {
+                            guiSettings.notice(page, qsTr("You can enable trending topics again in settings."))
+                            userSettings.showSuggestedUsers = false
+                        }
+                    }
                 }
 
                 delegate: AuthorViewDelegate {
@@ -523,7 +549,7 @@ SkyPage {
                 x: page.margin
                 anchors.top: recentSearchesText.bottom
                 width: parent.width - page.margin * 2
-                height: count > 0 ? 80 : 0
+                height: count > 0 ? 90 : 0
                 model: searchUtils.lastSearchedProfiles
                 orientation: ListView.Horizontal
                 flickDeceleration: guiSettings.flickDeceleration
@@ -537,13 +563,13 @@ SkyPage {
                 delegate: Column {
                     required property basicprofile modelData
 
-                    width: 70
+                    width: 80
                     height: parent.height
                     spacing: 10
 
                     Avatar {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: 50
+                        width: 60
                         author: modelData
 
                         onClicked: {
@@ -709,15 +735,25 @@ SkyPage {
         }
 
         function suggestUsers() {
+            if (!userSettings.showSuggestedUsers)
+                return
+
             if (!postAuthorUser || postAuthorUser === "me")
                 getSuggestedActors()
             else
                 getSuggestedFollows(postAuthorUser)
         }
 
+        function suggestTrendingTopics() {
+            if (!userSettings.showTrendingTopics)
+                return
+
+            getTrendingTopics()
+        }
+
         function getSuggestions() {
             suggestUsers()
-            getTrendingTopics()
+            suggestTrendingTopics()
         }
 
         Component.onDestruction: {
@@ -897,10 +933,12 @@ SkyPage {
             searchUtils.getSuggestions()
         }
         else {
-            searchUtils.getTrendingTopics()
+            searchUtils.suggestTrendingTopics()
         }
 
-        firstSearch = false
+        if (userSettings.showSuggestedUsers)
+            firstSearch = false
+
         searchUtils.initLastSearchedProfiles()
     }
 }

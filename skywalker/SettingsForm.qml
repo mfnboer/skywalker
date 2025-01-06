@@ -7,8 +7,6 @@ import skywalker
 SkyPage {
     property var skywalker: root.getSkywalker()
     property var userPrefs: skywalker.getEditUserPreferences()
-    property var userSettings: skywalker.getUserSettings()
-    property string userDid: userSettings.getActiveUserDid()
 
     id: page
     padding: 10
@@ -74,9 +72,15 @@ SkyPage {
             userPrefs: page.userPrefs
         }
 
+        SettingsSearch {
+            id: settingsSearch
+            anchors.top: settingsChat.bottom
+            width: parent.width
+        }
+
         SettingsLanguage {
             id: settingsLanguage
-            anchors.top: settingsChat.bottom
+            anchors.top: settingsSearch.bottom
             width: parent.width
         }
 

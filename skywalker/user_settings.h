@@ -31,7 +31,9 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoAutoLoad READ getVideoAutoLoad WRITE setVideoAutoLoad NOTIFY videoAutoLoadChanged FINAL)
     Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
-    Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged)
+    Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
+    Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
+    Q_PROPERTY(bool showSuggestedUsers READ getShowSuggestedUsers WRITE setShowSuggestedUsers NOTIFY showSuggestedUsersChanged FINAL)
 
 public:
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
@@ -210,6 +212,12 @@ public:
     QStringList getLastProfileSearches(const QString& did) const;
     void setLastProfileSearches(const QString& did, const QStringList& lastDids);
 
+    bool getShowTrendingTopics() const;
+    void setShowTrendingTopics(bool show);
+
+    bool getShowSuggestedUsers() const;
+    void setShowSuggestedUsers(bool show);
+
     QString getDefaultPostLanguage(const QString& did) const;
     void setDefaultPostLanguage(const QString& did, const QString& language);
 
@@ -259,6 +267,8 @@ signals:
     void videoAutoLoadChanged();
     void floatingNavigationButtonsChanged();
     void scriptRecognitionChanged();
+    void showTrendingTopicsChanged();
+    void showSuggestedUsersChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;

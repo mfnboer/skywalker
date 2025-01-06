@@ -787,6 +787,34 @@ void UserSettings::addDraftRepoToFileMigration(const QString& did)
     mSettings.setValue(key(did, "draftRepoToFileMigration"), attempts + 1);
 }
 
+bool UserSettings::getShowTrendingTopics() const
+{
+    return mSettings.value("showTrendingTopics", true).toBool();
+}
+
+void UserSettings::setShowTrendingTopics(bool show)
+{
+    if (show != getShowTrendingTopics())
+    {
+        mSettings.setValue("showTrendingTopics", show);
+        emit showTrendingTopicsChanged();
+    }
+}
+
+bool UserSettings::getShowSuggestedUsers() const
+{
+    return mSettings.value("showSuggestedUsers", true).toBool();
+}
+
+void UserSettings::setShowSuggestedUsers(bool show)
+{
+    if (show != getShowSuggestedUsers())
+    {
+        mSettings.setValue("showSuggestedUsers", show);
+        emit showSuggestedUsersChanged();
+    }
+}
+
 QString UserSettings::getDefaultPostLanguage(const QString& did) const
 {
     return mSettings.value(key(did, "defaultPostLanguage")).toString();

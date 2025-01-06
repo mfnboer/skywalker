@@ -450,6 +450,7 @@ qt_add_qml_module(libskywalker
         SOURCES trending_topic.cpp
         SOURCES trending_topic_list_model.h
         SOURCES trending_topic_list_model.cpp
+        QML_FILES SettingsSearch.qml
 )
 
 if (NOT ANDROID)
