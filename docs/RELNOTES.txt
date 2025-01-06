@@ -1,6 +1,8 @@
 next
 ====
 * Bluesky trending topics
+* Remember last searched accounts
+* Increase number of recent gifs from 25 to 50
 * Bug fixes
 
 3.10.1

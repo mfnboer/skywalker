@@ -217,11 +217,14 @@ SkyPage {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: searchModeSeparator.bottom
-        anchors.bottom: parent.bottom
+        anchors.bottom: pageFooter.top
         model: searchUtils.authorTypeaheadList
         visible: page.isTyping && !page.isPostSearch && !page.isHashtagSearch
 
-        onAuthorClicked: (profile) => { page.skywalker.getDetailedProfile(profile.did) }
+        onAuthorClicked: (profile) => {
+            searchUtils.addLastSearchedProfile(profile)
+            page.skywalker.getDetailedProfile(profile.did)
+        }
     }
 
     HashtagListView {
@@ -229,7 +232,7 @@ SkyPage {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: searchModeSeparator.bottom
-        anchors.bottom: parent.bottom
+        anchors.bottom: pageFooter.top
         model: searchUtils.hashtagTypeaheadList
         visible: page.isTyping && page.isPostSearch && page.isHashtagSearch
 
@@ -243,7 +246,7 @@ SkyPage {
     StackLayout {
         id: searchStack
         anchors.top: searchModeSeparator.bottom
-        anchors.bottom: parent.bottom
+        anchors.bottom: pageFooter.top
         width: parent.width
         currentIndex: currentText ? searchBar.currentIndex :
                                     ((page.header.hasFocus() || recentSearchesView.keepFocus) ?
@@ -253,7 +256,7 @@ SkyPage {
 
         onCurrentIndexChanged: {
             if (currentIndex === recentSearchesView.StackLayout.index)
-                recentSearchesView.model = searchUtils.getLastSearches()
+                recentSearchesRepeater.model = searchUtils.getLastSearches()
         }
 
         SkyListView {
@@ -339,8 +342,9 @@ SkyPage {
 
             delegate: AuthorViewDelegate {
                 width: usersView.width
-                onFollow: (profile) => { graphUtils.follow(profile) }
-                onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
+                onFollow: (profile) => graphUtils.follow(profile)
+                onUnfollow: (did, uri) => graphUtils.unfollow(did, uri)
+                onClicked: (profile) => searchUtils.addLastSearchedProfile(profile)
             }
 
             FlickableRefresher {
@@ -479,23 +483,26 @@ SkyPage {
             }
         }
 
-        SkyListView {
+        Flickable {
             property bool keepFocus: false
 
             id: recentSearchesView
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             clip: true
+            contentWidth: page.width
+            contentHeight: recentSearchesColumn.y + recentSearchesColumn.height
+            flickableDirection: Flickable.VerticalFlick
+            boundsBehavior: Flickable.StopAtBounds
 
-            Accessible.role: Accessible.List
-
-            header: AccessibleText {
+            AccessibleText {
+                id: recentSearchesText
                 width: parent.width
                 padding: 10
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(9/8)
                 text: qsTr("Recent searches")
-                visible: recentSearchesView.count > 0
+                visible: recentProfileSearchList.count + recentSearchesRepeater.count > 0
 
                 SvgButton {
                     anchors.right: parent.right
@@ -505,53 +512,137 @@ SkyPage {
                     accessibleName: qsTr("clear recent searches")
                     onPressed: {
                         recentSearchesView.keepFocus = true
-                        console.debug("CLICKED")
                         page.header.forceFocus()
                         clearRecentSearches()
                     }
                 }
             }
 
-            delegate: Rectangle {
-                required property string modelData
+            ListView {
+                id: recentProfileSearchList
+                x: page.margin
+                anchors.top: recentSearchesText.bottom
+                width: parent.width - page.margin * 2
+                height: count > 0 ? 80 : 0
+                model: searchUtils.lastSearchedProfiles
+                orientation: ListView.Horizontal
+                flickDeceleration: guiSettings.flickDeceleration
+                boundsBehavior: Flickable.StopAtBounds
+                maximumFlickVelocity: guiSettings.maxFlickVelocity
+                pixelAligned: guiSettings.flickPixelAligned
+                ScrollIndicator.horizontal: ScrollIndicator {}
+                clip: true
+                visible: count > 0
 
-                width: recentSearchesView.width
-                height: Math.max(recentSearchIcon.height, recentSearchText.height)
-                color: "transparent"
+                delegate: Column {
+                    required property basicprofile modelData
 
-                SkySvg {
-                    id: recentSearchIcon
-                    x: page.margin
-                    width: 34
-                    height: width
-                    color: guiSettings.textColor
-                    svg: SvgOutline.search
-                }
+                    width: 70
+                    height: parent.height
+                    spacing: 10
 
-                AccessibleText {
-                    id: recentSearchText
-                    anchors.left: recentSearchIcon.right
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: page.margin
-                    elide: Text.ElideRight
-                    text: modelData
-                }
+                    Avatar {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 50
+                        author: modelData
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        header.setSearchText(recentSearchText.text)
-                        searchUtils.search(recentSearchText.text)
+                        onClicked: {
+                            page.skywalker.getDetailedProfile(modelData.did)
+
+                            // This call changes the model!
+                            searchUtils.addLastSearchedProfile(modelData)
+                        }
+
+                        SvgButton {
+                            y: -topInset
+                            x: parent.width - width + rightInset
+                            width: 28
+                            height: width
+                            imageMargin: 8
+                            iconColor: guiSettings.textColor
+                            Material.background: guiSettings.backgroundColor
+                            flat: true
+                            svg: SvgOutline.close
+                            accessibleName: qsTr(`remove ${modelData.name}`)
+                            onPressed: {
+                                page.header.forceFocus()
+                                searchUtils.removeLastSearchedProfile(modelData.did)
+                            }
+                        }
+                    }
+
+                    SkyCleanedTextLine {
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        elide: Text.ElideRight
+                        font.pointSize: guiSettings.scaledFont(6/8)
+                        horizontalAlignment: Text.AlignHCenter
+                        plainText: modelData.name
                     }
                 }
             }
 
-            EmptyListIndication {
-                svg: SvgOutline.search
-                text: qsTr("No recent searches")
-                list: recentSearchesView
+            Column {
+                id: recentSearchesColumn
+                anchors.top: recentProfileSearchList.bottom
+                width: parent.width
+                visible: recentSearchesRepeater.count > 0
+
+                Repeater {
+                    id: recentSearchesRepeater
+
+                    delegate: Rectangle {
+                        required property string modelData
+
+                        width: parent.width
+                        height: Math.max(recentSearchIcon.height, recentSearchText.height)
+                        color: "transparent"
+
+                        SkySvg {
+                            id: recentSearchIcon
+                            x: page.margin
+                            width: 34
+                            height: width
+                            color: guiSettings.textColor
+                            svg: SvgOutline.search
+                        }
+
+                        AccessibleText {
+                            id: recentSearchText
+                            anchors.left: recentSearchIcon.right
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: page.margin
+                            elide: Text.ElideRight
+                            text: modelData
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                header.setSearchText(recentSearchText.text)
+                                searchUtils.search(recentSearchText.text)
+                            }
+                        }
+
+                        SvgButton {
+                            anchors.right: parent.right
+                            width: 34
+                            height: width
+                            iconColor: guiSettings.textColor
+                            Material.background: guiSettings.backgroundColor
+                            flat: true
+                            svg: SvgOutline.close
+                            accessibleName: qsTr(`remove ${recentSearchText.text}`)
+                            onPressed: {
+                                page.header.forceFocus()
+                                searchUtils.removeLastSearch(recentSearchText.text)
+                                recentSearchesRepeater.model = searchUtils.getLastSearches()
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -763,7 +854,7 @@ SkyPage {
                     qsTr("Are you sure to clear your recent searches?"),
                     () => {
                         searchUtils.clearLastSearches()
-                        recentSearchesView.model = []
+                        recentSearchesRepeater.model = []
                         recentSearchesView.keepFocus = false
                         page.header.forceFocus()
                     },
@@ -810,5 +901,6 @@ SkyPage {
         }
 
         firstSearch = false
+        searchUtils.initLastSearchedProfiles()
     }
 }

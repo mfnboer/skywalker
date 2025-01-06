@@ -20,6 +20,7 @@ Rectangle {
     signal follow(basicprofile profile)
     signal unfollow(string did, string uri)
     signal deleteItem(string listItemUri)
+    signal clicked(basicprofile profile)
 
     id: authorRect
     height: grid.height
@@ -166,7 +167,10 @@ Rectangle {
     MouseArea {
         z: -1
         anchors.fill: parent
-        onClicked: skywalker.getDetailedProfile(author.did)
+        onClicked: {
+            authorRect.clicked(author)
+            skywalker.getDetailedProfile(author.did)
+        }
     }
 
 

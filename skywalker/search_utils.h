@@ -18,6 +18,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_OBJECT
     Q_PROPERTY(BasicProfileList authorTypeaheadList READ getAuthorTypeaheadList WRITE setAuthorTypeaheadList NOTIFY authorTypeaheadListChanged FINAL)
     Q_PROPERTY(QStringList hashtagTypeaheadList READ getHashtagTypeaheadList WRITE setHashtagTypeaheadList NOTIFY hashtagTypeaheadListChanged FINAL)
+    Q_PROPERTY(BasicProfileList lastSearchedProfiles READ getLastSearchedProfiles WRITE setLastSearchedProfiles NOTIFY lastSearchedProfilesChanged FINAL)
     Q_PROPERTY(TrendingTopicListModel* trendingTopicsListModel READ getTrendingTopicsListModel NOTIFY trendingTopicsListModelChanged FINAL)
     Q_PROPERTY(bool searchPostsTopInProgress READ getSearchPostsTopInProgress NOTIFY searchPostsTopInProgressChanged FINAL)
     Q_PROPERTY(bool searchPostsLatestInProgress READ getSearchPostsLatestInProgress NOTIFY searchPostsLatestInProgressChanged FINAL)
@@ -63,13 +64,19 @@ public:
     Q_INVOKABLE void clearAllSearchResults();
     Q_INVOKABLE QStringList getLastSearches() const;
     Q_INVOKABLE void addLastSearch(const QString& search);
-    Q_INVOKABLE void clearLastSearches() const;
+    Q_INVOKABLE void removeLastSearch(const QString& search);
+    Q_INVOKABLE void addLastSearchedProfile(const BasicProfile& profile);
+    Q_INVOKABLE void removeLastSearchedProfile(const QString& profileDid);
+    Q_INVOKABLE void clearLastSearches();
+    Q_INVOKABLE void initLastSearchedProfiles();
     Q_INVOKABLE void getTrendingTopics();
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);
     const QStringList& getHashtagTypeaheadList() const { return mHashtagTypeaheadList; }
     void setHashtagTypeaheadList(const QStringList& list);
+    const BasicProfileList& getLastSearchedProfiles() const { return mLastSearchedProfiles; }
+    void setLastSearchedProfiles(const BasicProfileList& list);
     bool getSearchPostsInProgress(const QString& sortOrder) { return mSearchPostsInProgress[sortOrder]; }
     void setSearchPostsInProgress(const QString& sortOrder, bool inProgress);
     bool getSearchPostsTopInProgress() { return getSearchPostsInProgress(ATProto::AppBskyFeed::SearchSortOrder::TOP); }
@@ -85,6 +92,7 @@ public:
 signals:
     void authorTypeaheadListChanged();
     void hashtagTypeaheadListChanged();
+    void lastSearchedProfilesChanged();
     void searchPostsTopInProgressChanged();
     void searchPostsLatestInProgressChanged();
     void searchActorsInProgressChanged();
@@ -97,9 +105,11 @@ private:
     void localSearchAuthorsTypeahead(const QString& typed, int limit, const IProfileMatcher& matcher = AnyProfileMatcher{});
     QString preProcessSearchText(const QString& text) const;
     TrendingTopicListModel& createTrendingTopicsListModel();
+    QStringList getLastProfileSearches() const;
 
     BasicProfileList mAuthorTypeaheadList;
     QStringList mHashtagTypeaheadList;
+    BasicProfileList mLastSearchedProfiles;
     std::unordered_map<QString, int> mSearchPostFeedModelId; // sort order -> model id
     int mSearchUsersModelId = -1;
     int mSearchSuggestedUsersModelId = -1;

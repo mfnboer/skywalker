@@ -11,7 +11,7 @@ namespace {
 constexpr char const* TENOR_BASE_URL = "https://tenor.googleapis.com/v2/";
 constexpr char const* MEDIA_FILTER = "tinygif,gif,gifpreview";
 constexpr char const* CONTENT_FILTER = "medium";
-constexpr int MAX_RECENT_GIFS = 25;
+constexpr int MAX_RECENT_GIFS = 50;
 
 }
 

@@ -207,6 +207,9 @@ public:
     QStringList getLastSearches(const QString& did) const;
     void setLastSearches(const QString& did, const QStringList& lastSearches);
 
+    QStringList getLastProfileSearches(const QString& did) const;
+    void setLastProfileSearches(const QString& did, const QStringList& lastDids);
+
     QString getDefaultPostLanguage(const QString& did) const;
     void setDefaultPostLanguage(const QString& did, const QString& language);
 

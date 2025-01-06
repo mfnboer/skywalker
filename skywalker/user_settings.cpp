@@ -749,7 +749,7 @@ void UserSettings::setRecentGifs(const QString& did, const QStringList& gifIds)
 {
     QStringList list;
 
-    // The ID's are stored as JSON objects in older versions we stored the all
+    // The ID's are stored as JSON objects in older versions we stored all
     // GIF attributes in a JSON object.
     for (const auto& id : gifIds) {
         QJsonObject json;
@@ -769,6 +769,16 @@ QStringList UserSettings::getLastSearches(const QString& did) const
 void UserSettings::setLastSearches(const QString& did, const QStringList& lastSearches)
 {
     mSettings.setValue(key(did, "lastSearches"), lastSearches);
+}
+
+QStringList UserSettings::getLastProfileSearches(const QString& did) const
+{
+    return mSettings.value(key(did, "lastProfileSearches")).toStringList();
+}
+
+void UserSettings::setLastProfileSearches(const QString& did, const QStringList& lastDids)
+{
+    mSettings.setValue(key(did, "lastProfileSearches"), lastDids);
 }
 
 void UserSettings::addDraftRepoToFileMigration(const QString& did)

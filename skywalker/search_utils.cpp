@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "search_utils.h"
+#include "author_cache.h"
 #include "skywalker.h"
 #include "utils.h"
 #include <QTextBoundaryFinder>
@@ -8,6 +9,7 @@
 namespace Skywalker {
 
 static constexpr int MAX_LAST_SEARCHES = 25;
+static constexpr int MAX_LAST_PROFILE_SEARCHES = 10;
 static constexpr char const* USER_ME = "me";
 
 static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
@@ -132,6 +134,12 @@ void SearchUtils::setHashtagTypeaheadList(const QStringList& list)
         mHashtagTypeaheadList = list;
         emit hashtagTypeaheadListChanged();
     }
+}
+
+void SearchUtils::setLastSearchedProfiles(const BasicProfileList& list)
+{
+    mLastSearchedProfiles = list;
+    emit lastSearchedProfilesChanged();
 }
 
 void SearchUtils::setSearchPostsInProgress(const QString& sortOrder, bool inProgress)
@@ -670,13 +678,8 @@ QStringList SearchUtils::getLastSearches() const
     return mSkywalker->getUserSettings()->getLastSearches(did);
 }
 
-void SearchUtils::addLastSearch(const QString& search)
+static void updateLastSearches(QStringList& lastSearches, const QString& search, int maxSearches)
 {
-    Q_ASSERT(mSkywalker);
-    const QString& did = mSkywalker->getUserDid();
-    auto* settings = mSkywalker->getUserSettings();
-    QStringList lastSearches = settings->getLastSearches(did);
-
     for (auto it = lastSearches.cbegin(); it != lastSearches.cend(); ++it)
     {
         if (*it == search)
@@ -686,19 +689,125 @@ void SearchUtils::addLastSearch(const QString& search)
         }
     }
 
-    while (lastSearches.size() >= MAX_LAST_SEARCHES)
+    while (lastSearches.size() >= maxSearches)
         lastSearches.pop_back();
 
     lastSearches.push_front(search);
+}
+
+void SearchUtils::addLastSearch(const QString& search)
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList lastSearches = settings->getLastSearches(did);
+    updateLastSearches(lastSearches, search, MAX_LAST_SEARCHES);
     settings->setLastSearches(did, lastSearches);
 }
 
-void SearchUtils::clearLastSearches() const
+void SearchUtils::removeLastSearch(const QString& search)
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList lastSearches = settings->getLastSearches(did);
+    lastSearches.removeOne(search);
+    settings->setLastSearches(did, lastSearches);
+}
+
+QStringList SearchUtils::getLastProfileSearches() const
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    return mSkywalker->getUserSettings()->getLastProfileSearches(did);
+}
+
+void SearchUtils::addLastSearchedProfile(const BasicProfile& profile)
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList lastSearches = settings->getLastProfileSearches(did);
+    updateLastSearches(lastSearches, profile.getDid(), MAX_LAST_PROFILE_SEARCHES);
+    settings->setLastProfileSearches(did, lastSearches);
+    AuthorCache::instance().put(profile);
+    initLastSearchedProfiles();
+}
+
+void SearchUtils::removeLastSearchedProfile(const QString& profileDid)
+{
+    Q_ASSERT(mSkywalker);
+    const QString& did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList lastSearches = settings->getLastProfileSearches(did);
+    lastSearches.removeOne(profileDid);
+    settings->setLastProfileSearches(did, lastSearches);
+    initLastSearchedProfiles();
+}
+
+void SearchUtils::clearLastSearches()
 {
     Q_ASSERT(mSkywalker);
     const QString& did = mSkywalker->getUserDid();
     auto* settings = mSkywalker->getUserSettings();
     settings->setLastSearches(did, {});
+    settings->setLastProfileSearches(did, {});
+    setLastSearchedProfiles({});
+}
+
+void SearchUtils::initLastSearchedProfiles()
+{
+    qDebug() << "Init last searched profiles";
+
+    const QStringList lastDids = getLastProfileSearches();
+
+    if (lastDids.empty())
+    {
+        qDebug() << "No profiles";
+        setLastSearchedProfiles({});
+        return;
+    }
+
+    std::vector<QString> unresolvedDids;
+    BasicProfileList profiles;
+
+    for (const auto& did : lastDids)
+    {
+        auto* profile = AuthorCache::instance().get(did);
+
+        if (profile)
+        {
+            qDebug() << "Add profile:" << profile->getHandle();
+            profiles.push_back(*profile);
+        }
+        else
+        {
+            qDebug() << "Unresolved did:" << did;
+            unresolvedDids.push_back(did);
+        }
+    }
+
+    setLastSearchedProfiles(profiles);
+
+    if (unresolvedDids.empty())
+        return;
+
+    bskyClient()->getProfiles(unresolvedDids,
+        [this, presence=getPresence()](auto profilesViewDetailedList){
+            if (!presence)
+                return;
+
+            for (const auto& profileViewDetailed : profilesViewDetailedList)
+            {
+                BasicProfile profile(profileViewDetailed);
+                AuthorCache::instance().put(profile);
+            }
+
+            initLastSearchedProfiles();
+        },
+        [](const QString& error, const QString& msg){
+            qDebug() << "initLastSearchedProfiles failed:" << error << " - " << msg;
+        });
 }
 
 TrendingTopicListModel& SearchUtils::createTrendingTopicsListModel()
