@@ -220,7 +220,7 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         model: searchUtils.authorTypeaheadList
-        visible: page.isTyping && !page.isPostSearch && !page.isHashtagSearch
+        visible: page.isTyping && !page.isHashtagSearch
 
         onAuthorClicked: (profile) => {
             searchUtils.addLastSearchedProfile(profile)
@@ -235,7 +235,7 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         model: searchUtils.hashtagTypeaheadList
-        visible: page.isTyping && page.isPostSearch && page.isHashtagSearch
+        visible: page.isTyping && page.isHashtagSearch
 
         onHashtagClicked: (tag) => {
             const fullTag = `#${tag}`
@@ -636,7 +636,7 @@ SkyPage {
                         AccessibleText {
                             id: recentSearchText
                             anchors.left: recentSearchIcon.right
-                            anchors.right: parent.right
+                            anchors.right: removeRecentSearchButton.left
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.leftMargin: 10
                             anchors.rightMargin: page.margin
@@ -653,6 +653,7 @@ SkyPage {
                         }
 
                         SvgButton {
+                            id: removeRecentSearchButton
                             anchors.right: parent.right
                             width: 34
                             height: width
