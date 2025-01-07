@@ -4,6 +4,9 @@ import QtQuick.Layouts
 import skywalker
 
 Dialog {
+    required property var skywalker
+    property var userSettings: skywalker.getUserSettings()
+    readonly property string userDid: skywalker.getUserDid()
     property string authorName // "all", "me", "other"
     property string otherAuthorHandle
     property string mentionsName // "all", "me", "other"
@@ -13,6 +16,8 @@ Dialog {
     property date untilDate
     property bool setUntil: false
     property string language
+    readonly property bool adultContent: skywalker.getContentFilter().getAdultContent()
+    property int overrideAdultVisibility: userSettings.getSearchAdultOverrideVisibility(userDid)
     property bool isTyping: false
     property bool initialized: false
 
@@ -115,6 +120,7 @@ Dialog {
         SkyTextInput {
             id: sinceText
             Layout.fillWidth: true
+            svgIcon: SvgOutline.date
             placeholderText: qsTr("Date")
             text: setSince ? sinceDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
 
@@ -148,6 +154,7 @@ Dialog {
         SkyTextInput {
             id: untilText
             Layout.fillWidth: true
+            svgIcon: SvgOutline.date
             placeholderText: qsTr("Date")
             text: setUntil ? untilDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
 
@@ -201,6 +208,60 @@ Dialog {
                     language = ""
             }
         }
+
+        AccessibleText {
+            font.bold: true
+            text: qsTr("Adult:")
+            visible: adultContent
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: -1
+            visible: adultContent
+
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_SHOW
+                horizontalAlignment: Qt.AlignHCenter
+                text: qsTr("On")
+                onCheckedChanged: {
+                    if (checked)
+                        overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_SHOW
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA
+                horizontalAlignment: Qt.AlignHCenter
+                text: qsTr("Warn")
+                onCheckedChanged: {
+                    if (checked)
+                        overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_WARN_MEDIA
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+                horizontalAlignment: Qt.AlignHCenter
+                text: qsTr("Hide")
+                onCheckedChanged: {
+                    if (checked)
+                        overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+                }
+            }
+        }
+
+        // ComboBox {
+        //     Layout.fillWidth: true
+        //     textRole: "label"
+        //     valueRole: "value"
+        //     model: ListModel {
+        //         ListElement { label: qsTr("Content filter settings"); value: QEnums.CONTENT_VISIBILITY_SHOW }
+        //         ListElement { label: qsTr("Warn"); value: QEnums.CONTENT_VISIBILITY_WARN_MEDIA }
+        //         ListElement { label: qsTr("Hide"); value: QEnums.CONTENT_VISIBILITY_HIDE_MEDIA }
+        //     }
+        // }
     }
 
     SimpleAuthorListView {

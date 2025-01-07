@@ -1,6 +1,7 @@
 next
 ====
 * Bluesky trending topics
+* Override adult content visibility for search
 * Remember last searched accounts
 * Increase number of recent gifs from 25 to 50
 * Bug fixes

@@ -205,10 +205,18 @@ QEnums::ContentPrefVisibility ContentFilter::getGroupPrefVisibility(const Conten
     return QEnums::toContentPrefVisibility(group.getUnconditionalDefaultVisibility());
 }
 
-QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& group) const
+QEnums::ContentVisibility ContentFilter::getGroupVisibility(
+    const ContentGroup& group,
+    std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
-    if (group.isAdult() && !getAdultContent())
-        return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+    if (group.isAdult())
+    {
+        if (!getAdultContent())
+            return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+
+        if (adultOverrideVisibility)
+            return *adultOverrideVisibility;
+    }
 
     auto visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), group.getLabelId());
 
@@ -229,12 +237,12 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(const ContentGroup& 
     return group.getDefaultVisibility();
 }
 
-QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label) const
+QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label, std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     const auto* group = getContentGroup(label.getDid(), label.getLabelId());
 
     if (group)
-        return getGroupVisibility(*group);
+        return getGroupVisibility(*group, adultOverrideVisibility);
 
     // qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QEnums::CONTENT_VISIBILITY_SHOW;
@@ -270,20 +278,24 @@ QString ContentFilter::getWarning(const ContentLabel& label) const
     return QObject::tr("Unknown label") + QString(": %1").arg(label.getLabelId());
 }
 
-std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels) const
+std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(
+    const ATProto::ComATProtoLabel::LabelList& labels,
+    std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     const auto contentLabels = getContentLabels(labels);
-    return getVisibilityAndWarning(contentLabels);
+    return getVisibilityAndWarning(contentLabels, adultOverrideVisibility);
 }
 
-std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(const ContentLabelList& contentLabels) const
+std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(
+    const ContentLabelList& contentLabels,
+    std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     QEnums::ContentVisibility visibility = QEnums::CONTENT_VISIBILITY_SHOW;
     QString warning;
 
     for (const auto& label : contentLabels)
     {
-        const auto v = getVisibility(label);
+        const auto v = getVisibility(label, adultOverrideVisibility);
 
         if (v <= visibility)
             continue;

@@ -781,6 +781,21 @@ void UserSettings::setLastProfileSearches(const QString& did, const QStringList&
     mSettings.setValue(key(did, "lastProfileSearches"), lastDids);
 }
 
+QEnums::ContentVisibility UserSettings::getSearchAdultOverrideVisibility(const QString& did)
+{
+    int visibility = mSettings.value(key(did, "searchAdultOverrideVisibility"), (int)QEnums::CONTENT_VISIBILITY_SHOW).toInt();
+
+    if (visibility < 0 || visibility > (int)QEnums::CONTENT_VISIBILITY_LAST)
+        return QEnums::CONTENT_VISIBILITY_SHOW;
+
+    return QEnums::ContentVisibility(visibility);
+}
+
+void UserSettings::setSearchAdultOverrideVisibility(const QString& did, QEnums::ContentVisibility visibility)
+{
+    mSettings.setValue(key(did, "searchAdultOverrideVisibility"), (int)visibility);
+}
+
 void UserSettings::addDraftRepoToFileMigration(const QString& did)
 {
     const int attempts = mSettings.value(key(did, "draftRepoToFileMigration"), 0).toInt();

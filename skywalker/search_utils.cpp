@@ -599,7 +599,16 @@ SearchPostFeedModel* SearchUtils::getSearchPostFeedModel(const QString& sortOrde
     if (!mSearchPostFeedModelId.contains(sortOrder))
         mSearchPostFeedModelId[sortOrder] = mSkywalker->createSearchPostFeedModel();
 
-    return mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId[sortOrder]);
+    auto* model = mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId[sortOrder]);
+    const QString& did = mSkywalker->getUserDid();
+    const auto visibility = mSkywalker->getUserSettings()->getSearchAdultOverrideVisibility(did);
+
+    if (visibility != QEnums::CONTENT_VISIBILITY_SHOW)
+        model->setOverrideAdultVisibility(visibility);
+    else
+        model->clearOverrideAdultVisibility();
+
+    return model;
 }
 
 AuthorListModel* SearchUtils::getSearchUsersModel()

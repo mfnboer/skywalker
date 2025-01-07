@@ -96,6 +96,9 @@ public:
                           HashtagIndex& hashtags,
                           QObject* parent = nullptr);
 
+    void setOverrideAdultVisibility(const QEnums::ContentVisibility visibility) { mOverrideAdultVisibility = visibility; }
+    void clearOverrideAdultVisibility() { mOverrideAdultVisibility = {}; }
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
@@ -161,6 +164,7 @@ private:
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;
+    std::optional<QEnums::ContentVisibility> mOverrideAdultVisibility;
 
     bool mEndOfFeed = false;
 };

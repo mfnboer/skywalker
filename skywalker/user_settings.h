@@ -212,6 +212,9 @@ public:
     QStringList getLastProfileSearches(const QString& did) const;
     void setLastProfileSearches(const QString& did, const QStringList& lastDids);
 
+    Q_INVOKABLE QEnums::ContentVisibility getSearchAdultOverrideVisibility(const QString& did);
+    Q_INVOKABLE void setSearchAdultOverrideVisibility(const QString& did, QEnums::ContentVisibility visibility);
+
     bool getShowTrendingTopics() const;
     void setShowTrendingTopics(bool show);
 

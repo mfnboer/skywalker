@@ -8,6 +8,7 @@ import atproto.lib
 SkyPage {
     required property var skywalker
     property var userSettings: skywalker.getUserSettings()
+    readonly property string userDid: skywalker.getUserDid()
     property var timeline
     property bool isTyping: true
     property bool isHashtagSearch: false
@@ -19,6 +20,8 @@ SkyPage {
     property date postUntil
     property bool postSetUntil: false
     property string postLanguage
+    property bool adultContent: false
+    property int overrideAdultVisibility: userSettings.getSearchAdultOverrideVisibility(userDid)
     property string currentText
     property bool firstSearch: true
     readonly property int margin: 10
@@ -804,6 +807,7 @@ SkyPage {
 
         let component = Qt.createComponent("SearchPostScope.qml")
         let scopePage = component.createObject(page, {
+                skywalker: page.skywalker,
                 authorName: authorName,
                 otherAuthorHandle: otherAuthorHandle,
                 mentionsName: mentionsName,
@@ -823,6 +827,8 @@ SkyPage {
             postUntil = scopePage.untilDate
             postSetUntil = scopePage.setUntil
             postLanguage = scopePage.language
+            userSettings.setSearchAdultOverrideVisibility(userDid, scopePage.overrideAdultVisibility)
+            overrideAdultVisibility = scopePage.overrideAdultVisibility
             searchUtils.scopedSearchPosts(page.getSearchText())
             scopePage.destroy()
         }
@@ -860,10 +866,28 @@ SkyPage {
         if (postLanguage)
             scopeText += qsTr(` language:<b>${postLanguage}</b>`)
 
-        if (scopeText)
-            return qsTr(`Posts${scopeText}`)
+        let adult = ""
 
-        return "All posts"
+        if (adultContent)
+            adult = `, adult: ${getAdultVisibility()}`
+
+        if (scopeText)
+            return qsTr(`Posts${scopeText}${adult}`)
+
+        return qsTr(`All posts${adult}`)
+    }
+
+    function getAdultVisibility() {
+        switch (overrideAdultVisibility) {
+        case QEnums.CONTENT_VISIBILITY_SHOW:
+            return qsTr("on")
+        case QEnums.CONTENT_VISIBILITY_WARN_MEDIA:
+            return qsTr("warn")
+        case QEnums.CONTENT_VISIBILITY_HIDE_MEDIA:
+            return qsTr("hide")
+        default:
+            return qsTr("unknown")
+        }
     }
 
     function muteWord(word) {
@@ -915,6 +939,8 @@ SkyPage {
     }
 
     function show(searchText = "", searchScope = "") {
+        adultContent = skywalker.getContentFilter().getAdultContent()
+
         if (searchText)
             page.header.forceFocus()
         else
