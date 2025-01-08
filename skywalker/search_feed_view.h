@@ -19,6 +19,8 @@ class SearchFeedView
     QML_VALUE_TYPE(searchfeedview)
 
 public:
+    using List = QList<SearchFeedView>;
+
     SearchFeedView() = default;
     SearchFeedView(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
                    QDateTime since, QDateTime until, const QString& language);

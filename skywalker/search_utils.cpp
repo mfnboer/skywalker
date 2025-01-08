@@ -858,4 +858,10 @@ void SearchUtils::setOverrideAdultVisibility(QEnums::ContentVisibility visibilit
     }
 }
 
+SearchFeedView SearchUtils::createSearchFeedView(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
+                                    QDateTime since, QDateTime until, const QString& language) const
+{
+    return SearchFeedView(searchQuery, authorHandle, mentionsHandle, since, until, language);
+}
+
 }

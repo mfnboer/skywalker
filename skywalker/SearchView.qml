@@ -120,35 +120,74 @@ SkyPage {
     }
 
     SvgButton {
-        id: blockHashtagButton
+        id: moreButton
         anchors.right: parent.right
         anchors.rightMargin: 5
         imageMargin: 0
         y: (searchBar.height - height) / 2
         width: height
         height: 30
-        iconColor: guiSettings.linkColor
+        iconColor: guiSettings.textColor
         Material.background: "transparent"
-        svg: SvgOutline.block
-        accessibleName: qsTr(`mute hashtag ${page.getSearchText()}`)
+        svg: SvgOutline.menu
+        accessibleName: qsTr("hashtag options")
         visible: isHashtagSearch
-        onClicked: muteWord(page.getSearchText())
-    }
 
-    SvgButton {
-        id: focusHashtagButton
-        anchors.right: blockHashtagButton.left
-        anchors.rightMargin: 5
-        imageMargin: 0
-        y: (searchBar.height - height) / 2
-        width: height
-        height: 30
-        iconColor: guiSettings.linkColor
-        Material.background: "transparent"
-        svg: SvgOutline.hashtag
-        accessibleName: qsTr(`set focus on hashtag ${page.getSearchText()}`)
-        visible: isHashtagSearch
-        onClicked: focusHashtag(page.getSearchText())
+        onClicked: moreMenu.open()
+
+        Menu {
+            property bool isMuted: false
+            property bool isPinned: false
+
+            id: moreMenu
+            modal: true
+
+            onAboutToShow: {
+                root.enablePopupShield(true)
+                isMuted = skywalker.mutedWords.containsEntry(page.getSearchText())
+                isPinned = skywalker.favoriteFeeds.isPinnedSearch(page.getSearchText())
+            }
+
+            onAboutToHide: root.enablePopupShield(false)
+
+            CloseMenuItem {
+                text: qsTr("<b>Hashtags</b>")
+                Accessible.name: qsTr("close hashtag options menu")
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Focus hashtag")
+                onTriggered: focusHashtag(page.getSearchText())
+                MenuItemSvg { svg: SvgOutline.hashtag }
+            }
+
+            AccessibleMenuItem {
+                text: moreMenu.isMuted ? qsTr("Unmute hashtag") : qsTr("Mute hashtag")
+                onTriggered: {
+                    if (moreMenu.isMuted)
+                        unmuteWord(page.getSearchText())
+                    else
+                        muteWord(page.getSearchText())
+                }
+
+                MenuItemSvg { svg: moreMenu.isMuted ? SvgOutline.unmute : SvgOutline.mute }
+            }
+
+            AccessibleMenuItem {
+                text: moreMenu.isPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
+                onTriggered: {
+                    const view = searchUtils.createSearchFeedView(page.getSearchText(),
+                        postAuthorUser, postMentionsUser, postSince, postUntil, postLanguage)
+                    skywalker.favoriteFeeds.pinSearch(view, !moreMenu.isPinned)
+                    skywalker.saveFavoriteFeeds()
+                }
+
+                MenuItemSvg {
+                    svg: moreMenu.isPinned ? SvgFilled.star : SvgOutline.star
+                    color: moreMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
+                }
+            }
+        }
     }
 
     Rectangle {
@@ -190,7 +229,7 @@ SkyPage {
         }
         AccessibleText {
             id: searchModeText
-            width: parent.width - implicitHeight - 2 * page.margin - (blockHashtagButton.visible ? implicitHeight : 0)
+            width: parent.width - implicitHeight - 2 * page.margin // TODO - (blockHashtagButton.visible ? implicitHeight : 0)
             anchors.verticalCenter: searchModeBar.verticalCenter
             leftPadding: 5
             rightPadding: 5
@@ -892,14 +931,15 @@ SkyPage {
     }
 
     function muteWord(word) {
-        guiSettings.askYesNoQuestion(
-                    page,
-                    qsTr(`Mute <font color="${guiSettings.linkColor}">${word}</font> ?`),
-                    () => {
-                        skywalker.mutedWords.addEntry(word)
-                        skywalker.saveMutedWords()
-                        skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
-                    })
+        skywalker.mutedWords.addEntry(word)
+        skywalker.saveMutedWords()
+        skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
+    }
+
+    function unmuteWord(word) {
+        skywalker.mutedWords.removeEntry(word)
+        skywalker.saveMutedWords()
+        skywalker.showStatusMessage(qsTr(`Unmuted ${word}`), QEnums.STATUS_LEVEL_INFO)
     }
 
     function focusHashtag(hashtag) {

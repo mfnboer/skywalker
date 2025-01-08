@@ -15,8 +15,19 @@ static auto listNameCompare = [](const ListView& lhs, const ListView& rhs){
     return lhs.getName().compare(rhs.getName(), Qt::CaseInsensitive) < 0;
 };
 
+static QString getFavoriteSortName(const FavoriteFeedView& favorite)
+{
+    if (favorite.getType() == QEnums::FAVORITE_SEARCH && favorite.getSearchFeedView().isHashtag())
+        return favorite.getName().sliced(1); // remove hash
+
+    return favorite.getName();
+}
+
 static auto favoriteFeedNameCompare = [](const FavoriteFeedView& lhs, const FavoriteFeedView& rhs){
-    return lhs.getName().compare(rhs.getName(), Qt::CaseInsensitive) < 0;
+    const auto lhsName = getFavoriteSortName(lhs);
+    const auto rhsName = getFavoriteSortName(rhs);
+
+    return lhsName.compare(rhsName, Qt::CaseInsensitive) < 0;
 };
 
 FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
@@ -37,6 +48,7 @@ void FavoriteFeeds::clear()
     mSavedFeedsPref = {};
     mSavedUris.clear();
     mPinnedUris.clear();
+    mPinnedSearches.clear();
     mSavedFeeds.clear();
     mSavedLists.clear();
     mPinnedFeeds.clear();
@@ -50,6 +62,15 @@ void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedF
     mSavedUris.insert(mSavedFeedsPref.mSaved.begin(), mSavedFeedsPref.mSaved.end());
     mPinnedUris.insert(mSavedFeedsPref.mPinned.begin(), mSavedFeedsPref.mPinned.end());
     updatePinnedViews();
+}
+
+void FavoriteFeeds::set(const SearchFeedView::List& searchFeeds)
+{
+    qDebug() << "Set favorite search feeds";
+    mPinnedSearches.clear();
+
+    for (const auto& search : searchFeeds)
+        pinSearch(search);
 }
 
 void FavoriteFeeds::addSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators)
@@ -308,6 +329,58 @@ void FavoriteFeeds::unpinList(const ListView& list)
     }
 
     emit listPinned();
+}
+
+void FavoriteFeeds::pinSearch(const SearchFeedView& search, bool pin)
+{
+    if (pin)
+        pinSearch(search);
+    else
+        unpinSearch(search);
+}
+
+void FavoriteFeeds::pinSearch(const SearchFeedView& search)
+{
+    if (isPinnedSearch(search.getSearchQuery()))
+    {
+        qDebug() << "Search already pinned:" << search.getSearchQuery();
+        return;
+    }
+
+    mPinnedSearches.insert(search.getSearchQuery());
+
+    FavoriteFeedView view(search);
+    auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
+    mPinnedFeeds.insert(it, view);
+    qDebug() << "Pinned:" << view.getName();
+
+    emit searchPinned();
+}
+
+void FavoriteFeeds::unpinSearch(const SearchFeedView& search)
+{
+    if (!isPinnedSearch(search.getSearchQuery()))
+    {
+        qDebug() << "Search not pinned:" << search.getSearchQuery();
+        return;
+    }
+
+    mPinnedSearches.erase(search.getSearchQuery());
+
+    FavoriteFeedView view(search);
+    auto it = std::find_if(
+        mPinnedFeeds.cbegin(), mPinnedFeeds.cend(),
+        [name=view.getName()](const auto& fav){
+            return fav.getType() == QEnums::FAVORITE_SEARCH && fav.getName() == name;
+        });
+
+    if (it != mPinnedFeeds.cend())
+    {
+        qDebug() << "Unpin:" << it->getName();
+        mPinnedFeeds.erase(it);
+    }
+
+    emit searchPinned();
 }
 
 FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const
