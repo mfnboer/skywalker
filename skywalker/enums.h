@@ -276,6 +276,15 @@ public:
     };
     Q_ENUM(LanguageSource)
 
+
+    enum FavoriteType
+    {
+        FAVORITE_FEED,
+        FAVORITE_LIST,
+        FAVORITE_SEARCH
+    };
+    Q_ENUM(FavoriteType)
+
     Q_INVOKABLE static QString scriptToString(Script script);
 };
 

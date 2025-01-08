@@ -71,22 +71,31 @@ SvgButton {
                     width: height
                     height: parent.height - 10
                     avatarUrl: modelData.avatarThumb
-                    unknownSvg: modelData.isGeneratorView ? guiSettings.feedDefaultAvatar(modelData.generatorView) : SvgFilled.list
+                    unknownSvg: getDefaultAvatar()
                     onClicked: parent.triggered()
                 }
 
-                onTriggered: { highlighted = false; viewFeed() }
+                onTriggered: {
+                    highlighted = false;
+                    root.showFavorite(modelData)
+                }
 
                 Accessible.role: Accessible.MenuItem
                 Accessible.name: contentItem.text
                 Accessible.description: Accessible.name
                 Accessible.onPressAction: triggered()
 
-                function viewFeed() {
-                    if (modelData.isGeneratorView)
-                        root.viewFeed(modelData.generatorView)
-                    else
-                        root.viewListFeed(modelData.listView)
+                function getDefaultAvatar() {
+                    switch (modelData.type) {
+                    case QEnums.FAVORITE_FEED:
+                        return guiSettings.feedDefaultAvatar(modelData.generatorView)
+                    case QEnums.FAVORITE_LIST:
+                        return SvgFilled.list
+                    case QEnums.FAVORITE_SEARCH:
+                        return modelData.searchFeedView.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
+                    }
+
+                    return SvgOutline.feed
                 }
             }
 

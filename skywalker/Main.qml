@@ -110,10 +110,23 @@ ApplicationWindow {
             return
         }
 
-        if (favorite.isGeneratorView)
+        showFavorite(favorite)
+    }
+
+    function showFavorite(favorite) {
+        console.debug("Show favorite:", favorite)
+
+        switch (favorite.type) {
+        case QEnums.FAVORITE_FEED:
             viewFeed(favorite.generatorView)
-        else
+            break
+        case QEnums.FAVORITE_LIST:
             viewListFeed(favorite.listView)
+            break
+        case QEnums.FAVORITE_SEARCH:
+            // TODO
+            break
+        }
     }
 
     Skywalker {
