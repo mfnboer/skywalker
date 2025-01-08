@@ -600,11 +600,9 @@ SearchPostFeedModel* SearchUtils::getSearchPostFeedModel(const QString& sortOrde
         mSearchPostFeedModelId[sortOrder] = mSkywalker->createSearchPostFeedModel();
 
     auto* model = mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId[sortOrder]);
-    const QString& did = mSkywalker->getUserDid();
-    const auto visibility = mSkywalker->getUserSettings()->getSearchAdultOverrideVisibility(did);
 
-    if (visibility != QEnums::CONTENT_VISIBILITY_SHOW)
-        model->setOverrideAdultVisibility(visibility);
+    if (mOVerrideAdultVisibility != QEnums::CONTENT_VISIBILITY_SHOW)
+        model->setOverrideAdultVisibility(mOVerrideAdultVisibility);
     else
         model->clearOverrideAdultVisibility();
 
@@ -849,6 +847,15 @@ void SearchUtils::getTrendingTopics()
         [](const QString& error, const QString& msg){
             qDebug() << "getTrendingTopics failed:" << error << " - " << msg;
         });
+}
+
+void SearchUtils::setOverrideAdultVisibility(QEnums::ContentVisibility visibility)
+{
+    if (visibility != mOVerrideAdultVisibility)
+    {
+        mOVerrideAdultVisibility = visibility;
+        emit overrideAdultVisibilityChanged();
+    }
 }
 
 }

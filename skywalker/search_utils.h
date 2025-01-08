@@ -20,6 +20,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QStringList hashtagTypeaheadList READ getHashtagTypeaheadList WRITE setHashtagTypeaheadList NOTIFY hashtagTypeaheadListChanged FINAL)
     Q_PROPERTY(BasicProfileList lastSearchedProfiles READ getLastSearchedProfiles WRITE setLastSearchedProfiles NOTIFY lastSearchedProfilesChanged FINAL)
     Q_PROPERTY(TrendingTopicListModel* trendingTopicsListModel READ getTrendingTopicsListModel NOTIFY trendingTopicsListModelChanged FINAL)
+    Q_PROPERTY(QEnums::ContentVisibility overrideAdultVisibility READ getOverrideAdultVisibility WRITE setOverrideAdultVisibility NOTIFY overrideAdultVisibilityChanged FINAL)
     Q_PROPERTY(bool searchPostsTopInProgress READ getSearchPostsTopInProgress NOTIFY searchPostsTopInProgressChanged FINAL)
     Q_PROPERTY(bool searchPostsLatestInProgress READ getSearchPostsLatestInProgress NOTIFY searchPostsLatestInProgressChanged FINAL)
     Q_PROPERTY(bool searchActorsInProgress READ getSearchActorsInProgress WRITE setSearchActorsInProgress NOTIFY searchActorsInProgressChanged FINAL)
@@ -88,6 +89,8 @@ public:
     bool getSearchFeedsInProgress() const { return mSearchFeedsInProgress; }
     void setSearchFeedsInProgress(bool inProgress);
     TrendingTopicListModel* getTrendingTopicsListModel() { return mTrendingTopicsListModel.get(); }
+    QEnums::ContentVisibility getOverrideAdultVisibility() const { return mOVerrideAdultVisibility; }
+    void setOverrideAdultVisibility(QEnums::ContentVisibility visibility);
 
 signals:
     void authorTypeaheadListChanged();
@@ -99,6 +102,7 @@ signals:
     void searchSuggestedActorsInProgressChanged();
     void searchFeedsInProgressChanged();
     void trendingTopicsListModelChanged();
+    void overrideAdultVisibilityChanged();
 
 private:
     void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList, const IProfileMatcher& matcher = AnyProfileMatcher{});
@@ -121,6 +125,7 @@ private:
     AnyProfileMatcher mAnyProfileMatcher;
     CanChatProfileMatcher mCanChatProfileMatcher;
     TrendingTopicListModel::Ptr mTrendingTopicsListModel;
+    QEnums::ContentVisibility mOVerrideAdultVisibility = QEnums::CONTENT_VISIBILITY_SHOW;
 };
 
 }

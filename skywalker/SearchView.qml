@@ -702,6 +702,7 @@ SkyPage {
     SearchUtils {
         id: searchUtils
         skywalker: page.skywalker // qmllint disable missing-type
+        overrideAdultVisibility: page.overrideAdultVisibility
 
         function search(query) {
             page.isTyping = false
