@@ -101,6 +101,7 @@ public:
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
 
     // For the home feed, the URI is "home"
+    // For search feeds, the URI is the search name
     Q_INVOKABLE void setLastViewedFeed(const QString& did, const QString& uri);
     Q_INVOKABLE QString getLastViewedFeed(const QString& did) const;
 

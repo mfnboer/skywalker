@@ -354,7 +354,7 @@ void FavoriteFeeds::pinSearch(const SearchFeed& search)
     mPinnedFeeds.insert(it, view);
     qDebug() << "Pinned:" << view.getName();
 
-    emit searchPinned();
+    emit searchPinned(view.getName());
 }
 
 void FavoriteFeeds::unpinSearch(const SearchFeed& search)
@@ -380,7 +380,7 @@ void FavoriteFeeds::unpinSearch(const SearchFeed& search)
         mPinnedFeeds.erase(it);
     }
 
-    emit searchPinned();
+    emit searchUnpinned(search.getName());
 }
 
 FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const
@@ -388,6 +388,17 @@ FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const
     for (const auto& feed : mPinnedFeeds)
     {
         if (feed.getUri() == uri)
+            return feed;
+    }
+
+    return {};
+}
+
+FavoriteFeedView FavoriteFeeds::getPinnedSearch(const QString& name) const
+{
+    for (const auto& feed : mPinnedFeeds)
+    {
+        if (feed.getName() == name)
             return feed;
     }
 

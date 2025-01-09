@@ -46,6 +46,7 @@ public:
 
     Q_INVOKABLE QList<FavoriteFeedView> getPinnedFeeds() const { return mPinnedFeeds; }
     Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
+    Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& name) const;
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
     void setUpdateSavedFeedsModelInProgress(bool inProgress);
@@ -64,7 +65,8 @@ signals:
     void listSaved();
     void feedPinned();
     void listPinned();
-    void searchPinned();
+    void searchPinned(QString name);
+    void searchUnpinned(QString name);
     void updateSavedFeedsModelInProgressChanged();
 
 private:

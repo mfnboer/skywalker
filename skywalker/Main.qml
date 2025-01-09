@@ -107,7 +107,12 @@ ApplicationWindow {
         if (lastViewed === "home")
             return
 
-        const favorite = skywalker.favoriteFeeds.getPinnedFeed(lastViewed)
+        let favorite = null
+
+        if (lastViewed.startsWith("at://"))
+            favorite = skywalker.favoriteFeeds.getPinnedFeed(lastViewed)
+        else
+            favorite = skywalker.favoriteFeeds.getPinnedSearch(lastViewed)
 
         if (favorite.isNull())
         {
@@ -355,12 +360,16 @@ ApplicationWindow {
 
         onOldestUnreadNotificationIndex: (index, mentions) => getNotificationView().moveToNotification(index, mentions)
 
+        // Note for search feeds the feedUri is the search name
         function saveLastViewedFeed(feedUri) {
             let userSettings = skywalker.getUserSettings()
             const userDid = skywalker.getUserDid()
 
-            if (feedUri === "home" || skywalker.favoriteFeeds.isPinnedFeed(feedUri))
+            if (feedUri === "home" ||
+                    skywalker.favoriteFeeds.isPinnedFeed(feedUri) ||
+                    skywalker.favoriteFeeds.isPinnedSearch(feedUri)) {
                 userSettings.setLastViewedFeed(userDid, feedUri)
+            }
         }
 
         function start() {
@@ -1435,6 +1444,15 @@ ApplicationWindow {
         currentStackItem().show(searchText, searchScope)
     }
 
+    function viewSearchViewFeed(searchFeed) {
+        stackLayout.currentIndex = stackLayout.searchIndex
+
+        if (searchStack.depth === 0)
+            createSearchView()
+
+        currentStackItem().showSearchFeed(searchFeed)
+    }
+
     function createFeedsView() {
         let feedsComponent = Qt.createComponent("SearchFeeds.qml")
         let feedsView = feedsComponent.createObject(root,
@@ -1563,7 +1581,7 @@ ApplicationWindow {
         viewTimeline()
         unwindStack()
         pushStack(view)
-        // TODO skywalker.saveLastViewedFeed(generatorView.uri)
+        skywalker.saveLastViewedFeed(searchFeed.name)
     }
 
     function viewPostFeed(feed) {
@@ -1779,7 +1797,10 @@ ApplicationWindow {
 
     function currentStackItem() {
         let stack = currentStack()
+        return getStackTopItem(stack)
+    }
 
+    function getStackTopItem(stack) {
         if (stack.depth > 0)
             return stack.get(stack.depth - 1)
 
@@ -1790,8 +1811,11 @@ ApplicationWindow {
         return stackLayout.currentIndex === stackLayout.chatIndex
     }
 
-    function popStack() {
-        let item = currentStack().pop()
+    function popStack(stack = null) {
+        if (!stack)
+            stack = currentStack()
+
+        let item = stack.pop()
 
         // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
         if (!((item instanceof PostFeedView || item instanceof PostListFeedView || item instanceof SearchFeedView) && item.showAsHome))
@@ -1807,9 +1831,12 @@ ApplicationWindow {
         currentStack().push(item, operation)
     }
 
-    function unwindStack() {
-        while (currentStack().depth > 1)
-            popStack()
+    function unwindStack(stack = null) {
+        if (!stack)
+            stack = currentStack()
+
+        while (stack.depth > 1)
+            popStack(stack)
     }
 
     function setDisplayMode(displayMode) {
@@ -1861,9 +1888,22 @@ ApplicationWindow {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    function feedFavoriteDeleted(feedKey) {
+        console.debug("Favorite deleted:", feedKey)
+
+        if (!feedViews.has(feedKey))
+            return
+
+        if (getStackTopItem(timelineStack) === feedViews.get(feedKey))
+            unwindStack(timelineStack)
+
+        feedViews.delete(feedKey)
+    }
+
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
+        skywalker.favoriteFeeds.onSearchUnpinned.connect(feedFavoriteDeleted)
     }
 
     Component.onCompleted: {

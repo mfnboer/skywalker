@@ -24,14 +24,12 @@ SkyListView {
         defaultSvg: searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
         feedAvatar: ""
         showAsHome: feedView.showAsHome
-        // TODO showLanguageFilter: feedView.model.languageFilterConfigured
-        //filteredLanguages: feedView.model.filteredLanguages
-        //showPostWithMissingLanguage: feedView.model.showPostWithMissingLanguage
+        showLanguageFilter: searchFeed.languageList.length > 0
+        filteredLanguages: searchFeed.languageList
+        showPostWithMissingLanguage: false
 
         onClosed: feedView.closed()
-        onFeedAvatarClicked: {
-            // TODO: show SearchView.qml
-        }
+        onFeedAvatarClicked: root.viewSearchViewFeed(searchFeed)
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -86,7 +84,6 @@ SkyListView {
     }
 
     function search() {
-        console.debug("SINCE:", searchFeed.since)
         searchUtils.searchPosts(searchFeed.searchQuery, SearchSortOrder.LATEST,
                                 searchFeed.authorHandle, searchFeed.mentionHandle,
                                 searchFeed.since, !isNaN(searchFeed.since.getTime()),

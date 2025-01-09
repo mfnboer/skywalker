@@ -124,12 +124,8 @@ SvgButton {
                 const newFav = favorites[i]
                 const oldFav = menuInstantiator.model[i]
 
-                if (newFav.uri !== oldFav.uri ||
-                        newFav.name !== oldFav.name ||
-                        newFav.avatar !== oldFav.avatar)
-                {
+                if (!newFav.isSame(oldFav))
                     return false
-                }
             }
 
             return true

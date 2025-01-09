@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
+#include "language_utils.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -17,6 +18,7 @@ class SearchFeed
     Q_PROPERTY(QDateTime since READ getSince FINAL)
     Q_PROPERTY(QDateTime until READ getUntil FINAL)
     Q_PROPERTY(QString language READ getLanguage FINAL)
+    Q_PROPERTY(LanguageList languageList READ getLanguageList FINAL)
     QML_VALUE_TYPE(searchfeed)
 
 public:
@@ -30,6 +32,7 @@ public:
 
     Q_INVOKABLE bool isNull() const { return mSearchQuery.isEmpty(); }
     Q_INVOKABLE bool isHashtag() const;
+    Q_INVOKABLE bool equals(const SearchFeed& other) const;
 
     const QString& getName() const { return mSearchQuery; }
     const QString& getSearchQuery() const { return mSearchQuery; }
@@ -38,6 +41,7 @@ public:
     QDateTime getSince() const { return mSince; }
     QDateTime getUntil() const { return mUntil; }
     const QString& getLanguage() const { return mLanguage; }
+    LanguageList getLanguageList() const;
 
 private:
     QString mSearchQuery;

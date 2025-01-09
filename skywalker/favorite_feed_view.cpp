@@ -95,4 +95,21 @@ SearchFeed FavoriteFeedView::getSearchFeed() const
     return view ? *view : SearchFeed{};
 }
 
+bool FavoriteFeedView::isSame(const FavoriteFeedView& other) const
+{
+    if (getType() != other.getType())
+        return false;
+
+    switch (getType())
+    {
+    case QEnums::FAVORITE_FEED:
+    case QEnums::FAVORITE_LIST:
+        return getName() == other.getName() && getUri() == other.getUri() && getAvatar() == other.getAvatar();
+    case QEnums::FAVORITE_SEARCH:
+        return getSearchFeed().equals(other.getSearchFeed());
+    }
+
+    return false;
+}
+
 }

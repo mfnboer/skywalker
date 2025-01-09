@@ -21,4 +21,22 @@ bool SearchFeed::isHashtag() const
     return UnicodeFonts::isHashtag(mSearchQuery);
 }
 
+bool SearchFeed::equals(const SearchFeed& other) const
+{
+    return mSearchQuery == other.mSearchQuery &&
+        mAuthorHandle == other.mAuthorHandle &&
+        mMentionHandle == other.mMentionHandle &&
+        mSince == other.mSince &&
+        mUntil == other.mUntil &&
+        mLanguage == other.mLanguage;
+}
+
+LanguageList SearchFeed::getLanguageList() const
+{
+    if (mLanguage.isEmpty())
+        return {};
+
+    return LanguageUtils::getLanguages(QStringList{mLanguage});
+}
+
 }

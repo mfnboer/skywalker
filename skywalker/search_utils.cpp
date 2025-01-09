@@ -862,7 +862,11 @@ SearchFeed SearchUtils::createSearchFeed(
     const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
     QDateTime since, QDateTime until, const QString& language) const
 {
-    return SearchFeed(searchQuery, authorHandle, mentionsHandle, since, until, language);
+    const auto feed = SearchFeed(searchQuery, authorHandle, mentionsHandle, since, until, language);
+    qDebug() << "Search feed:" << feed.getSearchQuery() << "author:" << feed.getAuthorHandle() <<
+        "mention:" << feed.getMentionHandle() << "since:" << feed.getSince() << "until:" << feed.getUntil() <<
+        "lang:" << feed.getLanguage();
+    return feed;
 }
 
 }

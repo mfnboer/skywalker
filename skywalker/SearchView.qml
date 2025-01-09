@@ -25,6 +25,7 @@ SkyPage {
     property string currentText
     property bool firstSearch: true
     readonly property int margin: 10
+    property date nullDate
 
     signal closed
 
@@ -117,6 +118,10 @@ SkyPage {
         function setTopPosts() {
             currentIndex = tabTopPosts.TabBar.index
         }
+
+        function setLatestPosts() {
+            currentIndex = tabLatestPosts.TabBar.index
+        }
     }
 
     SvgButton {
@@ -177,7 +182,11 @@ SkyPage {
                 text: moreMenu.isPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
                 onTriggered: {
                     const view = searchUtils.createSearchFeed(page.getSearchText(),
-                        postAuthorUser, postMentionsUser, postSince, postUntil, postLanguage)
+                        postAuthorUser, postMentionsUser,
+                        postSetSince ? postSince : nullDate,
+                        postSetUntil ? postUntil : nullDate,
+                        postLanguage)
+
                     skywalker.favoriteFeeds.pinSearch(view, !moreMenu.isPinned)
                     skywalker.saveFavoriteFeeds()
                 }
@@ -979,6 +988,21 @@ SkyPage {
         page.header.unfocus() // qmllint disable missing-property
     }
 
+    function showSearchFeed(searchFeed) {
+        adultContent = skywalker.getContentFilter().getAdultContent()
+        page.header.forceFocus()
+        searchBar.setLatestPosts()
+        postAuthorUser = searchFeed.authorHandle
+        postMentionsUser = searchFeed.mentionHandle
+        postSince = searchFeed.since
+        postSetSince = !isNaN(searchFeed.since)
+        postUntil = searchFeed.until
+        postSetUntil = !isNaN(searchFeed.until)
+        postLanguage = searchFeed.language
+        header.setSearchText(searchFeed.searchQuery)
+        searchUtils.search(searchFeed.searchQuery)
+    }
+
     function show(searchText = "", searchScope = "") {
         adultContent = skywalker.getContentFilter().getAdultContent()
 
@@ -1006,7 +1030,9 @@ SkyPage {
 
         if (userSettings.showSuggestedUsers)
             firstSearch = false
+    }
 
+    Component.onCompleted: {
         searchUtils.initLastSearchedProfiles()
     }
 }

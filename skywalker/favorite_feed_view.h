@@ -28,6 +28,8 @@ public:
     explicit FavoriteFeedView(const SearchFeed& searchFeed);
 
     Q_INVOKABLE bool isNull() const { return mView.index() == 0 && std::get<0>(mView).isNull(); }
+    Q_INVOKABLE bool isSame(const FavoriteFeedView& other) const;
+
     QEnums::FavoriteType getType() const;
     QString getUri() const;
     QString getName() const;
