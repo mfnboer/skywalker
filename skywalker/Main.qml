@@ -6,6 +6,11 @@ import skywalker
 
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
+
+    // Map for pinned feeds
+    // GeneratorView.uri -> PostFeedView
+    // ListView.uri      -> PostListFeedView
+    // SearchFeed.name   -> SearchFeedView
     property var feedViews: new Map()
 
     id: root
@@ -124,7 +129,7 @@ ApplicationWindow {
             viewListFeed(favorite.listView)
             break
         case QEnums.FAVORITE_SEARCH:
-            // TODO
+            viewSearchFeed(favorite.searchFeed)
             break
         }
     }
@@ -1531,6 +1536,36 @@ ApplicationWindow {
         skywalker.saveLastViewedFeed(listView.uri)
     }
 
+    function viewSearchFeed(searchFeed) {
+        let view = null
+
+        if (root.feedViews.has(searchFeed.name)) {
+            view = feedViews.get(searchFeed.name)
+            const visibleItem = currentStackItem()
+
+            if (visibleItem === view)
+            {
+                console.debug("Feed already showing:", searchFeed.name)
+                return
+            }
+
+            if (view.atYBeginning) {
+                console.debug("Reload feed:", searchFeed.name)
+                view.search()
+            }
+        }
+        else {
+            let component = Qt.createComponent("SearchFeedView.qml")
+            view = component.createObject(root, { skywalker: skywalker, searchFeed: searchFeed, showAsHome: true })
+            feedViews.set(searchFeed.name, view)
+        }
+
+        viewTimeline()
+        unwindStack()
+        pushStack(view)
+        // TODO skywalker.saveLastViewedFeed(generatorView.uri)
+    }
+
     function viewPostFeed(feed) {
         const modelId = skywalker.createPostFeedModel(feed)
         skywalker.getFeed(modelId)
@@ -1758,8 +1793,8 @@ ApplicationWindow {
     function popStack() {
         let item = currentStack().pop()
 
-        // PostFeedViews and PostListFeedViews, shown as home, are kept alive in root.feedViews
-        if (!((item instanceof PostFeedView || item instanceof PostListFeedView) && item.showAsHome))
+        // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
+        if (!((item instanceof PostFeedView || item instanceof PostListFeedView || item instanceof SearchFeedView) && item.showAsHome))
             item.destroy()
     }
 

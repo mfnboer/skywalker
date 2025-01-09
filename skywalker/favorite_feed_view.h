@@ -18,7 +18,7 @@ class FavoriteFeedView
     Q_PROPERTY(QString avatarThumb READ getAvatarThumb FINAL)
     Q_PROPERTY(GeneratorView generatorView READ getGeneratorView FINAL)
     Q_PROPERTY(ListView listView READ getListView FINAL)
-    Q_PROPERTY(SearchFeed searchFeedView READ getSearchFeed FINAL)
+    Q_PROPERTY(SearchFeed searchFeed READ getSearchFeed FINAL)
     QML_VALUE_TYPE(favoritefeedview)
 
 public:

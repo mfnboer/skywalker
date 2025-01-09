@@ -967,7 +967,7 @@ SkyPage {
     }
 
     function forceDestroy() {
-        searchUtils.clearAllSearchResults();
+        searchUtils.clearAllSearchResults()
         usersView.model = null
         postsViewTop.model = null
         postsViewLatest.model = null

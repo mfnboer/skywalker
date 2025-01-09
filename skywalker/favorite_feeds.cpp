@@ -341,13 +341,13 @@ void FavoriteFeeds::pinSearch(const SearchFeed& search, bool pin)
 
 void FavoriteFeeds::pinSearch(const SearchFeed& search)
 {
-    if (isPinnedSearch(search.getSearchQuery()))
+    if (isPinnedSearch(search.getName()))
     {
-        qDebug() << "Search already pinned:" << search.getSearchQuery();
+        qDebug() << "Search already pinned:" << search.getName();
         return;
     }
 
-    mPinnedSearches.insert(search.getSearchQuery());
+    mPinnedSearches.insert(search.getName());
 
     FavoriteFeedView view(search);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
@@ -359,13 +359,13 @@ void FavoriteFeeds::pinSearch(const SearchFeed& search)
 
 void FavoriteFeeds::unpinSearch(const SearchFeed& search)
 {
-    if (!isPinnedSearch(search.getSearchQuery()))
+    if (!isPinnedSearch(search.getName()))
     {
-        qDebug() << "Search not pinned:" << search.getSearchQuery();
+        qDebug() << "Search not pinned:" << search.getName();
         return;
     }
 
-    mPinnedSearches.erase(search.getSearchQuery());
+    mPinnedSearches.erase(search.getName());
 
     FavoriteFeedView view(search);
     auto it = std::find_if(

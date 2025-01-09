@@ -10,13 +10,14 @@ namespace Skywalker {
 class SearchFeed
 {
     Q_GADGET
+    Q_PROPERTY(QString name READ getName() FINAL)
     Q_PROPERTY(QString searchQuery READ getSearchQuery FINAL)
     Q_PROPERTY(QString authorHandle READ getAuthorHandle FINAL)
     Q_PROPERTY(QString mentionHandle READ getMentionHandle FINAL)
     Q_PROPERTY(QDateTime since READ getSince FINAL)
     Q_PROPERTY(QDateTime until READ getUntil FINAL)
     Q_PROPERTY(QString language READ getLanguage FINAL)
-    QML_VALUE_TYPE(searchfeedview)
+    QML_VALUE_TYPE(searchfeed)
 
 public:
     using List = QList<SearchFeed>;
@@ -30,6 +31,7 @@ public:
     Q_INVOKABLE bool isNull() const { return mSearchQuery.isEmpty(); }
     Q_INVOKABLE bool isHashtag() const;
 
+    const QString& getName() const { return mSearchQuery; }
     const QString& getSearchQuery() const { return mSearchQuery; }
     const QString& getAuthorHandle() const { return mAuthorHandle; }
     const QString& getMentionHandle() const { return mMentionHandle; }
