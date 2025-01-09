@@ -648,6 +648,7 @@ ApplicationWindow {
         property date repostDateTime
         property basicprofile repostAuthor
         property bool repostEmbeddingDisabled
+        property string repostPlainText
 
         id: repostDrawer
         width: parent.width
@@ -704,6 +705,21 @@ ApplicationWindow {
             }
 
             SkyButton {
+                id: copyQuotePostButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Copy & quote post")
+                enabled: !repostDrawer.repostEmbeddingDisabled
+                onClicked: {
+                    // No need to check if post still exist. Already checked before
+                    // opening this drawer
+                    root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
+                                      repostDrawer.repostText, repostDrawer.repostDateTime,
+                                      repostDrawer.repostAuthor, repostDrawer.repostPlainText)
+                    repostDrawer.close()
+                }
+            }
+
+            SkyButton {
                 id: quoteInMessageButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Quote in direct message")
@@ -716,7 +732,7 @@ ApplicationWindow {
             }
         }
 
-        function show(hasRepostedUri, uri, cid, text, dateTime, author, embeddingDisabled) {
+        function show(hasRepostedUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
             repostedAlreadyUri =  hasRepostedUri
             repostUri = uri
             repostCid = cid
@@ -724,6 +740,7 @@ ApplicationWindow {
             repostDateTime = dateTime
             repostAuthor = author
             repostEmbeddingDisabled = embeddingDisabled
+            repostPlainText = plainText
             open()
         }
     }
@@ -1143,15 +1160,17 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
-        postUtils.checkPost(quoteUri, quoteCid,
-            () => doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor))
-    }
+    // TODO: remove
+    // function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
+    //     postUtils.checkPost(quoteUri, quoteCid,
+    //         () => doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor))
+    // }
 
-    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
+    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor, initialText = "") {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                initialText: initialText,
                 openedAsQuotePost: true,
                 quoteUri: quoteUri,
                 quoteCid: quoteCid,
@@ -1163,13 +1182,13 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function repost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled) {
+    function repost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
         postUtils.checkPost(uri, cid,
-            () => doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled))
+            () => doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText))
     }
 
-    function doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled) {
-        repostDrawer.show(repostUri, uri, cid, text, dateTime, author, embeddingDisabled)
+    function doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
+        repostDrawer.show(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText)
     }
 
     function like(likeUri, uri, cid) {
