@@ -222,7 +222,7 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
         mPinnedFeeds.erase(it2);
     }
 
-    emit feedPinned();
+    emit feedUnpinned(feed.getUri());
 }
 
 void FavoriteFeeds::addList(const ListView& list)
@@ -328,7 +328,7 @@ void FavoriteFeeds::unpinList(const ListView& list)
         mPinnedFeeds.erase(it2);
     }
 
-    emit listPinned();
+    emit listUnpinned(list.getUri());
 }
 
 void FavoriteFeeds::pinSearch(const SearchFeed& search, bool pin)

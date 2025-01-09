@@ -1904,6 +1904,8 @@ ApplicationWindow {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
         skywalker.favoriteFeeds.onSearchUnpinned.connect(feedFavoriteDeleted)
+        skywalker.favoriteFeeds.onFeedUnpinned.connect(feedFavoriteDeleted)
+        skywalker.favoriteFeeds.onListUnpinned.connect(feedFavoriteDeleted)
     }
 
     Component.onCompleted: {

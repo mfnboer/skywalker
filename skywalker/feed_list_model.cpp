@@ -11,6 +11,7 @@ FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, QObject* parent
 {
     connect(&mFavoriteFeeds, &FavoriteFeeds::feedSaved, this, [this]{ feedSavedChanged(); });
     connect(&mFavoriteFeeds, &FavoriteFeeds::feedPinned, this, [this]{ feedPinnedChanged(); });
+    connect(&mFavoriteFeeds, &FavoriteFeeds::feedUnpinned, this, [this](QString){ feedPinnedChanged(); });
 }
 
 int FeedListModel::rowCount(const QModelIndex& parent) const

@@ -62,7 +62,7 @@ SkyPage {
                 searchUtils.authorTypeaheadList = []
                 searchUtils.hashtagTypeaheadList = []
                 page.isHashtagSearch = false
-                searchUtils.getSuggestions()
+                page.header.forceFocus()
             }
         }
 
@@ -238,7 +238,7 @@ SkyPage {
         }
         AccessibleText {
             id: searchModeText
-            width: parent.width - implicitHeight - 2 * page.margin // TODO - (blockHashtagButton.visible ? implicitHeight : 0)
+            width: parent.width - implicitHeight - 2 * page.margin
             anchors.verticalCenter: searchModeBar.verticalCenter
             leftPadding: 5
             rightPadding: 5

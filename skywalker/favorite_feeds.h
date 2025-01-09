@@ -64,7 +64,9 @@ signals:
     void feedSaved();
     void listSaved();
     void feedPinned();
+    void feedUnpinned(QString uri);
     void listPinned();
+    void listUnpinned(QString uri);
     void searchPinned(QString name);
     void searchUnpinned(QString name);
     void updateSavedFeedsModelInProgressChanged();

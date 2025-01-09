@@ -42,18 +42,7 @@ QString FavoriteFeedView::getUri() const
 
 QString FavoriteFeedView::getName() const
 {
-    switch (getType())
-    {
-    case QEnums::FAVORITE_FEED:
-        return std::get<GeneratorView>(mView).getDisplayName(); // TODO rename to name
-    case QEnums::FAVORITE_LIST:
-        return std::get<ListView>(mView).getName();
-    case QEnums::FAVORITE_SEARCH:
-        return std::get<SearchFeed>(mView).getName();
-    }
-
-    Q_ASSERT(false);
-    return "unknown";
+    return std::visit([](auto&& view){ return view.getName(); }, mView);
 }
 
 QString FavoriteFeedView::getAvatar() const

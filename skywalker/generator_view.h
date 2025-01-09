@@ -54,6 +54,7 @@ public:
     QString getCid() const;
     QString getDid() const;
     Profile getCreator() const;
+    QString getName() const { return getDisplayName(); }
     QString getDisplayName() const;
     QString getDescription() const;
     QString getFormattedDescription() const;
