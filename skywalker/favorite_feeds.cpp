@@ -649,9 +649,23 @@ void FavoriteFeeds::setUpdateSavedFeedsModelInProgress(bool inProgress)
     }
 }
 
-void FavoriteFeeds::saveTo(ATProto::UserPreferences& userPreferences) const
+void FavoriteFeeds::saveTo(ATProto::UserPreferences& userPreferences, UserSettings& settings) const
 {
     userPreferences.setSavedFeedsPref(mSavedFeedsPref);
+    saveSearchFeedsTo(settings);
+}
+
+void FavoriteFeeds::saveSearchFeedsTo(UserSettings& settings) const
+{
+    SearchFeed::List searchFeeds;
+
+    for (const auto& favorite : mPinnedFeeds)
+    {
+        if (favorite.getType() == QEnums::FAVORITE_SEARCH)
+            searchFeeds.push_back(favorite.getSearchFeed());
+    }
+
+    settings.setPinnedSearchFeeds(mSkywalker->getUserDid(), searchFeeds);
 }
 
 }

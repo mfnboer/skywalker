@@ -39,4 +39,41 @@ LanguageList SearchFeed::getLanguageList() const
     return LanguageUtils::getLanguages(QStringList{mLanguage});
 }
 
+QJsonObject SearchFeed::toJson() const
+{
+    QJsonObject json;
+    json.insert("searchQuery", mSearchQuery);
+
+    if (!mAuthorHandle.isEmpty())
+        json.insert("author", mAuthorHandle);
+
+    if (!mMentionHandle.isEmpty())
+        json.insert("mention", mMentionHandle);
+
+    if (mSince.isValid())
+        json.insert("since", mSince.toString(Qt::ISODateWithMs));
+
+    if (mUntil.isValid())
+        json.insert("until", mUntil.toString(Qt::ISODateWithMs));
+
+    if (!mLanguage.isEmpty())
+        json.insert("language", mLanguage);
+
+    return json;
+}
+
+SearchFeed SearchFeed::fromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+    SearchFeed feed;
+    feed.mSearchQuery = xjson.getRequiredString("searchQuery");
+    feed.mAuthorHandle = xjson.getOptionalString("author", "");
+    feed.mMentionHandle = xjson.getOptionalString("mention", "");
+    feed.mSince = xjson.getOptionalDateTime("since", {});
+    feed.mUntil = xjson.getOptionalDateTime("until", {});
+    feed.mLanguage = xjson.getOptionalString("language", "");
+
+    return feed;
+}
+
 }

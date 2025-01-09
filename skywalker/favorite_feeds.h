@@ -7,6 +7,7 @@
 #include "list_list_model.h"
 #include "list_view.h"
 #include "search_feed.h"
+#include "user_settings.h"
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <unordered_set>
@@ -57,8 +58,7 @@ public:
     Q_INVOKABLE ListListModel* getSavedListsModel();
     Q_INVOKABLE void removeSavedListsModel();
 
-    void saveTo(ATProto::UserPreferences& userPreferences) const;
-    // TODO: save search feeds to UserSettings
+    void saveTo(ATProto::UserPreferences& userPreferences, UserSettings& settings) const;
 
 signals:
     void feedSaved();
@@ -92,6 +92,7 @@ private:
     void updateSavedFeedsModel();
     void updateSavedListsModel();
     std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
+    void saveSearchFeedsTo(UserSettings& settings) const;
 
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
     std::unordered_set<QString> mSavedUris;

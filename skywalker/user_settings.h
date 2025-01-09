@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "password_encryption.h"
 #include "profile.h"
+#include "search_feed.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QSettings>
@@ -251,6 +252,9 @@ public:
     void setLabels(const QString& did, const QString& labelerDid, const QStringList labels);
     void removeLabels(const QString& did, const QString& labelerDid);
     bool containsLabeler(const QString& did, const QString& labelerDid) const;
+
+    SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
+    void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);

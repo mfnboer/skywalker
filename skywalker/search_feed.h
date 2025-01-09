@@ -43,6 +43,9 @@ public:
     const QString& getLanguage() const { return mLanguage; }
     LanguageList getLanguageList() const;
 
+    QJsonObject toJson() const;
+    static SearchFeed fromJson(const QJsonObject& json);
+
 private:
     QString mSearchQuery;
     QString mAuthorHandle; // "", "me" or real handle

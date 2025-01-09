@@ -548,6 +548,7 @@ SkyPage {
                 }
 
                 EmptyListIndication {
+                    y: header.height
                     svg: SvgOutline.noUsers
                     text: qsTr("No suggestions")
                     list: suggestedUsersView
