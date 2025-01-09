@@ -176,7 +176,7 @@ SkyPage {
             AccessibleMenuItem {
                 text: moreMenu.isPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
                 onTriggered: {
-                    const view = searchUtils.createSearchFeedView(page.getSearchText(),
+                    const view = searchUtils.createSearchFeed(page.getSearchText(),
                         postAuthorUser, postMentionsUser, postSince, postUntil, postLanguage)
                     skywalker.favoriteFeeds.pinSearch(view, !moreMenu.isPinned)
                     skywalker.saveFavoriteFeeds()

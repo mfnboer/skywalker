@@ -14,8 +14,8 @@ FavoriteFeedView::FavoriteFeedView(const ListView& listView) :
 {
 }
 
-FavoriteFeedView::FavoriteFeedView(const SearchFeedView& searchFeedView) :
-    mView(searchFeedView)
+FavoriteFeedView::FavoriteFeedView(const SearchFeed& searchFeed) :
+    mView(searchFeed)
 {
 }
 
@@ -49,7 +49,7 @@ QString FavoriteFeedView::getName() const
     case QEnums::FAVORITE_LIST:
         return std::get<ListView>(mView).getName();
     case QEnums::FAVORITE_SEARCH:
-        return std::get<SearchFeedView>(mView).getSearchQuery();
+        return std::get<SearchFeed>(mView).getSearchQuery();
     }
 
     Q_ASSERT(false);
@@ -89,10 +89,10 @@ ListView FavoriteFeedView::getListView() const
     return view ? *view : ListView{};
 }
 
-SearchFeedView FavoriteFeedView::getSearchFeedView() const
+SearchFeed FavoriteFeedView::getSearchFeed() const
 {
-    auto* view = std::get_if<SearchFeedView>(&mView);
-    return view ? *view : SearchFeedView{};
+    auto* view = std::get_if<SearchFeed>(&mView);
+    return view ? *view : SearchFeed{};
 }
 
 }

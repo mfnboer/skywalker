@@ -17,7 +17,7 @@ static auto listNameCompare = [](const ListView& lhs, const ListView& rhs){
 
 static QString getFavoriteSortName(const FavoriteFeedView& favorite)
 {
-    if (favorite.getType() == QEnums::FAVORITE_SEARCH && favorite.getSearchFeedView().isHashtag())
+    if (favorite.getType() == QEnums::FAVORITE_SEARCH && favorite.getSearchFeed().isHashtag())
         return favorite.getName().sliced(1); // remove hash
 
     return favorite.getName();
@@ -64,7 +64,7 @@ void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedF
     updatePinnedViews();
 }
 
-void FavoriteFeeds::set(const SearchFeedView::List& searchFeeds)
+void FavoriteFeeds::set(const SearchFeed::List& searchFeeds)
 {
     qDebug() << "Set favorite search feeds";
     mPinnedSearches.clear();
@@ -331,7 +331,7 @@ void FavoriteFeeds::unpinList(const ListView& list)
     emit listPinned();
 }
 
-void FavoriteFeeds::pinSearch(const SearchFeedView& search, bool pin)
+void FavoriteFeeds::pinSearch(const SearchFeed& search, bool pin)
 {
     if (pin)
         pinSearch(search);
@@ -339,7 +339,7 @@ void FavoriteFeeds::pinSearch(const SearchFeedView& search, bool pin)
         unpinSearch(search);
 }
 
-void FavoriteFeeds::pinSearch(const SearchFeedView& search)
+void FavoriteFeeds::pinSearch(const SearchFeed& search)
 {
     if (isPinnedSearch(search.getSearchQuery()))
     {
@@ -357,7 +357,7 @@ void FavoriteFeeds::pinSearch(const SearchFeedView& search)
     emit searchPinned();
 }
 
-void FavoriteFeeds::unpinSearch(const SearchFeedView& search)
+void FavoriteFeeds::unpinSearch(const SearchFeed& search)
 {
     if (!isPinnedSearch(search.getSearchQuery()))
     {

@@ -6,7 +6,7 @@
 #include "presence.h"
 #include "profile.h"
 #include "profile_matcher.h"
-#include "search_feed_view.h"
+#include "search_feed.h"
 #include "search_post_feed_model.h"
 #include "trending_topic_list_model.h"
 #include "wrapped_skywalker.h"
@@ -72,8 +72,8 @@ public:
     Q_INVOKABLE void clearLastSearches();
     Q_INVOKABLE void initLastSearchedProfiles();
     Q_INVOKABLE void getTrendingTopics();
-    Q_INVOKABLE SearchFeedView createSearchFeedView(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
-                                                    QDateTime since, QDateTime until, const QString& language) const;
+    Q_INVOKABLE SearchFeed createSearchFeed(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
+                                            QDateTime since, QDateTime until, const QString& language) const;
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);

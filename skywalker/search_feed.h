@@ -7,7 +7,7 @@
 
 namespace Skywalker {
 
-class SearchFeedView
+class SearchFeed
 {
     Q_GADGET
     Q_PROPERTY(QString searchQuery READ getSearchQuery FINAL)
@@ -19,10 +19,10 @@ class SearchFeedView
     QML_VALUE_TYPE(searchfeedview)
 
 public:
-    using List = QList<SearchFeedView>;
+    using List = QList<SearchFeed>;
 
-    SearchFeedView() = default;
-    SearchFeedView(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
+    SearchFeed() = default;
+    SearchFeed(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
                    QDateTime since, QDateTime until, const QString& language);
 
     QEnums::FavoriteType getFavoriteType() const { return QEnums::FAVORITE_SEARCH; }
