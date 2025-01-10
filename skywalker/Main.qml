@@ -1160,12 +1160,6 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    // TODO: remove
-    // function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
-    //     postUtils.checkPost(quoteUri, quoteCid,
-    //         () => doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor))
-    // }
-
     function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor, initialText = "") {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
