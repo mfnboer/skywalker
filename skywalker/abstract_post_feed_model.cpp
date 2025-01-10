@@ -140,38 +140,6 @@ void AbstractPostFeedModel::unfoldPosts(int startIndex)
     changeData({ int(Role::PostFoldedType) });
 }
 
-QJsonObject AbstractPostFeedModel::toJson(int startIndex, int endIndex) const
-{
-    QJsonObject json;
-    QJsonArray feedJson;
-
-    for (int i = startIndex; i < endIndex; ++i)
-    {
-        const auto& post = mFeed[i];
-        auto postJson = post.toJson();
-        feedJson.push_back(postJson);
-    }
-
-    json.insert("feed", feedJson);
-    return json;
-}
-
-void AbstractPostFeedModel::setJson(const QJsonObject& json)
-{
-    const ATProto::XJsonObject xjson(json);
-    QJsonArray feedJson = xjson.getRequiredArray("feed");
-
-    beginInsertRows({}, mFeed.size(), mFeed.size() + feedJson.size());
-
-    for (const auto& postJson : feedJson)
-    {
-        const auto post = Post::fromJson(postJson.toObject());
-        mFeed.push_back(post);
-    }
-
-    endInsertRows();
-}
-
 int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);

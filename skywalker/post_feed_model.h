@@ -99,9 +99,6 @@ public:
     void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
-    QJsonObject toJsonAroundIndex(int currentIndex, int& modifiedIndex) const;
-    void setJson(const QJsonObject& json) override;
-
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();

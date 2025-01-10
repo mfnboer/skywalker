@@ -316,8 +316,6 @@ private:
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex, int offsetY);
-    void saveSyncTimelineState();
-    bool restoreSyncTimelineState();
     void shareImage(const QString& contentUri, const QString& text);
     void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
