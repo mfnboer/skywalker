@@ -10,10 +10,7 @@ SkyPage {
     readonly property int maxMessageLength: 1000
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
-    property bool keyboardVisible: Qt.inputMethod.visible && Qt.inputMethod.keyboardRectangle.y > 0 // qmllint disable missing-property
-    property int keyboardY: Qt.inputMethod.keyboardRectangle.y / Screen.devicePixelRatio // qmllint disable missing-property
-    property int keyboardHeight: keyboardVisible ? parent.height - keyboardY : 0
-    property int textInputToolbarHeight: (keyboardVisible || !guiSettings.isAndroid) ? 24 : 0
+    property int textInputToolbarHeight: (keyboardHandler.keyboardVisible || !guiSettings.isAndroid) ? 24 : 0
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
 
@@ -43,7 +40,7 @@ SkyPage {
     SkyListView {
         id: messagesView
         width: parent.width
-        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding - page.keyboardHeight
+        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding - keyboardHandler.keyboardHeight
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
         clip: true
@@ -93,7 +90,7 @@ SkyPage {
         width: parent.width
         height: Math.min(newMessageText.height - newMessageText.padding - newMessageText.bottomPadding, maxInputTextHeight)
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: newMessageText.bottomPadding + page.keyboardHeight
+        anchors.bottomMargin: newMessageText.bottomPadding + keyboardHandler.keyboardHeight
         clip: true
         contentWidth: parent.width
         contentHeight: newMessageText.contentHeight + page.margin
@@ -362,19 +359,8 @@ SkyPage {
     //     id: virtualKeyboardPageResizer
     // }
 
-    // HACK: sometimes when the keyboard pops up, inputMethod visible becomes true
-    // and then quickly false again. In that case the keyboard is visible on the
-    // screen, but the keyboarRectangle in null so the screen does no move up.
-    // To avoid this we force hide the keyboard. The user has to tap once more.
-    Connections {
-        target: Qt.inputMethod
-
-        function onVisibleChanged() {
-            if (!Qt.inputMethod.visible) { // qmllint disable missing-property
-                console.debug("KEYBOARD FORCE HIDE")
-                Qt.inputMethod.hide()
-            }
-        }
+    VirtualKeyboardHandler {
+        id: keyboardHandler
     }
 
     function addMessage(msgText) {

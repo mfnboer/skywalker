@@ -33,6 +33,7 @@ SkyPage {
     Flickable {
         id: flick
         anchors.fill: parent
+        anchors.bottomMargin: keyboardHandler.keyboardHeight
         clip: true
         contentWidth: parent.width
         contentHeight: altImage.y + altImage.height
@@ -166,15 +167,11 @@ SkyPage {
         id: qEnums
     }
 
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
+    VirtualKeyboardHandler {
+        id: keyboardHandler
     }
 
     Component.onCompleted: {
-        // Save the full page height now. Later when the Android keyboard pops up,
-        // the page height sometimes changes by itself, but not always...
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
-
         altText.forceActiveFocus()
     }
 }

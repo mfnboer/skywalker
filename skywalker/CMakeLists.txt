@@ -454,6 +454,7 @@ qt_add_qml_module(libskywalker
         SOURCES search_feed.h
         SOURCES search_feed.cpp
         QML_FILES SearchFeedView.qml
+        QML_FILES VirtualKeyboardHandler.qml
 )
 
 if (NOT ANDROID)

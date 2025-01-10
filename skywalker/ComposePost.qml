@@ -79,7 +79,7 @@ SkyPage {
 
     id: page
     width: parent.width
-    height: parent.height
+    height: parent.height - keyboardHandler.keyboardHeight
     contentHeight: flick.height
     topPadding: 0
     bottomPadding: 10
@@ -2405,8 +2405,8 @@ SkyPage {
         limitsPage.open()
     }
 
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
+    VirtualKeyboardHandler {
+        id: keyboardHandler
     }
 
     Component.onDestruction: {
@@ -2434,10 +2434,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        // Save the full page height now. Later when the Android keyboard pops up,
-        // the page height sometimes changes by itself, but not always...
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
-
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.
         focusTimer.start()

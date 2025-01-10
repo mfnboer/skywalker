@@ -8,9 +8,6 @@
 
 namespace Skywalker {
 
-static const int JSON_SAVE_TAIL_SIZE = 50;
-static const int JSON_SAVE_HEAD_SIZE = 250;
-
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
