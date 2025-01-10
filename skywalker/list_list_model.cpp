@@ -21,6 +21,7 @@ ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId,
 
     connect(&mFavoriteFeeds, &FavoriteFeeds::listSaved, this, [this]{ listSavedChanged(); });
     connect(&mFavoriteFeeds, &FavoriteFeeds::listPinned, this, [this]{ listPinnedChanged(); });
+    connect(&mFavoriteFeeds, &FavoriteFeeds::listUnpinned, this, [this](QString){ listPinnedChanged(); });
 
     connect(&mGraphUtils, &GraphUtils::isListUserOk, this,
             [this](const QString& listUri, const QString&, const QString& listItemUri){

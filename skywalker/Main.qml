@@ -6,6 +6,11 @@ import skywalker
 
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
+
+    // Map for pinned feeds
+    // GeneratorView.uri -> PostFeedView
+    // ListView.uri      -> PostListFeedView
+    // SearchFeed.name   -> SearchFeedView
     property var feedViews: new Map()
 
     id: root
@@ -102,7 +107,12 @@ ApplicationWindow {
         if (lastViewed === "home")
             return
 
-        const favorite = skywalker.favoriteFeeds.getPinnedFeed(lastViewed)
+        let favorite = null
+
+        if (lastViewed.startsWith("at://"))
+            favorite = skywalker.favoriteFeeds.getPinnedFeed(lastViewed)
+        else
+            favorite = skywalker.favoriteFeeds.getPinnedSearch(lastViewed)
 
         if (favorite.isNull())
         {
@@ -110,10 +120,23 @@ ApplicationWindow {
             return
         }
 
-        if (favorite.isGeneratorView)
+        showFavorite(favorite)
+    }
+
+    function showFavorite(favorite) {
+        console.debug("Show favorite:", favorite)
+
+        switch (favorite.type) {
+        case QEnums.FAVORITE_FEED:
             viewFeed(favorite.generatorView)
-        else
+            break
+        case QEnums.FAVORITE_LIST:
             viewListFeed(favorite.listView)
+            break
+        case QEnums.FAVORITE_SEARCH:
+            viewSearchFeed(favorite.searchFeed)
+            break
+        }
     }
 
     Skywalker {
@@ -337,12 +360,16 @@ ApplicationWindow {
 
         onOldestUnreadNotificationIndex: (index, mentions) => getNotificationView().moveToNotification(index, mentions)
 
+        // Note for search feeds the feedUri is the search name
         function saveLastViewedFeed(feedUri) {
             let userSettings = skywalker.getUserSettings()
             const userDid = skywalker.getUserDid()
 
-            if (feedUri === "home" || skywalker.favoriteFeeds.isPinnedFeed(feedUri))
+            if (feedUri === "home" ||
+                    skywalker.favoriteFeeds.isPinnedFeed(feedUri) ||
+                    skywalker.favoriteFeeds.isPinnedSearch(feedUri)) {
                 userSettings.setLastViewedFeed(userDid, feedUri)
+            }
         }
 
         function start() {
@@ -621,6 +648,7 @@ ApplicationWindow {
         property date repostDateTime
         property basicprofile repostAuthor
         property bool repostEmbeddingDisabled
+        property string repostPlainText
 
         id: repostDrawer
         width: parent.width
@@ -677,6 +705,21 @@ ApplicationWindow {
             }
 
             SkyButton {
+                id: copyQuotePostButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Copy & quote post")
+                enabled: !repostDrawer.repostEmbeddingDisabled
+                onClicked: {
+                    // No need to check if post still exist. Already checked before
+                    // opening this drawer
+                    root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
+                                      repostDrawer.repostText, repostDrawer.repostDateTime,
+                                      repostDrawer.repostAuthor, repostDrawer.repostPlainText)
+                    repostDrawer.close()
+                }
+            }
+
+            SkyButton {
                 id: quoteInMessageButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Quote in direct message")
@@ -689,7 +732,7 @@ ApplicationWindow {
             }
         }
 
-        function show(hasRepostedUri, uri, cid, text, dateTime, author, embeddingDisabled) {
+        function show(hasRepostedUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
             repostedAlreadyUri =  hasRepostedUri
             repostUri = uri
             repostCid = cid
@@ -697,6 +740,7 @@ ApplicationWindow {
             repostDateTime = dateTime
             repostAuthor = author
             repostEmbeddingDisabled = embeddingDisabled
+            repostPlainText = plainText
             open()
         }
     }
@@ -1116,15 +1160,11 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function composeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
-        postUtils.checkPost(quoteUri, quoteCid,
-            () => doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor))
-    }
-
-    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor) {
+    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor, initialText = "") {
         let component = Qt.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                initialText: initialText,
                 openedAsQuotePost: true,
                 quoteUri: quoteUri,
                 quoteCid: quoteCid,
@@ -1136,13 +1176,13 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function repost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled) {
+    function repost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
         postUtils.checkPost(uri, cid,
-            () => doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled))
+            () => doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText))
     }
 
-    function doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled) {
-        repostDrawer.show(repostUri, uri, cid, text, dateTime, author, embeddingDisabled)
+    function doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
+        repostDrawer.show(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText)
     }
 
     function like(likeUri, uri, cid) {
@@ -1417,6 +1457,15 @@ ApplicationWindow {
         currentStackItem().show(searchText, searchScope)
     }
 
+    function viewSearchViewFeed(searchFeed) {
+        stackLayout.currentIndex = stackLayout.searchIndex
+
+        if (searchStack.depth === 0)
+            createSearchView()
+
+        currentStackItem().showSearchFeed(searchFeed)
+    }
+
     function createFeedsView() {
         let feedsComponent = Qt.createComponent("SearchFeeds.qml")
         let feedsView = feedsComponent.createObject(root,
@@ -1516,6 +1565,36 @@ ApplicationWindow {
         unwindStack()
         pushStack(view)
         skywalker.saveLastViewedFeed(listView.uri)
+    }
+
+    function viewSearchFeed(searchFeed) {
+        let view = null
+
+        if (root.feedViews.has(searchFeed.name)) {
+            view = feedViews.get(searchFeed.name)
+            const visibleItem = currentStackItem()
+
+            if (visibleItem === view)
+            {
+                console.debug("Feed already showing:", searchFeed.name)
+                return
+            }
+
+            if (view.atYBeginning) {
+                console.debug("Reload feed:", searchFeed.name)
+                view.search()
+            }
+        }
+        else {
+            let component = Qt.createComponent("SearchFeedView.qml")
+            view = component.createObject(root, { skywalker: skywalker, searchFeed: searchFeed, showAsHome: true })
+            feedViews.set(searchFeed.name, view)
+        }
+
+        viewTimeline()
+        unwindStack()
+        pushStack(view)
+        skywalker.saveLastViewedFeed(searchFeed.name)
     }
 
     function viewPostFeed(feed) {
@@ -1731,7 +1810,10 @@ ApplicationWindow {
 
     function currentStackItem() {
         let stack = currentStack()
+        return getStackTopItem(stack)
+    }
 
+    function getStackTopItem(stack) {
         if (stack.depth > 0)
             return stack.get(stack.depth - 1)
 
@@ -1742,11 +1824,14 @@ ApplicationWindow {
         return stackLayout.currentIndex === stackLayout.chatIndex
     }
 
-    function popStack() {
-        let item = currentStack().pop()
+    function popStack(stack = null) {
+        if (!stack)
+            stack = currentStack()
 
-        // PostFeedViews and PostListFeedViews, shown as home, are kept alive in root.feedViews
-        if (!((item instanceof PostFeedView || item instanceof PostListFeedView) && item.showAsHome))
+        let item = stack.pop()
+
+        // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
+        if (!((item instanceof PostFeedView || item instanceof PostListFeedView || item instanceof SearchFeedView) && item.showAsHome))
             item.destroy()
     }
 
@@ -1759,9 +1844,12 @@ ApplicationWindow {
         currentStack().push(item, operation)
     }
 
-    function unwindStack() {
-        while (currentStack().depth > 1)
-            popStack()
+    function unwindStack(stack = null) {
+        if (!stack)
+            stack = currentStack()
+
+        while (stack.depth > 1)
+            popStack(stack)
     }
 
     function setDisplayMode(displayMode) {
@@ -1813,9 +1901,24 @@ ApplicationWindow {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    function feedFavoriteDeleted(feedKey) {
+        console.debug("Favorite deleted:", feedKey)
+
+        if (!feedViews.has(feedKey))
+            return
+
+        if (getStackTopItem(timelineStack) === feedViews.get(feedKey))
+            unwindStack(timelineStack)
+
+        feedViews.delete(feedKey)
+    }
+
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
+        skywalker.favoriteFeeds.onSearchUnpinned.connect(feedFavoriteDeleted)
+        skywalker.favoriteFeeds.onFeedUnpinned.connect(feedFavoriteDeleted)
+        skywalker.favoriteFeeds.onListUnpinned.connect(feedFavoriteDeleted)
     }
 
     Component.onCompleted: {

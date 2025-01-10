@@ -944,6 +944,38 @@ bool UserSettings::containsLabeler(const QString& did, const QString& labelerDid
     return mSettings.contains(labelsKey(did, labelerDid));
 }
 
+SearchFeed::List UserSettings::getPinnedSearchFeeds(const QString& did) const
+{
+    SearchFeed::List searchFeeds;
+    const auto jsonArray = mSettings.value(key(did, "pinnedSearchFeeds")).toJsonArray();
+
+    for (const auto& json : jsonArray)
+    {
+        try {
+            const auto searchFeed = SearchFeed::fromJson(json.toObject());
+            searchFeeds.push_back(searchFeed);
+        } catch (ATProto::InvalidJsonException& e) {
+            qWarning() << "Invalid pinned search feed:" << e.msg();
+        }
+    }
+
+    return searchFeeds;
+}
+
+void UserSettings::setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds)
+{
+    QJsonArray jsonArray;
+
+    for (const auto& searchFeed : searchFeeds)
+    {
+        const QJsonObject json = searchFeed.toJson();
+        jsonArray.push_back(json);
+    }
+
+    mSettings.setValue(key(did, "pinnedSearchFeeds"), jsonArray);
+}
+
+
 void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
 {
     mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);

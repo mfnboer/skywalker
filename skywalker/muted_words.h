@@ -29,7 +29,7 @@ public:
 
     Q_INVOKABLE void addEntry(const QString& word, const QJsonObject& bskyJson = {}, const QStringList& unkwownTargets = {});
     Q_INVOKABLE void removeEntry(const QString& word);
-    bool containsEntry(const QString& word);
+    Q_INVOKABLE bool containsEntry(const QString& word);
     void load(const ATProto::UserPreferences& userPrefs);
     bool legacyLoad(const UserSettings* userSettings);
     void save(ATProto::UserPreferences& userPrefs);

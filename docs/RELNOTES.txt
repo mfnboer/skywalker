@@ -1,8 +1,10 @@
 next
 ====
 * Bluesky trending topics
+* Pin hashtag as favorite feed
 * Override adult content visibility for search
 * Remember last searched accounts
+* Copy & quote post
 * Increase number of recent gifs from 25 to 50
 * Bug fixes
 

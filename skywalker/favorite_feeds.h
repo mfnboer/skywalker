@@ -6,6 +6,8 @@
 #include "generator_view.h"
 #include "list_list_model.h"
 #include "list_view.h"
+#include "search_feed.h"
+#include "user_settings.h"
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <unordered_set>
@@ -26,10 +28,12 @@ public:
 
     void clear();
     void reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
+    void set(const SearchFeed::List& searchFeeds);
 
     // Can also be called for list uri's
-    Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.count(uri); }
-    Q_INVOKABLE bool isPinnedFeed(const QString& uri) const { return mPinnedUris.count(uri); }
+    Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.contains(uri); }
+    Q_INVOKABLE bool isPinnedFeed(const QString& uri) const { return mPinnedUris.contains(uri); }
+    Q_INVOKABLE bool isPinnedSearch(const QString& name) const { return mPinnedSearches.contains(name); }
 
     Q_INVOKABLE void addFeed(const GeneratorView& feed);
     Q_INVOKABLE void removeFeed(const GeneratorView& feed);
@@ -39,8 +43,11 @@ public:
     Q_INVOKABLE void removeList(const ListView& list);
     Q_INVOKABLE void pinList(const ListView& list, bool pin);
 
+    Q_INVOKABLE void pinSearch(const SearchFeed& search, bool pin);
+
     Q_INVOKABLE QList<FavoriteFeedView> getPinnedFeeds() const { return mPinnedFeeds; }
     Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
+    Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& name) const;
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
     void setUpdateSavedFeedsModelInProgress(bool inProgress);
@@ -51,13 +58,17 @@ public:
     Q_INVOKABLE ListListModel* getSavedListsModel();
     Q_INVOKABLE void removeSavedListsModel();
 
-    void saveTo(ATProto::UserPreferences& userPreferences) const;
+    void saveTo(ATProto::UserPreferences& userPreferences, UserSettings& settings) const;
 
 signals:
     void feedSaved();
     void listSaved();
     void feedPinned();
+    void feedUnpinned(QString uri);
     void listPinned();
+    void listUnpinned(QString uri);
+    void searchPinned(QString name);
+    void searchUnpinned(QString name);
     void updateSavedFeedsModelInProgressChanged();
 
 private:
@@ -67,6 +78,8 @@ private:
     void unpinFeed(const GeneratorView& feed);
     void pinList(const ListView& list);
     void unpinList(const ListView& list);
+    void pinSearch(const SearchFeed& search);
+    void unpinSearch(const SearchFeed& search);
     void addSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators);
     void addPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators);
     void addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList);
@@ -81,10 +94,12 @@ private:
     void updateSavedFeedsModel();
     void updateSavedListsModel();
     std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
+    void saveSearchFeedsTo(UserSettings& settings) const;
 
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
     std::unordered_set<QString> mSavedUris;
     std::unordered_set<QString> mPinnedUris;
+    std::unordered_set<QString> mPinnedSearches;
     QList<GeneratorView> mSavedFeeds; // sorted by name
     QList<ListView> mSavedLists; // sorted by name
     QList<FavoriteFeedView> mPinnedFeeds; // sorted by name

@@ -251,17 +251,6 @@ Dialog {
                 }
             }
         }
-
-        // ComboBox {
-        //     Layout.fillWidth: true
-        //     textRole: "label"
-        //     valueRole: "value"
-        //     model: ListModel {
-        //         ListElement { label: qsTr("Content filter settings"); value: QEnums.CONTENT_VISIBILITY_SHOW }
-        //         ListElement { label: qsTr("Warn"); value: QEnums.CONTENT_VISIBILITY_WARN_MEDIA }
-        //         ListElement { label: qsTr("Hide"); value: QEnums.CONTENT_VISIBILITY_HIDE_MEDIA }
-        //     }
-        // }
     }
 
     SimpleAuthorListView {

@@ -302,7 +302,7 @@ Rectangle {
                         onRepost: {
                             root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
                                         notificationPostText, notificationPostTimestamp,
-                                        notificationAuthor, notificationPostEmbeddingDisabled)
+                                        notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText)
                         }
 
                         onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)

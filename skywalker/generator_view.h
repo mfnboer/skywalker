@@ -47,11 +47,14 @@ public:
     GeneratorView() = default;
     explicit GeneratorView(const ATProto::AppBskyFeed::GeneratorView::SharedPtr& view);
 
+    QEnums::FavoriteType getFavoriteType() const { return QEnums::FAVORITE_FEED; }
+
     Q_INVOKABLE bool isNull() const { return mGeneratorView == nullptr; }
     QString getUri() const;
     QString getCid() const;
     QString getDid() const;
     Profile getCreator() const;
+    QString getName() const { return getDisplayName(); }
     QString getDisplayName() const;
     QString getDescription() const;
     QString getFormattedDescription() const;

@@ -25,6 +25,7 @@ SkyPage {
     property string currentText
     property bool firstSearch: true
     readonly property int margin: 10
+    property date nullDate
 
     signal closed
 
@@ -61,7 +62,7 @@ SkyPage {
                 searchUtils.authorTypeaheadList = []
                 searchUtils.hashtagTypeaheadList = []
                 page.isHashtagSearch = false
-                searchUtils.getSuggestions()
+                page.header.forceFocus()
             }
         }
 
@@ -117,38 +118,85 @@ SkyPage {
         function setTopPosts() {
             currentIndex = tabTopPosts.TabBar.index
         }
+
+        function setLatestPosts() {
+            currentIndex = tabLatestPosts.TabBar.index
+        }
     }
 
     SvgButton {
-        id: blockHashtagButton
+        id: moreButton
         anchors.right: parent.right
         anchors.rightMargin: 5
         imageMargin: 0
         y: (searchBar.height - height) / 2
         width: height
         height: 30
-        iconColor: guiSettings.linkColor
+        iconColor: guiSettings.textColor
         Material.background: "transparent"
-        svg: SvgOutline.block
-        accessibleName: qsTr(`mute hashtag ${page.getSearchText()}`)
+        svg: SvgOutline.menu
+        accessibleName: qsTr("hashtag options")
         visible: isHashtagSearch
-        onClicked: muteWord(page.getSearchText())
-    }
 
-    SvgButton {
-        id: focusHashtagButton
-        anchors.right: blockHashtagButton.left
-        anchors.rightMargin: 5
-        imageMargin: 0
-        y: (searchBar.height - height) / 2
-        width: height
-        height: 30
-        iconColor: guiSettings.linkColor
-        Material.background: "transparent"
-        svg: SvgOutline.hashtag
-        accessibleName: qsTr(`set focus on hashtag ${page.getSearchText()}`)
-        visible: isHashtagSearch
-        onClicked: focusHashtag(page.getSearchText())
+        onClicked: moreMenu.open()
+
+        Menu {
+            property bool isMuted: false
+            property bool isPinned: false
+
+            id: moreMenu
+            modal: true
+
+            onAboutToShow: {
+                root.enablePopupShield(true)
+                isMuted = skywalker.mutedWords.containsEntry(page.getSearchText())
+                isPinned = skywalker.favoriteFeeds.isPinnedSearch(page.getSearchText())
+            }
+
+            onAboutToHide: root.enablePopupShield(false)
+
+            CloseMenuItem {
+                text: qsTr("<b>Hashtags</b>")
+                Accessible.name: qsTr("close hashtag options menu")
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Focus hashtag")
+                onTriggered: focusHashtag(page.getSearchText())
+                MenuItemSvg { svg: SvgOutline.hashtag }
+            }
+
+            AccessibleMenuItem {
+                text: moreMenu.isMuted ? qsTr("Unmute hashtag") : qsTr("Mute hashtag")
+                onTriggered: {
+                    if (moreMenu.isMuted)
+                        unmuteWord(page.getSearchText())
+                    else
+                        muteWord(page.getSearchText())
+                }
+
+                MenuItemSvg { svg: moreMenu.isMuted ? SvgOutline.unmute : SvgOutline.mute }
+            }
+
+            AccessibleMenuItem {
+                text: moreMenu.isPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
+                onTriggered: {
+                    const view = searchUtils.createSearchFeed(page.getSearchText(),
+                        postAuthorUser, postMentionsUser,
+                        postSetSince ? postSince : nullDate,
+                        postSetUntil ? postUntil : nullDate,
+                        postLanguage)
+
+                    skywalker.favoriteFeeds.pinSearch(view, !moreMenu.isPinned)
+                    skywalker.saveFavoriteFeeds()
+                }
+
+                MenuItemSvg {
+                    svg: moreMenu.isPinned ? SvgFilled.star : SvgOutline.star
+                    color: moreMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
+                }
+            }
+        }
     }
 
     Rectangle {
@@ -190,7 +238,7 @@ SkyPage {
         }
         AccessibleText {
             id: searchModeText
-            width: parent.width - implicitHeight - 2 * page.margin - (blockHashtagButton.visible ? implicitHeight : 0)
+            width: parent.width - implicitHeight - 2 * page.margin
             anchors.verticalCenter: searchModeBar.verticalCenter
             leftPadding: 5
             rightPadding: 5
@@ -500,6 +548,7 @@ SkyPage {
                 }
 
                 EmptyListIndication {
+                    y: header.height
                     svg: SvgOutline.noUsers
                     text: qsTr("No suggestions")
                     list: suggestedUsersView
@@ -702,6 +751,7 @@ SkyPage {
     SearchUtils {
         id: searchUtils
         skywalker: page.skywalker // qmllint disable missing-type
+        overrideAdultVisibility: page.overrideAdultVisibility
 
         function search(query) {
             page.isTyping = false
@@ -891,14 +941,15 @@ SkyPage {
     }
 
     function muteWord(word) {
-        guiSettings.askYesNoQuestion(
-                    page,
-                    qsTr(`Mute <font color="${guiSettings.linkColor}">${word}</font> ?`),
-                    () => {
-                        skywalker.mutedWords.addEntry(word)
-                        skywalker.saveMutedWords()
-                        skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
-                    })
+        skywalker.mutedWords.addEntry(word)
+        skywalker.saveMutedWords()
+        skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
+    }
+
+    function unmuteWord(word) {
+        skywalker.mutedWords.removeEntry(word)
+        skywalker.saveMutedWords()
+        skywalker.showStatusMessage(qsTr(`Unmuted ${word}`), QEnums.STATUS_LEVEL_INFO)
     }
 
     function focusHashtag(hashtag) {
@@ -926,7 +977,7 @@ SkyPage {
     }
 
     function forceDestroy() {
-        searchUtils.clearAllSearchResults();
+        searchUtils.clearAllSearchResults()
         usersView.model = null
         postsViewTop.model = null
         postsViewLatest.model = null
@@ -936,6 +987,21 @@ SkyPage {
 
     function hide() {
         page.header.unfocus() // qmllint disable missing-property
+    }
+
+    function showSearchFeed(searchFeed) {
+        adultContent = skywalker.getContentFilter().getAdultContent()
+        page.header.forceFocus()
+        searchBar.setLatestPosts()
+        postAuthorUser = searchFeed.authorHandle
+        postMentionsUser = searchFeed.mentionHandle
+        postSince = searchFeed.since
+        postSetSince = !isNaN(searchFeed.since)
+        postUntil = searchFeed.until
+        postSetUntil = !isNaN(searchFeed.until)
+        postLanguage = searchFeed.language
+        header.setSearchText(searchFeed.searchQuery)
+        searchUtils.search(searchFeed.searchQuery)
     }
 
     function show(searchText = "", searchScope = "") {
@@ -965,7 +1031,9 @@ SkyPage {
 
         if (userSettings.showSuggestedUsers)
             firstSearch = false
+    }
 
+    Component.onCompleted: {
         searchUtils.initLastSearchedProfiles()
     }
 }

@@ -483,7 +483,7 @@ Rectangle {
 
                     onRepost: {
                         root.repost(postRepostUri, postUri, postCid, postText,
-                                    postIndexedDateTime, author, postEmbeddingDisabled)
+                                    postIndexedDateTime, author, postEmbeddingDisabled, postPlainText)
                     }
 
                     onLike: root.like(postLikeUri, postUri, postCid)

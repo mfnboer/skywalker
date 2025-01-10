@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "password_encryption.h"
 #include "profile.h"
+#include "search_feed.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QSettings>
@@ -101,6 +102,7 @@ public:
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
 
     // For the home feed, the URI is "home"
+    // For search feeds, the URI is the search name
     Q_INVOKABLE void setLastViewedFeed(const QString& did, const QString& uri);
     Q_INVOKABLE QString getLastViewedFeed(const QString& did) const;
 
@@ -250,6 +252,9 @@ public:
     void setLabels(const QString& did, const QString& labelerDid, const QStringList labels);
     void removeLabels(const QString& did, const QString& labelerDid);
     bool containsLabeler(const QString& did, const QString& labelerDid) const;
+
+    SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
+    void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
     void addDraftRepoToFileMigration(const QString& did);
     void setDraftRepoToFileMigrationDone(const QString& did);
