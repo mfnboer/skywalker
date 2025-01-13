@@ -1,3 +1,8 @@
+next
+====
+* Bug fix: apps keeps sending requests for a profile in your
+  recent searches if that profile got deactivated.
+
 3.11
 ====
 * Bluesky trending topics

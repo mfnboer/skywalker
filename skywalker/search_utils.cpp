@@ -762,7 +762,7 @@ void SearchUtils::clearLastSearches()
     setLastSearchedProfiles({});
 }
 
-void SearchUtils::initLastSearchedProfiles()
+void SearchUtils::initLastSearchedProfiles(bool resolveDids)
 {
     qDebug() << "Init last searched profiles";
 
@@ -796,7 +796,7 @@ void SearchUtils::initLastSearchedProfiles()
 
     setLastSearchedProfiles(profiles);
 
-    if (unresolvedDids.empty())
+    if (unresolvedDids.empty() || !resolveDids)
         return;
 
     bskyClient()->getProfiles(unresolvedDids,
@@ -810,7 +810,8 @@ void SearchUtils::initLastSearchedProfiles()
                 AuthorCache::instance().put(profile);
             }
 
-            initLastSearchedProfiles();
+            // There could still be unresolved DIDs when an account gets de-activated.
+            initLastSearchedProfiles(false);
         },
         [](const QString& error, const QString& msg){
             qDebug() << "initLastSearchedProfiles failed:" << error << " - " << msg;

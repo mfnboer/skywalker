@@ -70,7 +70,7 @@ public:
     Q_INVOKABLE void addLastSearchedProfile(const BasicProfile& profile);
     Q_INVOKABLE void removeLastSearchedProfile(const QString& profileDid);
     Q_INVOKABLE void clearLastSearches();
-    Q_INVOKABLE void initLastSearchedProfiles();
+    Q_INVOKABLE void initLastSearchedProfiles(bool resolveDids = true);
     Q_INVOKABLE void getTrendingTopics();
     Q_INVOKABLE SearchFeed createSearchFeed(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
                                             QDateTime since, QDateTime until, const QString& language) const;

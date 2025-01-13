@@ -167,7 +167,6 @@ Column {
     Loader {
         id: recordLoader
         width: parent.width
-        visible: status == Loader.Ready
     }
 
     Loader {
