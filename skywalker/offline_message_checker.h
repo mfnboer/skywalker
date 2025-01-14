@@ -79,8 +79,9 @@ private:
     QString mUserDid;
     ImageReader mImageReader;
     ATProto::UserPreferences mUserPreferences;
+    ProfileStore mUserFollows;
     ContentFilter mContentFilter;
-    Bookmarks mBookmarks; // Not loaded. Needed for notificaion model
+    Bookmarks mBookmarks; // Not loaded. Needed for notification model
     MutedWords mMutedWords;
     NotificationListModel mNotificationListModel;
     std::unordered_map<QString, QByteArray> mAvatars; // URL -> jpg

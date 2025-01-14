@@ -27,6 +27,7 @@ public:
     // NormalizedWordIndex
     QString getText() const override { return getTopic(); }
     std::vector<QString> getHashtags() const override { return {}; }
+    QString getAuthorDid() const override { return {}; }
 
 private:
     ATProto::AppBskyUnspecced::TrendingTopic::SharedPtr mTopic;

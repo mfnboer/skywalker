@@ -35,7 +35,7 @@ ListView {
     headerPositioning: ListView.OverlayHeader
 
     delegate: ColumnLayout {
-        required property string modelData
+        required property mutedwordentry modelData
 
         width: view.width
 
@@ -48,8 +48,7 @@ ListView {
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 font.pointSize: guiSettings.scaledFont(9/8)
-                color: guiSettings.textColor
-                text: modelData
+                text: modelData.value
             }
             SvgButton {
                 iconColor: guiSettings.textColor
@@ -65,6 +64,28 @@ ListView {
                 accessibleName: qsTr(`delete ${entryText.text}`)
                 onClicked: skywalker.mutedWords.removeEntry(entryText.text)
             }
+        }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            leftPadding: 10
+            rightPadding: 10
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: Material.color(Material.Grey)
+            text: getExpiresIndication(modelData.expiresAt)
+            visible: !isNaN(modelData.expiresAt.getTime())
+        }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            leftPadding: 10
+            rightPadding: 10
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: Material.color(Material.Grey)
+            text: qsTr("Exclude users you follow")
+            visible: modelData.actorTarget === QEnums.ACTOR_TARGET_EXCLUDE_FOLLOWING
         }
 
         Rectangle {
@@ -83,6 +104,19 @@ ListView {
         list: view
     }
 
+    function getExpiresIndication(expiresAt) {
+        if (isNaN(expiresAt))
+            return ""
+
+        if (guiSettings.isToday(expiresAt))
+            return qsTr(`Expires ${Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))}`)
+        else if (guiSettings.isTomorrow(expiresAt))
+            return qsTr(`Expires tomorrow ${Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))}`)
+        else if (expiresAt < new Date())
+            return "Expired"
+        else
+            return qsTr(`Expires ${expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+    }
 
     function addWord() {
         let component = Qt.createComponent("AddMutedWord.qml")

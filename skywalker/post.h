@@ -55,6 +55,7 @@ public:
     QString getText() const override;
     QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}) const;
     BasicProfile getAuthor() const;
+    QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
     bool isRepost() const;
     std::optional<BasicProfile> getRepostedBy() const;

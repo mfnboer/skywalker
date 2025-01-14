@@ -498,7 +498,7 @@ private:
     UserSettings mUserSettings;
     ContentFilter mContentFilter{mUserPreferences, &mUserSettings};
     Bookmarks mBookmarks;
-    MutedWords mMutedWords;
+    MutedWords mMutedWords{mFollowing};
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};
     PostFeedModel::Ptr mPostFeedModel;

@@ -67,6 +67,7 @@ public:
     QString getText() const override;
     QString getFormattedText() const;
     BasicProfile getAuthor() const;
+    QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
     QList<ImageView> getImages() const;
     QVariant getVideo() const;

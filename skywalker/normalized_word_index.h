@@ -15,6 +15,7 @@ public:
     virtual ~NormalizedWordIndex() = default;
     virtual QString getText() const = 0;
     virtual std::vector<QString> getHashtags() const = 0;
+    virtual QString getAuthorDid() const = 0;
 
     const std::unordered_set<QString>& getUniqueHashtags() const;
     const std::vector<QString>& getNormalizedWords() const;

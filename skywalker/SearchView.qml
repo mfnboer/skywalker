@@ -996,9 +996,9 @@ SkyPage {
         postAuthorUser = searchFeed.authorHandle
         postMentionsUser = searchFeed.mentionHandle
         postSince = searchFeed.since
-        postSetSince = !isNaN(searchFeed.since)
+        postSetSince = !isNaN(searchFeed.since.getTime())
         postUntil = searchFeed.until
-        postSetUntil = !isNaN(searchFeed.until)
+        postSetUntil = !isNaN(searchFeed.until.getTime())
         postLanguage = searchFeed.language
         header.setSearchText(searchFeed.searchQuery)
         searchUtils.search(searchFeed.searchQuery)

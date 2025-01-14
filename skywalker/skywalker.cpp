@@ -50,7 +50,7 @@ Skywalker::Skywalker(QObject* parent) :
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
     mBookmarks(this),
-    mMutedWords(this),
+    mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mMentionListModel(mContentFilter, mBookmarks, mMutedWords, this),

@@ -267,6 +267,7 @@ public:
         SCRIPT_LAST = SCRIPT_KOREAN
     };
     Q_ENUM(Script)
+    Q_INVOKABLE static QString scriptToString(Script script);
 
     enum LanguageSource
     {
@@ -285,7 +286,13 @@ public:
     };
     Q_ENUM(FavoriteType)
 
-    Q_INVOKABLE static QString scriptToString(Script script);
+    enum ActorTarget
+    {
+        ACTOR_TARGET_ALL = (int)ATProto::AppBskyActor::ActorTarget::ALL,
+        ACTOR_TARGET_EXCLUDE_FOLLOWING = (int)ATProto::AppBskyActor::ActorTarget::EXCLUDE_FOLLOWING,
+        ACTOR_TARGET_UNKNOWN = (int)ATProto::AppBskyActor::ActorTarget::UNKNOWN
+    };
+    Q_ENUM(ActorTarget)
 };
 
 }

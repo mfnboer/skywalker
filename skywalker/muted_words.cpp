@@ -5,17 +5,25 @@
 
 namespace Skywalker {
 
-MutedWords::MutedWords(QObject* parent) :
-    QObject(parent)
+MutedWordEntry::MutedWordEntry(const QString& value, QEnums::ActorTarget actorTarget, QDateTime expiresAt) :
+    mValue(value),
+    mActorTarget(actorTarget),
+    mExpiresAt(expiresAt)
 {
 }
 
-QStringList MutedWords::getEntries() const
+MutedWords::MutedWords(const ProfileStore& userFollows, QObject* parent) :
+    QObject(parent),
+    mUserFollows(userFollows)
 {
-    QStringList sortedEntries;
+}
+
+MutedWordEntry::List MutedWords::getEntries() const
+{
+    MutedWordEntry::List sortedEntries;
 
     for (const auto& entry : mEntries)
-        sortedEntries.append(entry.mRaw);
+        sortedEntries.append(MutedWordEntry(entry.mRaw, entry.mActorTarget, entry.mExpiresAt));
 
     return sortedEntries;
 }
@@ -30,6 +38,7 @@ void MutedWords::clear()
     mEntries.clear();
     mSingleWordIndex.clear();
     mFirstWordIndex.clear();
+    mHashTagIndex.clear();
 
     emit entriesChanged();
 }
@@ -80,9 +89,12 @@ bool MutedWords::preAdd(const Entry& entry)
     return true;
 }
 
-void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, const QStringList& unkwownTargets)
+void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, const QStringList& unkwownTargets,
+                          QEnums::ActorTarget actorTarget, QDateTime expiresAt)
 {
     Entry newEntry(cleanRawWord(word), SearchUtils::getNormalizedWords(word), bskyJson, unkwownTargets);
+    newEntry.mActorTarget = actorTarget;
+    newEntry.mExpiresAt = expiresAt;
 
     if (!preAdd(newEntry))
         return;
@@ -159,16 +171,39 @@ void MutedWords::removeWordFromIndex(const Entry* entry, WordIndexType& wordInde
         wordIndex.erase(word);
 }
 
+bool MutedWords::mustSkip(const Entry& entry, const QString& authorDid, QDateTime now) const
+{
+    if (entry.mExpiresAt.isValid() && now >= entry.mExpiresAt)
+    {
+        qDebug() << "Expired entry:" << entry.mRaw << entry.mExpiresAt;
+        return true;
+    }
+
+    if (entry.mActorTarget == QEnums::ACTOR_TARGET_EXCLUDE_FOLLOWING &&
+        !authorDid.isEmpty() && mUserFollows.contains(authorDid))
+    {
+        qDebug() << "Entry from follower:" << entry.mRaw << authorDid;
+        return true;
+    }
+
+    return false;
+}
+
 bool MutedWords::match(const NormalizedWordIndex& post) const
 {
     if (mEntries.empty())
         return false;
 
+    const auto now = QDateTime::currentDateTimeUtc();
+    const QString authorDid = post.getAuthorDid();
     const auto& postHashtags = post.getUniqueHashtags();
 
-    for (const auto& [word, _] : mHashTagIndex)
+    for (const auto& [word, entries] : mHashTagIndex)
     {
-        if (postHashtags.count(word))
+        Q_ASSERT(entries.size() == 1);
+        const auto* entry = *entries.begin();
+
+        if (!mustSkip(*entry, authorDid, now) && postHashtags.count(word))
         {
             qDebug() << "Match on hashtag:" << word;
             return true;
@@ -177,9 +212,12 @@ bool MutedWords::match(const NormalizedWordIndex& post) const
 
     const auto& uniquePostWords = post.getUniqueNormalizedWords();
 
-    for (const auto& [word, _] : mSingleWordIndex)
+    for (const auto& [word, entries] : mSingleWordIndex)
     {
-        if (uniquePostWords.count(word))
+        Q_ASSERT(entries.size() == 1);
+        const auto* entry = *entries.begin();
+
+        if (!mustSkip(*entry, authorDid, now) && uniquePostWords.count(word))
         {
             qDebug() << "Match on single word entry:" << word;
             return true;
@@ -201,6 +239,9 @@ bool MutedWords::match(const NormalizedWordIndex& post) const
         {
             Q_ASSERT(mutedEntry);
             qDebug() << "Multi-word entry:" << mutedEntry->mRaw;
+
+            if (mustSkip(*mutedEntry, authorDid, now))
+                continue;
 
             for (int postWordIndex : uniqueWordIt->second)
             {
@@ -286,10 +327,17 @@ void MutedWords::load(const ATProto::UserPreferences& userPrefs)
         }
 
         if  (matchTag && !matchContent)
-            addEntry(QString("#%1").arg(mutedWord.mValue), mutedWord.mJson, unknownTargets);
+        {
+            addEntry(QString("#%1").arg(mutedWord.mValue), mutedWord.mJson, unknownTargets,
+                     (QEnums::ActorTarget)mutedWord.mActorTarget,
+                     mutedWord.mExpiresAt.value_or(QDateTime{}));
+        }
         else
-            addEntry(mutedWord.mValue, mutedWord.mJson, unknownTargets);
-
+        {
+            addEntry(mutedWord.mValue, mutedWord.mJson, unknownTargets,
+                     (QEnums::ActorTarget)mutedWord.mActorTarget,
+                     mutedWord.mExpiresAt.value_or(QDateTime{}));
+        }
     }
 
     qDebug() << "Muted words loaded:" << mEntries.size();

@@ -130,6 +130,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
     mBackgroundApp(backgroundApp),
     mUserSettings(settingsFileName),
     mContentFilter(mUserPreferences, &mUserSettings),
+    mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
     mNotificationListModel.enableRetrieveNotificationPosts(false);
@@ -139,6 +140,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QE
     mEventLoop(eventLoop),
     mUserSettings(settingsFileName),
     mContentFilter(mUserPreferences, &mUserSettings),
+    mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
     mNotificationListModel.enableRetrieveNotificationPosts(false);

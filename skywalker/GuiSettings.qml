@@ -116,6 +116,11 @@ Item {
         return isToday(nextDay)
     }
 
+    function isTomorrow(date) {
+        const prevDay = new Date(new Date().setDate(date.getDate() - 1))
+        return isToday(prevDay)
+    }
+
     function durationToString(duration) {
         if (duration < 59.5)
             return Math.round(duration) + qsTr("s", "seconds")
