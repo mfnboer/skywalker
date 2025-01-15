@@ -55,7 +55,7 @@ ListView {
                 Material.background: "transparent"
                 svg: SvgOutline.edit
                 accessibleName: qsTr(`edit ${entryText.text}`)
-                onClicked: editWord(entryText.text)
+                onClicked: editWord(modelData)
             }
             SvgButton {
                 iconColor: guiSettings.textColor
@@ -105,17 +105,21 @@ ListView {
     }
 
     function getExpiresIndication(expiresAt) {
-        if (isNaN(expiresAt))
+        if (isNaN(expiresAt.getTime()))
             return ""
+
+        const today = new Date()
+
+        if (expiresAt < today)
+            return qsTr("Expired")
 
         if (guiSettings.isToday(expiresAt))
             return qsTr(`Expires ${Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))}`)
-        else if (guiSettings.isTomorrow(expiresAt))
+
+        if (guiSettings.isTomorrow(expiresAt))
             return qsTr(`Expires tomorrow ${Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))}`)
-        else if (expiresAt < new Date())
-            return "Expired"
-        else
-            return qsTr(`Expires ${expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+
+        return qsTr(`Expires ${expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
     }
 
     function addWord() {
@@ -124,9 +128,10 @@ ListView {
 
         dialog.onAccepted.connect(() => {
             const word = dialog.getText()
+            const actorTarget = dialog.excludeFollows ? QEnums.ACTOR_TARGET_EXCLUDE_FOLLOWING : QEnums.ACTOR_TARGET_ALL
 
             if (word)
-                skywalker.mutedWords.addEntry(word)
+                skywalker.mutedWords.addEntry(word, actorTarget, dialog.expiresAt)
 
             dialog.destroy()
         })
@@ -135,16 +140,24 @@ ListView {
         dialog.show()
     }
 
-    function editWord(oldWord) {
+    function editWord(mutedWordEntry) {
         let component = Qt.createComponent("AddMutedWord.qml")
-        let dialog = component.createObject(view, { editWord: oldWord })
+        let dialog = component.createObject(view, {
+                editWord: mutedWordEntry.value,
+                expiresAt: mutedWordEntry.expiresAt,
+                excludeFollows: mutedWordEntry.actorTarget === QEnums.ACTOR_TARGET_EXCLUDE_FOLLOWING
+            })
 
         dialog.onAccepted.connect(() => {
             const word = dialog.getText()
+            const actorTarget = dialog.excludeFollows ? QEnums.ACTOR_TARGET_EXCLUDE_FOLLOWING : QEnums.ACTOR_TARGET_ALL
 
-            if (word && word !== oldWord) {
-                skywalker.mutedWords.removeEntry(oldWord)
-                skywalker.mutedWords.addEntry(word)
+            if (word && (word !== mutedWordEntry.value ||
+                actorTarget !== mutedWordEntry.actorTarget ||
+                dialog.expiresAt !== mutedWordEntry.expiresAt))
+            {
+                skywalker.mutedWords.removeEntry(mutedWordEntry.value)
+                skywalker.mutedWords.addEntry(word, actorTarget, dialog.expiresAt)
             }
 
             dialog.destroy()

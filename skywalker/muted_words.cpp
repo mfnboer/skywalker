@@ -89,6 +89,11 @@ bool MutedWords::preAdd(const Entry& entry)
     return true;
 }
 
+void MutedWords::addEntry(const QString& word, QEnums::ActorTarget actorTarget, QDateTime expiresAt)
+{
+    addEntry(word, {} , {}, actorTarget, expiresAt);
+}
+
 void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, const QStringList& unkwownTargets,
                           QEnums::ActorTarget actorTarget, QDateTime expiresAt)
 {
@@ -381,6 +386,11 @@ void MutedWords::save(ATProto::UserPreferences& userPrefs)
             mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::TAG));
             mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::CONTENT));
         }
+
+        if (entry.mExpiresAt.isValid())
+            mutedWord.mExpiresAt = entry.mExpiresAt;
+
+        mutedWord.mActorTarget = (ATProto::AppBskyActor::ActorTarget)entry.mActorTarget;
 
         // Forward compatibility: save unknown targets
         for (const auto& unknownTarget : entry.mUnknownTargets)

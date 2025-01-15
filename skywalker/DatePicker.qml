@@ -5,13 +5,14 @@ import skywalker
 
 Dialog {
     property date selectedDate
+    property bool enableTime: false
     readonly property int firstYear: 2020
     property bool initialized: false
 
     id: datePicker
     x: (parent.width - width) / 2
     contentWidth: Math.max(yearComboBox.x + yearComboBox.width, monthGrid.width)
-    contentHeight: monthColumn.y + monthColumn.height
+    contentHeight: timeRow.visible ? timeRow.y + timeRow.height : monthColumn.y + monthColumn.height
     topMargin: guiSettings.headerHeight + 10
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
@@ -99,12 +100,59 @@ Dialog {
         }
     }
 
+    RowLayout {
+        id: timeRow
+        anchors.top: monthColumn.bottom
+        anchors.topMargin: 10
+        anchors.horizontalCenter: parent.horizontalCenter
+        visible: enableTime
+
+        AccessibleText {
+            text: "Time:"
+        }
+        Tumbler {
+            id: hoursTumbler
+            model: 24
+            visibleItemCount: 3
+            delegate: timeTumblerComponent
+            contentItem.implicitWidth: 50
+            contentItem.implicitHeight: 80
+            onCurrentIndexChanged: setSelectedDate()
+        }
+        Text {
+            color: guiSettings.textColor
+            text: ":"
+        }
+        Tumbler {
+            id: minutesTumbler
+            model: 60
+            visibleItemCount: 3
+            delegate: timeTumblerComponent
+            contentItem.implicitWidth: 50
+            contentItem.implicitHeight: 80
+            onCurrentIndexChanged: setSelectedDate()
+        }
+    }
+
+    Component {
+        id: timeTumblerComponent
+
+        AccessibleText {
+            text: modelData.toString().length < 2 ? "0" + modelData : modelData
+            opacity: 1.0 - Math.abs(Tumbler.displacement) / (Tumbler.tumbler.visibleItemCount / 2)
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
 
     function setSelectedDate() {
         if (!initialized)
             return
 
         selectedDate.setFullYear(yearComboBox.getYear(), monthComboBox.getMonth(), monthGrid.day)
+
+        if (enableTime)
+            selectedDate.setHours(hoursTumbler.currentIndex, minutesTumbler.currentIndex)
     }
 
     Component.onCompleted: {
@@ -126,6 +174,12 @@ Dialog {
         yearComboBox.currentIndex = selectedDate.getFullYear() - firstYear
         monthComboBox.currentIndex = selectedDate.getMonth()
         monthGrid.day = selectedDate.getDate()
+
+        if (enableTime) {
+            hoursTumbler.currentIndex = selectedDate.getHours()
+            minutesTumbler.currentIndex = selectedDate.getMinutes()
+        }
+
         initialized = true
     }
 }

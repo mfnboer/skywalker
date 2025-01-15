@@ -1,7 +1,8 @@
 3.11.1
 ======
+* Support for expiry time and to exclude user you follow on muted words
 * Bug fix: apps keeps sending requests for a profile in your
-  recent searches if that profile got deactivated.
+  recent searches if that profile got deactivated
 
 3.11
 ====

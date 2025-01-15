@@ -5,12 +5,15 @@ import skywalker
 
 Dialog {
     property string editWord
+    property date expiresAt
+    property bool excludeFollows: false
     property bool isTyping: false
     property bool isHashtag: false
+    property date nullDate
 
     id: page
     width: parent.width
-    contentHeight: textInput.height + (hashtagTypeaheadView.visible ? hashtagTypeaheadView.height : 0)
+    contentHeight: excludeFollowsSwitch.y + excludeFollowsSwitch.height
     topMargin: guiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
@@ -43,12 +46,100 @@ Dialog {
         }
     }
 
+    AccessibleText {
+        id: validityHeader
+        anchors.top: textInput.bottom
+        anchors.topMargin: 10
+        width: parent.width
+        font.bold: true
+        text: qsTr('Duration:')
+    }
+
+    ButtonGroup {
+        id: durationGroup
+    }
+
+    GridLayout {
+        id: durationGrid
+        anchors.top: validityHeader.bottom
+        width: parent.width
+        rowSpacing: 0
+        columns: 2
+
+        RadioButton {
+            id: foreverButton
+            text: qsTr("Forever")
+            ButtonGroup.group: durationGroup
+            onCheckedChanged: {
+                if (checked)
+                    expiresAt = nullDate
+            }
+        }
+        RadioButton {
+            text: qsTr("24 hours")
+            ButtonGroup.group: durationGroup
+            onCheckedChanged: {
+                if (checked)
+                    setExpiresAtDays(1)
+            }
+        }
+        RadioButton {
+            text: qsTr("7 days")
+            ButtonGroup.group: durationGroup
+            onCheckedChanged: {
+                if (checked)
+                    setExpiresAtDays(7)
+            }
+        }
+        RadioButton {
+            text: qsTr("30 days")
+            ButtonGroup.group: durationGroup
+            onCheckedChanged: {
+                if (checked)
+                    setExpiresAtDays(30)
+            }
+        }
+
+        RowLayout {
+            Layout.columnSpan: 2
+
+            RadioButton {
+                id: untilButton
+                text: qsTr("Until:")
+                ButtonGroup.group: durationGroup
+            }
+            SkyTextInput {
+                id: untilIntput
+                Layout.fillWidth: true
+                svgIcon: SvgOutline.date
+                placeholderText: qsTr("Date, time")
+                text: enabled ? expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat) : ""
+                enabled: untilButton.checked
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: selectExpiresDate()
+                }
+            }
+        }
+    }
+
+    AccessibleSwitch {
+        id: excludeFollowsSwitch
+        anchors.top: durationGrid.bottom
+        anchors.topMargin: 10
+        width: parent.width
+        text: qsTr("Exclude users you follow")
+        checked: excludeFollows
+        onCheckedChanged: excludeFollows = checked
+    }
+
     HashtagListView {
         id: hashtagTypeaheadView
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: textInput.bottom
-        height: 200
+        anchors.bottom: excludeFollowsSwitch.bottom
         model: searchUtils.hashtagTypeaheadList
         visible: page.isTyping && page.isHashtag
 
@@ -74,7 +165,26 @@ Dialog {
         skywalker: root.getSkywalker()
     }
 
+    function setExpiresAtDays(days) {
+        expiresAt = new Date()
+        expiresAt.setDate(expiresAt.getDate() + days)
+    }
 
+    function selectExpiresDate() {
+        if (isNaN(expiresAt.getTime()))
+            setExpiresAtDays(1)
+
+        let component = guiSettings.createComponent("DatePicker.qml")
+        let datePicker = component.createObject(parent, { selectedDate: expiresAt, enableTime: true })
+        datePicker.onRejected.connect(() => datePicker.destroy())
+
+        datePicker.onAccepted.connect(() => {
+            expiresAt = datePicker.selectedDate
+            datePicker.destroy()
+        })
+
+        datePicker.open()
+    }
 
     function getText() {
         return textInput.text.trim()
@@ -85,6 +195,11 @@ Dialog {
     }
 
     Component.onCompleted: {
+        if (!isNaN(expiresAt.getTime()))
+            untilButton.checked = true
+        else
+            foreverButton.checked = true
+
         textInput.setFocus()
     }
 }

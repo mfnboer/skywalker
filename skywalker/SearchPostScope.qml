@@ -293,7 +293,7 @@ Dialog {
 
 
     function selectDate(textInput) {
-        let component = Qt.createComponent("DatePicker.qml")
+        let component = guiSettings.createComponent("DatePicker.qml")
         let datePicker = component.createObject(parent, { selectedDate: (textInput === sinceText) ? sinceDate : untilDate })
         datePicker.onRejected.connect(() => datePicker.destroy())
 

@@ -126,7 +126,7 @@ private slots:
         ProfileStore userFollows;
         userFollows.add(BasicProfile{"did:plc:foo", "@foo.thereforeiam.eu", "Foo", ""});
         MutedWords mutedWords{userFollows};
-        mutedWords.addEntry("hello", {}, {}, QEnums::ACTOR_TARGET_EXCLUDE_FOLLOWING);
+        mutedWords.addEntry("hello", QEnums::ACTOR_TARGET_EXCLUDE_FOLLOWING);
         const auto post = setPost("hello world");
         QVERIFY(mutedWords.match(post));
 
@@ -139,8 +139,8 @@ private slots:
         const auto now = QDateTime::currentDateTimeUtc();
         ProfileStore userFollows;
         MutedWords mutedWords{userFollows};
-        mutedWords.addEntry("hello", {}, {}, QEnums::ACTOR_TARGET_ALL, now + 10s);
-        mutedWords.addEntry("world", {}, {}, QEnums::ACTOR_TARGET_ALL, now - 10s);
+        mutedWords.addEntry("hello", QEnums::ACTOR_TARGET_ALL, now + 10s);
+        mutedWords.addEntry("world", QEnums::ACTOR_TARGET_ALL, now - 10s);
 
         const auto post1 = setPost("hello");
         QVERIFY(mutedWords.match(post1));

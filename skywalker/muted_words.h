@@ -52,8 +52,9 @@ public:
     MutedWordEntry::List getEntries() const;
     void clear();
 
-    Q_INVOKABLE void addEntry(const QString& word, const QJsonObject& bskyJson = {}, const QStringList& unkwownTargets = {},
-                              QEnums::ActorTarget actorTarget = QEnums::ACTOR_TARGET_ALL, QDateTime expiresAt = {});
+    Q_INVOKABLE void addEntry(const QString& word, QEnums::ActorTarget actorTarget = QEnums::ACTOR_TARGET_ALL, QDateTime expiresAt = {});
+    void addEntry(const QString& word, const QJsonObject& bskyJson, const QStringList& unkwownTargets,
+                  QEnums::ActorTarget actorTarget, QDateTime expiresAt);
     Q_INVOKABLE void removeEntry(const QString& word);
     Q_INVOKABLE bool containsEntry(const QString& word);
     void load(const ATProto::UserPreferences& userPrefs);
