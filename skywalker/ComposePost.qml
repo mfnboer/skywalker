@@ -1375,12 +1375,17 @@ SkyPage {
             if (!page.allowQuoting)
                 postUtils.addPostgate(uri, true, [])
 
-            if (page.sendingThreadPost > -1)
+            if (page.sendingThreadPost > -1) {
                 sendNextThreadPost(uri, cid)
-            else if (page.restrictReply)
-                postUtils.addThreadgate(uri, cid, page.allowReplyMentioned, page.allowReplyFollowing, page.getReplyRestrictionListUris())
-            else      
+            }
+            else if (page.restrictReply) {
+                const restrictionListUris = page.getReplyRestrictionListUris()
+                const allowNobody = !page.allowReplyMentioned && !page.allowReplyFollowing && restrictionListUris.length === 0
+                postUtils.addThreadgate(uri, cid, page.allowReplyMentioned, page.allowReplyFollowing, restrictionListUris, allowNobody, [])
+            }
+            else {
                 postDone()
+            }
         }
 
         onPostFailed: (error) => page.postFailed(error)
@@ -2048,8 +2053,10 @@ SkyPage {
             threadFirstPostCid = prevCid
 
             if (restrictReply && !threadGateCreated) {
+                const restrictionListUris = getReplyRestrictionListUris()
+                const allowNobody = !allowReplyMentioned && !allowReplyFollowing && restrictionListUris.length === 0
                 postUtils.addThreadgate(prevUri, prevCid, allowReplyMentioned, allowReplyFollowing,
-                                        getReplyRestrictionListUris())
+                                        restrictionListUris, allowNobody, [])
                 return
             }
 

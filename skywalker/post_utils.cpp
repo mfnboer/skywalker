@@ -1572,7 +1572,7 @@ void PostUtils::getPostgate(const QString& postUri)
             if (!presence)
                 return;
 
-            if (error == ATProto::ATProtoErrorMsg::INVALID_REQUEST)
+            if (error == ATProto::ATProtoErrorMsg::RECORD_NOT_FOUND)
             {
                 qDebug() << "No postgate record exists:" << postUri;
                 emit getPostgateOk(Postgate{});
