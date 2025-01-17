@@ -62,14 +62,30 @@ RoundedFrame {
             let p = Qt.point(mouseX, mouseY)
             let index = -1
 
-            if (img1.contains(mapToItem(img1, p)))
-                index = 0
-            else if (img2.contains(mapToItem(img2, p)))
-                index = 1
-            else if (img3.contains(mapToItem(img3, p)))
-                index = 2
-            else if (img4.contains(mapToItem(img4, p)))
-                index = 3
+            if (img1.contains(mapToItem(img1, p))) {
+                if (img1.failedCanReload)
+                    img1.reload()
+                else
+                    index = 0
+            }
+            else if (img2.contains(mapToItem(img2, p))) {
+                if (img2.failedCanReload)
+                    img2.reload()
+                else
+                    index = 1
+            }
+            else if (img3.contains(mapToItem(img3, p))) {
+                if (img3.failedCanReload)
+                    img3.reload()
+                else
+                    index = 2
+            }
+            else if (img4.contains(mapToItem(img4, p))) {
+                if (img4.failedCanReload)
+                    img4.reload()
+                else
+                    index = 3
+            }
 
             if (index >= 0)
                 root.viewFullImage(images, index)

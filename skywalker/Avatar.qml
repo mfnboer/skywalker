@@ -31,6 +31,7 @@ Item {
             source: avatarUrl
             fillMode: Image.PreserveAspectFit
             maxRetry: 60
+            indicateLoading: false
         }
     }
     Rectangle {

@@ -1,6 +1,7 @@
 next
 ====
 * Support for expiry time and exclude users you follow on muted words
+* Reload button when an image fails to load
 * Bug fix for setting/changing reply restrictions
 
 3.11.1

@@ -48,7 +48,12 @@ RoundedFrame {
         enabled: filter.imageVisible()
         anchors.fill: img
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.viewFullImage(images, 0)
+        onClicked: {
+            if (img.failedCanReload)
+                img.reload()
+            else
+                root.viewFullImage(images, 0)
+        }
     }
 
     AccessibleImage {

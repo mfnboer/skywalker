@@ -73,6 +73,7 @@ SkyPage {
                     fillMode: Image.PreserveAspectFit
                     source: images[index].fullSizeUrl
                     transform: Translate { id: imgTranslation }
+                    reloadIconColor: "white"
 
                     PinchHandler {
                         target: null

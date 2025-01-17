@@ -44,6 +44,7 @@ RoundedFrame {
             width: parent.width - 2
             source: filter.imageVisible() ? card.thumbUrl : ""
             fillMode: Image.PreserveAspectFit
+            indicateLoading: false
         }
         Text {
             id: linkText
@@ -79,5 +80,4 @@ RoundedFrame {
             elide: Text.ElideRight
         }
     }
-
 }

@@ -58,6 +58,7 @@ SkyPage {
             width: parent.width
             source: authorBanner
             fillMode: Image.PreserveAspectFit
+            indicateLoading: false
             visible: authorBanner && contentVisible() && status === Image.Ready
         }
 
