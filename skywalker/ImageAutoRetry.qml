@@ -7,7 +7,9 @@ Image {
     property int retryCount: 0
     property bool indicateLoading: true
     property string reloadIconColor: guiSettings.textColor
+    property bool isResetting: false
     readonly property bool failedCanReload: status == Image.Error && retryCount >= maxRetry && indicateLoading
+    readonly property bool isLoading: status == Image.Loading || (status == Image.Error && retryCount < maxRetry) || isResetting
 
     id: img
 
@@ -15,9 +17,11 @@ Image {
         id: retryTimer
 
         onTriggered: {
+            isResetting = true
             let src = img.source
             img.source = ""
             img.source = src
+            isResetting = false
         }
     }
 
@@ -42,7 +46,7 @@ Image {
         width: 30
         height: width
         anchors.centerIn: parent
-        running: parent.status == Image.Loading && indicateLoading
+        running: isLoading && indicateLoading
     }
 
     SvgButton {

@@ -1454,6 +1454,7 @@ ApplicationWindow {
         if (searchStack.depth === 0)
             createSearchView()
 
+        unwindStack()
         currentStackItem().show(searchText, searchScope)
     }
 
@@ -1463,6 +1464,7 @@ ApplicationWindow {
         if (searchStack.depth === 0)
             createSearchView()
 
+        unwindStack()
         currentStackItem().showSearchFeed(searchFeed)
     }
 

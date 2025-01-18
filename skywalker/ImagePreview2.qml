@@ -2,18 +2,18 @@ import QtQuick
 import QtQuick.Layouts
 import skywalker
 
-RoundedFrame {
+RoundCornerMask {
     required property int contentVisibility
     required property string contentWarning
     property list<imageview> images
 
     id: frame
-    objectToRound: imgRow
     width: parent.width
     height: filter.imageVisible() ? width / 2 : filter.height
 
     Row {
         id: imgRow
+        z: parent.z - 1
         anchors.fill: parent
         spacing: 4
 
@@ -59,17 +59,6 @@ RoundedFrame {
             if (index >= 0)
                 root.viewFullImage(images, index)
         }
-    }
-
-    AccessibleImage {
-        image: img1
-        alt: img1.imageView.alt
-        visible: filter.imageVisible()
-    }
-    AccessibleImage {
-        image: img2
-        alt: img2.imageView.alt
-        visible: filter.imageVisible()
     }
 
     FilteredImageWarning {

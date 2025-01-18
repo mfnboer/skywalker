@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "author_cache.h"
-#include "skywalker.h"
 
 namespace Skywalker {
 

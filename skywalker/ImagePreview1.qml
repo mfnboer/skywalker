@@ -1,7 +1,7 @@
 import QtQuick
 import skywalker
 
-RoundedFrame {
+RoundCornerMask {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property list<imageview> images
@@ -9,12 +9,12 @@ RoundedFrame {
     property bool settingSize: false
 
     id: frame
-    objectToRound: img
     width: filter.imageVisible() ? img.width : parent.width
     height: filter.imageVisible() ? img.height : filter.height
 
     ThumbImageView {
         id: img
+        z: parent.z - 1
         width: Math.min(implicitWidth, frame.parent.width)
         fillMode: Image.PreserveAspectFit
         imageView: filter.getImage(0)
@@ -54,12 +54,6 @@ RoundedFrame {
             else
                 root.viewFullImage(images, 0)
         }
-    }
-
-    AccessibleImage {
-        image: img
-        alt: img.imageView.alt
-        visible: filter.imageVisible()
     }
 
     FilteredImageWarning {
