@@ -3,6 +3,7 @@ import skywalker
 
 Item {
     required property record_with_media_view record
+    property string backgroundColor: "transparent"
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property bool highlight: false
@@ -25,6 +26,7 @@ Item {
 
         RecordView {
             record: recordItem.record.record
+            backgroundColor: recordItem.backgroundColor
             highlight: recordItem.highlight
         }
 
@@ -33,6 +35,7 @@ Item {
                 let qmlFile = `ImagePreview${(record.images.length)}.qml`
                 mediaLoader.setSource(qmlFile, {
                                           images: record.images,
+                                          maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor,
                                           contentVisibility: recordItem.contentVisibility,
                                           contentWarning: recordItem.contentWarning })
             }
@@ -41,6 +44,7 @@ Item {
                                           videoView: record.video,
                                           contentVisibility: recordItem.contentVisibility,
                                           contentWarning: recordItem.contentVisibility,
+                                          backgroundColor: backgroundColor,
                                           highlight: recordItem.highlight })
             }
             else if (record.external) {

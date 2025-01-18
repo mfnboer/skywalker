@@ -261,6 +261,7 @@ Column {
             let qmlFile = `ImagePreview${(postImages.length)}.qml`
             mediaLoader.setSource(qmlFile, {
                                       images: postImages,
+                                      maskColor: bodyBackgroundColor,
                                       contentVisibility: postContentVisibility,
                                       contentWarning: postContentWarning })
         }
@@ -276,6 +277,7 @@ Column {
                                           videoView: postBody.postVideo,
                                           contentVisibility: postContentVisibility,
                                           contentWarning: postContentWarning,
+                                          backgroundColor: bodyBackgroundColor,
                                           highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
             }
         }
@@ -305,6 +307,7 @@ Column {
     function showPostRecordWidthMedia() {
         recordLoader.setSource("RecordWithMediaView.qml", {
                                    record: postRecordWithMedia,
+                                   backgroundColor: bodyBackgroundColor,
                                    contentVisibility: postContentVisibility,
                                    contentWarning: postContentWarning,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor })

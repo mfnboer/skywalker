@@ -76,6 +76,7 @@ Item {
                 postVideo: record.video
                 postExternal: record.external
                 postDateTime: record.postDateTime
+                bodyBackgroundColor: recordView.backgroundColor == "transparent" ? guiSettings.backgroundColor : recordView.backgroundColor
             }
         }
 
