@@ -8,6 +8,7 @@ import skywalker
 Item {
     property Skywalker skywalker: root.getSkywalker()
     readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
+    property bool isLightMode: Material.theme === Material.Light
 
     // Geometry
     readonly property int footerHeight: 50
@@ -21,49 +22,49 @@ Item {
     readonly property int threadLineWidth: 2
 
     // Colors
-    readonly property string accentColor: userSettings ? userSettings.accentColor : (Material.theme === Material.Light ? "blue" : "#58a6ff")
+    readonly property string accentColor: userSettings ? userSettings.accentColor : (isLightMode ? "blue" : "#58a6ff")
     readonly property string avatarDefaultColor: accentColor
-    readonly property string backgroundColor: userSettings ? userSettings.backgroundColor : Material.background
+    property string backgroundColor: userSettings ? userSettings.backgroundColor : Material.background
     readonly property string badgeBorderColor: backgroundColor
     readonly property string badgeColor: accentColor
     readonly property string badgeTextColor: "white"
     readonly property string bannerDefaultColor: accentColor
-    readonly property string borderColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
-    readonly property string borderHighLightColor: Material.theme === Material.Light ? Qt.darker(borderColor, 1.1) : Qt.lighter(borderColor, 1.6)
+    readonly property string borderColor: isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
+    readonly property string borderHighLightColor: isLightMode ? Qt.darker(borderColor, 1.1) : Qt.lighter(borderColor, 1.6)
     readonly property string buttonColor: accentColor
-    readonly property string buttonFlatColor: Material.theme === Material.Light ? Qt.lighter(buttonColor, 1.8) : Qt.darker(buttonColor, 1.8)
-    readonly property string buttonNeutralColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.07) : Qt.lighter(backgroundColor, 1.6)
+    readonly property string buttonFlatColor: isLightMode ? Qt.lighter(buttonColor, 1.8) : Qt.darker(buttonColor, 1.8)
+    readonly property string buttonNeutralColor: isLightMode ? Qt.darker(backgroundColor, 1.07) : Qt.lighter(backgroundColor, 1.6)
     readonly property string buttonTextColor: "white"
-    readonly property string contentLabelColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
-    readonly property string contentUserLabelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
-    readonly property string disabledColor: Material.theme === Material.Light ? "lightgrey" : "darkslategrey"
-    readonly property string errorColor: Material.theme === Material.Light ? "darkred" : "palevioletred"
+    readonly property string contentLabelColor: isLightMode ? "#f3f3f3" : "#1d3030"
+    readonly property string contentUserLabelColor: isLightMode ? "lightblue" : "steelblue"
+    readonly property string disabledColor: isLightMode ? "lightgrey" : "darkslategrey"
+    readonly property string errorColor: isLightMode ? "darkred" : "palevioletred"
     readonly property string favoriteColor: "gold"
     readonly property string footerColor: backgroundColor
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: "black"
-    readonly property string headerHighLightColor: Material.theme === Material.Light ? "lightblue" : "darkslategrey"
+    readonly property string headerHighLightColor: isLightMode ? "lightblue" : "darkslategrey"
     readonly property string headerTextColor: "white"
-    readonly property string labelColor: Material.theme === Material.Light ? "lightblue" : "steelblue"
+    readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"
-    readonly property string linkColor: userSettings ? userSettings.linkColor : (Material.theme === Material.Light ? "blue" : "#58a6ff")
+    readonly property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : "#58a6ff")
     readonly property string messageTimeColor: Material.color(Material.Grey)
-    readonly property string messageNewBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
-    readonly property string messageNewTextColor: Material.theme === Material.Light ? "black" : "white"
-    readonly property string messageUserBackgroundColor: Material.theme === Material.Light ? "#58a6ff" : "#0053b3"
+    readonly property string messageNewBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
+    readonly property string messageNewTextColor: isLightMode ? "black" : "white"
+    readonly property string messageUserBackgroundColor: isLightMode ? "#58a6ff" : "#0053b3"
     readonly property string messageUserTextColor: "white"
-    readonly property string messageOtherBackgroundColor: Material.theme === Material.Light ? "#f3f3f3" : "#1d3030"
-    readonly property string messageOtherTextColor: Material.theme === Material.Light ? "black" : "white"
+    readonly property string messageOtherBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
+    readonly property string messageOtherTextColor: isLightMode ? "black" : "white"
     readonly property string moderatorIconColor: "lightgrey"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
-    readonly property string postHighLightColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
+    readonly property string postHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string selectionColor: accentColor
-    readonly property string separatorColor: Material.theme === Material.Light ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
-    readonly property string separatorHighLightColor: Material.theme === Material.Light ? Qt.darker(separatorColor, 1.1) : Qt.lighter(separatorColor, 1.6)
+    readonly property string separatorColor: isLightMode ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
+    readonly property string separatorHighLightColor: isLightMode ? Qt.darker(separatorColor, 1.1) : Qt.lighter(separatorColor, 1.6)
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)
-    readonly property string textColor: Material.foreground
+    property string textColor: Material.foreground
     readonly property string textLengthExceededColor: "palevioletred"
 
     // Opacity
@@ -270,7 +271,7 @@ Item {
     }
 
     function threadMidColor(color) {
-        return Material.theme === Material.Light ?  Qt.lighter(threadStartColor(color), 1.3) : Qt.darker(threadStartColor(color), 1.3)
+        return isLightMode ?  Qt.lighter(threadStartColor(color), 1.3) : Qt.darker(threadStartColor(color), 1.3)
     }
 
     function threadEndColor(color) {
@@ -278,7 +279,7 @@ Item {
     }
 
     function threadEntryColor(color) {
-        return Material.theme === Material.Light ? Qt.darker(threadStartColor(color), 1.2) : Qt.lighter(threadStartColor(color), 1.2)
+        return isLightMode ? Qt.darker(threadStartColor(color), 1.2) : Qt.lighter(threadStartColor(color), 1.2)
     }
 
     function forbiddenBackgroundColors() {

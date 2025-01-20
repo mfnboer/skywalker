@@ -362,6 +362,13 @@ ApplicationWindow {
 
         onOldestUnreadNotificationIndex: (index, mentions) => getNotificationView().moveToNotification(index, mentions)
 
+        onAppPaused: {
+            let current = currentStackItem()
+
+            if (current && typeof current.cover === 'function')
+                current.cover()
+        }
+
         // Note for search feeds the feedUri is the search name
         function saveLastViewedFeed(feedUri) {
             let userSettings = skywalker.getUserSettings()

@@ -16,12 +16,15 @@ Column {
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
     property int maxHeight: 0
     property bool isFullViewMode: false
+    readonly property bool isFullVideoFeedViewMode: isFullViewMode && isVideoFeed
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
     property string videoSource
     property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
     property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || isVideoFeed
-    property bool autoPlay: userSettings.videoAutoPlay || (isFullViewMode && isVideoFeed)
+    property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
+    readonly property int bottomMargin: playControls.height
+    readonly property bool showPlayControls: playControls.show
 
     // Cache
     property list<string> tmpVideos: []
@@ -30,6 +33,13 @@ Column {
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
+
+    Rectangle {
+        width: parent.width
+        height: isFullVideoFeedViewMode ? (parent.height - videoColumn.height) / 2 - parent.spacing : 0
+        color: "transparent"
+        visible: isFullVideoFeedViewMode
+    }
 
     Rectangle {
         width: parent.width
@@ -314,6 +324,13 @@ Column {
     }
 
     Rectangle {
+        width: parent.width
+        height: isFullVideoFeedViewMode ? (parent.height - videoColumn.height) / 2 - parent.spacing : 0
+        color: "transparent"
+        visible: isFullVideoFeedViewMode
+    }
+
+    Rectangle {
         property bool show: true
 
         id: playControls
@@ -481,6 +498,9 @@ Column {
                 videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
                 videoPlayer.start()
             }
+            else {
+                videoLoaded()
+            }
         }
 
         onLoadStreamError: {
@@ -510,6 +530,8 @@ Column {
 
             if (!autoLoad || autoPlay)
                 videoPlayer.start()
+            else
+                videoLoaded()
         }
     }
 

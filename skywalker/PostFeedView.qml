@@ -53,7 +53,7 @@ SkyListView {
 
         onVideoClicked: {
             if (isVideoFeed)
-                root.viewVideoFeed(modelId, index, (newIndex) => { positionViewAtIndex(newIndex, ListView.Beginning) })
+                root.viewVideoFeed(modelId, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
             else
                 console.warn("This is not a video feed")
         }

@@ -3263,6 +3263,7 @@ void Skywalker::pauseApp()
     }
 
     mChat->pause();
+    emit appPaused();
 }
 
 void Skywalker::resumeApp()

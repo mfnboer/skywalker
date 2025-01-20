@@ -286,6 +286,7 @@ signals:
     void bskyClientDeleted();
     void anniversary();
     void oldestUnreadNotificationIndex(int index, bool mentions);
+    void appPaused();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
