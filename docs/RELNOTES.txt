@@ -1,3 +1,7 @@
+next
+====
+* Button to reset search scope
+
 3.11.2
 ======
 * Support for expiry time and exclude users you follow on muted words

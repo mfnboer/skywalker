@@ -207,39 +207,33 @@ SkyPage {
         color: guiSettings.separatorColor
     }
 
-    Row {
+    RowLayout {
         id: searchModeBar
+        x: page.margin
         anchors.top: searchBarSeparator.bottom
-        width: parent.width
+        anchors.topMargin: 5
+        width: parent.width - 2 * page.margin
         height: page.isPostSearch ? implicitHeight : 0
         Material.background: guiSettings.backgroundColor
-        leftPadding: page.margin
-        rightPadding: page.margin
-        topPadding: 5
-        bottomPadding: 5
         visible: page.isPostSearch
 
-        SkySvg {
+        SvgButton {
             id: restrictionIcon
-            y: height
-            width: height
-            height: 20
-            color: guiSettings.linkColor
+            //y: 20
+            Layout.preferredWidth: height
+            Layout.preferredHeight: 20
+            imageMargin: 0
+            iconColor: guiSettings.linkColor
+            Material.background: guiSettings.backgroundColor
+            flat: true
             svg: SvgOutline.noReplyRestrictions
-            Accessible.ignored: true
-
-            MouseArea {
-                y: -height
-                width: parent.width
-                height: parent.height
-                onClicked: page.changeSearchPostScope()
-                enabled: page.isPostSearch
-            }
+            accessibleName: searchModeText.text
+            onClicked: page.changeSearchPostScope()
         }
         AccessibleText {
             id: searchModeText
-            width: parent.width - implicitHeight - 2 * page.margin
-            anchors.verticalCenter: searchModeBar.verticalCenter
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
             leftPadding: 5
             rightPadding: 5
             elide: Text.ElideRight
@@ -253,11 +247,25 @@ SkyPage {
                 enabled: page.isPostSearch
             }
         }
+        SvgButton {
+            id: clearScopeButton
+            Layout.preferredWidth: 20
+            Layout.preferredHeight: width
+            imageMargin: 0
+            iconColor: guiSettings.textColor
+            Material.background: guiSettings.backgroundColor
+            flat: true
+            svg: SvgOutline.close
+            accessibleName: qsTr("clear search scope")
+            visible: postAuthorUser || postMentionsUser || postSetSince || postSetUntil || postLanguage
+            onClicked: page.clearSearchPostScope()
+        }
     }
 
     Rectangle {
         id: searchModeSeparator
         anchors.top: searchModeBar.bottom
+        anchors.topMargin: 5
         width: parent.width
         height: page.isPostSearch ? 1 : 0
         color: guiSettings.separatorColor
@@ -771,6 +779,9 @@ SkyPage {
             if (query.length === 0)
                 return
 
+            if (query === "*" && postAuthorUser.length === 0 && postMentionsUser.length === 0)
+                return
+
             searchPosts(query, SearchSortOrder.TOP, postAuthorUser, postMentionsUser,
                         postSince, postSetSince, postUntil, postSetUntil, postLanguage)
             searchPosts(query, SearchSortOrder.LATEST, postAuthorUser, postMentionsUser,
@@ -825,7 +836,15 @@ SkyPage {
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
-
+    function clearSearchPostScope() {
+        postAuthorUser = ""
+        postMentionsUser = ""
+        postSetSince = false
+        postSince = nullDate
+        postSetUntil = false
+        postUntil = nullDate
+        postLanguage = ""
+    }
 
     function changeSearchPostScope() {
         let authorName = "all"

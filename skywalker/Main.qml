@@ -1433,7 +1433,7 @@ ApplicationWindow {
     }
 
     function createSearchView() {
-        let searchComponent = Qt.createComponent("SearchView.qml")
+        let searchComponent = guiSettings.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
                 { skywalker: skywalker, timeline: getTimelineView(), })
         searchView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
