@@ -183,6 +183,10 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         auto video = post.getVideoView();
         return video ? QVariant::fromValue(*video) : QVariant{};
     }
+    case Role::PostVideoSource:
+        return change && change->mPostVideoSource ? *change->mPostVideoSource : "";
+    case Role::PostVideoTranscodedSource:
+        return change && change->mPostVideoTranscodedSource ? *change->mPostVideoTranscodedSource : "";
     case Role::PostExternal:
     {
         auto external = post.getExternalView();
@@ -462,6 +466,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostRepostedByAuthor), "postRepostedByAuthor" },
         { int(Role::PostImages), "postImages" },
         { int(Role::PostVideo), "postVideo" },
+        { int(Role::PostVideoSource), "postVideoSource" },
+        { int(Role::PostVideoTranscodedSource), "postVideoTranscodedSource" },
         { int(Role::PostExternal), "postExternal" },
         { int(Role::PostRecord), "postRecord" },
         { int(Role::PostRecordWithMedia), "postRecordWithMedia" },
@@ -596,6 +602,16 @@ void AbstractPostFeedModel::reAttachedRecordChanged()
 void AbstractPostFeedModel::viewerStatePinnedChanged()
 {
     changeData({ int(Role::PostViewerStatePinned) });
+}
+
+void AbstractPostFeedModel::postVideoPostVideoSourceChanged()
+{
+    changeData({ int(Role::PostVideoSource) });
+}
+
+void AbstractPostFeedModel::postVideoPostVideoTranscodedSourceChanged()
+{
+    changeData({ int(Role::PostVideoTranscodedSource) });
 }
 
 void AbstractPostFeedModel::postDeletedChanged()

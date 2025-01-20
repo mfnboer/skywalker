@@ -1,12 +1,13 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "wrapped_skywalker.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
 namespace Skywalker {
 
-class VideoUtils : public QObject
+class VideoUtils : public WrappedSkywalker
 {
     Q_OBJECT
     Q_PROPERTY(bool transcoding READ isTranscoding NOTIFY transcodingChanged FINAL)
@@ -22,6 +23,8 @@ public:
     Q_INVOKABLE void copyVideoToGallery(const QString& fileName);
     Q_INVOKABLE void indexGalleryFile(const QString& fileName);
     Q_INVOKABLE static void dropVideo(const QString& source);
+    Q_INVOKABLE void setVideoSource(const QString& postCid, const QString& source);
+    Q_INVOKABLE void setVideoTranscodedSource(const QString& postCid, const QString& source);
 
 signals:
     void transcodingOk(QString inputFileName, QString outputFileName);

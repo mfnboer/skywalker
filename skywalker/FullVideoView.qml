@@ -7,6 +7,7 @@ SkyPage {
     required property var videoView // videoview
     property string videoSource
     property string transcodedSource
+    property bool isVideoFeed: false
 
     signal closed
 
@@ -28,6 +29,7 @@ SkyPage {
         controlColor: "white"
         disabledColor: "darkslategrey"
         backgroundColor: "black"
+        isVideoFeed: page.isVideoFeed
         isFullViewMode: true
     }
 
@@ -155,6 +157,7 @@ SkyPage {
 
     VideoUtils {
         id: videoUtils
+        skywalker: root.getSkywalker()
 
         onCopyVideoOk: root.getSkywalker().showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
         onCopyVideoFailed: (error) => root.getSkywalker().showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)

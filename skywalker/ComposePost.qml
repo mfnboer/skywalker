@@ -1564,6 +1564,7 @@ SkyPage {
         property var callbackFailed: (error) => {}
 
         id: videoUtils
+        skywalker: page.skywalker
 
         onTranscodingOk: (inputFileName, outputFileName) => {
             const source = "file://" + outputFileName

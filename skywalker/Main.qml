@@ -48,7 +48,9 @@ ApplicationWindow {
             event.accepted = false
 
             // TODO: need something better than this
-            if (item instanceof ComposePost || item instanceof EditList || item instanceof EditProfile) {
+            if (item instanceof ComposePost || item instanceof EditList ||
+                item instanceof EditProfile || item instanceof VideoFeedView)
+            {
                 item.cancel()
                 return
             }
@@ -1389,12 +1391,13 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewFullVideo(videoView, videoSource, transcodedSource) {
-        let component = Qt.createComponent("FullVideoView.qml")
+    function viewFullVideo(videoView, videoSource, transcodedSource, isVideoFeed) {
+        let component = guiSettings.createComponent("FullVideoView.qml")
         let view = component.createObject(root, {
                                               videoView: videoView,
                                               videoSource: videoSource,
-                                              transcodedSource: transcodedSource })
+                                              transcodedSource: transcodedSource,
+                                              isVideoFeed: isVideoFeed })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
@@ -1602,9 +1605,19 @@ ApplicationWindow {
     function viewPostFeed(feed) {
         const modelId = skywalker.createPostFeedModel(feed)
         skywalker.getFeed(modelId)
-        let component = Qt.createComponent("PostFeedView.qml")
+        let component = guiSettings.createComponent("PostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
         view.onClosed.connect(() => { popStack() })
+        root.pushStack(view)
+    }
+
+    function viewVideoFeed(modelId, index, closeCb = (newIndex) => {}) {
+        let component = guiSettings.createComponent("VideoFeedView.qml")
+        let view = component.createObject(root, { skywalker: skywalker, modelId: modelId, currentIndex: index })
+        view.onClosed.connect(() => {
+            closeCb(view.currentIndex)
+            popStack()
+        })
         root.pushStack(view)
     }
 

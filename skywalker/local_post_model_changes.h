@@ -35,6 +35,8 @@ public:
         RecordView::SharedPtr mDetachedRecord;
         RecordView::SharedPtr mReAttachedRecord;
         std::optional<bool> mViewerStatePinned;
+        std::optional<QString> mPostVideoSource;
+        std::optional<QString> mPostVideoTranscodedSource;
 
         bool mPostDeleted = false;
     };
@@ -59,6 +61,8 @@ public:
     void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
     void updateHiddenReplies(const QString& cid, const QStringList& hiddenReplies);
     void updateThreadMuted(const QString& uri, bool muted);
+    void updatePostVideoSource(const QString& cid, const QString& source);
+    void updatePostVideoTranscodedSource(const QString& cid, const QString& source);
 
     /**
      * @brief updateDetachedRecord
@@ -89,6 +93,8 @@ protected:
     virtual void detachedRecordChanged() = 0;
     virtual void reAttachedRecordChanged() = 0;
     virtual void viewerStatePinnedChanged() = 0;
+    virtual void postVideoPostVideoSourceChanged() = 0;
+    virtual void postVideoPostVideoTranscodedSourceChanged() = 0;
     virtual void postDeletedChanged() = 0;
 
 private:

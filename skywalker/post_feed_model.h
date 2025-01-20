@@ -16,6 +16,7 @@ class PostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
     Q_PROPERTY(bool languageFilterConfigured READ isLanguageFilterConfigured NOTIFY languageFilterConfiguredChanged FINAL)
     Q_PROPERTY(bool languageFilterEnabled READ isLanguageFilterEnabled WRITE enableLanguageFilter NOTIFY languageFilterEnabledChanged FINAL)
     Q_PROPERTY(LanguageList filteredLanguages READ getFilterdLanguages NOTIFY languageFilterConfiguredChanged FINAL)
@@ -43,6 +44,8 @@ public:
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
+
+    QEnums::ContentMode getContentMode() const { return mGeneratorView.getContentMode(); }
 
     Q_INVOKABLE const ListViewBasic getListView() const { return mListView; }
     void setListView(const ListViewBasic& view) { mListView = view; }

@@ -293,6 +293,14 @@ public:
         ACTOR_TARGET_UNKNOWN = (int)ATProto::AppBskyActor::ActorTarget::UNKNOWN
     };
     Q_ENUM(ActorTarget)
+
+    enum ContentMode
+    {
+        CONTENT_MODE_UNSPECIFIED = (int)ATProto::AppBskyFeed::ContentMode::UNSPECIFIED,
+        CONTENT_MODE_VIDEO = (int)ATProto::AppBskyFeed::ContentMode::VIDEO,
+        CONTENT_MODE_UNKNOWN = (int)ATProto::AppBskyFeed::ContentMode::UNKNOWN
+    };
+    Q_ENUM(ContentMode)
 };
 
 }

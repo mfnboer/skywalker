@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    property string postCid
     required property basicprofile postAuthor
     required property string postText
     required property list<imageview> postImages
@@ -27,6 +28,7 @@ Column {
     property bool attachmentsInitialized: false
     property string postHighlightColor: "transparent"
     property bool isDraft: false
+    property bool isVideoFeed: false
 
     id: postBody
 
@@ -274,11 +276,13 @@ Column {
             }
             else {
                 mediaLoader.setSource("VideoView.qml", {
+                                          postCid: postBody.postCid,
                                           videoView: postBody.postVideo,
                                           contentVisibility: postContentVisibility,
                                           contentWarning: postContentWarning,
                                           backgroundColor: bodyBackgroundColor,
-                                          highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+                                          highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
+                                          isVideoFeed: postBody.isVideoFeed })
             }
         }
         else if (postExternal) {
@@ -310,7 +314,8 @@ Column {
                                    backgroundColor: bodyBackgroundColor,
                                    contentVisibility: postContentVisibility,
                                    contentWarning: postContentWarning,
-                                   highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+                                   highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
+                                   isVideoFeed: isVideoFeed })
     }
 
     onPostRecordChanged: {

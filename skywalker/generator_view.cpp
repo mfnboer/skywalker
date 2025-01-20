@@ -101,4 +101,12 @@ GeneratorViewerState GeneratorView::getViewer() const
     return GeneratorViewerState(mGeneratorView->mViewer);
 }
 
+QEnums::ContentMode GeneratorView::getContentMode() const
+{
+    if (!mGeneratorView)
+        return QEnums::CONTENT_MODE_UNSPECIFIED;
+
+    return (QEnums::ContentMode)mGeneratorView->mContentMode.value_or(ATProto::AppBskyFeed::ContentMode::UNSPECIFIED);
+}
+
 }

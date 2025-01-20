@@ -46,7 +46,17 @@ SkyListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
+        required property int index
+
         width: postFeedView.width
+        isVideoFeed: postFeedView.model.contentMode === QEnums.CONTENT_MODE_VIDEO
+
+        onVideoClicked: {
+            if (isVideoFeed)
+                root.viewVideoFeed(modelId, index, (newIndex) => { positionViewAtIndex(newIndex, ListView.Beginning) })
+            else
+                console.warn("This is not a video feed")
+        }
     }
 
     FlickableRefresher {

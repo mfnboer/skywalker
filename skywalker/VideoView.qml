@@ -4,6 +4,7 @@ import QtMultimedia
 import skywalker
 
 Column {
+    property string postCid // if set, then video source will be stored in the postFeedModel
     required property var videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
@@ -11,6 +12,7 @@ Column {
     property string disabledColor: guiSettings.disabledColor
     property string backgroundColor: "transparent"
     property bool highlight: false
+    property bool isVideoFeed: false
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
     property int maxHeight: 0
     property bool isFullViewMode: false
@@ -18,10 +20,13 @@ Column {
     property var userSettings: root.getSkywalker().getUserSettings()
     property string videoSource
     property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
-    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad
+    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || isVideoFeed
+    property bool autoPlay: userSettings.videoAutoPlay || (isFullViewMode && isVideoFeed)
 
     // Cache
     property list<string> tmpVideos: []
+
+    signal videoLoaded
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
@@ -241,10 +246,10 @@ Column {
             }
             AudioOutput {
                 id: audioOutput
-                muted: !userSettings.videoSound || userSettings.videoAutoPlay
+                muted: !userSettings.videoSound || (autoPlay && !isFullViewMode)
 
                 function toggleSound() {
-                    if (userSettings.videoAutoPlay)
+                    if (autoPlay)
                         muted = !muted
                     else
                         userSettings.videoSound = !userSettings.videoSound
@@ -290,13 +295,13 @@ Column {
             width: parent.width
             height: parent.height
             z: -1
-            enabled: filter.imageVisible()
+            enabled: filter.imageVisible() && (!isVideoFeed || isFullViewMode)
 
             onClicked: {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
                 else
-                    root.viewFullVideo(videoView, videoSource, transcodedSource)
+                    root.viewFullVideo(videoView, videoSource, transcodedSource, false)
             }
         }
 
@@ -457,12 +462,13 @@ Column {
             transcodedSource = videoSource
             videoPlayer.mustKickPosition = true
 
-            if (userSettings.videoAutoPlay)
+            if (autoPlay)
                 videoPlayer.start()
         }
 
         onLoadStreamOk: (videoStream) => {
             videoSource = videoStream
+            videoUtils.setVideoSource(postCid, videoSource)
 
             // TS streams do not loop well in the media player, also seeking works mediocre.
             // Therefore we transcode to MP4
@@ -470,8 +476,9 @@ Column {
                 console.debug("Transcode to MP4:", videoStream)
                 videoUtils.transcodeVideo(videoStream.slice(7), -1, -1, -1, false)
             }
-            else if (!autoLoad || userSettings.videoAutoPlay) {
+            else if (!autoLoad || autoPlay) {
                 transcodedSource = videoSource
+                videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
                 videoPlayer.start()
             }
         }
@@ -483,21 +490,25 @@ Column {
 
     VideoUtils {
         id: videoUtils
+        skywalker: root.getSkywalker()
 
         onTranscodingOk: (inputFileName, outputFileName) => {
             console.debug("Set MP4 source:", outputFileName)
             transcodedSource = "file://" + outputFileName
             videoStack.tmpVideos.push(transcodedSource)
+            videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
 
-            if (!autoLoad || userSettings.videoAutoPlay)
+            if (!autoLoad || autoPlay)
                 videoPlayer.start()
+            else
+                videoLoaded()
         }
 
         onTranscodingFailed: (inputFileName, errorMsg) => {
             console.debug("Could not transcode to MP4:", inputFileName, "error:", errorMsg)
             transcodedSource = videoSource
 
-            if (!autoLoad || userSettings.videoAutoPlay)
+            if (!autoLoad || autoPlay)
                 videoPlayer.start()
         }
     }
@@ -505,11 +516,16 @@ Column {
     function pause() {
         if (videoPlayer.playing)
         {
-            if (!userSettings.videoAutoPlay)
+            if (!autoPlay)
                 videoPlayer.pause()
             else
                 audioOutput.muted = true
         }
+    }
+
+    function play() {
+        if (!videoPlayer.playing)
+            videoPlayer.start()
     }
 
     function getAspectRatio() {
@@ -533,7 +549,7 @@ Column {
             videoSource = videoView.playlistUrl
             transcodedSource = videoSource
 
-            if (userSettings.videoAutoPlay)
+            if (autoPlay)
                 videoPlayer.start()
         }
     }
@@ -545,5 +561,7 @@ Column {
     Component.onCompleted: {
         if (!videoSource)
             setVideoSource()
+        else if (autoPlay)
+            videoPlayer.start()
     }
 }

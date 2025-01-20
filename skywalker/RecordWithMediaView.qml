@@ -7,6 +7,7 @@ Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property bool highlight: false
+    property bool isVideoFeed: false
 
     id: recordItem
     width: parent.width
@@ -45,7 +46,8 @@ Item {
                                           contentVisibility: recordItem.contentVisibility,
                                           contentWarning: recordItem.contentVisibility,
                                           backgroundColor: backgroundColor,
-                                          highlight: recordItem.highlight })
+                                          highlight: recordItem.highlight,
+                                          isVideoFeed: recordItem.isVideoFeed })
             }
             else if (record.external) {
                 mediaLoader.setSource("ExternalView.qml", {

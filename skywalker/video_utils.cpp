@@ -4,12 +4,13 @@
 #include "file_utils.h"
 #include "jni_callback.h"
 #include "post_utils.h"
+#include "skywalker.h"
 #include "temp_file_holder.h"
 
 namespace Skywalker {
 
 VideoUtils::VideoUtils(QObject* parent) :
-    QObject(parent)
+    WrappedSkywalker(parent)
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
@@ -186,6 +187,40 @@ void VideoUtils::indexGalleryFile(const QString& fileName)
 void VideoUtils::dropVideo(const QString& source)
 {
     PostUtils::dropVideo(source);
+}
+
+void VideoUtils::setVideoSource(const QString& postCid, const QString& source)
+{
+    if (postCid.isEmpty())
+    {
+        qDebug() << "No post cid for:" << source;
+        return;
+    }
+
+    if (!mSkywalker)
+        return;
+
+    mSkywalker->makeLocalModelChange(
+        [postCid, source](LocalPostModelChanges* model){
+            model->updatePostVideoSource(postCid, source);
+        });
+}
+
+void VideoUtils::setVideoTranscodedSource(const QString& postCid, const QString& source)
+{
+    if (postCid.isEmpty())
+    {
+        qDebug() << "No post cid for:" << source;
+        return;
+    }
+
+    if (!mSkywalker)
+        return;
+
+    mSkywalker->makeLocalModelChange(
+        [postCid, source](LocalPostModelChanges* model){
+            model->updatePostVideoTranscodedSource(postCid, source);
+        });
 }
 
 }

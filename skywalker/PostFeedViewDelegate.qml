@@ -64,6 +64,7 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property bool isVideoFeed: false
 
     property int prevY: 0
     property bool isAnchorItem: false
@@ -72,6 +73,7 @@ Rectangle {
     signal calibratedPosition(int dy)
     signal showHiddenReplies
     signal unfoldPosts
+    signal videoClicked
 
     id: postEntry
     // HACK
@@ -390,6 +392,7 @@ Rectangle {
             PostBody {
                 id: postBody
                 width: parent.width
+                postCid: postEntry.postCid
                 postAuthor: author
                 postText: postEntry.postText
                 postPlainText: postEntry.postPlainText
@@ -408,6 +411,7 @@ Rectangle {
                 bodyBackgroundColor: postEntry.color.toString()
                 borderColor: postEntry.border.color.toString()
                 postHighlightColor: postEntry.postHighlightColor
+                isVideoFeed: postEntry.isVideoFeed
             }
 
             // Reposts and likes in detailed view of post entry in thread view
@@ -741,7 +745,12 @@ Rectangle {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound
-        onClicked: openPostThread()
+        onClicked: {
+            if (isVideoFeed)
+                videoClicked()
+            else
+                openPostThread()
+        }
     }
 
 
