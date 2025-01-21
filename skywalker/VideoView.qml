@@ -23,7 +23,8 @@ Column {
     property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
     property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || isVideoFeed
     property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
-    readonly property int bottomMargin: playControls.height
+    readonly property int playControlsWidth: playControls.width
+    readonly property int playControlsHeight: playControls.height
     readonly property bool showPlayControls: playControls.show
 
     // Cache
@@ -309,16 +310,22 @@ Column {
 
         id: playControls
         x: (parent.width - width) / 2
-        width: defaultThumbImg.visible ? defaultThumbImg.width : Math.min(thumbImg.width, thumbImg.maxWidth ? thumbImg.maxWidth : thumbImg.width)
-        height: playPauseButton.height
+        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : Math.min(thumbImg.width, thumbImg.maxWidth ? thumbImg.maxWidth : thumbImg.width))
+        height: visible ? playPauseButton.height : 0
         color: "transparent"
         visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
 
-        Rectangle {
+        Loader {
             anchors.fill: parent
-            color: "black"
-            opacity: 0.3
-            visible: isFullViewMode
+            active: isFullViewMode
+
+            Rectangle {
+                anchors.fill: parent
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: isVideoFeed ? "#D0000000" : "#00000000" }
+                    GradientStop { position: 1.0; color: isVideoFeed ? "#FF000000" : "#5F000000" }
+                }
+            }
         }
 
         SvgTransparentButton {

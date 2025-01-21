@@ -12,6 +12,7 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
     snapMode: ListView.SnapOneItem
+    spacing: 2
     currentIndex: 0
 
     Accessible.name: postFeedView.model.feedName
@@ -50,6 +51,12 @@ SkyListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: skywalker.getFeedInProgress
+    }
+
+    Rectangle {
+        z: parent.z - 1
+        anchors.fill: parent
+        color: "black"
     }
 
     function cancel() {

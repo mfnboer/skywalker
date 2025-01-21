@@ -79,7 +79,6 @@ Rectangle {
 
     VideoView {
         id: video
-        // y: (parent.height - height) / 2
         width: parent.width
         height: parent.height
         maxHeight: parent.height
@@ -106,7 +105,7 @@ Rectangle {
         anchors.bottom: postColumn.bottom
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#00000000" }
-            GradientStop { position: 1.0; color: "#FF000000" }
+            GradientStop { position: 1.0; color: "#CF000000" }
         }
         visible: postColumn.visible
     }
@@ -121,10 +120,10 @@ Rectangle {
 
     Column {
         id: postColumn
-        x: 10
+        x: (parent.width - width) / 2
         anchors.bottom: video.bottom
-        anchors.bottomMargin: video.bottomMargin
-        width: parent.width - 20
+        anchors.bottomMargin: video.playControlsHeight
+        width: video.playControlsWidth - 20
         visible: video.showPlayControls
 
         Rectangle {
@@ -165,7 +164,7 @@ Rectangle {
             postContentWarning: videoPage.postContentWarning
             postMuted: videoPage.postMutedReason
             postDateTime: videoPage.postIndexedDateTime
-            maxTextLines: videoPage.showFullPostText ? 1000 : 3
+            maxTextLines: videoPage.showFullPostText ? 1000 : 2
             bodyBackgroundColor: "transparent"
         }
 
