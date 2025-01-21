@@ -23,6 +23,8 @@ Column {
     property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
     property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || isVideoFeed
     property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
+    property int footerHeight: 0
+    property int useIfNeededHeight: 0
     readonly property int playControlsWidth: playControls.width
     readonly property int playControlsHeight: playControls.height
     readonly property bool showPlayControls: playControls.show
@@ -36,13 +38,17 @@ Column {
     spacing: isFullViewMode ? -playControls.height : 10
 
     Rectangle {
+        property int fullVideoFeedHeight: Math.max(playControls.height, (parent.height - useIfNeededHeight - videoColumn.height) / 2 - parent.spacing)
+
         width: parent.width
-        height: isFullVideoFeedViewMode ? (parent.height - videoColumn.height) / 2 - parent.spacing : 0
+        // Move video to top if it is close to the top of the screen
+        height: isFullVideoFeedViewMode ? (fullVideoFeedHeight < playControls.height + 30 ? playControls.height : fullVideoFeedHeight) : 0
         color: "transparent"
         visible: isFullVideoFeedViewMode
     }
 
     Rectangle {
+        id: videoRect
         width: parent.width
         height: videoColumn.height
         color: "transparent"
@@ -300,7 +306,7 @@ Column {
 
     Rectangle {
         width: parent.width
-        height: isFullVideoFeedViewMode ? (parent.height - videoColumn.height) / 2 - parent.spacing : 0
+        height: isFullVideoFeedViewMode ? Math.max(0, parent.height - videoRect.y - videoRect.height - footerHeight - parent.spacing) : 0
         color: "transparent"
         visible: isFullVideoFeedViewMode
     }
@@ -557,7 +563,7 @@ Column {
 
     Component.onDestruction: {
         tmpVideos.forEach((value, index, array) => {
-            videoUtils.set(postCid, "")
+            videoUtils.setVideoTranscodedSource(postCid, "")
             videoUtils.dropVideo(value)
         })
     }

@@ -61,6 +61,7 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property int footerHeight: 0
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
@@ -92,6 +93,8 @@ Rectangle {
         isFullViewMode: true
         isVideoFeed: true
         autoPlay: false
+        footerHeight: videoPage.footerHeight
+        useIfNeededHeight: postColumn.height
 
         onVideoLoaded: {
             if (onScreen)
@@ -122,7 +125,7 @@ Rectangle {
         id: postColumn
         x: (parent.width - width) / 2
         anchors.bottom: video.bottom
-        anchors.bottomMargin: video.playControlsHeight
+        anchors.bottomMargin: video.playControlsHeight + videoPage.footerHeight
         width: video.playControlsWidth - 20
         visible: video.showPlayControls
 

@@ -5,6 +5,7 @@ import skywalker
 SkyListView {
     required property var skywalker
     required property int modelId
+    property int footerHeight: guiSettings.getNavigationBarHeight()
 
     signal closed
 
@@ -14,15 +15,17 @@ SkyListView {
     snapMode: ListView.SnapOneItem
     spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
     currentIndex: 0
+    highlightMoveVelocity: 1000
 
     Accessible.name: postFeedView.model.feedName
 
     delegate: VideoFeedViewDelegate {
         width: postFeedView.width
+        footerHeight: postFeedView.footerHeight
     }
 
-    onCovered: resetNavigationBarColor()
-    onUncovered: setNavigationBarColor()
+    onCovered: resetSystemBars()
+    onUncovered: setSystemBars()
 
     onMovementEnded: {
         currentIndex = indexAt(0, contentY)
@@ -66,19 +69,26 @@ SkyListView {
         closed()
     }
 
-    function setNavigationBarColor() {
+    function setSystemBars() {
+        skywalker.setStatusBarTransparent(true)
         skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
-    function resetNavigationBarColor() {
+    function resetSystemBars() {
+        skywalker.setStatusBarTransparent(false)
         skywalker.setNavigationBarColor(guiSettings.backgroundColor)
     }
 
+    function setFooterHeight() {
+        footerHeight = guiSettings.getNavigationBarHeight()
+    }
+
     Component.onDestruction: {
-        resetNavigationBarColor()
+        resetSystemBars()
     }
 
     Component.onCompleted: {
-        setNavigationBarColor()
+        Screen.onOrientationChanged.connect(setFooterHeight)
+        setSystemBars()
     }
 }

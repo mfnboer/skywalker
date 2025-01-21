@@ -320,4 +320,10 @@ Item {
                 messageOtherBackgroundColor,
                 postHighLightColor]
     }
+
+    // Note this returns the height of the navigation bar at the bottom.
+    // If the navigation bar is not at the bottom, then 0 is returned.
+    function getNavigationBarHeight() {
+        return skywalker.getNavigationBarHeight() / Screen.devicePixelRatio
+    }
 }

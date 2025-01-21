@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowInsets;
@@ -236,6 +237,30 @@ public class SkywalkerActivity extends QtActivity {
         }
 
         return 0;
+    }
+
+    public void setStatusBarTransparent(boolean transparent) {
+        Log.d(LOGTAG, "Set status bar transparent: " + transparent);
+        runOnUiThread(new StatusBarSetter(this, transparent));
+    }
+
+    private static class StatusBarSetter implements Runnable {
+        private Activity mActivity;
+        private boolean mTransparent;
+
+        StatusBarSetter(Activity activity, boolean transparent) {
+            mActivity = activity;
+            mTransparent = transparent;
+        }
+
+        @Override
+        public void run() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Window window = mActivity.getWindow();
+                window.setStatusBarColor(mTransparent ? Color.TRANSPARENT : Color.BLACK);
+                window.setDecorFitsSystemWindows(!mTransparent);
+            }
+        }
     }
 
     private void setStatusBarColor() {

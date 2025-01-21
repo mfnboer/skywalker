@@ -3109,6 +3109,36 @@ void Skywalker::setNavigationBarColorAndMode(QColor color, bool isLightMode)
 #endif
 }
 
+int Skywalker::getNavigationBarHeight() const
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return 0;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    return (int)activity.callMethod<jint>("getNavigationBarHeight", "()I");
+#endif
+}
+
+void Skywalker::setStatusBarTransparent(bool transparent)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    activity.callMethod<void>("setStatusBarTransparent", "(Z)V", (jboolean)transparent);
+#else
+    Q_UNUSED(transparent)
+#endif
+}
+
 void Skywalker::updateUser(const QString& did, const QString& host)
 {
     mUserDid = did;
