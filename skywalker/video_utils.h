@@ -23,7 +23,6 @@ public:
     Q_INVOKABLE void copyVideoToGallery(const QString& fileName);
     Q_INVOKABLE void indexGalleryFile(const QString& fileName);
     Q_INVOKABLE static void dropVideo(const QString& source);
-    Q_INVOKABLE void setVideoSource(const QString& postCid, const QString& source);
     Q_INVOKABLE void setVideoTranscodedSource(const QString& postCid, const QString& source);
 
 signals:

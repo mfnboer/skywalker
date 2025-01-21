@@ -94,12 +94,6 @@ void LocalPostModelChanges::updateHiddenReplies(const QString& cid, const QStrin
     hiddenRepliesChanged();
 }
 
-void LocalPostModelChanges::updatePostVideoSource(const QString& cid, const QString& source)
-{
-    mChanges[cid].mPostVideoSource = source;
-    postVideoPostVideoSourceChanged();
-}
-
 void LocalPostModelChanges::updatePostVideoTranscodedSource(const QString& cid, const QString& source)
 {
     mChanges[cid].mPostVideoTranscodedSource = source;

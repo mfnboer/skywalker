@@ -458,7 +458,6 @@ Column {
 
         onLoadStreamOk: (videoStream) => {
             videoSource = videoStream
-            videoUtils.setVideoSource(postCid, videoSource)
 
             // TS streams do not loop well in the media player, also seeking works mediocre.
             // Therefore we transcode to MP4
@@ -550,7 +549,10 @@ Column {
     }
 
     Component.onDestruction: {
-        tmpVideos.forEach((value, index, array) => { videoUtils.dropVideo(value); })
+        tmpVideos.forEach((value, index, array) => {
+            videoUtils.set(postCid, "")
+            videoUtils.dropVideo(value)
+        })
     }
 
     Component.onCompleted: {

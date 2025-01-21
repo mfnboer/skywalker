@@ -38,7 +38,6 @@ public:
         PostRepostedByAuthor,
         PostImages,
         PostVideo,
-        PostVideoSource,
         PostVideoTranscodedSource,
         PostExternal,
         PostRecord,
@@ -138,7 +137,6 @@ protected:
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
     virtual void viewerStatePinnedChanged() override;
-    virtual void postVideoPostVideoSourceChanged() override;
     virtual void postVideoPostVideoTranscodedSourceChanged() override;
     virtual void postDeletedChanged() override;
 

@@ -15,7 +15,6 @@ Rectangle {
     required property basicprofile postRepostedByAuthor
     required property list<imageview> postImages
     required property var postVideo // videoView
-    required property string postVideoSource
     required property string postVideoTranscodedSource
     required property var postExternal // externalview (var allows NULL)
     required property var postRecord // recordview
@@ -85,7 +84,6 @@ Rectangle {
         height: parent.height
         maxHeight: parent.height
         videoView: postVideo
-        videoSource: postVideoSource
         transcodedSource: postVideoTranscodedSource
         contentVisibility: postContentVisibility
         contentWarning: postContentWarning

@@ -189,23 +189,6 @@ void VideoUtils::dropVideo(const QString& source)
     PostUtils::dropVideo(source);
 }
 
-void VideoUtils::setVideoSource(const QString& postCid, const QString& source)
-{
-    if (postCid.isEmpty())
-    {
-        qDebug() << "No post cid for:" << source;
-        return;
-    }
-
-    if (!mSkywalker)
-        return;
-
-    mSkywalker->makeLocalModelChange(
-        [postCid, source](LocalPostModelChanges* model){
-            model->updatePostVideoSource(postCid, source);
-        });
-}
-
 void VideoUtils::setVideoTranscodedSource(const QString& postCid, const QString& source)
 {
     if (postCid.isEmpty())
