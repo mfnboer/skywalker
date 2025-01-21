@@ -155,7 +155,7 @@ Column {
             enabled: videoPlayer.hasVideo || !autoLoad
 
             onClicked: {
-                if (videoSource)
+                if (transcodedSource)
                     videoPlayer.start()
                 else if (!autoLoad)
                     m3u8Reader.loadStream()
@@ -175,8 +175,6 @@ Column {
             MediaPlayer {
                 property bool videoFound: false
                 property bool restarting: false
-                property bool positionKicked: false
-                property bool mustKickPosition: false // hack for playing live stream
                 property int m3u8DurationMs: 0
 
                 id: videoPlayer
@@ -193,30 +191,6 @@ Column {
                 onPlayingChanged: {
                     if (videoPlayer.playing) {
                         restartTimer.set(false)
-                    }
-                }
-
-                onPositionChanged: {
-                    if (!mustKickPosition || positionKicked)
-                        return
-
-                    console.debug("POSITION:", position)
-
-                    // HORRIBLE HACK
-                    // Qt fails to play the first part properly. Resetting the position
-                    // like this makes it somewhat better
-                    if (position > 100) {
-                        positionKicked = true
-                        position = position - 50
-                        console.debug("POSITION KICKED")
-                    }
-                }
-
-                onPlaybackStateChanged: {
-                    if (mustKickPosition && playbackState === MediaPlayer.StoppedState)
-                    {
-                        source = ""
-                        source = videoSource
                     }
                 }
 
@@ -311,7 +285,7 @@ Column {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
                 else
-                    root.viewFullVideo(videoView, videoSource, transcodedSource, false)
+                    root.viewFullVideo(videoView, transcodedSource)
             }
         }
 
@@ -477,7 +451,6 @@ Column {
         onGetVideoStreamError: {
             videoSource = videoView.playlistUrl
             transcodedSource = videoSource
-            videoPlayer.mustKickPosition = true
 
             if (autoPlay)
                 videoPlayer.start()
@@ -581,7 +554,7 @@ Column {
     }
 
     Component.onCompleted: {
-        if (!videoSource)
+        if (!transcodedSource)
             setVideoSource()
         else if (autoPlay)
             videoPlayer.start()
