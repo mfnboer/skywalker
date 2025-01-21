@@ -16,6 +16,7 @@ class FavoriteFeedView
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
     Q_PROPERTY(QString avatarThumb READ getAvatarThumb FINAL)
+    Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode FINAL)
     Q_PROPERTY(GeneratorView generatorView READ getGeneratorView FINAL)
     Q_PROPERTY(ListView listView READ getListView FINAL)
     Q_PROPERTY(SearchFeed searchFeed READ getSearchFeed FINAL)
@@ -35,6 +36,7 @@ public:
     QString getName() const;
     QString getAvatar() const;
     QString getAvatarThumb() const;
+    QEnums::ContentMode getContentMode() const;
     GeneratorView getGeneratorView() const;
     ListView getListView() const;
     SearchFeed getSearchFeed() const;

@@ -21,6 +21,7 @@ SkyListView {
         feedName: postFeedView.model.feedName
         feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
         defaultSvg: guiSettings.feedDefaultAvatar(postFeedView.model.getGeneratorView())
+        contentMode: postFeedView.model.contentMode
         showAsHome: postFeedView.showAsHome
         showLanguageFilter: postFeedView.model.languageFilterConfigured
         filteredLanguages: postFeedView.model.filteredLanguages

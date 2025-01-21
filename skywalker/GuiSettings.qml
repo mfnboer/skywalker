@@ -57,6 +57,7 @@ Item {
     readonly property string messageOtherBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string messageOtherTextColor: isLightMode ? "black" : "white"
     readonly property string moderatorIconColor: "lightgrey"
+    readonly property string videoIconColor: "lightgrey"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
     readonly property string postHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string selectionColor: accentColor

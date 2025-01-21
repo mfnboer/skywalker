@@ -7,5 +7,4 @@ SkySvg {
     height: width
     color: guiSettings.favoriteColor
     svg: SvgFilled.star
-
 }

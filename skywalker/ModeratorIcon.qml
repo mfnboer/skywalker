@@ -8,5 +8,4 @@ SkySvg {
     color: guiSettings.moderatorIconColor
     outlineColor: guiSettings.backgroundColor
     svg: SvgFilled.moderator
-
 }

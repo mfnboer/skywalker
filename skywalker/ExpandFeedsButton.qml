@@ -72,6 +72,7 @@ SvgButton {
                     height: parent.height - 10
                     avatarUrl: modelData.avatarThumb
                     unknownSvg: getDefaultAvatar()
+                    contentMode: modelData.contentMode
                     onClicked: parent.triggered()
                 }
 

@@ -66,6 +66,14 @@ QString FavoriteFeedView::getAvatarThumb() const
     return ATProto::createAvatarThumbUrl(getAvatar());
 }
 
+QEnums::ContentMode FavoriteFeedView::getContentMode() const
+{
+    if (getType() == QEnums::FAVORITE_FEED)
+        return getGeneratorView().getContentMode();
+
+    return QEnums::CONTENT_MODE_UNSPECIFIED;
+}
+
 GeneratorView FavoriteFeedView::getGeneratorView() const
 {
     auto* view = std::get_if<GeneratorView>(&mView);
