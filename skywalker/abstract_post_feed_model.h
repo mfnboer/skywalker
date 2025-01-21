@@ -100,6 +100,9 @@ public:
     void setOverrideAdultVisibility(const QEnums::ContentVisibility visibility) { mOverrideAdultVisibility = visibility; }
     void clearOverrideAdultVisibility() { mOverrideAdultVisibility = {}; }
 
+    Q_INVOKABLE void setOverrideLinkColor(const QString& color);
+    Q_INVOKABLE void clearOverrideLinkColor();
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
@@ -164,6 +167,7 @@ private:
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;
     std::optional<QEnums::ContentVisibility> mOverrideAdultVisibility;
+    QString mOverrideLinkColor;
 
     bool mEndOfFeed = false;
 };

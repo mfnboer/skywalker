@@ -48,7 +48,8 @@ Item {
     readonly property string headerTextColor: "white"
     readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"
-    readonly property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : "#58a6ff")
+    readonly property string linkColorDarkMode: "#58a6ff"
+    readonly property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : linkColorDarkMode)
     readonly property string messageTimeColor: Material.color(Material.Grey)
     readonly property string messageNewBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string messageNewTextColor: isLightMode ? "black" : "white"

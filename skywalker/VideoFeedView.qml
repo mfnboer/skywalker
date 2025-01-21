@@ -85,10 +85,12 @@ SkyListView {
 
     Component.onDestruction: {
         resetSystemBars()
+        model.clearOverrideLinkColor();
     }
 
     Component.onCompleted: {
         Screen.onOrientationChanged.connect(setFooterHeight)
         setSystemBars()
+        model.setOverrideLinkColor(guiSettings.linkColorDarkMode)
     }
 }
