@@ -195,7 +195,7 @@ Rectangle {
                 isReply: postIsReply
                 replyRootAuthorDid: postReplyRootAuthorDid
                 replyRootUri: postReplyRootUri
-                authorIsUser: isUser(author)
+                authorIsUser: guiSettings.isUser(author)
                 isBookmarked: postBookmarked
                 bookmarkNotFound: postBookmarkNotFound
                 record: postRecord

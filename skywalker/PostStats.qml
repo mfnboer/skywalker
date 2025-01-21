@@ -254,10 +254,10 @@ Item {
 
     function hasOwnRecord() {
         if (record)
-            return record.detached ? isUserDid(record.detachedByDid) : isUserDid(record.author.did)
+            return record.detached ? guiSettings.isUserDid(record.detachedByDid) : guiSettings.isUserDid(record.author.did)
 
         if (recordWithMedia)
-            return recordWithMedia.record.detached ? isUserDid(recordWithMedia.record.detachedByDid)  : isUserDid(recordWithMedia.record.author.did)
+            return recordWithMedia.record.detached ? guiSettings.isUserDid(recordWithMedia.record.detachedByDid)  : guiSettings.isUserDid(recordWithMedia.record.author.did)
 
         return false
     }
@@ -266,11 +266,7 @@ Item {
         if (!isReply)
             return authorIsUser
 
-        return isUserDid(replyRootAuthorDid)
-    }
-
-    function isUserDid(did) {
-        return skywalker.getUserDid() === did
+        return guiSettings.isUserDid(replyRootAuthorDid)
     }
 
     function statSpeech(stat, textSingular, textPlural) {

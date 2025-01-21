@@ -116,7 +116,7 @@ SkyPage {
 
         PostButton {
             y: -height - 10
-            svg: (isUser(author) || author.hasInvalidHandle()) ? SvgOutline.chat : SvgOutline.atSign
+            svg: (guiSettings.isUser(author) || author.hasInvalidHandle()) ? SvgOutline.chat : SvgOutline.atSign
             overrideOnClicked: () => mentionPost()
 
             Accessible.role: Accessible.Button
@@ -173,7 +173,7 @@ SkyPage {
                     svg: SvgOutline.edit
                     onClicked: editAuthor(author)
                     accessibleName: qsTr("edit your profile")
-                    visible: isUser(author)
+                    visible: guiSettings.isUser(author)
                 }
 
                 SvgButton {
@@ -221,7 +221,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: following ? qsTr("Unfollow") : qsTr("Follow")
-                                visible: isLabeler && !isUser(author) && contentVisible()
+                                visible: isLabeler && !guiSettings.isUser(author) && contentVisible()
                                 onClicked: {
                                     if (following)
                                         graphUtils.unfollow(author.did, following)
@@ -239,7 +239,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
-                                visible: !isUser(author) && author.viewer.mutedByList.isNull()
+                                visible: !guiSettings.isUser(author) && author.viewer.mutedByList.isNull()
                                 onTriggered: {
                                     if (authorMuted)
                                         graphUtils.unmute(author.did)
@@ -251,7 +251,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: blocking ? qsTr("Unblock account") : qsTr("Block account")
-                                visible: !isUser(author) && author.viewer.blockingByList.isNull()
+                                visible: !guiSettings.isUser(author) && author.viewer.blockingByList.isNull()
                                 onTriggered: {
                                     if (blocking)
                                         graphUtils.unblock(author.did, blocking)
@@ -263,7 +263,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
-                               visible: !isUser(author)
+                               visible: !guiSettings.isUser(author)
                                onTriggered: {
                                    if (authorMutedReposts)
                                        graphUtils.unmuteReposts(author.did)
@@ -282,7 +282,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Report account")
-                                visible: !isUser(author)
+                                visible: !guiSettings.isUser(author)
                                 onTriggered: root.reportAuthor(author)
 
                                 MenuItemSvg { svg: SvgOutline.report }
@@ -295,19 +295,19 @@ SkyPage {
                     svg: SvgOutline.directMessage
                     accessibleName: qsTr(`direct message ${author.name}`)
                     onClicked: skywalker.chat.startConvoForMember(author.did)
-                    visible: author.canSendDirectMessage() && !isUser(author) && !skywalker.chat.messageConvoOpen()
+                    visible: author.canSendDirectMessage() && !guiSettings.isUser(author) && !skywalker.chat.messageConvoOpen()
                 }
 
                 SkyButton {
                     text: qsTr("Follow")
-                    visible: !following && !isUser(author) && contentVisible() && !isLabeler
+                    visible: !following && !guiSettings.isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.follow(author)
                     Accessible.name: qsTr(`press to follow ${author.name}`)
                 }
                 SkyButton {
                     flat: true
                     text: qsTr("Following")
-                    visible: following && !isUser(author) && contentVisible() && !isLabeler
+                    visible: following && !guiSettings.isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.unfollow(author.did, following)
                     Accessible.name: qsTr(`press to unfollow ${author.name}`)
                 }
@@ -556,8 +556,8 @@ SkyPage {
                 }
                 AccessibleTabButton {
                     text: qsTr("Likes")
-                    visible: isUser(author)
-                    width: isUser(author) ? implicitWidth : 0
+                    visible: guiSettings.isUser(author)
+                    width: guiSettings.isUser(author) ? implicitWidth : 0
                 }
                 AccessibleTabButton {
                     text: qsTr("Feeds")
@@ -747,7 +747,7 @@ SkyPage {
             Loader {
                 Layout.preferredWidth: parent.width
                 Layout.preferredHeight: parent.height
-                active: isUser(author)
+                active: guiSettings.isUser(author)
                 asynchronous: true
 
                 StackLayout.onIsCurrentItemChanged: {
@@ -1161,12 +1161,12 @@ SkyPage {
     }
 
     function mentionPost(text = "", imgSource = "") {
-        const mentionText = (isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
+        const mentionText = (guiSettings.isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
         root.composePost(mentionText, imgSource)
     }
 
     function mentionVideoPost(text = "", videoSource = "") {
-        const mentionText = (isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
+        const mentionText = (guiSettings.isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
         root.composeVideoPost(mentionText, videoSource)
     }
 
@@ -1335,15 +1335,11 @@ SkyPage {
         return followersText
     }
 
-    function isUser(author) {
-        return skywalker.getUserDid() === author.did
-    }
-
     Component.onDestruction: {
         skywalker.onAuthorFeedError.disconnect(feedFailedHandler)
         skywalker.onAuthorFeedOk.disconnect(feedOkHandler)
 
-        if (isUser(author)) {
+        if (guiSettings.isUser(author)) {
             rootProfileUtils.onSetPinnedPostOk.disconnect(pinnedPostHandler)
             rootProfileUtils.onClearPinnedPostOk.disconnect(unpinnedPostHandler)
         }
@@ -1364,7 +1360,7 @@ SkyPage {
         skywalker.onAuthorFeedError.connect(feedFailedHandler)
         skywalker.onAuthorFeedOk.connect(feedOkHandler)
 
-        if (isUser(author)) {
+        if (guiSettings.isUser(author)) {
             rootProfileUtils.onSetPinnedPostOk.connect(pinnedPostHandler)
             rootProfileUtils.onClearPinnedPostOk.connect(unpinnedPostHandler)
         }

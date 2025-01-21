@@ -22,6 +22,12 @@ SkyListView {
 
     onMovementEnded: {
         currentIndex = indexAt(0, contentY)
+        console.debug("Move:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
+
+        if (count - currentIndex < 15) {
+            console.debug("Prefetch next page:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
+            skywalker.getFeedNextPage(modelId)
+        }
     }
 
     FlickableRefresher {

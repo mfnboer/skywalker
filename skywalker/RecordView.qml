@@ -152,7 +152,7 @@ Item {
             sourceComponent: Text {
                 width: parent.width
                 color: guiSettings.textColor
-                text: isUser(record.detachedByDid) ?
+                text: guiSettings.isUserDid(record.detachedByDid) ?
                           qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
                           qsTr("🗑 Detached by author")
 
@@ -225,14 +225,9 @@ Item {
         }
 
         if (record.detached)
-            return isUser(record.detachedByDid) ? qsTr("quote removed by you") : qsTr("quote removed by author")
+            return guiSettings.isUserDid(record.detachedByDid) ? qsTr("quote removed by you") : qsTr("quote removed by author")
 
         return accessibilityUtils.getPostNotAvailableSpeech(
                 record.notFound, record.blocked, record.notSupported)
     }
-
-    function isUser(did) {
-        return skywalker.getUserDid() === did
-    }
-
 }

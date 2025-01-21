@@ -380,7 +380,7 @@ Rectangle {
             // Reply hidden by user
             Loader {
                 width: parent.width
-                active: postIsHiddenReply && isUserDid(postReplyRootAuthorDid)
+                active: postIsHiddenReply && guiSettings.isUserDid(postReplyRootAuthorDid)
                 visible: status == Loader.Ready
                 sourceComponent: ReplyToRow {
                     width: parent.width
@@ -473,7 +473,7 @@ Rectangle {
                     isReply: postIsReply
                     replyRootAuthorDid: postReplyRootAuthorDid
                     replyRootUri: postReplyRootUri
-                    authorIsUser: isUser(author)
+                    authorIsUser: guiSettings.isUser(author)
                     isBookmarked: postBookmarked
                     bookmarkNotFound: postBookmarkNotFound
                     record: postRecord
@@ -822,14 +822,6 @@ Rectangle {
             return postBody.getMuteText()
 
         return postContentWarning
-    }
-
-    function isUserDid(did) {
-        return skywalker.getUserDid() === did
-    }
-
-    function isUser(author) {
-        return isUserDid(author.did)
     }
 
     function checkOnScreen() {

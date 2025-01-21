@@ -266,6 +266,14 @@ Item {
         return labels
     }
 
+    function isUserDid(did) {
+        return skywalker.getUserDid() === did
+    }
+
+    function isUser(author) {
+        return isUserDid(author.did)
+    }
+
     function threadStartColor(color) {
         return color
     }
