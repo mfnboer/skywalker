@@ -502,6 +502,8 @@ Column {
             transcodedSource = "file://" + outputFileName
             videoStack.tmpVideos.push(transcodedSource)
             videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
+            m3u8Reader.resetStream()
+            videoSource = ""
 
             if (!autoLoad || autoPlay)
                 videoPlayer.start()

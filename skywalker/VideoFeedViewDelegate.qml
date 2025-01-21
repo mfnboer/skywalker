@@ -228,6 +228,12 @@ Rectangle {
                 }
 
                 onShare: skywalker.sharePost(postUri)
+
+                onViewThread: {
+                    if (postUri)
+                        skywalker.getPostThread(postUri)
+                }
+
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
                 onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
                 onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)

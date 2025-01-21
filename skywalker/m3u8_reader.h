@@ -34,6 +34,8 @@ public:
     // If fileName is empty then a temp file will be created
     Q_INVOKABLE void loadStream(const QString& fileName = {});
 
+    Q_INVOKABLE void resetStream() { mStream.reset(); }
+
 signals:
     void getVideoStreamOk(int durationMs);
     void getVideoStreamError();

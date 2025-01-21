@@ -53,12 +53,6 @@ SkyListView {
         list: postFeedView
     }
 
-    BusyIndicator {
-        id: busyIndicator
-        anchors.centerIn: parent
-        running: skywalker.getFeedInProgress
-    }
-
     Rectangle {
         z: parent.z - 1
         anchors.fill: parent
