@@ -68,7 +68,7 @@ Rectangle {
     id: videoPage
     width: root.width
     height: root.height
-    color: "black"
+    color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
         if (!onScreen)

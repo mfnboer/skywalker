@@ -15,7 +15,7 @@ SkyPage {
     width: parent.width
     height: parent.height
     padding: 10
-    background: Rectangle { color: "black" }
+    background: Rectangle { color: guiSettings.fullScreenColor }
 
     SwipeView {
         property bool zooming: false
@@ -33,7 +33,7 @@ SkyPage {
                 property bool isCurrentItem: SwipeView.isCurrentItem
 
                 id: imgRect
-                color: "black"
+                color: guiSettings.fullScreenColor
 
                 Flickable {
                     id: altFlick
@@ -151,7 +151,7 @@ SkyPage {
 
     SvgButton {
         iconColor: "white"
-        Material.background: "black"
+        Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
@@ -162,7 +162,7 @@ SkyPage {
         anchors.top: parent.top
         anchors.right: parent.right
         iconColor: "white"
-        Material.background: "black"
+        Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
@@ -194,5 +194,21 @@ SkyPage {
                 MenuItemSvg { svg: SvgOutline.googleTranslate }
             }
         }
+    }
+
+    function setNavigationBarColor() {
+        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+    }
+
+    function resetNavigationBarColor() {
+        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+    }
+
+    Component.onDestruction: {
+        resetNavigationBarColor()
+    }
+
+    Component.onCompleted: {
+        setNavigationBarColor()
     }
 }

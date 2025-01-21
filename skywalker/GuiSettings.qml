@@ -40,6 +40,7 @@ Item {
     readonly property string disabledColor: isLightMode ? "lightgrey" : "darkslategrey"
     readonly property string errorColor: isLightMode ? "darkred" : "palevioletred"
     readonly property string favoriteColor: "gold"
+    readonly property string fullScreenColor: "black"
     readonly property string footerColor: backgroundColor
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: "black"

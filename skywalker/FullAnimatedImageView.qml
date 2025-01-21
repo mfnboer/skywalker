@@ -13,7 +13,7 @@ SkyPage {
     width: parent.width
     height: parent.height
     padding: 10
-    background: Rectangle { color: "black" }
+    background: Rectangle { color: guiSettings.fullScreenColor }
 
     Text {
         id: altText
@@ -41,10 +41,26 @@ SkyPage {
 
     SvgButton {
         iconColor: "white"
-        Material.background: "black"
+        Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
         onClicked: page.closed()
+    }
+
+    function setNavigationBarColor() {
+        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+    }
+
+    function resetNavigationBarColor() {
+        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+    }
+
+    Component.onDestruction: {
+        resetNavigationBarColor()
+    }
+
+    Component.onCompleted: {
+        setNavigationBarColor()
     }
 }

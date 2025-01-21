@@ -14,7 +14,7 @@ SkyPage {
     id: page
     width: parent.width
     height: parent.height
-    background: Rectangle { color: "black" }
+    background: Rectangle { color: guiSettings.fullScreenColor }
 
     VideoView {
         id: view
@@ -28,7 +28,7 @@ SkyPage {
         contentWarning: ""
         controlColor: "white"
         disabledColor: "darkslategrey"
-        backgroundColor: "black"
+        backgroundColor: guiSettings.fullScreenColor
         isVideoFeed: page.isVideoFeed
         isFullViewMode: true
     }
@@ -78,7 +78,7 @@ SkyPage {
     SvgButton {
         x: 10
         iconColor: "white"
-        Material.background: "black"
+        Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
@@ -91,7 +91,7 @@ SkyPage {
         anchors.right: parent.right
         anchors.rightMargin: 10
         iconColor: "white"
-        Material.background: "black"
+        Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
@@ -174,5 +174,21 @@ SkyPage {
         else {
             root.getSkywalker().showStatusMessage(qsTr(`Cannot save: ${videoView.playlistUrl}`), QEnums.STATUS_LEVEL_ERROR)
         }
+    }
+
+    function setNavigationBarColor() {
+        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+    }
+
+    function resetNavigationBarColor() {
+        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+    }
+
+    Component.onDestruction: {
+        resetNavigationBarColor()
+    }
+
+    Component.onCompleted: {
+        setNavigationBarColor()
     }
 }

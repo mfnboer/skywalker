@@ -12,7 +12,7 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
     snapMode: ListView.SnapOneItem
-    spacing: 2
+    spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
     currentIndex: 0
 
     Accessible.name: postFeedView.model.feedName
@@ -20,6 +20,9 @@ SkyListView {
     delegate: VideoFeedViewDelegate {
         width: postFeedView.width
     }
+
+    onCovered: resetNavigationBarColor()
+    onUncovered: setNavigationBarColor()
 
     onMovementEnded: {
         currentIndex = indexAt(0, contentY)
@@ -56,10 +59,26 @@ SkyListView {
     Rectangle {
         z: parent.z - 1
         anchors.fill: parent
-        color: "black"
+        color: guiSettings.fullScreenColor
     }
 
     function cancel() {
         closed()
+    }
+
+    function setNavigationBarColor() {
+        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+    }
+
+    function resetNavigationBarColor() {
+        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+    }
+
+    Component.onDestruction: {
+        resetNavigationBarColor()
+    }
+
+    Component.onCompleted: {
+        setNavigationBarColor()
     }
 }

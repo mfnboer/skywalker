@@ -438,13 +438,19 @@ ApplicationWindow {
 
             if (prevStack.depth > 0) {
                 let prevItem = prevStack.get(prevStack.depth - 1)
-                prevItem.cover()
+
+                if (typeof prevItem.cover === 'function')
+                    prevItem.cover()
             }
 
             if (prevIndex === notificationIndex)
                 skywalker.notificationListModel.updateRead()
 
             prevIndex = currentIndex
+            let currentItem = currentStackItem()
+
+            if (currentItem && typeof currentItem.uncover === 'function')
+                currentItem.uncover()
         }
 
         StackView {
@@ -1853,6 +1859,13 @@ ApplicationWindow {
         // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
         if (!((item instanceof PostFeedView || item instanceof PostListFeedView || item instanceof SearchFeedView) && item.showAsHome))
             item.destroy()
+
+        if (stack === currentStack()) {
+            let currentItem = currentStackItem()
+
+            if (currentItem && typeof currentItem.uncover === 'function')
+                currentItem.uncover()
+        }
     }
 
     function pushStack(item, operation) {

@@ -3087,6 +3087,12 @@ bool Skywalker::sendAppToBackground()
 
 void Skywalker::setNavigationBarColor(QColor color)
 {
+    const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
+    setNavigationBarColorAndMode(color, isLightMode);
+}
+
+void Skywalker::setNavigationBarColorAndMode(QColor color, bool isLightMode)
+{
 #ifdef Q_OS_ANDROID
     if (!QNativeInterface::QAndroidApplication::isActivityContext())
     {
@@ -3096,10 +3102,10 @@ void Skywalker::setNavigationBarColor(QColor color)
 
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     int rgb = color.rgba();
-    bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
     activity.callMethod<void>("setNavigationBarColor", "(IZ)V", (jint)rgb, (jboolean)isLightMode);
 #else
     Q_UNUSED(color)
+    Q_UNUSED(isLightMode)
 #endif
 }
 
