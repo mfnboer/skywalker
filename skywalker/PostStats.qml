@@ -21,6 +21,7 @@ Item {
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
+    property bool showViewThread: false
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
     property int topPadding: 0
@@ -28,6 +29,7 @@ Item {
     signal reply()
     signal repost()
     signal like()
+    signal viewThread()
     signal muteThread()
     signal bookmark()
     signal share()
@@ -158,6 +160,13 @@ Item {
                     MenuItemSvg { svg: SvgOutline.share }
                 }
                 AccessibleMenuItem {
+                    text: qsTr("View thread")
+                    visible: showViewThread
+                    onTriggered: viewThread()
+
+                    MenuItemSvg { svg: SvgOutline.chat }
+                }
+                AccessibleMenuItem {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")
                     visible: !isReply || replyRootUri
                     onTriggered: muteThread()
@@ -223,6 +232,8 @@ Item {
 
                     MenuItemSvg { svg: SvgOutline.block }
                 }
+
+                Component.onCompleted: background.color = guiSettings.menuColor
             }
         }
     }

@@ -369,6 +369,13 @@ ApplicationWindow {
                 current.cover()
         }
 
+        onAppResumed: {
+            let current = currentStackItem()
+
+            if (current && typeof current.uncover === 'function')
+                current.uncover()
+        }
+
         // Note for search feeds the feedUri is the search name
         function saveLastViewedFeed(feedUri) {
             let userSettings = skywalker.getUserSettings()

@@ -290,6 +290,7 @@ signals:
     void anniversary();
     void oldestUnreadNotificationIndex(int index, bool mentions);
     void appPaused();
+    void appResumed();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);

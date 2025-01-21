@@ -3321,6 +3321,7 @@ void Skywalker::resumeApp()
     if (mTimelineUpdatePaused.isNull())
     {
         qDebug() << "Timeline update was not paused.";
+        emit appResumed();
         return;
     }
 
@@ -3348,6 +3349,7 @@ void Skywalker::resumeApp()
         }
 
         mChat->resume();
+        emit appResumed();
     });
 }
 

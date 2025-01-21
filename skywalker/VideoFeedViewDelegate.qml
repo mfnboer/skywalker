@@ -198,6 +198,7 @@ Rectangle {
                 authorIsUser: guiSettings.isUser(author)
                 isBookmarked: postBookmarked
                 bookmarkNotFound: postBookmarkNotFound
+                showViewThread: true
                 record: postRecord
                 recordWithMedia: postRecordWithMedia
 
