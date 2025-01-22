@@ -204,7 +204,8 @@ Column {
                 onErrorOccurred: (error, errorString) => {
                     console.debug("Video error:", source, error, errorString)
 
-                    if (error === MediaPlayer.ResourceError) {
+                    if (error === MediaPlayer.ResourceError && videoUtils.isTempVideoSource(transcodedSource)) {
+                        console.debug("Reload video")
                         transcodedSource = ""
                         setVideoSource()
                     }
@@ -224,6 +225,11 @@ Column {
                 function start() {
                     if (!filter.imageVisible())
                         return
+
+                    if (!transcodedSource) {
+                        console.warn("No transcoded source:", videoView.playlistUrl)
+                        setVideoSource()
+                    }
 
                     restartTimer.set(true)
                     play()
@@ -275,7 +281,7 @@ Column {
                 onTriggered: {
                     videoPlayer.stop()
                     videoPlayer.restarting = false
-                    console.warn("Failed to start video")
+                    console.warn("Failed to start video:", transcodedSource, videoView.playlistUrl)
                 }
 
                 function set(on) {
@@ -580,6 +586,7 @@ Column {
     }
 
     Component.onDestruction: {
+        console.debug("Destruct VideoView:", videoView.playlistUrl)
         clearCache()
     }
 

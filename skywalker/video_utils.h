@@ -24,6 +24,7 @@ public:
     Q_INVOKABLE void indexGalleryFile(const QString& fileName);
     Q_INVOKABLE static void dropVideo(const QString& source);
     Q_INVOKABLE void setVideoTranscodedSource(const QString& postCid, const QString& source);
+    Q_INVOKABLE bool isTempVideoSource(const QString& source) const;
 
 signals:
     void transcodingOk(QString inputFileName, QString outputFileName);

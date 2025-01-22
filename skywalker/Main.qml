@@ -1630,9 +1630,11 @@ ApplicationWindow {
     }
 
     function viewVideoFeed(modelId, index, closeCb = (newIndex) => {}) {
+        console.debug("View video feed:", modelId, "index:", index)
         let component = guiSettings.createComponent("VideoFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId, currentIndex: index })
         view.onClosed.connect(() => {
+            console.debug("Close video feed:", modelId, "index:", view.currentIndex)
             closeCb(view.currentIndex)
             popStack()
         })

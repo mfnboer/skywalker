@@ -73,6 +73,11 @@ QString TempFileHolder::getNameTemplate(const QString& fileExtension, bool cache
         fileExtension);
 }
 
+QString TempFileHolder::namePrefix()
+{
+    return TMP_FILENAME_PREFIX;
+}
+
 TempFileHolder::~TempFileHolder()
 {
     Q_ASSERT(mFiles.empty());

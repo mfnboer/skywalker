@@ -74,6 +74,7 @@ SkyListView {
 
     function setFooterHeight() {
         footerHeight = guiSettings.getNavigationBarHeight()
+        positionViewAtIndex(currentIndex, ListView.Beginning)
     }
 
     Component.onDestruction: {
@@ -85,5 +86,6 @@ SkyListView {
         Screen.onOrientationChanged.connect(setFooterHeight)
         setSystemBars()
         model.setOverrideLinkColor(guiSettings.linkColorDarkMode)
+        positionViewAtIndex(currentIndex, ListView.Beginning)
     }
 }

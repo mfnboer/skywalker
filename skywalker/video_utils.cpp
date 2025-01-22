@@ -206,4 +206,13 @@ void VideoUtils::setVideoTranscodedSource(const QString& postCid, const QString&
         });
 }
 
+bool VideoUtils::isTempVideoSource(const QString& source) const
+{
+    if (!source.startsWith("file://"))
+        return false;
+
+    QFileInfo info(source.sliced(7));
+    return info.suffix() == "mp4" && info.baseName().startsWith(TempFileHolder::namePrefix());
+}
+
 }

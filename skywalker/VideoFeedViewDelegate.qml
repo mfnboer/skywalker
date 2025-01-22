@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
+    required property int index
     property var skywalker: root.getSkywalker()
     required property basicprofile author
     required property string postUri

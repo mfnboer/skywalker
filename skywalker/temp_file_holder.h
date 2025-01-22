@@ -12,6 +12,7 @@ public:
     static TempFileHolder& instance();
     static void init();
     static QString getNameTemplate(const QString& fileExtension, bool cache);
+    static QString namePrefix();
 
     ~TempFileHolder();
     void put(std::unique_ptr<QTemporaryFile> tempFile);
