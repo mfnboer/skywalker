@@ -60,6 +60,7 @@ Item {
         }
 
         Loader {
+            id: postBodyLoader
             width: parent.width
             active: record.available
 
@@ -229,5 +230,10 @@ Item {
 
         return accessibilityUtils.getPostNotAvailableSpeech(
                 record.notFound, record.blocked, record.notSupported)
+    }
+
+    function movedOffScreen() {
+        if (postBodyLoader.item)
+            postBodyLoader.item.movedOffScreen()
     }
 }

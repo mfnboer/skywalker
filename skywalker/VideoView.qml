@@ -332,7 +332,7 @@ Column {
             anchors.fill: parent
             active: isFullViewMode
 
-            Rectangle {
+            sourceComponent: Rectangle {
                 anchors.fill: parent
                 gradient: Gradient {
                     GradientStop { position: 0.0; color: isVideoFeed ? "#D0000000" : "#00000000" }
