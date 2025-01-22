@@ -346,6 +346,14 @@ Column {
         postBody.attachmentsInitialized = true
     }
 
+    function clearCache() {
+        if (!mediaLoader.item)
+            return
+
+        if (typeof mediaLoader.item.clearCache === 'function')
+            mediaLoader.item.clearCache()
+    }
+
     Component.onCompleted: {
         if (!postBody.visible)
             return

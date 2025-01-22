@@ -177,7 +177,7 @@ void M3U8Reader::loadStream(const QString& fileName)
 
         if (fileName.isEmpty())
         {
-            mStream = FileUtils::makeTempFile("ts");
+            mStream = FileUtils::makeTempFile("ts", true);
 
             if (!mStream)
             {

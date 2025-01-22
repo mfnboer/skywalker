@@ -31,7 +31,7 @@ public:
     void setLoading(bool loading);
     Q_INVOKABLE void getVideoStream(const QString& link, bool firstCall = true);
 
-    // If fileName is empty then a temp file will be created
+    // If fileName is empty then a temp cache file will be created
     Q_INVOKABLE void loadStream(const QString& fileName = {});
 
     Q_INVOKABLE void resetStream() { mStream.reset(); }

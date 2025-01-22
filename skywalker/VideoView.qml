@@ -201,7 +201,14 @@ Column {
                     }
                 }
 
-                onErrorOccurred: (error, errorString) => { console.debug("Video error:", source, error, errorString) }
+                onErrorOccurred: (error, errorString) => {
+                    console.debug("Video error:", source, error, errorString)
+
+                    if (error === MediaPlayer.ResourceError) {
+                        transcodedSource = ""
+                        setVideoSource()
+                    }
+                }
 
                 function getDuration() {
                     return duration === 0 ? m3u8DurationMs : duration
@@ -563,11 +570,17 @@ Column {
         }
     }
 
-    Component.onDestruction: {
+    function clearCache() {
+        console.debug("Clear cache:", videoView.playlistUrl)
+
         tmpVideos.forEach((value, index, array) => {
             videoUtils.setVideoTranscodedSource(postCid, "")
             videoUtils.dropVideo(value)
         })
+    }
+
+    Component.onDestruction: {
+        clearCache()
     }
 
     Component.onCompleted: {

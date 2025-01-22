@@ -12,6 +12,7 @@ SkyListView {
     id: postFeedView
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
+    boundsBehavior: Flickable.StopAtBounds
     snapMode: ListView.SnapOneItem
     spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
     currentIndex: 0
@@ -31,7 +32,7 @@ SkyListView {
         currentIndex = indexAt(0, contentY)
         console.debug("Move:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
 
-        if (count - currentIndex < 15) {
+        if (currentIndex >= 0 && count - currentIndex < 15) {
             console.debug("Prefetch next page:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
             skywalker.getFeedNextPage(modelId)
         }
@@ -40,9 +41,7 @@ SkyListView {
     FlickableRefresher {
         inProgress: skywalker.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
-        topOvershootFun: () => skywalker.getFeed(modelId)
         bottomOvershootFun: () => skywalker.getFeedNextPage(modelId)
-        topText: qsTr("Pull down to refresh feed")
         enableScrollToTop: false
     }
 

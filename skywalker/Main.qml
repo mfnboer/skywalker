@@ -1864,8 +1864,15 @@ ApplicationWindow {
         let item = stack.pop()
 
         // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
-        if (!((item instanceof PostFeedView || item instanceof PostListFeedView || item instanceof SearchFeedView) && item.showAsHome))
+        if (!((item instanceof PostFeedView ||
+               item instanceof PostListFeedView ||
+               item instanceof SearchFeedView) && item.showAsHome))
+        {
             item.destroy()
+        }
+        else if (item instanceof PostFeedView) {
+            item.clearCache()
+        }
 
         if (stack === currentStack()) {
             let currentItem = currentStackItem()

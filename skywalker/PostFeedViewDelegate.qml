@@ -830,6 +830,10 @@ Rectangle {
         onScreen = (y + height > topY) && (y < ListView.view.contentY + ListView.view.height)
     }
 
+    function clearCache() {
+        postBody.clearCache()
+    }
+
     Component.onCompleted: {
         ListView.view.enableOnScreenCheck = true
         checkOnScreen()

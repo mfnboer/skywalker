@@ -44,7 +44,7 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
         return false;
     }
 
-    auto outputFile = FileUtils::makeTempFile("mp4");
+    auto outputFile = FileUtils::makeTempFile("mp4", true);
     const QString outputFileName = outputFile->fileName();
     outputFile = nullptr;
 

@@ -12,6 +12,7 @@ static constexpr const char* TMP_FILENAME_PREFIX = "sw_tmp_";
 
 std::unique_ptr<TempFileHolder> TempFileHolder::sInstance;
 QString TempFileHolder::sTempPath(".");
+QString TempFileHolder::sCachePath(".");
 
 TempFileHolder& TempFileHolder::instance()
 {
@@ -19,6 +20,12 @@ TempFileHolder& TempFileHolder::instance()
         sInstance = std::make_unique<TempFileHolder>();
 
     return *sInstance;
+}
+
+void TempFileHolder::init()
+{
+    initTempDir();
+    initCacheDir();
 }
 
 void TempFileHolder::initTempDir()
@@ -29,14 +36,25 @@ void TempFileHolder::initTempDir()
         sTempPath = ".";
 
     qDebug() << "Temp dir:" << sTempPath;
-    removeAllFiles();
+    removeAllFiles(sTempPath);
 }
 
-void TempFileHolder::removeAllFiles()
+void TempFileHolder::initCacheDir()
 {
-    qDebug() << "Remove all files in:" << sTempPath;
+    sCachePath = FileUtils::getCachePath(TMP_SUB_PATH);
 
-    QDir tmpDir(sTempPath);
+    if (sCachePath.isEmpty())
+        sCachePath = ".";
+
+    qDebug() << "Cache dir:" << sCachePath;
+    removeAllFiles(sCachePath);
+}
+
+void TempFileHolder::removeAllFiles(const QString& path)
+{
+    qDebug() << "Remove all files in:" << path;
+
+    QDir tmpDir(path);
     const QString tmpFilePattern = QString("%1*").arg(TMP_FILENAME_PREFIX);
     const auto tmpFiles = tmpDir.entryList({tmpFilePattern});
 
@@ -47,9 +65,12 @@ void TempFileHolder::removeAllFiles()
     }
 }
 
-QString TempFileHolder::getNameTemplate(const QString& fileExtension)
+QString TempFileHolder::getNameTemplate(const QString& fileExtension, bool cache)
 {
-    return QString("%1/%2XXXXXX.%3").arg(sTempPath, TMP_FILENAME_PREFIX, fileExtension);
+    return QString("%1/%2XXXXXX.%3").arg(
+        cache ? sCachePath : sTempPath,
+        TMP_FILENAME_PREFIX,
+        fileExtension);
 }
 
 TempFileHolder::~TempFileHolder()
@@ -80,6 +101,11 @@ void TempFileHolder::remove(const QString& fileName)
         QFile::remove(fileName);
         mFileNames.erase(fileName);
     }
+}
+
+bool TempFileHolder::contains(const QString& fileName) const
+{
+    return mFiles.contains(fileName) || mFileNames.contains(fileName);
 }
 
 }

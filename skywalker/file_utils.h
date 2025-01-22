@@ -16,7 +16,7 @@ QString getMoviesPath();
 QString getCachePath(const QString& subDir);
 int openContentUri(const QString& contentUri);
 QString resolveContentUriToFile(const QString& contentUri);
-std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension);
+std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension, bool cache = false);
 std::unique_ptr<QTemporaryFile> createTempFile(const QString& fileUri, const QString& fileExtension);
 std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileExtension);
 std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtension);
