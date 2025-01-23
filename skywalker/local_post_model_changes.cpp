@@ -94,12 +94,6 @@ void LocalPostModelChanges::updateHiddenReplies(const QString& cid, const QStrin
     hiddenRepliesChanged();
 }
 
-void LocalPostModelChanges::updatePostVideoTranscodedSource(const QString& cid, const QString& source)
-{
-    mChanges[cid].mPostVideoTranscodedSource = source;
-    postVideoPostVideoTranscodedSourceChanged();
-}
-
 void LocalPostModelChanges::updateThreadMuted(const QString& uri, bool muted)
 {
     mUriChanges[uri].mThreadMuted = muted;

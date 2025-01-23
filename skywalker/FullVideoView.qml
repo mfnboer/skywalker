@@ -6,7 +6,6 @@ import skywalker
 SkyPage {
     required property var videoView // videoview
     property string videoSource
-    property string transcodedSource
     property bool isVideoFeed: false
 
     signal closed
@@ -23,7 +22,6 @@ SkyPage {
         maxHeight: parent.height
         videoView: page.videoView
         videoSource: page.videoSource
-        transcodedSource: page.transcodedSource
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
         controlColor: "white"

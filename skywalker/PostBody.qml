@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
-    property string postCid
     required property basicprofile postAuthor
     required property string postText
     required property list<imageview> postImages
@@ -276,7 +275,6 @@ Column {
             }
             else {
                 mediaLoader.setSource("VideoView.qml", {
-                                          postCid: postBody.postCid,
                                           videoView: postBody.postVideo,
                                           contentVisibility: postContentVisibility,
                                           contentWarning: postContentWarning,

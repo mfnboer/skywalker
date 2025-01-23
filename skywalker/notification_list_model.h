@@ -151,7 +151,6 @@ protected:
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
     virtual void viewerStatePinnedChanged() override;
-    virtual void postVideoPostVideoTranscodedSourceChanged() override {}
     virtual void postDeletedChanged() override;
 
     // LocalProfileChanges

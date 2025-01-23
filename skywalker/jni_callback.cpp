@@ -283,8 +283,7 @@ void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName,
 
 void JNICallbackListener::handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
-    // TODO: use FileSignal
-    emit videoTranscodingFailed(inputFileName, outputFileName, error);
+    emit videoTranscodingFailed(inputFileName, std::make_shared<FileSignal>(outputFileName), error);
 }
 
 void JNICallbackListener::handleExtractTextAvailabilityOk(QEnums::Script script, bool available)

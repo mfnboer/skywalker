@@ -25,7 +25,6 @@ public:
     Q_INVOKABLE void copyVideoToGallery(const QString& fileName);
     Q_INVOKABLE void indexGalleryFile(const QString& fileName);
     Q_INVOKABLE static void dropVideo(const QString& source);
-    Q_INVOKABLE void setVideoTranscodedSource(const QString& postCid, const QString& source);
     Q_INVOKABLE bool isTempVideoSource(const QString& source) const;
 
     Q_INVOKABLE VideoHandle* getVideoFromCache(const QString& link);
@@ -40,7 +39,7 @@ signals:
 
 private:
     void handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile);
-    void handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error);
+    void handleTranscodingFailed(const QString& inputFileName, FileSignal::SharedPtr outputFile, const QString& error);
 
     bool mTranscoding = false;
     QString mTranscodingFileName;

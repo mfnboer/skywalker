@@ -4,7 +4,6 @@ import QtMultimedia
 import skywalker
 
 Column {
-    property string postCid // if set, then video source will be stored in the postFeedModel
     required property var videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
@@ -31,7 +30,6 @@ Column {
 
     // Cache
     property var videoHandle
-    property list<string> tmpVideos: []
 
     signal videoLoaded
 
@@ -320,7 +318,7 @@ Column {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
                 else
-                    root.viewFullVideo(videoView, transcodedSource)
+                    root.viewFullVideo(videoView)
             }
         }
 
@@ -508,7 +506,6 @@ Column {
             }
             else if (!autoLoad || autoPlay) {
                 transcodedSource = videoSource
-                videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
                 videoPlayer.start()
             }
             else {
@@ -529,8 +526,6 @@ Column {
             console.debug("Set MP4 source:", outputFileName)
             videoHandle = videoUtils.cacheVideo(videoView.playlistUrl, outputFileName)
             transcodedSource = "file://" + videoHandle.fileName
-            // TODO videoStack.tmpVideos.push(transcodedSource)
-            //videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
             m3u8Reader.resetStream()
             videoSource = ""
 
@@ -611,11 +606,6 @@ Column {
 
         if (videoHandle)
             videoHandle.destroy()
-
-        tmpVideos.forEach((value, index, array) => {
-            videoUtils.setVideoTranscodedSource(postCid, "")
-            videoUtils.dropVideo(value)
-        })
     }
 
     Component.onDestruction: {

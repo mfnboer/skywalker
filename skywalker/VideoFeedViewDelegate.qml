@@ -16,7 +16,6 @@ Rectangle {
     required property basicprofile postRepostedByAuthor
     required property list<imageview> postImages
     required property var postVideo // videoView
-    required property string postVideoTranscodedSource
     required property var postExternal // externalview (var allows NULL)
     required property var postRecord // recordview
     required property var postRecordWithMedia // record_with_media_view

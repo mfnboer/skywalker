@@ -1412,7 +1412,7 @@ ApplicationWindow {
     }
 
     // TODO: remove transcodedSourcxe
-    function viewFullVideo(videoView, transcodedSource) {
+    function viewFullVideo(videoView) {
         let component = guiSettings.createComponent("FullVideoView.qml")
         let view = component.createObject(root, { videoView: videoView })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property

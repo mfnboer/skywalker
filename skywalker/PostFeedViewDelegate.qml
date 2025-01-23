@@ -392,7 +392,6 @@ Rectangle {
             PostBody {
                 id: postBody
                 width: parent.width
-                postCid: postEntry.postCid
                 postAuthor: author
                 postText: postEntry.postText
                 postPlainText: postEntry.postPlainText

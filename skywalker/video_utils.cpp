@@ -20,8 +20,8 @@ VideoUtils::VideoUtils(QObject* parent) :
             });
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingFailed,
-            this, [this](QString inputFileName, QString outputFileName, QString error){
-                handleTranscodingFailed(inputFileName, outputFileName, error);
+            this, [this](QString inputFileName, FileSignal::SharedPtr outputFile, QString error){
+                handleTranscodingFailed(inputFileName, outputFile, error);
             });
 }
 
@@ -100,7 +100,7 @@ void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::S
     emit transcodingOk(inputFileName, outputFile->getFileName());
 }
 
-void VideoUtils::handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
+void VideoUtils::handleTranscodingFailed(const QString& inputFileName, FileSignal::SharedPtr outputFile, const QString& error)
 {
     if (inputFileName != mTranscodingFileName)
     {
@@ -111,7 +111,8 @@ void VideoUtils::handleTranscodingFailed(const QString& inputFileName, const QSt
     qWarning() << "Transcoding failed:" << inputFileName << error;
     setTranscoding(false);
     mTranscodingFileName.clear();
-    QFile::remove(outputFileName);
+    outputFile->setHandled(true);
+    QFile::remove(outputFile->getFileName());
     emit transcodingFailed(inputFileName, error);
 }
 
@@ -188,23 +189,6 @@ void VideoUtils::indexGalleryFile(const QString& fileName)
 void VideoUtils::dropVideo(const QString& source)
 {
     PostUtils::dropVideo(source);
-}
-
-void VideoUtils::setVideoTranscodedSource(const QString& postCid, const QString& source)
-{
-    if (postCid.isEmpty())
-    {
-        qDebug() << "No post cid for:" << source;
-        return;
-    }
-
-    if (!mSkywalker)
-        return;
-
-    mSkywalker->makeLocalModelChange(
-        [postCid, source](LocalPostModelChanges* model){
-            model->updatePostVideoTranscodedSource(postCid, source);
-        });
 }
 
 bool VideoUtils::isTempVideoSource(const QString& source) const
