@@ -161,6 +161,13 @@ SkyPage {
         onCopyVideoFailed: (error) => root.getSkywalker().showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    GuiSettings {
+        id: guiSettings
+        isLightMode: false
+        backgroundColor: page.color
+        textColor: "white"
+    }
+
     function saveVideo() {
         if (view.videoSource && view.videoSource.startsWith("file://")) {
             videoUtils.copyVideoToGallery(view.videoSource.slice(7))

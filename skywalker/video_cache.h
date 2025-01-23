@@ -42,7 +42,7 @@ public:
 
     VideoHandle* putVideo(const QString& link, const QString& fileName);
     VideoHandle* getVideo(const QString& link);
-    void unlinkVideo(const QString& link);
+    void unlinkVideo(const QString& link, const QString& fileName);
 
 private:
     static std::unique_ptr<VideoCache> sInstance;

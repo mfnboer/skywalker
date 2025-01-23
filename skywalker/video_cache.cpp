@@ -25,7 +25,7 @@ VideoHandle::~VideoHandle()
 VideoHandle::Handle::~Handle()
 {
     qDebug() << "Destroy video handle:" << mLink << "file:" << mFileName;
-    VideoCache::instance().unlinkVideo(mLink);
+    VideoCache::instance().unlinkVideo(mLink, mFileName);
 }
 
 
@@ -49,7 +49,7 @@ VideoHandle* VideoCache::putVideo(const QString& link, const QString& fileName)
         TempFileHolder::instance().put(fileName);
     }
 
-    const auto& handle = getVideo(link);
+    auto* handle = getVideo(link);
 
     if (handle->isValid())
     {
@@ -60,6 +60,8 @@ VideoHandle* VideoCache::putVideo(const QString& link, const QString& fileName)
 
         return handle;
     }
+
+    delete handle;
 
     CacheEntry entry;
     entry.mFileName = fileName;
@@ -74,18 +76,26 @@ VideoHandle* VideoCache::putVideo(const QString& link, const QString& fileName)
 
 VideoHandle* VideoCache::getVideo(const QString& link)
 {
-    if (mCache.contains(link))
+    if (!mCache.contains(link))
+        return new VideoHandle();
+
+    auto& entry = mCache[link];
+
+    if (!QFile::exists(entry.mFileName))
     {
-        auto& entry = mCache[link];
-        ++entry.mCount;
-        qDebug() << "Get video:" << link << "file:" << entry.mFileName << "count:" << entry.mCount;
-        return new VideoHandle(link, entry.mFileName);
+        // This can happen when a file was forcefully deleted from cache.
+        qWarning() << "Get video, file does not exist:" << link << "file:" << entry.mFileName << "count:" << entry.mCount;
+        TempFileHolder::instance().remove(entry.mFileName);
+        mCache.erase(link);
+        return new VideoHandle();
     }
 
-    return new VideoHandle();
+    ++entry.mCount;
+    qDebug() << "Get video:" << link << "file:" << entry.mFileName << "count:" << entry.mCount;
+    return new VideoHandle(link, entry.mFileName);
 }
 
-void VideoCache::unlinkVideo(const QString& link)
+void VideoCache::unlinkVideo(const QString& link, const QString& fileName)
 {
     if (!mCache.contains(link))
     {
@@ -94,6 +104,14 @@ void VideoCache::unlinkVideo(const QString& link)
     }
 
     auto& entry = mCache[link];
+
+    if (entry.mFileName != fileName)
+    {
+        // This can happen when a file was forcefully deleted from cache.
+        qWarning() << "Link file names do not match:" << fileName << "cached:" << entry.mFileName;
+        return;
+    }
+
     --entry.mCount;
     qDebug() << "Unlink video:" << link << "file:" << entry.mFileName << "count:" << entry.mCount;
 

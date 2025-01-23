@@ -1871,8 +1871,8 @@ ApplicationWindow {
         {
             item.destroy()
         }
-        else if (item instanceof PostFeedView) {
-            item.clearCache()
+        else if (item instanceof PostFeedView && item.showAsHome) {
+            item.deactivate()
         }
 
         if (stack === currentStack()) {
@@ -1890,6 +1890,10 @@ ApplicationWindow {
             current.cover()
 
         currentStack().push(item, operation)
+
+        if (item instanceof PostFeedView && item.showAsHome) {
+            item.activate()
+        }
     }
 
     function unwindStack(stack = null) {

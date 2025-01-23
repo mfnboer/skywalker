@@ -546,6 +546,15 @@ Column {
         }
     }
 
+    Timer {
+        id: inactiveTimer
+        interval: 30000
+        onTriggered: {
+            console.debug() << "Entering inactive state"
+            clearCache()
+        }
+    }
+
     function pause() {
         if (videoPlayer.playing)
         {
@@ -606,6 +615,16 @@ Column {
 
         if (videoHandle)
             videoHandle.destroy()
+    }
+
+    function activate() {
+        console.debug("Activate VideoView:", videoView.playlistUrl)
+        inactiveTimer.stop()
+    }
+
+    function deactivate() {
+        console.debug("Deactivate VideoView:", videoView.playlistUrl)
+        inactiveTimer.start()
     }
 
     Component.onDestruction: {

@@ -82,12 +82,21 @@ SkyListView {
         running: skywalker.getFeedInProgress
     }
 
-    function clearCache() {
+    function activate() {
         for (var i = 0; i < count; ++i) {
             const item = itemAtIndex(i)
 
             if (item)
-                item.clearCache() // qmllint disable missing-property
+                item.activate() // qmllint disable missing-property
+        }
+    }
+
+    function deactivate() {
+        for (var i = 0; i < count; ++i) {
+            const item = itemAtIndex(i)
+
+            if (item)
+                item.deactivate() // qmllint disable missing-property
         }
     }
 

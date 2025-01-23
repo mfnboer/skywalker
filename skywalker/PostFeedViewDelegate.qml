@@ -829,8 +829,12 @@ Rectangle {
         onScreen = (y + height > topY) && (y < ListView.view.contentY + ListView.view.height)
     }
 
-    function clearCache() {
-        postBody.clearCache()
+    function activate() {
+        postBody.activate()
+    }
+
+    function deactivate() {
+        postBody.deactivate()
     }
 
     Component.onCompleted: {
