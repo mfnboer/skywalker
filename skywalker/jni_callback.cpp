@@ -278,13 +278,12 @@ void JNICallbackListener::handlePhotoPickCanceled()
 
 void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName)
 {
-    emit videoTranscodingOk(inputFileName, outputFileName);
-    // TODO: remove the output file if no one handled it.
-    // Can be done by using a shared pointer?
+    emit videoTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName));
 }
 
 void JNICallbackListener::handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
+    // TODO: use FileSignal
     emit videoTranscodingFailed(inputFileName, outputFileName, error);
 }
 

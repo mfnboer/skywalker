@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
+#include "signal_object.h"
 #include <QObject>
 
 namespace Skywalker {
@@ -38,7 +39,7 @@ public:
 signals:
     void photoPicked(int fd, QString mimeType);
     void photoPickCanceled();
-    void videoTranscodingOk(QString inputFileName, QString outputFileName);
+    void videoTranscodingOk(QString inputFileName, FileSignal::SharedPtr outputFile);
     void videoTranscodingFailed(QString inputFileName, QString outputFileName, QString error);
     void extractTextAvailabilityOk(QEnums::Script script, bool available);
     void extractTextAvailabilityFailed(QEnums::Script script, QString error);

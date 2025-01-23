@@ -61,7 +61,6 @@ Item {
 
 
     function movedOffScreen() {
-        console.debug("MOVED OFF:", record.record.plainText)
         if (record.video && mediaLoader.item)
             mediaLoader.item.pause()
     }

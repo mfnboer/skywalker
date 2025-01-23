@@ -15,8 +15,8 @@ VideoUtils::VideoUtils(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
-            this, [this](QString inputFileName, QString outputFileName){
-                handleTranscodingOk(inputFileName, outputFileName);
+            this, [this](QString inputFileName, FileSignal::SharedPtr outputFile){
+                handleTranscodingOk(inputFileName, outputFile);
             });
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingFailed,
@@ -79,12 +79,12 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     Q_UNUSED(removeAudio)
     qDebug() << "Transcoding not supported";
     QFile::copy(inputFileName, outputFileName);
-    handleTranscodingOk(inputFileName, outputFileName);
+    handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName));
 #endif
     return true;
 }
 
-void VideoUtils::handleTranscodingOk(const QString& inputFileName, const QString& outputFileName)
+void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile)
 {
     if (inputFileName != mTranscodingFileName)
     {
@@ -95,8 +95,9 @@ void VideoUtils::handleTranscodingOk(const QString& inputFileName, const QString
     qDebug() << "Transcoding ok:" << inputFileName;
     setTranscoding(false);
     mTranscodingFileName.clear();
-    TempFileHolder::instance().put(outputFileName);
-    emit transcodingOk(inputFileName, outputFileName);
+    outputFile->setHandled(true);
+    TempFileHolder::instance().put(outputFile->getFileName());
+    emit transcodingOk(inputFileName, outputFile->getFileName());
 }
 
 void VideoUtils::handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
@@ -213,6 +214,20 @@ bool VideoUtils::isTempVideoSource(const QString& source) const
 
     QFileInfo info(source.sliced(7));
     return info.suffix() == "mp4" && info.baseName().startsWith(TempFileHolder::namePrefix());
+}
+
+VideoHandle* VideoUtils::getVideoFromCache(const QString& link)
+{
+    auto* handle = VideoCache::instance().getVideo(link);
+    handle->setParent(this);
+    return handle;
+}
+
+VideoHandle* VideoUtils::cacheVideo(const QString& link, const QString& fileName)
+{
+    auto* handle = VideoCache::instance().putVideo(link, fileName);
+    handle->setParent(this);
+    return handle;
 }
 
 }

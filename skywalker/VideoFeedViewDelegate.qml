@@ -85,7 +85,6 @@ Rectangle {
         height: parent.height
         maxHeight: parent.height
         videoView: postVideo
-        transcodedSource: postVideoTranscodedSource
         contentVisibility: postContentVisibility
         contentWarning: postContentWarning
         controlColor: "white"

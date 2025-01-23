@@ -1,6 +1,8 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "video_cache.h"
+#include "signal_object.h"
 #include "wrapped_skywalker.h"
 #include <QObject>
 #include <QtQmlIntegration>
@@ -26,6 +28,9 @@ public:
     Q_INVOKABLE void setVideoTranscodedSource(const QString& postCid, const QString& source);
     Q_INVOKABLE bool isTempVideoSource(const QString& source) const;
 
+    Q_INVOKABLE VideoHandle* getVideoFromCache(const QString& link);
+    Q_INVOKABLE VideoHandle* cacheVideo(const QString& link, const QString& fileName);
+
 signals:
     void transcodingOk(QString inputFileName, QString outputFileName);
     void transcodingFailed(QString inputFileName, QString error);
@@ -34,7 +39,7 @@ signals:
     void copyVideoFailed(QString error);
 
 private:
-    void handleTranscodingOk(const QString& inputFileName, const QString& outputFileName);
+    void handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile);
     void handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error);
 
     bool mTranscoding = false;

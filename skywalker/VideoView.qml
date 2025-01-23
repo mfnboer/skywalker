@@ -30,6 +30,7 @@ Column {
     readonly property bool showPlayControls: playControls.show
 
     // Cache
+    property var videoHandle
     property list<string> tmpVideos: []
 
     signal videoLoaded
@@ -162,9 +163,22 @@ Column {
             enabled: videoPlayer.hasVideo || !autoLoad
 
             onClicked: {
-                if (transcodedSource)
+                if (transcodedSource) {
                     videoPlayer.start()
-                else if (!autoLoad)
+                    return
+                }
+
+                videoHandle = videoUtils.getVideoFromCache(videoView.playlistUrl)
+
+                if (videoHandle.isValid()) {
+                    videoSource = videoView.playlistUrl
+                    transcodedSource = "file://" + videoHandle.fileName
+                    videoPlayer.start()
+                    return;
+                }
+
+
+                if (!autoLoad)
                     m3u8Reader.loadStream()
             }
 
@@ -207,6 +221,7 @@ Column {
                     if (error === MediaPlayer.ResourceError && videoUtils.isTempVideoSource(transcodedSource)) {
                         console.debug("Reload video")
                         transcodedSource = ""
+                        videoHandle.destroy()
                         setVideoSource()
                     }
                 }
@@ -512,9 +527,10 @@ Column {
 
         onTranscodingOk: (inputFileName, outputFileName) => {
             console.debug("Set MP4 source:", outputFileName)
-            transcodedSource = "file://" + outputFileName
-            videoStack.tmpVideos.push(transcodedSource)
-            videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
+            videoHandle = videoUtils.cacheVideo(videoView.playlistUrl, outputFileName)
+            transcodedSource = "file://" + videoHandle.fileName
+            // TODO videoStack.tmpVideos.push(transcodedSource)
+            //videoUtils.setVideoTranscodedSource(postCid, transcodedSource)
             m3u8Reader.resetStream()
             videoSource = ""
 
@@ -565,7 +581,18 @@ Column {
         console.debug("Set video source for:", videoView.playlistUrl)
 
         if (videoView.playlistUrl.endsWith(".m3u8")) {
-            m3u8Reader.getVideoStream(videoView.playlistUrl)
+            videoHandle = videoUtils.getVideoFromCache(videoView.playlistUrl)
+
+            if (videoHandle.isValid()) {
+                videoSource = videoView.playlistUrl
+                transcodedSource = "file://" + videoHandle.fileName
+
+                if (autoPlay)
+                    videoPlayer.start()
+            }
+            else {
+                m3u8Reader.getVideoStream(videoView.playlistUrl)
+            }
         }
         else {
             videoSource = videoView.playlistUrl
@@ -578,6 +605,12 @@ Column {
 
     function clearCache() {
         console.debug("Clear cache:", videoView.playlistUrl)
+
+        if (transcodedSource && videoUtils.isTempVideoSource(transcodedSource))
+            transcodedSource = ""
+
+        if (videoHandle)
+            videoHandle.destroy()
 
         tmpVideos.forEach((value, index, array) => {
             videoUtils.setVideoTranscodedSource(postCid, "")
