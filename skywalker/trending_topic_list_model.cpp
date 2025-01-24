@@ -62,11 +62,9 @@ void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::Trending
         }
     }
 
-    if (trendingTopics.empty())
-    {
-        qDebug() << "No trending topics";
-        return;
-    }
+    const TrendingTopic trendingVideos(tr("Trending videos"),
+            "https://bsky.app/profile/bsky.app/feed/thevids", QEnums::CONTENT_MODE_VIDEO);
+    trendingTopics.push_back(trendingVideos);
 
     const size_t newRowCount = mList.size() + trendingTopics.size();
     beginInsertRows({}, mList.size(), newRowCount - 1);

@@ -1,6 +1,7 @@
 next
 ====
 * Swipe view for video feeds
+* Link to trending videos on search page
 * Button to reset search scope
 
 3.11.2

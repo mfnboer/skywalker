@@ -10,6 +10,14 @@ TrendingTopic::TrendingTopic(const ATProto::AppBskyUnspecced::TrendingTopic::Sha
 {
 }
 
+TrendingTopic::TrendingTopic(const QString& topic, const QString& link, QEnums::ContentMode contentMode) :
+    mTopic{std::make_shared<ATProto::AppBskyUnspecced::TrendingTopic>()},
+    mContentMode(contentMode)
+{
+    mTopic->mTopic = topic;
+    mTopic->mLink = link;
+}
+
 QString TrendingTopic::getTopic() const
 {
     return mTopic ? mTopic->mTopic : "";
