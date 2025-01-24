@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -61,10 +62,13 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property int headerHeight: 0
     property int footerHeight: 0
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
+
+    signal closed
 
     id: videoPage
     width: root.width
@@ -99,6 +103,16 @@ Rectangle {
             if (onScreen)
                 video.play()
         }
+    }
+
+    SvgButton {
+        x: 10
+        y: headerHeight + 20
+        iconColor: "white"
+        Material.background: "transparent"
+        svg: SvgOutline.arrowBack
+        accessibleName: qsTr("go back")
+        onClicked: videoPage.closed()
     }
 
     Rectangle {

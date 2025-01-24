@@ -3120,6 +3120,23 @@ int Skywalker::getNavigationBarHeight() const
 
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     return (int)activity.callMethod<jint>("getNavigationBarHeight", "()I");
+#else
+    return 0;
+#endif
+}
+
+int Skywalker::getStatusBarHeight() const {
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return 0;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    return (int)activity.callMethod<jint>("getStatusBarHeight", "()I");
+#else
+    return 0;
 #endif
 }
 

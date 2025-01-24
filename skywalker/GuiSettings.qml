@@ -329,4 +329,8 @@ Item {
     function getNavigationBarHeight() {
         return skywalker.getNavigationBarHeight() / Screen.devicePixelRatio
     }
+
+    function getStatusBarHeight() {
+        return skywalker.getStatusBarHeight() / Screen.devicePixelRatio
+    }
 }

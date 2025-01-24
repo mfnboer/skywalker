@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -225,18 +226,28 @@ public class SkywalkerActivity extends QtActivity {
         moveTaskToBack(true);
     }
 
-    public int getNavigationBarHeight() {
+    private Insets getInsets(int insetType) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Window window = this.getWindow();
             WindowInsets insets = window.getDecorView().getRootWindowInsets();
 
             if (insets != null)
-                return insets.getInsets(WindowInsets.Type.navigationBars()).bottom;
+                return insets.getInsets(insetType);
             else
                 Log.w(LOGTAG, "Cannot get window insets controller");
         }
 
-        return 0;
+        return null;
+    }
+
+    public int getNavigationBarHeight() {
+        Insets insets = getInsets(WindowInsets.Type.navigationBars());
+        return insets != null ? insets.bottom : 0;
+    }
+
+    public int getStatusBarHeight() {
+        Insets insets = getInsets(WindowInsets.Type.statusBars());
+        return insets != null ? insets.top : 0;
     }
 
     public void setStatusBarTransparent(boolean transparent) {
