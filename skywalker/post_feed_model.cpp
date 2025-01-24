@@ -642,6 +642,13 @@ bool PostFeedModel::mustHideContent(const Post& post) const
     if (AbstractPostFeedModel::mustHideContent(post))
         return true;
 
+    // All posts should be video posts in a video feed.
+    if (getContentMode() == QEnums::CONTENT_MODE_VIDEO && !post.getVideoView())
+    {
+        qWarning() << "Non-video post in video feed!";
+        return true;
+    }
+
     return !passLanguageFilter(post);
 }
 

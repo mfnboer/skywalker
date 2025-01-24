@@ -1801,24 +1801,33 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
         return;
     }
 
+    bool includePins = false;
     std::optional<QString> filter;
+
     switch ((*model)->getFilter())
     {
     case QEnums::AUTHOR_FEED_FILTER_NONE:
+        includePins = true;
+        break;
     case QEnums::AUTHOR_FEED_FILTER_REPLIES:
         break;
     case QEnums::AUTHOR_FEED_FILTER_POSTS:
+        includePins = true;
         filter = ATProto::AppBskyFeed::AuthorFeedFilter::POSTS_NO_REPLIES;
         break;
     case QEnums::AUTHOR_FEED_FILTER_MEDIA:
         filter = ATProto::AppBskyFeed::AuthorFeedFilter::POSTS_WITH_MEDIA;
+        break;
+    case QEnums::AUTHOR_FEED_FILTER_VIDEO:
+        filter = ATProto::AppBskyFeed::AuthorFeedFilter::POSTS_WITH_VIDEO;
+        break;
     }
 
     const auto& author = (*model)->getAuthor();
     qDebug() << "Get author feed:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), filter, true,
+    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), filter, includePins,
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
