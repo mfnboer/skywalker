@@ -1411,7 +1411,6 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    // TODO: remove transcodedSourcxe
     function viewFullVideo(videoView) {
         let component = guiSettings.createComponent("FullVideoView.qml")
         let view = component.createObject(root, { videoView: videoView })

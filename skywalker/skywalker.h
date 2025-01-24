@@ -190,8 +190,8 @@ public:
     Q_INVOKABLE bool sendAppToBackground();
     Q_INVOKABLE void setNavigationBarColor(QColor color);
     Q_INVOKABLE void setNavigationBarColorAndMode(QColor color, bool isLightMode);
-    Q_INVOKABLE int getNavigationBarHeight() const;
-    Q_INVOKABLE int getStatusBarHeight() const;
+    Q_INVOKABLE int getNavigationBarSize(QEnums::InsetsSide side) const;
+    Q_INVOKABLE int getStatusBarSize(QEnums::InsetsSide side) const;
     Q_INVOKABLE void setStatusBarTransparent(bool transparent);
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }

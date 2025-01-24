@@ -324,13 +324,11 @@ Item {
                 postHighLightColor]
     }
 
-    // Note this returns the height of the navigation bar at the bottom.
-    // If the navigation bar is not at the bottom, then 0 is returned.
-    function getNavigationBarHeight() {
-        return skywalker.getNavigationBarHeight() / Screen.devicePixelRatio
+    function getNavigationBarSize(side) {
+        return skywalker.getNavigationBarSize(side) / Screen.devicePixelRatio
     }
 
-    function getStatusBarHeight() {
-        return skywalker.getStatusBarHeight() / Screen.devicePixelRatio
+    function getStatusBarSize(side) {
+        return skywalker.getStatusBarSize(side) / Screen.devicePixelRatio
     }
 }

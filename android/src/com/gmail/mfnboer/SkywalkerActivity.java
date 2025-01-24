@@ -226,6 +226,12 @@ public class SkywalkerActivity extends QtActivity {
         moveTaskToBack(true);
     }
 
+    // Must match QEnums::InsertsSide
+    private static final int INSETS_SIDE_TOP = 0;
+    private static final int INSETS_SIDE_BOTTOM = 1;
+    private static final int INSETS_SIDE_LEFT = 2;
+    private static final int INSETS_SIDE_RIGHT = 3;
+
     private Insets getInsets(int insetType) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Window window = this.getWindow();
@@ -240,14 +246,33 @@ public class SkywalkerActivity extends QtActivity {
         return null;
     }
 
-    public int getNavigationBarHeight() {
-        Insets insets = getInsets(WindowInsets.Type.navigationBars());
-        return insets != null ? insets.bottom : 0;
+    private int getInsetsSide(Insets insets, int side) {
+        if (insets == null)
+            return 0;
+
+        switch (side) {
+            case INSETS_SIDE_TOP:
+                return insets.top;
+            case INSETS_SIDE_BOTTOM:
+                return insets.bottom;
+            case INSETS_SIDE_LEFT:
+                return insets.left;
+            case INSETS_SIDE_RIGHT:
+                return insets.right;
+            default:
+                Log.w(LOGTAG, "Unknown side: " + side);
+                return 0;
+        }
     }
 
-    public int getStatusBarHeight() {
+    public int getNavigationBarSize(int side) {
+        Insets insets = getInsets(WindowInsets.Type.navigationBars());
+        return getInsetsSide(insets, side);
+    }
+
+    public int getStatusBarHeight(int side) {
         Insets insets = getInsets(WindowInsets.Type.statusBars());
-        return insets != null ? insets.top : 0;
+        return getInsetsSide(insets, side);
     }
 
     public void setStatusBarTransparent(boolean transparent) {

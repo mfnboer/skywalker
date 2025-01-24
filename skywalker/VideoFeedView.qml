@@ -5,8 +5,9 @@ import skywalker
 SkyListView {
     required property var skywalker
     required property int modelId
-    property int headerHeight: guiSettings.getStatusBarHeight()
-    property int footerHeight: guiSettings.getNavigationBarHeight()
+    property int headerHeight: guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
+    property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
+    property int leftMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
 
     signal closed
 
@@ -24,6 +25,8 @@ SkyListView {
     delegate: VideoFeedViewDelegate {
         width: postFeedView.width
         footerHeight: postFeedView.footerHeight
+        headerHeight: postFeedView.headerHeight
+        leftMarginWidth: postFeedView.leftMarginWidth
 
         onClosed: postFeedView.closed()
     }
@@ -76,8 +79,9 @@ SkyListView {
     }
 
     function orientationHandler() {
-        headerHeight = guiSettings.getStatusBarHeight()
-        footerHeight = guiSettings.getNavigationBarHeight()
+        headerHeight = guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
+        footerHeight = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
+        leftMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
         positionViewAtIndex(currentIndex, ListView.Beginning)
     }
 

@@ -64,6 +64,7 @@ Rectangle {
     required property bool endOfFeed
     property int headerHeight: 0
     property int footerHeight: 0
+    property int leftMarginWidth: 0
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
@@ -106,7 +107,7 @@ Rectangle {
     }
 
     SvgButton {
-        x: 10
+        x: leftMarginWidth + 10
         y: headerHeight + 20
         iconColor: "white"
         Material.background: "transparent"

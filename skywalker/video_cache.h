@@ -17,21 +17,13 @@ public:
     VideoHandle(const QString& link, const QString& fileName, QObject* parent = nullptr);
     ~VideoHandle();
 
-    Q_INVOKABLE bool isValid() const { return mHandle != nullptr; }
-    QString getLink() const { return mHandle ? mHandle->mLink : ""; }
-    QString getFileName() const { return mHandle ? mHandle->mFileName : ""; }
+    Q_INVOKABLE bool isValid() const { return !mLink.isEmpty() && !mFileName.isEmpty(); }
+    QString getLink() const { return mLink; }
+    QString getFileName() const { return mFileName; }
 
 private:
-    // TODO: no need for pointer anymore
-    struct Handle
-    {
-        ~Handle();
-
-        QString mLink;
-        QString mFileName;
-    };
-
-    std::shared_ptr<Handle> mHandle;
+    QString mLink;
+    QString mFileName;
 };
 
 

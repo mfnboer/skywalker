@@ -301,6 +301,15 @@ public:
         CONTENT_MODE_UNKNOWN = (int)ATProto::AppBskyFeed::ContentMode::UNKNOWN
     };
     Q_ENUM(ContentMode)
+
+    enum InsetsSide
+    {
+        INSETS_SIDE_TOP,
+        INSETS_SIDE_BOTTOM,
+        INSETS_SIDE_LEFT,
+        INSETS_SIDE_RIGHT
+    };
+    Q_ENUM(InsetsSide)
 };
 
 }

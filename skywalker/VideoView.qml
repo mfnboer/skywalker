@@ -42,7 +42,7 @@ Column {
 
         width: parent.width
         // Move video to top if it is close to the top of the screen
-        height: isFullVideoFeedViewMode ? (fullVideoFeedHeight < playControls.height + 30 ? playControls.height : fullVideoFeedHeight) : 0
+        height: isFullVideoFeedViewMode ? (fullVideoFeedHeight < playControls.height + 50 ? playControls.height : fullVideoFeedHeight) : 0
         color: "transparent"
         visible: isFullVideoFeedViewMode
     }

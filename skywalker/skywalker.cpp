@@ -3109,7 +3109,7 @@ void Skywalker::setNavigationBarColorAndMode(QColor color, bool isLightMode)
 #endif
 }
 
-int Skywalker::getNavigationBarHeight() const
+int Skywalker::getNavigationBarSize(QEnums::InsetsSide side) const
 {
 #ifdef Q_OS_ANDROID
     if (!QNativeInterface::QAndroidApplication::isActivityContext())
@@ -3119,13 +3119,13 @@ int Skywalker::getNavigationBarHeight() const
     }
 
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    return (int)activity.callMethod<jint>("getNavigationBarHeight", "()I");
+    return (int)activity.callMethod<jint>("getNavigationBarSize", "(I)I", (jint)side);
 #else
     return 0;
 #endif
 }
 
-int Skywalker::getStatusBarHeight() const {
+int Skywalker::getStatusBarSize(QEnums::InsetsSide side) const {
 #ifdef Q_OS_ANDROID
     if (!QNativeInterface::QAndroidApplication::isActivityContext())
     {
@@ -3134,7 +3134,7 @@ int Skywalker::getStatusBarHeight() const {
     }
 
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    return (int)activity.callMethod<jint>("getStatusBarHeight", "()I");
+    return (int)activity.callMethod<jint>("getStatusBarSize", "(I)I", (jint)side);
 #else
     return 0;
 #endif

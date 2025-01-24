@@ -11,21 +11,18 @@ VideoHandle::VideoHandle(QObject* parent) : QObject(parent)
 
 VideoHandle::VideoHandle(const QString& link, const QString& fileName, QObject* parent) :
     QObject(parent),
-    mHandle{std::make_shared<Handle>(link, fileName)}
+    mLink(link),
+    mFileName(fileName)
 {
     qDebug() << "Create video handle:" << link << "file:" << fileName;
 }
 
 VideoHandle::~VideoHandle()
 {
-    if (mHandle)
-        qDebug() << "Destructor video handle:" << mHandle.use_count() << mHandle->mLink << "file:" << mHandle->mFileName;
-}
-
-VideoHandle::Handle::~Handle()
-{
-    qDebug() << "Destroy video handle:" << mLink << "file:" << mFileName;
-    VideoCache::instance().unlinkVideo(mLink, mFileName);
+    if (isValid()) {
+        qDebug() << "Destructor video handle:" << mLink << "file:" << mFileName;
+        VideoCache::instance().unlinkVideo(mLink, mFileName);
+    }
 }
 
 
