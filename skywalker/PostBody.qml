@@ -255,40 +255,111 @@ Column {
         }
     }
 
+    // Inital code loaded component from the QML files using the number of images
+    // to create the file name
+    // let qmlFile = `ImagePreview${(postImages.length)}.qml`
+    // However when the bodyBackgroundColor changes, e.g. the user changes the
+    // background, then the property maskColor did not automatically change too.
+    // with explicit components it does.
+    Component {
+        id: images1Component
+
+        ImagePreview1 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: images2Component
+
+        ImagePreview2 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: images3Component
+
+        ImagePreview3 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: images4Component
+
+        ImagePreview4 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: videoThumbnailComponent
+
+        VideoThumbnail {
+            width: Math.min(180 * 1.777, postBody.width)
+            height: 180
+            videoSource: postBody.postVideo.playlistUrl
+        }
+    }
+
+    Component {
+        id: videoViewComponent
+
+        VideoView {
+            videoView: postBody.postVideo
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+            backgroundColor: bodyBackgroundColor
+            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+            isVideoFeed: postBody.isVideoFeed
+        }
+    }
+
+    Component {
+        id: externalViewComponent
+
+        ExternalView {
+            postExternal: postBody.postExternal
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+        }
+    }
+
     function showPostAttachements() {
         showLanguageLabels()
 
         if (postImages.length > 0) {
-            let qmlFile = `ImagePreview${(postImages.length)}.qml`
-            mediaLoader.setSource(qmlFile, {
-                                      images: postImages,
-                                      maskColor: bodyBackgroundColor,
-                                      contentVisibility: postContentVisibility,
-                                      contentWarning: postContentWarning })
+            const compList = [images1Component, images2Component, images3Component, images4Component]
+            mediaLoader.sourceComponent = compList[postImages.length - 1]
+            mediaLoader.active = true
         }
         else if (postVideo) {
             if (isDraft) {
-                mediaLoader.setSource("VideoThumbnail.qml", {
-                                        width: Math.min(180 * 1.777, postBody.width),
-                                        height: 180,
-                                        videoSource: postBody.postVideo.playlistUrl });
+                mediaLoader.sourceComponent = videoThumbnailComponent
+                mediaLoader.active = true
             }
             else {
-                mediaLoader.setSource("VideoView.qml", {
-                                          videoView: postBody.postVideo,
-                                          contentVisibility: postContentVisibility,
-                                          contentWarning: postContentWarning,
-                                          backgroundColor: bodyBackgroundColor,
-                                          highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
-                                          isVideoFeed: postBody.isVideoFeed })
+                mediaLoader.sourceComponent = videoViewComponent
+                mediaLoader.active = true
             }
         }
         else if (postExternal) {
-            mediaLoader.setSource("ExternalView.qml", {
-                                      postExternal: postBody.postExternal,
-                                      contentVisibility: postContentVisibility,
-                                      contentWarning: postContentWarning,
-                                      highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+            mediaLoader.sourceComponent = externalViewComponent
+            mediaLoader.active = true
         }
 
         showContentLabels()
@@ -300,6 +371,8 @@ Column {
     }
 
     function showPostRecord() {
+        // Cannot use a direct component here, because of cyclic dependency.
+        // RecordView has a PostBody
         recordLoader.setSource("RecordView.qml", {
                                    record: postRecord,
                                    backgroundColor: bodyBackgroundColor,
@@ -314,6 +387,13 @@ Column {
                                    contentWarning: postContentWarning,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
                                    isVideoFeed: isVideoFeed })
+    }
+
+    onBodyBackgroundColorChanged: {
+        if (recordLoader.item) {
+            recordLoader.item.backgroundColor = bodyBackgroundColor
+            recordLoader.item.highlight = bodyBackgroundColor === guiSettings.postHighLightColor
+        }
     }
 
     onPostRecordChanged: {

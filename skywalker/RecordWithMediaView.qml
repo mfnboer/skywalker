@@ -31,30 +31,87 @@ Item {
             highlight: recordItem.highlight
         }
 
+        Component {
+            id: images1Component
+
+            ImagePreview1 {
+                images: record.images
+                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+                contentVisibility: recordItem.contentVisibility
+                contentWarning: recordItem.contentWarning
+            }
+        }
+
+        Component {
+            id: images2Component
+
+            ImagePreview2 {
+                images: record.images
+                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+                contentVisibility: recordItem.contentVisibility
+                contentWarning: recordItem.contentWarning
+            }
+        }
+
+        Component {
+            id: images3Component
+
+            ImagePreview3 {
+                images: record.images
+                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+                contentVisibility: recordItem.contentVisibility
+                contentWarning: recordItem.contentWarning
+            }
+        }
+
+        Component {
+            id: images4Component
+
+            ImagePreview4 {
+                images: record.images
+                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+                contentVisibility: recordItem.contentVisibility
+                contentWarning: recordItem.contentWarning
+            }
+        }
+
+        Component {
+            id: videoViewComponent
+
+            VideoView {
+                videoView: record.video
+                contentVisibility: recordItem.contentVisibility
+                contentWarning: recordItem.contentVisibility
+                backgroundColor: backgroundColor
+                highlight: recordItem.highlight
+                isVideoFeed: recordItem.isVideoFeed
+            }
+        }
+
+        Component {
+            id: externalViewComponent
+
+            ExternalView {
+                postExternal: record.external
+                contentVisibility: recordItem.contentVisibility
+                contentWarning: recordItem.contentVisibility
+                highlight: recordItem.highlight
+            }
+        }
+
         Component.onCompleted: {
             if (record.images.length > 0) {
-                let qmlFile = `ImagePreview${(record.images.length)}.qml`
-                mediaLoader.setSource(qmlFile, {
-                                          images: record.images,
-                                          maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor,
-                                          contentVisibility: recordItem.contentVisibility,
-                                          contentWarning: recordItem.contentWarning })
+                const compList = [images1Component, images2Component, images3Component, images4Component]
+                mediaLoader.sourceComponent = compList[record.images.length - 1]
+                mediaLoader.active = true
             }
             else if (record.video) {
-                mediaLoader.setSource("VideoView.qml", {
-                                          videoView: record.video,
-                                          contentVisibility: recordItem.contentVisibility,
-                                          contentWarning: recordItem.contentVisibility,
-                                          backgroundColor: backgroundColor,
-                                          highlight: recordItem.highlight,
-                                          isVideoFeed: recordItem.isVideoFeed })
+                mediaLoader.sourceComponent = videoViewComponent
+                mediaLoader.active = true
             }
             else if (record.external) {
-                mediaLoader.setSource("ExternalView.qml", {
-                                          postExternal: record.external,
-                                          contentVisibility: recordItem.contentVisibility,
-                                          contentWarning: recordItem.contentVisibility,
-                                          highlight: recordItem.highlight })
+                mediaLoader.sourceComponent = externalViewComponent
+                mediaLoader.active = true
             }
         }
     }
