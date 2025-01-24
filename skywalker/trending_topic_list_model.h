@@ -24,7 +24,7 @@ public:
 
     bool empty() const { return mList.empty(); }
     void clear();
-    void addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics);
+    void addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics, int maxTopics);
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

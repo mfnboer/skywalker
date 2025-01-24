@@ -42,7 +42,7 @@ void TrendingTopicListModel::clear()
     }
 }
 
-void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics)
+void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics, int maxTopics)
 {
     qDebug() << "Add topics:" << topics.size();
     std::vector<TrendingTopic> trendingTopics;
@@ -60,6 +60,9 @@ void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::Trending
         {
             qWarning() << "Empty topic:" << trendingTopic.getTopic() << "link:" << trendingTopic.getLink();
         }
+
+        if ((int)trendingTopics.size() >= maxTopics)
+            break;
     }
 
     const TrendingTopic trendingVideos(tr("Trending videos"),

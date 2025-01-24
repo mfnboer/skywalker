@@ -10,6 +10,7 @@ namespace Skywalker {
 
 static constexpr int MAX_LAST_SEARCHES = 25;
 static constexpr int MAX_LAST_PROFILE_SEARCHES = 10;
+static constexpr int MAX_TRENDING_TOPICS = 10;
 static constexpr char const* USER_ME = "me";
 
 static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
@@ -836,14 +837,14 @@ void SearchUtils::getTrendingTopics()
     Q_ASSERT(mSkywalker);
     const QString& did = mSkywalker->getUserDid();
 
-    bskyClient()->getTrendingTopics(did, 10,
+    bskyClient()->getTrendingTopics(did, {},
         [this, presence=getPresence()](auto output){
             if (!presence)
                 return;
 
             auto& model = createTrendingTopicsListModel();
             model.clear();
-            model.addTopics(output->mTopics);
+            model.addTopics(output->mTopics, MAX_TRENDING_TOPICS);
         },
         [](const QString& error, const QString& msg){
             qDebug() << "getTrendingTopics failed:" << error << " - " << msg;
