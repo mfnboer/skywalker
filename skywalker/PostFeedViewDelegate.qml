@@ -411,6 +411,8 @@ Rectangle {
                 borderColor: postEntry.border.color.toString()
                 postHighlightColor: postEntry.postHighlightColor
                 isVideoFeed: postEntry.isVideoFeed
+
+                onVideoClicked: postEntry.videoClicked()
             }
 
             // Reposts and likes in detailed view of post entry in thread view

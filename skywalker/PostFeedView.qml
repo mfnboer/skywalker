@@ -7,6 +7,7 @@ SkyListView {
     required property int modelId
     property bool showAsHome: false
     property int unreadPosts: 0
+    property bool isVideoFeed: postFeedView.model.contentMode === QEnums.CONTENT_MODE_VIDEO
 
     signal closed
 
@@ -50,7 +51,7 @@ SkyListView {
         required property int index
 
         width: postFeedView.width
-        isVideoFeed: postFeedView.model.contentMode === QEnums.CONTENT_MODE_VIDEO
+        isVideoFeed: postFeedView.isVideoFeed
 
         onVideoClicked: {
             if (isVideoFeed)

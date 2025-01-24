@@ -32,6 +32,7 @@ Column {
     property var videoHandle
 
     signal videoLoaded
+    signal videoClicked
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
@@ -83,6 +84,7 @@ Column {
                 color: "transparent"
 
                 ThumbImageView {
+                    indicateLoading: false
                     property double aspectRatio: implicitHeight > 0 ? implicitWidth / implicitHeight : 0
                     property double maxWidth: maxHeight * aspectRatio
 
@@ -161,6 +163,11 @@ Column {
             enabled: videoPlayer.hasVideo || !autoLoad
 
             onClicked: {
+                if (isVideoFeed && !isFullViewMode) {
+                    videoClicked()
+                    return
+                }
+
                 if (transcodedSource) {
                     videoPlayer.start()
                     return

@@ -29,6 +29,8 @@ Column {
     property bool isDraft: false
     property bool isVideoFeed: false
 
+    signal videoClicked
+
     id: postBody
 
     SkyCleanedText {
@@ -319,12 +321,16 @@ Column {
         id: videoViewComponent
 
         VideoView {
+            id: videoViewItem
+
             videoView: postBody.postVideo
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
             backgroundColor: bodyBackgroundColor
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
             isVideoFeed: postBody.isVideoFeed
+
+            onVideoClicked: postBody.videoClicked()
         }
     }
 

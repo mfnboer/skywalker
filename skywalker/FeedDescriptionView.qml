@@ -14,6 +14,7 @@ SkyPage {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
+    property bool idVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
 
     signal closed
 
@@ -22,7 +23,7 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
-        text: qsTr("Feed")
+        text: isVideoFeed ? qsTr("Video feed") : qsTr("Feed")
         onBack: closed()
     }
 
