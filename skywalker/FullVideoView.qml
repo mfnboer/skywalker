@@ -4,6 +4,8 @@ import QtQuick.Controls.Material
 import skywalker
 
 SkyPage {
+    property Skywalker skywalker: root.getSkywalker()
+    readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
     required property var videoView // videoview
     property string videoSource
     property bool isVideoFeed: false
@@ -186,7 +188,10 @@ SkyPage {
     }
 
     function resetNavigationBarColor() {
-        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+        // As GuiSettings are temporarily set to dark on this page, we determine
+        // the normal background color here instead of taking it from guiSettings
+        const backgroundColor = userSettings ? userSettings.backgroundColor : Material.background
+        skywalker.setNavigationBarColor(backgroundColor)
     }
 
     Component.onDestruction: {
