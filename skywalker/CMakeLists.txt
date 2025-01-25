@@ -461,6 +461,7 @@ qt_add_qml_module(libskywalker
         SOURCES video_cache.cpp
         SOURCES signal_object.h
         SOURCES signal_object.cpp
+        SOURCES feed_pager.h
 )
 
 if (NOT ANDROID)

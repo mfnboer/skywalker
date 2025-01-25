@@ -26,6 +26,7 @@ public:
     Q_INVOKABLE void indexGalleryFile(const QString& fileName);
     Q_INVOKABLE static void dropVideo(const QString& source);
     Q_INVOKABLE bool isTempVideoSource(const QString& source) const;
+    Q_INVOKABLE bool videoSourceExists(const QString& source) const;
 
     Q_INVOKABLE VideoHandle* getVideoFromCache(const QString& link);
     Q_INVOKABLE VideoHandle* cacheVideo(const QString& link, const QString& fileName);

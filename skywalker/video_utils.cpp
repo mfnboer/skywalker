@@ -78,6 +78,8 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     Q_UNUSED(endMs)
     Q_UNUSED(removeAudio)
     qDebug() << "Transcoding not supported";
+    setTranscoding(true);
+    mTranscodingFileName = inputFileName;
     QFile::copy(inputFileName, outputFileName);
     handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName));
 #endif
@@ -198,6 +200,11 @@ bool VideoUtils::isTempVideoSource(const QString& source) const
 
     QFileInfo info(source.sliced(7));
     return info.suffix() == "mp4" && info.baseName().startsWith(TempFileHolder::namePrefix());
+}
+
+bool VideoUtils::videoSourceExists(const QString& source) const
+{
+    return source.startsWith("file://") && QFile::exists(source.sliced(7));
 }
 
 VideoHandle* VideoUtils::getVideoFromCache(const QString& link)

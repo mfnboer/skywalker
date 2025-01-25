@@ -55,7 +55,7 @@ SkyListView {
 
         onVideoClicked: {
             if (isVideoFeed)
-                root.viewVideoFeed(modelId, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+                root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
             else
                 console.warn("This is not a video feed")
         }
@@ -64,8 +64,8 @@ SkyListView {
     FlickableRefresher {
         inProgress: skywalker.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
-        topOvershootFun: () => skywalker.getFeed(modelId)
-        bottomOvershootFun: () => skywalker.getFeedNextPage(modelId)
+        topOvershootFun: () => model.getFeed(skywalker)
+        bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         topText: qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
     }

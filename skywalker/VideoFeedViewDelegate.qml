@@ -170,6 +170,17 @@ Rectangle {
             }
         }
 
+        // Reply to
+        Loader {
+            width: parent.width
+            active: postIsReply
+            visible: status == Loader.Ready
+            sourceComponent: ReplyToRow {
+                width: parent.width
+                text: qsTr(`Reply to ${postReplyToAuthor.name}`)
+            }
+        }
+
         PostBody {
             width: parent.width
             postAuthor: videoPage.author

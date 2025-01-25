@@ -223,7 +223,10 @@ Column {
                 onErrorOccurred: (error, errorString) => {
                     console.debug("Video error:", source, error, errorString)
 
-                    if (error === MediaPlayer.ResourceError && videoUtils.isTempVideoSource(transcodedSource)) {
+                    if (error === MediaPlayer.ResourceError &&
+                        videoUtils.isTempVideoSource(transcodedSource) &&
+                        !videoUtils.videoSourceExists(transcodedSource))
+                    {
                         console.debug("Reload video")
                         transcodedSource = ""
                         videoHandle.destroy()

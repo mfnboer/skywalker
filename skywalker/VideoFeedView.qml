@@ -4,7 +4,6 @@ import skywalker
 
 SkyListView {
     required property var skywalker
-    required property int modelId
     property int headerHeight: guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
     property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
     property int leftMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
@@ -13,7 +12,6 @@ SkyListView {
 
     id: postFeedView
     width: parent.width
-    model: skywalker.getPostFeedModel(modelId)
     boundsBehavior: Flickable.StopAtBounds
     snapMode: ListView.SnapOneItem
     spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
@@ -40,14 +38,14 @@ SkyListView {
 
         if (currentIndex >= 0 && count - currentIndex < 15) {
             console.debug("Prefetch next page:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
-            skywalker.getFeedNextPage(modelId)
+            model.getFeedNextPage(skywalker)
         }
     }
 
     FlickableRefresher {
-        inProgress: skywalker.getFeedInProgress
+        inProgress: model.feedType === QEnums.FEED_AUTHOR ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
-        bottomOvershootFun: () => skywalker.getFeedNextPage(modelId)
+        bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         enableScrollToTop: false
     }
 
@@ -66,6 +64,15 @@ SkyListView {
 
     function cancel() {
         closed()
+    }
+
+    function getNextPage() {
+        if (!currentItem.endOfFeed) {
+            model.getFeedNextPage(skywalker)
+            return
+        }
+
+        skywalker.showStatusMessage("That's all folks", QEnums.STATUS_LEVEL_INFO)
     }
 
     function setSystemBars() {
@@ -88,7 +95,9 @@ SkyListView {
     Component.onDestruction: {
         Screen.onOrientationChanged.disconnect(orientationHandler)
         resetSystemBars()
-        model.clearOverrideLinkColor();
+
+        if (model)
+            model.clearOverrideLinkColor();
     }
 
     Component.onCompleted: {

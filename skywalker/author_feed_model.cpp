@@ -16,6 +16,11 @@ AuthorFeedModel::AuthorFeedModel(const DetailedProfile& author, const QString& u
 {
 }
 
+QString AuthorFeedModel::getFeedName() const
+{
+    return QString("%1 feed").arg(mAuthor.getName());
+}
+
 void AuthorFeedModel::clear()
 {
     if (!mFeed.empty())
@@ -101,7 +106,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
             if (mPinnedPostUri == post.getUri())
                 post.setPinned(true);
 
-            if (post.isReply() && !post.isRepost())
+            if (post.isReply() && !post.isRepost() && mustShowReplyContext())
             {
                 auto replyRef = post.getViewPostReplyRef();
 
@@ -147,6 +152,31 @@ bool AuthorFeedModel::mustShow(const Post& post) const
 
     qWarning() << "Unknown filter:" << int(mFilter);
     return false;
+}
+
+bool AuthorFeedModel::mustShowReplyContext() const
+{
+    switch (mFilter)
+    {
+    case QEnums::AUTHOR_FEED_FILTER_NONE:
+    case QEnums::AUTHOR_FEED_FILTER_POSTS:
+    case QEnums::AUTHOR_FEED_FILTER_REPLIES:
+        return true;
+    default:
+        return false;
+    }
+}
+
+void AuthorFeedModel::getFeed(IFeedPager* pager)
+{
+    Q_ASSERT(mModelId > -1);
+    pager->getAuthorFeed(mModelId);
+}
+
+void AuthorFeedModel::getFeedNextPage(IFeedPager* pager)
+{
+    Q_ASSERT(mModelId > -1);
+    pager->getAuthorFeedNextPage(mModelId);
 }
 
 }

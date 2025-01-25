@@ -96,6 +96,9 @@ public:
                           HashtagIndex& hashtags,
                           QObject* parent = nullptr);
 
+    void setModelId(int modelId) { mModelId = modelId; }
+    int getModelId() const { return mModelId; }
+
     void setOverrideAdultVisibility(const QEnums::ContentVisibility visibility) { mOverrideAdultVisibility = visibility; }
     void clearOverrideAdultVisibility() { mOverrideAdultVisibility = {}; }
 
@@ -158,6 +161,7 @@ protected:
     const IMatchWords& mMutedWords;
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
+    int mModelId = -1;
 
 private:
     void postBookmarkedChanged();
@@ -166,7 +170,6 @@ private:
     std::queue<QString> mStoredCidQueue;
     std::optional<QEnums::ContentVisibility> mOverrideAdultVisibility;
     QString mOverrideLinkColor;
-
     bool mEndOfFeed = false;
 };
 

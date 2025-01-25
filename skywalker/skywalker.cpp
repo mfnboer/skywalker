@@ -46,7 +46,7 @@ static constexpr int USER_HASHTAG_INDEX_SIZE = 100;
 static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
-    QObject(parent),
+    IFeedPager(parent),
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
     mBookmarks(this),
@@ -1457,7 +1457,7 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
                     return;
                 }
 
-                int id = mPostThreadModels.put(std::move(model));
+                const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
                 emit postThreadOk(id, postEntryIndex);
             }
             else
@@ -1988,7 +1988,7 @@ int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::Auth
         author, mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setFilter(filter);
-    const int id = mAuthorFeedModels.put(std::move(model));
+    const int id = addModelToStore<AuthorFeedModel>(std::move(model), mAuthorFeedModels);
     return id;
 }
 
@@ -2010,7 +2010,7 @@ int Skywalker::createSearchPostFeedModel()
     auto model = std::make_unique<SearchPostFeedModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
-    const int id = mSearchPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;
 }
 
@@ -2209,6 +2209,16 @@ void Skywalker::removeStarterPackListModel(int id)
     mStarterPackListModels.remove(id);
 }
 
+template<typename ModelType>
+int Skywalker::addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store)
+{
+    auto* modelPtr = model.get();
+    const int id = store.put(std::move(model));
+    modelPtr->setModelId(id);
+
+    return id;
+}
+
 int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
@@ -2216,7 +2226,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
-    const int id = mPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
 
@@ -2228,7 +2238,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setListView(listView);
     model->enableLanguageFilter(true);
-    const int id = mPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
 
@@ -2239,7 +2249,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setQuoteUri(quoteUri);
-    const int id = mPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
 
@@ -3130,6 +3140,7 @@ int Skywalker::getNavigationBarSize(QEnums::InsetsSide side) const
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     return (int)activity.callMethod<jint>("getNavigationBarSize", "(I)I", (jint)side);
 #else
+    Q_UNUSED(side)
     return 0;
 #endif
 }
@@ -3145,6 +3156,7 @@ int Skywalker::getStatusBarSize(QEnums::InsetsSide side) const {
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     return (int)activity.callMethod<jint>("getStatusBarSize", "(I)I", (jint)side);
 #else
+    Q_UNUSED(side)
     return 0;
 #endif
 }

@@ -241,6 +241,14 @@ void M3U8Reader::loadStream(QNetworkReply* reply)
 
     const auto data = reply->readAll();
 
+    if (!mStream)
+    {
+        qWarning() << "Stream is not present.";
+        setLoading(false);
+        emit loadStreamError();
+        return;
+    }
+
     if (mStream->write(data) < 0)
     {
         qWarning() << "Failed to save stream into tempfile:" << mStream->fileName();

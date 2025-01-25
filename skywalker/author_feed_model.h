@@ -3,6 +3,7 @@
 #pragma once
 #include "abstract_post_feed_model.h"
 #include "enums.h"
+#include "feed_pager.h"
 #include "muted_words.h"
 
 namespace Skywalker {
@@ -10,6 +11,9 @@ namespace Skywalker {
 class AuthorFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
+    Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
+
 public:
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
@@ -19,6 +23,9 @@ public:
                     const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                     HashtagIndex& hashtags,
                     QObject* parent = nullptr);
+
+    QString getFeedName() const;
+    QEnums::FeedType getFeedType() const { return QEnums::FEED_AUTHOR; }
 
     void setFilter(QEnums::AuthorFeedFilter filter) { mFilter = filter; }
     QEnums::AuthorFeedFilter getFilter() const { return mFilter; }
@@ -33,6 +40,9 @@ public:
     const BasicProfile& getAuthor() const { return mAuthor; }
     const QString& getCursorNextPage() const { return mCursorNextPage; }
 
+    Q_INVOKABLE void getFeed(IFeedPager* pager);
+    Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
+
 private:
     struct Page
     {
@@ -43,6 +53,7 @@ private:
 
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     bool mustShow(const Post& post) const;
+    bool mustShowReplyContext() const;
 
     BasicProfile mAuthor;
 

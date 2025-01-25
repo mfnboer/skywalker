@@ -311,6 +311,13 @@ public:
         INSETS_SIDE_RIGHT
     };
     Q_ENUM(InsetsSide)
+
+    enum FeedType
+    {
+        FEED_GENERATOR,
+        FEED_AUTHOR
+    };
+    Q_ENUM(FeedType)
 };
 
 }
