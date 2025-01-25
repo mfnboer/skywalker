@@ -16,11 +16,37 @@ public class NetworkUtils {
     private static final String LOGTAG = "NetworkUtils";
 
     public static int getBandwidthKbps() {
+        NetworkCapabilities caps = getNetworkCapabilities();
+
+        if (caps == null) {
+            Log.w(LOGTAG, "No network capabilities.");
+            return -1;
+        }
+
+        int kbps = caps.getLinkDownstreamBandwidthKbps();
+        Log.d(LOGTAG, "Bandwidth: " + kbps + " kbps");
+        return kbps;
+    }
+
+    public static boolean isUnmetered() {
+        NetworkCapabilities caps = getNetworkCapabilities();
+
+        if (caps == null) {
+            Log.w(LOGTAG, "No network capabilities.");
+            return false;
+        }
+
+        boolean unmetered = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+        Log.d(LOGTAG, "Unmetered: " + unmetered);
+        return unmetered;
+    }
+
+    private static NetworkCapabilities getNetworkCapabilities() {
         Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context.");
-            return -1;
+            return null;
         }
 
         ConnectivityManager connectivityManager = context.getSystemService(ConnectivityManager.class);
@@ -28,18 +54,10 @@ public class NetworkUtils {
 
         if (network == null) {
             Log.w(LOGTAG, "No active network.");
-            return -1;
+            return null;
         }
 
         NetworkCapabilities caps = connectivityManager.getNetworkCapabilities(network);
-
-        if (caps == null) {
-            Log.w(LOGTAG, "Not network capabilities.");
-            return -1;
-        }
-
-        int kbps = caps.getLinkDownstreamBandwidthKbps();
-        Log.d(LOGTAG, "Bandwidth: " + kbps + " kbps");
-        return kbps;
+        return caps;
     }
 }

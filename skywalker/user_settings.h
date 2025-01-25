@@ -137,6 +137,9 @@ public:
     Q_INVOKABLE void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
 
+    Q_INVOKABLE void setVideoQuality(QEnums::VideoQuality quality);
+    Q_INVOKABLE QEnums::VideoQuality getVideoQuality() const;
+
     void setVideoAutoPlay(bool autoPlay);
     bool getVideoAutoPlay() const;
 

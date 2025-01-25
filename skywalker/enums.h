@@ -318,6 +318,16 @@ public:
         FEED_AUTHOR
     };
     Q_ENUM(FeedType)
+
+    enum VideoQuality
+    {
+        VIDEO_QUALITY_HD,
+        VIDEO_QUALITY_HD_WIFI,
+        VIDEO_QUALITY_SD,
+
+        VIDEO_QUALITY_LAST = VIDEO_QUALITY_SD
+    };
+    Q_ENUM(VideoQuality)
 };
 
 }

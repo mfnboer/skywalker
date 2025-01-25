@@ -27,12 +27,16 @@ void M3U8Reader::setLoading(bool loading)
 
 void M3U8Reader::setResolution()
 {
-    const int kbps = NetworkUtils::getBandwidthKbps();
-
-    if (kbps < HD_BANDWIDTH_THRESHOLD_KBPS)
+    if (mVideoQuality == QEnums::VIDEO_QUALITY_SD ||
+        (mVideoQuality == QEnums::VIDEO_QUALITY_HD_WIFI && !NetworkUtils::isUnmetered()) ||
+        NetworkUtils::getBandwidthKbps() < HD_BANDWIDTH_THRESHOLD_KBPS)
+    {
         mResolution = STREAM_RESOLUTION_360;
+    }
     else
+    {
         mResolution = STREAM_RESOLUTION_720;
+    }
 
     qDebug() << "Resolution:" << mResolution;
 }

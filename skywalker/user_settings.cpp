@@ -464,6 +464,21 @@ bool UserSettings::getGifAutoPlay() const
     return mSettings.value("gifAutoPlay", true).toBool();
 }
 
+void UserSettings::setVideoQuality(QEnums::VideoQuality quality)
+{
+    mSettings.setValue("videoQuality", (int)quality);
+}
+
+QEnums::VideoQuality UserSettings::getVideoQuality() const
+{
+    int quality = mSettings.value("videoQuality", (int)QEnums::VIDEO_QUALITY_HD_WIFI).toInt();
+
+    if (quality < 0 || quality > (int)QEnums::VIDEO_QUALITY_LAST)
+        return QEnums::VIDEO_QUALITY_HD_WIFI;
+
+    return QEnums::VideoQuality(quality);
+}
+
 void UserSettings::setVideoAutoPlay(bool autoPlay)
 {
     if (autoPlay == getVideoAutoPlay())
