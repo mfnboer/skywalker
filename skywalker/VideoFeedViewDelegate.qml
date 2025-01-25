@@ -73,7 +73,7 @@ Rectangle {
 
     id: videoPage
     width: root.width
-    height: root.height
+    height: root.height + (endOfFeed ? root.height : 0)
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
@@ -86,8 +86,8 @@ Rectangle {
     VideoView {
         id: video
         width: parent.width
-        height: parent.height
-        maxHeight: parent.height
+        height: root.height
+        maxHeight: root.height
         videoView: postVideo
         contentVisibility: postContentVisibility
         contentWarning: postContentWarning
@@ -284,6 +284,34 @@ Rectangle {
             isLightMode: false
             backgroundColor: videoPage.color
             textColor: "white"
+        }
+    }
+
+    Loader {
+        anchors.top: video.bottom
+        active: endOfFeed
+
+        sourceComponent: Rectangle {
+            width: root.width
+            height: root.height
+            color: "transparent"
+
+            SvgButton {
+                x: leftMarginWidth + 10
+                y: headerHeight + 20
+                iconColor: "white"
+                Material.background: "transparent"
+                svg: SvgOutline.arrowBack
+                accessibleName: qsTr("go back")
+                onClicked: videoPage.closed()
+            }
+
+            Image {
+                anchors.centerIn: parent
+                width: parent.width
+                fillMode: Image.PreserveAspectFit
+                source: "/images/thats_all_folks.png"
+            }
         }
     }
 
