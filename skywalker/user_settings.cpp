@@ -466,7 +466,11 @@ bool UserSettings::getGifAutoPlay() const
 
 void UserSettings::setVideoQuality(QEnums::VideoQuality quality)
 {
+    if (quality == getVideoQuality())
+        return;
+
     mSettings.setValue("videoQuality", (int)quality);
+    emit videoQualityChanged();
 }
 
 QEnums::VideoQuality UserSettings::getVideoQuality() const

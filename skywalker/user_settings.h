@@ -31,6 +31,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoAutoLoad READ getVideoAutoLoad WRITE setVideoAutoLoad NOTIFY videoAutoLoadChanged FINAL)
+    Q_PROPERTY(QEnums::VideoQuality videoQuality READ getVideoQuality WRITE setVideoQuality NOTIFY videoQualityChanged FINAL)
     Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
     Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
@@ -137,8 +138,8 @@ public:
     Q_INVOKABLE void setGifAutoPlay(bool autoPlay);
     Q_INVOKABLE bool getGifAutoPlay() const;
 
-    Q_INVOKABLE void setVideoQuality(QEnums::VideoQuality quality);
-    Q_INVOKABLE QEnums::VideoQuality getVideoQuality() const;
+    void setVideoQuality(QEnums::VideoQuality quality);
+    QEnums::VideoQuality getVideoQuality() const;
 
     void setVideoAutoPlay(bool autoPlay);
     bool getVideoAutoPlay() const;
@@ -276,6 +277,7 @@ signals:
     void videoSoundChanged();
     void videoAutoPlayChanged();
     void videoAutoLoadChanged();
+    void videoQualityChanged();
     void floatingNavigationButtonsChanged();
     void scriptRecognitionChanged();
     void showTrendingTopicsChanged();

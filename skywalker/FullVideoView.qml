@@ -130,6 +130,7 @@ SkyPage {
 
     M3U8Reader {
         id: m3u8Reader
+        videoQuality: userSettings.videoQuality
 
         onGetVideoStreamOk: (durationMs) => {
             const fileName = videoUtils.getVideoFileNameForGallery("ts")

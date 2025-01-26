@@ -3,6 +3,7 @@ next
 * Swipe view for video feeds
 * Video tab on profile page
 * Link to trending videos on search page
+* Setting to set video quality (HD or SD). Default HD on WiFi only.
 * Button to reset search scope
 
 3.11.2

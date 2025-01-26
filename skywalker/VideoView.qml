@@ -489,6 +489,7 @@ Column {
 
     M3U8Reader {
         id: m3u8Reader
+        videoQuality: userSettings.videoQuality
 
         onGetVideoStreamOk: (durationMs) => {
             videoPlayer.m3u8DurationMs = durationMs
