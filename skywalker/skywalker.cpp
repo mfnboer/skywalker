@@ -3002,6 +3002,13 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     Q_ASSERT(mBsky);
     const auto* session = mBsky->getSession();
     Q_ASSERT(session);
+
+    if (!session)
+    {
+        qWarning() << "Session missing.";
+        return nullptr;
+    }
+
     mEditUserPreferences = std::make_unique<EditUserPreferences>(this);
     mEditUserPreferences->setEmail(session->mEmail.value_or(""));
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
@@ -3009,7 +3016,9 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setDID(mUserDid);
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
-    mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
+
+    if (mChat)
+        mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
 
     if (session->getPDS())
     {
