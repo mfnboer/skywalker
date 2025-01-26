@@ -167,7 +167,7 @@ SkyPage {
     GuiSettings {
         id: guiSettings
         isLightMode: false
-        backgroundColor: page.color
+        backgroundColor: guiSettings.fullScreenColor
         textColor: "white"
     }
 
