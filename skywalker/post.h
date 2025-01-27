@@ -53,7 +53,7 @@ public:
     void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
 
     QString getText() const override;
-    QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}) const;
+    QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}, const QString& linkColor = {}) const;
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;

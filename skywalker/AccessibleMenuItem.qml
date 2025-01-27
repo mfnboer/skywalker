@@ -7,4 +7,6 @@ MenuItem {
     Accessible.name: text
     Accessible.description: Accessible.name
     Accessible.onPressAction: triggered()
+
+    Component.onCompleted: contentItem.color = guiSettings.textColor
 }

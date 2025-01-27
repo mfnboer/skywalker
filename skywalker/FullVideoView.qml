@@ -4,16 +4,18 @@ import QtQuick.Controls.Material
 import skywalker
 
 SkyPage {
+    property Skywalker skywalker: root.getSkywalker()
+    readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
     required property var videoView // videoview
     property string videoSource
-    property string transcodedSource
+    property bool isVideoFeed: false
 
     signal closed
 
     id: page
     width: parent.width
     height: parent.height
-    background: Rectangle { color: "black" }
+    background: Rectangle { color: guiSettings.fullScreenColor }
 
     VideoView {
         id: view
@@ -22,12 +24,12 @@ SkyPage {
         maxHeight: parent.height
         videoView: page.videoView
         videoSource: page.videoSource
-        transcodedSource: page.transcodedSource
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
         controlColor: "white"
         disabledColor: "darkslategrey"
-        backgroundColor: "black"
+        backgroundColor: guiSettings.fullScreenColor
+        isVideoFeed: page.isVideoFeed
         isFullViewMode: true
     }
 
@@ -76,7 +78,7 @@ SkyPage {
     SvgButton {
         x: 10
         iconColor: "white"
-        Material.background: "black"
+        Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
@@ -89,7 +91,7 @@ SkyPage {
         anchors.right: parent.right
         anchors.rightMargin: 10
         iconColor: "white"
-        Material.background: "black"
+        Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
@@ -128,6 +130,7 @@ SkyPage {
 
     M3U8Reader {
         id: m3u8Reader
+        videoQuality: userSettings.videoQuality
 
         onGetVideoStreamOk: (durationMs) => {
             const fileName = videoUtils.getVideoFileNameForGallery("ts")
@@ -155,9 +158,17 @@ SkyPage {
 
     VideoUtils {
         id: videoUtils
+        skywalker: root.getSkywalker()
 
         onCopyVideoOk: root.getSkywalker().showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
         onCopyVideoFailed: (error) => root.getSkywalker().showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    GuiSettings {
+        id: guiSettings
+        isLightMode: false
+        backgroundColor: guiSettings.fullScreenColor
+        textColor: "white"
     }
 
     function saveVideo() {
@@ -171,5 +182,24 @@ SkyPage {
         else {
             root.getSkywalker().showStatusMessage(qsTr(`Cannot save: ${videoView.playlistUrl}`), QEnums.STATUS_LEVEL_ERROR)
         }
+    }
+
+    function setNavigationBarColor() {
+        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+    }
+
+    function resetNavigationBarColor() {
+        // As GuiSettings are temporarily set to dark on this page, we determine
+        // the normal background color here instead of taking it from guiSettings
+        const backgroundColor = userSettings ? userSettings.backgroundColor : Material.background
+        skywalker.setNavigationBarColor(backgroundColor)
+    }
+
+    Component.onDestruction: {
+        resetNavigationBarColor()
+    }
+
+    Component.onCompleted: {
+        setNavigationBarColor()
     }
 }

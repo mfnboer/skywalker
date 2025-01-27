@@ -4,6 +4,9 @@ import QtQuick.Controls
 ListView {
     property bool enableOnScreenCheck: false
 
+    signal covered
+    signal uncovered
+
     spacing: 0
     flickDeceleration: guiSettings.flickDeceleration
     maximumFlickVelocity: guiSettings.maxFlickVelocity
@@ -71,6 +74,8 @@ ListView {
 
     // Called when list gets covered by another page
     function cover() {
+        covered()
+
         if (!enableOnScreenCheck)
             return
 
@@ -80,6 +85,10 @@ ListView {
             if (item)
                 item.cover() // qmllint disable missing-property
         }
+    }
+
+    function uncover() {
+        uncovered()
     }
 
     function getFirstVisibleIndex() {

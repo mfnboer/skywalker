@@ -41,6 +41,7 @@ Rectangle {
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.preferredHeight: guiSettings.threadColumnWidth
             avatarUrl: showFeed ? feed.avatarThumb : ""
+            contentMode: feed.contentMode
             unknownSvg: guiSettings.feedDefaultAvatar(feed)
 
             onClicked: feedClicked(feed)

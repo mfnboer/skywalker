@@ -12,6 +12,7 @@
 #include "edit_user_preferences.h"
 #include "favorite_feeds.h"
 #include "feed_list_model.h"
+#include "feed_pager.h"
 #include "hashtag_index.h"
 #include "item_store.h"
 #include "labeler.h"
@@ -37,7 +38,7 @@ namespace Skywalker {
 class Chat;
 class FocusHashtags;
 
-class Skywalker : public QObject
+class Skywalker : public IFeedPager
 {
     Q_OBJECT
     Q_PROPERTY(QString APP_NAME MEMBER APP_NAME CONSTANT)
@@ -92,8 +93,12 @@ public:
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {});
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
-    Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
+
+    // IFeedPager
+    // Repeating default values here for calls from QML
+    Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {}) override;
+    Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10) override;
+
     Q_INVOKABLE void getListFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getListFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getQuotesFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
@@ -112,8 +117,11 @@ public:
                                        const QString& avatar);
 
     Q_INVOKABLE void clearAuthorFeed(int id);
-    Q_INVOKABLE void getAuthorFeed(int id, int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 20, int minEntries = 10);
+
+    // IFeedPager
+    Q_INVOKABLE void getAuthorFeed(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {}) override;
+    Q_INVOKABLE void getAuthorFeedNextPage(int id, int maxPages = 20, int minEntries = 10) override;
+
     Q_INVOKABLE void getAuthorLikes(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getAuthorLikesNextPage(int id, int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE int createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter = QEnums::AUTHOR_FEED_FILTER_POSTS);
@@ -189,6 +197,10 @@ public:
     // TODO: refactor to separate App Utils class
     Q_INVOKABLE bool sendAppToBackground();
     Q_INVOKABLE void setNavigationBarColor(QColor color);
+    Q_INVOKABLE void setNavigationBarColorAndMode(QColor color, bool isLightMode);
+    Q_INVOKABLE int getNavigationBarSize(QEnums::InsetsSide side) const;
+    Q_INVOKABLE int getStatusBarSize(QEnums::InsetsSide side) const;
+    Q_INVOKABLE void setStatusBarTransparent(bool transparent);
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void signOut();
@@ -211,7 +223,7 @@ public:
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
     void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+    bool isGetFeedInProgress() const override { return mGetFeedInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
     bool isGetPostThreadInProgress() const { return mGetPostThreadInProgress; }
     void setGetNotificationsInProgress(bool inProgress);
@@ -219,7 +231,7 @@ public:
     void setGetMentionsInProgress(bool inProgress);
     bool isGetMentionsInProgress() const { return mGetMentionsInProgress; }
     void setGetAuthorFeedInProgress(bool inProgress);
-    bool isGetAuthorFeedInProgress() const { return mGetAuthorFeedInProgress; }
+    bool isGetAuthorFeedInProgress() const override { return mGetAuthorFeedInProgress; }
     void setGetAuthorListInProgress(bool inProgress);
     bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
     void setGetListListInProgress(bool inProgress);
@@ -260,6 +272,7 @@ signals:
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
     void getFeedInProgressChanged();
+    void getAuthorFeedInProgressChanged();
     void getNotificationsInProgressChanged();
     void getMentionsInProgressChanged();
     void sessionExpired(QString error);
@@ -270,7 +283,6 @@ signals:
     void userChanged();
     void unreadNotificationCountChanged();
     void getDetailedProfileOK(DetailedProfile);
-    void getAuthorFeedInProgressChanged();
     void getAuthorListInProgressChanged();
     void getListListInProgressChanged();
     void getStarterPackListInProgressChanged();
@@ -286,6 +298,8 @@ signals:
     void bskyClientDeleted();
     void anniversary();
     void oldestUnreadNotificationIndex(int index, bool mentions);
+    void appPaused();
+    void appResumed();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
@@ -331,6 +345,9 @@ private:
     void resumeApp();
     void migrateDraftPosts();
     void checkAnniversary();
+
+    template<typename ModelType>
+    int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
 
     ATProto::Client::Ptr mBsky;
     ATProto::PlcDirectoryClient mPlcDirectory;

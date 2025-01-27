@@ -8,6 +8,7 @@ Rectangle {
     required property string feedName
     property SvgImage defaultSvg: SvgFilled.feed
     property string feedAvatar
+    property int contentMode: QEnums.CONTENT_MODE_UNSPECIFIED
     property bool showAsHome: false
     property bool isHomeFeed: false
     property bool showLanguageFilter: false
@@ -95,6 +96,8 @@ Rectangle {
             Layout.preferredHeight: parent.height - 10
             Layout.preferredWidth: height
             avatarUrl: header.feedAvatar
+            contentMode: header.contentMode
+            badgeOutlineColor: guiSettings.headerColor
             unknownSvg: defaultSvg
             visible: showAsHome && !isHomeFeed
 
@@ -156,6 +159,8 @@ Rectangle {
             height: parent.height - 10
             width: height
             avatarUrl: header.feedAvatar
+            contentMode: header.contentMode
+            badgeOutlineColor: guiSettings.headerColor
             unknownSvg: defaultSvg
             visible: !showAsHome && !isHomeFeed
 

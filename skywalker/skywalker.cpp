@@ -46,7 +46,7 @@ static constexpr int USER_HASHTAG_INDEX_SIZE = 100;
 static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
-    QObject(parent),
+    IFeedPager(parent),
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
     mBookmarks(this),
@@ -1457,7 +1457,7 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
                     return;
                 }
 
-                int id = mPostThreadModels.put(std::move(model));
+                const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
                 emit postThreadOk(id, postEntryIndex);
             }
             else
@@ -1801,24 +1801,33 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
         return;
     }
 
+    bool includePins = false;
     std::optional<QString> filter;
+
     switch ((*model)->getFilter())
     {
     case QEnums::AUTHOR_FEED_FILTER_NONE:
+        includePins = true;
+        break;
     case QEnums::AUTHOR_FEED_FILTER_REPLIES:
         break;
     case QEnums::AUTHOR_FEED_FILTER_POSTS:
+        includePins = true;
         filter = ATProto::AppBskyFeed::AuthorFeedFilter::POSTS_NO_REPLIES;
         break;
     case QEnums::AUTHOR_FEED_FILTER_MEDIA:
         filter = ATProto::AppBskyFeed::AuthorFeedFilter::POSTS_WITH_MEDIA;
+        break;
+    case QEnums::AUTHOR_FEED_FILTER_VIDEO:
+        filter = ATProto::AppBskyFeed::AuthorFeedFilter::POSTS_WITH_VIDEO;
+        break;
     }
 
     const auto& author = (*model)->getAuthor();
     qDebug() << "Get author feed:" << author.getHandle();
 
     setGetAuthorFeedInProgress(true);
-    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), filter, true,
+    mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), filter, includePins,
         [this, id, maxPages, minEntries, cursor](auto feed){
             setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
@@ -1979,7 +1988,7 @@ int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::Auth
         author, mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setFilter(filter);
-    const int id = mAuthorFeedModels.put(std::move(model));
+    const int id = addModelToStore<AuthorFeedModel>(std::move(model), mAuthorFeedModels);
     return id;
 }
 
@@ -2001,7 +2010,7 @@ int Skywalker::createSearchPostFeedModel()
     auto model = std::make_unique<SearchPostFeedModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
-    const int id = mSearchPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;
 }
 
@@ -2200,6 +2209,16 @@ void Skywalker::removeStarterPackListModel(int id)
     mStarterPackListModels.remove(id);
 }
 
+template<typename ModelType>
+int Skywalker::addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store)
+{
+    auto* modelPtr = model.get();
+    const int id = store.put(std::move(model));
+    modelPtr->setModelId(id);
+
+    return id;
+}
+
 int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
@@ -2207,7 +2226,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
-    const int id = mPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
 
@@ -2219,7 +2238,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setListView(listView);
     model->enableLanguageFilter(true);
-    const int id = mPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
 
@@ -2230,7 +2249,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setQuoteUri(quoteUri);
-    const int id = mPostFeedModels.put(std::move(model));
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
 
@@ -2983,6 +3002,13 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     Q_ASSERT(mBsky);
     const auto* session = mBsky->getSession();
     Q_ASSERT(session);
+
+    if (!session)
+    {
+        qWarning() << "Session missing.";
+        return nullptr;
+    }
+
     mEditUserPreferences = std::make_unique<EditUserPreferences>(this);
     mEditUserPreferences->setEmail(session->mEmail.value_or(""));
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
@@ -2990,7 +3016,9 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setDID(mUserDid);
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
-    mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
+
+    if (mChat)
+        mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
 
     if (session->getPDS())
     {
@@ -3087,6 +3115,12 @@ bool Skywalker::sendAppToBackground()
 
 void Skywalker::setNavigationBarColor(QColor color)
 {
+    const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
+    setNavigationBarColorAndMode(color, isLightMode);
+}
+
+void Skywalker::setNavigationBarColorAndMode(QColor color, bool isLightMode)
+{
 #ifdef Q_OS_ANDROID
     if (!QNativeInterface::QAndroidApplication::isActivityContext())
     {
@@ -3096,10 +3130,59 @@ void Skywalker::setNavigationBarColor(QColor color)
 
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     int rgb = color.rgba();
-    bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
     activity.callMethod<void>("setNavigationBarColor", "(IZ)V", (jint)rgb, (jboolean)isLightMode);
 #else
     Q_UNUSED(color)
+    Q_UNUSED(isLightMode)
+#endif
+}
+
+int Skywalker::getNavigationBarSize(QEnums::InsetsSide side) const
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return 0;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    return (int)activity.callMethod<jint>("getNavigationBarSize", "(I)I", (jint)side);
+#else
+    Q_UNUSED(side)
+    return 0;
+#endif
+}
+
+int Skywalker::getStatusBarSize(QEnums::InsetsSide side) const {
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return 0;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    return (int)activity.callMethod<jint>("getStatusBarSize", "(I)I", (jint)side);
+#else
+    Q_UNUSED(side)
+    return 0;
+#endif
+}
+
+void Skywalker::setStatusBarTransparent(bool transparent)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    activity.callMethod<void>("setStatusBarTransparent", "(Z)V", (jboolean)transparent);
+#else
+    Q_UNUSED(transparent)
 #endif
 }
 
@@ -3263,6 +3346,7 @@ void Skywalker::pauseApp()
     }
 
     mChat->pause();
+    emit appPaused();
 }
 
 void Skywalker::resumeApp()
@@ -3284,6 +3368,7 @@ void Skywalker::resumeApp()
     if (mTimelineUpdatePaused.isNull())
     {
         qDebug() << "Timeline update was not paused.";
+        emit appResumed();
         return;
     }
 
@@ -3311,6 +3396,7 @@ void Skywalker::resumeApp()
         }
 
         mChat->resume();
+        emit appResumed();
     });
 }
 

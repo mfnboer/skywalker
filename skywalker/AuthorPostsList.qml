@@ -41,7 +41,17 @@ SkyListView {
     }
 
     delegate: PostFeedViewDelegate {
+        required property int index
+
         width: enclosingView.width
+        isVideoFeed: feedFilter === QEnums.AUTHOR_FEED_FILTER_VIDEO
+
+        onVideoClicked: {
+            if (isVideoFeed)
+                root.viewVideoFeed(model, index, (newIndex) => { authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning) })
+            else
+                console.warn("This is not a video feed")
+        }
     }
 
     FlickableRefresher {

@@ -216,7 +216,8 @@ public:
         AUTHOR_FEED_FILTER_NONE,
         AUTHOR_FEED_FILTER_POSTS,
         AUTHOR_FEED_FILTER_REPLIES,
-        AUTHOR_FEED_FILTER_MEDIA
+        AUTHOR_FEED_FILTER_MEDIA,
+        AUTHOR_FEED_FILTER_VIDEO
     };
     Q_ENUM(AuthorFeedFilter)
 
@@ -293,6 +294,40 @@ public:
         ACTOR_TARGET_UNKNOWN = (int)ATProto::AppBskyActor::ActorTarget::UNKNOWN
     };
     Q_ENUM(ActorTarget)
+
+    enum ContentMode
+    {
+        CONTENT_MODE_UNSPECIFIED = (int)ATProto::AppBskyFeed::ContentMode::UNSPECIFIED,
+        CONTENT_MODE_VIDEO = (int)ATProto::AppBskyFeed::ContentMode::VIDEO,
+        CONTENT_MODE_UNKNOWN = (int)ATProto::AppBskyFeed::ContentMode::UNKNOWN
+    };
+    Q_ENUM(ContentMode)
+
+    enum InsetsSide
+    {
+        INSETS_SIDE_TOP,
+        INSETS_SIDE_BOTTOM,
+        INSETS_SIDE_LEFT,
+        INSETS_SIDE_RIGHT
+    };
+    Q_ENUM(InsetsSide)
+
+    enum FeedType
+    {
+        FEED_GENERATOR,
+        FEED_AUTHOR
+    };
+    Q_ENUM(FeedType)
+
+    enum VideoQuality
+    {
+        VIDEO_QUALITY_HD,
+        VIDEO_QUALITY_HD_WIFI,
+        VIDEO_QUALITY_SD,
+
+        VIDEO_QUALITY_LAST = VIDEO_QUALITY_SD
+    };
+    Q_ENUM(VideoQuality)
 };
 
 }

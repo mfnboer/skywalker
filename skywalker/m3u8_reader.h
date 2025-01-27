@@ -1,11 +1,11 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTemporaryFile>
 #include <QtQmlIntegration>
-
 
 namespace Skywalker {
 
@@ -15,6 +15,7 @@ class M3U8Reader : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged FINAL)
+    Q_PROPERTY(QEnums::VideoQuality videoQuality WRITE setVideoQuality FINAL)
     QML_ELEMENT
 
 public:
@@ -27,12 +28,16 @@ public:
 
     explicit M3U8Reader(QObject* parent = nullptr);
 
+    void setVideoQuality(QEnums::VideoQuality quality) { mVideoQuality = quality; }
+
     bool isLoading() const { return mLoading; }
     void setLoading(bool loading);
     Q_INVOKABLE void getVideoStream(const QString& link, bool firstCall = true);
 
-    // If fileName is empty then a temp file will be created
+    // If fileName is empty then a temp cache file will be created
     Q_INVOKABLE void loadStream(const QString& fileName = {});
+
+    Q_INVOKABLE void resetStream() { mStream.reset(); }
 
 signals:
     void getVideoStreamOk(int durationMs);
@@ -59,6 +64,7 @@ private:
     QStringList mStreamSegments;
     std::unique_ptr<QFile> mStream;
     bool mLoading = false;
+    QEnums::VideoQuality mVideoQuality = QEnums::VIDEO_QUALITY_HD_WIFI;
 };
 
 }

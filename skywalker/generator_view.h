@@ -41,6 +41,7 @@ class GeneratorView
     Q_PROPERTY(bool acceptsInteractions READ acceptsInteractions FINAL)
     Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
     Q_PROPERTY(GeneratorViewerState viewer READ getViewer FINAL)
+    Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode FINAL)
     QML_VALUE_TYPE(generatorview)
 
 public:
@@ -65,6 +66,7 @@ public:
     bool acceptsInteractions() const;
     ContentLabelList getContentLabels() const;
     GeneratorViewerState getViewer() const;
+    QEnums::ContentMode getContentMode() const;
 
 private:
     ATProto::AppBskyFeed::GeneratorView::SharedPtr mGeneratorView;

@@ -21,6 +21,7 @@ Item {
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
+    property bool showViewThread: false
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
     property int topPadding: 0
@@ -28,6 +29,7 @@ Item {
     signal reply()
     signal repost()
     signal like()
+    signal viewThread()
     signal muteThread()
     signal bookmark()
     signal share()
@@ -158,6 +160,13 @@ Item {
                     MenuItemSvg { svg: SvgOutline.share }
                 }
                 AccessibleMenuItem {
+                    text: qsTr("View thread")
+                    visible: showViewThread
+                    onTriggered: viewThread()
+
+                    MenuItemSvg { svg: SvgOutline.chat }
+                }
+                AccessibleMenuItem {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")
                     visible: !isReply || replyRootUri
                     onTriggered: muteThread()
@@ -223,6 +232,8 @@ Item {
 
                     MenuItemSvg { svg: SvgOutline.block }
                 }
+
+                Component.onCompleted: background.color = guiSettings.menuColor
             }
         }
     }
@@ -254,10 +265,10 @@ Item {
 
     function hasOwnRecord() {
         if (record)
-            return record.detached ? isUserDid(record.detachedByDid) : isUserDid(record.author.did)
+            return record.detached ? guiSettings.isUserDid(record.detachedByDid) : guiSettings.isUserDid(record.author.did)
 
         if (recordWithMedia)
-            return recordWithMedia.record.detached ? isUserDid(recordWithMedia.record.detachedByDid)  : isUserDid(recordWithMedia.record.author.did)
+            return recordWithMedia.record.detached ? guiSettings.isUserDid(recordWithMedia.record.detachedByDid)  : guiSettings.isUserDid(recordWithMedia.record.author.did)
 
         return false
     }
@@ -266,11 +277,7 @@ Item {
         if (!isReply)
             return authorIsUser
 
-        return isUserDid(replyRootAuthorDid)
-    }
-
-    function isUserDid(did) {
-        return skywalker.getUserDid() === did
+        return guiSettings.isUserDid(replyRootAuthorDid)
     }
 
     function statSpeech(stat, textSingular, textPlural) {

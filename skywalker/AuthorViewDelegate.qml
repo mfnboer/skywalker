@@ -125,14 +125,14 @@ Rectangle {
 
             SkyButton {
                 text: qsTr("Follow")
-                visible: !followingUri && !isUser(author) && showAuthor && showFollow && !author.associated.isLabeler
+                visible: !followingUri && !guiSettings.isUser(author) && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: follow(author)
                 Accessible.name: qsTr(`press to follow ${author.name}`)
             }
             SkyButton {
                 flat: true
                 text: qsTr("Following")
-                visible: followingUri && !isUser(author) && showAuthor && showFollow && !author.associated.isLabeler
+                visible: followingUri && !guiSettings.isUser(author) && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: unfollow(author.did, followingUri)
                 Accessible.name: qsTr(`press to unfollow ${author.name}`)
             }
@@ -183,9 +183,5 @@ Rectangle {
 
     function authorVisible() {
         return guiSettings.contentVisible(author)
-    }
-
-    function isUser(author) {
-        return skywalker.getUserDid() === author.did
     }
 }

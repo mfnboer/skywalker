@@ -233,9 +233,9 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
-std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension)
+std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension, bool cache)
 {
-    const QString nameTemplate = TempFileHolder::getNameTemplate(fileExtension);
+    const QString nameTemplate = TempFileHolder::getNameTemplate(fileExtension, cache);
     auto tmpFile = std::make_unique<QTemporaryFile>(nameTemplate);
 
     if (!tmpFile->open())

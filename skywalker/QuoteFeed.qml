@@ -23,6 +23,7 @@ Column {
             Layout.preferredHeight: 34
             Layout.alignment: Qt.AlignTop
             avatarUrl: feed.avatarThumb
+            contentMode: feed.contentMode
             unknownSvg: guiSettings.feedDefaultAvatar(feed)
 
             onClicked: skywalker.getFeedGenerator(feed.uri)

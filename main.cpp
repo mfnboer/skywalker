@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName(Skywalker::Skywalker::APP_NAME);
     app.setApplicationName(Skywalker::Skywalker::APP_NAME);
 
-    Skywalker::TempFileHolder::initTempDir();
+    Skywalker::TempFileHolder::init();
     Skywalker::FontDownloader::initAppFonts();
 
     QQmlApplicationEngine engine;

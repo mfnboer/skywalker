@@ -1752,6 +1752,8 @@ void PostUtils::dropPhoto(const QString& source)
 
 void PostUtils::dropVideo(const QString& source)
 {
+    qDebug() << "Drop video:" << source;
+
     if (source.startsWith("file://"))
     {
         const QString fileName = source.sliced(7);

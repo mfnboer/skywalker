@@ -7,6 +7,7 @@ SkyListView {
     required property int modelId
     property bool showAsHome: false
     property int unreadPosts: 0
+    property bool isVideoFeed: postFeedView.model.contentMode === QEnums.CONTENT_MODE_VIDEO
 
     signal closed
 
@@ -21,6 +22,7 @@ SkyListView {
         feedName: postFeedView.model.feedName
         feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
         defaultSvg: guiSettings.feedDefaultAvatar(postFeedView.model.getGeneratorView())
+        contentMode: postFeedView.model.contentMode
         showAsHome: postFeedView.showAsHome
         showLanguageFilter: postFeedView.model.languageFilterConfigured
         filteredLanguages: postFeedView.model.filteredLanguages
@@ -46,14 +48,24 @@ SkyListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
+        required property int index
+
         width: postFeedView.width
+        isVideoFeed: postFeedView.isVideoFeed
+
+        onVideoClicked: {
+            if (isVideoFeed)
+                root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+            else
+                console.warn("This is not a video feed")
+        }
     }
 
     FlickableRefresher {
         inProgress: skywalker.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
-        topOvershootFun: () => skywalker.getFeed(modelId)
-        bottomOvershootFun: () => skywalker.getFeedNextPage(modelId)
+        topOvershootFun: () => model.getFeed(skywalker)
+        bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         topText: qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
     }
@@ -71,6 +83,23 @@ SkyListView {
         running: skywalker.getFeedInProgress
     }
 
+    function activate() {
+        for (var i = 0; i < count; ++i) {
+            const item = itemAtIndex(i)
+
+            if (item)
+                item.activate() // qmllint disable missing-property
+        }
+    }
+
+    function deactivate() {
+        for (var i = 0; i < count; ++i) {
+            const item = itemAtIndex(i)
+
+            if (item)
+                item.deactivate() // qmllint disable missing-property
+        }
+    }
 
     function forceDestroy() {
         if (modelId !== -1) {

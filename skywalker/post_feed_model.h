@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "feed_pager.h"
 #include "filtered_post_feed_model.h"
 #include "generator_view.h"
 #include "post_filter.h"
@@ -16,6 +17,8 @@ class PostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
+    Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
     Q_PROPERTY(bool languageFilterConfigured READ isLanguageFilterConfigured NOTIFY languageFilterConfiguredChanged FINAL)
     Q_PROPERTY(bool languageFilterEnabled READ isLanguageFilterEnabled WRITE enableLanguageFilter NOTIFY languageFilterEnabledChanged FINAL)
     Q_PROPERTY(LanguageList filteredLanguages READ getFilterdLanguages NOTIFY languageFilterConfiguredChanged FINAL)
@@ -38,11 +41,14 @@ public:
                            QObject* parent = nullptr);
 
     const QString& getFeedName() const { return mFeedName; }
+    QEnums::FeedType getFeedType() const { return QEnums::FEED_GENERATOR; }
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
     const QString& getPreferencesFeedKey() const;
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
+
+    QEnums::ContentMode getContentMode() const { return mGeneratorView.getContentMode(); }
 
     Q_INVOKABLE const ListViewBasic getListView() const { return mListView; }
     void setListView(const ListViewBasic& view) { mListView = view; }
@@ -88,6 +94,9 @@ public:
     int findTimestamp(QDateTime timestamp, const QString& cid) const;
 
     void clear();
+
+    Q_INVOKABLE void getFeed(IFeedPager* pager);
+    Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
 
     bool hasFilters() const { return !mFilteredPostFeedModels.empty(); }
     Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const BasicProfile& profile);

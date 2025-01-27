@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(appskywalker VERSION 3.11.2 LANGUAGES CXX)
-set(VERSION_CODE 61)
+project(appskywalker VERSION 3.12 LANGUAGES CXX)
+set(VERSION_CODE 62)
 set(APP_VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 20)
@@ -53,6 +53,7 @@ qt_add_qml_module(appskywalker
         images/via_tenor_logo_blue.svg
         images/giphy_logo.png
         images/buycoffee.png
+        images/thats_all_folks.png
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java

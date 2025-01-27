@@ -483,7 +483,7 @@ SkyPage {
                             width: 34
                             height: width
                             color: guiSettings.textColor
-                            svg: SvgOutline.trending
+                            svg: modelData.contentMode === QEnums.CONTENT_MODE_VIDEO ? SvgOutline.film : SvgOutline.trending
                         }
 
                         SkyCleanedTextLine {

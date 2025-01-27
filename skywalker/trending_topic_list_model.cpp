@@ -42,7 +42,7 @@ void TrendingTopicListModel::clear()
     }
 }
 
-void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics)
+void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics, int maxTopics)
 {
     qDebug() << "Add topics:" << topics.size();
     std::vector<TrendingTopic> trendingTopics;
@@ -60,13 +60,14 @@ void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::Trending
         {
             qWarning() << "Empty topic:" << trendingTopic.getTopic() << "link:" << trendingTopic.getLink();
         }
+
+        if ((int)trendingTopics.size() >= maxTopics)
+            break;
     }
 
-    if (trendingTopics.empty())
-    {
-        qDebug() << "No trending topics";
-        return;
-    }
+    const TrendingTopic trendingVideos(tr("Trending videos"),
+            "https://bsky.app/profile/bsky.app/feed/thevids", QEnums::CONTENT_MODE_VIDEO);
+    trendingTopics.push_back(trendingVideos);
 
     const size_t newRowCount = mList.size() + trendingTopics.size();
     beginInsertRows({}, mList.size(), newRowCount - 1);

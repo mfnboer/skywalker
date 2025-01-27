@@ -31,6 +31,18 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
             [this]{ changeData({ int(Role::PostReplyToAuthor), int(Role::PostRecord), int(Role::PostRecordWithMedia) }); });
 }
 
+void AbstractPostFeedModel::setOverrideLinkColor(const QString& color)
+{
+    mOverrideLinkColor = color;
+    changeData({ int(Role::PostText) });
+}
+
+void AbstractPostFeedModel::clearOverrideLinkColor()
+{
+    mOverrideLinkColor.clear();
+    changeData({ int(Role::PostText) });
+}
+
 void AbstractPostFeedModel::clearFeed()
 {
     mFeed.clear();
@@ -163,7 +175,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(profileChange ? *profileChange : author);
     }
     case Role::PostText:
-        return post.getFormattedText(mFocusHashtags.getNormalizedMatchHashtags(post));
+        return post.getFormattedText(mFocusHashtags.getNormalizedMatchHashtags(post), mOverrideLinkColor);
     case Role::PostPlainText:
         return post.getText();
     case Role::PostLanguages:

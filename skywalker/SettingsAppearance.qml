@@ -269,7 +269,48 @@ ColumnLayout {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
         text: qsTr("With auto loading, the video is automatically loaded (more data usage) so it starts faster when you press play. Otherwise it will load when you press play.")
-        enabled: !userSettings.videoAutoPlay
+    }
+
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: -1
+
+        AccessibleText {
+            Layout.preferredWidth: 120
+            text: qsTr("Video quality")
+        }
+        SkyRadioButton {
+            Layout.fillWidth: true
+            checked: userSettings.videoQuality === QEnums.VIDEO_QUALITY_HD
+            text: qsTr("HD");
+            onCheckedChanged: {
+                if (checked)
+                    userSettings.videoQuality = QEnums.VIDEO_QUALITY_HD
+            }
+        }
+        SkyRadioButton {
+            Layout.fillWidth: true
+            checked: userSettings.videoQuality === QEnums.VIDEO_QUALITY_HD_WIFI
+            text: qsTr("HD WiFi");
+            onCheckedChanged: {
+                if (checked)
+                    userSettings.videoQuality = QEnums.VIDEO_QUALITY_HD_WIFI
+            }
+        }
+        SkyRadioButton {
+            Layout.fillWidth: true
+            checked: userSettings.videoQuality === QEnums.VIDEO_QUALITY_SD
+            text: qsTr("SD");
+            onCheckedChanged: {
+                if (checked)
+                    userSettings.videoQuality = QEnums.VIDEO_QUALITY_SD
+            }
+        }
+    }
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        text: qsTr("Higher quality requires more network bandwidth (data).<br>High Definition (HD) is 1280x720 pixels.<br>Standard Definition (SD) is 640x360 pixels.<br>HD WiFi uses HD when you are connected to WiFi.")
     }
 
     Utils {

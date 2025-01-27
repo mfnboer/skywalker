@@ -81,6 +81,5 @@ Rectangle {
             color: guiSettings.separatorColor
             visible: description
         }
-
     }
 }

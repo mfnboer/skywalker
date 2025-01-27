@@ -64,6 +64,7 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property bool isVideoFeed: false
 
     property int prevY: 0
     property bool isAnchorItem: false
@@ -72,6 +73,7 @@ Rectangle {
     signal calibratedPosition(int dy)
     signal showHiddenReplies
     signal unfoldPosts
+    signal videoClicked
 
     id: postEntry
     // HACK
@@ -378,7 +380,7 @@ Rectangle {
             // Reply hidden by user
             Loader {
                 width: parent.width
-                active: postIsHiddenReply && isUserDid(postReplyRootAuthorDid)
+                active: postIsHiddenReply && guiSettings.isUserDid(postReplyRootAuthorDid)
                 visible: status == Loader.Ready
                 sourceComponent: ReplyToRow {
                     width: parent.width
@@ -408,6 +410,9 @@ Rectangle {
                 bodyBackgroundColor: postEntry.color.toString()
                 borderColor: postEntry.border.color.toString()
                 postHighlightColor: postEntry.postHighlightColor
+                isVideoFeed: postEntry.isVideoFeed
+
+                onVideoClicked: postEntry.videoClicked()
             }
 
             // Reposts and likes in detailed view of post entry in thread view
@@ -469,7 +474,7 @@ Rectangle {
                     isReply: postIsReply
                     replyRootAuthorDid: postReplyRootAuthorDid
                     replyRootUri: postReplyRootUri
-                    authorIsUser: isUser(author)
+                    authorIsUser: guiSettings.isUser(author)
                     isBookmarked: postBookmarked
                     bookmarkNotFound: postBookmarkNotFound
                     record: postRecord
@@ -741,7 +746,12 @@ Rectangle {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound
-        onClicked: openPostThread()
+        onClicked: {
+            if (isVideoFeed)
+                videoClicked()
+            else
+                openPostThread()
+        }
     }
 
 
@@ -815,18 +825,18 @@ Rectangle {
         return postContentWarning
     }
 
-    function isUserDid(did) {
-        return skywalker.getUserDid() === did
-    }
-
-    function isUser(author) {
-        return isUserDid(author.did)
-    }
-
     function checkOnScreen() {
         const headerHeight = ListView.view.headerItem ? ListView.view.headerItem.height : 0
         const topY = ListView.view.contentY + headerHeight
         onScreen = (y + height > topY) && (y < ListView.view.contentY + ListView.view.height)
+    }
+
+    function activate() {
+        postBody.activate()
+    }
+
+    function deactivate() {
+        postBody.deactivate()
     }
 
     Component.onCompleted: {

@@ -48,7 +48,9 @@ ApplicationWindow {
             event.accepted = false
 
             // TODO: need something better than this
-            if (item instanceof ComposePost || item instanceof EditList || item instanceof EditProfile) {
+            if (item instanceof ComposePost || item instanceof EditList ||
+                item instanceof EditProfile || item instanceof VideoFeedView)
+            {
                 item.cancel()
                 return
             }
@@ -360,6 +362,20 @@ ApplicationWindow {
 
         onOldestUnreadNotificationIndex: (index, mentions) => getNotificationView().moveToNotification(index, mentions)
 
+        onAppPaused: {
+            let current = currentStackItem()
+
+            if (current && typeof current.cover === 'function')
+                current.cover()
+        }
+
+        onAppResumed: {
+            let current = currentStackItem()
+
+            if (current && typeof current.uncover === 'function')
+                current.uncover()
+        }
+
         // Note for search feeds the feedUri is the search name
         function saveLastViewedFeed(feedUri) {
             let userSettings = skywalker.getUserSettings()
@@ -429,13 +445,19 @@ ApplicationWindow {
 
             if (prevStack.depth > 0) {
                 let prevItem = prevStack.get(prevStack.depth - 1)
-                prevItem.cover()
+
+                if (typeof prevItem.cover === 'function')
+                    prevItem.cover()
             }
 
             if (prevIndex === notificationIndex)
                 skywalker.notificationListModel.updateRead()
 
             prevIndex = currentIndex
+            let currentItem = currentStackItem()
+
+            if (currentItem && typeof currentItem.uncover === 'function')
+                currentItem.uncover()
         }
 
         StackView {
@@ -1389,12 +1411,9 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewFullVideo(videoView, videoSource, transcodedSource) {
-        let component = Qt.createComponent("FullVideoView.qml")
-        let view = component.createObject(root, {
-                                              videoView: videoView,
-                                              videoSource: videoSource,
-                                              transcodedSource: transcodedSource })
+    function viewFullVideo(videoView) {
+        let component = guiSettings.createComponent("FullVideoView.qml")
+        let view = component.createObject(root, { videoView: videoView })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
@@ -1602,9 +1621,21 @@ ApplicationWindow {
     function viewPostFeed(feed) {
         const modelId = skywalker.createPostFeedModel(feed)
         skywalker.getFeed(modelId)
-        let component = Qt.createComponent("PostFeedView.qml")
+        let component = guiSettings.createComponent("PostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
         view.onClosed.connect(() => { popStack() })
+        root.pushStack(view)
+    }
+
+    function viewVideoFeed(model, index, closeCb = (newIndex) => {}) {
+        console.debug("View video feed:", model.feedName, "index:", index)
+        let component = guiSettings.createComponent("VideoFeedView.qml")
+        let view = component.createObject(root, { skywalker: skywalker, model: model, currentIndex: index })
+        view.onClosed.connect(() => {
+            console.debug("Close video feed:", model.feedName, "index:", view.currentIndex)
+            closeCb(view.currentIndex)
+            popStack()
+        })
         root.pushStack(view)
     }
 
@@ -1833,8 +1864,22 @@ ApplicationWindow {
         let item = stack.pop()
 
         // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
-        if (!((item instanceof PostFeedView || item instanceof PostListFeedView || item instanceof SearchFeedView) && item.showAsHome))
+        if (!((item instanceof PostFeedView ||
+               item instanceof PostListFeedView ||
+               item instanceof SearchFeedView) && item.showAsHome))
+        {
             item.destroy()
+        }
+        else if (item instanceof PostFeedView && item.showAsHome) {
+            item.deactivate()
+        }
+
+        if (stack === currentStack()) {
+            let currentItem = currentStackItem()
+
+            if (currentItem && typeof currentItem.uncover === 'function')
+                currentItem.uncover()
+        }
     }
 
     function pushStack(item, operation) {
@@ -1844,6 +1889,10 @@ ApplicationWindow {
             current.cover()
 
         currentStack().push(item, operation)
+
+        if (item instanceof PostFeedView && item.showAsHome) {
+            item.activate()
+        }
     }
 
     function unwindStack(stack = null) {

@@ -25,4 +25,18 @@ int getBandwidthKbps()
 #endif
 }
 
+bool isUnmetered()
+{
+#if defined(Q_OS_ANDROID)
+    const bool unmetered = (bool)QJniObject::callStaticMethod<jboolean>(
+        "com/gmail/mfnboer/NetworkUtils",
+        "isUnmetered", "()Z");
+
+    qDebug() << "Unmetered:" << unmetered;
+    return unmetered;
+#else
+    return true;
+#endif
+}
+
 }

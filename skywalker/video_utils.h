@@ -1,12 +1,15 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "video_cache.h"
+#include "signal_object.h"
+#include "wrapped_skywalker.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
 namespace Skywalker {
 
-class VideoUtils : public QObject
+class VideoUtils : public WrappedSkywalker
 {
     Q_OBJECT
     Q_PROPERTY(bool transcoding READ isTranscoding NOTIFY transcodingChanged FINAL)
@@ -22,6 +25,11 @@ public:
     Q_INVOKABLE void copyVideoToGallery(const QString& fileName);
     Q_INVOKABLE void indexGalleryFile(const QString& fileName);
     Q_INVOKABLE static void dropVideo(const QString& source);
+    Q_INVOKABLE bool isTempVideoSource(const QString& source) const;
+    Q_INVOKABLE bool videoSourceExists(const QString& source) const;
+
+    Q_INVOKABLE VideoHandle* getVideoFromCache(const QString& link);
+    Q_INVOKABLE VideoHandle* cacheVideo(const QString& link, const QString& fileName);
 
 signals:
     void transcodingOk(QString inputFileName, QString outputFileName);
@@ -31,8 +39,8 @@ signals:
     void copyVideoFailed(QString error);
 
 private:
-    void handleTranscodingOk(const QString& inputFileName, const QString& outputFileName);
-    void handleTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error);
+    void handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile);
+    void handleTranscodingFailed(const QString& inputFileName, FileSignal::SharedPtr outputFile, const QString& error);
 
     bool mTranscoding = false;
     QString mTranscodingFileName;

@@ -27,6 +27,9 @@ Column {
     property bool attachmentsInitialized: false
     property string postHighlightColor: "transparent"
     property bool isDraft: false
+    property bool isVideoFeed: false
+
+    signal videoClicked
 
     id: postBody
 
@@ -190,7 +193,7 @@ Column {
         if (postVideo && mediaLoader.item)
             mediaLoader.item.pause() // qmllint disable missing-property
 
-        if (postRecordWithMedia && recordLoader.item)
+        if ((postRecord || postRecordWithMedia) && recordLoader.item)
             recordLoader.item.movedOffScreen()
     }
 
@@ -254,39 +257,115 @@ Column {
         }
     }
 
+    // Inital code loaded component from the QML files using the number of images
+    // to create the file name
+    // let qmlFile = `ImagePreview${(postImages.length)}.qml`
+    // However when the bodyBackgroundColor changes, e.g. the user changes the
+    // background, then the property maskColor did not automatically change too.
+    // with explicit components it does.
+    Component {
+        id: images1Component
+
+        ImagePreview1 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: images2Component
+
+        ImagePreview2 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: images3Component
+
+        ImagePreview3 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: images4Component
+
+        ImagePreview4 {
+            images: postImages
+            maskColor: bodyBackgroundColor
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+        }
+    }
+
+    Component {
+        id: videoThumbnailComponent
+
+        VideoThumbnail {
+            width: Math.min(180 * 1.777, postBody.width)
+            height: 180
+            videoSource: postBody.postVideo.playlistUrl
+        }
+    }
+
+    Component {
+        id: videoViewComponent
+
+        VideoView {
+            id: videoViewItem
+
+            videoView: postBody.postVideo
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+            backgroundColor: bodyBackgroundColor
+            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+            isVideoFeed: postBody.isVideoFeed
+
+            onVideoClicked: postBody.videoClicked()
+        }
+    }
+
+    Component {
+        id: externalViewComponent
+
+        ExternalView {
+            postExternal: postBody.postExternal
+            contentVisibility: postContentVisibility
+            contentWarning: postContentWarning
+            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+        }
+    }
+
     function showPostAttachements() {
         showLanguageLabels()
 
         if (postImages.length > 0) {
-            let qmlFile = `ImagePreview${(postImages.length)}.qml`
-            mediaLoader.setSource(qmlFile, {
-                                      images: postImages,
-                                      maskColor: bodyBackgroundColor,
-                                      contentVisibility: postContentVisibility,
-                                      contentWarning: postContentWarning })
+            const compList = [images1Component, images2Component, images3Component, images4Component]
+            mediaLoader.sourceComponent = compList[postImages.length - 1]
+            mediaLoader.active = true
         }
         else if (postVideo) {
             if (isDraft) {
-                mediaLoader.setSource("VideoThumbnail.qml", {
-                                        width: Math.min(180 * 1.777, postBody.width),
-                                        height: 180,
-                                        videoSource: postBody.postVideo.playlistUrl });
+                mediaLoader.sourceComponent = videoThumbnailComponent
+                mediaLoader.active = true
             }
             else {
-                mediaLoader.setSource("VideoView.qml", {
-                                          videoView: postBody.postVideo,
-                                          contentVisibility: postContentVisibility,
-                                          contentWarning: postContentWarning,
-                                          backgroundColor: bodyBackgroundColor,
-                                          highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+                mediaLoader.sourceComponent = videoViewComponent
+                mediaLoader.active = true
             }
         }
         else if (postExternal) {
-            mediaLoader.setSource("ExternalView.qml", {
-                                      postExternal: postBody.postExternal,
-                                      contentVisibility: postContentVisibility,
-                                      contentWarning: postContentWarning,
-                                      highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+            mediaLoader.sourceComponent = externalViewComponent
+            mediaLoader.active = true
         }
 
         showContentLabels()
@@ -298,6 +377,8 @@ Column {
     }
 
     function showPostRecord() {
+        // Cannot use a direct component here, because of cyclic dependency.
+        // RecordView has a PostBody
         recordLoader.setSource("RecordView.qml", {
                                    record: postRecord,
                                    backgroundColor: bodyBackgroundColor,
@@ -310,7 +391,15 @@ Column {
                                    backgroundColor: bodyBackgroundColor,
                                    contentVisibility: postContentVisibility,
                                    contentWarning: postContentWarning,
-                                   highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
+                                   highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
+                                   isVideoFeed: isVideoFeed })
+    }
+
+    onBodyBackgroundColorChanged: {
+        if (recordLoader.item) {
+            recordLoader.item.backgroundColor = bodyBackgroundColor
+            recordLoader.item.highlight = bodyBackgroundColor === guiSettings.postHighLightColor
+        }
     }
 
     onPostRecordChanged: {
@@ -339,6 +428,22 @@ Column {
             showPostAttachements()
 
         postBody.attachmentsInitialized = true
+    }
+
+    function activate() {
+        if (!mediaLoader.item)
+            return
+
+        if (typeof mediaLoader.item.activate === 'function')
+            mediaLoader.item.activate()
+    }
+
+    function deactivate() {
+        if (!mediaLoader.item)
+            return
+
+        if (typeof mediaLoader.item.deactivate === 'function')
+            mediaLoader.item.deactivate()
     }
 
     Component.onCompleted: {

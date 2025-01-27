@@ -278,12 +278,12 @@ void JNICallbackListener::handlePhotoPickCanceled()
 
 void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName)
 {
-    emit videoTranscodingOk(inputFileName, outputFileName);
+    emit videoTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName));
 }
 
 void JNICallbackListener::handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)
 {
-    emit videoTranscodingFailed(inputFileName, outputFileName, error);
+    emit videoTranscodingFailed(inputFileName, std::make_shared<FileSignal>(outputFileName), error);
 }
 
 void JNICallbackListener::handleExtractTextAvailabilityOk(QEnums::Script script, bool available)

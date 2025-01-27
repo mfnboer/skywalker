@@ -495,6 +495,18 @@ int PostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
     return 0;
 }
 
+void PostFeedModel::getFeed(IFeedPager* pager)
+{
+    Q_ASSERT(mModelId > -1);
+    pager->getFeed(mModelId);
+}
+
+void PostFeedModel::getFeedNextPage(IFeedPager* pager)
+{
+    Q_ASSERT(mModelId > -1);
+    pager->getFeedNextPage(mModelId);
+}
+
 FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profile)
 {
     auto filter = std::make_unique<AuthorPostFilter>(profile);
@@ -641,6 +653,13 @@ bool PostFeedModel::mustHideContent(const Post& post) const
 {
     if (AbstractPostFeedModel::mustHideContent(post))
         return true;
+
+    // All posts should be video posts in a video feed.
+    if (getContentMode() == QEnums::CONTENT_MODE_VIDEO && !post.getVideoView())
+    {
+        qWarning() << "Non-video post in video feed!";
+        return true;
+    }
 
     return !passLanguageFilter(post);
 }

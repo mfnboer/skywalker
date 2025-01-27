@@ -5,5 +5,6 @@
 namespace Skywalker::NetworkUtils {
 
 int getBandwidthKbps();
+bool isUnmetered();
 
 }

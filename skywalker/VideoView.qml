@@ -11,22 +11,44 @@ Column {
     property string disabledColor: guiSettings.disabledColor
     property string backgroundColor: "transparent"
     property bool highlight: false
+    property bool isVideoFeed: false
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
     property int maxHeight: 0
     property bool isFullViewMode: false
+    readonly property bool isFullVideoFeedViewMode: isFullViewMode && isVideoFeed
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
     property string videoSource
     property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
-    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad
+    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || isVideoFeed
+    property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
+    property int footerHeight: 0
+    property int useIfNeededHeight: 0
+    readonly property int playControlsWidth: playControls.width
+    readonly property int playControlsHeight: playControls.height
+    readonly property bool showPlayControls: playControls.show
 
     // Cache
-    property list<string> tmpVideos: []
+    property var videoHandle
+
+    signal videoLoaded
+    signal videoClicked
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
 
     Rectangle {
+        property int fullVideoFeedHeight: Math.max(playControls.height, (parent.height - useIfNeededHeight - videoColumn.height) / 2 - parent.spacing)
+
+        width: parent.width
+        // Move video to top if it is close to the top of the screen
+        height: isFullVideoFeedViewMode ? (fullVideoFeedHeight < playControls.height + 50 ? playControls.height : fullVideoFeedHeight) : 0
+        color: "transparent"
+        visible: isFullVideoFeedViewMode
+    }
+
+    Rectangle {
+        id: videoRect
         width: parent.width
         height: videoColumn.height
         color: "transparent"
@@ -62,6 +84,7 @@ Column {
                 color: "transparent"
 
                 ThumbImageView {
+                    indicateLoading: false
                     property double aspectRatio: implicitHeight > 0 ? implicitWidth / implicitHeight : 0
                     property double maxWidth: maxHeight * aspectRatio
 
@@ -140,9 +163,27 @@ Column {
             enabled: videoPlayer.hasVideo || !autoLoad
 
             onClicked: {
-                if (videoSource)
+                if (isVideoFeed && !isFullViewMode) {
+                    videoClicked()
+                    return
+                }
+
+                if (transcodedSource) {
                     videoPlayer.start()
-                else if (!autoLoad)
+                    return
+                }
+
+                videoHandle = videoUtils.getVideoFromCache(videoView.playlistUrl)
+
+                if (videoHandle.isValid()) {
+                    videoSource = videoView.playlistUrl
+                    transcodedSource = "file://" + videoHandle.fileName
+                    videoPlayer.start()
+                    return;
+                }
+
+
+                if (!autoLoad)
                     m3u8Reader.loadStream()
             }
 
@@ -160,8 +201,6 @@ Column {
             MediaPlayer {
                 property bool videoFound: false
                 property bool restarting: false
-                property bool positionKicked: false
-                property bool mustKickPosition: false // hack for playing live stream
                 property int m3u8DurationMs: 0
 
                 id: videoPlayer
@@ -181,31 +220,19 @@ Column {
                     }
                 }
 
-                onPositionChanged: {
-                    if (!mustKickPosition || positionKicked)
-                        return
+                onErrorOccurred: (error, errorString) => {
+                    console.debug("Video error:", source, error, errorString)
 
-                    console.debug("POSITION:", position)
-
-                    // HORRIBLE HACK
-                    // Qt fails to play the first part properly. Resetting the position
-                    // like this makes it somewhat better
-                    if (position > 100) {
-                        positionKicked = true
-                        position = position - 50
-                        console.debug("POSITION KICKED")
-                    }
-                }
-
-                onPlaybackStateChanged: {
-                    if (mustKickPosition && playbackState === MediaPlayer.StoppedState)
+                    if (error === MediaPlayer.ResourceError &&
+                        videoUtils.isTempVideoSource(transcodedSource) &&
+                        !videoUtils.videoSourceExists(transcodedSource))
                     {
-                        source = ""
-                        source = videoSource
+                        console.debug("Reload video")
+                        transcodedSource = ""
+                        videoHandle.destroy()
+                        setVideoSource()
                     }
                 }
-
-                onErrorOccurred: (error, errorString) => { console.debug("Video error:", source, error, errorString) }
 
                 function getDuration() {
                     return duration === 0 ? m3u8DurationMs : duration
@@ -221,6 +248,11 @@ Column {
                 function start() {
                     if (!filter.imageVisible())
                         return
+
+                    if (!transcodedSource) {
+                        console.warn("No transcoded source:", videoView.playlistUrl)
+                        setVideoSource()
+                    }
 
                     restartTimer.set(true)
                     play()
@@ -241,10 +273,10 @@ Column {
             }
             AudioOutput {
                 id: audioOutput
-                muted: !userSettings.videoSound || userSettings.videoAutoPlay
+                muted: !userSettings.videoSound || (autoPlay && !isFullViewMode)
 
                 function toggleSound() {
-                    if (userSettings.videoAutoPlay)
+                    if (autoPlay)
                         muted = !muted
                     else
                         userSettings.videoSound = !userSettings.videoSound
@@ -272,7 +304,7 @@ Column {
                 onTriggered: {
                     videoPlayer.stop()
                     videoPlayer.restarting = false
-                    console.warn("Failed to start video")
+                    console.warn("Failed to start video:", transcodedSource, videoView.playlistUrl)
                 }
 
                 function set(on) {
@@ -290,13 +322,13 @@ Column {
             width: parent.width
             height: parent.height
             z: -1
-            enabled: filter.imageVisible()
+            enabled: filter.imageVisible() && (!isVideoFeed || isFullViewMode)
 
             onClicked: {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
                 else
-                    root.viewFullVideo(videoView, videoSource, transcodedSource)
+                    root.viewFullVideo(videoView)
             }
         }
 
@@ -309,20 +341,33 @@ Column {
     }
 
     Rectangle {
+        width: parent.width
+        height: isFullVideoFeedViewMode ? Math.max(0, parent.height - videoRect.y - videoRect.height - footerHeight - parent.spacing) : 0
+        color: "transparent"
+        visible: isFullVideoFeedViewMode
+    }
+
+    Rectangle {
         property bool show: true
 
         id: playControls
         x: (parent.width - width) / 2
-        width: defaultThumbImg.visible ? defaultThumbImg.width : Math.min(thumbImg.width, thumbImg.maxWidth ? thumbImg.maxWidth : thumbImg.width)
-        height: playPauseButton.height
+        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : Math.min(thumbImg.width, thumbImg.maxWidth ? thumbImg.maxWidth : thumbImg.width))
+        height: visible ? playPauseButton.height : 0
         color: "transparent"
         visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
 
-        Rectangle {
+        Loader {
             anchors.fill: parent
-            color: "black"
-            opacity: 0.3
-            visible: isFullViewMode
+            active: isFullViewMode
+
+            sourceComponent: Rectangle {
+                anchors.fill: parent
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: isVideoFeed ? "#D0000000" : "#00000000" }
+                    GradientStop { position: 1.0; color: isVideoFeed ? "#FF000000" : "#5F000000" }
+                }
+            }
         }
 
         SvgTransparentButton {
@@ -444,6 +489,7 @@ Column {
 
     M3U8Reader {
         id: m3u8Reader
+        videoQuality: userSettings.videoQuality
 
         onGetVideoStreamOk: (durationMs) => {
             videoPlayer.m3u8DurationMs = durationMs
@@ -455,9 +501,8 @@ Column {
         onGetVideoStreamError: {
             videoSource = videoView.playlistUrl
             transcodedSource = videoSource
-            videoPlayer.mustKickPosition = true
 
-            if (userSettings.videoAutoPlay)
+            if (autoPlay)
                 videoPlayer.start()
         }
 
@@ -470,9 +515,12 @@ Column {
                 console.debug("Transcode to MP4:", videoStream)
                 videoUtils.transcodeVideo(videoStream.slice(7), -1, -1, -1, false)
             }
-            else if (!autoLoad || userSettings.videoAutoPlay) {
+            else if (!autoLoad || autoPlay) {
                 transcodedSource = videoSource
                 videoPlayer.start()
+            }
+            else {
+                videoLoaded()
             }
         }
 
@@ -483,33 +531,54 @@ Column {
 
     VideoUtils {
         id: videoUtils
+        skywalker: root.getSkywalker()
 
         onTranscodingOk: (inputFileName, outputFileName) => {
             console.debug("Set MP4 source:", outputFileName)
-            transcodedSource = "file://" + outputFileName
-            videoStack.tmpVideos.push(transcodedSource)
+            videoHandle = videoUtils.cacheVideo(videoView.playlistUrl, outputFileName)
+            transcodedSource = "file://" + videoHandle.fileName
+            m3u8Reader.resetStream()
+            videoSource = ""
 
-            if (!autoLoad || userSettings.videoAutoPlay)
+            if (!autoLoad || autoPlay)
                 videoPlayer.start()
+            else
+                videoLoaded()
         }
 
         onTranscodingFailed: (inputFileName, errorMsg) => {
             console.debug("Could not transcode to MP4:", inputFileName, "error:", errorMsg)
             transcodedSource = videoSource
 
-            if (!autoLoad || userSettings.videoAutoPlay)
+            if (!autoLoad || autoPlay)
                 videoPlayer.start()
+            else
+                videoLoaded()
+        }
+    }
+
+    Timer {
+        id: inactiveTimer
+        interval: 30000
+        onTriggered: {
+            console.debug() << "Entering inactive state"
+            clearCache()
         }
     }
 
     function pause() {
         if (videoPlayer.playing)
         {
-            if (!userSettings.videoAutoPlay)
+            if (!autoPlay)
                 videoPlayer.pause()
             else
                 audioOutput.muted = true
         }
+    }
+
+    function play() {
+        if (!videoPlayer.playing)
+            videoPlayer.start()
     }
 
     function getAspectRatio() {
@@ -527,23 +596,57 @@ Column {
         console.debug("Set video source for:", videoView.playlistUrl)
 
         if (videoView.playlistUrl.endsWith(".m3u8")) {
-            m3u8Reader.getVideoStream(videoView.playlistUrl)
+            videoHandle = videoUtils.getVideoFromCache(videoView.playlistUrl)
+
+            if (videoHandle.isValid()) {
+                videoSource = videoView.playlistUrl
+                transcodedSource = "file://" + videoHandle.fileName
+
+                if (autoPlay)
+                    videoPlayer.start()
+            }
+            else {
+                m3u8Reader.getVideoStream(videoView.playlistUrl)
+            }
         }
         else {
             videoSource = videoView.playlistUrl
             transcodedSource = videoSource
 
-            if (userSettings.videoAutoPlay)
+            if (autoPlay)
                 videoPlayer.start()
         }
     }
 
+    function clearCache() {
+        console.debug("Clear cache:", videoView.playlistUrl)
+
+        if (transcodedSource && videoUtils.isTempVideoSource(transcodedSource))
+            transcodedSource = ""
+
+        if (videoHandle)
+            videoHandle.destroy()
+    }
+
+    function activate() {
+        console.debug("Activate VideoView:", videoView.playlistUrl)
+        inactiveTimer.stop()
+    }
+
+    function deactivate() {
+        console.debug("Deactivate VideoView:", videoView.playlistUrl)
+        inactiveTimer.start()
+    }
+
     Component.onDestruction: {
-        tmpVideos.forEach((value, index, array) => { videoUtils.dropVideo(value); })
+        console.debug("Destruct VideoView:", videoView.playlistUrl)
+        clearCache()
     }
 
     Component.onCompleted: {
-        if (!videoSource)
+        if (!transcodedSource)
             setVideoSource()
+        else if (autoPlay)
+            videoPlayer.start()
     }
 }
