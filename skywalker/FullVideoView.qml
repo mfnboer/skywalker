@@ -8,7 +8,6 @@ SkyPage {
     readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
     required property var videoView // videoview
     property string videoSource
-    property bool isVideoFeed: false
 
     signal closed
 
@@ -29,7 +28,6 @@ SkyPage {
         controlColor: "white"
         disabledColor: "darkslategrey"
         backgroundColor: guiSettings.fullScreenColor
-        isVideoFeed: page.isVideoFeed
         isFullViewMode: true
     }
 

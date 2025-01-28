@@ -15,12 +15,14 @@ Rectangle {
     property list<language> filteredLanguages
     property bool showPostWithMissingLanguage: true
     property bool showMoreOptions: false
+    property bool showViewOptions: false
 
     signal closed
     signal feedAvatarClicked
     signal addUserView
     signal addHashtagView
     signal addFocusHashtagView
+    signal addVideoView
 
     id: header
     width: parent.width
@@ -88,6 +90,12 @@ Rectangle {
                     onTriggered: addFocusHashtagView()
                     MenuItemSvg { svg: SvgOutline.hashtag }
                 }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add video view")
+                    onTriggered: addVideoView()
+                    MenuItemSvg { svg: SvgOutline.film }
+                }
             }
         }
         FeedAvatar {
@@ -151,6 +159,40 @@ Rectangle {
             accessibleName: qsTr("language filter active")
             visible: showLanguageFilter
             onClicked: showLanguageFilterDetails()
+        }
+
+        SvgButton {
+            svg: contentMode === QEnums.CONTENT_MODE_UNSPECIFIED ? SvgOutline.chat : SvgOutline.film
+            iconColor: guiSettings.headerTextColor
+            Material.background: "transparent"
+            accessibleName: qsTr("view mode")
+            visible: showViewOptions
+
+            onClicked: viewMenu.open()
+
+            Menu {
+                id: viewMenu
+                modal: true
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>View</b>")
+                    Accessible.name: qsTr("close view menu")
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Post view")
+                    onTriggered: contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
+                    MenuItemSvg { svg: SvgOutline.chat }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Video view")
+                    onTriggered: contentMode = QEnums.CONTENT_MODE_VIDEO
+                    MenuItemSvg { svg: SvgOutline.film }
+                }
+            }
         }
 
         FeedAvatar {

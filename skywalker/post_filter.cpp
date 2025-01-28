@@ -114,4 +114,18 @@ bool AuthorPostFilter::match(const Post& post) const
     return post.getAuthor().getDid() == mProfile.getDid();
 }
 
+QString VideoPostFilter::getName() const
+{
+    return QObject::tr("Video");
+}
+
+bool VideoPostFilter::match(const Post& post) const
+{
+    if (post.isPlaceHolder())
+        return false;
+
+
+    return post.getVideoView() != nullptr;
+}
+
 }

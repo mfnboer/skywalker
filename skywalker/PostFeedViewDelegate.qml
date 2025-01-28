@@ -64,7 +64,7 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
-    property bool isVideoFeed: false
+    property bool swipeMode: false
 
     property int prevY: 0
     property bool isAnchorItem: false
@@ -73,7 +73,7 @@ Rectangle {
     signal calibratedPosition(int dy)
     signal showHiddenReplies
     signal unfoldPosts
-    signal videoClicked
+    signal activateSwipe
 
     id: postEntry
     // HACK
@@ -410,9 +410,9 @@ Rectangle {
                 bodyBackgroundColor: postEntry.color.toString()
                 borderColor: postEntry.border.color.toString()
                 postHighlightColor: postEntry.postHighlightColor
-                isVideoFeed: postEntry.isVideoFeed
+                swipeMode: postEntry.swipeMode
 
-                onVideoClicked: postEntry.videoClicked()
+                onActivateSwipe: postEntry.activateSwipe()
             }
 
             // Reposts and likes in detailed view of post entry in thread view
@@ -747,8 +747,8 @@ Rectangle {
         anchors.fill: parent
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound
         onClicked: {
-            if (isVideoFeed)
-                videoClicked()
+            if (swipeMode)
+                activateSwipe()
             else
                 openPostThread()
         }

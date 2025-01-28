@@ -21,7 +21,7 @@ private slots:
         auto filter = std::make_unique<AuthorPostFilter>(profile);
 
         mPostFeedModel = std::make_unique<FilteredPostFeedModel>(
-            std::move(filter), mUserDid, mFollowing, mMutedReposts, mContentFilter,
+            std::move(filter), nullptr, mUserDid, mFollowing, mMutedReposts, mContentFilter,
             mBookmarks, mMutedWords, mFocusHashtags, mHashtags);
     }
 

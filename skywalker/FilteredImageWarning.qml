@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Row {
-    required property int contentVisibiliy // QEnums::ContentVisibility
+    required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property list<imageview> images
     property bool showWarnedMedia: false

@@ -7,7 +7,7 @@ Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property bool highlight: false
-    property bool isVideoFeed: false
+    property bool swipeMode: false
 
     id: recordItem
     width: parent.width
@@ -84,7 +84,7 @@ Item {
                 contentWarning: recordItem.contentVisibility
                 backgroundColor: backgroundColor
                 highlight: recordItem.highlight
-                isVideoFeed: recordItem.isVideoFeed
+                swipeMode: recordItem.swipeMode
             }
         }
 

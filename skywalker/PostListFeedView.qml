@@ -15,23 +15,27 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
 
-    Accessible.name: postListFeedView.model.feedName
+    Accessible.name: postListFeedView.model.getUnderlyingModel().feedName
 
     header: PostFeedHeader {
         skywalker: postListFeedView.skywalker
-        feedName: postListFeedView.model.feedName
+        feedName: postListFeedView.model.getUnderlyingModel().feedName
         defaultSvg: SvgFilled.list
-        feedAvatar: postListFeedView.model.getListView().avatarThumb
+        feedAvatar: postListFeedView.model.getUnderlyingModel().getListView().avatarThumb
         showAsHome: postListFeedView.showAsHome
-        showLanguageFilter: postListFeedView.model.languageFilterConfigured
-        filteredLanguages: postListFeedView.model.filteredLanguages
-        showPostWithMissingLanguage: postListFeedView.model.showPostWithMissingLanguage
+        showLanguageFilter: postListFeedView.model.getUnderlyingModel().languageFilterConfigured
+        filteredLanguages: postListFeedView.model.getUnderlyingModel().filteredLanguages
+        showPostWithMissingLanguage: postListFeedView.model.getUnderlyingModel().showPostWithMissingLanguage
+        showViewOptions: true
 
         onClosed: postListFeedView.closed()
+
         onFeedAvatarClicked: {
-            let list = postListFeedView.model.getListView()
+            let list = postListFeedView.model.getUnderlyingModel().getListView()
             root.viewListByUri(list.uri, false)
         }
+
+        onContentModeChanged: changeView(contentMode)
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -50,13 +54,20 @@ SkyListView {
     footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
+        required property int index
+
         width: postListFeedView.width
+        swipeMode: model.contentMode === QEnums.CONTENT_MODE_VIDEO
+
+        onActivateSwipe: {
+            root.viewVideoFeed(model, index, (newIndex) => { postListFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+        }
     }
 
     FlickableRefresher {
         inProgress: skywalker.getFeedInProgress
-        topOvershootFun: () => skywalker.getListFeed(modelId)
-        bottomOvershootFun: () => skywalker.getListFeedNextPage(modelId)
+        topOvershootFun: () => model.getFeed(skywalker)
+        bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         topText: qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
     }
@@ -74,6 +85,42 @@ SkyListView {
         running: skywalker.getFeedInProgress
     }
 
+    function changeView(contentMode) {
+        let oldModel = model
+
+        switch (contentMode) {
+        case QEnums.CONTENT_MODE_UNSPECIFIED:
+            model = model.getUnderlyingModel()
+            break
+        case QEnums.CONTENT_MODE_VIDEO:
+            model = model.getUnderlyingModel().addVideoFilter()
+            break
+        default:
+            console.warn("Unknown content mode:", contentMode)
+            return
+        }
+
+        if (oldModel.isFilterModel())
+            oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
+    }
+
+    function activate() {
+        for (var i = 0; i < count; ++i) {
+            const item = itemAtIndex(i)
+
+            if (item)
+                item.activate() // qmllint disable missing-property
+        }
+    }
+
+    function deactivate() {
+        for (var i = 0; i < count; ++i) {
+            const item = itemAtIndex(i)
+
+            if (item)
+                item.deactivate() // qmllint disable missing-property
+        }
+    }
 
     function forceDestroy() {
         if (modelId !== -1) {

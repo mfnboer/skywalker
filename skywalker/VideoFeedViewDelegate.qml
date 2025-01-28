@@ -68,6 +68,8 @@ Rectangle {
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
+    property var videoItem: postVideo ? videoLoader.item : null
+    property var imageItem: postImages.length > 0 ? imageLoader.item : null
 
     signal closed
 
@@ -77,32 +79,89 @@ Rectangle {
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
-        if (!onScreen)
+        if (!onScreen) {
             cover()
-        else
-            video.play()
+        }
+        else {
+            if (postVideo)
+                videoItem.play()
+        }
     }
 
-    VideoView {
-        id: video
-        width: parent.width
-        height: root.height
-        maxHeight: root.height
-        videoView: postVideo
-        contentVisibility: postContentVisibility
-        contentWarning: postContentWarning
-        controlColor: "white"
-        disabledColor: "darkslategrey"
-        backgroundColor: videoPage.color
-        isFullViewMode: true
-        isVideoFeed: true
-        autoPlay: false
-        footerHeight: videoPage.footerHeight
-        useIfNeededHeight: postColumn.height
+    Rectangle {
+        property int bottomMargin: postVideo ? videoItem.playControlsHeight : 0
+        property int mediaWidth: postVideo ? videoItem.playControlsWidth : root.width
+        property bool showDetails: postVideo ? videoItem.showPlayControls : imageLoader.showDetails
 
-        onVideoLoaded: {
-            if (onScreen)
-                video.play()
+        id: mediaRect
+        width: root.width
+        height: root.height
+        color: "transparent"
+
+        Loader {
+            id: videoLoader
+            active: Boolean(postVideo)
+
+            sourceComponent: VideoView {
+                id: video
+                width: root.width
+                height: root.height
+                maxHeight: root.height
+                videoView: postVideo
+                contentVisibility: postContentVisibility
+                contentWarning: postContentWarning
+                controlColor: "white"
+                disabledColor: "darkslategrey"
+                backgroundColor: videoPage.color
+                isFullViewMode: true
+                swipeMode: true
+                autoPlay: false
+                footerHeight: videoPage.footerHeight
+                useIfNeededHeight: postColumn.height
+
+                onVideoLoaded: {
+                    if (onScreen)
+                        videoItem.play()
+                }
+            }
+        }
+
+        Loader {
+            property bool showDetails: true
+
+            id: imageLoader
+            active: postImages.length > 0
+
+            sourceComponent: Rectangle {
+                width: root.width
+                height: root.height
+                color: "transparent"
+
+                ImageAutoRetry {
+                    width: parent.width
+                    height: parent.height
+                    fillMode: Image.PreserveAspectFit
+                    source: filter.getImage(0).fullSizeUrl
+                    reloadIconColor: "white"
+                }
+
+                MouseArea {
+                    width: parent.width
+                    height: parent.height
+
+                    onClicked: showDetails = !showDetails
+                }
+
+                FilteredImageWarning {
+                    id: filter
+                    x: 10
+                    width: parent.width - 20
+                    anchors.verticalCenter: parent.verticalCenter
+                    contentVisibility: postContentVisibility
+                    contentWarning: postContentWarning
+                    images: postImages
+                }
+            }
         }
     }
 
@@ -138,10 +197,10 @@ Rectangle {
     Column {
         id: postColumn
         x: (parent.width - width) / 2
-        anchors.bottom: video.bottom
-        anchors.bottomMargin: video.playControlsHeight + videoPage.footerHeight
-        width: video.playControlsWidth - 20
-        visible: video.showPlayControls
+        anchors.bottom: mediaRect.bottom
+        anchors.bottomMargin: mediaRect.bottomMargin + videoPage.footerHeight
+        width: mediaRect.mediaWidth - 20
+        visible: mediaRect.showDetails
 
         Rectangle {
             width: parent.width
@@ -278,17 +337,18 @@ Rectangle {
             height: 5
             color: "transparent"
         }
+    }
 
-        GuiSettings {
-            id: guiSettings
-            isLightMode: false
-            backgroundColor: videoPage.color
-            textColor: "white"
-        }
+    GuiSettings {
+        id: guiSettings
+        isLightMode: false
+        backgroundColor: videoPage.color
+        linkColor: "#58a6ff"
+        textColor: "white"
     }
 
     Loader {
-        anchors.top: video.bottom
+        anchors.top: mediaRect.bottom
         active: endOfFeed
 
         sourceComponent: Rectangle {
@@ -316,7 +376,8 @@ Rectangle {
     }
 
     function cover() {
-        video.pause()
+        if (postVideo)
+            videoItem.pause()
     }
 
     function checkOnScreen() {}

@@ -98,9 +98,9 @@ public:
     // Repeating default values here for calls from QML
     Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {}) override;
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10) override;
+    Q_INVOKABLE void getListFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {}) override;
+    Q_INVOKABLE void getListFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10) override;
 
-    Q_INVOKABLE void getListFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getListFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getQuotesFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getPostThread(const QString& uri, int modelId = -1);

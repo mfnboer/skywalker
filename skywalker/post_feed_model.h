@@ -40,6 +40,8 @@ public:
                            const UserSettings& userSettings,
                            QObject* parent = nullptr);
 
+    Q_INVOKABLE bool isFilterModel() const { return false; }
+    Q_INVOKABLE PostFeedModel* getUnderlyingModel() { return this; }
     const QString& getFeedName() const { return mFeedName; }
     QEnums::FeedType getFeedType() const { return QEnums::FEED_GENERATOR; }
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
@@ -102,6 +104,7 @@ public:
     Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const BasicProfile& profile);
     Q_INVOKABLE FilteredPostFeedModel* addHashtagFilter(const QString& hashtag);
     Q_INVOKABLE FilteredPostFeedModel* addFocusHashtagFilter(FocusHashtagEntry* focusHashtag);
+    Q_INVOKABLE FilteredPostFeedModel* addVideoFilter();
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
 
@@ -142,6 +145,7 @@ private:
     void removeHeadFromFilteredPostModels(size_t headSize);
     void removeTailFromFilteredPostModels(size_t tailSize);
     void clearFilteredPostModels();
+    void setEndOfFeedFilteredPostModels(bool endOfFeed);
 
     FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
 

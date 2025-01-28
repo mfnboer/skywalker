@@ -38,6 +38,7 @@ SkyListView {
         required property int index
 
         width: timelineView.width
+        swipeMode: model.contentMode === QEnums.CONTENT_MODE_VIDEO
 
         onCalibratedPosition: (dy) => {
             calibrationDy += dy
@@ -45,6 +46,7 @@ SkyListView {
         }
 
         onUnfoldPosts: model.unfoldPosts(index)
+        onActivateSwipe: root.viewVideoFeed(model, index, (newIndex) => { moveToPost(newIndex) })
     }
 
     onCountChanged: {

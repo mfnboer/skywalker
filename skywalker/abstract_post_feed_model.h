@@ -107,6 +107,7 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool isEndOfFeed() const { return mEndOfFeed; }
 
     const Post& getPost(int index) const { return mFeed.at(index); }
     void preprocess(const Post& post);
@@ -121,7 +122,6 @@ protected:
     void removeStoredCid(const QString& cid);
     void cleanupStoredCids();
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
-    bool isEndOfFeed() const { return mEndOfFeed; }
     void setEndOfFeed(bool endOfFeed) { mEndOfFeed = endOfFeed; }
     virtual bool mustHideContent(const Post& post) const;
 
@@ -161,7 +161,7 @@ protected:
     const IMatchWords& mMutedWords;
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
-    int mModelId = -1;
+    int mModelId = -1; // TODO: do we still need this?
 
 private:
     void postBookmarkedChanged();

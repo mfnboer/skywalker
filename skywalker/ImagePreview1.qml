@@ -59,7 +59,7 @@ RoundCornerMask {
     FilteredImageWarning {
         id: filter
         width: parent.width
-        contentVisibiliy: frame.contentVisibility
+        contentVisibility: frame.contentVisibility
         contentWarning: frame.contentWarning
         images: frame.images
     }

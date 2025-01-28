@@ -7,7 +7,6 @@ SkyListView {
     required property int modelId
     property bool showAsHome: false
     property int unreadPosts: 0
-    property bool isVideoFeed: postFeedView.model.contentMode === QEnums.CONTENT_MODE_VIDEO
 
     signal closed
 
@@ -15,21 +14,23 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
 
-    Accessible.name: postFeedView.model.feedName
+    Accessible.name: postFeedView.model.getUnderlyingModel().feedName
 
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
-        feedName: postFeedView.model.feedName
-        feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
-        defaultSvg: guiSettings.feedDefaultAvatar(postFeedView.model.getGeneratorView())
-        contentMode: postFeedView.model.contentMode
+        feedName: postFeedView.model.getUnderlyingModel().feedName
+        feedAvatar: guiSettings.contentVisible(postFeedView.model.getUnderlyingModel().getGeneratorView()) ? postFeedView.model.getUnderlyingModel().getGeneratorView().avatarThumb : ""
+        defaultSvg: guiSettings.feedDefaultAvatar(postFeedView.model.getUnderlyingModel().getGeneratorView())
+        contentMode: postFeedView.model.getUnderlyingModel().contentMode
         showAsHome: postFeedView.showAsHome
-        showLanguageFilter: postFeedView.model.languageFilterConfigured
-        filteredLanguages: postFeedView.model.filteredLanguages
-        showPostWithMissingLanguage: postFeedView.model.showPostWithMissingLanguage
+        showLanguageFilter: postFeedView.model.getUnderlyingModel().languageFilterConfigured
+        filteredLanguages: postFeedView.model.getUnderlyingModel().filteredLanguages
+        showPostWithMissingLanguage: postFeedView.model.getUnderlyingModel().showPostWithMissingLanguage
+        showViewOptions: true
 
         onClosed: postFeedView.closed()
-        onFeedAvatarClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
+        onFeedAvatarClicked: skywalker.getFeedGenerator(postFeedView.model.getUnderlyingModel().getGeneratorView().uri)
+        onContentModeChanged: changeView(contentMode)
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -51,13 +52,10 @@ SkyListView {
         required property int index
 
         width: postFeedView.width
-        isVideoFeed: postFeedView.isVideoFeed
+        swipeMode: model.contentMode === QEnums.CONTENT_MODE_VIDEO
 
-        onVideoClicked: {
-            if (isVideoFeed)
-                root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
-            else
-                console.warn("This is not a video feed")
+        onActivateSwipe: {
+            root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
         }
     }
 
@@ -81,6 +79,25 @@ SkyListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: skywalker.getFeedInProgress
+    }
+
+    function changeView(contentMode) {
+        let oldModel = model
+
+        switch (contentMode) {
+        case QEnums.CONTENT_MODE_UNSPECIFIED:
+            model = model.getUnderlyingModel()
+            break
+        case QEnums.CONTENT_MODE_VIDEO:
+            model = model.getUnderlyingModel().addVideoFilter()
+            break
+        default:
+            console.warn("Unknown content mode:", contentMode)
+            return
+        }
+
+        if (oldModel.isFilterModel())
+            oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
     }
 
     function activate() {
