@@ -133,34 +133,55 @@ Rectangle {
             id: imageLoader
             active: postImages.length > 0
 
-            sourceComponent: Rectangle {
+            sourceComponent: SwipeView {
                 width: root.width
                 height: root.height
-                color: "transparent"
 
-                ImageAutoRetry {
-                    width: parent.width
-                    height: parent.height
-                    fillMode: Image.PreserveAspectFit
-                    source: filter.getImage(0).fullSizeUrl
-                    reloadIconColor: "white"
-                }
+                Repeater {
+                    model: postImages.length
 
-                MouseArea {
-                    width: parent.width
-                    height: parent.height
+                    Rectangle {
+                        required property int index
 
-                    onClicked: showDetails = !showDetails
-                }
+                        width: root.width
+                        height: root.height
+                        color: "transparent"
 
-                FilteredImageWarning {
-                    id: filter
-                    x: 10
-                    width: parent.width - 20
-                    anchors.verticalCenter: parent.verticalCenter
-                    contentVisibility: postContentVisibility
-                    contentWarning: postContentWarning
-                    images: postImages
+                        ImageAutoRetry {
+                            width: parent.width
+                            height: parent.height
+                            fillMode: Image.PreserveAspectFit
+                            source: filter.getImage(index).fullSizeUrl
+                            reloadIconColor: "white"
+
+                            SkyLabel {
+                                x: (parent.width - parent.paintedWidth) / 2 + parent.paintedWidth - width - 10
+                                y: (parent.height - parent.paintedHeight) / 2 + 5
+                                backgroundColor: "black"
+                                backgroundOpacity: 0.6
+                                color: "white"
+                                text: `${index + 1}/${postImages.length}`
+                                visible: postImages.length > 1 && filter.imageVisible() && showDetails
+                            }
+                        }
+
+                        MouseArea {
+                            width: parent.width
+                            height: parent.height
+
+                            onClicked: showDetails = !showDetails
+                        }
+
+                        FilteredImageWarning {
+                            id: filter
+                            x: 10
+                            width: parent.width - 20
+                            anchors.verticalCenter: parent.verticalCenter
+                            contentVisibility: postContentVisibility
+                            contentWarning: postContentWarning
+                            images: postImages
+                        }
+                    }
                 }
             }
         }
@@ -173,6 +194,7 @@ Rectangle {
         Material.background: "transparent"
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
+        visible: mediaRect.showDetails
         onClicked: videoPage.closed()
     }
 

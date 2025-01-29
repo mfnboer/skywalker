@@ -1,3 +1,8 @@
+next
+====
+* Video and media view modes for all your feeds
+* Video and media view added to timeline views
+
 3.12
 ====
 * Swipe view for video feeds
