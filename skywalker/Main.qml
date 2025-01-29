@@ -9,7 +9,7 @@ ApplicationWindow {
 
     // Map for pinned feeds
     // GeneratorView.uri -> PostFeedView
-    // ListView.uri      -> PostListFeedView
+    // ListView.uri      -> PostFeedView
     // SearchFeed.name   -> SearchFeedView
     property var feedViews: new Map()
 
@@ -1863,9 +1863,8 @@ ApplicationWindow {
 
         let item = stack.pop()
 
-        // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
+        // PostFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
         if (!((item instanceof PostFeedView ||
-               item instanceof PostListFeedView ||
                item instanceof SearchFeedView) && item.showAsHome))
         {
             item.destroy()
