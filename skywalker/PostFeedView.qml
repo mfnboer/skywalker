@@ -55,7 +55,7 @@ SkyListView {
         required property int index
 
         width: postFeedView.width
-        swipeMode: model.contentMode === QEnums.CONTENT_MODE_VIDEO
+        swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
         onActivateSwipe: {
@@ -178,6 +178,9 @@ SkyListView {
             break
         case QEnums.CONTENT_MODE_VIDEO:
             model = model.getUnderlyingModel().addVideoFilter()
+            break
+        case QEnums.CONTENT_MODE_MEDIA:
+            model = model.getUnderlyingModel().addMediaFilter()
             break
         default:
             console.warn("Unknown content mode:", contentMode)

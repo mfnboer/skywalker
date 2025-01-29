@@ -23,6 +23,7 @@ Rectangle {
     signal addHashtagView
     signal addFocusHashtagView
     signal addVideoView
+    signal addMediaView
     signal viewChanged(int contentMode)
 
     id: header
@@ -90,6 +91,12 @@ Rectangle {
                     text: qsTr("Add focus hashtag view")
                     onTriggered: addFocusHashtagView()
                     MenuItemSvg { svg: SvgOutline.hashtag }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add media view")
+                    onTriggered: addMediaView()
+                    MenuItemSvg { svg: SvgOutline.image }
                 }
 
                 AccessibleMenuItem {
@@ -163,7 +170,7 @@ Rectangle {
         }
 
         SvgButton {
-            svg: contentMode === QEnums.CONTENT_MODE_UNSPECIFIED ? SvgOutline.chat : SvgOutline.film
+            svg: guiSettings.getContentModeSvg(contentMode)
             iconColor: guiSettings.headerTextColor
             Material.background: "transparent"
             accessibleName: qsTr("view mode")
@@ -190,6 +197,14 @@ Rectangle {
                         viewChanged(contentMode)
                     }
                     MenuItemSvg { svg: SvgOutline.chat }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Media view")
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_MEDIA
+                        viewChanged(contentMode)
+                    }
+                    MenuItemSvg { svg: SvgOutline.image }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Video view")

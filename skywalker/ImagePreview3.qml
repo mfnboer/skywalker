@@ -7,6 +7,9 @@ RoundCornerMask {
     required property string contentWarning
     property list<imageview> images
     property int spacing: 4
+    property bool swipeMode: false
+
+    signal activateSwipe
 
     id: frame
     width: parent.width
@@ -78,8 +81,12 @@ RoundCornerMask {
                     index = 2
             }
 
-            if (index >= 0)
-                root.viewFullImage(images, index)
+            if (index >= 0) {
+                if (swipeMode)
+                    activateSwipe()
+                else
+                    root.viewFullImage(images, index)
+            }
         }
     }
 

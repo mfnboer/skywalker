@@ -569,6 +569,12 @@ FilteredPostFeedModel* PostFeedModel::addVideoFilter()
     return addFilteredPostFeedModel(std::move(filter));
 }
 
+FilteredPostFeedModel* PostFeedModel::addMediaFilter()
+{
+    auto filter = std::make_unique<MediaPostFilter>();
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
 FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)
 {
     Q_ASSERT(postFilter);

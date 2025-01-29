@@ -286,6 +286,17 @@ Item {
         return qsTr(`No more posts in ${model.numPostsChecked} feed posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
     }
 
+    function getContentModeSvg(contentMode) {
+        switch (contentMode) {
+        case QEnums.CONTENT_MODE_VIDEO:
+            return SvgOutline.film
+        case QEnums.CONTENT_MODE_MEDIA:
+            return SvgOutline.image
+        default:
+            return SvgOutline.chat
+        }
+    }
+
     function isUserDid(did) {
         return skywalker.getUserDid() === did
     }

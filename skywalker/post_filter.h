@@ -74,4 +74,15 @@ public:
     bool match(const Post& post) const override;
 };
 
+class MediaPostFilter : public IPostFilter
+{
+public:
+    using Ptr = std::unique_ptr<MediaPostFilter>;
+
+    QString getName() const override;
+    QEnums::ContentMode getContentMode() const override { return QEnums::CONTENT_MODE_MEDIA; }
+    bool mustAddThread() const override { return false; }
+    bool match(const Post& post) const override;
+};
+
 }

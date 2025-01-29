@@ -105,6 +105,7 @@ public:
     Q_INVOKABLE FilteredPostFeedModel* addHashtagFilter(const QString& hashtag);
     Q_INVOKABLE FilteredPostFeedModel* addFocusHashtagFilter(FocusHashtagEntry* focusHashtag);
     Q_INVOKABLE FilteredPostFeedModel* addVideoFilter();
+    Q_INVOKABLE FilteredPostFeedModel* addMediaFilter();
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
 

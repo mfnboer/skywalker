@@ -128,4 +128,18 @@ bool VideoPostFilter::match(const Post& post) const
     return post.getVideoView() != nullptr;
 }
 
+QString MediaPostFilter::getName() const
+{
+    return QObject::tr("Media");
+}
+
+bool MediaPostFilter::match(const Post& post) const
+{
+    if (post.isPlaceHolder())
+        return false;
+
+
+    return !post.getImages().empty() || post.getVideoView() != nullptr;
+}
+
 }

@@ -39,7 +39,7 @@ SkyListView {
         required property int index
 
         width: timelineView.width
-        swipeMode: model.contentMode === QEnums.CONTENT_MODE_VIDEO
+        swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
 
         onCalibratedPosition: (dy) => {
             calibrationDy += dy

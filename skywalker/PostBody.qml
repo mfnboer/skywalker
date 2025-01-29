@@ -271,6 +271,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -282,6 +285,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -293,6 +299,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -304,6 +313,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 

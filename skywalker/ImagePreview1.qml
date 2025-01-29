@@ -7,6 +7,9 @@ RoundCornerMask {
     property list<imageview> images
     readonly property int maxHeight: 1200
     property bool settingSize: false
+    property bool swipeMode: false
+
+    signal activateSwipe
 
     id: frame
     width: filter.imageVisible() ? img.width : parent.width
@@ -51,6 +54,8 @@ RoundCornerMask {
         onClicked: {
             if (img.failedCanReload)
                 img.reload()
+            else if (swipeMode)
+                activateSwipe()
             else
                 root.viewFullImage(images, 0)
         }
