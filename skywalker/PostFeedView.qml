@@ -7,6 +7,7 @@ SkyListView {
     required property int modelId
     property bool showAsHome: false
     property int unreadPosts: 0
+    readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
 
     signal closed
 
@@ -14,22 +15,22 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
 
-    Accessible.name: postFeedView.model.getUnderlyingModel().feedName
+    Accessible.name: postFeedView.underlyingModel.feedName
 
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
-        feedName: postFeedView.model.getUnderlyingModel().feedName
-        feedAvatar: guiSettings.contentVisible(postFeedView.model.getUnderlyingModel().getGeneratorView()) ? postFeedView.model.getUnderlyingModel().getGeneratorView().avatarThumb : ""
-        defaultSvg: guiSettings.feedDefaultAvatar(postFeedView.model.getUnderlyingModel().getGeneratorView())
-        contentMode: postFeedView.model.getUnderlyingModel().contentMode
+        feedName: postFeedView.underlyingModel.feedName
+        feedAvatar: getFeedAvatar()
+        defaultSvg: getFeedDefaultAvatar()
+        contentMode: postFeedView.underlyingModel.contentMode
         showAsHome: postFeedView.showAsHome
-        showLanguageFilter: postFeedView.model.getUnderlyingModel().languageFilterConfigured
-        filteredLanguages: postFeedView.model.getUnderlyingModel().filteredLanguages
-        showPostWithMissingLanguage: postFeedView.model.getUnderlyingModel().showPostWithMissingLanguage
+        showLanguageFilter: postFeedView.underlyingModel.languageFilterConfigured
+        filteredLanguages: postFeedView.underlyingModel.filteredLanguages
+        showPostWithMissingLanguage: postFeedView.underlyingModel.showPostWithMissingLanguage
         showViewOptions: true
 
         onClosed: postFeedView.closed()
-        onFeedAvatarClicked: skywalker.getFeedGenerator(postFeedView.model.getUnderlyingModel().getGeneratorView().uri)
+        onFeedAvatarClicked: showFeed()
         onContentModeChanged: changeView(contentMode)
     }
     headerPositioning: ListView.OverlayHeader
@@ -79,6 +80,46 @@ SkyListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: skywalker.getFeedInProgress
+    }
+
+    function getFeedDefaultAvatar() {
+        switch (underlyingModel.feedType) {
+        case QEnums.FEED_GENERATOR:
+            return guiSettings.feedDefaultAvatar(underlyingModel.getGeneratorView())
+        case QEnums.FEED_LIST:
+            return SvgFilled.list
+        default:
+            console.warn("Unexpected feed type:", underlyingModel.feedType)
+            return SvgFilled.feed
+        }
+    }
+
+    function getFeedAvatar() {
+        switch (underlyingModel.feedType) {
+        case QEnums.FEED_GENERATOR:
+            return guiSettings.feedContentVisible(underlyingModel.getGeneratorView()) ?
+                underlyingModel.getGeneratorView().avatarThumb : ""
+        case QEnums.FEED_LIST:
+            return guiSettings.feedContentVisible(underlyingModel.getListView()) ?
+                underlyingModel.getListView().avatarThumb : ""
+        default:
+            console.warn("Unexpected feed type:", underlyingModel.feedType)
+            return ""
+        }
+    }
+
+    function showFeed() {
+        switch (underlyingModel.feedType) {
+        case QEnums.FEED_GENERATOR:
+            skywalker.getFeedGenerator(underlyingModel.getGeneratorView().uri)
+            break
+        case QEnums.FEED_LIST:
+            root.viewListByUri(underlyingModel.getListView().uri, false)
+            break
+        default:
+            console.warn("Unexpected feed type:", underlyingModel.feedType)
+            break
+        }
     }
 
     function changeView(contentMode) {

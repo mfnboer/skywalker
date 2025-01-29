@@ -256,6 +256,12 @@ Item {
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
+    function feedContentVisible(feed)
+    {
+        let visibility = skywalker.getContentVisibility(feed.labels)
+        return visibility === QEnums.CONTENT_VISIBILITY_SHOW
+    }
+
     function filterContentLabelsToShow(contentLabels) {
         let contentFilter = skywalker.getContentFilter()
         let labels = []

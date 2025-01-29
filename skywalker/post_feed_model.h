@@ -43,7 +43,7 @@ public:
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE PostFeedModel* getUnderlyingModel() { return this; }
     const QString& getFeedName() const { return mFeedName; }
-    QEnums::FeedType getFeedType() const { return QEnums::FEED_GENERATOR; }
+    QEnums::FeedType getFeedType() const;
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
     const QString& getPreferencesFeedKey() const;
 

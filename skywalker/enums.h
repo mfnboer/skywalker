@@ -315,6 +315,7 @@ public:
     enum FeedType
     {
         FEED_GENERATOR,
+        FEED_LIST,
         FEED_AUTHOR
     };
     Q_ENUM(FeedType)

@@ -28,6 +28,11 @@ PostFeedModel::PostFeedModel(const QString& feedName,
             [this]{ emit languageFilterConfiguredChanged(); });
 }
 
+QEnums::FeedType PostFeedModel::getFeedType() const
+{
+    return !mListView.isNull() ? QEnums::FEED_LIST : QEnums::FEED_GENERATOR;
+}
+
 const QString& PostFeedModel::getPreferencesFeedKey() const
 {
     static const QString HOME_KEY = HOME_FEED;
