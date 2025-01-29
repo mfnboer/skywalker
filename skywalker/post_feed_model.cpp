@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post_feed_model.h"
 #include "definitions.h"
+#include "skywalker.h"
 #include "user_settings.h"
 #include <algorithm>
 #include <ranges>
@@ -510,6 +511,12 @@ int PostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
 
 void PostFeedModel::getFeed(IFeedPager* pager)
 {
+    if (mIsHomeFeed)
+    {
+        pager->updateTimeline(2, Skywalker::TIMELINE_PREPEND_PAGE_SIZE);
+        return;
+    }
+
     Q_ASSERT(mModelId > -1);
 
     if (!mGeneratorView.isNull())
@@ -522,6 +529,12 @@ void PostFeedModel::getFeed(IFeedPager* pager)
 
 void PostFeedModel::getFeedNextPage(IFeedPager* pager)
 {
+    if (mIsHomeFeed)
+    {
+        pager->getTimelineNextPage();
+        return;
+    }
+
     Q_ASSERT(mModelId > -1);
 
     if (!mGeneratorView.isNull())
@@ -566,6 +579,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
 
     model->setModelId(mModelId);
     model->setPosts(mFeed, mFeed.size());
+    model->setEndOfFeed(isEndOfFeed());
     auto* retval = model.get();
     mFilteredPostFeedModels.push_back(std::move(model));
     emit filteredPostFeedModelsChanged();

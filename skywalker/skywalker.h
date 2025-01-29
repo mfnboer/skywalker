@@ -87,11 +87,11 @@ public:
     Q_INVOKABLE void syncTimeline(int maxPages = 20);
     Q_INVOKABLE void startTimelineAutoUpdate();
     Q_INVOKABLE void stopTimelineAutoUpdate();
-    Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {}) override;
     void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE, const std::function<void()>& cb = {});
     Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false, const std::function<void()>& cb = {});
-    Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10);
-    Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {});
+    Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10) override;
+    Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {}) override;
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
 
     // IFeedPager
@@ -221,7 +221,7 @@ public:
     void setAutoUpdateTimelineInProgress(bool inProgress);
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
-    bool isGetTimelineInProgress() const { return mGetTimelineInProgress; }
+    bool isGetTimelineInProgress() const override { return mGetTimelineInProgress; }
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const override { return mGetFeedInProgress; }
     void setGetPostThreadInProgress(bool inProgress);

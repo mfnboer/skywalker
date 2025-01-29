@@ -30,7 +30,8 @@ SkyListView {
         bottomPadding: 50
         textFormat: Text.RichText
         wrapMode: Text.Wrap
-        text: (isView && model) ? qsTr(`${timelineView.getViewFooterText()}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`) : ""
+        text: (isView && model) ? qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`) : ""
+        visible: model ? !model.endOfFeed : false
         onLinkActivated: skywalker.getTimelineNextPage()
     }
 
@@ -261,13 +262,6 @@ SkyListView {
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
         model.onRowsRemoved.disconnect(rowsRemovedHandler)
         model.onRowsAboutToBeRemoved.disconnect(rowsAboutToBeRemovedHandler)
-    }
-
-    function getViewFooterText() {
-        if (model.numPostsChecked === 0)
-            return qsTr(`No more posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
-
-        return qsTr(`No more posts in ${model.numPostsChecked} timeline posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
     }
 
     Component.onCompleted: {

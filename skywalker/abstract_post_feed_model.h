@@ -22,7 +22,9 @@ class AbstractPostFeedModel : public QAbstractListModel,
                               public LocalProfileChanges
 {
     Q_OBJECT
+    Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     QML_ELEMENT
+
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
 
@@ -107,12 +109,17 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    bool isEndOfFeed() const { return mEndOfFeed; }
+
+    virtual bool isEndOfFeed() const { return mEndOfFeed; }
+    virtual void setEndOfFeed(bool endOfFeed);
 
     const Post& getPost(int index) const { return mFeed.at(index); }
     void preprocess(const Post& post);
 
     Q_INVOKABLE void unfoldPosts(int startIndex);
+
+signals:
+    void endOfFeedChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -122,7 +129,7 @@ protected:
     void removeStoredCid(const QString& cid);
     void cleanupStoredCids();
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
-    void setEndOfFeed(bool endOfFeed) { mEndOfFeed = endOfFeed; }
+
     virtual bool mustHideContent(const Post& post) const;
 
     // LocalPostModelChanges

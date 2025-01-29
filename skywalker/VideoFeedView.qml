@@ -25,8 +25,17 @@ SkyListView {
         footerHeight: postFeedView.footerHeight
         headerHeight: postFeedView.headerHeight
         leftMarginWidth: postFeedView.leftMarginWidth
+        extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
         onClosed: postFeedView.closed()
+
+        Loader {
+            id: extraFooterLoader
+            anchors.bottom: parent.bottom
+
+            active: model.isFilterModel() && index == count - 1 && !endOfFeed
+            sourceComponent: extraFooterComponent
+        }
     }
 
     onCovered: resetSystemBars()
@@ -36,7 +45,7 @@ SkyListView {
         currentIndex = indexAt(0, contentY)
         console.debug("Move:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
 
-        if (currentIndex >= 0 && count - currentIndex < 15) {
+        if (currentIndex >= 0 && count - currentIndex < 5) {
             console.debug("Prefetch next page:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
             model.getFeedNextPage(skywalker)
         }
@@ -62,17 +71,29 @@ SkyListView {
         color: guiSettings.fullScreenColor
     }
 
-    function cancel() {
-        closed()
+    Component {
+        id: extraFooterComponent
+
+        Rectangle {
+            width: postFeedView.width
+            height: 150
+            color: "transparent"
+
+            AccessibleText {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                padding: 10
+                textFormat: Text.RichText
+                wrapMode: Text.Wrap
+                color: "white"
+                text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColorDarkMode}; text-decoration: none">Load more</a>`)
+                onLinkActivated: model.getFeedNextPage(skywalker)
+            }
+        }
     }
 
-    function getNextPage() {
-        if (!currentItem.endOfFeed) {
-            model.getFeedNextPage(skywalker)
-            return
-        }
-
-        skywalker.showStatusMessage("That's all folks", QEnums.STATUS_LEVEL_INFO)
+    function cancel() {
+        closed()
     }
 
     function setSystemBars() {

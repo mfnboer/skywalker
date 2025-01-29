@@ -51,7 +51,8 @@ public:
     QDateTime getCheckedTillTimestamp() const { return mCheckedTillTimestamp; }
     void setNumPostsChecked(int numPostsChecked);
     int getNumPostsChecked() const { return mNumPostsChecked; }
-    void setEndOfFeed(bool endOfFeed);
+
+    void setEndOfFeed(bool endOfFeed) override;
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);

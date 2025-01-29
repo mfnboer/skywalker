@@ -174,6 +174,8 @@ void FilteredPostFeedModel::setCheckedTillTimestamp(QDateTime timestamp)
 
 void FilteredPostFeedModel::setEndOfFeed(bool endOfFeed)
 {
+    AbstractPostFeedModel::setEndOfFeed(endOfFeed);
+
     if (!mFeed.empty())
     {
         mFeed.back().setEndOfFeed(endOfFeed);

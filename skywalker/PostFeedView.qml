@@ -15,18 +15,18 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
 
-    Accessible.name: postFeedView.underlyingModel.feedName
+    Accessible.name: underlyingModel ? underlyingModel.feedName : ""
 
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
-        feedName: postFeedView.underlyingModel.feedName
+        feedName: underlyingModel ? underlyingModel.feedName : ""
         feedAvatar: getFeedAvatar()
         defaultSvg: getFeedDefaultAvatar()
-        contentMode: postFeedView.underlyingModel.contentMode
+        contentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
         showAsHome: postFeedView.showAsHome
-        showLanguageFilter: postFeedView.underlyingModel.languageFilterConfigured
-        filteredLanguages: postFeedView.underlyingModel.filteredLanguages
-        showPostWithMissingLanguage: postFeedView.underlyingModel.showPostWithMissingLanguage
+        showLanguageFilter: underlyingModel ? underlyingModel.languageFilterConfigured : false
+        filteredLanguages: underlyingModel ? underlyingModel.filteredLanguages : []
+        showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
         showViewOptions: true
 
         onClosed: postFeedView.closed()
@@ -54,9 +54,18 @@ SkyListView {
 
         width: postFeedView.width
         swipeMode: model.contentMode === QEnums.CONTENT_MODE_VIDEO
+        extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
         onActivateSwipe: {
             root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+        }
+
+        Loader {
+            id: extraFooterLoader
+            anchors.bottom: parent.bottom
+
+            active: model.isFilterModel() && index == count - 1 && !endOfFeed
+            sourceComponent: extraFooterComponent
         }
     }
 
@@ -70,6 +79,7 @@ SkyListView {
     }
 
     EmptyListIndication {
+        id: emptyListIndication
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.noPosts
         text: qsTr("Feed is empty")
@@ -82,7 +92,36 @@ SkyListView {
         running: skywalker.getFeedInProgress
     }
 
+    Component {
+        id: extraFooterComponent
+
+        Rectangle {
+            width: postFeedView.width
+            height: 150
+            color: "transparent"
+
+            AccessibleText {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                padding: 10
+                textFormat: Text.RichText
+                wrapMode: Text.Wrap
+                text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`)
+                onLinkActivated: model.getFeedNextPage(skywalker)
+            }
+        }
+    }
+
+    Loader {
+        anchors.top: emptyListIndication.bottom
+        active: model.isFilterModel() && count === 0 && !model.endOfFeed
+        sourceComponent: extraFooterComponent
+    }
+
     function getFeedDefaultAvatar() {
+        if (!underlyingModel)
+            return SvgFilled.feed
+
         switch (underlyingModel.feedType) {
         case QEnums.FEED_GENERATOR:
             return guiSettings.feedDefaultAvatar(underlyingModel.getGeneratorView())
@@ -95,6 +134,9 @@ SkyListView {
     }
 
     function getFeedAvatar() {
+        if (!underlyingModel)
+            return ""
+
         switch (underlyingModel.feedType) {
         case QEnums.FEED_GENERATOR:
             return guiSettings.feedContentVisible(underlyingModel.getGeneratorView()) ?
@@ -109,6 +151,9 @@ SkyListView {
     }
 
     function showFeed() {
+        if (!underlyingModel)
+            return
+
         switch (underlyingModel.feedType) {
         case QEnums.FEED_GENERATOR:
             skywalker.getFeedGenerator(underlyingModel.getGeneratorView().uri)

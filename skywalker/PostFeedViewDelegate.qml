@@ -65,6 +65,7 @@ Rectangle {
     required property bool postLocallyDeleted
     required property bool endOfFeed
     property bool swipeMode: false
+    property int extraFooterHeight: 0
 
     property int prevY: 0
     property bool isAnchorItem: false
@@ -79,7 +80,7 @@ Rectangle {
     // HACK
     // Setting the default size to 300 if the grid is not sized yet, seems to fix
     // positioning issued with viewPositionAtIndex
-    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > 30 ? grid.height : 300)
+    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > 30 ? grid.height : 300) + extraFooterHeight
     color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     border.width: postThreadType & QEnums.THREAD_ENTRY ? 1 : 0
     border.color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.borderHighLightColor : guiSettings.borderColor

@@ -65,6 +65,7 @@ Rectangle {
     property int headerHeight: 0
     property int footerHeight: 0
     property int leftMarginWidth: 0
+    property int extraFooterHeight
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
@@ -75,7 +76,7 @@ Rectangle {
 
     id: videoPage
     width: root.width
-    height: root.height + (endOfFeed ? root.height : 0)
+    height: root.height + (endOfFeed ? root.height : 0) + extraFooterHeight
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {

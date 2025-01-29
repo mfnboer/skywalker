@@ -12,6 +12,11 @@ class IFeedPager : public QObject
 public:
     explicit IFeedPager(QObject* parent = nullptr) : QObject(parent) {}
 
+    virtual bool isGetTimelineInProgress() const = 0;
+    virtual void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {}) = 0;
+    virtual void getTimelineNextPage(int maxPages = 20, int minEntries = 10) = 0;
+    virtual void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {}) = 0;
+
     virtual bool isGetFeedInProgress() const = 0;
     virtual void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {}) = 0;
     virtual void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10) = 0;
