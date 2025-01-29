@@ -17,6 +17,8 @@ SkyListView {
 
     Accessible.name: underlyingModel ? underlyingModel.feedName : ""
 
+    onUnderlyingModelChanged: console.debug("UNDERLYING CHANGED:", underlyingModel)
+
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: underlyingModel ? underlyingModel.feedName : ""
@@ -27,11 +29,11 @@ SkyListView {
         showLanguageFilter: underlyingModel ? underlyingModel.languageFilterConfigured : false
         filteredLanguages: underlyingModel ? underlyingModel.filteredLanguages : []
         showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
-        showViewOptions: true
+        showViewOptions: underlyingModel ? underlyingModel.contentMode === QEnums.CONTENT_MODE_UNSPECIFIED : false
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeed()
-        onContentModeChanged: changeView(contentMode)
+        onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.OverlayHeader
 

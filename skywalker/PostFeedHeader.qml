@@ -23,6 +23,7 @@ Rectangle {
     signal addHashtagView
     signal addFocusHashtagView
     signal addVideoView
+    signal viewChanged(int contentMode)
 
     id: header
     width: parent.width
@@ -184,12 +185,18 @@ Rectangle {
 
                 AccessibleMenuItem {
                     text: qsTr("Post view")
-                    onTriggered: contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
+                        viewChanged(contentMode)
+                    }
                     MenuItemSvg { svg: SvgOutline.chat }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Video view")
-                    onTriggered: contentMode = QEnums.CONTENT_MODE_VIDEO
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_VIDEO
+                        viewChanged(contentMode)
+                    }
                     MenuItemSvg { svg: SvgOutline.film }
                 }
             }

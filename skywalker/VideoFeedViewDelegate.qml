@@ -90,9 +90,9 @@ Rectangle {
     }
 
     Rectangle {
-        property int bottomMargin: postVideo ? videoItem.playControlsHeight : 0
-        property int mediaWidth: postVideo ? videoItem.playControlsWidth : root.width
-        property bool showDetails: postVideo ? videoItem.showPlayControls : imageLoader.showDetails
+        property int bottomMargin: videoItem ? videoItem.playControlsHeight : 0
+        property int mediaWidth: videoItem ? videoItem.playControlsWidth : root.width
+        property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
 
         id: mediaRect
         width: root.width
