@@ -7,6 +7,7 @@ SkyListView {
     property int headerHeight: guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
     property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
     property int leftMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
+    property int rightMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
 
     signal closed
 
@@ -25,6 +26,7 @@ SkyListView {
         footerHeight: postFeedView.footerHeight
         headerHeight: postFeedView.headerHeight
         leftMarginWidth: postFeedView.leftMarginWidth
+        rightMarginWidth: postFeedView.rightMarginWidth
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
         onClosed: postFeedView.closed()
@@ -110,11 +112,12 @@ SkyListView {
         headerHeight = guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
         footerHeight = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
         leftMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
+        rightMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
         positionViewAtIndex(currentIndex, ListView.Beginning)
     }
 
     Component.onDestruction: {
-        Screen.onOrientationChanged.disconnect(orientationHandler)
+        Screen.onPrimaryOrientationChanged.disconnect(orientationHandler)
         resetSystemBars()
 
         if (model)
@@ -122,7 +125,7 @@ SkyListView {
     }
 
     Component.onCompleted: {
-        Screen.onOrientationChanged.connect(orientationHandler)
+        Screen.onPrimaryOrientationChanged.connect(orientationHandler)
         setSystemBars()
         model.setOverrideLinkColor(guiSettings.linkColorDarkMode)
         positionViewAtIndex(currentIndex, ListView.Beginning)

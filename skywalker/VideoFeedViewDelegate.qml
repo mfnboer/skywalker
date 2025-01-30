@@ -65,7 +65,8 @@ Rectangle {
     property int headerHeight: 0
     property int footerHeight: 0
     property int leftMarginWidth: 0
-    property int extraFooterHeight
+    property int rightMarginWidth: 0
+    property int extraFooterHeight: 0
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
@@ -91,11 +92,12 @@ Rectangle {
 
     Rectangle {
         property int bottomMargin: videoItem ? videoItem.playControlsHeight : 0
-        property int mediaWidth: videoItem ? videoItem.playControlsWidth : root.width
+        property int mediaWidth: videoItem ? videoItem.playControlsWidth : (imageItem ? imageItem.imageWidth : width)
         property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
 
         id: mediaRect
-        width: root.width
+        x: leftMarginWidth
+        width: root.width - leftMarginWidth - rightMarginWidth
         height: root.height
         color: "transparent"
 
@@ -105,7 +107,7 @@ Rectangle {
 
             sourceComponent: VideoView {
                 id: video
-                width: root.width
+                width: mediaRect.width
                 height: root.height
                 maxHeight: root.height
                 videoView: postVideo
@@ -134,7 +136,9 @@ Rectangle {
             active: postImages.length > 0
 
             sourceComponent: SwipeView {
-                width: root.width
+                property int imageWidth: currentItem.imageWidth
+
+                width: mediaRect.width
                 height: root.height
 
                 Repeater {
@@ -142,17 +146,29 @@ Rectangle {
 
                     Rectangle {
                         required property int index
+                        property int imageWidth: img.paintedWidth
 
-                        width: root.width
+                        width: mediaRect.width
                         height: root.height
                         color: "transparent"
 
                         ImageAutoRetry {
+                            id: img
                             width: parent.width
                             height: parent.height
                             fillMode: Image.PreserveAspectFit
                             source: filter.getImage(index).fullSizeUrl
                             reloadIconColor: "white"
+
+                            onHeightChanged: alighImage()
+                            onPaintedHeightChanged: alighImage()
+
+                            function alighImage() {
+                                if (status === Image.Ready && height - paintedHeight < 300)
+                                    verticalAlignment = Image.AlignTop;
+                                else
+                                    verticalAlignment = Image.AlignVCenter
+                            }
 
                             SkyLabel {
                                 x: (parent.width - parent.paintedWidth) / 2 + parent.paintedWidth - width - 10
@@ -189,7 +205,7 @@ Rectangle {
 
     SvgButton {
         x: leftMarginWidth + 10
-        y: headerHeight + 20
+        y: headerHeight + 10
         iconColor: "white"
         Material.background: "transparent"
         svg: SvgOutline.arrowBack
@@ -219,7 +235,7 @@ Rectangle {
 
     Column {
         id: postColumn
-        x: (parent.width - width) / 2
+        x: leftMarginWidth + (mediaRect.width - width) / 2
         anchors.bottom: mediaRect.bottom
         anchors.bottomMargin: mediaRect.bottomMargin + videoPage.footerHeight
         width: mediaRect.mediaWidth - 20
@@ -371,17 +387,19 @@ Rectangle {
     }
 
     Loader {
+        x: leftMarginWidth
         anchors.top: mediaRect.bottom
+        height: root.height
         active: endOfFeed
 
         sourceComponent: Rectangle {
-            width: root.width
+            width: mediaRect.width
             height: root.height
             color: "transparent"
 
             SvgButton {
-                x: leftMarginWidth + 10
-                y: headerHeight + 20
+                x: 10
+                y: headerHeight + 10
                 iconColor: "white"
                 Material.background: "transparent"
                 svg: SvgOutline.arrowBack

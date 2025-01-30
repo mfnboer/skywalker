@@ -24,6 +24,7 @@ public:
                     HashtagIndex& hashtags,
                     QObject* parent = nullptr);
 
+    Q_INVOKABLE bool isFilterModel() const { return false; }
     QString getFeedName() const;
     QEnums::FeedType getFeedType() const { return QEnums::FEED_AUTHOR; }
 

@@ -270,7 +270,7 @@ public class SkywalkerActivity extends QtActivity {
         return getInsetsSide(insets, side);
     }
 
-    public int getStatusBarHeight(int side) {
+    public int getStatusBarSize(int side) {
         Insets insets = getInsets(WindowInsets.Type.statusBars());
         return getInsetsSide(insets, side);
     }

@@ -17,8 +17,6 @@ SkyListView {
 
     Accessible.name: underlyingModel ? underlyingModel.feedName : ""
 
-    onUnderlyingModelChanged: console.debug("UNDERLYING CHANGED:", underlyingModel)
-
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: underlyingModel ? underlyingModel.feedName : ""
