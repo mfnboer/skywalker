@@ -46,6 +46,21 @@ RoundCornerMask {
 
             settingSize = false
         }
+
+        Loader {
+            anchors.right: parent.right
+            anchors.rightMargin: 5
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            active: swipeMode
+
+            sourceComponent: SkySvg {
+                width: 20
+                height: 20
+                svg: SvgOutline.swipeVertical
+                color: "white"
+            }
+        }
     }
     MouseArea {
         enabled: filter.imageVisible()
