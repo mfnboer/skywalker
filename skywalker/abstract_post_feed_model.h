@@ -168,7 +168,7 @@ protected:
     const IMatchWords& mMutedWords;
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
-    int mModelId = -1; // TODO: do we still need this?
+    int mModelId = -1;
 
 private:
     void postBookmarkedChanged();
