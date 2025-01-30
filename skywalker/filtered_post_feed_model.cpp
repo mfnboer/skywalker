@@ -1,11 +1,13 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "filtered_post_feed_model.h"
+#include "post_feed_model.h"
 #include <ranges>
 
 namespace Skywalker {
 
 FilteredPostFeedModel::FilteredPostFeedModel(IPostFilter::Ptr postFilter,
+                                             PostFeedModel* underlyingModel,
                                              const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
                                              const IContentFilter& contentFilter,
@@ -16,9 +18,15 @@ FilteredPostFeedModel::FilteredPostFeedModel(IPostFilter::Ptr postFilter,
                                              QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords,
                   focusHashtags, hashtags, parent),
-    mPostFilter(std::move(postFilter))
+    mPostFilter(std::move(postFilter)),
+    mUnderlyingModel(underlyingModel)
 {
     Q_ASSERT(mPostFilter);
+}
+
+QVariant FilteredPostFeedModel::getUnderlyingModel()
+{
+    return QVariant::fromValue(mUnderlyingModel);
 }
 
 void FilteredPostFeedModel::clear()
@@ -164,6 +172,51 @@ void FilteredPostFeedModel::setCheckedTillTimestamp(QDateTime timestamp)
     }
 }
 
+void FilteredPostFeedModel::setEndOfFeed(bool endOfFeed)
+{
+    AbstractPostFeedModel::setEndOfFeed(endOfFeed);
+
+    if (!mFeed.empty())
+    {
+        mFeed.back().setEndOfFeed(endOfFeed);
+        const auto index = createIndex(mFeed.size() - 1, 0);
+        emit dataChanged(index, index, { int(Role::EndOfFeed) });
+    }
+}
+
+void FilteredPostFeedModel::getFeed(IFeedPager* pager)
+{
+    if (mUnderlyingModel)
+        mUnderlyingModel->getFeed(pager);
+    else
+        qWarning() << "No underlying model:" << getFeedName();
+}
+
+void FilteredPostFeedModel::getFeedNextPage(IFeedPager* pager)
+{
+    if (mUnderlyingModel)
+        mUnderlyingModel->getFeedNextPage(pager);
+    else
+        qWarning() << "No underlying model:" << getFeedName();
+}
+
+QVariant FilteredPostFeedModel::data(const QModelIndex& index, int role) const
+{
+    if (index.row() < 0 || index.row() >= (int)mFeed.size())
+        return {};
+
+    switch (Role(role))
+    {
+    case Role::PostType:
+        if (!mPostFilter->mustAddThread())
+            return QEnums::POST_STANDALONE;
+    default:
+        break;
+    }
+
+    return AbstractPostFeedModel::data(index, role);
+}
+
 void FilteredPostFeedModel::Page::addPost(const Post* post)
 {
     mFeed.push_back(post);
@@ -237,7 +290,7 @@ FilteredPostFeedModel::Page::Ptr FilteredPostFeedModel::createPage(const Timelin
         if (!mPostFilter->match(post))
             continue;
 
-        if (post.getPostType() == QEnums::POST_STANDALONE)
+        if (post.getPostType() == QEnums::POST_STANDALONE || !mPostFilter->mustAddThread())
         {
             page->addPost(&post);
             continue;

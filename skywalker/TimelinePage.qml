@@ -29,6 +29,8 @@ SkyPage {
         onAddUserView: page.addUserView()
         onAddHashtagView: page.addHashtagView()
         onAddFocusHashtagView: page.addFocusHashtagView()
+        onAddMediaView: page.showMediaView()
+        onAddVideoView: page.showVideoView()
     }
 
     footer: SkyFooter {
@@ -209,6 +211,16 @@ SkyPage {
 
     function showFocusHashtagView(focusHashtagEntry) {
         let postFilterModel = skywalker.timelineModel.addFocusHashtagFilter(focusHashtagEntry)
+        viewStack.addTimelineView(postFilterModel)
+    }
+
+    function showVideoView() {
+        let postFilterModel = skywalker.timelineModel.addVideoFilter()
+        viewStack.addTimelineView(postFilterModel)
+    }
+
+    function showMediaView() {
+        let postFilterModel = skywalker.timelineModel.addMediaFilter()
         viewStack.addTimelineView(postFilterModel)
     }
 

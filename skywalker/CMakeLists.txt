@@ -248,7 +248,7 @@ qt_add_qml_module(libskywalker
         QML_FILES TextLengthCounter.qml
         QML_FILES EditAvatar.qml
         QML_FILES ImageFileDialog.qml
-        QML_FILES PostListFeedView.qml
+        QML_FILES
         QML_FILES ListFeedDescriptionView.qml
         QML_FILES QuoteList.qml
         QML_FILES SearchAuthor.qml

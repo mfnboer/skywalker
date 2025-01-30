@@ -9,7 +9,7 @@ ApplicationWindow {
 
     // Map for pinned feeds
     // GeneratorView.uri -> PostFeedView
-    // ListView.uri      -> PostListFeedView
+    // ListView.uri      -> PostFeedView
     // SearchFeed.name   -> SearchFeedView
     property var feedViews: new Map()
 
@@ -1577,7 +1577,7 @@ ApplicationWindow {
         else {
             const modelId = skywalker.createPostFeedModel(listView)
             skywalker.getListFeed(modelId)
-            let component = Qt.createComponent("PostListFeedView.qml")
+            let component = Qt.createComponent("PostFeedView.qml")
             view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
             feedViews.set(listView.uri, view)
         }
@@ -1666,7 +1666,7 @@ ApplicationWindow {
     function viewPostListFeed(list) {
         const modelId = skywalker.createPostFeedModel(list)
         skywalker.getListFeed(modelId)
-        let component = Qt.createComponent("PostListFeedView.qml")
+        let component = Qt.createComponent("PostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
         view.onClosed.connect(() => { popStack() })
         root.pushStack(view)
@@ -1863,9 +1863,8 @@ ApplicationWindow {
 
         let item = stack.pop()
 
-        // PostFeedViews, PostListFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
+        // PostFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
         if (!((item instanceof PostFeedView ||
-               item instanceof PostListFeedView ||
                item instanceof SearchFeedView) && item.showAsHome))
         {
             item.destroy()

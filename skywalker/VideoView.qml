@@ -11,16 +11,16 @@ Column {
     property string disabledColor: guiSettings.disabledColor
     property string backgroundColor: "transparent"
     property bool highlight: false
-    property bool isVideoFeed: false
+    property bool swipeMode: false
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
     property int maxHeight: 0
     property bool isFullViewMode: false
-    readonly property bool isFullVideoFeedViewMode: isFullViewMode && isVideoFeed
+    readonly property bool isFullVideoFeedViewMode: isFullViewMode && swipeMode
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
     property string videoSource
     property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
-    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || isVideoFeed
+    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || swipeMode
     property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
     property int footerHeight: 0
     property int useIfNeededHeight: 0
@@ -32,7 +32,7 @@ Column {
     property var videoHandle
 
     signal videoLoaded
-    signal videoClicked
+    signal activateSwipe
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height : 10
@@ -59,7 +59,7 @@ Column {
             x: 10
             y: 10
             width: parent.width - 20
-            contentVisibiliy: videoStack.contentVisibility
+            contentVisibility: videoStack.contentVisibility
             contentWarning: videoStack.contentWarning
             imageUrl: videoView.thumbUrl
             isVideo: true
@@ -103,6 +103,21 @@ Column {
                             height = maxHeight
                         else if (aspectRatio > 0)
                             height = width / aspectRatio
+                    }
+
+                    Loader {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 5
+                        anchors.top: parent.top
+                        anchors.topMargin: 5
+                        active: swipeMode
+
+                        sourceComponent: SkySvg {
+                            width: 20
+                            height: 20
+                            svg: SvgOutline.swipeVertical
+                            color: "white"
+                        }
                     }
 
                     Component.onCompleted: setSize()
@@ -163,8 +178,8 @@ Column {
             enabled: videoPlayer.hasVideo || !autoLoad
 
             onClicked: {
-                if (isVideoFeed && !isFullViewMode) {
-                    videoClicked()
+                if (swipeMode && !isFullViewMode) {
+                    activateSwipe()
                     return
                 }
 
@@ -322,7 +337,7 @@ Column {
             width: parent.width
             height: parent.height
             z: -1
-            enabled: filter.imageVisible() && (!isVideoFeed || isFullViewMode)
+            enabled: filter.imageVisible() && (!swipeMode || isFullViewMode)
 
             onClicked: {
                 if (isFullViewMode)
@@ -364,8 +379,8 @@ Column {
             sourceComponent: Rectangle {
                 anchors.fill: parent
                 gradient: Gradient {
-                    GradientStop { position: 0.0; color: isVideoFeed ? "#D0000000" : "#00000000" }
-                    GradientStop { position: 1.0; color: isVideoFeed ? "#FF000000" : "#5F000000" }
+                    GradientStop { position: 0.0; color: swipeMode ? "#D0000000" : "#00000000" }
+                    GradientStop { position: 1.0; color: swipeMode ? "#FF000000" : "#5F000000" }
                 }
             }
         }

@@ -27,9 +27,9 @@ Column {
     property bool attachmentsInitialized: false
     property string postHighlightColor: "transparent"
     property bool isDraft: false
-    property bool isVideoFeed: false
+    property bool swipeMode: false
 
-    signal videoClicked
+    signal activateSwipe
 
     id: postBody
 
@@ -271,6 +271,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -282,6 +285,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -293,6 +299,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -304,6 +313,9 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            swipeMode: postBody.swipeMode
+
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -328,9 +340,9 @@ Column {
             contentWarning: postContentWarning
             backgroundColor: bodyBackgroundColor
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
-            isVideoFeed: postBody.isVideoFeed
+            swipeMode: postBody.swipeMode
 
-            onVideoClicked: postBody.videoClicked()
+            onActivateSwipe: postBody.activateSwipe()
         }
     }
 
@@ -392,7 +404,7 @@ Column {
                                    contentVisibility: postContentVisibility,
                                    contentWarning: postContentWarning,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
-                                   isVideoFeed: isVideoFeed })
+                                   swipeMode: swipeMode })
     }
 
     onBodyBackgroundColorChanged: {

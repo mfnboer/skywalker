@@ -15,12 +15,16 @@ Rectangle {
     property list<language> filteredLanguages
     property bool showPostWithMissingLanguage: true
     property bool showMoreOptions: false
+    property bool showViewOptions: false
 
     signal closed
     signal feedAvatarClicked
     signal addUserView
     signal addHashtagView
     signal addFocusHashtagView
+    signal addVideoView
+    signal addMediaView
+    signal viewChanged(int contentMode)
 
     id: header
     width: parent.width
@@ -86,7 +90,19 @@ Rectangle {
                     width: 250
                     text: qsTr("Add focus hashtag view")
                     onTriggered: addFocusHashtagView()
-                    MenuItemSvg { svg: SvgOutline.hashtag }
+                    MenuItemSvg { svg: SvgOutline.hashtag; color: guiSettings.favoriteColor }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add media view")
+                    onTriggered: addMediaView()
+                    MenuItemSvg { svg: SvgOutline.image }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add video view")
+                    onTriggered: addVideoView()
+                    MenuItemSvg { svg: SvgOutline.film }
                 }
             }
         }
@@ -151,6 +167,54 @@ Rectangle {
             accessibleName: qsTr("language filter active")
             visible: showLanguageFilter
             onClicked: showLanguageFilterDetails()
+        }
+
+        SvgButton {
+            svg: guiSettings.getContentModeSvg(contentMode)
+            iconColor: guiSettings.headerTextColor
+            Material.background: "transparent"
+            accessibleName: qsTr("view mode")
+            visible: showViewOptions
+
+            onClicked: viewMenu.open()
+
+            Menu {
+                id: viewMenu
+                modal: true
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>View</b>")
+                    Accessible.name: qsTr("close view menu")
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Post view")
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
+                        viewChanged(contentMode)
+                    }
+                    MenuItemSvg { svg: SvgOutline.chat }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Media view")
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_MEDIA
+                        viewChanged(contentMode)
+                    }
+                    MenuItemSvg { svg: SvgOutline.image }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Video view")
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_VIDEO
+                        viewChanged(contentMode)
+                    }
+                    MenuItemSvg { svg: SvgOutline.film }
+                }
+            }
         }
 
         FeedAvatar {

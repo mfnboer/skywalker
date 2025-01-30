@@ -20,7 +20,7 @@ RoundedFrame {
     FilteredImageWarning {
         id: filter
         width: parent.width - 2
-        contentVisibiliy: card.contentVisibility
+        contentVisibility: card.contentVisibility
         contentWarning: card.contentWarning
         imageUrl: card.thumbUrl
     }

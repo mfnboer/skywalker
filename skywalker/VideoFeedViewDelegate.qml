@@ -65,54 +65,152 @@ Rectangle {
     property int headerHeight: 0
     property int footerHeight: 0
     property int leftMarginWidth: 0
+    property int rightMarginWidth: 0
+    property int extraFooterHeight: 0
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
+    property var videoItem: postVideo ? videoLoader.item : null
+    property var imageItem: postImages.length > 0 ? imageLoader.item : null
 
     signal closed
 
     id: videoPage
     width: root.width
-    height: root.height + (endOfFeed ? root.height : 0)
+    height: root.height + (endOfFeed ? root.height : 0) + extraFooterHeight
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
-        if (!onScreen)
+        if (!onScreen) {
             cover()
-        else
-            video.play()
+        }
+        else {
+            if (postVideo)
+                videoItem.play()
+        }
     }
 
-    VideoView {
-        id: video
-        width: parent.width
-        height: root.height
-        maxHeight: root.height
-        videoView: postVideo
-        contentVisibility: postContentVisibility
-        contentWarning: postContentWarning
-        controlColor: "white"
-        disabledColor: "darkslategrey"
-        backgroundColor: videoPage.color
-        isFullViewMode: true
-        isVideoFeed: true
-        autoPlay: false
-        footerHeight: videoPage.footerHeight
-        useIfNeededHeight: postColumn.height
+    Rectangle {
+        property int bottomMargin: videoItem ? videoItem.playControlsHeight : 0
+        property int mediaWidth: videoItem ? videoItem.playControlsWidth : (imageItem ? imageItem.imageWidth : width)
+        property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
 
-        onVideoLoaded: {
-            if (onScreen)
-                video.play()
+        id: mediaRect
+        x: leftMarginWidth
+        width: root.width - leftMarginWidth - rightMarginWidth
+        height: root.height
+        color: "transparent"
+
+        Loader {
+            id: videoLoader
+            active: Boolean(postVideo)
+
+            sourceComponent: VideoView {
+                id: video
+                width: mediaRect.width
+                height: root.height
+                maxHeight: root.height
+                videoView: postVideo
+                contentVisibility: postContentVisibility
+                contentWarning: postContentWarning
+                controlColor: "white"
+                disabledColor: "darkslategrey"
+                backgroundColor: videoPage.color
+                isFullViewMode: true
+                swipeMode: true
+                autoPlay: false
+                footerHeight: videoPage.footerHeight
+                useIfNeededHeight: postColumn.height
+
+                onVideoLoaded: {
+                    if (onScreen)
+                        videoItem.play()
+                }
+            }
+        }
+
+        Loader {
+            property bool showDetails: true
+
+            id: imageLoader
+            active: postImages.length > 0
+
+            sourceComponent: SwipeView {
+                property int imageWidth: currentItem.imageWidth
+
+                width: mediaRect.width
+                height: root.height
+
+                Repeater {
+                    model: postImages.length
+
+                    Rectangle {
+                        required property int index
+                        property int imageWidth: img.paintedWidth
+
+                        width: mediaRect.width
+                        height: root.height
+                        color: "transparent"
+
+                        ImageAutoRetry {
+                            id: img
+                            width: parent.width
+                            height: parent.height
+                            fillMode: Image.PreserveAspectFit
+                            source: filter.getImage(index).fullSizeUrl
+                            reloadIconColor: "white"
+
+                            onHeightChanged: alighImage()
+                            onPaintedHeightChanged: alighImage()
+
+                            function alighImage() {
+                                if (status === Image.Ready && height - paintedHeight < 300)
+                                    verticalAlignment = Image.AlignTop;
+                                else
+                                    verticalAlignment = Image.AlignVCenter
+                            }
+
+                            SkyLabel {
+                                x: (parent.width - parent.paintedWidth) / 2 + parent.paintedWidth - width - 10
+                                y: (parent.height - parent.paintedHeight) / 2 + 5
+                                backgroundColor: "black"
+                                backgroundOpacity: 0.6
+                                color: "white"
+                                text: `${index + 1}/${postImages.length}`
+                                visible: postImages.length > 1 && filter.imageVisible() && showDetails
+                            }
+                        }
+
+                        MouseArea {
+                            width: parent.width
+                            height: parent.height
+
+                            onClicked: showDetails = !showDetails
+                        }
+
+                        FilteredImageWarning {
+                            id: filter
+                            x: 10
+                            width: parent.width - 20
+                            anchors.verticalCenter: parent.verticalCenter
+                            contentVisibility: postContentVisibility
+                            contentWarning: postContentWarning
+                            images: postImages
+                        }
+                    }
+                }
+            }
         }
     }
 
     SvgButton {
         x: leftMarginWidth + 10
-        y: headerHeight + 20
+        y: headerHeight + 10
         iconColor: "white"
         Material.background: "transparent"
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
+        visible: mediaRect.showDetails
         onClicked: videoPage.closed()
     }
 
@@ -137,11 +235,11 @@ Rectangle {
 
     Column {
         id: postColumn
-        x: (parent.width - width) / 2
-        anchors.bottom: video.bottom
-        anchors.bottomMargin: video.playControlsHeight + videoPage.footerHeight
-        width: video.playControlsWidth - 20
-        visible: video.showPlayControls
+        x: leftMarginWidth + (mediaRect.width - width) / 2
+        anchors.bottom: mediaRect.bottom
+        anchors.bottomMargin: mediaRect.bottomMargin + videoPage.footerHeight
+        width: mediaRect.mediaWidth - 20
+        visible: mediaRect.showDetails
 
         Rectangle {
             width: parent.width
@@ -278,27 +376,30 @@ Rectangle {
             height: 5
             color: "transparent"
         }
+    }
 
-        GuiSettings {
-            id: guiSettings
-            isLightMode: false
-            backgroundColor: videoPage.color
-            textColor: "white"
-        }
+    GuiSettings {
+        id: guiSettings
+        isLightMode: false
+        backgroundColor: videoPage.color
+        linkColor: "#58a6ff"
+        textColor: "white"
     }
 
     Loader {
-        anchors.top: video.bottom
+        x: leftMarginWidth
+        anchors.top: mediaRect.bottom
+        height: root.height
         active: endOfFeed
 
         sourceComponent: Rectangle {
-            width: root.width
+            width: mediaRect.width
             height: root.height
             color: "transparent"
 
             SvgButton {
-                x: leftMarginWidth + 10
-                y: headerHeight + 20
+                x: 10
+                y: headerHeight + 10
                 iconColor: "white"
                 Material.background: "transparent"
                 svg: SvgOutline.arrowBack
@@ -316,7 +417,8 @@ Rectangle {
     }
 
     function cover() {
-        video.pause()
+        if (postVideo)
+            videoItem.pause()
     }
 
     function checkOnScreen() {}

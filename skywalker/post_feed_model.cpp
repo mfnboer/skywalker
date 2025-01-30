@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post_feed_model.h"
 #include "definitions.h"
+#include "skywalker.h"
 #include "user_settings.h"
 #include <algorithm>
 #include <ranges>
@@ -26,6 +27,11 @@ PostFeedModel::PostFeedModel(const QString& feedName,
 {
     connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
             [this]{ emit languageFilterConfiguredChanged(); });
+}
+
+QEnums::FeedType PostFeedModel::getFeedType() const
+{
+    return !mListView.isNull() ? QEnums::FEED_LIST : QEnums::FEED_GENERATOR;
 }
 
 const QString& PostFeedModel::getPreferencesFeedKey() const
@@ -181,6 +187,12 @@ void PostFeedModel::clearFilteredPostModels()
         model->clear();
 }
 
+void PostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->setEndOfFeed(endOfFeed);
+}
+
 int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
 {
     qDebug() << "Insert feed:" << feed->mFeed.size() << "index:" << insertIndex << "fillGap:" << fillGapId;
@@ -319,6 +331,7 @@ void PostFeedModel::addPage(Page::Ptr page)
     else
     {
         setEndOfFeed(true);
+        setEndOfFeedFilteredPostModels(true);
 
         if (page->mFeed.empty() && !mFeed.empty())
         {
@@ -373,6 +386,7 @@ void PostFeedModel::removeTailPosts(int size)
     }
 
     setEndOfFeed(false);
+    setEndOfFeedFilteredPostModels(false);
     endRemoveRows();
 
     qDebug() << "Removed tail rows:" << size << "new size:" << mFeed.size();
@@ -497,14 +511,38 @@ int PostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
 
 void PostFeedModel::getFeed(IFeedPager* pager)
 {
+    if (mIsHomeFeed)
+    {
+        pager->updateTimeline(2, Skywalker::TIMELINE_PREPEND_PAGE_SIZE);
+        return;
+    }
+
     Q_ASSERT(mModelId > -1);
-    pager->getFeed(mModelId);
+
+    if (!mGeneratorView.isNull())
+        pager->getFeed(mModelId);
+    else if (!mListView.isNull())
+        pager->getListFeed(mModelId);
+    else
+        qWarning() << "No view to get page";
 }
 
 void PostFeedModel::getFeedNextPage(IFeedPager* pager)
 {
+    if (mIsHomeFeed)
+    {
+        pager->getTimelineNextPage();
+        return;
+    }
+
     Q_ASSERT(mModelId > -1);
-    pager->getFeedNextPage(mModelId);
+
+    if (!mGeneratorView.isNull())
+        pager->getFeedNextPage(mModelId);
+    else if (!mListView.isNull())
+        pager->getListFeedNextPage(mModelId);
+    else
+        qWarning() << "No view to get next page";
 }
 
 FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profile)
@@ -525,15 +563,29 @@ FilteredPostFeedModel* PostFeedModel::addFocusHashtagFilter(FocusHashtagEntry* f
     return addFilteredPostFeedModel(std::move(filter));
 }
 
+FilteredPostFeedModel* PostFeedModel::addVideoFilter()
+{
+    auto filter = std::make_unique<VideoPostFilter>();
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
+FilteredPostFeedModel* PostFeedModel::addMediaFilter()
+{
+    auto filter = std::make_unique<MediaPostFilter>();
+    return addFilteredPostFeedModel(std::move(filter));
+}
+
 FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)
 {
     Q_ASSERT(postFilter);
     qDebug() << "Add filtered post feed model:" << postFilter->getName();
     auto model = std::make_unique<FilteredPostFeedModel>(
-            std::move(postFilter), mUserDid, mFollowing, mMutedReposts, mContentFilter,
+            std::move(postFilter), this, mUserDid, mFollowing, mMutedReposts, mContentFilter,
             mBookmarks, mMutedWords, mFocusHashtags, mHashtags, this);
 
+    model->setModelId(mModelId);
     model->setPosts(mFeed, mFeed.size());
+    model->setEndOfFeed(isEndOfFeed());
     auto* retval = model.get();
     mFilteredPostFeedModels.push_back(std::move(model));
     emit filteredPostFeedModelsChanged();
@@ -546,7 +598,7 @@ void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedM
     {
         if (it->get() == postFeedModel)
         {
-            qDebug() << "Delete filtered post feed model:" << (*it)->getFeedName();
+            qDebug() << "Delete filtered post feed model:" << (*it)->getFeedName() << "from:" << getFeedName();
             Q_ASSERT((*it)->getFeedName() == postFeedModel->getFeedName());
             mFilteredPostFeedModels.erase(it);
             emit filteredPostFeedModelsChanged();

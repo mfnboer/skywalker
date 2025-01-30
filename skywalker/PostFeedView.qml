@@ -7,7 +7,7 @@ SkyListView {
     required property int modelId
     property bool showAsHome: false
     property int unreadPosts: 0
-    property bool isVideoFeed: postFeedView.model.contentMode === QEnums.CONTENT_MODE_VIDEO
+    readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
 
     signal closed
 
@@ -15,21 +15,23 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
 
-    Accessible.name: postFeedView.model.feedName
+    Accessible.name: underlyingModel ? underlyingModel.feedName : ""
 
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
-        feedName: postFeedView.model.feedName
-        feedAvatar: guiSettings.contentVisible(postFeedView.model.getGeneratorView()) ? postFeedView.model.getGeneratorView().avatarThumb : ""
-        defaultSvg: guiSettings.feedDefaultAvatar(postFeedView.model.getGeneratorView())
-        contentMode: postFeedView.model.contentMode
+        feedName: underlyingModel ? underlyingModel.feedName : ""
+        feedAvatar: getFeedAvatar()
+        defaultSvg: getFeedDefaultAvatar()
+        contentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
         showAsHome: postFeedView.showAsHome
-        showLanguageFilter: postFeedView.model.languageFilterConfigured
-        filteredLanguages: postFeedView.model.filteredLanguages
-        showPostWithMissingLanguage: postFeedView.model.showPostWithMissingLanguage
+        showLanguageFilter: underlyingModel ? underlyingModel.languageFilterConfigured : false
+        filteredLanguages: underlyingModel ? underlyingModel.filteredLanguages : []
+        showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
+        showViewOptions: underlyingModel ? underlyingModel.contentMode === QEnums.CONTENT_MODE_UNSPECIFIED : false
 
         onClosed: postFeedView.closed()
-        onFeedAvatarClicked: skywalker.getFeedGenerator(postFeedView.model.getGeneratorView().uri)
+        onFeedAvatarClicked: showFeed()
+        onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -51,13 +53,19 @@ SkyListView {
         required property int index
 
         width: postFeedView.width
-        isVideoFeed: postFeedView.isVideoFeed
+        swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
+        extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
-        onVideoClicked: {
-            if (isVideoFeed)
-                root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
-            else
-                console.warn("This is not a video feed")
+        onActivateSwipe: {
+            root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+        }
+
+        Loader {
+            id: extraFooterLoader
+            anchors.bottom: parent.bottom
+
+            active: model.isFilterModel() && index == count - 1 && !endOfFeed
+            sourceComponent: extraFooterComponent
         }
     }
 
@@ -71,6 +79,7 @@ SkyListView {
     }
 
     EmptyListIndication {
+        id: emptyListIndication
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.noPosts
         text: qsTr("Feed is empty")
@@ -81,6 +90,103 @@ SkyListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: skywalker.getFeedInProgress
+    }
+
+    Component {
+        id: extraFooterComponent
+
+        Rectangle {
+            width: postFeedView.width
+            height: 150
+            color: "transparent"
+
+            AccessibleText {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                padding: 10
+                textFormat: Text.RichText
+                wrapMode: Text.Wrap
+                text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`)
+                onLinkActivated: model.getFeedNextPage(skywalker)
+            }
+        }
+    }
+
+    Loader {
+        anchors.top: emptyListIndication.bottom
+        active: model.isFilterModel() && count === 0 && !model.endOfFeed
+        sourceComponent: extraFooterComponent
+    }
+
+    function getFeedDefaultAvatar() {
+        if (!underlyingModel)
+            return SvgFilled.feed
+
+        switch (underlyingModel.feedType) {
+        case QEnums.FEED_GENERATOR:
+            return guiSettings.feedDefaultAvatar(underlyingModel.getGeneratorView())
+        case QEnums.FEED_LIST:
+            return SvgFilled.list
+        default:
+            console.warn("Unexpected feed type:", underlyingModel.feedType)
+            return SvgFilled.feed
+        }
+    }
+
+    function getFeedAvatar() {
+        if (!underlyingModel)
+            return ""
+
+        switch (underlyingModel.feedType) {
+        case QEnums.FEED_GENERATOR:
+            return guiSettings.feedContentVisible(underlyingModel.getGeneratorView()) ?
+                underlyingModel.getGeneratorView().avatarThumb : ""
+        case QEnums.FEED_LIST:
+            return guiSettings.feedContentVisible(underlyingModel.getListView()) ?
+                underlyingModel.getListView().avatarThumb : ""
+        default:
+            console.warn("Unexpected feed type:", underlyingModel.feedType)
+            return ""
+        }
+    }
+
+    function showFeed() {
+        if (!underlyingModel)
+            return
+
+        switch (underlyingModel.feedType) {
+        case QEnums.FEED_GENERATOR:
+            skywalker.getFeedGenerator(underlyingModel.getGeneratorView().uri)
+            break
+        case QEnums.FEED_LIST:
+            root.viewListByUri(underlyingModel.getListView().uri, false)
+            break
+        default:
+            console.warn("Unexpected feed type:", underlyingModel.feedType)
+            break
+        }
+    }
+
+    function changeView(contentMode) {
+        let oldModel = model
+
+        switch (contentMode) {
+        case QEnums.CONTENT_MODE_UNSPECIFIED:
+            model = model.getUnderlyingModel()
+            break
+        case QEnums.CONTENT_MODE_VIDEO:
+            model = model.getUnderlyingModel().addVideoFilter()
+            break
+        case QEnums.CONTENT_MODE_MEDIA:
+            model = model.getUnderlyingModel().addMediaFilter()
+            break
+        default:
+            console.warn("Unknown content mode:", contentMode)
+            return
+        }
+
+        if (oldModel.isFilterModel())
+            oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
     }
 
     function activate() {

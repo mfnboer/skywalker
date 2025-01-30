@@ -49,7 +49,7 @@ Item {
     readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"
     readonly property string linkColorDarkMode: "#58a6ff"
-    readonly property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : linkColorDarkMode)
+    property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : linkColorDarkMode)
     readonly property string menuColor: backgroundColor
     readonly property string messageTimeColor: Material.color(Material.Grey)
     readonly property string messageNewBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
@@ -256,6 +256,12 @@ Item {
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
+    function feedContentVisible(feed)
+    {
+        let visibility = skywalker.getContentVisibility(feed.labels)
+        return visibility === QEnums.CONTENT_VISIBILITY_SHOW
+    }
+
     function filterContentLabelsToShow(contentLabels) {
         let contentFilter = skywalker.getContentFilter()
         let labels = []
@@ -268,6 +274,27 @@ Item {
         }
 
         return labels
+    }
+
+    function getFilteredPostsFooterText(model) {
+        if (!model.isFilterModel())
+            return ""
+
+        if (model.numPostsChecked === 0)
+            return qsTr(`No more posts in feed till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+
+        return qsTr(`No more posts in ${model.numPostsChecked} feed posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+    }
+
+    function getContentModeSvg(contentMode) {
+        switch (contentMode) {
+        case QEnums.CONTENT_MODE_VIDEO:
+            return SvgOutline.film
+        case QEnums.CONTENT_MODE_MEDIA:
+            return SvgOutline.image
+        default:
+            return SvgOutline.chat
+        }
     }
 
     function isUserDid(did) {

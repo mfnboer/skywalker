@@ -2,14 +2,18 @@
 // License: GPLv3
 #pragma once
 #include "abstract_post_feed_model.h"
+#include "feed_pager.h"
 #include "post_filter.h"
 
 namespace Skywalker {
+
+class PostFeedModel;
 
 class FilteredPostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
     Q_PROPERTY(QColor backgroundColor READ getBackgroundColor CONSTANT FINAL)
     Q_PROPERTY(BasicProfile profile READ getProfile CONSTANT FINAL)
     Q_PROPERTY(QDateTime checkedTillTimestamp READ getCheckedTillTimestamp NOTIFY checkedTillTimestampChanged FINAL)
@@ -19,6 +23,7 @@ public:
     using Ptr = std::unique_ptr<FilteredPostFeedModel>;
 
     explicit FilteredPostFeedModel(IPostFilter::Ptr postFilter,
+                                   PostFeedModel* underlyingModel,
                                    const QString& userDid, const IProfileStore& following,
                                    const IProfileStore& mutedReposts,
                                    const IContentFilter& contentFilter,
@@ -28,7 +33,10 @@ public:
                                    HashtagIndex& hashtags,
                                    QObject* parent = nullptr);
 
+    Q_INVOKABLE bool isFilterModel() const { return true; }
+    Q_INVOKABLE QVariant getUnderlyingModel();
     QString getFeedName() const { return mPostFilter->getName(); }
+    QEnums::ContentMode getContentMode() const { return mPostFilter->getContentMode(); }
     QColor getBackgroundColor() const { return mPostFilter->getBackgroundColor(); }
     BasicProfile getProfile() const { return mPostFilter->getAuthor(); }
 
@@ -43,6 +51,13 @@ public:
     QDateTime getCheckedTillTimestamp() const { return mCheckedTillTimestamp; }
     void setNumPostsChecked(int numPostsChecked);
     int getNumPostsChecked() const { return mNumPostsChecked; }
+
+    void setEndOfFeed(bool endOfFeed) override;
+
+    Q_INVOKABLE void getFeed(IFeedPager* pager);
+    Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
+
+    QVariant data(const QModelIndex& index, int role) const override;
 
 signals:
     void checkedTillTimestampChanged();
@@ -67,6 +82,7 @@ private:
     void addToIndices(int offset, size_t startAtIndex);
 
     IPostFilter::Ptr mPostFilter;
+    PostFeedModel* mUnderlyingModel = nullptr;
     QDateTime mCheckedTillTimestamp{QDateTime::currentDateTimeUtc()};
     int mNumPostsChecked = 0;
 

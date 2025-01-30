@@ -14,7 +14,7 @@ SkyPage {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
-    property bool idVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
+    property bool isVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
 
     signal closed
 

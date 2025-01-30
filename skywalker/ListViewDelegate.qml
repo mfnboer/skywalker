@@ -474,6 +474,6 @@ Rectangle {
     }
 
     function listVisible() {
-        return guiSettings.contentVisible(list)
+        return guiSettings.feedContentVisible(list)
     }
 }

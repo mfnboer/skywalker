@@ -460,6 +460,15 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
+void AbstractPostFeedModel::setEndOfFeed(bool endOfFeed)
+{
+    if (endOfFeed != mEndOfFeed)
+    {
+        mEndOfFeed = endOfFeed;
+        emit endOfFeedChanged();
+    }
+}
+
 QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{

@@ -299,7 +299,10 @@ public:
     {
         CONTENT_MODE_UNSPECIFIED = (int)ATProto::AppBskyFeed::ContentMode::UNSPECIFIED,
         CONTENT_MODE_VIDEO = (int)ATProto::AppBskyFeed::ContentMode::VIDEO,
-        CONTENT_MODE_UNKNOWN = (int)ATProto::AppBskyFeed::ContentMode::UNKNOWN
+        CONTENT_MODE_UNKNOWN = (int)ATProto::AppBskyFeed::ContentMode::UNKNOWN,
+
+        // Not defined by ATProto
+        CONTENT_MODE_MEDIA
     };
     Q_ENUM(ContentMode)
 
@@ -315,6 +318,7 @@ public:
     enum FeedType
     {
         FEED_GENERATOR,
+        FEED_LIST,
         FEED_AUTHOR
     };
     Q_ENUM(FeedType)

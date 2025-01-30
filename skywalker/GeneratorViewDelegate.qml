@@ -303,6 +303,6 @@ Rectangle {
     }
 
     function feedVisible() {
-        return guiSettings.contentVisible(feed)
+        return guiSettings.feedContentVisible(feed)
     }
 }

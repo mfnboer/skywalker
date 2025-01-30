@@ -6,6 +6,9 @@ RoundCornerMask {
     required property int contentVisibility
     required property string contentWarning
     property list<imageview> images
+    property bool swipeMode: false
+
+    signal activateSwipe
 
     id: frame
     width: parent.width
@@ -34,6 +37,21 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(1)
+
+            Loader {
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                active: swipeMode
+
+                sourceComponent: SkySvg {
+                    width: 20
+                    height: 20
+                    svg: SvgOutline.swipeVertical
+                    color: "white"
+                }
+            }
         }
 
         ThumbImageView {
@@ -87,15 +105,19 @@ RoundCornerMask {
                     index = 3
             }
 
-            if (index >= 0)
-                root.viewFullImage(images, index)
+            if (index >= 0) {
+                if (swipeMode)
+                    activateSwipe()
+                else
+                    root.viewFullImage(images, index)
+            }
         }
     }
 
     FilteredImageWarning {
         id: filter
         width: parent.width
-        contentVisibiliy: frame.contentVisibility
+        contentVisibility: frame.contentVisibility
         contentWarning: frame.contentWarning
         images: frame.images
     }

@@ -15,6 +15,8 @@ public:
     virtual QString getName() const = 0;
     virtual QColor getBackgroundColor() const { return "transparent"; }
     virtual BasicProfile getAuthor() const { return BasicProfile{}; }
+    virtual QEnums::ContentMode getContentMode() const { return QEnums::CONTENT_MODE_UNSPECIFIED; }
+    virtual bool mustAddThread() const { return true; }
     virtual bool match(const Post& post) const = 0;
 };
 
@@ -59,6 +61,28 @@ public:
 
 private:
     BasicProfile mProfile;
+};
+
+class VideoPostFilter : public IPostFilter
+{
+public:
+    using Ptr = std::unique_ptr<VideoPostFilter>;
+
+    QString getName() const override;
+    QEnums::ContentMode getContentMode() const override { return QEnums::CONTENT_MODE_VIDEO; }
+    bool mustAddThread() const override { return false; }
+    bool match(const Post& post) const override;
+};
+
+class MediaPostFilter : public IPostFilter
+{
+public:
+    using Ptr = std::unique_ptr<MediaPostFilter>;
+
+    QString getName() const override;
+    QEnums::ContentMode getContentMode() const override { return QEnums::CONTENT_MODE_MEDIA; }
+    bool mustAddThread() const override { return false; }
+    bool match(const Post& post) const override;
 };
 
 }
