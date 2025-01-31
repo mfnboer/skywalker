@@ -5,6 +5,8 @@
 
 namespace Skywalker {
 
+const ProfileStore ProfileStore::NULL_STORE;
+
 bool ProfileStore::contains(const QString& did) const
 {
     return mDidProfileMap.count(did);
@@ -78,6 +80,14 @@ void ProfileListItemStore::add(const BasicProfile& profile, const QString& listI
     ProfileStore::add(profile);
     mDidListItemUriMap[did] = listItemUri;
     mListItemUriDidMap[listItemUri] = did;
+}
+
+void ProfileListItemStore::removeByListItemUri(const QString& listItemUri)
+{
+    const QString* did = getDidByListItemUri(listItemUri);
+
+    if (did)
+        remove(*did);
 }
 
 const QString* ProfileListItemStore::getListItemUri(const QString& did) const

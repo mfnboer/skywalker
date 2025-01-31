@@ -1680,7 +1680,7 @@ ApplicationWindow {
     }
 
     function viewAuthor(profile, modelId) {
-        let component = Qt.createComponent("AuthorView.qml")
+        let component = guiSettings.createComponent("AuthorView.qml")
         let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker, rootProfileUtils: profileUtils })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)

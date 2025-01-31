@@ -462,6 +462,10 @@ qt_add_qml_module(libskywalker
         SOURCES signal_object.h
         SOURCES signal_object.cpp
         SOURCES feed_pager.h
+        SOURCES list_store.h
+        SOURCES list_store.cpp
+        SOURCES graph_listener.h
+        SOURCES graph_listener.cpp
 )
 
 if (NOT ANDROID)

@@ -14,7 +14,8 @@ ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId,
     mPurpose(purpose),
     mAtId(atId),
     mFavoriteFeeds(favoriteFeeds),
-    mGraphUtils(this)
+    mGraphUtils(this),
+    mTimelineHide(*skywalker->getTimelineHide())
 {
     qDebug() << "New list list model type:" << type << "purpose:" << purpose << "atId:" << atId;
     mGraphUtils.setSkywalker(skywalker);
@@ -65,6 +66,8 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
         return mFavoriteFeeds.isSavedFeed(list.getUri());
     case Role::ListPinned:
         return mFavoriteFeeds.isPinnedFeed(list.getUri());
+    case Role::ListHideFromTimeline:
+        return change &&change->mHideFromTimeline ? *change->mHideFromTimeline : mTimelineHide.hasList(list.getUri());
     case Role::MemberCheck:
         if (change && change->mMemberListItemUri)
             return change->mMemberListItemUri->isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
@@ -262,6 +265,7 @@ QHash<int, QByteArray> ListListModel::roleNames() const
         { int(Role::ListMuted), "listMuted" },
         { int(Role::ListSaved), "listSaved" },
         { int(Role::ListPinned), "listPinned" },
+        { int(Role::ListHideFromTimeline), "listHideFromTimeline" },
         { int(Role::MemberCheck), "memberCheck" },
         { int(Role::MemberListItemUri), "memberListItemUri" }
     };
@@ -320,6 +324,11 @@ void ListListModel::blockedChanged()
 void ListListModel::mutedChanged()
 {
     changeData({ int(Role::ListMuted) });
+}
+
+void ListListModel::hideFromTimelineChanged()
+{
+    changeData({ int(Role::ListHideFromTimeline) });
 }
 
 void ListListModel::memberListItemUriChanged()

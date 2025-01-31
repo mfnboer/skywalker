@@ -2,6 +2,7 @@ next
 ====
 * Video and media view modes (swiping) for all feeds and lists
 * Video and media view added to timeline views
+* Option to hide users in a list from your timeline
 
 3.12
 ====

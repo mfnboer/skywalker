@@ -10,6 +10,7 @@ Rectangle {
     required property bool listMuted
     required property bool listSaved
     required property bool listPinned
+    required property bool listHideFromTimeline
     property bool showList: listVisible()
     property bool ownLists: true
     property bool allowEdit: true
@@ -26,6 +27,8 @@ Rectangle {
     signal unblockList(listview list, string blockedUri)
     signal muteList(listview list)
     signal unmuteList(listview list)
+    signal hideList(listview list)
+    signal unhideList(listview list)
 
     GridLayout {
         id: grid
@@ -121,6 +124,7 @@ Rectangle {
                 topPadding: 5
                 muted: listMuted
                 blockedUri: listBlockedUri
+                hideFromTimeline: listHideFromTimeline
             }
         }
 
@@ -230,6 +234,7 @@ Rectangle {
     Menu {
         id: moreMenuOwnUserList
         modal: true
+        width: hideListMenuItem.width
 
         CloseMenuItem {
             text: qsTr("<b>List</b>")
@@ -265,6 +270,22 @@ Rectangle {
             MenuItemSvg {
                 svg: listPinned ? SvgFilled.star : SvgOutline.star
                 color: listPinned ? guiSettings.favoriteColor : guiSettings.textColor
+            }
+        }
+
+        AccessibleMenuItem {
+            id: hideListMenuItem
+            width: 250
+            text: listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
+            onTriggered: {
+                if (listHideFromTimeline)
+                    unhideList(list)
+                else
+                    hideList(list)
+            }
+
+            MenuItemSvg {
+                svg: listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
             }
         }
 

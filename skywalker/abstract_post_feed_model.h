@@ -93,6 +93,7 @@ public:
 
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
+                          const IProfileStore& feedHide,
                           const IContentFilter& contentFilter, const Bookmarks& bookmarks,
                           const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                           HashtagIndex& hashtags,
@@ -163,6 +164,7 @@ protected:
     const QString& mUserDid;
     const IProfileStore& mFollowing;
     const IProfileStore& mMutedReposts;
+    const IProfileStore& mFeedHide;
     const IContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
     const IMatchWords& mMutedWords;

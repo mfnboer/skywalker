@@ -18,7 +18,7 @@ private slots:
     void init()
     {
         mPostFeedModel = std::make_unique<PostFeedModel>(
-            HOME_FEED, mUserDid, mFollowing, mMutedReposts, mContentFilter,
+            HOME_FEED, mUserDid, mFollowing, mMutedReposts, mHideLists, mContentFilter,
             mBookmarks, mMutedWords, mFocusHashtags, mHashtags, mUserPreferences, mUserSettings);
     }
 
@@ -494,6 +494,7 @@ private:
     QString mUserDid;
     ProfileStore mFollowing;
     ProfileStore mMutedReposts;
+    ProfileStore mHideLists;
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
     ContentFilter mContentFilter{mUserPreferences, &mUserSettings};

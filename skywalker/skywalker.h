@@ -17,6 +17,7 @@
 #include "item_store.h"
 #include "labeler.h"
 #include "list_list_model.h"
+#include "list_store.h"
 #include "muted_words.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
@@ -244,6 +245,7 @@ public:
     void addToUnreadNotificationCount(int addUnread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
+    Q_INVOKABLE ListStore* getTimelineHide() { return &mTimelineHide; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     ATProto::PlcDirectoryClient& getPlcDirectory() { return mPlcDirectory; }
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
@@ -334,6 +336,8 @@ private:
     void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
     void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
+    void loadTimelineHide();
+    void loadTimelineHide(QStringList uris);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void initLabelers();
     void loadLabelSettings();
@@ -359,6 +363,7 @@ private:
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
     ProfileListItemStore mMutedReposts;
+    ListStore mTimelineHide;
     ATProto::UserPreferences mUserPreferences;
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;

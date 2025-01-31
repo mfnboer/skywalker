@@ -8,6 +8,7 @@ ListView {
     required property int modelId
     property string description
     property bool ownLists: true
+    property var timelineHide: skywalker.getTimelineHide()
 
     signal closed
 
@@ -64,6 +65,8 @@ ListView {
         onUnblockList: (list, blockedUri) => graphUtils.unblockList(list.uri, blockedUri)
         onMuteList: (list) => graphUtils.muteList(list.uri)
         onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
+        onHideList: (list) => graphUtils.hideList(list.uri)
+        onUnhideList: (list) => graphUtils.unhideList(list.uri)
     }
 
     FlickableRefresher {
@@ -98,6 +101,8 @@ ListView {
         onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onHideListOk: statusPopup.show(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
+        onHideListFailed: (error) => statusPopup.show(qsTr(`Failed to hide list from timeline: ${error}`), QEnums.STATUS_LEVEL_INFO, 2)
     }
 
 

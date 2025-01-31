@@ -10,7 +10,9 @@ SearchPostFeedModel::SearchPostFeedModel(const QString& userDid, const IProfileS
                                          const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                          HashtagIndex& hashtags,
                                          QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent)
+    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+                          contentFilter, bookmarks, mutedWords, focusHashtags, hashtags,
+                          parent)
 {
 }
 

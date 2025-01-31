@@ -16,8 +16,9 @@ FilteredPostFeedModel::FilteredPostFeedModel(IPostFilter::Ptr postFilter,
                                              const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords,
-                  focusHashtags, hashtags, parent),
+    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+                          contentFilter, bookmarks, mutedWords, focusHashtags, hashtags,
+                          parent),
     mPostFilter(std::move(postFilter)),
     mUnderlyingModel(underlyingModel)
 {

@@ -27,6 +27,12 @@ void LocalListModelChanges::updateMuted(const QString& uri, bool muted)
     mutedChanged();
 }
 
+void LocalListModelChanges::hideFromTimeline(const QString& uri, bool hide)
+{
+    mChanges[uri].mHideFromTimeline = hide;
+    hideFromTimelineChanged();
+}
+
 void LocalListModelChanges::updateMemberListItemUri(const QString& uri, const QString& listItemUri)
 {
     mChanges[uri].mMemberListItemUri = listItemUri;

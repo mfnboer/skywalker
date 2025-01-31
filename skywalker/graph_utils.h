@@ -44,6 +44,8 @@ public:
     Q_INVOKABLE void unblockList(const QString& listUri, const QString& blockingUri);
     Q_INVOKABLE void muteList(const QString& listUri);
     Q_INVOKABLE void unmuteList(const QString& listUri);
+    Q_INVOKABLE void hideList(const QString& listUri);
+    Q_INVOKABLE void unhideList(const QString& listUri);
 
     Q_INVOKABLE bool areRepostsMuted(const QString& did) const;
     Q_INVOKABLE void muteReposts(const BasicProfile& profile);
@@ -93,6 +95,8 @@ signals:
     void muteRepostsFailed(QString error);
     void unmuteRepostsOk();
     void unmuteRepostsFailed(QString error);
+    void hideListOk();
+    void hideListFailed(QString error);
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,

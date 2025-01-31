@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "graph_utils.h"
 #include "definitions.h"
+#include "graph_listener.h"
 #include "photo_picker.h"
 #include "skywalker.h"
 #include <atproto/lib/at_uri.h>
@@ -350,6 +351,7 @@ void GraphUtils::deleteList(const QString& listUri)
                 mutedReposts.setListCreated(false);
             }
 
+            emit GraphListener::instance().listDeleted(listUri);
             emit deleteListOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -457,6 +459,7 @@ void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile
                 emit muteRepostsOk();
             }
 
+            emit GraphListener::instance().userAdded(listUri, profile, itemUri);
             emit addListUserOk(profile.getDid(), itemUri, itemCid);
         },
         [this, presence=getPresence(), listUri](const QString& error, const QString& msg){
@@ -512,6 +515,7 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
                 }
             }
 
+            emit GraphListener::instance().userRemoved(listUri, listItemUri);
             emit removeListUserOk();
         },
         [this, presence=getPresence(), listUri](const QString& error, const QString& msg){
@@ -637,6 +641,42 @@ void GraphUtils::unmuteList(const QString& listUri)
 
             qDebug() << "Unmute failed failed:" << error << " - " << msg;
             emit unmuteListFailed(msg);
+        });
+}
+
+void GraphUtils::hideList(const QString& listUri)
+{
+    Q_ASSERT(mSkywalker);
+    mSkywalker->getTimelineHide()->addList(listUri,
+        [this, presence=getPresence(), listUri]{
+            if (!presence)
+                return;
+
+            auto* timelineHide = mSkywalker->getTimelineHide();
+            const auto listUris = timelineHide->getListUris();
+            mSkywalker->getUserSettings()->setHideLists(mSkywalker->getUserDid(), listUris);
+
+            mSkywalker->makeLocalModelChange(
+                [listUri](LocalListModelChanges* model){
+                    model->hideFromTimeline(listUri, true);
+                });
+
+            emit hideListOk();
+        },
+        [this](auto, const QString& msg){ emit hideListFailed(msg); });
+}
+
+void GraphUtils::unhideList(const QString& listUri)
+{
+    Q_ASSERT(mSkywalker);
+    auto* timelineHide = mSkywalker->getTimelineHide();
+    timelineHide->removeList(listUri);
+    const auto listUris = timelineHide->getListUris();
+    mSkywalker->getUserSettings()->setHideLists(mSkywalker->getUserDid(), listUris);
+
+    mSkywalker->makeLocalModelChange(
+        [listUri](LocalListModelChanges* model){
+            model->hideFromTimeline(listUri, false);
         });
 }
 

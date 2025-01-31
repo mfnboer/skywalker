@@ -107,6 +107,9 @@ public:
     Q_INVOKABLE void setLastViewedFeed(const QString& did, const QString& uri);
     Q_INVOKABLE QString getLastViewedFeed(const QString& did) const;
 
+    void setHideLists(const QString& did, const QStringList& listUris);
+    QStringList getHideLists(const QString& did) const;
+
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
 

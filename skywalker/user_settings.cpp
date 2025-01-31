@@ -303,6 +303,16 @@ QString UserSettings::getLastViewedFeed(const QString& did) const
     return mSettings.value(key(did, "lastViewedFeed"), HOME_FEED).toString();
 }
 
+void UserSettings::setHideLists(const QString& did, const QStringList& listUris)
+{
+    mSettings.setValue(key(did, "hideLists"), listUris);
+}
+
+QStringList UserSettings::getHideLists(const QString& did) const
+{
+    return mSettings.value(key(did, "hideLists")).toStringList();
+}
+
 void UserSettings::setBookmarks(const QString& did, const QStringList& bookmarks)
 {
     mSettings.setValue(key(did, "bookmarks"), bookmarks);

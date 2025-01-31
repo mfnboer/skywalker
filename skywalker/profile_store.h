@@ -20,6 +20,8 @@ public:
 class ProfileStore : public IProfileStore
 {
 public:
+    static const ProfileStore NULL_STORE;
+
     bool contains(const QString& did) const override;
     const BasicProfile* get(const QString& did) const override;
     virtual void add(const BasicProfile& profile);
@@ -39,6 +41,7 @@ public:
     virtual void clear() override;
 
     void add(const BasicProfile& profile, const QString& listItemUri);
+    void removeByListItemUri(const QString& listItemUri);
     const QString* getListItemUri(const QString& did) const;
     const QString* getDidByListItemUri(const QString& listItemUri) const;
 

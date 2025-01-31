@@ -10,6 +10,7 @@ SkyPage {
     property bool listMuted: list.viewer.muted
     property bool isSavedList: skywalker.favoriteFeeds.isSavedFeed(list.uri)
     property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
+    property bool listHideFromTimeline: skywalker.getTimelineHide().hasList(list.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
 
@@ -124,6 +125,7 @@ SkyPage {
                 topPadding: 5
                 muted: listMuted
                 blockedUri: listBlockedUri
+                hideFromTimeline: listHideFromTimeline
             }
 
             ContentLabels {
@@ -203,6 +205,7 @@ SkyPage {
     Menu {
         id: moreMenuOwnUserList
         modal: true
+        width: hideListMenuItem.width
 
         CloseMenuItem {
             text: qsTr("<b>List</b>")
@@ -231,6 +234,26 @@ SkyPage {
             MenuItemSvg {
                 svg: isPinnedList ? SvgFilled.star : SvgOutline.star
                 color: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
+            }
+        }
+
+        AccessibleMenuItem {
+            id: hideListMenuItem
+            width: 250
+            text: listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
+            onTriggered: {
+                if (listHideFromTimeline) {
+                    graphUtils.unhideList(list.uri)
+                    listHideFromTimeline = false
+                }
+                else {
+                    graphUtils.hideList(list.uri)
+                }
+
+            }
+
+            MenuItemSvg {
+                svg: listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
             }
         }
 
@@ -393,6 +416,12 @@ SkyPage {
             authorListView.refresh()
         }
         onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onHideListOk: {
+            listHideFromTimeline = true
+            statusPopup.show(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
+        }
+        onHideListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+
     }
 
     ProfileUtils {

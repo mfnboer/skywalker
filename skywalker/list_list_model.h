@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "graph_utils.h"
+#include "list_store.h"
 #include "list_view.h"
 #include "local_list_model_changes.h"
 #include "local_profile_changes.h"
@@ -28,6 +29,7 @@ public:
         ListMuted,
         ListSaved,
         ListPinned,
+        ListHideFromTimeline,
         MemberCheck,
         MemberListItemUri
     };
@@ -69,6 +71,7 @@ protected:
     // LocalListModelChanges
     virtual void blockedChanged() override;
     virtual void mutedChanged() override;
+    virtual void hideFromTimelineChanged() override;
     virtual void memberListItemUriChanged() override;
 
     // LocalProfileChanges
@@ -94,6 +97,7 @@ private:
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
     GraphUtils mGraphUtils;
+    const ListStore& mTimelineHide;
     QString mMemberCheckDid;
     std::unordered_map<QString, std::optional<QString>> mMemberCheckResults; // listUri -> listItemUri
     bool mExcludeInternalLists = false;

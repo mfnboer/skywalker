@@ -12,7 +12,9 @@ DraftPostsModel::DraftPostsModel(const QString& userDid, const IProfileStore& fo
                                  const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent)
+    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+                          contentFilter, bookmarks, mutedWords, focusHashtags, hashtags,
+                          parent)
 {
 }
 

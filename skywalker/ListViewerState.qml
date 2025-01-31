@@ -1,8 +1,9 @@
 import QtQuick
 
 Row {
-    property bool muted
+    property bool muted: false
     property string blockedUri
+    property bool hideFromTimeline: false
 
     spacing: 5
 
@@ -13,5 +14,9 @@ Row {
     SkyLabel {
         text: qsTr("blocked")
         visible: blockedUri
+    }
+    SkyLabel {
+        text: qsTr("hide from timeline")
+        visible: hideFromTimeline
     }
 }

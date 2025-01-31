@@ -47,6 +47,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
     IFeedPager(parent),
+    mTimelineHide(this),
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
     mBookmarks(this),
@@ -59,11 +60,12 @@ Skywalker::Skywalker(QObject* parent) :
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mContentFilter,
-                   mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
+    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
+                   mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, this)
 {
     mBookmarks.setSkywalker(this);
+    mTimelineHide.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
@@ -589,6 +591,50 @@ void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs, std::
         });
 }
 
+void Skywalker::loadTimelineHide()
+{
+    qDebug() << "Load timeline hide lists";
+    const QStringList listUris = mUserSettings.getHideLists(mUserDid);
+    loadTimelineHide(listUris);
+}
+
+void Skywalker::loadTimelineHide(QStringList uris)
+{
+    Q_ASSERT(mBsky);
+    if (uris.empty())
+    {
+        emit getUserPreferencesOK();
+        return;
+    }
+
+    const QString uri = uris.back();
+    uris.pop_back();
+
+    mTimelineHide.loadList(uri,
+        [this, uri, uris]{
+            qDebug() << "Loaded:" << uri;
+            loadTimelineHide(uris);
+        },
+        [this, uri, uris](const QString& error, const QString& msg){
+            if (ATProto::Client::isListNotFoundError(error))
+            {
+                qDebug() << "Hide list not found:" << uri << error << " - " << msg;
+
+                // The list is probbaly delete through another interface. Remove from settings.
+                QStringList listUris = mUserSettings.getHideLists(mUserDid);
+                listUris.removeOne(uri);
+                mUserSettings.setHideLists(mUserDid, listUris);
+
+                loadTimelineHide(uris);
+            }
+            else
+            {
+                qWarning() << "Failed:" << error << " - " << msg;
+                emit getUserPreferencesFailed(tr("Failed to hide list %1 : %2").arg(uri, msg));
+            }
+        });
+}
+
 void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -606,7 +652,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         // Either their are too many muted reposts, or the cursor got in a loop.
         // We signal OK as there is no way out of this situation without starting
         // up the app.
-        emit getUserPreferencesOK();
+        loadTimelineHide();
         return;
     }
 
@@ -623,15 +669,15 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
             if (output->mCursor)
                 loadMutedReposts(maxPages - 1, *output->mCursor);
             else
-                emit getUserPreferencesOK();
+                loadTimelineHide();
         },
         [this](const QString& error, const QString& msg){
             mMutedReposts.setListCreated(false);
 
-            if (ATProto::Client::isListNotFoundError(error, msg))
+            if (ATProto::Client::isListNotFoundError(error))
             {
                 qDebug() << "No muted reposts list:" << error << " - " << msg;
-                emit getUserPreferencesOK();
+                loadTimelineHide();
             }
             else
             {
@@ -2222,7 +2268,7 @@ int Skywalker::addModelToStore(ModelType::Ptr model, ItemStore<typename ModelTyp
 int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
-            mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks, mMutedWords,
+            mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mBookmarks, mMutedWords,
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
@@ -2233,7 +2279,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 {
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
-                                                 mUserDid, mUserFollows, mMutedReposts,
+                                                 mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setListView(listView);
@@ -2245,7 +2291,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 {
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"),
-                                                 mUserDid, mUserFollows, mMutedReposts,
+                                                 mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings, this);
     model->setQuoteUri(quoteUri);
@@ -3493,6 +3539,7 @@ void Skywalker::signOut()
     mLoggedOutVisibility = true;
     mUserFollows.clear();
     mMutedReposts.clear();
+    mTimelineHide.clear();
     setUnreadNotificationCount(0);
     mBookmarksModel = nullptr;
     mBookmarks.clear();

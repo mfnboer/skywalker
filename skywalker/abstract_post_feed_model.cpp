@@ -12,6 +12,7 @@ using namespace std::chrono_literals;
 
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
+                                             const IProfileStore& feedHide,
                                              const IContentFilter& contentFilter, const Bookmarks& bookmarks,
                                              const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
@@ -20,6 +21,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mUserDid(userDid),
     mFollowing(following),
     mMutedReposts(mutedReposts),
+    mFeedHide(feedHide),
     mContentFilter(contentFilter),
     mBookmarks(bookmarks),
     mMutedWords(mutedWords),
@@ -92,9 +94,24 @@ void AbstractPostFeedModel::cleanupStoredCids()
 
 bool AbstractPostFeedModel::mustHideContent(const Post& post) const
 {
-    if (post.getAuthor().getViewer().isMuted())
+    const auto& author = post.getAuthor();
+
+    if (author.getViewer().isMuted())
     {
-        qDebug() << "Hide post of muted author:" << post.getAuthor().getHandleOrDid() << post.getCid();
+        qDebug() << "Hide post of muted author:" << author.getHandleOrDid() << post.getCid();
+        return true;
+    }
+
+    if (mFeedHide.contains(author.getDid()))
+    {
+        qDebug () << "Hide post from author:" << author.getHandleOrDid();
+        return true;
+    }
+
+    const auto repostedBy = post.getRepostedBy();
+    if (repostedBy && mFeedHide.contains(repostedBy->getDid()))
+    {
+        qDebug () << "Hide repost from author:" << author.getHandleOrDid();
         return true;
     }
 
