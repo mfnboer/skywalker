@@ -20,8 +20,8 @@ Column {
             id: avatar
             Layout.rowSpan: 2
             Layout.topMargin: 3
-            Layout.preferredWidth: 28
-            Layout.preferredHeight: 28
+            Layout.preferredWidth: 34
+            Layout.preferredHeight: 34
             Layout.alignment: Qt.AlignTop
             author: postHeader.author
 

@@ -44,7 +44,7 @@ SkyListView {
         required property int index
 
         width: enclosingView.width
-        swipeMode: feedFilter === QEnums.AUTHOR_FEED_FILTER_VIDEO
+        swipeMode: [QEnums.AUTHOR_FEED_FILTER_VIDEO, QEnums.AUTHOR_FEED_FILTER_MEDIA].includes(feedFilter)
 
         onActivateSwipe: {
             if (swipeMode)

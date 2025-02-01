@@ -66,6 +66,10 @@ Rectangle {
     required property bool endOfFeed
     property bool swipeMode: false
     property int extraFooterHeight: 0
+    property bool threadBarVisible: !swipeMode
+    readonly property int gridColumns: threadBarVisible ? 2 : 1
+    readonly property int threadColumnWidth: threadBarVisible ? guiSettings.threadColumnWidth : 0
+    readonly property int contentLeftMargin: threadBarVisible ? 0 : margin
 
     property int prevY: 0
     property bool isAnchorItem: false
@@ -121,10 +125,11 @@ Rectangle {
 
     GridLayout {
         id: grid
-        columns: 2
+        columns: gridColumns
         width: parent.width
         rowSpacing: 0
 
+        // BAR
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Rectangle {
@@ -160,6 +165,7 @@ Rectangle {
             }
 
             opacity: avatar.opacity
+            visible: threadBarVisible
 
             Rectangle {
                 y: postEntry.margin - (height / 2)
@@ -170,16 +176,18 @@ Rectangle {
             }
         }
         Rectangle {
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
-            Layout.preferredHeight: topLeftSpace.height
+            Layout.leftMargin: contentLeftMargin
+            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
+            Layout.preferredHeight: topLeftSpace.visible ? topLeftSpace.height : postEntry.margin
             color: "transparent"
         }
 
+        // BAR
         // Pinned post
         Loader {
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredWidth: threadColumnWidth
             Layout.fillHeight: true
-            active: postIsPinned && !postLocallyDeleted
+            active: postIsPinned && !postLocallyDeleted && threadBarVisible
             visible: status == Loader.Ready
             sourceComponent: Rectangle {
                 width: parent.width
@@ -196,6 +204,7 @@ Rectangle {
             }
         }
         Loader {
+            Layout.leftMargin: contentLeftMargin
             Layout.fillWidth: true
             active: postIsPinned && !postLocallyDeleted
             visible: status == Loader.Ready
@@ -209,11 +218,12 @@ Rectangle {
             }
         }
 
+        // BAR
         // Repost information
         Loader {
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredWidth: threadColumnWidth
             Layout.fillHeight: true
-            active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+            active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted && threadBarVisible
             visible: status == Loader.Ready
             sourceComponent: Rectangle {
                 width: parent.width
@@ -230,7 +240,8 @@ Rectangle {
             }
         }
         Loader {
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            Layout.leftMargin: contentLeftMargin
+            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
             active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
             visible: status == Loader.Ready
             sourceComponent: SkyCleanedTextLine {
@@ -250,13 +261,15 @@ Rectangle {
             }
         }
 
+        // BAR
         // Author and content
         Rectangle {
             id: avatar
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredWidth: threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
             opacity: 0.9
+            visible: threadBarVisible
 
             Rectangle {
                 x: avatarImg.x + (avatarImg.width - width) / 2
@@ -319,8 +332,8 @@ Rectangle {
 
             Avatar {
                 id: avatarImg
-                x: avatar.x + 8
-                y: postHeader.y + 5 // For some reason "avatar.y + 5" does not work when it is a repost
+                x: 8
+                y: 5
                 width: parent.width - 13
                 author: postEntry.author
                 visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
@@ -357,14 +370,31 @@ Rectangle {
             // where posts sometimes are too wide (like landscape mode) but makes
             // things very slow :-(
             // This seems fixed on Qt 6.7.3
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            Layout.leftMargin: contentLeftMargin
+            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
             visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
 
-            PostHeader {
-                id: postHeader
+            Loader {
                 width: parent.width
-                author: postEntry.author
-                postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                active: threadBarVisible
+                visible: status == Loader.Ready
+
+                sourceComponent: PostHeader {
+                    width: parent.width
+                    author: postEntry.author
+                    postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                }
+            }
+            Loader {
+                width: parent.width
+                active: !threadBarVisible
+                visible: status == Loader.Ready
+
+                sourceComponent: PostHeaderWithAvatar {
+                    width: parent.width
+                    author: postEntry.author
+                    postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                }
             }
 
             // Reply to
@@ -478,6 +508,7 @@ Rectangle {
                     authorIsUser: guiSettings.isUser(author)
                     isBookmarked: postBookmarked
                     bookmarkNotFound: postBookmarkNotFound
+                    showViewThread: swipeMode
                     record: postRecord
                     recordWithMedia: postRecordWithMedia
 
@@ -504,6 +535,11 @@ Rectangle {
                             if (!bookmarked)
                                 skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
                         }
+                    }
+
+                    onViewThread: {
+                        if (postUri)
+                            skywalker.getPostThread(postUri)
                     }
 
                     onShare: skywalker.sharePost(postUri)
@@ -567,8 +603,9 @@ Rectangle {
             }
         }
 
-        // Folded Posts
+        // Folded Posts (Replaces the post content above)
         Loader {
+            Layout.leftMargin: contentLeftMargin
             Layout.fillWidth: true
             active: postFoldedType === QEnums.FOLDED_POST_FIRST
             visible: status == Loader.Ready
@@ -589,7 +626,7 @@ Rectangle {
 
         // Gap place holder
         Loader {
-            Layout.columnSpan: 2
+            Layout.columnSpan: gridColumns
             Layout.fillWidth: true
             active: postGapId > 0
             visible: status == Loader.Ready
@@ -611,7 +648,7 @@ Rectangle {
 
         // Hidden posts
         Loader {
-            Layout.columnSpan: 2
+            Layout.columnSpan: gridColumns
             Layout.fillWidth: true
             active: postHiddenPosts
             visible: status == Loader.Ready
@@ -631,7 +668,7 @@ Rectangle {
 
         // Place holder for NOT FOUND, BLOCKED, NOT SUPPORTED, DELETED posts
         Loader {
-            Layout.columnSpan: 2
+            Layout.columnSpan: gridColumns
             Layout.fillWidth: true
             active: postNotFound || postBlocked || postNotSupported || postLocallyDeleted
             visible: status == Loader.Ready
@@ -656,7 +693,7 @@ Rectangle {
         }
 
         Loader {
-            Layout.columnSpan: 2
+            Layout.columnSpan: gridColumns
             Layout.fillWidth: true
             active: postNotSupported
             visible: status == Loader.Ready
@@ -672,12 +709,14 @@ Rectangle {
             }
         }
 
+        // BAR
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Rectangle {
-            Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredWidth: threadColumnWidth
             Layout.preferredHeight: postEntry.margin
             color: "transparent"
+            visible: threadBarVisible
 
             Rectangle {
                 x: 8 + (avatarImg.width - width) / 2
@@ -710,7 +749,8 @@ Rectangle {
             }
         }
         Rectangle {
-            Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - postEntry.margin * 2
+            Layout.leftMargin: contentLeftMargin
+            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: postEntry.margin
             color: "transparent"
         }
@@ -718,7 +758,7 @@ Rectangle {
         // Post/Thread separator
         Rectangle {
             Layout.preferredWidth: parent.width
-            Layout.columnSpan: 2
+            Layout.columnSpan: gridColumns
             Layout.preferredHeight: 1
             color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
             visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType) ||
@@ -727,7 +767,7 @@ Rectangle {
 
         // End of feed indication
         Loader {
-            Layout.columnSpan: 2
+            Layout.columnSpan: gridColumns
             Layout.fillWidth: true
             active: endOfFeed
             visible: status == Loader.Ready
