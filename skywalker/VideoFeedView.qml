@@ -17,7 +17,7 @@ SkyListView {
     snapMode: ListView.SnapOneItem
     spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
     currentIndex: 0
-    highlightMoveVelocity: 1000
+    highlightMoveVelocity: 2000
 
     Accessible.name: postFeedView.model.feedName
 
@@ -113,7 +113,6 @@ SkyListView {
         footerHeight = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
         leftMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
         rightMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
-        positionViewAtIndex(currentIndex, ListView.Beginning)
     }
 
     Component.onDestruction: {
