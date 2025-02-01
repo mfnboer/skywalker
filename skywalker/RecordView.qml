@@ -31,25 +31,11 @@ Item {
         width: parent.width - 20
         anchors.centerIn: parent
 
-        Row {
-            spacing: 10
+        PostHeaderWithAvatar {
             width: parent.width
+            author: record.author
+            postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
             visible: record.available
-
-            Avatar {
-                id: avatar
-                width: 24
-                Layout.alignment: Qt.AlignTop
-                author: record.author
-
-                onClicked: skywalker.getDetailedProfile(record.author.did)
-            }
-
-            PostHeader {
-                width: parent.width - avatar.width - parent.spacing
-                author: record.author
-                postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
-            }
         }
 
         // Reply to

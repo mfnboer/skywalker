@@ -466,6 +466,7 @@ qt_add_qml_module(libskywalker
         SOURCES list_store.cpp
         SOURCES graph_listener.h
         SOURCES graph_listener.cpp
+        QML_FILES PostHeaderWithAvatar.qml
 )
 
 if (NOT ANDROID)

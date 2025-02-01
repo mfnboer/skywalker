@@ -247,25 +247,10 @@ Rectangle {
             color: "transparent"
         }
 
-        RowLayout {
+        PostHeaderWithAvatar {
             width: parent.width
-            spacing: 10
-
-            Avatar {
-                id: avatar
-                Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 34
-                Layout.preferredHeight: 34
-                author: videoPage.author
-
-                onClicked: skywalker.getDetailedProfile(author.did)
-            }
-
-            PostHeader {
-                Layout.fillWidth: true
-                author: videoPage.author
-                postIndexedSecondsAgo: videoPage.postIndexedSecondsAgo
-            }
+            author: videoPage.author
+            postIndexedSecondsAgo: videoPage.postIndexedSecondsAgo
         }
 
         // Reply to

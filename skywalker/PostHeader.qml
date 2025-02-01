@@ -43,7 +43,7 @@ Column {
 
     Text {
         width: parent.width
-        bottomPadding: 5
+        bottomPadding: labelsToShow.length > 0 ? 0 : 5
         elide: Text.ElideRight
         text: "@" + author.handle
         font.pointSize: guiSettings.scaledFont(7/8)
@@ -55,7 +55,7 @@ Column {
     Loader {
         active: labelsToShow.length > 0
         width: parent.width
-        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding : 0
+        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding * 2 : 0
         asynchronous: true
         visible: active
 
