@@ -21,7 +21,8 @@ public:
         BlockingUri,
         ListItemUri,
         AuthorMuted,
-        MutedReposts
+        MutedReposts,
+        HideFromTimeline
     };
 
     struct ListEntry
@@ -36,6 +37,7 @@ public:
     using Ptr = std::unique_ptr<AuthorListModel>;
 
     AuthorListModel(Type type, const QString& atId, const IProfileStore& mutedReposts,
+                    const IProfileStore& timelineHide,
                     const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -61,6 +63,7 @@ protected:
     virtual void followingUriChanged() override;
     virtual void mutedChanged() override;
     virtual void mutedRepostsChanged() override;
+    virtual void hideFromTimelineChanged() override;
 
 private:
     using AuthorList = std::deque<ListEntry>;
@@ -71,6 +74,7 @@ private:
     Type mType;
     QString mAtId;
     const IProfileStore& mMutedReposts;
+    const IProfileStore& mTimelineHide;
     const ContentFilter& mContentFilter;
 
     AuthorList mList;

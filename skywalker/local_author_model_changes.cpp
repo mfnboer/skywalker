@@ -39,4 +39,12 @@ void LocalAuthorModelChanges::updateMutedReposts(const QString& did, bool mutedR
     mutedRepostsChanged();
 }
 
+void LocalAuthorModelChanges::updateHideFromTimeline()
+{
+    // No need to actual store the changed value here as the value in mTimelineHide
+    // is updated. The changed() signal will trigger retrieving the new value.
+    // Probably updateMutedReposts can be changed likewise.
+    hideFromTimelineChanged();
+}
+
 }

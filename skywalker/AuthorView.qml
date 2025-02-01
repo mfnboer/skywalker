@@ -22,6 +22,7 @@ SkyPage {
     property string blocking: author.viewer.blocking
     property bool authorMuted: author.viewer.muted
     property bool authorMutedReposts: false
+    property bool authorHideFromTimeline: false
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
@@ -358,6 +359,10 @@ SkyPage {
                 SkyLabel {
                     text: qsTr("follows you")
                     visible: author.viewer.followedBy
+                }
+                SkyLabel {
+                    text: qsTr("hide from timeline")
+                    visible: authorHideFromTimeline
                 }
             }
 
@@ -1400,6 +1405,7 @@ SkyPage {
         authorAvatar = author.avatarUrl
         authorBanner = author.banner
         authorMutedReposts = graphUtils.areRepostsMuted(author.did)
+        authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)

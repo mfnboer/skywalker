@@ -29,12 +29,14 @@ public:
     void updateFollowingUri(const QString& did, const QString& followingUri);
     void updateMuted(const QString& did, bool muted);
     void updateMutedReposts(const QString& did, bool mutedReposts);
+    void updateHideFromTimeline();
 
 protected:
     virtual void blockingUriChanged() = 0;
     virtual void followingUriChanged() = 0;
     virtual void mutedChanged() = 0;
     virtual void mutedRepostsChanged() = 0;
+    virtual void hideFromTimelineChanged() = 0;
 
 private:
     // Mapping from author DID to change

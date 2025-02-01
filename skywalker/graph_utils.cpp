@@ -351,7 +351,12 @@ void GraphUtils::deleteList(const QString& listUri)
                 mutedReposts.setListCreated(false);
             }
 
+            const bool listHidden = mSkywalker->getTimelineHide()->hasList(listUri);
             emit GraphListener::instance().listDeleted(listUri);
+
+            if (listHidden)
+                unhideList(listUri);
+
             emit deleteListOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -661,6 +666,11 @@ void GraphUtils::hideList(const QString& listUri)
                     model->hideFromTimeline(listUri, true);
                 });
 
+            mSkywalker->makeLocalModelChange(
+                [listUri](LocalAuthorModelChanges* model){
+                    model->updateHideFromTimeline();
+                });
+
             emit hideListOk();
         },
         [this](auto, const QString& msg){ emit hideListFailed(msg); });
@@ -677,6 +687,11 @@ void GraphUtils::unhideList(const QString& listUri)
     mSkywalker->makeLocalModelChange(
         [listUri](LocalListModelChanges* model){
             model->hideFromTimeline(listUri, false);
+        });
+
+    mSkywalker->makeLocalModelChange(
+        [listUri](LocalAuthorModelChanges* model){
+            model->updateHideFromTimeline();
         });
 }
 

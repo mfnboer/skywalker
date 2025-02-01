@@ -2614,7 +2614,7 @@ void Skywalker::getAuthorListNextPage(int id)
 
 int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
 {
-    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mContentFilter, this);
+    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mTimelineHide, mContentFilter, this);
     const int id = mAuthorListModels.put(std::move(model));
     return id;
 }

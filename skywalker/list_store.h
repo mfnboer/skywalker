@@ -27,7 +27,7 @@ public:
     Q_INVOKABLE bool hasList(const QString& uri) const;
     QStringList getListUris() const;
 
-    bool contains(const QString& did) const override;
+    Q_INVOKABLE bool contains(const QString& did) const override;
     const BasicProfile* get(const QString& did) const override;
 
 private:

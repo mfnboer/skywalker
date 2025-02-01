@@ -10,6 +10,7 @@ Rectangle {
     required property string listItemUri // empty when the author list is not an item list
     required property bool authorMuted
     required property bool mutedReposts
+    required property bool hideFromTimeline
     property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
     property bool showFollow: true
@@ -115,6 +116,10 @@ Rectangle {
                 SkyLabel {
                     text: qsTr("muted reposts")
                     visible: mutedReposts
+                }
+                SkyLabel {
+                    text: qsTr("hide from timeline")
+                    visible: hideFromTimeline
                 }
             }
         }
