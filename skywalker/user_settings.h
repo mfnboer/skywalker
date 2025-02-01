@@ -203,6 +203,9 @@ public:
     Q_INVOKABLE bool getShowQuotesWithBlockedPost(const QString& did) const;
     Q_INVOKABLE void setShowQuotesWithBlockedPost(const QString& did, bool show);
 
+    Q_INVOKABLE bool getShowSelfReposts(const QString& did) const;
+    Q_INVOKABLE void setShowSelfReposts(const QString& did, bool show);
+
     Q_INVOKABLE bool getHideRepliesInThreadFromUnfollowed(const QString did) const;
     Q_INVOKABLE void setHideRepliesInThreadFromUnfollowed(const QString& did, bool hide);
 

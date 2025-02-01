@@ -43,12 +43,21 @@ ColumnLayout {
     }
 
     AccessibleSwitch {
+        id: showRepostsSwitch
         text: qsTr("Show reposts")
         checked: !userPrefs.hideReposts
         onCheckedChanged: userPrefs.hideReposts = !checked
     }
 
     AccessibleSwitch {
+        text: qsTr("Show self-reposts")
+        checked: userSettings.getShowSelfReposts(userDid)
+        onCheckedChanged: userSettings.setShowSelfReposts(userDid, checked)
+        enabled: showRepostsSwitch.checked
+    }
+
+    AccessibleSwitch {
+        id: showQuotesSwitch
         text: qsTr("Show quote posts")
         checked: !userPrefs.hideQuotePosts
         onCheckedChanged: userPrefs.hideQuotePosts = !checked
@@ -58,6 +67,7 @@ ColumnLayout {
         text: qsTr("Show quotes with blocked post")
         checked: userSettings.getShowQuotesWithBlockedPost(userDid)
         onCheckedChanged: userSettings.setShowQuotesWithBlockedPost(userDid, checked)
+        enabled: showQuotesSwitch.checked
     }
 
     AccessibleSwitch {

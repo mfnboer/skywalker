@@ -723,6 +723,16 @@ void UserSettings::setShowQuotesWithBlockedPost(const QString& did, bool show)
     mSettings.setValue(key(did, "showQuotesWithBlockedPost"), show);
 }
 
+bool UserSettings::getShowSelfReposts(const QString& did) const
+{
+    return mSettings.value(key(did, "showSelfReposts"), true).toBool();
+}
+
+void UserSettings::setShowSelfReposts(const QString& did, bool show)
+{
+    mSettings.setValue(key(did, "showSelfReposts"), show);
+}
+
 bool UserSettings::getHideRepliesInThreadFromUnfollowed(const QString did) const
 {
     return mSettings.value(key(did, "hideRepliesInThreadFromUnfollowed"), false).toBool();
