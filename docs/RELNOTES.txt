@@ -1,7 +1,7 @@
-next
+3.13
 ====
 * Video and media view modes (swiping) for all feeds and lists
-* Video and media view added to timeline views
+* Video and media views added to timeline views
 * Option to hide users in a list from your timeline (in list options menu)
 * Setting to show/hide self-reposts (default is show)
 * Bug fixes
