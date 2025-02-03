@@ -218,37 +218,46 @@ Rectangle {
         onClicked: videoPage.closed()
     }
 
-    Loader {
+    SvgButton {
         anchors.right: parent.right
         anchors.rightMargin: rightMarginWidth + 10
         y: headerHeight + 10
-        active: Boolean(imageItem)
+        iconColor: "white"
+        Material.background: "transparent"
+        svg: SvgOutline.moreVert
+        accessibleName: qsTr("more options")
+        visible: mediaRect.showDetails
+        onClicked: moreMenu.open()
 
-        sourceComponent: SvgButton {
-            iconColor: "white"
-            Material.background: "transparent"
-            svg: SvgOutline.moreVert
-            accessibleName: qsTr("more options")
-            visible: mediaRect.showDetails
-            onClicked: moreMenu.open()
+        Menu {
+            id: moreMenu
+            modal: true
 
-            Menu {
-                id: moreMenu
-                modal: true
+            AccessibleMenuItem {
+                text: qsTr("Save picture")
+                textColor: "black"
+                onTriggered: root.savePhoto(postImages[imageItem.currentIndex].fullSizeUrl)
+                visible: Boolean(imageItem)
 
-                MenuItem {
-                    text: qsTr("Save picture")
-                    onTriggered: root.savePhoto(postImages[imageItem.currentIndex].fullSizeUrl)
+                MenuItemSvg { svg: SvgOutline.save; color: "black" }
+            }
 
-                    MenuItemSvg { svg: SvgOutline.save }
-                }
+            AccessibleMenuItem {
+                text: qsTr("Share picture")
+                textColor: "black"
+                onTriggered: root.sharePhotoToApp(postImages[imageItem.currentIndex].fullSizeUrl)
+                visible: Boolean(imageItem)
 
-                MenuItem {
-                    text: qsTr("Share picture")
-                    onTriggered: root.sharePhotoToApp(postImages[imageItem.currentIndex].fullSizeUrl)
+                MenuItemSvg { svg: SvgOutline.share; color: "black" }
+            }
 
-                    MenuItemSvg { svg: SvgOutline.share }
-                }
+            AccessibleMenuItem {
+                text: qsTr("Save video")
+                textColor: "black"
+                onTriggered: root.saveVideo(videoItem.videoSource, postVideo.playlistUrl)
+                visible: Boolean(videoItem)
+
+                MenuItemSvg { svg: SvgOutline.save; color: "black" }
             }
         }
     }

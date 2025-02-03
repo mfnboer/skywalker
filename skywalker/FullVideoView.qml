@@ -102,7 +102,7 @@ SkyPage {
 
             MenuItem {
                 text: qsTr("Save video")
-                onTriggered: page.saveVideo()
+                onTriggered: root.saveVideo(view.videoSource, videoView.playlistUrl)
 
                 MenuItemSvg {
                     svg: SvgOutline.save
@@ -121,65 +121,11 @@ SkyPage {
         }
     }
 
-    BusyIndicator {
-        anchors.centerIn: parent
-        running: m3u8Reader.loading || videoUtils.transcoding
-    }
-
-    M3U8Reader {
-        id: m3u8Reader
-        videoQuality: userSettings.videoQuality
-
-        onGetVideoStreamOk: (durationMs) => {
-            const fileName = videoUtils.getVideoFileNameForGallery("ts")
-
-            if (!fileName) {
-                root.getSkywalker().showStatusMessage(qsTr("Cannot create gallery file"), QEnums.STATUS_LEVEL_ERROR)
-                return
-            }
-
-            loadStream(fileName)
-        }
-
-        // NOTE: Transcoding to MP4 results in an MP4 that cannot be played by the gallery
-        // app. The MP4 can be played with other players. For now save as mpeg-ts. This
-        // can be played by the gallery app.
-        onGetVideoStreamError: root.getSkywalker().showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
-
-        onLoadStreamOk: (videoSource) => {
-            videoUtils.indexGalleryFile(videoSource.slice(7))
-            root.getSkywalker().showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
-        }
-
-        onLoadStreamError: root.getSkywalker().showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
-    }
-
-    VideoUtils {
-        id: videoUtils
-        skywalker: root.getSkywalker()
-
-        onCopyVideoOk: root.getSkywalker().showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
-        onCopyVideoFailed: (error) => root.getSkywalker().showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-    }
-
     GuiSettings {
         id: guiSettings
         isLightMode: false
         backgroundColor: guiSettings.fullScreenColor
         textColor: "white"
-    }
-
-    function saveVideo() {
-        if (view.videoSource && view.videoSource.startsWith("file://")) {
-            videoUtils.copyVideoToGallery(view.videoSource.slice(7))
-        }
-        else if (videoView.playlistUrl.endsWith(".m3u8")) {
-            m3u8Reader.getVideoStream(videoView.playlistUrl)
-            statusPopup.show(qsTr("Saving video"), QEnums.STATUS_LEVEL_INFO, 60)
-        }
-        else {
-            root.getSkywalker().showStatusMessage(qsTr(`Cannot save: ${videoView.playlistUrl}`), QEnums.STATUS_LEVEL_ERROR)
-        }
     }
 
     function setNavigationBarColor() {

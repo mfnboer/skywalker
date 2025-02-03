@@ -892,6 +892,42 @@ ApplicationWindow {
         onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
+    M3U8Reader {
+        id: m3u8Reader
+        videoQuality: skywalker.getUserSettings().videoQuality
+
+        onGetVideoStreamOk: (durationMs) => {
+            const fileName = videoUtils.getVideoFileNameForGallery("ts")
+
+            if (!fileName) {
+                skywalker.showStatusMessage(qsTr("Cannot create gallery file"), QEnums.STATUS_LEVEL_ERROR)
+                return
+            }
+
+            loadStream(fileName)
+        }
+
+        // NOTE: Transcoding to MP4 results in an MP4 that cannot be played by the gallery
+        // app. The MP4 can be played with other players. For now save as mpeg-ts. This
+        // can be played by the gallery app.
+        onGetVideoStreamError: skywalker.showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
+
+        onLoadStreamOk: (videoSource) => {
+            videoUtils.indexGalleryFile(videoSource.slice(7))
+            skywalker.showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
+        }
+
+        onLoadStreamError: skywalker.showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    VideoUtils {
+        id: videoUtils
+        skywalker: skywalker
+
+        onCopyVideoOk: skywalker.showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
+        onCopyVideoFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     // InviteCodeStore {
     //     id: inviteCodeStore
     //     skywalker: skywalker
@@ -1417,6 +1453,19 @@ ApplicationWindow {
         let view = component.createObject(root, { imageUrl: imageUrl, imageTitle: imageTitle })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
+    }
+
+    function saveVideo(videoSource, playlistUrl) {
+        if (videoSource && videoSource.startsWith("file://")) {
+            videoUtils.copyVideoToGallery(videoSource.slice(7))
+        }
+        else if (playlistUrl.endsWith(".m3u8")) {
+            m3u8Reader.getVideoStream(playlistUrl)
+            skywalker.showStatusMessage(qsTr("Saving video"), QEnums.STATUS_LEVEL_INFO, 60)
+        }
+        else {
+            skywalker.showStatusMessage(qsTr(`Cannot save: ${videoView.playlistUrl}`), QEnums.STATUS_LEVEL_ERROR)
+        }
     }
 
     function viewFullVideo(videoView) {
