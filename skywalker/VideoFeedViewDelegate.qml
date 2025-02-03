@@ -137,8 +137,8 @@ Rectangle {
             active: postImages.length > 0
 
             sourceComponent: SwipeView {
-                property int imageWidth: currentItem.imageWidth
-                property bool zooming: currentItem.zooming
+                property int imageWidth: currentItem ? currentItem.imageWidth : 0
+                property bool zooming: currentItem ? currentItem.zooming : false
 
                 width: mediaRect.width
                 height: root.height

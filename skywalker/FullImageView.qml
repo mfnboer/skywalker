@@ -18,7 +18,7 @@ SkyPage {
     background: Rectangle { color: guiSettings.fullScreenColor }
 
     SwipeView {
-        property bool zooming: currentItem.zooming
+        property bool zooming: currentItem ? currentItem.zooming : false
 
         id: view
         anchors.fill: parent
