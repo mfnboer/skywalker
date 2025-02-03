@@ -14,8 +14,6 @@
 
 namespace Skywalker {
 
-class InviteCodeStore;
-
 class NotificationListModel : public QAbstractListModel,
                               public LocalPostModelChanges,
                               public LocalProfileChanges
@@ -114,7 +112,7 @@ public:
 
     Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
 
-    Q_INVOKABLE void addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore);
+    // Q_INVOKABLE void addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore);
     Q_INVOKABLE void dismissInviteCodeUsageNotification(int index);
     int getInviteCodeUsageNotificationCount() const { return (int)mInviteCodeUsedNotifications.size(); }
 

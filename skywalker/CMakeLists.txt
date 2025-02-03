@@ -168,11 +168,6 @@ qt_add_qml_module(libskywalker
         QML_FILES SwitchUserDrawer.qml
         QML_FILES AltTextEditor.qml
         QML_FILES MenuItemSvg.qml
-        SOURCES invite_code.h
-        SOURCES invite_code.cpp
-        QML_FILES InviteCodesView.qml
-        SOURCES invite_code_store.h
-        SOURCES invite_code_store.cpp
         SOURCES bookmarks.h
         SOURCES bookmarks.cpp
         SOURCES bookmarks_model.h

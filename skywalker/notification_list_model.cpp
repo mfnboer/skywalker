@@ -5,7 +5,6 @@
 #include "convo_view.h"
 #include "content_filter.h"
 #include "enums.h"
-#include "invite_code_store.h"
 #include <atproto/lib/at_uri.h>
 #include <unordered_map>
 
@@ -380,26 +379,26 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
         });
 }
 
-void NotificationListModel::addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore)
-{
-    Q_ASSERT(inviteCodeStore);
-    const auto& usedCodes = inviteCodeStore->getUsedSincePreviousSignIn();
+// void NotificationListModel::addInviteCodeUsageNofications(InviteCodeStore* inviteCodeStore)
+// {
+//     Q_ASSERT(inviteCodeStore);
+//     const auto& usedCodes = inviteCodeStore->getUsedSincePreviousSignIn();
 
-    for (auto* code : usedCodes)
-    {
-        BasicProfile usedBy = code->getUsedBy();
+//     for (auto* code : usedCodes)
+//     {
+//         BasicProfile usedBy = code->getUsedBy();
 
-        if (usedBy.isNull())
-        {
-            usedBy = BasicProfile(code->getUsedByDid(), "", "", "");
-            connect(code, &InviteCode::usedByChanged, this, [this, code]{
-                updateInviteCodeUser(code->getUsedBy()); });
-        }
+//         if (usedBy.isNull())
+//         {
+//             usedBy = BasicProfile(code->getUsedByDid(), "", "", "");
+//             connect(code, &InviteCode::usedByChanged, this, [this, code]{
+//                 updateInviteCodeUser(code->getUsedBy()); });
+//         }
 
-        Notification notification(code->getCode(), usedBy);
-        mInviteCodeUsedNotifications.push_back(notification);
-    }
-}
+//         Notification notification(code->getCode(), usedBy);
+//         mInviteCodeUsedNotifications.push_back(notification);
+//     }
+// }
 
 void NotificationListModel::updateInviteCodeUser(const BasicProfile& profile)
 {
