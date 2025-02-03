@@ -15,7 +15,7 @@ class M3U8Reader : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged FINAL)
-    Q_PROPERTY(QEnums::VideoQuality videoQuality WRITE setVideoQuality FINAL)
+    Q_PROPERTY(QEnums::VideoQuality videoQuality READ getVideoQuality WRITE setVideoQuality NOTIFY videoQualityChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -28,7 +28,8 @@ public:
 
     explicit M3U8Reader(QObject* parent = nullptr);
 
-    void setVideoQuality(QEnums::VideoQuality quality) { mVideoQuality = quality; }
+    void setVideoQuality(QEnums::VideoQuality quality);
+    QEnums::VideoQuality getVideoQuality() const { return mVideoQuality; }
 
     bool isLoading() const { return mLoading; }
     void setLoading(bool loading);
@@ -45,6 +46,7 @@ signals:
     void loadStreamOk(QString videoStream);
     void loadStreamError();
     void loadingChanged();
+    void videoQualityChanged();
 
 private:
     void setResolution();

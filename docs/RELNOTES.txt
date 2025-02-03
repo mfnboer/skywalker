@@ -4,6 +4,7 @@ next
 * Save or share image from swipe mode
 * Save video from swipe mode
 * Search key on keyboard on search pages
+* Remove app bundle emoji font
 
 3.13
 ====
