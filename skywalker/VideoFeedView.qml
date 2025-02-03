@@ -18,6 +18,7 @@ SkyListView {
     spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
     currentIndex: 0
     highlightMoveVelocity: 2000
+    interactive: !currentItem.zooming
 
     Accessible.name: postFeedView.model.feedName
 

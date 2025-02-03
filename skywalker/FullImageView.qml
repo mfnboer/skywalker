@@ -18,7 +18,7 @@ SkyPage {
     background: Rectangle { color: guiSettings.fullScreenColor }
 
     SwipeView {
-        property bool zooming: false
+        property bool zooming: currentItem.zooming
 
         id: view
         anchors.fill: parent
@@ -31,6 +31,7 @@ SkyPage {
             Rectangle {
                 required property int index
                 property bool isCurrentItem: SwipeView.isCurrentItem
+                property bool zooming: img.zooming
 
                 id: imgRect
                 color: guiSettings.fullScreenColor
@@ -73,8 +74,6 @@ SkyPage {
                     fillMode: Image.PreserveAspectFit
                     source: images[index].fullSizeUrl
                     reloadIconColor: "white"
-
-                    onZoomingChanged: view.zooming = img.zooming
                 }
             }
         }

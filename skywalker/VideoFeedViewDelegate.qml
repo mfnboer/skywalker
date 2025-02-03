@@ -72,6 +72,7 @@ Rectangle {
     property bool showFullPostText: false
     property var videoItem: postVideo ? videoLoader.item : null
     property var imageItem: postImages.length > 0 ? imageLoader.item : null
+    property bool zooming: imageItem ? imageItem.zooming : false
 
     signal closed
 
@@ -137,9 +138,11 @@ Rectangle {
 
             sourceComponent: SwipeView {
                 property int imageWidth: currentItem.imageWidth
+                property bool zooming: currentItem.zooming
 
                 width: mediaRect.width
                 height: root.height
+                interactive: !zooming
 
                 Repeater {
                     model: postImages.length
@@ -147,12 +150,13 @@ Rectangle {
                     Rectangle {
                         required property int index
                         property int imageWidth: img.paintedWidth
+                        property bool zooming: img.zooming
 
                         width: mediaRect.width
                         height: root.height
                         color: "transparent"
 
-                        ImageAutoRetry {
+                        ImageWithZoom {
                             id: img
                             width: parent.width
                             height: parent.height

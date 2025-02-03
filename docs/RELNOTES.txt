@@ -1,3 +1,7 @@
+next
+====
+* Zoom image in swipe mode
+
 3.13
 ====
 * Video and media view modes (swiping) for all feeds and lists
