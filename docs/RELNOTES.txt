@@ -1,6 +1,7 @@
 next
 ====
 * Zoom image in swipe mode
+* Save or share image from swipe mode
 
 3.13
 ====

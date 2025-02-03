@@ -218,6 +218,41 @@ Rectangle {
         onClicked: videoPage.closed()
     }
 
+    Loader {
+        anchors.right: parent.right
+        anchors.rightMargin: rightMarginWidth + 10
+        y: headerHeight + 10
+        active: Boolean(imageItem)
+
+        sourceComponent: SvgButton {
+            iconColor: "white"
+            Material.background: "transparent"
+            svg: SvgOutline.moreVert
+            accessibleName: qsTr("more options")
+            visible: mediaRect.showDetails
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                MenuItem {
+                    text: qsTr("Save picture")
+                    onTriggered: root.savePhoto(postImages[imageItem.currentIndex].fullSizeUrl)
+
+                    MenuItemSvg { svg: SvgOutline.save }
+                }
+
+                MenuItem {
+                    text: qsTr("Share picture")
+                    onTriggered: root.sharePhotoToApp(postImages[imageItem.currentIndex].fullSizeUrl)
+
+                    MenuItemSvg { svg: SvgOutline.share }
+                }
+            }
+        }
+    }
+
     Rectangle {
         width: parent.width
         anchors.top: postColumn.top

@@ -1395,12 +1395,20 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function savePhoto(sourceUrl) {
+        postUtils.savePhoto(sourceUrl)
+    }
+
+    function sharePhotoToApp(sourceUrl) {
+        postUtils.sharePhotoToApp(sourceUrl)
+    }
+
     function viewFullImage(imageList, currentIndex) {
         let component = Qt.createComponent("FullImageView.qml")
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
-        view.onSaveImage.connect((sourceUrl) => { postUtils.savePhoto(sourceUrl) })
-        view.onShareImage.connect((sourceUrl) => { postUtils.sharePhotoToApp(sourceUrl) })
+        view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
+        view.onShareImage.connect((sourceUrl) => { sharePhotoToApp(sourceUrl) })
         pushStack(view)
     }
 
