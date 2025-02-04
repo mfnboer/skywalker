@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -67,6 +68,7 @@ Dialog {
             Layout.fillWidth: true
             font.pointSize: guiSettings.scaledFont(7/8)
             elide: Text.ElideRight
+            textFormat: Text.RichText
             color: guiSettings.textColor
             text: `Set by ${labelerHandle}`
             onLinkActivated: (link) => {
@@ -97,11 +99,11 @@ Dialog {
 
     ProfileUtils {
         id: profileUtils
-        skywalker: root.getSkywalker()
+        skywalker: root.getSkywalker() // qmllint disable missing-type
 
-        onBasicProfileOk: (profile) => {
+        onBasicProfileOk: (profile) => { // qmllint disable signal-handler-parameters
             labeler = profile
-            labelerHandle = `<a href="${profile.did}" style="color: ${guiSettings.linkColor}">@${profile.handle}</a>`
+            labelerHandle = `<a href="${profile.did}" style="color: ${guiSettings.linkColor}; text-decoration: none">@${profile.handle}</a>`
         }
     }
 
