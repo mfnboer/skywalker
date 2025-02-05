@@ -30,6 +30,17 @@ PostFeedModel::PostFeedModel(const QString& feedName,
             [this]{ emit languageFilterConfiguredChanged(); });
 }
 
+QString PostFeedModel::getFeedUri() const
+{
+    if (!mListView.isNull())
+        return mListView.getUri();
+
+    if (!mGeneratorView.isNull())
+        return mGeneratorView.getUri();
+
+    return {};
+}
+
 QEnums::FeedType PostFeedModel::getFeedType() const
 {
     return !mListView.isNull() ? QEnums::FEED_LIST : QEnums::FEED_GENERATOR;
@@ -523,7 +534,7 @@ void PostFeedModel::getFeed(IFeedPager* pager)
     if (!mGeneratorView.isNull())
         pager->getFeed(mModelId);
     else if (!mListView.isNull())
-        pager->getListFeed(mModelId);
+        pager->syncListFeed(mModelId);
     else
         qWarning() << "No view to get page";
 }

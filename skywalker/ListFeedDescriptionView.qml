@@ -11,6 +11,7 @@ SkyPage {
     property bool isSavedList: skywalker.favoriteFeeds.isSavedFeed(list.uri)
     property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
     property bool listHideFromTimeline: skywalker.getTimelineHide().hasList(list.uri)
+    property bool listSync: skywalker.getUserSettings().mustSyncFeed(skywalker.getUserDid(), list.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
 
@@ -20,6 +21,11 @@ SkyPage {
     id: page
 
     Accessible.role: Accessible.Pane
+
+    onIsPinnedListChanged: {
+        if (!isPinnedList && listSync)
+            syncList(false)
+    }
 
     header: SimpleHeader {
         text: guiSettings.listTypeName(list.purpose)
@@ -36,14 +42,14 @@ SkyPage {
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: 10
+            Layout.preferredHeight: 10
             color: "transparent"
         }
 
         ListAvatar {
-            x: 8
-            y: 5
-            width: 100
+            Layout.leftMargin: 8
+            Layout.topMargin: 5
+            Layout.preferredWidth: 100
             Layout.alignment: Qt.AlignTop
             avatarUrl: !contentVisible() ? "" : list.avatar
             onClicked: {
@@ -126,6 +132,7 @@ SkyPage {
                 muted: listMuted
                 blockedUri: listBlockedUri
                 hideFromTimeline: listHideFromTimeline
+                sync: listSync
             }
 
             ContentLabels {
@@ -276,6 +283,17 @@ SkyPage {
 
             MenuItemSvg { svg: SvgOutline.report }
         }
+
+        AccessibleMenuItem {
+            text: qsTr("Rewind on startup")
+            checkable: true
+            checked: listSync
+            enabled: isPinnedList
+            onToggled: {
+                graphUtils.syncList(list.uri, checked)
+                listSync = checked
+            }
+        }
     }
 
     Menu {
@@ -334,6 +352,13 @@ SkyPage {
             onTriggered: root.reportList(list)
 
             MenuItemSvg { svg: SvgOutline.report }
+        }
+        AccessibleMenuItem {
+            text: qsTr("Rewind on startup")
+            checkable: true
+            checked: listSync
+            enabled: isPinnedList
+            onToggled: syncList(checked)
         }
     }
 
@@ -453,12 +478,17 @@ SkyPage {
     function addUser() {
         let component = Qt.createComponent("SearchAuthor.qml")
         let searchPage = component.createObject(page, { skywalker: skywalker })
-        searchPage.onAuthorClicked.connect((profile) => {
+        searchPage.onAuthorClicked.connect((profile) => { // qmllint disable missing-property
             graphUtils.addListUser(list.uri, profile)
             root.popStack()
         })
         searchPage.onClosed.connect(() => { root.popStack() })
         root.pushStack(searchPage)
+    }
+
+    function syncList(sync) {
+        graphUtils.syncList(list.uri, sync)
+        listSync = sync
     }
 
     function isOwnList() {

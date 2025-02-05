@@ -6,6 +6,7 @@
 #include "list_view.h"
 #include "local_list_model_changes.h"
 #include "local_profile_changes.h"
+#include "user_settings.h"
 #include <QAbstractListModel>
 #include <deque>
 
@@ -30,6 +31,7 @@ public:
         ListSaved,
         ListPinned,
         ListHideFromTimeline,
+        ListSync,
         MemberCheck,
         MemberListItemUri
     };
@@ -72,6 +74,7 @@ protected:
     virtual void blockedChanged() override;
     virtual void mutedChanged() override;
     virtual void hideFromTimelineChanged() override;
+    virtual void syncListChanged() override;
     virtual void memberListItemUriChanged() override;
 
     // LocalProfileChanges
@@ -97,7 +100,9 @@ private:
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
     GraphUtils mGraphUtils;
+    QString mUserDid;
     const ListStore& mTimelineHide;
+    const UserSettings& mUserSettings;
     QString mMemberCheckDid;
     std::unordered_map<QString, std::optional<QString>> mMemberCheckResults; // listUri -> listItemUri
     bool mExcludeInternalLists = false;

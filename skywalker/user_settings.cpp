@@ -39,6 +39,11 @@ QString UserSettings::key(const QString& did, const QString& subkey) const
     return QString("%1/%2").arg(did, subkey);
 }
 
+QString UserSettings::key(const QString& did, const QString& subkey1, const QString& subkey2) const
+{
+    return QString("%1/%2/%3").arg(did, subkey1, subkey2);
+}
+
 QString UserSettings::displayKey(const QString& key) const
 {
     const auto display = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "dark" : "light";
@@ -281,6 +286,71 @@ void UserSettings::saveSyncOffsetY(const QString& did, int offsetY)
 int UserSettings::getSyncOffsetY(const QString& did) const
 {
     return mSettings.value(key(did, "syncOffsetY"), 0).toInt();
+}
+
+void UserSettings::saveFeedSyncTimestamp(const QString& did, const QString& feedUri, QDateTime timestamp)
+{
+    mSettings.setValue(key(did, feedUri, "syncTimestamp"), timestamp);
+}
+
+QDateTime UserSettings::getFeedSyncTimestamp(const QString& did, const QString& feedUri) const
+{
+    return mSettings.value(key(did, feedUri, "syncTimestamp")).toDateTime();
+}
+
+void UserSettings::saveFeedSyncCid(const QString& did, const QString& feedUri, const QString& cid)
+{
+    mSettings.setValue(key(did, feedUri, "syncCid"), cid);
+}
+
+QString UserSettings::getFeedSyncCid(const QString& did, const QString& feedUri) const
+{
+    return mSettings.value(key(did, feedUri, "syncCid")).toString();
+}
+
+void UserSettings::saveFeedSyncOffsetY(const QString& did, const QString& feedUri, int offsetY)
+{
+    mSettings.setValue(key(did, feedUri, "syncOffsetY"), offsetY);
+}
+
+int UserSettings::getFeedSyncOffsetY(const QString& did, const QString& feedUri) const
+{
+    return mSettings.value(key(did, feedUri, "syncOffsetY"), 0).toInt();
+}
+
+void UserSettings::addSyncFeed(const QString& did, const QString& feedUri)
+{
+    getSyncFeeds(did);
+    mSyncFeeds->insert(feedUri);
+    const QStringList uris(mSyncFeeds->begin(), mSyncFeeds->end());
+    mSettings.setValue(key(did, "syncFeeds"), uris);
+}
+
+void UserSettings::removeSyncFeed(const QString& did, const QString& feedUri)
+{
+    getSyncFeeds(did);
+    mSyncFeeds->erase(feedUri);
+    const QStringList uris(mSyncFeeds->begin(), mSyncFeeds->end());
+    mSettings.setValue(key(did, "syncFeeds"), uris);
+    mSettings.remove(key(did, feedUri, "syncTimestamp"));
+    mSettings.remove(key(did, feedUri, "syncCid"));
+    mSettings.remove(key(did, feedUri, "syncOffsetY"));
+}
+
+const std::unordered_set<QString>& UserSettings::getSyncFeeds(const QString& did) const
+{
+    if (mSyncFeeds)
+        return *mSyncFeeds;
+
+    QStringList feeds = mSettings.value(key(did, "syncFeeds")).toStringList();
+    const_cast<UserSettings*>(this)->mSyncFeeds = std::unordered_set<QString>(feeds.begin(), feeds.end());
+    return *mSyncFeeds;
+}
+
+bool UserSettings::mustSyncFeed(const QString& did, const QString& feedUri) const
+{
+    const auto& feedUris = getSyncFeeds(did);
+    return feedUris.contains(feedUri);
 }
 
 void UserSettings::updateLastSignInTimestamp(const QString& did)

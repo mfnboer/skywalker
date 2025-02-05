@@ -7,6 +7,8 @@ SkyListView {
     required property int modelId
     property bool showAsHome: false
     property int unreadPosts: 0
+    property int calibrationDy: 0
+    property bool inSync: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
 
     signal closed
@@ -41,7 +43,7 @@ SkyListView {
         skywalker: postFeedView.skywalker
         homeActive: true
         showHomeFeedBadge: true
-        onHomeClicked: postFeedView.positionViewAtBeginning()
+        onHomeClicked: moveToHome()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
@@ -56,6 +58,11 @@ SkyListView {
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
+        onCalibratedPosition: (dy) => {
+            calibrationDy += dy
+            Qt.callLater(calibratePosition)
+        }
+
         onActivateSwipe: {
             root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
         }
@@ -67,6 +74,21 @@ SkyListView {
             active: model.isFilterModel() && index == count - 1 && !endOfFeed
             sourceComponent: extraFooterComponent
         }
+    }
+
+    onMovementEnded: {
+        if (!inSync)
+            return
+
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        if (lastVisibleIndex != -1 && modelId != -1) {
+            const lastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+            skywalker.feedMovementEnded(modelId, lastVisibleIndex, lastVisibleOffsetY)
+        }
+
+        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
     }
 
     FlickableRefresher {
@@ -116,6 +138,32 @@ SkyListView {
         anchors.top: emptyListIndication.bottom
         active: model.isFilterModel() && count === 0 && !model.endOfFeed
         sourceComponent: extraFooterComponent
+    }
+
+    Rectangle {
+        y: headerItem ? headerItem.height : 0
+        width: parent.width
+        height: parent.height - (headerItem ? headerItem.height : 0) - (footerItem ? footerItem.height : 0)
+        color: guiSettings.backgroundColor
+        visible: !inSync && (rewindStatus.rewindPagesLoaded > 0 || rewindStatus.isFirstRewind)
+
+        Column {
+            width: parent.width - 20
+            anchors.centerIn: parent
+
+            AccessibleText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pointSize: guiSettings.scaledFont(2)
+                text: qsTr("Rewinding feed")
+            }
+
+            RewindStatus {
+                property bool isFirstRewind: true
+
+                id: rewindStatus
+                width: parent.width
+            }
+        }
     }
 
     function getFeedDefaultAvatar() {
@@ -189,6 +237,81 @@ SkyListView {
             oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
     }
 
+    function calibratePosition() {
+        if (calibrationDy === 0)
+            return
+
+        console.debug("Calibration, calibrationDy:", calibrationDy)
+        contentY += calibrationDy
+        calibrationDy = 0
+    }
+
+    function moveToHome() {
+        positionViewAtBeginning()
+        setAnchorItem(0, 0)
+
+        if (modelId != -1)
+            skywalker.feedMovementEnded(modelId, 0, 0)
+    }
+
+    function doMoveToPost(index) {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Move to:", model.feedName, "index:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
+        positionViewAtIndex(Math.max(index, 0), ListView.End)
+        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
+        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+    }
+
+    function finishSync() {
+        inSync = true
+        rewindStatus.isFirstRewind = false
+    }
+
+    function setInSync(id, index, offsetY = 0) {
+        if (id != modelId)
+            return
+
+        console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
+
+        if (index == 0 && offsetY == 0) {
+            moveToHome()
+            finishSync()
+        }
+        else if (index >= 0) {
+            moveToIndex(index, doMoveToPost, () => { contentY -= offsetY; finishSync() })
+        }
+        else {
+            moveToEnd()
+            finishSync()
+        }
+    }
+
+    function syncToHome(id) {
+        if (id != modelId)
+            return
+
+        finishSync()
+        moveToHome()
+    }
+
+    function handleSyncStart(id, maxPages, timestamp) {
+        if (id != modelId)
+            return
+
+        console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
+        rewindStatus.startRewind(maxPages, timestamp)
+        inSync = false
+    }
+
+    function handleSyncProgress(id, pages, timestamp) {
+        if (id != modelId)
+            return
+
+        console.debug("Sync proress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
+        rewindStatus.updateRewindProgress(pages, timestamp)
+    }
+
     function activate() {
         for (var i = 0; i < count; ++i) {
             const item = itemAtIndex(i)
@@ -217,7 +340,19 @@ SkyListView {
     }
 
     Component.onDestruction: {
+        skywalker.onFeedSyncStart.disconnect(handleSyncStart)
+        skywalker.onFeedSyncProgress.disconnect(handleSyncProgress)
+        skywalker.onFeedSyncOk.disconnect(setInSync)
+        skywalker.onFeedSyncFailed.disconnect(syncToHome)
+
         if (modelId !== -1)
             skywalker.removePostFeedModel(modelId)
+    }
+
+    Component.onCompleted: {
+        skywalker.onFeedSyncStart.connect(handleSyncStart)
+        skywalker.onFeedSyncProgress.connect(handleSyncProgress)
+        skywalker.onFeedSyncOk.connect(setInSync)
+        skywalker.onFeedSyncFailed.connect(syncToHome)
     }
 }

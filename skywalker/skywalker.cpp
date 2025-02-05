@@ -801,6 +801,38 @@ void Skywalker::syncTimeline(int maxPages)
     syncTimeline(timestamp, cid, maxPages);
 }
 
+void Skywalker::syncListFeed(int modelId, int maxPages)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    if (model->getFeedType() != QEnums::FEED_LIST)
+        return;
+
+    if (!mUserSettings.mustSyncFeed(mUserDid, model->getFeedUri()))
+    {
+        getListFeed(modelId);
+        return;
+    }
+
+    const auto timestamp = mUserSettings.getFeedSyncTimestamp(mUserDid, model->getFeedUri());
+
+    if (!timestamp.isValid())
+    {
+        qDebug() << "Do not rewind timeline";
+        getListFeed(modelId);
+        return;
+    }
+
+    const auto cid = mUserSettings.getFeedSyncCid(mUserDid, model->getFeedUri());
+    syncListFeed(modelId, timestamp, cid, maxPages);
+}
+
 void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -816,64 +848,10 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
     setGetTimelineInProgress(true);
     mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor),
         [this, tillTimestamp, cid, maxPages, cursor](auto feed){
-            mTimelineModel.addFeed(std::move(feed));
-            setGetTimelineInProgress(false);
-            const auto lastTimestamp = mTimelineModel.lastTimestamp();
+            const auto newCursor = processSyncPage(std::move(feed), mTimelineModel, tillTimestamp, cid, maxPages, cursor);
 
-            if (lastTimestamp.isNull())
-            {
-                restoreDebugLogging();
-                qWarning() << "Feed is empty";
-                finishTimelineSyncFailed();
-                return;
-            }
-
-            if (lastTimestamp < tillTimestamp)
-            {
-                restoreDebugLogging();
-                const auto index = mTimelineModel.findTimestamp(tillTimestamp, cid);
-                qDebug() << "Timeline synced, last timestamp:" << lastTimestamp << "index:"
-                        << index << ",feed size:" << mTimelineModel.rowCount()
-                        << ",pages left:" << maxPages;
-
-                Q_ASSERT(index >= 0);
-                const auto& post = mTimelineModel.getPost(index);
-                qDebug() << post.getTimelineTimestamp() << post.getText();
-
-                finishTimelineSync(index);
-                return;
-            }
-
-            if (maxPages == 1)
-            {
-                restoreDebugLogging();
-                qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
-                finishTimelineSync(mTimelineModel.rowCount() - 1);
-                emit statusMessage(tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
-                                       tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
-                return;
-            }
-
-            const QString& newCursor = mTimelineModel.getLastCursor();
-            if (newCursor.isEmpty())
-            {
-                restoreDebugLogging();
-                qDebug() << "Last page reached, no more cursor";
-                finishTimelineSync(mTimelineModel.rowCount() - 1);
-                return;
-            }
-
-            if (newCursor == cursor)
-            {
-                restoreDebugLogging();
-                qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
-                qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
-                finishTimelineSync(mTimelineModel.rowCount() - 1);
-            }
-
-            qInfo() << "Last timestamp:" << lastTimestamp;
-            emit timelineSyncProgress(maxPages - 1, lastTimestamp);
-            syncTimeline(tillTimestamp, cid, maxPages - 1, newCursor);
+            if (!newCursor.isEmpty())
+                syncTimeline(tillTimestamp, cid, maxPages - 1, newCursor);
         },
         [this](const QString& error, const QString& msg){
             restoreDebugLogging();
@@ -883,6 +861,109 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
             finishTimelineSyncFailed();
         }
         );
+}
+
+QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
+{
+    if (cursor.isEmpty())
+        model.setFeed(std::move(feed));
+    else
+        model.addFeed(std::move(feed));
+
+    if (model.isHomeFeed())
+        setGetTimelineInProgress(false);
+    else
+        setGetFeedInProgress(false);
+
+    const auto lastTimestamp = model.lastTimestamp();
+
+    if (lastTimestamp.isNull())
+    {
+        restoreDebugLogging();
+        qWarning() << "Feed is empty";
+
+        if (model.isHomeFeed())
+            finishTimelineSyncFailed();
+        else
+            finishFeedSyncFailed(model.getModelId());
+
+        return {};
+    }
+
+    if (lastTimestamp < tillTimestamp)
+    {
+        restoreDebugLogging();
+        const auto index = model.findTimestamp(tillTimestamp, cid);
+        qDebug() << "Feed synced, last timestamp:" << lastTimestamp << "index:"
+                 << index << ",feed size:" << model.rowCount()
+                 << ",pages left:" << maxPages;
+
+        Q_ASSERT(index >= 0);
+        const auto& post = model.getPost(index);
+        qDebug() << post.getTimelineTimestamp() << post.getText();
+
+        if (model.isHomeFeed())
+            finishTimelineSync(index);
+        else
+            finishFeedSync(model.getModelId(), index);
+
+        return {};
+    }
+
+    if (maxPages == 1)
+    {
+        restoreDebugLogging();
+        qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+
+        if (model.isHomeFeed())
+            finishTimelineSync(model.rowCount() - 1);
+        else
+            finishFeedSync(model.getModelId(), model.rowCount() - 1);
+
+        emit statusMessage(tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
+                               tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
+
+        return {};
+    }
+
+    const QString& newCursor = model.getLastCursor();
+
+    if (newCursor.isEmpty())
+    {
+        restoreDebugLogging();
+        qDebug() << "Last page reached, no more cursor";
+
+        if (model.isHomeFeed())
+            finishTimelineSync(mTimelineModel.rowCount() - 1);
+        else {
+            finishFeedSync(model.getModelId(), model.rowCount() - 1);
+        }
+
+        return {};
+    }
+
+    if (newCursor == cursor)
+    {
+        restoreDebugLogging();
+        qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
+        qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+
+        if (model.isHomeFeed())
+            finishTimelineSync(mTimelineModel.rowCount() - 1);
+        else
+            finishFeedSync(model.getModelId(), model.rowCount() - 1);
+
+        return {};
+    }
+
+    qInfo() << "Last timestamp:" << lastTimestamp;
+
+    if (model.isHomeFeed())
+        emit timelineSyncProgress(maxPages - 1, lastTimestamp);
+    else
+        emit feedSyncProgress(model.getModelId(), maxPages - 1, lastTimestamp);
+
+    return newCursor;
 }
 
 void Skywalker::finishTimelineSync(int index)
@@ -908,6 +989,73 @@ void Skywalker::finishTimelineSyncFailed()
     emit timelineSyncFailed();
     OffLineMessageChecker::checkNotificationPermission();
     JNICallbackListener::handlePendingIntent();
+}
+
+void Skywalker::syncListFeed(int modelId, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    Q_ASSERT(tillTimestamp.isValid());
+    qInfo() << "Sync list feed:" << tillTimestamp << "max pages:" << maxPages;
+
+    if (mGetFeedInProgress)
+    {
+        qInfo() << "Get feed still in progress";
+        return;
+    }
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& listUri = model->getListView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
+    setGetFeedInProgress(true);
+
+    if (cursor.isEmpty())
+        emit feedSyncStart(modelId, maxPages, tillTimestamp);
+
+    mBsky->getListFeed(listUri, TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor), langs,
+        [this, modelId, tillTimestamp, cid, maxPages, cursor](auto feed){
+            setGetFeedInProgress(false);
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            const auto newCursor = processSyncPage(std::move(feed), *model, tillTimestamp, cid, maxPages, cursor);
+
+            if (!newCursor.isEmpty())
+                syncListFeed(modelId, tillTimestamp, cid, maxPages - 1, newCursor);
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qWarning() << "Sync feed FAILED:" << error << " - " << msg;
+            setGetFeedInProgress(false);
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            finishFeedSyncFailed(modelId);
+    });
+}
+
+void Skywalker::finishFeedSync(int modelId, int index)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+        return;
+
+    const int offsetY = mUserSettings.getFeedSyncOffsetY(mUserDid, model->getFeedUri());
+    emit feedSyncOk(modelId, index, offsetY);
+}
+
+void Skywalker::finishFeedSyncFailed(int modelId)
+{
+    emit feedSyncFailed(modelId);
 }
 
 void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QString& cursor)
@@ -1470,6 +1618,23 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
 
     if (lastVisibleIndex > mTimelineModel.rowCount() - 20 && !mGetTimelineInProgress)
         getTimelineNextPage();
+}
+
+void Skywalker::feedMovementEnded(int modelId, int lastVisibleIndex, int lastVisibleOffsetY)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "No model:" << modelId;
+        return;
+    }
+
+    if (model->getFeedType() != QEnums::FEED_LIST)
+        return;
+
+    if (mUserSettings.mustSyncFeed(mUserDid, model->getFeedUri()))
+        saveFeedSyncTimestamp(*model, lastVisibleIndex, lastVisibleOffsetY);
 }
 
 void Skywalker::getPostThread(const QString& uri, int modelId)
@@ -3276,7 +3441,23 @@ void Skywalker::saveSyncTimestamp(int postIndex, int offsetY)
     mUserSettings.saveSyncTimestamp(mUserDid, post.getTimelineTimestamp());
     mUserSettings.saveSyncCid(mUserDid, post.getCid());
     mUserSettings.saveSyncOffsetY(mUserDid, offsetY);
-    mSyncPostIndex = postIndex;
+}
+
+void Skywalker::saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int offsetY)
+{
+    if (postIndex < 0 || postIndex >= model.rowCount())
+    {
+        qWarning() << "Invalid index:" << postIndex << "size:" << model.rowCount() << model.getFeedName();
+        return;
+    }
+
+    const auto feedUri = model.getFeedUri();
+    qDebug() << "Save feed sync:" << model.getFeedName() << "index:" << postIndex << "offsetY:" << offsetY;
+
+    const auto& post = model.getPost(postIndex);
+    mUserSettings.saveFeedSyncTimestamp(mUserDid, feedUri, post.getTimelineTimestamp());
+    mUserSettings.saveFeedSyncCid(mUserDid, feedUri, post.getCid());
+    mUserSettings.saveFeedSyncOffsetY(mUserDid, feedUri, offsetY);
 }
 
 Chat* Skywalker::getChat()
@@ -3551,7 +3732,6 @@ void Skywalker::signOut()
     mContentFilter.clear();
     mUserSettings.setActiveUserDid({});
     mTimelineSynced = false;
-    mSyncPostIndex = -1;
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);
     setGetFeedInProgress(false);

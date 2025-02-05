@@ -17,6 +17,7 @@ class PostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QString feedUri READ getFeedUri CONSTANT FINAL)
     Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
     Q_PROPERTY(bool languageFilterConfigured READ isLanguageFilterConfigured NOTIFY languageFilterConfiguredChanged FINAL)
@@ -44,8 +45,10 @@ public:
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE PostFeedModel* getUnderlyingModel() { return this; }
     const QString& getFeedName() const { return mFeedName; }
+    QString getFeedUri() const;
     QEnums::FeedType getFeedType() const;
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
+    bool isHomeFeed() const { return mIsHomeFeed; }
     const QString& getPreferencesFeedKey() const;
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }

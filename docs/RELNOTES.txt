@@ -1,5 +1,6 @@
 next
 ====
+* Rewind list feeds to last read post (optional)
 * Zoom image in swipe mode
 * Save or share image from swipe mode
 * Save video from swipe mode

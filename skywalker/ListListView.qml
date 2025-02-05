@@ -67,6 +67,7 @@ ListView {
         onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
         onHideList: (list) => graphUtils.hideList(list.uri)
         onUnhideList: (list) => graphUtils.unhideList(list.uri)
+        onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
     }
 
     FlickableRefresher {
@@ -90,7 +91,7 @@ ListView {
 
     GraphUtils {
         id: graphUtils
-        skywalker: view.skywalker
+        skywalker: view.skywalker // qmllint disable missing-type
 
         onDeleteListFailed: (error) => {
             statusPopup.show(qsTr(`Failed to delete list: ${error}`), QEnums.STATUS_LEVEL_ERROR)

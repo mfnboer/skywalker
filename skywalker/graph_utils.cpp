@@ -695,6 +695,22 @@ void GraphUtils::unhideList(const QString& listUri)
         });
 }
 
+void GraphUtils::syncList(const QString& listUri, bool sync)
+{
+    Q_ASSERT(mSkywalker);
+    auto* settings = mSkywalker->getUserSettings();
+
+    if (sync)
+        settings->addSyncFeed(mSkywalker->getUserDid(), listUri);
+    else
+        settings->removeSyncFeed(mSkywalker->getUserDid(), listUri);
+
+    mSkywalker->makeLocalModelChange(
+        [listUri, sync](LocalListModelChanges* model){
+            model->syncList(listUri, sync);
+        });
+}
+
 bool GraphUtils::areRepostsMuted(const QString& did) const
 {
     Q_ASSERT(mSkywalker);

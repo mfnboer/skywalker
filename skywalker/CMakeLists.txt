@@ -463,6 +463,7 @@ qt_add_qml_module(libskywalker
         SOURCES graph_listener.cpp
         QML_FILES PostHeaderWithAvatar.qml
         QML_FILES ImageWithZoom.qml
+        QML_FILES RewindStatus.qml
 )
 
 if (NOT ANDROID)

@@ -1616,6 +1616,7 @@ ApplicationWindow {
     function viewListFeed(listView) {
         let view = null
 
+        console.debug("uri:", listView.uri, "feedViews:", root.feedViews.size)
         if (root.feedViews.has(listView.uri)) {
             view = feedViews.get(listView.uri)
             const visibleItem = currentStackItem()
@@ -1628,15 +1629,15 @@ ApplicationWindow {
 
             if (view.atYBeginning) {
                 console.debug("Reload list feed:", listView.name)
-                skywalker.getListFeed(view.modelId)
+                skywalker.syncListFeed(view.modelId)
             }
         }
         else {
             const modelId = skywalker.createPostFeedModel(listView)
-            skywalker.getListFeed(modelId)
-            let component = Qt.createComponent("PostFeedView.qml")
+            let component = guiSettings.createComponent("PostFeedView.qml")
             view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
             feedViews.set(listView.uri, view)
+            skywalker.syncListFeed(modelId)
         }
 
         viewTimeline()
@@ -1701,7 +1702,7 @@ ApplicationWindow {
         skywalker.getQuotesFeed(modelId)
         let component = Qt.createComponent("QuotePostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
-        view.onClosed.connect(() => { popStack() }) // qmlllint disable missing-property
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
     }
 
@@ -1732,7 +1733,7 @@ ApplicationWindow {
     function viewStarterPack(starterPack) {
         let component = Qt.createComponent("StarterPackView.qml")
         let view = component.createObject(root, { starterPack: starterPack })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
     }
 
@@ -1763,7 +1764,7 @@ ApplicationWindow {
                 title: title,
                 model: profiles
         })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
@@ -1773,7 +1774,7 @@ ApplicationWindow {
                 modelId: modelId,
                 skywalker: skywalker
         })
-        page.onClosed.connect(() => { popStack() })
+        page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
         skywalker.getListList(modelId)
     }
@@ -1784,7 +1785,7 @@ ApplicationWindow {
                 modelId: modelId,
                 skywalker: skywalker
         })
-        page.onClosed.connect(() => { popStack() })
+        page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
         skywalker.getListList(modelId)
     }
@@ -1792,21 +1793,21 @@ ApplicationWindow {
     function viewFeedDescription(feed) {
         let component = Qt.createComponent("FeedDescriptionView.qml")
         let view = component.createObject(root, { feed: feed, skywalker: skywalker })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
     function viewListFeedDescription(list) {
         let component = Qt.createComponent("ListFeedDescriptionView.qml")
         let view = component.createObject(root, { list: list, skywalker: skywalker })
-        view.onClosed.connect(() => { popStack() })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
     function editSettings() {
         let component = guiSettings.createComponent("SettingsForm.qml")
         let form = component.createObject(root)
-        form.onClosed.connect(() => { popStack() })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
