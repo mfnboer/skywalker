@@ -50,6 +50,7 @@ SkyPage {
             Layout.leftMargin: 8
             Layout.topMargin: 5
             Layout.preferredWidth: 100
+            Layout.preferredHeight: 100
             Layout.alignment: Qt.AlignTop
             avatarUrl: !contentVisible() ? "" : list.avatar
             onClicked: {
@@ -288,10 +289,15 @@ SkyPage {
             text: qsTr("Rewind on startup")
             checkable: true
             checked: listSync
-            enabled: isPinnedList
             onToggled: {
                 graphUtils.syncList(list.uri, checked)
                 listSync = checked
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !isPinnedList
+                onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
             }
         }
     }
@@ -357,8 +363,13 @@ SkyPage {
             text: qsTr("Rewind on startup")
             checkable: true
             checked: listSync
-            enabled: isPinnedList
             onToggled: syncList(checked)
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !isPinnedList
+                onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+            }
         }
     }
 

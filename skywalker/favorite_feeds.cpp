@@ -130,13 +130,9 @@ void FavoriteFeeds::addFeed(const GeneratorView& feed)
     mSavedFeedsPref.mSaved.push_back(feed.getUri());
     mSavedUris.insert(feed.getUri());
 
-    if (mSavedFeedsModelId >= 0)
-    {
-        auto it = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
-        mSavedFeeds.insert(it, feed);
-
-        updateSavedFeedsModel();
-    }
+    auto it = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
+    mSavedFeeds.insert(it, feed);
+    updateSavedFeedsModel();
 
     emit feedSaved();
 }
@@ -156,16 +152,13 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
     mSavedFeedsPref.mSaved.erase(it);
     mSavedUris.erase(feed.getUri());
 
-    if (mSavedFeedsModelId >= 0)
-    {
-        auto it2 = std::find_if(mSavedFeeds.cbegin(), mSavedFeeds.cend(),
-                            [uri=feed.getUri()](const auto& f){ return f.getUri() == uri; });
+    auto it2 = std::find_if(mSavedFeeds.cbegin(), mSavedFeeds.cend(),
+                        [uri=feed.getUri()](const auto& f){ return f.getUri() == uri; });
 
-        if (it2 != mSavedFeeds.cend())
-            mSavedFeeds.erase(it2);
+    if (it2 != mSavedFeeds.cend())
+        mSavedFeeds.erase(it2);
 
-        updateSavedFeedsModel();
-    }
+    updateSavedFeedsModel();
 
     emit feedSaved();
 }
@@ -227,6 +220,8 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
 
 void FavoriteFeeds::addList(const ListView& list)
 {
+    qDebug() << "Add list:" << list.getName() << "model:" << mSavedListsModelId;
+
     if (isSavedFeed(list.getUri()))
     {
         qDebug() << "List already added:" << list.getName();
@@ -236,19 +231,17 @@ void FavoriteFeeds::addList(const ListView& list)
     mSavedFeedsPref.mSaved.push_back(list.getUri());
     mSavedUris.insert(list.getUri());
 
-    if (mSavedListsModelId >= 0)
-    {
-        auto it = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), list, listNameCompare);
-        mSavedLists.insert(it, list);
-
-        updateSavedListsModel();
-    }
+    auto it = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), list, listNameCompare);
+    mSavedLists.insert(it, list);
+    updateSavedListsModel();
 
     emit listSaved();
 }
 
 void FavoriteFeeds::removeList(const ListView& list)
 {
+    qDebug() << "Remove list:" << list.getName();
+
     if (!isSavedFeed(list.getUri()))
     {
         qDebug() << "List already removed:" << list.getName();
@@ -262,16 +255,13 @@ void FavoriteFeeds::removeList(const ListView& list)
     mSavedFeedsPref.mSaved.erase(it);
     mSavedUris.erase(list.getUri());
 
-    if (mSavedListsModelId >= 0)
-    {
-        auto it2 = std::find_if(mSavedLists.cbegin(), mSavedLists.cend(),
-                             [uri=list.getUri()](const auto& l){ return l.getUri() == uri; });
+    auto it2 = std::find_if(mSavedLists.cbegin(), mSavedLists.cend(),
+                         [uri=list.getUri()](const auto& l){ return l.getUri() == uri; });
 
-        if (it2 != mSavedLists.cend())
-            mSavedLists.erase(it2);
+    if (it2 != mSavedLists.cend())
+        mSavedLists.erase(it2);
 
-        updateSavedListsModel();
-    }
+    updateSavedListsModel();
 
     emit listSaved();
 }

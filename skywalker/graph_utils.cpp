@@ -357,6 +357,8 @@ void GraphUtils::deleteList(const QString& listUri)
             if (listHidden)
                 unhideList(listUri);
 
+            syncList(listUri, false);
+
             emit deleteListOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){

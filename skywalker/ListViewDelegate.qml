@@ -55,6 +55,7 @@ Rectangle {
             Layout.rightMargin: view.margin
             Layout.topMargin: 5
             Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredHeight: guiSettings.threadColumnWidth
             Layout.alignment: Qt.AlignTop
             avatarUrl: showList ? list.avatarThumb : ""
 
@@ -322,8 +323,13 @@ Rectangle {
             text: qsTr("Rewind on startup")
             checkable: true
             checked: listSync
-            enabled: listPinned
             onToggled: syncList(list, checked)
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !listPinned
+                onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+            }
         }
     }
 
@@ -390,8 +396,13 @@ Rectangle {
             text: qsTr("Rewind on startup")
             checkable: true
             checked: listSync
-            enabled: listPinned
             onToggled: syncList(list, checked)
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !listPinned
+                onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+            }
         }
     }
 

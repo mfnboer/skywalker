@@ -136,7 +136,7 @@ SkyListView {
 
     Loader {
         anchors.top: emptyListIndication.bottom
-        active: model.isFilterModel() && count === 0 && !model.endOfFeed
+        active: Boolean(model) && model.isFilterModel() && count === 0 && !model.endOfFeed
         sourceComponent: extraFooterComponent
     }
 
