@@ -524,13 +524,17 @@ void FavoriteFeeds::updatePinnedListViews()
 void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
 {
     if (listUris.empty())
+    {
+        cleanupSettings();
         return;
+    }
 
     const QString uri = listUris.back();
     listUris.pop_back();
 
     mSkywalker->getBskyClient()->getList(uri, 1, {},
         [this, listUris](auto output){
+            qDebug() << "Add list:" << output->mList->mUri << output->mList->mName;
             addPinnedFeed(output->mList);
             updatePinnedListViews(std::move(listUris));
         },
@@ -656,6 +660,24 @@ void FavoriteFeeds::saveSearchFeedsTo(UserSettings& settings) const
     }
 
     settings.setPinnedSearchFeeds(mSkywalker->getUserDid(), searchFeeds);
+}
+
+void FavoriteFeeds::cleanupSettings()
+{
+    qDebug() << "Cleanup settings";
+    auto& settings = *mSkywalker->getUserSettings();
+    const QString userDid = mSkywalker->getUserDid();
+    const std::unordered_set<QString> feeds = settings.getSyncFeeds(userDid);
+
+    for (const QString& uri : feeds)
+    {
+        // Sync feeds must be pinned
+        if (isPinnedFeed(uri))
+            continue;
+
+        qWarning() << "Feed not pinned:" << uri;
+        settings.removeSyncFeed(userDid, uri);
+    }
 }
 
 }

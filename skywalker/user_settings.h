@@ -99,6 +99,8 @@ public:
     void saveSyncOffsetY(const QString& did, int offsetY);
     int getSyncOffsetY(const QString& did) const;
 
+    // Currently these feeds are list feeds pinned as favorites
+    // [FAVORITES]
     void saveFeedSyncTimestamp(const QString& did, const QString& feedUri, QDateTime timestamp);
     QDateTime getFeedSyncTimestamp(const QString& did, const QString& feedUri) const;
 
@@ -112,6 +114,7 @@ public:
     void removeSyncFeed(const QString& did, const QString& feedUri);
     const std::unordered_set<QString>& getSyncFeeds(const QString& did) const;
     Q_INVOKABLE bool mustSyncFeed(const QString& did, const QString& feedUri) const;
+    // [FAVORITES]
 
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;

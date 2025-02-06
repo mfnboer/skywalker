@@ -95,6 +95,7 @@ private:
     void updateSavedListsModel();
     std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
     void saveSearchFeedsTo(UserSettings& settings) const;
+    void cleanupSettings();
 
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
     std::unordered_set<QString> mSavedUris;
