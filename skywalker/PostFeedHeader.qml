@@ -156,7 +156,7 @@ Rectangle {
 
             function expandFeeds() {
                 if (expandFeedsButton.visible)
-                    expandFeedsButton.clicked() // qmllint disable missing-proprety
+                    expandFeedsButton.clicked() // qmllint disable missing-property
             }
         }
 

@@ -360,6 +360,24 @@ bool UserSettings::mustSyncFeed(const QString& did, const QString& feedUri) cons
     return feedUris.contains(feedUri);
 }
 
+void UserSettings::setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode)
+{
+    mSettings.setValue(key(did, "feedViewMode", feedUri), (int)mode);
+}
+
+QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QString& feedUri)
+{
+    const int mode = mSettings.value(key(did, "feedViewMode", feedUri), (int)QEnums::CONTENT_MODE_UNSPECIFIED).toInt();
+
+    if (mode < QEnums::CONTENT_MODE_UNSPECIFIED || mode > QEnums::CONTENT_MODE_LAST)
+        return QEnums::CONTENT_MODE_UNSPECIFIED;
+
+    if (mode >= QEnums::CONTENT_MODE_UNKNOWN && mode < QEnums::CONTENT_MODE_MEDIA)
+        return QEnums::CONTENT_MODE_UNSPECIFIED;
+
+    return QEnums::ContentMode(mode);
+}
+
 void UserSettings::updateLastSignInTimestamp(const QString& did)
 {
     mSettings.setValue(key(did, "lastSignInTimestamp"), QDateTime::currentDateTime());

@@ -10,6 +10,7 @@ SkyListView {
     property int calibrationDy: 0
     property bool inSync: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
+    property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
 
     signal closed
 
@@ -24,7 +25,7 @@ SkyListView {
         feedName: underlyingModel ? underlyingModel.feedName : ""
         feedAvatar: getFeedAvatar()
         defaultSvg: getFeedDefaultAvatar()
-        contentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+        contentMode: initialContentMode
         showAsHome: postFeedView.showAsHome
         showLanguageFilter: underlyingModel ? underlyingModel.languageFilterConfigured : false
         filteredLanguages: underlyingModel ? underlyingModel.filteredLanguages : []
@@ -235,6 +236,11 @@ SkyListView {
 
         if (oldModel.isFilterModel())
             oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
+
+        if (skywalker.favoriteFeeds.isPinnedFeed(underlyingModel.feedUri)) {
+            const userSettings = skywalker.getUserSettings()
+            userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
+        }
     }
 
     function calibratePosition() {
@@ -354,5 +360,13 @@ SkyListView {
         skywalker.onFeedSyncProgress.connect(handleSyncProgress)
         skywalker.onFeedSyncOk.connect(setInSync)
         skywalker.onFeedSyncFailed.connect(syncToHome)
+
+        const userSettings = skywalker.getUserSettings()
+        const viewMode = userSettings.getFeedViewMode(skywalker.getUserDid(), model.feedUri)
+
+        if (viewMode != QEnums.CONTENT_MODE_UNSPECIFIED) {
+            initialContentMode = viewMode
+            changeView(viewMode)
+        }
     }
 }
