@@ -331,7 +331,8 @@ void UserSettings::removeSyncFeed(const QString& did, const QString& feedUri)
     getSyncFeeds(did);
     mSyncFeeds->erase(feedUri);
     const QStringList uris(mSyncFeeds->begin(), mSyncFeeds->end());
-    mSettings.setValue(key(did, "syncFeeds", feedUri), uris);
+    mSettings.setValue(key(did, "syncFeeds"), uris);
+
     mSettings.remove(key(did, "syncFeedTimestamp", feedUri));
     mSettings.remove(key(did, "syncFeedCid", feedUri));
     mSettings.remove(key(did, "syncFeedOffsetY", feedUri));
