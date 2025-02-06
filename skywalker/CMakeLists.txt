@@ -320,7 +320,7 @@ qt_add_qml_module(libskywalker
         QML_FILES SvgTransparentButton.qml
         QML_FILES ComposePostItem.qml
         QML_FILES SeparatorLine.qml
-        QML_FILES VirtualKeyboardPageResizer.qml
+        QML_FILES
         SOURCES tenor_gif.cpp
         QML_FILES LanguageComboBox.qml
         SOURCES language_utils.h

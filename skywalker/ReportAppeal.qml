@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import skywalker
 
 SkyPage {
@@ -34,7 +33,7 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: page.width
-        height: guiSettings.footerHeight
+        height: guiSettings.footerHeight + keyboardHandler.keyboardHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
 
@@ -99,7 +98,7 @@ SkyPage {
 
     ReportUtils {
         id: reportUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onReportOk: {
             skywalker.showStatusMessage(qsTr("Appeal sent"), QEnums.STATUS_LEVEL_INFO)
@@ -109,10 +108,9 @@ SkyPage {
         onReportFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
+    VirtualKeyboardHandler {
+        id: keyboardHandler
     }
-
 
     function sendAppeal() {
         if (label.appliesToActor()) {
@@ -126,10 +124,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        // Save the full page height now. Later when the Android keyboard pops up,
-        // the page height sometimes changes by itself, but not always...
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
-
         detailsText.forceActiveFocus()
     }
 }

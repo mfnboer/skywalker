@@ -3730,7 +3730,7 @@ void Skywalker::signOut()
     mSeenHashtags.clear();
     mFavoriteFeeds.clear();
     mContentFilter.clear();
-    mUserSettings.setActiveUserDid({});
+    mUserSettings.reset();
     mTimelineSynced = false;
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);

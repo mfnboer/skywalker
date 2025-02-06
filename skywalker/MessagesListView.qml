@@ -316,49 +316,6 @@ SkyPage {
         // }
     }
 
-
-    // This was needed in Qt 6.6.3
-    // Connections {
-    //     target: Qt.inputMethod
-
-    //     function onKeyboardRectangleChanged() {
-    //         const keyboardY = Qt.inputMethod.keyboardRectangle.y  / Screen.devicePixelRatio
-
-    //         // NOTE: This function seems to be called many times when the keyboard
-    //         // pops up, with increasing Y values. The first Y value seems to be the
-    //         // position of the top of the keyboard, not sure where the others calls
-    //         // come from.
-    //         if (keyboardY > 0) {
-    //             if (!keyboardVisible) {
-    //                 const keyboardHeight = page.height - keyboardY
-
-    //                 // Shrink empty space between message list and text input. The
-    //                 // text input shifted up to make place for the keyboard.
-    //                 messagesView.y = Math.min(keyboardHeight, Math.max(messagesView.height - messagesView.contentHeight, 0))
-
-    //                 // Qt seems to scroll the whole window up!. Pull the header
-    //                 // down to make it visible
-    //                 header.y = keyboardHeight
-
-    //                 newMessageText.ensureVisible(newMessageText.cursorRectangle)
-    //                 keyboardVisible = true
-    //             }
-    //         }
-    //         else {
-    //             messagesView.y = 0
-    //             header.y = 0
-    //             keyboardVisible = false
-    //         }
-    //     }
-    // }
-
-    // This works since Qt 6.7.3
-    // Seems not to work on every phone. Replaced this with adding keyboard height
-    // to the bottom margin of flick.
-    // VirtualKeyboardPageResizer {
-    //     id: virtualKeyboardPageResizer
-    // }
-
     VirtualKeyboardHandler {
         id: keyboardHandler
     }

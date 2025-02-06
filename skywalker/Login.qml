@@ -28,6 +28,7 @@ SkyPage {
 
     Flickable {
         anchors.fill: parent
+        anchors.bottomMargin: keyboardHandler.keyboardHeight
         clip: true
         contentWidth: parent.width
         contentHeight: okButton.y + okButton.height
@@ -174,10 +175,9 @@ SkyPage {
         }
     }
 
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
+    VirtualKeyboardHandler {
+        id: keyboardHandler
     }
-
 
     function autoCompleteHandle(handle, host) {
         let newHandle = handle
@@ -200,8 +200,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
-
         if (authFactorTokenRequired())
             authFactorTokenField.setFocus()
         else if (isNewAccount())

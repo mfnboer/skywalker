@@ -55,6 +55,12 @@ QString UserSettings::labelsKey(const QString& did, const QString& labelerDid) c
     return QString("%1/labels/%2").arg(did, labelerDid);
 }
 
+void UserSettings::reset()
+{
+    mSyncFeeds.reset();
+    setActiveUserDid({});
+}
+
 void UserSettings::setActiveDisplayMode(QEnums::DisplayMode mode)
 {
     if (mode != sActiveDisplayMode)

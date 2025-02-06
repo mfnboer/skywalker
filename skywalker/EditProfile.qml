@@ -51,7 +51,7 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: editProfilePage.width
-        height: guiSettings.footerHeight
+        height: guiSettings.footerHeight + keyboardHandler.keyboardHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus
@@ -83,10 +83,6 @@ SkyPage {
         }
     }
 
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
-    }
-
     Flickable {
         id: flick
         anchors.fill: parent
@@ -113,7 +109,7 @@ SkyPage {
             Rectangle {
                 id: bannerBackground
                 Layout.fillWidth: true
-                height: parent.width * (bannerHeight / bannerWidth) + avatar.height / 2
+                Layout.preferredHeight: parent.width * (bannerHeight / bannerWidth) + avatar.height / 2
                 color: guiSettings.bannerDefaultColor
 
                 ImageAutoRetry {
@@ -285,7 +281,7 @@ SkyPage {
 
     PostUtils {
         id: postUtils
-        skywalker: editProfilePage.skywalker
+        skywalker: editProfilePage.skywalker // qmllint disable missing-type
 
         onPhotoPicked: (imgSource) => {
             pickingImage = false
@@ -304,13 +300,16 @@ SkyPage {
 
     ProfileUtils {
         id: profileUtils
-        skywalker: editProfilePage.skywalker
+        skywalker: editProfilePage.skywalker // qmllint disable missing-type
 
         onUpdateProfileProgress: (msg) => editProfilePage.updateProfileProgress(msg)
         onUpdateProfileFailed: (error) => editProfilePage.updatProfileFailed(error)
         onUpdateProfileOk: () => editProfilePage.updateProfileDone()
     }
 
+    VirtualKeyboardHandler {
+        id: keyboardHandler
+    }
 
     function updateProfileProgress(msg) {
         busyIndicator.running = true
@@ -366,7 +365,7 @@ SkyPage {
     function avatarPhotoPicked(source) {
         let component = Qt.createComponent("EditAvatar.qml")
         let page = component.createObject(editProfilePage, { photoSource: source })
-        page.onClosed.connect(() => {
+        page.onClosed.connect(() => { // qmllint disable missing-property
             root.popStack()
             postUtils.dropPhoto(source)
         })
@@ -396,7 +395,7 @@ SkyPage {
             maskHeight: maskHeight,
             pageMargin: pageMargin
         })
-        page.onClosed.connect(() => {
+        page.onClosed.connect(() => { // qmllint disable missing-property
             root.popStack()
             postUtils.dropPhoto(source)
         })
@@ -462,10 +461,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        // Save the full page height now. Later when the Android keyboard pops up,
-        // the page height sometimes changes by itself, but not always...
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
-
         nameField.forceActiveFocus()
     }
 }
