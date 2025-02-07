@@ -119,6 +119,7 @@ public:
 
     Q_INVOKABLE void setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode);
     Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri);
+    QStringList getFeedViewModeUris(const QString& did) const;
     // [FAVORITES]
 
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
@@ -313,7 +314,7 @@ signals:
 
 private:
     QString key(const QString& did, const QString& subkey) const;
-    QString key(const QString& did, const QString& subkey1, const QString& subkey2) const;
+    QString uriKey(const QString& did, const QString& subkey, QString uri) const;
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
     void cleanup();

@@ -667,16 +667,28 @@ void FavoriteFeeds::cleanupSettings()
     qDebug() << "Cleanup settings";
     auto& settings = *mSkywalker->getUserSettings();
     const QString userDid = mSkywalker->getUserDid();
-    const std::unordered_set<QString> feeds = settings.getSyncFeeds(userDid);
 
-    for (const QString& uri : feeds)
+    qDebug() << "Cleanup sync feed settings";
+    const auto syncFeeds = settings.getSyncFeeds(userDid);
+    removeNonPinnedFeeds(syncFeeds,
+        [&settings, &userDid](const QString& uri){ settings.removeSyncFeed(userDid, uri); });
+
+    qDebug() << "Cleanup feed view mode settings";
+    removeNonPinnedFeeds(settings.getFeedViewModeUris(userDid),
+        [&settings, &userDid](const QString& uri){ settings.setFeedViewMode(userDid, uri, QEnums::CONTENT_MODE_UNSPECIFIED); });
+}
+
+template<typename Container>
+void FavoriteFeeds::removeNonPinnedFeeds(const Container& feedUris, const std::function<void(const QString& uri)>& removeFun)
+{
+    for (const QString& uri : feedUris)
     {
-        // Sync feeds must be pinned
-        if (isPinnedFeed(uri))
-            continue;
-
-        qWarning() << "Feed not pinned:" << uri;
-        settings.removeSyncFeed(userDid, uri);
+        qDebug() << "Check:" << uri;
+        if (!isPinnedFeed(uri))
+        {
+            qWarning() << "Feed not pinned:" << uri;
+            removeFun(uri);
+        }
     }
 }
 

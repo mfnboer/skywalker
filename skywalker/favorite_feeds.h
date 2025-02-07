@@ -97,6 +97,9 @@ private:
     void saveSearchFeedsTo(UserSettings& settings) const;
     void cleanupSettings();
 
+    template<typename Container>
+    void removeNonPinnedFeeds(const Container& feedUris, const std::function<void(const QString& uri)>& removeFun);
+
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
     std::unordered_set<QString> mSavedUris;
     std::unordered_set<QString> mPinnedUris;

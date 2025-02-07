@@ -39,9 +39,20 @@ QString UserSettings::key(const QString& did, const QString& subkey) const
     return QString("%1/%2").arg(did, subkey);
 }
 
-QString UserSettings::key(const QString& did, const QString& subkey1, const QString& subkey2) const
+static QString& uriToKey(QString& uri)
 {
-    return QString("%1/%2/%3").arg(did, subkey1, subkey2);
+    Q_ASSERT(uri.indexOf('|') == -1);
+    return uri.replace('/', '|');
+}
+
+static QString& keyToUri(QString& uri)
+{
+    return uri.replace('|', '/');
+}
+
+QString UserSettings::uriKey(const QString& did, const QString& subkey, QString uri) const
+{
+    return QString("%1/%2/%3").arg(did, subkey, uriToKey(uri));
 }
 
 QString UserSettings::displayKey(const QString& key) const
@@ -296,32 +307,32 @@ int UserSettings::getSyncOffsetY(const QString& did) const
 
 void UserSettings::saveFeedSyncTimestamp(const QString& did, const QString& feedUri, QDateTime timestamp)
 {
-    mSettings.setValue(key(did, "syncFeedTimestamp", feedUri), timestamp);
+    mSettings.setValue(uriKey(did, "syncFeedTimestamp", feedUri), timestamp);
 }
 
 QDateTime UserSettings::getFeedSyncTimestamp(const QString& did, const QString& feedUri) const
 {
-    return mSettings.value(key(did, "syncFeedTimestamp", feedUri)).toDateTime();
+    return mSettings.value(uriKey(did, "syncFeedTimestamp", feedUri)).toDateTime();
 }
 
 void UserSettings::saveFeedSyncCid(const QString& did, const QString& feedUri, const QString& cid)
 {
-    mSettings.setValue(key(did, "syncFeedCid", feedUri), cid);
+    mSettings.setValue(uriKey(did, "syncFeedCid", feedUri), cid);
 }
 
 QString UserSettings::getFeedSyncCid(const QString& did, const QString& feedUri) const
 {
-    return mSettings.value(key(did, "syncFeedCid", feedUri)).toString();
+    return mSettings.value(uriKey(did, "syncFeedCid", feedUri)).toString();
 }
 
 void UserSettings::saveFeedSyncOffsetY(const QString& did, const QString& feedUri, int offsetY)
 {
-    mSettings.setValue(key(did, "syncFeedOffsetY", feedUri), offsetY);
+    mSettings.setValue(uriKey(did, "syncFeedOffsetY", feedUri), offsetY);
 }
 
 int UserSettings::getFeedSyncOffsetY(const QString& did, const QString& feedUri) const
 {
-    return mSettings.value(key(did, "syncFeedOffsetY", feedUri), 0).toInt();
+    return mSettings.value(uriKey(did, "syncFeedOffsetY", feedUri), 0).toInt();
 }
 
 void UserSettings::addSyncFeed(const QString& did, const QString& feedUri)
@@ -339,9 +350,9 @@ void UserSettings::removeSyncFeed(const QString& did, const QString& feedUri)
     const QStringList uris(mSyncFeeds->begin(), mSyncFeeds->end());
     mSettings.setValue(key(did, "syncFeeds"), uris);
 
-    mSettings.remove(key(did, "syncFeedTimestamp", feedUri));
-    mSettings.remove(key(did, "syncFeedCid", feedUri));
-    mSettings.remove(key(did, "syncFeedOffsetY", feedUri));
+    mSettings.remove(uriKey(did, "syncFeedTimestamp", feedUri));
+    mSettings.remove(uriKey(did, "syncFeedCid", feedUri));
+    mSettings.remove(uriKey(did, "syncFeedOffsetY", feedUri));
 }
 
 const std::unordered_set<QString>& UserSettings::getSyncFeeds(const QString& did) const
@@ -362,12 +373,15 @@ bool UserSettings::mustSyncFeed(const QString& did, const QString& feedUri) cons
 
 void UserSettings::setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode)
 {
-    mSettings.setValue(key(did, "feedViewMode", feedUri), (int)mode);
+    if (mode != QEnums::CONTENT_MODE_UNSPECIFIED)
+        mSettings.setValue(uriKey(did, "feedViewMode", feedUri), (int)mode);
+    else
+        mSettings.remove(uriKey(did, "feedViewMode", feedUri));
 }
 
 QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QString& feedUri)
 {
-    const int mode = mSettings.value(key(did, "feedViewMode", feedUri), (int)QEnums::CONTENT_MODE_UNSPECIFIED).toInt();
+    const int mode = mSettings.value(uriKey(did, "feedViewMode", feedUri), (int)QEnums::CONTENT_MODE_UNSPECIFIED).toInt();
 
     if (mode < QEnums::CONTENT_MODE_UNSPECIFIED || mode > QEnums::CONTENT_MODE_LAST)
         return QEnums::CONTENT_MODE_UNSPECIFIED;
@@ -376,6 +390,18 @@ QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QStr
         return QEnums::CONTENT_MODE_UNSPECIFIED;
 
     return QEnums::ContentMode(mode);
+}
+
+QStringList UserSettings::getFeedViewModeUris(const QString& did) const
+{
+    const_cast<QSettings&>(mSettings).beginGroup(key(did, "feedViewMode"));
+    QStringList uris = mSettings.allKeys();
+    const_cast<QSettings&>(mSettings).endGroup();
+
+    for (auto& uri : uris)
+        keyToUri(uri);
+
+    return uris;
 }
 
 void UserSettings::updateLastSignInTimestamp(const QString& did)
