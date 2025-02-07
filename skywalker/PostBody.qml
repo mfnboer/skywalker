@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    readonly property int margin: 10
     required property basicprofile postAuthor
     required property string postText
     required property list<imageview> postImages
@@ -155,9 +156,11 @@ Column {
         visible: status == Loader.Ready
     }
 
+    // HACK: somehow video leaves 1 empty pixel at each side. Add 2 pixels to fix it.
     Loader {
         id: mediaLoader
-        width: parent.width
+        x: swipeMode ? -margin - 1 : 0
+        width: parent.width + (swipeMode ? 2 * margin + 2 : 0)
         visible: status == Loader.Ready
     }
 

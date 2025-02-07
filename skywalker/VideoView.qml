@@ -351,7 +351,7 @@ Column {
             width: parent.width
             height: parent.height
             maskColor: videoStack.backgroundColor == "transparent" ? guiSettings.backgroundColor : videoStack.backgroundColor
-            visible: !isFullViewMode
+            visible: !isFullViewMode && !swipeMode
         }
     }
 
