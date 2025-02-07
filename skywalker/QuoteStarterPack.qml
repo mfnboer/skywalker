@@ -65,7 +65,7 @@ Column {
         width: parent.width - 2 * margin
         wrapMode: Text.Wrap
         elide: Text.ElideRight
-        maximumLineCount: maxTextLines
+        maximumLineCount: 5
         color: guiSettings.textColor
         plainText: starterPack.description
         visible: starterPack.description

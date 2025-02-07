@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
+# Work around to fix build issue in Qt6.8.2
+# See https://bugreports.qt.io/browse/QTBUG-131707
+set(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL OFF)
+
 include(FetchContent)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Multimedia)
 
@@ -47,7 +51,6 @@ qt_add_qml_module(appskywalker
         qtquickcontrols2.conf
         fonts/unicode.impact.ttf
         fonts/NotoSansMath-Regular.ttf
-        fonts/NotoColorEmoji.ttf
         images/skywalker.png
         images/PB_tenor_logo_blue_horizontal.svg
         images/via_tenor_logo_blue.svg

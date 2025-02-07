@@ -17,6 +17,7 @@ class PostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QString feedUri READ getFeedUri CONSTANT FINAL)
     Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
     Q_PROPERTY(bool languageFilterConfigured READ isLanguageFilterConfigured NOTIFY languageFilterConfiguredChanged FINAL)
@@ -44,8 +45,10 @@ public:
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE PostFeedModel* getUnderlyingModel() { return this; }
     const QString& getFeedName() const { return mFeedName; }
+    QString getFeedUri() const;
     QEnums::FeedType getFeedType() const;
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
+    bool isHomeFeed() const { return mIsHomeFeed; }
     const QString& getPreferencesFeedKey() const;
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
@@ -87,14 +90,6 @@ public:
     const Post* getGapPlaceHolder(int gapId) const;
     void clearLastInsertedRowIndex() { mLastInsertedRowIndex = -1; }
     int getLastInsertedRowIndex() const { return mLastInsertedRowIndex; }
-
-    // Get the timestamp of the last post in the feed
-    QDateTime lastTimestamp() const;
-
-    // Returns the index of the last post >= timestamp, 0 if no such post exists
-    // If  there are multiple posts with the same timestamp, then pick the one with
-    // matching cid.
-    int findTimestamp(QDateTime timestamp, const QString& cid) const;
 
     void clear();
 

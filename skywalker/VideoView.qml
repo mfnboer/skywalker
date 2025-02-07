@@ -351,7 +351,7 @@ Column {
             width: parent.width
             height: parent.height
             maskColor: videoStack.backgroundColor == "transparent" ? guiSettings.backgroundColor : videoStack.backgroundColor
-            visible: !isFullViewMode
+            visible: !isFullViewMode && !swipeMode
         }
     }
 
@@ -504,7 +504,7 @@ Column {
 
     M3U8Reader {
         id: m3u8Reader
-        videoQuality: userSettings.videoQuality
+        videoQuality: userSettings.videoQuality // qmllint disable missing-type
 
         onGetVideoStreamOk: (durationMs) => {
             videoPlayer.m3u8DurationMs = durationMs
@@ -546,7 +546,7 @@ Column {
 
     VideoUtils {
         id: videoUtils
-        skywalker: root.getSkywalker()
+        skywalker: root.getSkywalker() // qmllint disable missing-type
 
         onTranscodingOk: (inputFileName, outputFileName) => {
             console.debug("Set MP4 source:", outputFileName)

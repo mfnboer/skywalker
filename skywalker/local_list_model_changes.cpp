@@ -33,6 +33,11 @@ void LocalListModelChanges::hideFromTimeline(const QString& uri, bool hide)
     hideFromTimelineChanged();
 }
 
+void LocalListModelChanges::syncList(const QString&, bool)
+{
+    syncListChanged();
+}
+
 void LocalListModelChanges::updateMemberListItemUri(const QString& uri, const QString& listItemUri)
 {
     mChanges[uri].mMemberListItemUri = listItemUri;

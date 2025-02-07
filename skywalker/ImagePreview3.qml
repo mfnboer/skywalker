@@ -14,6 +14,7 @@ RoundCornerMask {
     id: frame
     width: parent.width
     height: filter.imageVisible() ? parent.width / 1.5 : filter.height
+    cornerRadius: swipeMode ? 0 : 10
 
     Item {
         id: imgGrid

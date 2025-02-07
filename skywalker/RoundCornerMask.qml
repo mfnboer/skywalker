@@ -14,6 +14,7 @@ Rectangle {
         y: 0
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
+        visible: cornerRadius > 0
 
         ShapePath {
             strokeColor: maskRect.maskColor
@@ -35,6 +36,7 @@ Rectangle {
         y: 0
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
+        visible: cornerRadius > 0
 
         ShapePath {
             strokeColor: maskRect.maskColor
@@ -56,6 +58,7 @@ Rectangle {
         y: maskRect.height - height
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
+        visible: cornerRadius > 0
 
         ShapePath {
             strokeColor: maskRect.maskColor
@@ -77,6 +80,7 @@ Rectangle {
         y: maskRect.height - height
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
+        visible: cornerRadius > 0
 
         ShapePath {
             strokeColor: maskRect.maskColor

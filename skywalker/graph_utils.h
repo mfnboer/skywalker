@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE void unmuteList(const QString& listUri);
     Q_INVOKABLE void hideList(const QString& listUri);
     Q_INVOKABLE void unhideList(const QString& listUri);
+    Q_INVOKABLE void syncList(const QString& listUri, bool sync);
 
     Q_INVOKABLE bool areRepostsMuted(const QString& did) const;
     Q_INVOKABLE void muteReposts(const BasicProfile& profile);

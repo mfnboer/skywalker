@@ -7,7 +7,6 @@ SkyListView {
     property bool inSync: false
     property bool isView: false
     property int unreadPosts: 0
-    property var anchorItem // item used to calibrate list position on insert of new posts
     property int calibrationDy: 0
     property int prevCount: 0
     property int newLastVisibleIndex: -1
@@ -131,21 +130,6 @@ SkyListView {
         timelineView.unreadPosts = Math.max(firstIndex, 0)
     }
 
-    function setAnchorItem(firstIndex, lastIndex) {
-        const index = firstIndex >= 0 ? firstIndex : lastIndex
-
-        if (index < 0)
-            return
-
-        if (anchorItem)
-            anchorItem.isAnchorItem = false
-
-        anchorItem = itemAtIndex(index)
-
-        if (anchorItem)
-            anchorItem.isAnchorItem = true
-    }
-
     function doMoveToPost(index) {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
@@ -165,8 +149,10 @@ SkyListView {
         setAnchorItem(0, 0)
         updateUnreadPosts(0)
 
-        if (!isView)
+        if (!isView) {
+            skywalker.timelineMovementEnded(0, 0, 0)
             skywalker.getTimeline(100)
+        }
     }
 
     function moveToEnd(afterMoveCb = () => {}) {

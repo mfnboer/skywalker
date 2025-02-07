@@ -38,6 +38,8 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool showSuggestedUsers READ getShowSuggestedUsers WRITE setShowSuggestedUsers NOTIFY showSuggestedUsersChanged FINAL)
 
 public:
+    void reset();
+
     static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
     Q_INVOKABLE void setActiveDisplayMode(QEnums::DisplayMode mode);
 
@@ -98,6 +100,27 @@ public:
 
     void saveSyncOffsetY(const QString& did, int offsetY);
     int getSyncOffsetY(const QString& did) const;
+
+    // Currently these feeds are feeds pinned as favorites
+    // [FAVORITES]
+    void saveFeedSyncTimestamp(const QString& did, const QString& feedUri, QDateTime timestamp);
+    QDateTime getFeedSyncTimestamp(const QString& did, const QString& feedUri) const;
+
+    void saveFeedSyncCid(const QString& did, const QString& feedUri, const QString& cid);
+    QString getFeedSyncCid(const QString& did, const QString& feedUri) const;
+
+    void saveFeedSyncOffsetY(const QString& did, const QString& feedUri, int offsetY);
+    int getFeedSyncOffsetY(const QString& did, const QString& feedUri) const;
+
+    void addSyncFeed(const QString& did, const QString& feedUri);
+    void removeSyncFeed(const QString& did, const QString& feedUri);
+    const std::unordered_set<QString>& getSyncFeeds(const QString& did) const;
+    Q_INVOKABLE bool mustSyncFeed(const QString& did, const QString& feedUri) const;
+
+    Q_INVOKABLE void setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode);
+    Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri);
+    QStringList getFeedViewModeUris(const QString& did) const;
+    // [FAVORITES]
 
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
@@ -291,12 +314,14 @@ signals:
 
 private:
     QString key(const QString& did, const QString& subkey) const;
+    QString uriKey(const QString& did, const QString& subkey, QString uri) const;
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
     void cleanup();
 
     QSettings mSettings;
     PasswordEncryption mEncryption;
+    std::optional<std::unordered_set<QString>> mSyncFeeds;
 
     // Derived from display mode
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK

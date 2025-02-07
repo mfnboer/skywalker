@@ -48,15 +48,11 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: editListPage.width
-        height: getFooterHeight()
+        height: guiSettings.footerHeight + keyboardHandler.keyboardHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus
 
-        function getFooterHeight() {
-            return guiSettings.footerHeight
-        }
-
         TextLengthBar {
             textField: nameField
             visible: nameField.activeFocus
@@ -82,10 +78,6 @@ SkyPage {
             textField: descriptionField
             visible: descriptionField.activeFocus
         }
-    }
-
-    VirtualKeyboardPageResizer {
-        id: virtualKeyboardPageResizer
     }
 
     Flickable {
@@ -116,7 +108,8 @@ SkyPage {
                 property bool isUpdated: false
 
                 id: avatar
-                width: 100
+                Layout.preferredWidth: 100
+                Layout.preferredHeight: 100
                 avatarUrl: list.avatar
 
                 onClicked: {
@@ -194,9 +187,6 @@ SkyPage {
             Rectangle {
                 id: descriptionRect
                 Layout.fillWidth: true
-
-                // Normal height acts weird when the user changes the avatar, then it
-                // shrinks back to a single line of text. preferredHeight works.
                 Layout.preferredHeight: descriptionField.height
 
                 radius: 5
@@ -232,7 +222,7 @@ SkyPage {
 
     PostUtils {
         id: postUtils
-        skywalker: editListPage.skywalker
+        skywalker: editListPage.skywalker // qmllint disable missing-type
 
         onPhotoPicked: (imgSource) => {
             pickingImage = false
@@ -251,7 +241,7 @@ SkyPage {
 
     GraphUtils {
         id: graphUtils
-        skywalker: editListPage.skywalker
+        skywalker: editListPage.skywalker // qmllint disable missing-type
 
         onCreateListProgress: (msg) => editListPage.createListProgress(msg)
         onCreateListFailed: (error) => editListPage.createListFailed(error)
@@ -270,6 +260,9 @@ SkyPage {
         onUpdateListOk: (uri, cid) => editListPage.updateListDone(uri, cid)
     }
 
+    VirtualKeyboardHandler {
+        id: keyboardHandler
+    }
 
     function createListProgress(msg) {
         busyIndicator.running = true
@@ -303,7 +296,7 @@ SkyPage {
         console.debug("IMAGE:", source)
         let component = Qt.createComponent("EditAvatar.qml")
         let page = component.createObject(editListPage, { photoSource: source, relativeRadius: 0.1 })
-        page.onClosed.connect(() => {
+        page.onClosed.connect(() => { // qmllint disable missing-property
             root.popStack()
             postUtils.dropPhoto(source)
         })
@@ -348,10 +341,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        // Save the full page height now. Later when the Android keyboard pops up,
-        // the page height sometimes changes by itself, but not always...
-        virtualKeyboardPageResizer.fullPageHeight = parent.height
-
         nameField.forceActiveFocus()
     }
 }

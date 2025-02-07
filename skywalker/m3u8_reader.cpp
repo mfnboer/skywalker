@@ -16,6 +16,15 @@ M3U8Reader::M3U8Reader(QObject* parent) :
     mNetwork.setTransferTimeout(15000);
 }
 
+void M3U8Reader::setVideoQuality(QEnums::VideoQuality quality)
+{
+    if (quality != mVideoQuality)
+    {
+        mVideoQuality = quality;
+        emit videoQualityChanged();
+    }
+}
+
 void M3U8Reader::setLoading(bool loading)
 {
     if (loading != mLoading)

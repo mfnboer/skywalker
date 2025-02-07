@@ -38,7 +38,7 @@ void FontDownloader::initAppFonts()
     UserSettings userSettings;
 
     addApplicationFonts();
-    installBundleEmojiFontSource();
+    downloadEmojiFont();
 
     QFont font = QGuiApplication::font();
     const float fontScale = getFontScale();

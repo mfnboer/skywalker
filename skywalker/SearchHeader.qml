@@ -36,12 +36,13 @@ Rectangle {
         Rectangle {
             radius: 5
             Layout.fillWidth: true
+            Layout.rightMargin: 10
             Layout.preferredHeight: searchText.height
             color: guiSettings.backgroundColor
 
             TextInput {
                 id: searchText
-                // TODO in Qt6.8 EnterKey.type: Qt.EnterKeySearch
+                EnterKey.type: Qt.EnterKeySearch // works since Qt6.8
                 width: parent.width
                 clip: true
                 padding: 5
@@ -59,8 +60,7 @@ Rectangle {
                     }
                 }
 
-                // Does not work with Android
-                Keys.onReleased: (event) => { headerRect.keyRelease(event) }
+                Keys.onReturnPressed: headerRect.search(searchText.displayText)
 
                 Accessible.role: Accessible.EditableText
                 Accessible.name: placeHolder.visible ? placeHolderText : text
@@ -75,6 +75,9 @@ Rectangle {
                     width: height
                     height: parent.height + 10
                     svg: SvgOutline.close
+                    flat: true
+                    iconColor: guiSettings.textColor
+                    Material.background: guiSettings.backgroundColor
                     accessibleName: qsTr("clear search text")
                     visible: searchText.displayText.length > 0
                     onClicked: searchText.clear()
@@ -92,20 +95,6 @@ Rectangle {
 
                 Accessible.ignored: true
             }
-        }
-
-        // WORKAROUND for Android
-        // Qt does not catch the signal of the ENTER key from the Android
-        // keyboard, nor can it set the icon to a search icon.
-        SvgButton {
-            id: searchButton
-            iconColor: enabled ? guiSettings.headerTextColor : guiSettings.disabledColor
-            Material.background: enabled ? guiSettings.buttonColor : guiSettings.headerColor
-            svg: SvgOutline.search
-            accessibleName: qsTr("start search for posts and users")
-            onClicked: headerRect.search(searchText.displayText)
-            enabled: searchText.displayText.length >= headerRect.minSearchTextLength
-            visible: headerRect.showSearchButton
         }
     }
 

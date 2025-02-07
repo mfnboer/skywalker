@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import skywalker
 
 SkyListView {
@@ -18,7 +17,7 @@ SkyListView {
     spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
     currentIndex: 0
     highlightMoveVelocity: 2000
-    interactive: !currentItem.zooming
+    interactive: !currentItem.zooming // qmllint disable missing-property
 
     Accessible.name: postFeedView.model.feedName
 
@@ -117,7 +116,7 @@ SkyListView {
     }
 
     Component.onDestruction: {
-        Screen.onPrimaryOrientationChanged.disconnect(orientationHandler)
+        Screen.onPrimaryOrientationChanged.disconnect(orientationHandler) // qmllint disable missing-property
         resetSystemBars()
 
         if (model)
@@ -125,7 +124,7 @@ SkyListView {
     }
 
     Component.onCompleted: {
-        Screen.onPrimaryOrientationChanged.connect(orientationHandler)
+        Screen.onPrimaryOrientationChanged.connect(orientationHandler) // qmllint disable missing-property
         setSystemBars()
         model.setOverrideLinkColor(guiSettings.linkColorDarkMode)
         positionViewAtIndex(currentIndex, ListView.Beginning)

@@ -11,6 +11,7 @@ Rectangle {
     required property bool listSaved
     required property bool listPinned
     required property bool listHideFromTimeline
+    required property bool listSync
     property bool showList: listVisible()
     property bool ownLists: true
     property bool allowEdit: true
@@ -29,6 +30,12 @@ Rectangle {
     signal unmuteList(listview list)
     signal hideList(listview list)
     signal unhideList(listview list)
+    signal syncList(listview list, bool sync)
+
+    onListPinnedChanged: {
+        if (!listPinned && listSync)
+            syncList(list, false)
+    }
 
     GridLayout {
         id: grid
@@ -39,16 +46,16 @@ Rectangle {
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: 10
+            Layout.preferredHeight: 10
             color: "transparent"
         }
 
         ListAvatar {
-            Layout.leftMargin: view.margin
+            Layout.leftMargin: view.margin + 8
             Layout.rightMargin: view.margin
-            x: 8
-            y: 5
-            width: guiSettings.threadColumnWidth
+            Layout.topMargin: 5
+            Layout.preferredWidth: guiSettings.threadColumnWidth
+            Layout.preferredHeight: guiSettings.threadColumnWidth
             Layout.alignment: Qt.AlignTop
             avatarUrl: showList ? list.avatarThumb : ""
 
@@ -125,11 +132,12 @@ Rectangle {
                 muted: listMuted
                 blockedUri: listBlockedUri
                 hideFromTimeline: listHideFromTimeline
+                sync: listSync
             }
         }
 
         Rectangle {
-            width: 80
+            Layout.preferredWidth: 80
             Layout.fillHeight: true
             color: "transparent"
 
@@ -174,7 +182,7 @@ Rectangle {
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
-            height: contentLabels.height + 3
+            Layout.preferredHeight: contentLabels.height + 3
             color: "transparent"
 
             ContentLabels {
@@ -308,8 +316,19 @@ Rectangle {
             text: qsTr("Report list")
             onTriggered: root.reportList(list)
 
-            MenuItemSvg {
-                svg: SvgOutline.report
+            MenuItemSvg { svg: SvgOutline.report }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Rewind on startup")
+            checkable: true
+            checked: listSync
+            onToggled: syncList(list, checked)
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !listPinned
+                onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
             }
         }
     }
@@ -371,6 +390,18 @@ Rectangle {
 
             MenuItemSvg {
                 svg: SvgOutline.report
+            }
+        }
+        AccessibleMenuItem {
+            text: qsTr("Rewind on startup")
+            checkable: true
+            checked: listSync
+            onToggled: syncList(list, checked)
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !listPinned
+                onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
             }
         }
     }

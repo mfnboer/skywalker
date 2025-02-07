@@ -302,7 +302,9 @@ public:
         CONTENT_MODE_UNKNOWN = (int)ATProto::AppBskyFeed::ContentMode::UNKNOWN,
 
         // Not defined by ATProto
-        CONTENT_MODE_MEDIA
+        CONTENT_MODE_MEDIA = 100,
+
+        CONTENT_MODE_LAST = CONTENT_MODE_MEDIA
     };
     Q_ENUM(ContentMode)
 

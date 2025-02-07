@@ -1,8 +1,14 @@
 next
 ====
+* Rewind favorite list feeds to last read post (optional)
+* Remember last view mode for favorite feeds
+* Use full screen width in media and video views
 * Zoom image in swipe mode
 * Save or share image from swipe mode
 * Save video from swipe mode
+* Search key on keyboard on search pages
+* Remove app bundle emoji font
+* Bug fixes
 
 3.13
 ====

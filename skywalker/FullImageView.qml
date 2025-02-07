@@ -18,7 +18,7 @@ SkyPage {
     background: Rectangle { color: guiSettings.fullScreenColor }
 
     SwipeView {
-        property bool zooming: currentItem ? currentItem.zooming : false
+        property bool zooming: currentItem ? currentItem.zooming : false // qmllint disable missing-property
 
         id: view
         anchors.fill: parent

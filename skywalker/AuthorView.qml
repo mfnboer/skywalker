@@ -948,6 +948,9 @@ SkyPage {
                         onUnblockList: (list, blockedUri) => graphUtils.unblockList(list.uri, blockedUri)
                         onMuteList: (list) => graphUtils.muteList(list.uri)
                         onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
+                        onHideList: (list) => graphUtils.hideList(list.uri)
+                        onUnhideList: (list) => graphUtils.unhideList(list.uri)
+                        onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
                     }
 
                     FlickableRefresher {

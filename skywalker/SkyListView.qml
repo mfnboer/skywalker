@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 ListView {
     property bool enableOnScreenCheck: false
+    property var anchorItem // item used to calibrate list position on insert of new posts
 
     signal covered
     signal uncovered
@@ -109,5 +110,20 @@ ListView {
 
         const hiddenY = contentY + height - item.y
         return item.height - hiddenY
+    }
+
+    function setAnchorItem(firstIndex, lastIndex) {
+        const index = firstIndex >= 0 ? firstIndex : lastIndex
+
+        if (index < 0)
+            return
+
+        if (anchorItem)
+            anchorItem.isAnchorItem = false
+
+        anchorItem = itemAtIndex(index)
+
+        if (anchorItem)
+            anchorItem.isAnchorItem = true
     }
 }

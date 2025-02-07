@@ -66,12 +66,6 @@ SkyPage {
             }
         }
 
-        onKeyRelease: (event) => {
-            if (event.key === Qt.Key_Return) {
-                searchUtils.search(getDisplayText())
-            }
-        }
-
         onSearch: (text) => { searchUtils.search(text) }
     }
 
@@ -759,7 +753,7 @@ SkyPage {
     SearchUtils {
         id: searchUtils
         skywalker: page.skywalker // qmllint disable missing-type
-        overrideAdultVisibility: page.overrideAdultVisibility
+        overrideAdultVisibility: page.overrideAdultVisibility // qmllint disable missing-type
 
         function search(query) {
             page.isTyping = false

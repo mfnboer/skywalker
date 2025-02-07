@@ -20,6 +20,7 @@ Item {
 
     RoundCornerMask {
         id: frame
+        cornerRadius: swipeMode ? 0 : 10
         anchors.horizontalCenter: parent.horizontalCenter
         width: filter.imageVisible() ? img.width : parent.width
         height: filter.imageVisible() ? img.height : filter.height

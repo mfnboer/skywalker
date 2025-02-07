@@ -4,6 +4,7 @@ Row {
     property bool muted: false
     property string blockedUri
     property bool hideFromTimeline: false
+    property bool sync: false
 
     spacing: 5
 
@@ -18,5 +19,10 @@ Row {
     SkyLabel {
         text: qsTr("hide from timeline")
         visible: hideFromTimeline
+    }
+
+    SkyLabel {
+        text: qsTr("rewind")
+        visible: sync
     }
 }

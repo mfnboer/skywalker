@@ -357,6 +357,8 @@ void GraphUtils::deleteList(const QString& listUri)
             if (listHidden)
                 unhideList(listUri);
 
+            syncList(listUri, false);
+
             emit deleteListOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -692,6 +694,22 @@ void GraphUtils::unhideList(const QString& listUri)
     mSkywalker->makeLocalModelChange(
         [listUri](LocalAuthorModelChanges* model){
             model->updateHideFromTimeline();
+        });
+}
+
+void GraphUtils::syncList(const QString& listUri, bool sync)
+{
+    Q_ASSERT(mSkywalker);
+    auto* settings = mSkywalker->getUserSettings();
+
+    if (sync)
+        settings->addSyncFeed(mSkywalker->getUserDid(), listUri);
+    else
+        settings->removeSyncFeed(mSkywalker->getUserDid(), listUri);
+
+    mSkywalker->makeLocalModelChange(
+        [listUri, sync](LocalListModelChanges* model){
+            model->syncList(listUri, sync);
         });
 }
 

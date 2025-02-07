@@ -24,12 +24,6 @@ SkyPage {
             typeaheadSearchTimer.start()
         }
 
-        onKeyRelease: (event) => {
-            if (event.key === Qt.Key_Return) {
-                searchFeeds()
-            }
-        }
-
         onSearch: (text) => {
             typeaheadSearchTimer.stop()
             searchFeeds()

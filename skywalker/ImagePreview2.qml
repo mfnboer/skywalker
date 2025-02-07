@@ -13,6 +13,7 @@ RoundCornerMask {
     id: frame
     width: parent.width
     height: filter.imageVisible() ? width / 2 : filter.height
+    cornerRadius: swipeMode ? 0 : 10
 
     Row {
         id: imgRow

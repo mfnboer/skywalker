@@ -38,8 +38,8 @@ SkyPage {
 
         ListListView {
             id: yourLists
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             skywalker: page.skywalker
             modelId: page.modelId
             ownLists: true
@@ -48,8 +48,8 @@ SkyPage {
 
         ListView {
             id: savedListsView
-            width: parent.width
-            height: parent.height
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
             spacing: 0
             clip: true
             model: skywalker.favoriteFeeds.getSavedListsModel()
@@ -80,6 +80,8 @@ SkyPage {
             delegate: ListViewDelegate {
                 width: page.width
                 ownLists: false
+
+                onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
             }
 
             FlickableRefresher {}
@@ -98,6 +100,10 @@ SkyPage {
         }
     }
 
+    GraphUtils {
+        id: graphUtils
+        skywalker: page.skywalker // qmllint disable missing-type
+    }
 
     Component.onDestruction: {
         skywalker.favoriteFeeds.removeSavedListsModel()

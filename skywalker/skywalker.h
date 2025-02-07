@@ -94,6 +94,8 @@ public:
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10) override;
     Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb = {}) override;
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
+    Q_INVOKABLE void syncListFeed(int modelId, int maxPages = 20) override;
+    Q_INVOKABLE void feedMovementEnded(int modelId, int lastVisibleIndex, int lastVisibleOffsetY);
 
     // IFeedPager
     // Repeating default values here for calls from QML
@@ -265,6 +267,10 @@ signals:
     void timelineSyncFailed();
     void timelineResumed(int index, int offsetY);
     void gapFilled(int gapEndIndex);
+    void feedSyncStart(int modelId, int pages, QDateTime rewindTimestamp);
+    void feedSyncProgress(int modelId, int pages, QDateTime timestamp);
+    void feedSyncOk(int modelId, int index, int offsetY);
+    void feedSyncFailed(int modelId);
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
@@ -320,8 +326,12 @@ private:
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user);
     void syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
+    QString processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();
+    void syncListFeed(int modelId, QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
+    void finishFeedSync(int modelId, int index);
+    void finishFeedSyncFailed(int modelId);
     void updatePostIndexedSecondsAgo();
     void startRefreshTimers();
     void stopRefreshTimers();
@@ -332,6 +342,7 @@ private:
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
     void saveSyncTimestamp(int postIndex, int offsetY);
+    void saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int offsetY);
     void shareImage(const QString& contentUri, const QString& text);
     void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
@@ -418,7 +429,6 @@ private:
     std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;
-    int mSyncPostIndex = -1;
     bool mDebugLogging = false;
 };
 
