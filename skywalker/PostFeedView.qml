@@ -218,6 +218,10 @@ SkyListView {
 
     function changeView(contentMode) {
         let oldModel = model
+        const lastVisibleIndex = getLastVisibleIndex()
+        const timestamp = model.getPostTimelineTimestamp(lastVisibleIndex)
+        const cid = model.getPostCid(lastVisibleIndex)
+        const lastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
 
         switch (contentMode) {
         case QEnums.CONTENT_MODE_UNSPECIFIED:
@@ -240,6 +244,11 @@ SkyListView {
         if (skywalker.favoriteFeeds.isPinnedFeed(underlyingModel.feedUri)) {
             const userSettings = skywalker.getUserSettings()
             userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
+        }
+
+        if (lastVisibleIndex > -1) {
+            const newIndex = model.findTimestamp(timestamp, cid)
+            setInSync(modelId, newIndex, lastVisibleOffsetY)
         }
     }
 

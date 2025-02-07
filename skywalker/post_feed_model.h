@@ -91,14 +91,6 @@ public:
     void clearLastInsertedRowIndex() { mLastInsertedRowIndex = -1; }
     int getLastInsertedRowIndex() const { return mLastInsertedRowIndex; }
 
-    // Get the timestamp of the last post in the feed
-    QDateTime lastTimestamp() const;
-
-    // Returns the index of the last post >= timestamp, 0 if no such post exists
-    // If  there are multiple posts with the same timestamp, then pick the one with
-    // matching cid.
-    int findTimestamp(QDateTime timestamp, const QString& cid) const;
-
     void clear();
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);

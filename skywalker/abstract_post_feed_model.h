@@ -119,6 +119,17 @@ public:
 
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
+    // Get the timestamp of the last post in the feed
+    QDateTime lastTimestamp() const;
+
+    // Returns the index of the last post >= timestamp, 0 if no such post exists
+    // If  there are multiple posts with the same timestamp, then pick the one with
+    // matching cid.
+    Q_INVOKABLE int findTimestamp(QDateTime timestamp, const QString& cid) const;
+
+    Q_INVOKABLE QDateTime getPostTimelineTimestamp(int index) const;
+    Q_INVOKABLE QString getPostCid(int index) const;
+
 signals:
     void endOfFeedChanged();
 
