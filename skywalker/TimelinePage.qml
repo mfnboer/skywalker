@@ -7,7 +7,7 @@ import skywalker
 SkyPage {
     required property var skywalker
     property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
-    property int unreadPosts: currentViewItem ? currentViewItem.unreadPosts : 0
+    property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
     property int margin: 10
 
     id: page
@@ -50,7 +50,7 @@ SkyPage {
         id: viewBar
         z: guiSettings.headerZLevel
         width: parent.width
-        // contentHeight: 40
+        contentHeight: 40
         Material.background: guiSettings.backgroundColor
         visible: count > 1
 
@@ -87,6 +87,8 @@ SkyPage {
     }
 
     StackLayout {
+        property list<var> syncBackup: []
+
         id: viewStack
         anchors.top: viewBar.visible ? viewBarSeparator.bottom : parent.top
         anchors.bottom: parent.bottom
@@ -135,11 +137,39 @@ SkyPage {
             }
         }
 
+        // When the model of a repeater changes then all items are destroyed
+        // and created again. To keep position in those views, we backup the sync
+        // information before the change, and restore after.
+
+        function backupViewSync(skipIndex = -1) {
+            syncBackup = []
+
+            for (let i = 1; i < count; ++i) {
+                if (i == skipIndex)
+                    continue
+
+                const view = children[i]
+                const syncIndex = view.getLastVisibleIndex()
+                const syncOffset = view.calcVisibleOffsetY(syncIndex)
+                syncBackup.push([syncIndex, syncOffset])
+            }
+        }
+
+        function restoreViewSync() {
+            for (let i = 0; i < syncBackup.length; ++i) {
+                let view = children[i + 1]
+                const syncIndex = syncBackup[i][0]
+                const syncOffset = syncBackup[i][1]
+                view.setInSync(syncIndex, syncOffset)
+            }
+        }
+
         function addTimelineView(filteredPostFeedModel) {
             viewBar.addTab(filteredPostFeedModel.feedName,
                            filteredPostFeedModel.backgroundColor,
                            filteredPostFeedModel.profile)
             children[count - 1].setInSync(-1)
+            restoreViewSync()
         }
 
         function cover() {
@@ -200,26 +230,31 @@ SkyPage {
     }
 
     function showUserView(profile) {
+        viewStack.backupViewSync()
         let postFilterModel = skywalker.timelineModel.addAuthorFilter(profile)
         viewStack.addTimelineView(postFilterModel)
     }
 
     function showHashtagView(hashtag) {
+        viewStack.backupViewSync()
         let postFilterModel = skywalker.timelineModel.addHashtagFilter(hashtag)
         viewStack.addTimelineView(postFilterModel)
     }
 
     function showFocusHashtagView(focusHashtagEntry) {
+        viewStack.backupViewSync()
         let postFilterModel = skywalker.timelineModel.addFocusHashtagFilter(focusHashtagEntry)
         viewStack.addTimelineView(postFilterModel)
     }
 
     function showVideoView() {
+        viewStack.backupViewSync()
         let postFilterModel = skywalker.timelineModel.addVideoFilter()
         viewStack.addTimelineView(postFilterModel)
     }
 
     function showMediaView() {
+        viewStack.backupViewSync()
         let postFilterModel = skywalker.timelineModel.addMediaFilter()
         viewStack.addTimelineView(postFilterModel)
     }
@@ -230,8 +265,10 @@ SkyPage {
         if (viewBar.currentIndex === index)
             viewBar.setCurrentIndex(index - 1)
 
+        viewStack.backupViewSync(index)
         let view = skywalker.timelineModel.filteredPostFeedModels[index - 1]
         skywalker.timelineModel.deleteFilteredPostFeedModel(view)
         viewBar.removeItem(tab)
+        viewStack.restoreViewSync()
     }
 }

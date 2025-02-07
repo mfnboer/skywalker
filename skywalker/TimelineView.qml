@@ -8,7 +8,6 @@ SkyListView {
     property bool isView: false
     property int unreadPosts: 0
     property int calibrationDy: 0
-    property int prevCount: 0
     property int newLastVisibleIndex: -1
     property int newLastVisibleOffsetY: 0
 
@@ -53,7 +52,6 @@ SkyListView {
         console.debug((model ? model.feedName : "no feed yet"), count)
 
         if (!inSync) {
-            prevCount = count
             newLastVisibleIndex = -1
             return
         }
@@ -63,11 +61,6 @@ SkyListView {
         console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
         updateUnreadPosts(firstVisibleIndex)
-
-        if (count > prevCount)
-            newPosts()
-
-        prevCount = count
 
         if (newLastVisibleIndex >= 0)
             resumeTimeline(newLastVisibleIndex, newLastVisibleOffsetY)
@@ -183,6 +176,9 @@ SkyListView {
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
         calibrateUnreadPosts()
+
+        if (start == 0)
+            newPosts()
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
@@ -248,6 +244,11 @@ SkyListView {
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
         model.onRowsRemoved.disconnect(rowsRemovedHandler)
         model.onRowsAboutToBeRemoved.disconnect(rowsAboutToBeRemovedHandler)
+    }
+
+    Component.onDestruction: {
+        if (model)
+            stopSync()
     }
 
     Component.onCompleted: {

@@ -91,7 +91,11 @@ public:
     void clearLastInsertedRowIndex() { mLastInsertedRowIndex = -1; }
     int getLastInsertedRowIndex() const { return mLastInsertedRowIndex; }
 
+    // Clear model and filter models
     void clear();
+
+    // Clear model and destroy filter models
+    void reset();
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);

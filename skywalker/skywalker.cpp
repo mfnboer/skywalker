@@ -3713,7 +3713,7 @@ void Skywalker::signOut()
     mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;
     mGlobalContentGroupListModel = nullptr;
-    mTimelineModel.clear();
+    mTimelineModel.reset();
     mUserDid.clear();
     mUserProfile = {};
     mAnniversary.setFirstAppearance({});

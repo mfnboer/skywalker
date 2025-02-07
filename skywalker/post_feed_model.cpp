@@ -304,6 +304,13 @@ void PostFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
+void PostFeedModel::reset()
+{
+    mFilteredPostFeedModels.clear();
+    emit filteredPostFeedModelsChanged();
+    clear();
+}
+
 void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
