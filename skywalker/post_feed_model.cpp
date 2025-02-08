@@ -600,7 +600,13 @@ void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedM
             const int index = it - mFilteredPostFeedModels.begin();
 
             emit filteredPostFeedModelAboutToBeDeleted(index);
+
+            // Keep unique_ptr alive till the filteredPostFeedModelsChanged has been emitted.
+            // Deleting it before causes a crash when you delete a filter that is not the
+            // the last, in the QML engine on Android only!
+            auto deletedModel = std::move(*it);
             mFilteredPostFeedModels.erase(it);
+
             emit filteredPostFeedModelsChanged();
             emit filteredPostFeedModelDeleted(index);
 

@@ -250,8 +250,8 @@ SkyPage {
 
     function closeView(tab) {
         const index = tab.TabBar.index
-        let view = skywalker.timelineModel.filteredPostFeedModels[index - 1]
-        skywalker.timelineModel.deleteFilteredPostFeedModel(view)
+        let filterModel = skywalker.timelineModel.filteredPostFeedModels[index - 1]
+        skywalker.timelineModel.deleteFilteredPostFeedModel(filterModel)
     }
 
     function filteredPostFeedModelAboutToBeAddedHandler() {
