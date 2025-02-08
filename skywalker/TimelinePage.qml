@@ -169,7 +169,6 @@ SkyPage {
                            filteredPostFeedModel.backgroundColor,
                            filteredPostFeedModel.profile)
             children[count - 1].setInSync(-1)
-            restoreViewSync()
         }
 
         function cover() {
@@ -230,45 +229,65 @@ SkyPage {
     }
 
     function showUserView(profile) {
-        viewStack.backupViewSync()
-        let postFilterModel = skywalker.timelineModel.addAuthorFilter(profile)
-        viewStack.addTimelineView(postFilterModel)
+        skywalker.timelineModel.addAuthorFilter(profile)
     }
 
     function showHashtagView(hashtag) {
-        viewStack.backupViewSync()
-        let postFilterModel = skywalker.timelineModel.addHashtagFilter(hashtag)
-        viewStack.addTimelineView(postFilterModel)
+        skywalker.timelineModel.addHashtagFilter(hashtag)
     }
 
     function showFocusHashtagView(focusHashtagEntry) {
-        viewStack.backupViewSync()
-        let postFilterModel = skywalker.timelineModel.addFocusHashtagFilter(focusHashtagEntry)
-        viewStack.addTimelineView(postFilterModel)
+        skywalker.timelineModel.addFocusHashtagFilter(focusHashtagEntry)
     }
 
     function showVideoView() {
-        viewStack.backupViewSync()
-        let postFilterModel = skywalker.timelineModel.addVideoFilter()
-        viewStack.addTimelineView(postFilterModel)
+        skywalker.timelineModel.addVideoFilter()
     }
 
     function showMediaView() {
-        viewStack.backupViewSync()
-        let postFilterModel = skywalker.timelineModel.addMediaFilter()
-        viewStack.addTimelineView(postFilterModel)
+        skywalker.timelineModel.addMediaFilter()
     }
 
     function closeView(tab) {
         const index = tab.TabBar.index
-
-        if (viewBar.currentIndex === index)
-            viewBar.setCurrentIndex(index - 1)
-
-        viewStack.backupViewSync(index)
         let view = skywalker.timelineModel.filteredPostFeedModels[index - 1]
         skywalker.timelineModel.deleteFilteredPostFeedModel(view)
-        viewBar.removeItem(tab)
+    }
+
+    function filteredPostFeedModelAboutToBeAddedHandler() {
+        viewStack.backupViewSync()
+    }
+
+    function filteredPostFeedModelAdded(filterModel) {
+        viewStack.addTimelineView(filterModel)
         viewStack.restoreViewSync()
+    }
+
+    function filteredPostFeedModelAboutToBeDeleted(index) {
+        const viewIndex = index + 1 // first view has index 1
+        viewStack.backupViewSync(viewIndex)
+
+        if (viewBar.currentIndex === viewIndex)
+            viewBar.setCurrentIndex(viewIndex - 1)
+
+        viewBar.takeItem(viewIndex)
+    }
+
+    function filteredPostFeedModelDeleted(index) {
+        viewStack.restoreViewSync()
+    }
+
+    Component.onDestruction: {
+        skywalker.timelineModel.onFilteredPostFeedModelAboutToBeAdded.disconnect(filteredPostFeedModelAboutToBeAddedHandler)
+        skywalker.timelineModel.onFilteredPostFeedModelAdded.disconnect(filteredPostFeedModelAdded)
+        skywalker.timelineModel.onFilteredPostFeedModelAboutToBeDeleted.disconnect(filteredPostFeedModelAboutToBeDeleted)
+        skywalker.timelineModel.onFilteredPostFeedModelDeleted.disconnect(filteredPostFeedModelDeleted)
+    }
+
+    Component.onCompleted: {
+        skywalker.timelineModel.onFilteredPostFeedModelAboutToBeAdded.connect(filteredPostFeedModelAboutToBeAddedHandler)
+        skywalker.timelineModel.onFilteredPostFeedModelAdded.connect(filteredPostFeedModelAdded)
+        skywalker.timelineModel.onFilteredPostFeedModelAboutToBeDeleted.connect(filteredPostFeedModelAboutToBeDeleted)
+        skywalker.timelineModel.onFilteredPostFeedModelDeleted.connect(filteredPostFeedModelDeleted)
     }
 }

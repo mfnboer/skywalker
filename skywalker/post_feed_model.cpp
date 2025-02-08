@@ -306,8 +306,15 @@ void PostFeedModel::clear()
 
 void PostFeedModel::reset()
 {
-    mFilteredPostFeedModels.clear();
-    emit filteredPostFeedModelsChanged();
+    while (!mFilteredPostFeedModels.empty())
+    {
+        const auto index = mFilteredPostFeedModels.size() - 1;
+        emit filteredPostFeedModelAboutToBeDeleted(index);
+        mFilteredPostFeedModels.pop_back();
+        emit filteredPostFeedModelsChanged();
+        emit filteredPostFeedModelDeleted(index);
+    }
+
     clear();
 }
 
@@ -573,8 +580,12 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     model->setPosts(mFeed, mFeed.size());
     model->setEndOfFeed(isEndOfFeed());
     auto* retval = model.get();
+
+    emit filteredPostFeedModelAboutToBeAdded();
     mFilteredPostFeedModels.push_back(std::move(model));
     emit filteredPostFeedModelsChanged();
+    emit filteredPostFeedModelAdded(retval);
+
     return retval;
 }
 
@@ -586,8 +597,13 @@ void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedM
         {
             qDebug() << "Delete filtered post feed model:" << (*it)->getFeedName() << "from:" << getFeedName();
             Q_ASSERT((*it)->getFeedName() == postFeedModel->getFeedName());
+            const int index = it - mFilteredPostFeedModels.begin();
+
+            emit filteredPostFeedModelAboutToBeDeleted(index);
             mFilteredPostFeedModels.erase(it);
             emit filteredPostFeedModelsChanged();
+            emit filteredPostFeedModelDeleted(index);
+
             return;
         }
     }

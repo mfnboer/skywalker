@@ -116,6 +116,10 @@ signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
     void filteredPostFeedModelsChanged();
+    void filteredPostFeedModelAboutToBeAdded();
+    void filteredPostFeedModelAdded(FilteredPostFeedModel*);
+    void filteredPostFeedModelAboutToBeDeleted(int index);
+    void filteredPostFeedModelDeleted(int index);
 
 private:
     struct Page
