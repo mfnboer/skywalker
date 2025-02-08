@@ -19,7 +19,7 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              const FocusHashtags& focusHashtags,
                              HashtagIndex& hashtags,
                              const ATProto::UserPreferences& userPrefs,
-                             const UserSettings& userSettings,
+                             UserSettings& userSettings,
                              QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, feedHide, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
@@ -586,6 +586,9 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     emit filteredPostFeedModelsChanged();
     emit filteredPostFeedModelAdded(retval);
 
+    if (isHomeFeed())
+        mUserSettings.setTimelineViews(mUserDid, filteredPostFeedModelsToJson());
+
     return retval;
 }
 
@@ -610,6 +613,9 @@ void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedM
             emit filteredPostFeedModelsChanged();
             emit filteredPostFeedModelDeleted(index);
 
+            if (isHomeFeed())
+                mUserSettings.setTimelineViews(mUserDid, filteredPostFeedModelsToJson());
+
             return;
         }
     }
@@ -621,6 +627,45 @@ QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const
 {
     auto models = mFilteredPostFeedModels | std::views::transform([](auto& m){ return m.get(); });
     return QList<FilteredPostFeedModel*>(models.begin(), models.end());
+}
+
+void PostFeedModel::addFilteredPostFeedModelsFromSettings()
+{
+    const auto json = mUserSettings.getTimelineViews(mUserDid);
+    qDebug() << "FILTERS:" << mUserDid << json;
+    addFilteredPostFeedModelsFromJson(json);
+}
+
+QJsonObject PostFeedModel::filteredPostFeedModelsToJson()
+{
+    QJsonArray filterArray;
+
+    for (const auto& filter : mFilteredPostFeedModels)
+        filterArray.push_back(filter->getPostFilter().toJson());
+
+    QJsonObject json;
+    json.insert("postFilters", filterArray);
+    return json;
+}
+
+void PostFeedModel::addFilteredPostFeedModelsFromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+
+    try {
+        const QJsonArray filterArray = xjson.getRequiredArray("postFilters");
+        for (const auto& filterValue : filterArray)
+        {
+            const auto& filterJson = filterValue.toObject();
+            IPostFilter::Ptr filter = IPostFilter::fromJson(filterJson);
+
+            if (filter)
+                addFilteredPostFeedModel(std::move(filter));
+        }
+    }
+    catch (ATProto::InvalidJsonException& e) {
+        qWarning() << e.msg();
+    }
 }
 
 void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update)

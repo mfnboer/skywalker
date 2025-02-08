@@ -39,6 +39,7 @@ public:
     QEnums::ContentMode getContentMode() const { return mPostFilter->getContentMode(); }
     QColor getBackgroundColor() const { return mPostFilter->getBackgroundColor(); }
     BasicProfile getProfile() const { return mPostFilter->getAuthor(); }
+    const IPostFilter& getPostFilter() const { return *mPostFilter; }
 
     void clear();
     void setPosts(const TimelineFeed& posts, size_t numPosts);

@@ -101,6 +101,9 @@ public:
     void saveSyncOffsetY(const QString& did, int offsetY);
     int getSyncOffsetY(const QString& did) const;
 
+    void setTimelineViews(const QString& did, const QJsonObject postFilters);
+    QJsonObject getTimelineViews(const QString& did) const;
+
     // Currently these feeds are feeds pinned as favorites
     // [FAVORITES]
     void saveFeedSyncTimestamp(const QString& did, const QString& feedUri, QDateTime timestamp);

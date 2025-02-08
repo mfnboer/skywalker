@@ -305,6 +305,16 @@ int UserSettings::getSyncOffsetY(const QString& did) const
     return mSettings.value(key(did, "syncOffsetY"), 0).toInt();
 }
 
+void UserSettings::setTimelineViews(const QString& did, const QJsonObject postFilters)
+{
+    mSettings.setValue(key(did, "timelineViews"), postFilters);
+}
+
+QJsonObject UserSettings::getTimelineViews(const QString& did) const
+{
+    return mSettings.value(key(did, "timelineViews")).toJsonObject();
+}
+
 void UserSettings::saveFeedSyncTimestamp(const QString& did, const QString& feedUri, QDateTime timestamp)
 {
     mSettings.setValue(uriKey(did, "syncFeedTimestamp", feedUri), timestamp);

@@ -248,6 +248,10 @@ SkyPage {
         skywalker.timelineModel.addMediaFilter()
     }
 
+    function switchToFullView() {
+        viewBar.setCurrentIndex(0)
+    }
+
     function closeView(tab) {
         const index = tab.TabBar.index
         let filterModel = skywalker.timelineModel.filteredPostFeedModels[index - 1]
@@ -266,10 +270,7 @@ SkyPage {
     function filteredPostFeedModelAboutToBeDeleted(index) {
         const viewIndex = index + 1 // first view has index 1
         viewStack.backupViewSync(viewIndex)
-
-        if (viewBar.currentIndex === viewIndex)
-            viewBar.setCurrentIndex(viewIndex - 1)
-
+        viewBar.setCurrentIndex(0)
         viewBar.takeItem(viewIndex)
     }
 

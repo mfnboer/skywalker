@@ -96,6 +96,8 @@ ApplicationWindow {
     }
 
     function syncTimelineToPost(postIndex, offsetY = 0) {
+        skywalker.timelineModel.addFilteredPostFeedModelsFromSettings()
+        getTimelineView().switchToFullView()
         closeStartupStatus()
         getTimelineView().setInSync(postIndex, offsetY)
         skywalker.startTimelineAutoUpdate()
@@ -2031,7 +2033,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)
-        console.debug("Font pt:", Qt.application.font.pointSize)
+        console.debug("Font pt:", Qt.application.font.pointSize) // qmllint disable missing-property
         console.debug("Font px:", Qt.application.font.pixelSize)
         console.debug(Qt.fontFamilies());
 

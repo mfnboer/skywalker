@@ -39,7 +39,7 @@ public:
                            const FocusHashtags& focusHashtags,
                            HashtagIndex& hashtags,
                            const ATProto::UserPreferences& userPrefs,
-                           const UserSettings& userSettings,
+                           UserSettings& userSettings,
                            QObject* parent = nullptr);
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
@@ -108,6 +108,7 @@ public:
     Q_INVOKABLE FilteredPostFeedModel* addMediaFilter();
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
+    Q_INVOKABLE void addFilteredPostFeedModelsFromSettings();
 
     void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
@@ -153,6 +154,8 @@ private:
     void setEndOfFeedFilteredPostModels(bool endOfFeed);
 
     FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
+    QJsonObject filteredPostFeedModelsToJson();
+    void  addFilteredPostFeedModelsFromJson(const QJsonObject& json);
 
     virtual bool mustHideContent(const Post& post) const override;
     bool passLanguageFilter(const Post& post) const;
@@ -175,7 +178,7 @@ private:
 
     bool mIsHomeFeed = false;
     const ATProto::UserPreferences& mUserPreferences;
-    const UserSettings& mUserSettings;
+    UserSettings& mUserSettings;
     bool mLanguageFilterEnabled = false;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
