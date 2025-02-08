@@ -637,7 +637,6 @@ QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const
 void PostFeedModel::addFilteredPostFeedModelsFromSettings()
 {
     const auto json = mUserSettings.getTimelineViews(mUserDid);
-    qDebug() << "FILTERS:" << mUserDid << json;
     addFilteredPostFeedModelsFromJson(json);
 }
 
@@ -666,6 +665,9 @@ int PostFeedModel::findFilteredPostFeedModelByFilter(IPostFilter* filter) const
 
 void PostFeedModel::addFilteredPostFeedModelsFromJson(const QJsonObject& json)
 {
+    if (json.isEmpty())
+        return;
+
     const ATProto::XJsonObject xjson(json);
 
     try {
@@ -675,7 +677,6 @@ void PostFeedModel::addFilteredPostFeedModelsFromJson(const QJsonObject& json)
             const auto& filterJson = filterValue.toObject();
             IPostFilter::Ptr filter = IPostFilter::fromJson(filterJson, [this](IPostFilter* f){
                 const int index = findFilteredPostFeedModelByFilter(f);
-                qDebug() << "FOUND MODEL:" << index;
 
                 if (index >= 0)
                     emit filteredPostFeedModelUpdated(index);
