@@ -54,7 +54,7 @@ public:
                                            const GeneratorView& quoteFeed, const ListView& quoteList,
                                            const TenorGif gif, const LinkCard* card, const QStringList& labels,
                                            const QString& language,
-                                           bool restrictReplies, bool allowMention, bool allowFollowing,
+                                           bool restrictReplies, bool allowMention, bool allowFollwer, bool allowFollowing,
                                            const QStringList& allowLists, bool embeddingDisabled,
                                            QDateTime timestamp = QDateTime::currentDateTime());
 

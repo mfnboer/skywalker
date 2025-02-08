@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
@@ -8,6 +9,7 @@ Dialog {
     required property string postUri
     required property bool restrictReply
     required property bool allowMentioned
+    required property bool allowFollower
     required property bool allowFollowing
     required property list<bool> allowLists
     required property list<int> allowListIndexes
@@ -108,19 +110,21 @@ Dialog {
 
                     if (checked) {
                         allowMentioned = false
+                        allowFollower = false
                         allowFollowing = false
                         allowLists = [false, false, false]
                     }
                 }
             }
             AccessibleCheckBox {
-                checked: restrictReply && !allowMentioned && !allowFollowing && !allowLists[0] && !allowLists[1] && !allowLists[2]
+                checked: restrictReply && !allowMentioned && !allowFollower && !allowFollowing && !allowLists[0] && !allowLists[1] && !allowLists[2]
                 text: qsTr("Nobody")
                 visible: isThreadFromUser
                 onCheckedChanged: {
                     if (checked) {
                         restrictReply = true
                         allowMentioned = false
+                        allowFollower = false
                         allowFollowing = false
                         allowLists = [false, false, false]
                     }
@@ -132,6 +136,17 @@ Dialog {
                 visible: isThreadFromUser
                 onCheckedChanged: {
                     allowMentioned = checked
+
+                    if (checked)
+                        restrictReply = true
+                }
+            }
+            AccessibleCheckBox {
+                checked: allowFollower
+                text: qsTr("Users following you")
+                visible: isThreadFromUser
+                onCheckStateChanged: {
+                    allowFollower = checked
 
                     if (checked)
                         restrictReply = true

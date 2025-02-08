@@ -72,7 +72,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
                                        const GeneratorView& quoteFeed, const ListView& quoteList,
                                        const TenorGif gif, const LinkCard* card, const QStringList& labels,
                                        const QString& language,
-                                       bool restrictReplies, bool allowMention, bool allowFollowing,
+                                       bool restrictReplies, bool allowMention, bool allowFollower, bool allowFollowing,
                                        const QStringList& allowLists, bool embeddingDisabled,
                                        QDateTime timestamp)
 {
@@ -123,6 +123,7 @@ DraftPostData* DraftPosts::createDraft(const QString& text,
     draft->setLanguage(language);
     draft->setRestrictReplies(restrictReplies);
     draft->setAllowMention(allowMention);
+    draft->setAllowFollower(allowFollower);
     draft->setAllowFollowing(allowFollowing);
     draft->setAllowLists(allowLists);
     draft->setEmbeddingDisabled(embeddingDisabled);
@@ -175,9 +176,9 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
     if (draftPost->restrictReplies())
     {
         const QString fileName = mStorageType == STORAGE_FILE ? createDraftPostFileName(dateTime) : "draft";
-        const bool allowNobody = !draftPost->allowMention() && !draftPost->allowFollowing() && draftPost->allowLists().empty();
+        const bool allowNobody = !draftPost->allowMention() && !draftPost->allowFollower() && !draftPost->allowFollowing() && draftPost->allowLists().empty();
         draft->mThreadgate = ATProto::PostMaster::createThreadgate(
-            getDraftUri(fileName), draftPost->allowMention(), draftPost->allowFollowing(),
+            getDraftUri(fileName), draftPost->allowMention(), draftPost->allowFollower(), draftPost->allowFollowing(),
             draftPost->allowLists(), allowNobody, {});
     }
 
@@ -438,6 +439,7 @@ static void setReplyRestrictions(DraftPostData* data, const Post& post)
         return;
 
     data->setAllowMention(restriction & QEnums::REPLY_RESTRICTION_MENTIONED);
+    data->setAllowFollower(restriction & QEnums::REPLY_RESTRICTION_FOLLOWER);
     data->setAllowFollowing(restriction & QEnums::REPLY_RESTRICTION_FOLLOWING);
 
     if (restriction & QEnums::REPLY_RESTRICTION_LIST)

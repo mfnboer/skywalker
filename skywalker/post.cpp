@@ -668,7 +668,7 @@ QString Post::getThreadgateUri() const
     return {};
 }
 
-QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allowFollowing, const bool allowList, bool allowNobody)
+QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allowFollower, bool allowFollowing, const bool allowList, bool allowNobody)
 {
     if (allowNobody)
         return QEnums::REPLY_RESTRICTION_NOBODY;
@@ -677,6 +677,9 @@ QEnums::ReplyRestriction Post::makeReplyRestriction(bool allowMention, bool allo
 
     if (allowMention)
         restriction |= QEnums::REPLY_RESTRICTION_MENTIONED;
+
+    if (allowFollower)
+        restriction |= QEnums::REPLY_RESTRICTION_FOLLOWER;
 
     if (allowFollowing)
         restriction |= QEnums::REPLY_RESTRICTION_FOLLOWING;
@@ -696,6 +699,7 @@ QEnums::ReplyRestriction Post::getReplyRestriction() const
 
     const auto& threadgate = threadgateView->mRecord;
     return makeReplyRestriction(threadgate->mAllowMention,
+                                threadgate->mAllowFollower,
                                 threadgate->mAllowFollowing,
                                 !threadgate->mAllowList.empty(),
                                 threadgate->mAllowNobody);

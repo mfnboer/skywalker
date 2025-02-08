@@ -1295,6 +1295,7 @@ ApplicationWindow {
 
     function hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
         const allowMentioned = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
+        const allowFollower = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWER)
         const allowFollowing = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING)
         const allowNobody = Boolean(replyRestriction === QEnums.REPLY_RESTRICTION_NOBODY)
 
@@ -1302,7 +1303,7 @@ ApplicationWindow {
             postUtils.undoThreadgate(threadgateUri, rootCid)
         }
         else {
-            postUtils.addThreadgate(rootUri, rootCid, allowMentioned, allowFollowing,
+            postUtils.addThreadgate(rootUri, rootCid, allowMentioned, allowFollower, allowFollowing,
                                     replyRestrictionLists, allowNobody, postHiddenReplies)
         }
     }
@@ -1318,6 +1319,7 @@ ApplicationWindow {
                 postUri: uri,
                 restrictReply: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE,
                 allowMentioned: replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED,
+                allowFollower: replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWER,
                 allowFollowing: replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING,
                 allowLists: postUtils.allowLists,
                 allowListIndexes: postUtils.allowListIndexes,
@@ -1327,6 +1329,7 @@ ApplicationWindow {
         restrictionsPage.onAccepted.connect(() => {
                 if (restrictionsPage.restrictReply === Boolean(replyRestriction !== QEnums.REPLY_RESTRICTION_NONE) &&
                     restrictionsPage.allowMentioned === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED) &&
+                    restrictionsPage.allowFollower === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWER) &&
                     restrictionsPage.allowFollowing === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) &&
                     !checkRestrictionListsChanged(getReplyRestrictionListUris(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)))
                 {
@@ -1337,10 +1340,11 @@ ApplicationWindow {
                 }
                 else {
                     const allowLists = getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)
-                    const allowNobody = Boolean(restrictionsPage.restrictReply && !restrictionsPage.allowMentioned && !restrictionsPage.allowFollowing && (allowLists.length === 0))
+                    const allowNobody = Boolean(restrictionsPage.restrictReply && !restrictionsPage.allowMentioned && !restrictionsPage.allowFollower && !restrictionsPage.allowFollowing && (allowLists.length === 0))
 
                     postUtils.addThreadgate(rootUri, rootCid,
                                             restrictionsPage.allowMentioned,
+                                            restrictionsPage.allowFollower,
                                             restrictionsPage.allowFollowing,
                                             allowLists, allowNobody, postHiddenReplies)
                 }

@@ -93,7 +93,7 @@ public:
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr getThreadgateView() const;
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgate) { mThreadgateView = threadgate; }
     QString getThreadgateUri() const;
-    static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollowing, bool allowList, bool allowNobody);
+    static QEnums::ReplyRestriction makeReplyRestriction(bool allowMention, bool allowFollower, bool allowFollowing, bool allowList, bool allowNobody);
     QEnums::ReplyRestriction getReplyRestriction() const;
     ListViewBasicList getReplyRestrictionLists() const;
     QStringList getHiddenReplies() const;

@@ -256,19 +256,19 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName, con
         });
 }
 
-void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const QStringList& allowList, bool allowNobody, const QStringList& hiddenReplies)
+void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const QStringList& allowList, bool allowNobody, const QStringList& hiddenReplies)
 {
     ListViewBasicList restrictionLists;
 
     for (const auto& uri : allowList)
         restrictionLists.push_back(ListViewBasic(uri, "", uri, ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, ""));
 
-    addThreadgate(uri, cid, allowMention, allowFollowing, restrictionLists, allowNobody, hiddenReplies);
+    addThreadgate(uri, cid, allowMention, allowFollower, allowFollowing, restrictionLists, allowNobody, hiddenReplies);
 }
 
-void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollowing, const ListViewBasicList& allowList, bool allowNobody, const QStringList& hiddenReplies)
+void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const ListViewBasicList& allowList, bool allowNobody, const QStringList& hiddenReplies)
 {
-    qDebug() << "Add threadgate uri:" << uri << "mention:" << allowMention << "following:" << allowFollowing << "nobody:" << allowNobody << "hiddenReplies:" << hiddenReplies.size();
+    qDebug() << "Add threadgate uri:" << uri << "mention:" << allowMention << "follower:" << allowFollower << "following:" << allowFollowing << "nobody:" << allowNobody << "hiddenReplies:" << hiddenReplies.size();
 
     if (!postMaster())
         return;
@@ -278,15 +278,15 @@ void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allow
     for (const auto& list : allowList)
         allowListUris.push_back(list.getUri());
 
-    mPostMaster->addThreadgate(uri, allowMention, allowFollowing, allowListUris, allowNobody, hiddenReplies,
-        [this, presence=getPresence(), cid, allowMention, allowFollowing, allowList, allowNobody, hiddenReplies](const QString& threadgateUri, const QString&){
+    mPostMaster->addThreadgate(uri, allowMention, allowFollower, allowFollowing, allowListUris, allowNobody, hiddenReplies,
+        [this, presence=getPresence(), cid, allowMention, allowFollower, allowFollowing, allowList, allowNobody, hiddenReplies](const QString& threadgateUri, const QString&){
             if (!presence)
                 return;
 
             mSkywalker->makeLocalModelChange(
-                [cid, threadgateUri, allowMention, allowFollowing, allowList, allowNobody, hiddenReplies](LocalPostModelChanges* model){
+                [cid, threadgateUri, allowMention, allowFollower, allowFollowing, allowList, allowNobody, hiddenReplies](LocalPostModelChanges* model){
                     model->updateThreadgateUri(cid, threadgateUri);
-                    model->updateReplyRestriction(cid, Post::makeReplyRestriction(allowMention, allowFollowing, !allowList.empty(), allowNobody));
+                    model->updateReplyRestriction(cid, Post::makeReplyRestriction(allowMention, allowFollower, allowFollowing, !allowList.empty(), allowNobody));
                     model->updateReplyRestrictionLists(cid, allowList);
                     model->updateHiddenReplies(cid, hiddenReplies);
                 });

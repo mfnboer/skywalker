@@ -89,6 +89,11 @@ SkyListView {
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
                         restrictionList.push(qsTr("mentioned users"))
 
+                    if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWER) {
+                        const author = model.replyRestrictionAuthor
+                        restrictionList.push(qsTr(`users following <a href="${author.did}" style="color: ${guiSettings.linkColor}; text-decoration: none">@${author.handle}</a>`))
+                    }
+
                     if (replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) {
                         const author = model.replyRestrictionAuthor
                         restrictionList.push(qsTr(`users followed by <a href="${author.did}" style="color: ${guiSettings.linkColor}; text-decoration: none">@${author.handle}</a>`))

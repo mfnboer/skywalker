@@ -20,6 +20,7 @@ SkyPage {
     // Reply restrictions (on post thread)
     property bool restrictReply: false
     property bool allowReplyMentioned: false
+    property bool allowReplyFollower: false
     property bool allowReplyFollowing: false
     property list<int> allowListIndexes: [0, 1, 2]
     property list<bool> allowLists: [false, false, false]
@@ -1110,13 +1111,19 @@ SkyPage {
                         return qsTr("Everyone can reply.")
 
                     let restrictionList = []
+                    let allowNames = []
 
-                    if (allowReplyMentioned && allowReplyFollowing)
-                        restrictionList.push(qsTr("mentioned and followed users"))
-                    else if (allowReplyMentioned)
-                        restrictionList.push(qsTr("mentioned users"))
-                    else if (allowReplyFollowing)
-                        restrictionList.push(qsTr("followed users"))
+                    if (allowReplyMentioned)
+                        allowNames.push(qsTr("mentioned"))
+                    if (allowReplyFollower)
+                        allowNames.push(qsTr("following"))
+                    if (allowReplyFollowing)
+                        allowNames.push(qsTr("followed"))
+
+                    if (allowNames.length > 0) {
+                        const allowText = guiSettings.toWordSequence(allowNames) + qsTr(" users")
+                        restrictionList.push(allowText)
+                    }
 
                     let listNames = []
 
@@ -1380,8 +1387,8 @@ SkyPage {
             }
             else if (page.restrictReply) {
                 const restrictionListUris = page.getReplyRestrictionListUris()
-                const allowNobody = !page.allowReplyMentioned && !page.allowReplyFollowing && restrictionListUris.length === 0
-                postUtils.addThreadgate(uri, cid, page.allowReplyMentioned, page.allowReplyFollowing, restrictionListUris, allowNobody, [])
+                const allowNobody = !page.allowReplyMentioned && !page.allowReplyFollower && !page.allowReplyFollowing && restrictionListUris.length === 0
+                postUtils.addThreadgate(uri, cid, page.allowReplyMentioned, page.allowReplyFollower, page.allowReplyFollowing, restrictionListUris, allowNobody, [])
             }
             else {
                 postDone()
@@ -2055,8 +2062,8 @@ SkyPage {
 
             if (restrictReply && !threadGateCreated) {
                 const restrictionListUris = getReplyRestrictionListUris()
-                const allowNobody = !allowReplyMentioned && !allowReplyFollowing && restrictionListUris.length === 0
-                postUtils.addThreadgate(prevUri, prevCid, allowReplyMentioned, allowReplyFollowing,
+                const allowNobody = !allowReplyMentioned && !allowReplyFollower && !allowReplyFollowing && restrictionListUris.length === 0
+                postUtils.addThreadgate(prevUri, prevCid, allowReplyMentioned, allowReplyFollower, allowReplyFollowing,
                                         restrictionListUris, allowNobody, [])
                 return
             }
@@ -2099,7 +2106,7 @@ SkyPage {
                                  postItem.quoteDateTime, postItem.quoteFixed,
                                  postItem.quoteFeed, postItem.quoteList,
                                  postItem.gif, postItem.card, labels, postItem.language,
-                                 restrictReply, allowReplyMentioned, allowReplyFollowing,
+                                 restrictReply, allowReplyMentioned, allowReplyFollower, allowReplyFollowing,
                                  getReplyRestrictionListUris(), !allowQuoting)
 
         let draftItemList = []
@@ -2200,6 +2207,7 @@ SkyPage {
 
                 restrictReply = draftData.restrictReplies
                 allowReplyMentioned = draftData.allowMention
+                allowReplyFollower = draftData.allowFollower
                 allowReplyFollowing = draftData.allowFollowing
                 allowListUrisFromDraft = draftData.allowLists
                 allowListIndexes = [0, 1, 2]
@@ -2248,6 +2256,7 @@ SkyPage {
                 postUri: "",
                 restrictReply: page.restrictReply,
                 allowMentioned: page.allowReplyMentioned,
+                allowFollower: page.allowReplyFollower,
                 allowFollowing: page.allowReplyFollowing,
                 allowLists: page.allowLists,
                 allowListIndexes: page.allowListIndexes,
@@ -2258,6 +2267,7 @@ SkyPage {
         restrictionsPage.onAccepted.connect(() => {
                 page.restrictReply = restrictionsPage.restrictReply
                 page.allowReplyMentioned = restrictionsPage.allowMentioned
+                page.allowReplyFollower = restrictionsPage.allowFollower
                 page.allowReplyFollowing = restrictionsPage.allowFollowing
                 page.allowLists = restrictionsPage.allowLists
                 page.allowListIndexes = restrictionsPage.allowListIndexes

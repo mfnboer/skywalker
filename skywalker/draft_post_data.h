@@ -41,6 +41,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged FINAL)
     Q_PROPERTY(bool restrictReplies READ restrictReplies WRITE setRestrictReplies NOTIFY restrictRepliesChanged FINAL)
     Q_PROPERTY(bool allowMention READ allowMention WRITE setAllowMention NOTIFY allowMentionChanged FINAL)
+    Q_PROPERTY(bool allowFollower READ allowFollower WRITE setAllowFollower NOTIFY allowFollowerChanged FINAL)
     Q_PROPERTY(bool allowFollowing READ allowFollowing WRITE setAllowFollowing NOTIFY allowFollowingChanged FINAL)
     Q_PROPERTY(QStringList allowLists READ allowLists WRITE setAllowLists NOTIFY allowListsChanged FINAL)
     Q_PROPERTY(QString recordUri READ recordUri WRITE setRecordUri NOTIFY recordUriChanged FINAL)
@@ -102,6 +103,8 @@ public:
     void setRestrictReplies(bool newRestrictReplies);
     bool allowMention() const;
     void setAllowMention(bool newAllowMention);
+    bool allowFollower() const;
+    void setAllowFollower(bool newAllowFollowing);
     bool allowFollowing() const;
     void setAllowFollowing(bool newAllowFollowing);
     QStringList allowLists() const;
@@ -137,6 +140,7 @@ signals:
     void languageChanged();
     void restrictRepliesChanged();
     void allowMentionChanged();
+    void allowFollowerChanged();
     void allowFollowingChanged();
     void allowListsChanged();
     void openAsQuotePostChanged();
@@ -170,6 +174,7 @@ private:
     QString mLanguage;
     bool mRestrictReplies = false;
     bool mAllowMention = false;
+    bool mAllowFollower = false;
     bool mAllowFollowing = false;
     QStringList mAllowLists;
     QString mRecordUri;
@@ -493,6 +498,19 @@ inline void DraftPostData::setAllowMention(bool newAllowMention)
         return;
     mAllowMention = newAllowMention;
     emit allowMentionChanged();
+}
+
+inline bool DraftPostData::allowFollower() const
+{
+    return mAllowFollower;
+}
+
+inline void DraftPostData::setAllowFollower(bool newAllowFollower)
+{
+    if (mAllowFollower == newAllowFollower)
+        return;
+    mAllowFollower = newAllowFollower;
+    emit allowFollowerChanged();
 }
 
 inline bool DraftPostData::allowFollowing() const

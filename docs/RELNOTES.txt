@@ -1,5 +1,6 @@
 next
 ====
+* New reply restriction: only followers can reply
 * Rewind favorite list feeds to last read post (optional)
 * Remember last view mode for favorite feeds
 * Use full screen width in media and video views
