@@ -74,6 +74,19 @@ SkyPage {
             addItem(tab)
             setCurrentIndex(count - 1)
         }
+
+        function updateTab(index, name, backgroundColor, profile) {
+            let item = itemAt(index)
+
+            if (!item) {
+                console.warn("Item does not exist:", index, name)
+                return
+            }
+
+            item.text = name
+            item.backgroundColor = backgroundColor
+            item.profile = profile
+        }
     }
 
     Rectangle {
@@ -278,11 +291,18 @@ SkyPage {
         viewStack.restoreViewSync()
     }
 
+    function filteredPostFeedModelUpdated(index) {
+        console.debug("UPDATED:", index)
+        const filter = skywalker.timelineModel.filteredPostFeedModels[index]
+        viewBar.updateTab(index + 1, filter.feedName, filter.backgroundColor, filter.profile)
+    }
+
     Component.onDestruction: {
         skywalker.timelineModel.onFilteredPostFeedModelAboutToBeAdded.disconnect(filteredPostFeedModelAboutToBeAddedHandler)
         skywalker.timelineModel.onFilteredPostFeedModelAdded.disconnect(filteredPostFeedModelAdded)
         skywalker.timelineModel.onFilteredPostFeedModelAboutToBeDeleted.disconnect(filteredPostFeedModelAboutToBeDeleted)
         skywalker.timelineModel.onFilteredPostFeedModelDeleted.disconnect(filteredPostFeedModelDeleted)
+        skywalker.timelineModel.onFilteredPostFeedModelUpdated.disconnect(filteredPostFeedModelUpdated)
     }
 
     Component.onCompleted: {
@@ -290,5 +310,6 @@ SkyPage {
         skywalker.timelineModel.onFilteredPostFeedModelAdded.connect(filteredPostFeedModelAdded)
         skywalker.timelineModel.onFilteredPostFeedModelAboutToBeDeleted.connect(filteredPostFeedModelAboutToBeDeleted)
         skywalker.timelineModel.onFilteredPostFeedModelDeleted.connect(filteredPostFeedModelDeleted)
+        skywalker.timelineModel.onFilteredPostFeedModelUpdated.connect(filteredPostFeedModelUpdated)
     }
 }

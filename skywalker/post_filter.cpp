@@ -1,10 +1,11 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "post_filter.h"
+#include "author_cache.h"
 
 namespace Skywalker {
 
-IPostFilter::Ptr IPostFilter::fromJson(const QJsonObject& json)
+IPostFilter::Ptr IPostFilter::fromJson(const QJsonObject& json, const UpdatedCb& updatedCb)
 {
     const ATProto::XJsonObject xjson(json);
     const QString type = xjson.getRequiredString("$type");
@@ -16,7 +17,7 @@ IPostFilter::Ptr IPostFilter::fromJson(const QJsonObject& json)
         return FocusHashtagsPostFilter::fromJson(json);
 
     if (type == AuthorPostFilter::TYPE)
-        return AuthorPostFilter::fromJson(json);
+        return AuthorPostFilter::fromJson(json, updatedCb);
 
     if (type == VideoPostFilter::TYPE)
         return VideoPostFilter::fromJson(json);
@@ -194,13 +195,39 @@ QJsonObject AuthorPostFilter::toJson() const
     return json;
 }
 
-AuthorPostFilter::Ptr AuthorPostFilter::fromJson(const QJsonObject& json)
+AuthorPostFilter::Ptr AuthorPostFilter::fromJson(const QJsonObject& json, const UpdatedCb& updatedCb)
 {
     const ATProto::XJsonObject xjson(json);
     const QString did = xjson.getRequiredString("did");
+    const auto* profile = AuthorCache::instance().get(did);
+
+    if (profile)
+        return std::make_unique<AuthorPostFilter>(BasicProfile(*profile));
+
+    // Make temporary profile till we have a complete profile
     const QString handle = xjson.getRequiredString("handle");
-    // TODO: retrieve profile
     auto filter = std::make_unique<AuthorPostFilter>(BasicProfile(did, handle, "", ""));
+
+    AuthorCache::instance().putProfile(did,
+        [postFilter=filter.get(), presence=filter->getPresence(), did, updatedCb]{
+            if (!presence)
+                return;
+
+            const auto* p = AuthorCache::instance().get(did);
+
+            if (p)
+            {
+                postFilter->mProfile = BasicProfile(*p);
+
+                if (updatedCb)
+                    updatedCb(postFilter);
+            }
+            else
+            {
+                qWarning() << "Profile missing:" << did;
+            }
+        });
+
     return filter;
 }
 

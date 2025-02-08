@@ -30,7 +30,7 @@ public:
 
     void clear();
     void put(const BasicProfile& author);
-    void putProfile(const QString& did);
+    void putProfile(const QString& did, const std::function<void()>& addedCb = {});
     const BasicProfile* get(const QString& did) const;
     bool contains(const QString& did) const;
 

@@ -3,6 +3,7 @@
 #pragma once
 #include "focus_hashtags.h"
 #include "post.h"
+#include "presence.h"
 
 namespace Skywalker {
 
@@ -10,7 +11,9 @@ class IPostFilter
 {
 public:
     using Ptr = std::unique_ptr<IPostFilter>;
-    static Ptr fromJson(const QJsonObject& json);
+    using UpdatedCb = std::function<void(IPostFilter*)>;
+
+    static Ptr fromJson(const QJsonObject& json, const UpdatedCb& updatedCb);
 
     virtual ~IPostFilter() = default;
     virtual QString getName() const = 0;
@@ -58,12 +61,12 @@ private:
     FocusHashtags mFocusHashtags;
 };
 
-class AuthorPostFilter : public IPostFilter
+class AuthorPostFilter : public IPostFilter, public Presence
 {
 public:
     using Ptr = std::unique_ptr<AuthorPostFilter>;
     static constexpr char const* TYPE = "authorPostFilter";
-    static Ptr fromJson(const QJsonObject& json);
+    static Ptr fromJson(const QJsonObject& json, const UpdatedCb& updatedCb);
 
     AuthorPostFilter(const BasicProfile& profile);
     QString getName() const override;

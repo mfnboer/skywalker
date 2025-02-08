@@ -592,35 +592,40 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     return retval;
 }
 
-void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
+int PostFeedModel::findFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel) const
 {
     for (auto it = mFilteredPostFeedModels.begin(); it != mFilteredPostFeedModels.end(); ++it)
     {
         if (it->get() == postFeedModel)
-        {
-            qDebug() << "Delete filtered post feed model:" << (*it)->getFeedName() << "from:" << getFeedName();
-            Q_ASSERT((*it)->getFeedName() == postFeedModel->getFeedName());
-            const int index = it - mFilteredPostFeedModels.begin();
-
-            emit filteredPostFeedModelAboutToBeDeleted(index);
-
-            // Keep unique_ptr alive till the filteredPostFeedModelsChanged has been emitted.
-            // Deleting it before causes a crash when you delete a filter that is not the
-            // the last, in the QML engine on Android only!
-            auto deletedModel = std::move(*it);
-            mFilteredPostFeedModels.erase(it);
-
-            emit filteredPostFeedModelsChanged();
-            emit filteredPostFeedModelDeleted(index);
-
-            if (isHomeFeed())
-                mUserSettings.setTimelineViews(mUserDid, filteredPostFeedModelsToJson());
-
-            return;
-        }
+            return it - mFilteredPostFeedModels.begin();
     }
 
-    qWarning() << "Could not delete filtered post feed model:" << postFeedModel->getFeedName();
+    return -1;
+}
+
+void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
+{
+    const int index = findFilteredPostFeedModel(postFeedModel);
+
+    if (index < 0)
+    {
+        qWarning() << "Could not delete filtered post feed model:" << postFeedModel->getFeedName();
+        return;
+    }
+
+    emit filteredPostFeedModelAboutToBeDeleted(index);
+
+    // Keep unique_ptr alive till the filteredPostFeedModelsChanged has been emitted.
+    // Deleting it before causes a crash when you delete a filter that is not the
+    // the last, in the QML engine on Android only!
+    auto deletedModel = std::move(mFilteredPostFeedModels[index]);
+    mFilteredPostFeedModels.erase(mFilteredPostFeedModels.begin() + index);
+
+    emit filteredPostFeedModelsChanged();
+    emit filteredPostFeedModelDeleted(index);
+
+    if (isHomeFeed())
+        mUserSettings.setTimelineViews(mUserDid, filteredPostFeedModelsToJson());
 }
 
 QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const
@@ -648,6 +653,17 @@ QJsonObject PostFeedModel::filteredPostFeedModelsToJson()
     return json;
 }
 
+int PostFeedModel::findFilteredPostFeedModelByFilter(IPostFilter* filter) const
+{
+    for (auto it = mFilteredPostFeedModels.begin(); it != mFilteredPostFeedModels.end(); ++it)
+    {
+        if (&(*it)->getPostFilter() == filter)
+            return it - mFilteredPostFeedModels.begin();
+    }
+
+    return -1;
+}
+
 void PostFeedModel::addFilteredPostFeedModelsFromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject xjson(json);
@@ -657,7 +673,13 @@ void PostFeedModel::addFilteredPostFeedModelsFromJson(const QJsonObject& json)
         for (const auto& filterValue : filterArray)
         {
             const auto& filterJson = filterValue.toObject();
-            IPostFilter::Ptr filter = IPostFilter::fromJson(filterJson);
+            IPostFilter::Ptr filter = IPostFilter::fromJson(filterJson, [this](IPostFilter* f){
+                const int index = findFilteredPostFeedModelByFilter(f);
+                qDebug() << "FOUND MODEL:" << index;
+
+                if (index >= 0)
+                    emit filteredPostFeedModelUpdated(index);
+            });
 
             if (filter)
                 addFilteredPostFeedModel(std::move(filter));

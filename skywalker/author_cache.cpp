@@ -40,7 +40,7 @@ void AuthorCache::put(const BasicProfile& author)
     mCache.insert(did, entry);
 }
 
-void AuthorCache::putProfile(const QString& did)
+void AuthorCache::putProfile(const QString& did, const std::function<void()>& addedCb)
 {
     if (contains(did))
     {
@@ -57,11 +57,14 @@ void AuthorCache::putProfile(const QString& did)
     mFetchingDids.insert(did);
 
     bskyClient()->getProfile(did,
-        [this](auto profile){
+        [this, addedCb](auto profile){
             mFetchingDids.erase(profile->mDid);
             mFailedDids.erase(profile->mDid);
             put(BasicProfile(profile));
             emit profileAdded(profile->mDid);
+
+            if (addedCb)
+                addedCb();
         },
         [this, did](const QString& error, const QString& msg){
             qDebug() << "putProfile failed:" << did << error << " - " << msg;

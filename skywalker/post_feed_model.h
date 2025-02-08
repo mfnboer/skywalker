@@ -121,6 +121,7 @@ signals:
     void filteredPostFeedModelAdded(FilteredPostFeedModel*);
     void filteredPostFeedModelAboutToBeDeleted(int index);
     void filteredPostFeedModelDeleted(int index);
+    void filteredPostFeedModelUpdated(int index);
 
 private:
     struct Page
@@ -155,6 +156,8 @@ private:
 
     FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
     QJsonObject filteredPostFeedModelsToJson();
+    int findFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel) const;
+    int findFilteredPostFeedModelByFilter(IPostFilter* filter) const;
     void  addFilteredPostFeedModelsFromJson(const QJsonObject& json);
 
     virtual bool mustHideContent(const Post& post) const override;
