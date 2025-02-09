@@ -698,11 +698,11 @@ QEnums::ReplyRestriction Post::getReplyRestriction() const
         return QEnums::REPLY_RESTRICTION_NONE;
 
     const auto& threadgate = threadgateView->mRecord;
-    return makeReplyRestriction(threadgate->mAllowMention,
-                                threadgate->mAllowFollower,
-                                threadgate->mAllowFollowing,
-                                !threadgate->mAllowList.empty(),
-                                threadgate->mAllowNobody);
+    return makeReplyRestriction(threadgate->mRules.mAllowMention,
+                                threadgate->mRules.mAllowFollower,
+                                threadgate->mRules.mAllowFollowing,
+                                !threadgate->mRules.mAllowList.empty(),
+                                threadgate->mRules.mAllowNobody);
 }
 
 ListViewBasicList Post::getReplyRestrictionLists() const

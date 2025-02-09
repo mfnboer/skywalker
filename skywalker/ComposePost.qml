@@ -25,6 +25,7 @@ SkyPage {
     property list<int> allowListIndexes: [0, 1, 2]
     property list<bool> allowLists: [false, false, false]
     property list<string> allowListUrisFromDraft: []
+    property list<string> allowListNamesFromDraft: []
     property int restrictionsListModelId: -1
     property bool allowQuoting: true
 
@@ -86,6 +87,8 @@ SkyPage {
     bottomPadding: 10
 
     onCurrentPostIndexChanged: languageIdentificationTimer.reset()
+
+    onAllowListUrisFromDraftChanged: getListNamesFromDraft()
 
     header: Rectangle {
         width: parent.width
@@ -1137,7 +1140,7 @@ SkyPage {
                     }
 
                     if (listNames.length === 0)
-                        listNames = allowListUrisFromDraft
+                        allowListNamesFromDraft.forEach((listName) => listNames.push(`<b>${listName}</b>`))
 
                     if (listNames.length > 0) {
                         const names = guiSettings.toWordSequence(listNames)
@@ -2244,11 +2247,15 @@ SkyPage {
         threadPosts.copyPostListToPostItems()
     }
 
-    function addReplyRestrictions() {
+    function createRestrictionListModel() {
         if (restrictionsListModelId < 0) {
             restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, userDid)
-            skywalker.getListList(restrictionsListModelId)
+            skywalker.getListList(restrictionsListModelId, 100)
         }
+    }
+
+    function addReplyRestrictions() {
+        createRestrictionListModel()
 
         let component = Qt.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(page, {
@@ -2284,6 +2291,37 @@ SkyPage {
             return allowListUrisFromDraft
 
         return root.getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes)
+    }
+
+    function getListNamesFromDraft() {
+        console.debug("Get list names, uris:", allowListUrisFromDraft)
+
+        if (allowListUrisFromDraft.length == 0) {
+            allowListNamesFromDraft = []
+            return
+        }
+
+        if (restrictionsListModelId < 0) {
+            allowListNamesFromDraft = allowListUrisFromDraft
+            createRestrictionListModel()
+            let listModel = skywalker.getListListModel(restrictionsListModelId)
+            listModel.onRowsInserted.connect(getListNamesFromDraft)
+            return
+        }
+
+        let names = []
+        let listModel = skywalker.getListListModel(restrictionsListModelId)
+
+        for (let i = 0; i < allowListUrisFromDraft.length; ++i) {
+            const listView = listModel.findUri(allowListUrisFromDraft[i])
+
+            if (listView.isNull())
+                names.push(allowListUrisFromDraft[i])
+            else
+                names.push(listView.name)
+        }
+
+        allowListNamesFromDraft = names
     }
 
     function addContentWarning() {
@@ -2455,6 +2493,14 @@ SkyPage {
         // Wait a bit for the window to render.
         // Then make sue the text field is in the visible area.
         focusTimer.start()
+
+        const postInteractionSettings = postUtils.getPostInteractionSettings()
+        allowReplyMentioned = postInteractionSettings.allowMention
+        allowReplyFollower = postInteractionSettings.allowFollower
+        allowReplyFollowing = postInteractionSettings.allowFollowing
+        allowListUrisFromDraft = postInteractionSettings.allowListUris
+        restrictReply = postInteractionSettings.allowNobody || allowReplyMentioned || allowReplyFollower || allowReplyFollowing || allowListUrisFromDraft.length > 0
+        allowQuoting = !postInteractionSettings.disableEmbedding
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()

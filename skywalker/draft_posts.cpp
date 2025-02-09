@@ -792,7 +792,7 @@ ATProto::AppBskyFeed::ThreadgateView::SharedPtr DraftPosts::createThreadgateView
     auto view = std::make_shared<ATProto::AppBskyFeed::ThreadgateView>();
     view->mRecord = std::move(draft.mThreadgate);
 
-    for (const auto& list : view->mRecord->mAllowList)
+    for (const auto& list : view->mRecord->mRules.mAllowList)
     {
         auto listView = std::make_shared<ATProto::AppBskyGraph::ListViewBasic>();
         listView->mUri = list->mList;

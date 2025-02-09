@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
-import QtQuick.Layouts
 import skywalker
 
 Dialog {
@@ -21,6 +20,7 @@ Dialog {
     property postgate postgate
     property bool postgateReceived: false
     property bool isThreadFromUser: false
+    property bool saveAsDefault: false
 
     id: restrictionDialog
     width: parent.width
@@ -30,16 +30,28 @@ Dialog {
     anchors.centerIn: parent
     Material.background: guiSettings.backgroundColor
 
-    onAllowListsChanged: {
-        allowLists.forEach((allow) => {
-                            if (allow)
-                                restrictReply = true
-                        })
+    onAccepted: {
+        if (saveAsDefault)
+            saveRestrictionsAsDefault()
+    }
 
+    onAllowListsChanged: {
+        restrictReply = hasAllowLists()
         checkUniqueLists()
     }
 
     onAllowListIndexesChanged: checkUniqueLists()
+
+    function hasAllowLists() {
+        let hasLists = false
+
+        allowLists.forEach((allow) => {
+            if (allow)
+                hasLists = true
+        })
+
+        return hasLists
+    }
 
     function checkUniqueLists() {
         let duplicates = false
@@ -86,7 +98,7 @@ Dialog {
                 text: qsTr("Quote settings")
             }
 
-            AccessibleSwitch {
+            AccessibleCheckBox {
                 text: qsTr("Allow others to quote this post")
                 checked: allowQuoting
                 enabled: postgateReceived
@@ -226,14 +238,28 @@ Dialog {
                 text: qsTr("You cannot restrict replies as this is not your thread.")
                 visible: !isThreadFromUser
             }
+
+            AccessibleText {
+                width: parent.width
+                padding: 10
+                font.pointSize: guiSettings.scaledFont(9/8)
+                font.bold: true
+                text: qsTr("Default settings")
+            }
+
+            AccessibleCheckBox {
+                text: qsTr("Save these settings as default")
+                checked: saveAsDefault
+                onCheckedChanged: saveAsDefault = checked
+            }
         }
     }
 
     PostUtils {
         id: postUtils
-        skywalker: root.getSkywalker()
+        skywalker: root.getSkywalker() // qmllint disable missing-type
 
-        onGetPostgateOk: (postgate) => {
+        onGetPostgateOk: (postgate) => { // qmllint disable signal-handler-parameters
             restrictionDialog.postgate = postgate
             prevAllowQuoting = !postgate.disabledEmbedding
             allowQuoting = prevAllowQuoting
@@ -246,6 +272,14 @@ Dialog {
 
     function getListUriFromDraft(index) {
         return index < allowListUrisFromDraft.length ? allowListUrisFromDraft[index] : ""
+    }
+
+    function saveRestrictionsAsDefault() {
+        const allowNobody = restrictReply && !allowMentioned && !allowFollower && !allowFollowing && !hasAllowLists()
+        const allowUris = root.getReplyRestrictionListUris(listModelId, allowLists, allowListIndexes)
+
+        postUtils.savePostInteractionSettings(allowMentioned, allowFollower, allowFollowing,
+                allowUris, allowNobody, !allowQuoting)
     }
 
     Component.onCompleted: {

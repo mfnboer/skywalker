@@ -464,6 +464,8 @@ qt_add_qml_module(libskywalker
         QML_FILES PostHeaderWithAvatar.qml
         QML_FILES ImageWithZoom.qml
         QML_FILES RewindStatus.qml
+        SOURCES post_interaction_settings.h
+        SOURCES post_interaction_settings.cpp
 )
 
 if (NOT ANDROID)

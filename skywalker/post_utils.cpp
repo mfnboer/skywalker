@@ -1634,6 +1634,38 @@ void PostUtils::checkVideoUploadLimits()
         });
 }
 
+PostInteractionSettings PostUtils::getPostInteractionSettings() const
+{
+    Q_ASSERT(mSkywalker);
+    const auto& userPrefs = mSkywalker->userPreferences();
+    return PostInteractionSettings(userPrefs.getPostInteractionSettingsPref());
+}
+
+void PostUtils::savePostInteractionSettings(bool allowMention, bool allowFollower, bool allowFollowing,
+        const QStringList& allowList, bool allowNobody, bool disableEmbedding)
+{
+    qDebug() << "mention:" << allowMention << "follower:" << allowFollower << "following:" << allowFollowing << "list:" << allowList << "nobody:" << allowNobody << "disableEmbed:" << disableEmbedding;
+
+    Q_ASSERT(mSkywalker);
+    ATProto::AppBskyActor::PostInteractionSettingsPref pref;
+    pref.mRules.mAllowMention = allowMention;
+    pref.mRules.mAllowFollower = allowFollower;
+    pref.mRules.mAllowFollowing = allowFollowing;
+    pref.mRules.mAllowNobody = allowNobody;
+    pref.mDisableEmbedding = disableEmbedding;
+
+    for (const auto& list : allowList)
+    {
+        auto listRule = std::make_shared<ATProto::AppBskyFeed::ThreadgateListRule>();
+        listRule->mList = list;
+        pref.mRules.mAllowList.push_back(listRule);
+    }
+
+    auto userPrefs = mSkywalker->userPreferences();
+    userPrefs.setPostInteractionSettingsPref(pref);
+    mSkywalker->saveUserPreferences(userPrefs);
+}
+
 void PostUtils::identifyLanguage(QString text, int index)
 {
     if (text.length() < MIN_LANGUAGE_IDENTIFICATION_LENGTH)

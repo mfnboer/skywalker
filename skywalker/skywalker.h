@@ -194,6 +194,7 @@ public:
     Q_INVOKABLE const BookmarksModel* createBookmarksModel();
     Q_INVOKABLE void deleteBookmarksModel();
 
+    const ATProto::UserPreferences& userPreferences() const { return mUserPreferences; }
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
 
@@ -254,6 +255,7 @@ public:
     HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
     DraftPostsModel::Ptr createDraftPostsModel();
+    void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
 
 signals:
     void loginOk();
@@ -346,7 +348,6 @@ private:
     void shareImage(const QString& contentUri, const QString& text);
     void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();
-    void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
     void loadTimelineHide();
     void loadTimelineHide(QStringList uris);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});

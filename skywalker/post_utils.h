@@ -7,6 +7,7 @@
 #include "image_reader.h"
 #include "link_card.h"
 #include "list_view.h"
+#include "post_interaction_settings.h"
 #include "postgate.h"
 #include "presence.h"
 #include "profile.h"
@@ -97,6 +98,9 @@ public:
     Q_INVOKABLE void getPostgate(const QString& postUri);
     Q_INVOKABLE void getVideoUploadLimits();
     Q_INVOKABLE void checkVideoUploadLimits();
+    Q_INVOKABLE PostInteractionSettings getPostInteractionSettings() const;
+    Q_INVOKABLE void savePostInteractionSettings(bool allowMention, bool allowFollower, bool allowFollowing,
+            const QStringList& allowList, bool allowNobody, bool disableEmbedding);
 
     Q_INVOKABLE void identifyLanguage(QString text, int index);
 
