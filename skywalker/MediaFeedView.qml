@@ -21,7 +21,7 @@ SkyListView {
 
     Accessible.name: postFeedView.model.feedName
 
-    delegate: VideoFeedViewDelegate {
+    delegate: MediaFeedViewDelegate {
         width: postFeedView.width
         footerHeight: postFeedView.footerHeight
         headerHeight: postFeedView.headerHeight

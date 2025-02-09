@@ -450,8 +450,8 @@ qt_add_qml_module(libskywalker
         SOURCES search_feed.cpp
         QML_FILES SearchFeedView.qml
         QML_FILES VirtualKeyboardHandler.qml
-        QML_FILES VideoFeedViewDelegate.qml
-        QML_FILES VideoFeedView.qml
+        QML_FILES MediaFeedViewDelegate.qml
+        QML_FILES MediaFeedView.qml
         SOURCES video_cache.h
         SOURCES video_cache.cpp
         SOURCES signal_object.h

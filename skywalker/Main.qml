@@ -49,7 +49,7 @@ ApplicationWindow {
 
             // TODO: need something better than this
             if (item instanceof ComposePost || item instanceof EditList ||
-                item instanceof EditProfile || item instanceof VideoFeedView)
+                item instanceof EditProfile || item instanceof MediaFeedView)
             {
                 item.cancel()
                 return
@@ -1693,7 +1693,7 @@ ApplicationWindow {
 
     function viewVideoFeed(model, index, closeCb = (newIndex) => {}) {
         console.debug("View video feed:", model.feedName, "index:", index)
-        let component = guiSettings.createComponent("VideoFeedView.qml")
+        let component = guiSettings.createComponent("MediaFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, model: model, currentIndex: index })
         view.onClosed.connect(() => {
             console.debug("Close video feed:", model.feedName, "index:", view.currentIndex)
