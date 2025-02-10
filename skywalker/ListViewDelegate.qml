@@ -13,7 +13,6 @@ Rectangle {
     required property bool listHideFromTimeline
     required property bool listSync
     property bool showList: listVisible()
-    property bool ownLists: true
     property bool allowEdit: true
     property int margin: 10
     property int maxTextLines: 1000

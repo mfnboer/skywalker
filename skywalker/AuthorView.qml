@@ -941,7 +941,6 @@ SkyPage {
 
                     delegate: ListViewDelegate {
                         width: authorFeedView.width
-                        ownLists: false
                         allowEdit: false
 
                         onBlockList: (list) => graphUtils.blockList(list.uri)

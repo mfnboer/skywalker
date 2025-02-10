@@ -79,7 +79,6 @@ SkyPage {
 
             delegate: ListViewDelegate {
                 width: page.width
-                ownLists: false
 
                 onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
             }

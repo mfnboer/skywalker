@@ -57,7 +57,6 @@ ListView {
         required property int index
 
         width: view.width
-        ownLists: view.ownLists
 
         onUpdateList: (list) => view.editList(list, index)
         onDeleteList: (list) => view.deleteList(list, index)
