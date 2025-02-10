@@ -192,6 +192,11 @@ SkyPage {
         }
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: !parent.enabled
+    }
+
     function setInSync(index, offsetY = 0) {
         timelineView.setInSync(index, offsetY)
     }

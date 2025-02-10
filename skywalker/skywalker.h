@@ -337,7 +337,7 @@ private:
     void updatePostIndexedSecondsAgo();
     void startRefreshTimers();
     void stopRefreshTimers();
-    void refreshSession(const std::function<void()>& cbOk = {});
+    void refreshSession(const std::function<void()>& cbDone = {});
     void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();

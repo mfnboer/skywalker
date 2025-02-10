@@ -329,7 +329,7 @@ void Skywalker::stopRefreshTimers()
     mRefreshNotificationTimer.stop();
 }
 
-void Skywalker::refreshSession(const std::function<void()>& cbOk)
+void Skywalker::refreshSession(const std::function<void()>& cbDone)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Refresh session";
@@ -338,27 +338,36 @@ void Skywalker::refreshSession(const std::function<void()>& cbOk)
     if (!session)
     {
         qWarning() << "No session to refresh.";
+
+        if (cbDone)
+            cbDone();
+
         stopRefreshTimers();
+        emit sessionExpired("Session lost");
         return;
     }
 
     // TODO: would be nicer to have session refreshment done by the atproto stack
     mBsky->refreshSession(
-        [this, cbOk]{
+        [this, cbDone]{
             qDebug() << "Session refreshed";
             saveSession(*mBsky->getSession());
 
-            if (cbOk)
-                cbOk();
+            if (cbDone)
+                cbDone();
         },
-        [this](const QString& error, const QString& msg){
+        [this, cbDone](const QString& error, const QString& msg){
             qDebug() << "Session could not be refreshed:" << error << " - " << msg;
 
             if (error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
             {
                 qWarning() << "Token expired, need to login again";
-                emit sessionExpired(msg);
+
+                if (cbDone)
+                    cbDone();
+
                 stopRefreshTimers();
+                emit sessionExpired(msg);
             }
             else if (error == ATProto::ATProtoErrorMsg::XRPC_TIMEOUT)
             {
@@ -367,11 +376,19 @@ void Skywalker::refreshSession(const std::function<void()>& cbOk)
                 // NOTE: this is not fool proof; ideally no other requests should be sent
                 // during refresh.
                 qDebug() << "Request timed out, retry";
-                refreshSession();
+                refreshSession(cbDone);
             }
             else
             {
                 qDebug() << "Refresh failed, wait for the next interval to refresh.";
+
+                if (cbDone) {
+                    qWarning() << "Refresh failed:" << error << " - " << msg;
+
+                    // There is nothing we can do now. Signal that we are done.
+                    // Session will expire later if token is not valid anymore.
+                    cbDone();
+                }
             }
         });
 }

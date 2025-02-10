@@ -17,7 +17,7 @@ ApplicationWindow {
     width: 480
     height: 960
     visible: true
-    title: skywalker.APP_NAME
+    title: skywalker.APP_NAME // qmllint disable missing-property
     color: guiSettings.backgroundColor
 
     onPostButtonRelativeXChanged: {
@@ -75,7 +75,7 @@ ApplicationWindow {
     }
 
     FontLoader {
-        source: UnicodeFonts.getEmojiFontSource()
+        source: UnicodeFonts.getEmojiFontSource() // qmllint disable missing-property
         onStatusChanged: console.debug("Font loader status:", status, name, source)
     }
 
@@ -369,6 +369,8 @@ ApplicationWindow {
 
             if (current && typeof current.cover === 'function')
                 current.cover()
+
+            getTimelineView().enabled = false
         }
 
         onAppResumed: {
@@ -376,6 +378,8 @@ ApplicationWindow {
 
             if (current && typeof current.uncover === 'function')
                 current.uncover()
+
+            getTimelineView().enabled = true
         }
 
         // Note for search feeds the feedUri is the search name
