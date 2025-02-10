@@ -2279,7 +2279,8 @@ SkyPage {
                 allowListIndexes: page.allowListIndexes,
                 allowListUrisFromDraft: page.allowListUrisFromDraft,
                 listModelId: page.restrictionsListModelId,
-                allowQuoting: page.allowQuoting
+                allowQuoting: page.allowQuoting,
+                allowSaveAsDefault: true
         })
         restrictionsPage.onAccepted.connect(() => {
                 page.restrictReply = restrictionsPage.restrictReply

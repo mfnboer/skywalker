@@ -21,6 +21,8 @@ Dialog {
     property bool postgateReceived: false
     property bool isThreadFromUser: false
     property bool saveAsDefault: false
+    property bool allowSaveAsDefault: false
+    readonly property bool hasMaxReplyRestrictions: countReplyRestrictions() >= 5
 
     id: restrictionDialog
     width: parent.width
@@ -43,14 +45,18 @@ Dialog {
     onAllowListIndexesChanged: checkUniqueLists()
 
     function hasAllowLists() {
-        let hasLists = false
+        return countAllowLists() > 0
+    }
+
+    function countAllowLists() {
+        let count = 0
 
         allowLists.forEach((allow) => {
             if (allow)
-                hasLists = true
+                ++count
         })
 
-        return hasLists
+        return count
     }
 
     function checkUniqueLists() {
@@ -76,6 +82,21 @@ Dialog {
 
         if (okButton)
             okButton.enabled = !duplicates
+    }
+
+    function countReplyRestrictions() {
+        let count = countAllowLists()
+
+        if (allowMentioned)
+            ++count
+
+        if (allowFollower)
+            ++count
+
+        if (allowFollowing)
+            ++ count
+
+        return count
     }
 
     Flickable {
@@ -158,11 +179,16 @@ Dialog {
                                 allowFollowing = false
                                 allowLists = [false, false, false]
                             }
+                            else {
+                                if (countReplyRestrictions() == 0)
+                                    restrictReply = false
+                            }
                         }
                     }
                     AccessibleCheckBox {
                         checked: allowMentioned
                         text: qsTr("Users mentioned in your post")
+                        enabled: checked || !hasMaxReplyRestrictions
                         visible: isThreadFromUser
                         onCheckedChanged: {
                             allowMentioned = checked
@@ -174,6 +200,7 @@ Dialog {
                     AccessibleCheckBox {
                         checked: allowFollower
                         text: qsTr("Users following you")
+                        enabled: checked || !hasMaxReplyRestrictions
                         visible: isThreadFromUser
                         onCheckStateChanged: {
                             allowFollower = checked
@@ -185,6 +212,7 @@ Dialog {
                     AccessibleCheckBox {
                         checked: allowFollowing
                         text: qsTr("Users you follow")
+                        enabled: checked || !hasMaxReplyRestrictions
                         visible: isThreadFromUser
                         onCheckStateChanged: {
                             allowFollowing = checked
@@ -218,6 +246,7 @@ Dialog {
                                 id: allowListCheckBox
                                 checked: allowLists[parent.index]
                                 text: qsTr("Users from list:")
+                                enabled: checked || !hasMaxReplyRestrictions
                                 onCheckStateChanged: allowLists[parent.index] = checked
                             }
                             PagingComboBox {
@@ -266,12 +295,14 @@ Dialog {
                 bottomPadding: 10
                 font.bold: true
                 text: qsTr("Default settings")
+                visible: allowSaveAsDefault
             }
             Rectangle {
                 width: parent.width
                 height: saveAsDefaultCheckBox.height
                 radius: 10
                 color: guiSettings.settingsHighLightColor
+                visible: allowSaveAsDefault
 
                 AccessibleCheckBox {
                     id: saveAsDefaultCheckBox
