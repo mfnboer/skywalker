@@ -278,7 +278,7 @@ SkyPage {
         AccessibleMenuItem {
             id: hideListMenuItem
             width: 250
-            visible: list.creator.did === skywalker.getUserDid()
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE && isOwnList()
             text: listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
             onTriggered: {
                 if (listHideFromTimeline) {
@@ -298,7 +298,7 @@ SkyPage {
 
         AccessibleMenuItem {
             text: qsTr("Translate")
-            enabled: list.description
+            visible: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: SvgOutline.googleTranslate }

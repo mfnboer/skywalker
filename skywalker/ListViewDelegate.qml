@@ -159,23 +159,7 @@ Rectangle {
                 svg: SvgOutline.moreVert
                 accessibleName: qsTr("more options")
 
-                onClicked: {
-                    switch (list.purpose) {
-                    case QEnums.LIST_PURPOSE_CURATE:
-                        if (list.creator.did === skywalker.getUserDid())
-                            moreMenuOwnUserList.popup(moreButton)
-                        else
-                            moreMenuOtherUserList.popup(moreButton)
-
-                        break
-                    case QEnums.LIST_PURPOSE_MOD:
-                        if (list.creator.did === skywalker.getUserDid())
-                            moreMenuOwnModList.popup(moreButton)
-                        else
-                            moreMenuOtherModList.popup(moreButton)
-                        break
-                    }
-                }
+                onClicked: moreMenu.popup(moreButton)
             }
         }
 
@@ -240,7 +224,7 @@ Rectangle {
     }
 
     Menu {
-        id: moreMenuOwnUserList
+        id: moreMenu
         modal: true
         width: hideListMenuItem.width
 
@@ -250,7 +234,7 @@ Rectangle {
         }
         AccessibleMenuItem {
             text: qsTr("Edit")
-            enabled: allowEdit
+            visible: allowEdit && isOwnList()
             onTriggered: updateList(list)
 
             MenuItemSvg { svg: SvgOutline.edit }
@@ -258,19 +242,59 @@ Rectangle {
 
         AccessibleMenuItem {
             text: qsTr("Delete")
-            enabled: ownLists
+            visible: isOwnList()
             onTriggered: deleteList(list)
 
             MenuItemSvg { svg: SvgOutline.delete }
         }
 
         AccessibleMenuItem {
-            text: listPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
+            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
+            visible: list.purpose === QEnums.LIST_PURPOSE_MOD
+            onTriggered: listMuted ? unmuteList(list) : muteList(list)
+            enabled: !listBlockedUri || listMuted
+
+            MenuItemSvg { svg: listMuted ? SvgOutline.unmute : SvgOutline.mute }
+        }
+
+        AccessibleMenuItem {
+            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
+            visible: list.purpose === QEnums.LIST_PURPOSE_MOD
+            onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
+            enabled: !listMuted || listBlockedUri
+
+            MenuItemSvg { svg: listBlockedUri ? SvgOutline.unblock : SvgOutline.block }
+        }
+
+        AccessibleMenuItem {
+            text: listSaved ? qsTr("Unsave list") : qsTr("Save list")
+            enabled: listCreator.did !== skywalker.getUserDid()
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE && !isOwnList()
             onTriggered: {
-                if (listPinned)
-                    skywalker.favoriteFeeds.removeList(list) // We never show own lists as saved
+                if (listSaved)
+                    skywalker.favoriteFeeds.removeList(list)
                 else
-                    skywalker.favoriteFeeds.pinList(list, true)
+                    skywalker.favoriteFeeds.addList(list)
+
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg { svg: listSaved ? SvgOutline.remove : SvgOutline.add }
+        }
+
+        AccessibleMenuItem {
+            text: listPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
+            onTriggered: {
+                if (isOwnList()) {
+                    if (listPinned)
+                        skywalker.favoriteFeeds.removeList(list) // We never show own lists as saved
+                    else
+                        skywalker.favoriteFeeds.pinList(list, true)
+                }
+                else {
+                    skywalker.favoriteFeeds.pinList(list, !listPinned)
+                }
 
                 skywalker.saveFavoriteFeeds()
             }
@@ -285,6 +309,7 @@ Rectangle {
             id: hideListMenuItem
             width: 250
             text: listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE && isOwnList()
             onTriggered: {
                 if (listHideFromTimeline)
                     unhideList(list)
@@ -299,7 +324,7 @@ Rectangle {
 
         AccessibleMenuItem {
             text: qsTr("Translate")
-            enabled: list.description
+            visible: list.description
             onTriggered: root.translateText(list.description)
 
             MenuItemSvg { svg: SvgOutline.googleTranslate }
@@ -323,199 +348,13 @@ Rectangle {
             text: qsTr("Rewind on startup")
             checkable: true
             checked: listSync
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
             onToggled: syncList(list, checked)
 
             MouseArea {
                 anchors.fill: parent
                 enabled: !listPinned
                 onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
-            }
-        }
-    }
-
-    Menu {
-        id: moreMenuOtherUserList
-        modal: true
-
-        CloseMenuItem {
-            text: qsTr("<b>List</b>")
-            Accessible.name: qsTr("close more options menu")
-        }
-        AccessibleMenuItem {
-            text: listSaved ? qsTr("Unsave list") : qsTr("Save list")
-            enabled: listCreator.did !== skywalker.getUserDid()
-            onTriggered: {
-                if (listSaved)
-                    skywalker.favoriteFeeds.removeList(list)
-                else
-                    skywalker.favoriteFeeds.addList(list)
-
-                skywalker.saveFavoriteFeeds()
-            }
-
-            MenuItemSvg { svg: listSaved ? SvgOutline.remove : SvgOutline.add }
-        }
-
-        AccessibleMenuItem {
-            text: listPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
-            onTriggered: {
-                skywalker.favoriteFeeds.pinList(list, !listPinned)
-                skywalker.saveFavoriteFeeds()
-            }
-
-            MenuItemSvg {
-                svg: listPinned ? SvgFilled.star : SvgOutline.star
-                color: listPinned ? guiSettings.favoriteColor : guiSettings.textColor
-            }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Translate")
-            enabled: list.description
-            onTriggered: root.translateText(list.description)
-
-            MenuItemSvg { svg: SvgOutline.googleTranslate }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Share")
-            onTriggered: skywalker.shareList(list)
-
-            MenuItemSvg { svg: SvgOutline.share }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Report list")
-            onTriggered: root.reportList(list)
-
-            MenuItemSvg {
-                svg: SvgOutline.report
-            }
-        }
-        AccessibleMenuItem {
-            text: qsTr("Rewind on startup")
-            checkable: true
-            checked: listSync
-            onToggled: syncList(list, checked)
-
-            MouseArea {
-                anchors.fill: parent
-                enabled: !listPinned
-                onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
-            }
-        }
-    }
-
-    Menu {
-        id: moreMenuOwnModList
-        modal: true
-
-        CloseMenuItem {
-            text: qsTr("<b>List</b>")
-            Accessible.name: qsTr("close more options menu")
-        }
-        AccessibleMenuItem {
-            text: qsTr("Edit")
-            enabled: allowEdit
-            onTriggered: updateList(list)
-
-            MenuItemSvg { svg: SvgOutline.edit }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Delete")
-            enabled: ownLists
-            onTriggered: deleteList(list)
-
-            MenuItemSvg { svg: SvgOutline.delete }
-        }
-
-        AccessibleMenuItem {
-            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
-            onTriggered: listMuted ? unmuteList(list) : muteList(list)
-            enabled: !listBlockedUri || listMuted
-
-            MenuItemSvg { svg: listMuted ? SvgOutline.unmute : SvgOutline.mute }
-        }
-
-        AccessibleMenuItem {
-            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
-            onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
-            enabled: !listMuted || listBlockedUri
-
-            MenuItemSvg { svg: listBlockedUri ? SvgOutline.unblock : SvgOutline.block }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Translate")
-            enabled: list.description
-            onTriggered: root.translateText(list.description)
-
-            MenuItemSvg { svg: SvgOutline.googleTranslate }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Share")
-            onTriggered: skywalker.shareList(list)
-
-            MenuItemSvg { svg: SvgOutline.share }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Report list")
-            onTriggered: root.reportList(list)
-
-            MenuItemSvg {
-                svg: SvgOutline.report
-            }
-        }
-    }
-
-    Menu {
-        id: moreMenuOtherModList
-        modal: true
-
-        CloseMenuItem {
-            text: qsTr("<b>List</b>")
-            Accessible.name: qsTr("close more options menu")
-        }
-        AccessibleMenuItem {
-            text: listMuted ? qsTr("Unmute") : qsTr("Mute")
-            onTriggered: listMuted ? unmuteList(list) : muteList(list)
-            enabled: !listBlockedUri || listMuted
-
-            MenuItemSvg { svg: listMuted ? SvgOutline.unmute : SvgOutline.mute }
-        }
-
-        AccessibleMenuItem {
-            text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
-            onTriggered: listBlockedUri ? unblockList(list, listBlockedUri) : blockList(list)
-            enabled: !listMuted || listBlockedUri
-
-            MenuItemSvg { svg: listBlockedUri ? SvgOutline.unblock : SvgOutline.block }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Translate")
-            enabled: list.description
-            onTriggered: root.translateText(list.description)
-
-            MenuItemSvg { svg: SvgOutline.googleTranslate }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Share")
-            onTriggered: skywalker.shareList(list)
-
-            MenuItemSvg { svg: SvgOutline.share }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Report list")
-            onTriggered: root.reportList(list)
-
-            MenuItemSvg {
-                svg: SvgOutline.report
             }
         }
     }
