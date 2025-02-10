@@ -1741,7 +1741,7 @@ ApplicationWindow {
     }
 
     function viewStarterPack(starterPack) {
-        let component = Qt.createComponent("StarterPackView.qml")
+        let component = guiSettings.createComponent("StarterPackView.qml")
         let view = component.createObject(root, { starterPack: starterPack })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)

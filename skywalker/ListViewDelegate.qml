@@ -520,6 +520,9 @@ Rectangle {
         }
     }
 
+    function isOwnList() {
+        return skywalker.getUserDid() === list.creator.did
+    }
 
     function listClicked(list) {
         root.viewListByUri(list.uri, true)

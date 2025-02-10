@@ -229,19 +229,38 @@ SkyPage {
         }
     }
 
+    // Give the network some time after creating a list before retrieving it.
+    // Sometimes you get a not-found error when you retrieve it too quickly.
+    Timer {
+        property string listUri
+
+        id: getListViewTimer
+        interval: 500
+        onTriggered: graphUtils.getListView(listUri)
+
+        function go(uri) {
+            listUri = uri
+            start()
+        }
+    }
+
     GraphUtils {
         id: graphUtils
         skywalker: page.skywalker
 
         onCreatedListFromStarterPackOk: (pack, listUri, listCid) => {
             skywalker.showStatusMessage(qsTr("List created"), QEnums.STATUS_LEVEL_INFO)
-            graphUtils.getListView(listUri)
+            getListViewTimer.go(listUri)
         }
 
         onCreatedListFromStarterPackFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onGetListOk: (list) => root.viewListFeedDescription(list)
-        onGetListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onGetListFailed: (error) => {
+            // The network may take a while before you can retrieve a new list.
+            console.warn(error)
+            skywalker.showStatusMessage(qsTr("You can find the new list in your overview of user lists"), QEnums.STATUS_LEVEL_INFO)
+        }
     }
 
     function copyStarterPackToList() {
