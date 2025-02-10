@@ -10,7 +10,7 @@ ImageReader::ImageReader() :
     QObject()
 {
     mNetwork.setAutoDeleteReplies(true);
-    mNetwork.setTransferTimeout(15000);
+    mNetwork.setTransferTimeout(10000);
 }
 
 bool ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb)

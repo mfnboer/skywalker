@@ -31,7 +31,7 @@ Tenor::Tenor(QObject* parent) :
     qDebug() << "Locale:" << mLocale;
 
     sNetwork.setAutoDeleteReplies(true);
-    sNetwork.setTransferTimeout(15000);
+    sNetwork.setTransferTimeout(10000);
 }
 
 void Tenor::setWidth(int width)

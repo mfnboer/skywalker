@@ -52,7 +52,7 @@ LinkCardReader::LinkCardReader(QObject* parent):
     mGifUtils(this)
 {
     mNetwork.setAutoDeleteReplies(true);
-    mNetwork.setTransferTimeout(15000);
+    mNetwork.setTransferTimeout(10000);
     mNetwork.setCookieJar(new CookieJar);
 
     QLocale locale;

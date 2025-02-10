@@ -13,7 +13,7 @@ M3U8Reader::M3U8Reader(QObject* parent) :
     QObject(parent)
 {
     mNetwork.setAutoDeleteReplies(true);
-    mNetwork.setTransferTimeout(15000);
+    mNetwork.setTransferTimeout(10000);
 }
 
 void M3U8Reader::setVideoQuality(QEnums::VideoQuality quality)
