@@ -273,6 +273,90 @@ void GraphUtils::continueCreateList(const QEnums::ListPurpose purpose, const QSt
         });
 }
 
+void GraphUtils::createListFromStarterPack(const StarterPackView& starterPack)
+{
+    qDebug() << "Create list from starter pack:" << starterPack.getName();
+
+    graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, starterPack.getName(), starterPack.getDescription(), nullptr, {},
+        [this, presence=getPresence(), starterPack](const QString& uri, const QString& cid){
+            if (!presence)
+                return;
+
+            continueCreateListFromStarterPack(starterPack, uri, cid);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Create list failed:" << error << " - " << msg;
+            emit createdListFromStarterPackFailed(msg);
+        });
+}
+
+void GraphUtils::continueCreateListFromStarterPack(const StarterPackView& starterPack, const QString &listUri, const QString& listCid, int maxPages, const std::optional<QString> cursor)
+{
+    qDebug() << "Copy users from starter pack to list:" << starterPack.getName();
+
+    if (maxPages <= 0)
+    {
+        qWarning() << "Max pages reached";
+        emit createdListFromStarterPackOk(starterPack, listUri, listCid);
+    }
+
+    bskyClient()->getList(starterPack.getList().getUri(), 100, cursor,
+        [this, presence=getPresence(), starterPack, listUri, listCid, maxPages](auto output){
+            if (!presence)
+                return;
+
+            QStringList dids;
+
+            for (const auto& item : output->mItems)
+                dids.push_back(item->mSubject->mDid);
+
+            if (dids.isEmpty())
+            {
+                qDebug() << "Empty starter pack:" << starterPack.getName();
+                emit createdListFromStarterPackOk(starterPack, listUri, listCid);
+                return;
+            }
+
+            qDebug() << "Users:" << dids.size();
+
+            graphMaster()->batchAddUsersToList(listUri, dids,
+                [this, presence=getPresence(), starterPack, listUri, listCid, maxPages, nextCursor=output->mCursor]{
+                    if (!presence)
+                        return;
+
+                    qDebug() << "Users added to starter pack:" << starterPack.getName();
+
+                    if (!nextCursor)
+                    {
+                        qDebug() << "All users added:" << starterPack.getName();
+                        emit createdListFromStarterPackOk(starterPack, listUri, listCid);
+                        return;
+                    }
+
+                    continueCreateListFromStarterPack(starterPack, listUri, listCid, maxPages - 1, nextCursor);
+                },
+                [this, presence=getPresence(), listUri](const QString& error, const QString& msg){
+                    if (!presence)
+                        return;
+
+                    qDebug() << "Adding users from starter pack failed:" << error << " - " << msg;
+                    deleteList(listUri);
+                    emit createdListFromStarterPackFailed(msg);
+                });
+        },
+        [this, presence=getPresence(), listUri](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Adding users from starter pack failed:" << error << " - " << msg;
+            deleteList(listUri);
+            emit createdListFromStarterPackFailed(msg);
+        });
+}
+
 void GraphUtils::updateList(const QString& listUri, const QString& name,
                 const QString& description, const QString& avatarImgSource,
                 bool updateAvatar)

@@ -8,6 +8,7 @@ next
 * Zoom image in swipe mode
 * Save or share image from swipe mode
 * Save video from swipe mode
+* Copy starter pack to user list
 * Search key on keyboard on search pages
 * Remove app bundle emoji font
 * Bug fixes

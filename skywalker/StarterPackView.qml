@@ -47,6 +47,12 @@ SkyPage {
                     MenuItemSvg { svg: SvgOutline.share }
                 }
                 AccessibleMenuItem {
+                    text: qsTr("Copy to list")
+                    onTriggered: copyStarterPackToList()
+
+                    MenuItemSvg { svg: SvgOutline.list }
+                }
+                AccessibleMenuItem {
                     text: qsTr("Report starter pack")
                     onTriggered: root.reportStarterPack(starterPack)
 
@@ -223,6 +229,25 @@ SkyPage {
         }
     }
 
+    GraphUtils {
+        id: graphUtils
+        skywalker: page.skywalker
+
+        onCreatedListFromStarterPackOk: (pack, listUri, listCid) => {
+            skywalker.showStatusMessage(qsTr("List created"), QEnums.STATUS_LEVEL_INFO)
+            graphUtils.getListView(listUri)
+        }
+
+        onCreatedListFromStarterPackFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onGetListOk: (list) => root.viewListFeedDescription(list)
+        onGetListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function copyStarterPackToList() {
+        skywalker.showStatusMessage(qsTr("Copying starter pack to list"), QEnums.STATUS_LEVEL_INFO, 30)
+        graphUtils.createListFromStarterPack(starterPack)
+    }
 
     Component.onDestruction: {
         skywalker.removePostFeedModel(postFeedModelId)
