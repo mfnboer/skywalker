@@ -1,4 +1,4 @@
-next
+3.14
 ====
 * New reply restriction: only followers can reply
 * Set reply and quote restrictions as default
