@@ -231,19 +231,6 @@ ListView ListListModel::getEntry(int index) const
     return mLists[index];
 }
 
-ListView ListListModel::findUri(const QString& uri) const
-{
-    qDebug() << "Find uri:" << uri;
-
-    for (int i = 0; i < (int)mLists.size(); ++i)
-    {
-        if (mLists[i].getUri() == uri)
-            return mLists[i];
-    }
-
-    return {};
-}
-
 ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListViewList lists) const
 {
     ListList filtered;

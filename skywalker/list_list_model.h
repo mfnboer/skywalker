@@ -59,7 +59,6 @@ public:
     Q_INVOKABLE ListView updateEntry(int index, const QString& cid, const QString& name, const QString& description, const QString& avatar);
     Q_INVOKABLE void deleteEntry(int index);
     Q_INVOKABLE ListView getEntry(int index) const;
-    Q_INVOKABLE ListView findUri(const QString& uri) const;
 
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
