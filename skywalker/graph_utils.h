@@ -31,6 +31,7 @@ public:
                                 const QString& description, const QString& avatarImgSource,
                                 bool updateAvatar);
     Q_INVOKABLE void deleteList(const QString& listUri);
+    Q_INVOKABLE ListViewBasic getCachedListView(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri, bool viewPosts = false);
     Q_INVOKABLE void addListUser(const QString& listUri, const BasicProfile& profile);
     Q_INVOKABLE void removeListUser(const QString& listUri, const QString& listItemUri);
@@ -98,6 +99,7 @@ signals:
     void unmuteRepostsFailed(QString error);
     void hideListOk();
     void hideListFailed(QString error);
+    void cachedList(ListViewBasic list);
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,

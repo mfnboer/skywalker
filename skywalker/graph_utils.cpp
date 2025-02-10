@@ -3,6 +3,7 @@
 #include "graph_utils.h"
 #include "definitions.h"
 #include "graph_listener.h"
+#include "list_cache.h"
 #include "photo_picker.h"
 #include "skywalker.h"
 #include <atproto/lib/at_uri.h>
@@ -368,6 +369,32 @@ void GraphUtils::deleteList(const QString& listUri)
             qDebug() << "Delete list failed:" << error << " - " << msg;
             emit deleteListFailed(msg);
         });
+}
+
+ListViewBasic GraphUtils::getCachedListView(const QString& listUri)
+{
+    auto& listCache = ListCache::instance();
+    const auto* list = listCache.get(listUri);
+
+    if (list)
+        return *list;
+
+    if (!bskyClient())
+        return {};
+
+    listCache.putList(listUri,
+        [this, presence=getPresence(), listUri](){
+            if (!presence)
+                return;
+
+            const auto* list = ListCache::instance().get(listUri);
+            Q_ASSERT(list);
+
+            if (list)
+                emit cachedList(*list);
+        });
+
+    return {};
 }
 
 void GraphUtils::getListView(const QString& listUri, bool viewPosts)

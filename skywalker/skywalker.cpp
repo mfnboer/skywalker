@@ -7,6 +7,7 @@
 #include "focus_hashtags.h"
 #include "font_downloader.h"
 #include "jni_callback.h"
+#include "list_cache.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
@@ -76,6 +77,7 @@ Skywalker::Skywalker(QObject* parent) :
 
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
+    ListCache::instance().setSkywalker(this);
     OffLineMessageChecker::createNotificationChannels();
 
     auto& jniCallbackListener = JNICallbackListener::getInstance();

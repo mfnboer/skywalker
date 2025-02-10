@@ -24,8 +24,11 @@ SkyPage {
     property bool allowReplyFollowing: false
     property list<int> allowListIndexes: [0, 1, 2]
     property list<bool> allowLists: [false, false, false]
+
+    // Used for list restrictions from draft of default
     property list<string> allowListUrisFromDraft: []
     property list<string> allowListNamesFromDraft: []
+
     property int restrictionsListModelId: -1
     property bool allowQuoting: true
 
@@ -1569,23 +1572,30 @@ SkyPage {
         }
     }
 
+    GraphUtils {
+        id: graphUtils
+        skywalker: page.skywalker // qmllint disable missing-type
+
+        onCachedList: getListNamesFromDraft()
+    }
+
     VideoUtils {
         property var callbackOk: (videoSource) => {}
         property var callbackFailed: (error) => {}
 
         id: videoUtils
-        skywalker: page.skywalker
+        skywalker: page.skywalker // qmllint disable missing-property
 
         onTranscodingOk: (inputFileName, outputFileName) => {
             const source = "file://" + outputFileName
             page.tmpVideos.push(source)
-            callbackOk(source)
+            callbackOk(source) // qmllint disable use-proper-function
             callbackOk = (videoSource) => {}
             callbackFailed = (error) => {}
         }
 
         onTranscodingFailed: (inputFileName, error) => {
-            callbackFailed(error)
+            callbackFailed(error) // qmllint disable use-proper-function
             callbackOk = (videoSource) => {}
             callbackFailed = (error) => {}
         }
@@ -2301,26 +2311,20 @@ SkyPage {
             return
         }
 
-        if (restrictionsListModelId < 0) {
-            allowListNamesFromDraft = allowListUrisFromDraft
-            createRestrictionListModel()
-            let listModel = skywalker.getListListModel(restrictionsListModelId)
-            listModel.onRowsInserted.connect(getListNamesFromDraft)
-            return
-        }
-
         let names = []
         let listModel = skywalker.getListListModel(restrictionsListModelId)
 
         for (let i = 0; i < allowListUrisFromDraft.length; ++i) {
-            const listView = listModel.findUri(allowListUrisFromDraft[i])
+            const uri = allowListUrisFromDraft[i]
+            const listView = graphUtils.getCachedListView(uri)
 
             if (listView.isNull())
-                names.push(allowListUrisFromDraft[i])
+                names.push(uri)
             else
                 names.push(listView.name)
         }
 
+        console.debug("Get list names:", names)
         allowListNamesFromDraft = names
     }
 
@@ -2472,6 +2476,10 @@ SkyPage {
 
             if (Boolean(postItem.video))
                 postUtils.dropVideo(postItem.video)
+
+        if (initialVideo)
+            postUtils.dropVideo(initialVideo)
+
         }
 
         page.tmpImages.forEach((value, index, array) => { postUtils.dropPhoto(value); })
@@ -2479,10 +2487,6 @@ SkyPage {
 
         if (initialImage)
             getPostUtils().dropPhoto(initialImage)
-
-        if (initialVideo)
-            postUtils.dropVideo(initialVideo)
-
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)
 

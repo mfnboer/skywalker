@@ -466,6 +466,8 @@ qt_add_qml_module(libskywalker
         QML_FILES RewindStatus.qml
         SOURCES post_interaction_settings.h
         SOURCES post_interaction_settings.cpp
+        SOURCES list_cache.h
+        SOURCES list_cache.cpp
 )
 
 if (NOT ANDROID)
