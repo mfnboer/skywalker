@@ -3,10 +3,17 @@
 #pragma once
 #include <QString>
 
-namespace Skywalker::AndroidUtils {
+namespace Skywalker {
 
-#if defined(Q_OS_ANDROID)
-bool checkPermission(const QString& permission);
-#endif
+class AndroidUtils {
+
+public:
+    static bool checkPermission(const QString& permission);
+
+private:
+    static void setKeepScreenOn(bool keepOn);
+
+    friend class DisplayUtils;
+};
 
 }

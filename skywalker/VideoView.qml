@@ -217,6 +217,7 @@ Column {
                 property bool videoFound: false
                 property bool restarting: false
                 property int m3u8DurationMs: 0
+                property var keepScreenOnHandle
 
                 id: videoPlayer
                 source: transcodedSource
@@ -232,6 +233,10 @@ Column {
                 onPlayingChanged: {
                     if (videoPlayer.playing) {
                         restartTimer.set(false)
+                        keepScreenOnHandle = displayUtils.keepScreenOn()
+                    }
+                    else {
+                        keepScreenOnHandle.destroy()
                     }
                 }
 
@@ -570,6 +575,10 @@ Column {
             else
                 videoLoaded()
         }
+    }
+
+    DisplayUtils {
+        id: displayUtils
     }
 
     Timer {

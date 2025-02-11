@@ -1,3 +1,7 @@
+next
+====
+* Keep screen on (no sleeping) while a video is playing
+
 3.14.1
 ======
 * Bug fix: saving a post thread as draft was broken

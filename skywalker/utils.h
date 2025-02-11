@@ -4,6 +4,7 @@
 #include <QColor>
 #include <QDateTime>
 #include <QString>
+#include <QObject>
 #include <QtQmlIntegration>
 
 namespace Skywalker {

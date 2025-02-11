@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "video_cache.h"
 #include "temp_file_holder.h"
+#include <qdebug.h>
 
 namespace Skywalker {
 

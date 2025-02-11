@@ -3,6 +3,8 @@
 
 package com.gmail.mfnboer;
 
+import com.gmail.mfnboer.SkywalkerApplication;
+
 import com.gmail.mfnboer.FileUtils;
 import com.gmail.mfnboer.NewMessageChecker;
 import com.gmail.mfnboer.NewMessageNotifier;
@@ -21,6 +23,7 @@ import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -50,6 +53,7 @@ public class SkywalkerActivity extends QtActivity {
 
     private boolean mIsIntentPending = false;
     private boolean mIsReady = false;
+    private PowerManager.WakeLock mWakeLock = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -220,6 +224,41 @@ public class SkywalkerActivity extends QtActivity {
         emitSharedVideoReceived(uriString, text);
     }
 
+    public void setKeepScreenOn(boolean keepOn) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Window window = getWindow();
+                if (window == null) {
+                    Log.w(LOGTAG, "Cannot get window");
+                    return;
+                }
+
+                Context context = SkywalkerApplication.getContext();
+                if (context == null) {
+                    Log.w(LOGTAG, "No context");
+                    return;
+                }
+
+                PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+
+                if (keepOn) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    if (mWakeLock == null) {
+                        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SpiralFunTag");
+                        mWakeLock.acquire();
+                    }
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    if (mWakeLock != null) {
+                        mWakeLock.release();
+                        mWakeLock = null;
+                    }
+                }
+            }
+        });
+    }
+
     // Avoid the app to close when the user presses the back button.
     public void goToBack() {
         Log.d(LOGTAG, "Moving task to back");
@@ -346,6 +385,8 @@ public class SkywalkerActivity extends QtActivity {
             }
         }
     }
+
+
 
     public void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
         runOnUiThread(new Runnable() {

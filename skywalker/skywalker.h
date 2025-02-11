@@ -32,7 +32,6 @@
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
 #include <QTimer>
-#include <QtQmlIntegration>
 
 namespace Skywalker {
 

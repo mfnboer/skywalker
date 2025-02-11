@@ -468,6 +468,10 @@ qt_add_qml_module(libskywalker
         SOURCES post_interaction_settings.cpp
         SOURCES list_cache.h
         SOURCES list_cache.cpp
+        SOURCES display_utils.h
+        SOURCES scoped_handle.h
+        SOURCES scoped_handle.cpp
+        SOURCES display_utils.cpp
 )
 
 if (NOT ANDROID)

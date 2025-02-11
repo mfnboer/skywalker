@@ -2,15 +2,14 @@
 // License: GPLv3
 #pragma once
 #include <QObject>
-#include <QtQmlIntegration>
 
 namespace Skywalker {
 
 class VideoHandle : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString link READ getLink FINAL)
-    Q_PROPERTY(QString fileName READ getFileName FINAL)
+    Q_PROPERTY(QString link READ getLink CONSTANT FINAL)
+    Q_PROPERTY(QString fileName READ getFileName CONSTANT FINAL)
 
 public:
     explicit VideoHandle(QObject* parent = nullptr);
