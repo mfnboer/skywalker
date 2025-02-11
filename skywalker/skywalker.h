@@ -197,14 +197,6 @@ public:
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
 
-    // TODO: refactor to separate App Utils class
-    Q_INVOKABLE bool sendAppToBackground();
-    Q_INVOKABLE void setNavigationBarColor(QColor color);
-    Q_INVOKABLE void setNavigationBarColorAndMode(QColor color, bool isLightMode);
-    Q_INVOKABLE int getNavigationBarSize(QEnums::InsetsSide side) const;
-    Q_INVOKABLE int getStatusBarSize(QEnums::InsetsSide side) const;
-    Q_INVOKABLE void setStatusBarTransparent(bool transparent);
-
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void signOut();
 

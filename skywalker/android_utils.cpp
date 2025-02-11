@@ -43,6 +43,97 @@ bool AndroidUtils::checkPermission(const QString& permission)
     return true;
 }
 
+bool AndroidUtils::sendAppToBackground()
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return false;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    activity.callMethod<void>("goToBack", "()V");
+    return true;
+#else
+    return false;
+#endif
+}
+
+void AndroidUtils::setNavigationBarColor(QColor color, QEnums::DisplayMode displayMode)
+{
+    const bool isLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);
+    setNavigationBarColorAndMode(color, isLightMode);
+}
+
+void AndroidUtils::setNavigationBarColorAndMode(QColor color, bool isLightMode)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    int rgb = color.rgba();
+    activity.callMethod<void>("setNavigationBarColor", "(IZ)V", (jint)rgb, (jboolean)isLightMode);
+#else
+    Q_UNUSED(color)
+    Q_UNUSED(isLightMode)
+#endif
+}
+
+int AndroidUtils::getNavigationBarSize(QEnums::InsetsSide side)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return 0;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    return (int)activity.callMethod<jint>("getNavigationBarSize", "(I)I", (jint)side);
+#else
+    Q_UNUSED(side)
+    return 0;
+#endif
+}
+
+int AndroidUtils::getStatusBarSize(QEnums::InsetsSide side)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return 0;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    return (int)activity.callMethod<jint>("getStatusBarSize", "(I)I", (jint)side);
+#else
+    Q_UNUSED(side)
+    return 0;
+#endif
+}
+
+void AndroidUtils::setStatusBarTransparent(bool transparent)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    activity.callMethod<void>("setStatusBarTransparent", "(Z)V", (jboolean)transparent);
+#else
+    Q_UNUSED(transparent)
+#endif
+}
+
 void AndroidUtils::setKeepScreenOn(bool keepOn)
 {
     qDebug() << "Keep screen on:" << keepOn;

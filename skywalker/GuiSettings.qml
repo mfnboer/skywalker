@@ -90,11 +90,18 @@ Item {
     readonly property string skywalkerHandle: "@skywalker.thereforeiam.eu"
     readonly property string blueskyTrendingDid: "did:plc:qrz3lhbyuxbeilrc6nekdqme"
 
+    id: guiItem
+
     Accessible.ignored: true
 
     FontMetrics {
         id: fontMetrics
         font: Application.font
+    }
+
+    DisplayUtils {
+        id: displayUtils
+        skywalker: guiItem.skywalker
     }
 
     function createComponent(qmlFileName) {
@@ -353,10 +360,10 @@ Item {
     }
 
     function getNavigationBarSize(side) {
-        return skywalker.getNavigationBarSize(side) / Screen.devicePixelRatio
+        return displayUtils.getNavigationBarSize(side) / Screen.devicePixelRatio
     }
 
     function getStatusBarSize(side) {
-        return skywalker.getStatusBarSize(side) / Screen.devicePixelRatio
+        return displayUtils.getStatusBarSize(side) / Screen.devicePixelRatio
     }
 }

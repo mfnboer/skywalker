@@ -121,6 +121,11 @@ SkyPage {
         }
     }
 
+    DisplayUtils {
+        id: displayUtils
+        skywalker: page.skywalker
+    }
+
     GuiSettings {
         id: guiSettings
         isLightMode: false
@@ -129,14 +134,14 @@ SkyPage {
     }
 
     function setNavigationBarColor() {
-        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
     function resetNavigationBarColor() {
         // As GuiSettings are temporarily set to dark on this page, we determine
         // the normal background color here instead of taking it from guiSettings
         const backgroundColor = userSettings ? userSettings.backgroundColor : Material.background
-        skywalker.setNavigationBarColor(backgroundColor)
+        displayUtils.setNavigationBarColor(backgroundColor)
     }
 
     Component.onDestruction: {

@@ -126,12 +126,17 @@ SkyPage {
         }
     }
 
+    DisplayUtils {
+        id: displayUtils
+        skywalker: root.getSkywalker()
+    }
+
     function setNavigationBarColor() {
-        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
     function resetNavigationBarColor() {
-        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
     }
 
     Component.onDestruction: {

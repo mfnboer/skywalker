@@ -579,6 +579,7 @@ Column {
 
     DisplayUtils {
         id: displayUtils
+        skywalker: root.getSkywalker() // qmllint disable missing-type
     }
 
     Timer {

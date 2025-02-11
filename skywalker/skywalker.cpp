@@ -3,6 +3,7 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "chat.h"
+#include "display_utils.h"
 #include "file_utils.h"
 #include "focus_hashtags.h"
 #include "font_downloader.h"
@@ -73,7 +74,11 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(5, TIMELINE_PREPEND_PAGE_SIZE); });
-    connect(&mUserSettings, &UserSettings::backgroundColorChanged, this, [this]{ setNavigationBarColor(mUserSettings.getBackgroundColor()); });
+
+    connect(&mUserSettings, &UserSettings::backgroundColorChanged, this, [this]{
+        const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
+        DisplayUtils::setNavigationBarColorAndMode(mUserSettings.getBackgroundColor(), isLightMode);
+    });
 
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
@@ -3326,95 +3331,7 @@ DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
         mMutedWordsNoMutes, *mFocusHashtags, mSeenHashtags, this);
 }
 
-bool Skywalker::sendAppToBackground()
-{
-#ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return false;
-    }
 
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    activity.callMethod<void>("goToBack", "()V");
-    return true;
-#else
-    return false;
-#endif
-}
-
-void Skywalker::setNavigationBarColor(QColor color)
-{
-    const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
-    setNavigationBarColorAndMode(color, isLightMode);
-}
-
-void Skywalker::setNavigationBarColorAndMode(QColor color, bool isLightMode)
-{
-#ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    int rgb = color.rgba();
-    activity.callMethod<void>("setNavigationBarColor", "(IZ)V", (jint)rgb, (jboolean)isLightMode);
-#else
-    Q_UNUSED(color)
-    Q_UNUSED(isLightMode)
-#endif
-}
-
-int Skywalker::getNavigationBarSize(QEnums::InsetsSide side) const
-{
-#ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return 0;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    return (int)activity.callMethod<jint>("getNavigationBarSize", "(I)I", (jint)side);
-#else
-    Q_UNUSED(side)
-    return 0;
-#endif
-}
-
-int Skywalker::getStatusBarSize(QEnums::InsetsSide side) const {
-#ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return 0;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    return (int)activity.callMethod<jint>("getStatusBarSize", "(I)I", (jint)side);
-#else
-    Q_UNUSED(side)
-    return 0;
-#endif
-}
-
-void Skywalker::setStatusBarTransparent(bool transparent)
-{
-#ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    activity.callMethod<void>("setStatusBarTransparent", "(Z)V", (jboolean)transparent);
-#else
-    Q_UNUSED(transparent)
-#endif
-}
 
 void Skywalker::updateUser(const QString& did, const QString& host)
 {

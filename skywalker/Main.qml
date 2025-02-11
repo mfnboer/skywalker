@@ -39,7 +39,7 @@ ApplicationWindow {
                 // The Sign In page should not be popped from the stack.
                 // The user must sign in or close the app.
 
-                if (skywalker.sendAppToBackground())
+                if (displayUtils.sendAppToBackground())
                     event.accepted = false
 
                 return
@@ -69,7 +69,7 @@ ApplicationWindow {
             event.accepted = false
             viewTimeline()
         }
-        else if (skywalker.sendAppToBackground()) {
+        else if (displayUtils.sendAppToBackground()) {
             event.accepted = false
         }
     }
@@ -932,6 +932,11 @@ ApplicationWindow {
 
         onCopyVideoOk: skywalker.showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
         onCopyVideoFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    DisplayUtils {
+        id: displayUtils
+        skywalker: skywalker
     }
 
     // InviteCodeStore {
@@ -1992,7 +1997,7 @@ ApplicationWindow {
         userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
-        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
     }
 
     function getSkywalker() {

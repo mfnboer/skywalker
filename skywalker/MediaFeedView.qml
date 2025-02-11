@@ -94,18 +94,23 @@ SkyListView {
         }
     }
 
+    DisplayUtils {
+        id: displayUtils
+        skywalker: postFeedView.skywalker
+    }
+
     function cancel() {
         closed()
     }
 
     function setSystemBars() {
-        skywalker.setStatusBarTransparent(true)
-        skywalker.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setStatusBarTransparent(true)
+        displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
     function resetSystemBars() {
-        skywalker.setStatusBarTransparent(false)
-        skywalker.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setStatusBarTransparent(false)
+        displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
     }
 
     function orientationHandler() {
