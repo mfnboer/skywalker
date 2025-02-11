@@ -2144,7 +2144,7 @@ SkyPage {
                                      threadItem.quoteDateTime, threadItem.quoteFixed,
                                      threadItem.quoteFeed, threadItem.quoteList,
                                      threadItem.gif, threadItem.card, labelsItem, threadItem.language,
-                                     false, false, false,
+                                     false, false, false, false,
                                      [], false)
 
             draftItemList.push(draftItem)
