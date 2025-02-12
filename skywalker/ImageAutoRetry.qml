@@ -49,22 +49,32 @@ Image {
         running: isLoading && indicateLoading
     }
 
-    SvgButton {
-        id: reloadButton
+    Loader {
+        width: parent.width
         anchors.centerIn: parent
-        iconColor: reloadIconColor
-        Material.background: "transparent"
-        svg: SvgOutline.refresh
-        accessibleName: qsTr("reload")
-        visible: failedCanReload
-        onClicked: reload()
-    }
-    AccessibleText {
-        anchors.top: reloadButton.bottom
-        anchors.horizontalCenter: reloadButton.horizontalCenter
-        color: Material.color(Material.Grey)
-        text: qsTr("Loading failed")
-        visible: failedCanReload
+        active: failedCanReload
+
+        sourceComponent: Item {
+            width: parent.width
+            height: reloadButton.height + reloadText.height
+
+            SvgButton {
+                id: reloadButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                iconColor: reloadIconColor
+                Material.background: "transparent"
+                svg: SvgOutline.refresh
+                accessibleName: qsTr("reload")
+                onClicked: reload()
+            }
+            AccessibleText {
+                id: reloadText
+                anchors.top: reloadButton.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: Material.color(Material.Grey)
+                text: qsTr("Loading failed")
+            }
+        }
     }
 
     function reload() {
