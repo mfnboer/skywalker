@@ -472,6 +472,8 @@ qt_add_qml_module(libskywalker
         SOURCES scoped_handle.h
         SOURCES scoped_handle.cpp
         SOURCES display_utils.cpp
+        QML_FILES ThumbImageKnownSizeView.qml
+        QML_FILES ThumbImageUnknownSizeView.qml
 )
 
 if (NOT ANDROID)
