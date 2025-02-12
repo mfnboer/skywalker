@@ -38,7 +38,7 @@ public:
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
     QString getAlt() const { return mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : mAlt; }
-    ImageView getImageView() const { return ImageView(getThumbUrl(), getAlt()); }
+    ImageView getImageView() const { return ImageView(getThumbUrl(), getAlt(), getWidth(), getHeight()); }
     int getStartMs() const { return mStartMs; }
     void setStartMs(int startMs) { mStartMs = startMs; }
     int getEndMs() const { return mEndMs; }

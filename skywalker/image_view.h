@@ -29,6 +29,12 @@ public:
         mMemeTopText(memeTopText),
         mMemeBottomText(memeBottomText)
     {}
+    ImageView(const QString& fullSizeUrl, const QString& alt, int width, int height) :
+        mFullSizeUrl(fullSizeUrl),
+        mAlt(alt),
+        mWidth(width),
+        mHeight(height)
+    {}
     ImageView(const ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr& viewImage) :
         mViewImage(viewImage)
     {}
@@ -38,8 +44,8 @@ public:
     QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : mFullSizeUrl; }
     QString getAlt() const { return mViewImage ? mViewImage->mAlt : mAlt; }
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mViewImage ? mViewImage->mAspectRatio.get() : nullptr; }
-    int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
-    int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
+    int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : mWidth;  }
+    int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : mHeight;  }
     const QString& getMemeTopText() const { return mMemeTopText; }
     void setMemeTopText(const QString& text) { mMemeTopText = text; }
     const QString& getMemeBottomText() const { return mMemeBottomText; }
@@ -50,6 +56,8 @@ private:
 
     QString mFullSizeUrl;
     QString mAlt;
+    int mWidth = 0;
+    int mHeight = 0;
 
     // Only for draft posts
     QString mMemeTopText;

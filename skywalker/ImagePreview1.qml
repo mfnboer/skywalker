@@ -32,7 +32,7 @@ Item {
             active: filter.imageVisible()
 
             sourceComponent: images[0].width > 0 && images[0].height > 0 && frame.parent.width > 0 ?
-                                 knowSizeComp : unknownSizeComp
+                                 knownSizeComp : unknownSizeComp
         }
 
         MouseArea {
@@ -84,7 +84,7 @@ Item {
     }
 
     Component {
-        id: knowSizeComp
+        id: knownSizeComp
 
         ThumbImageKnownSizeView {
             maxWidth: frame.parent.width

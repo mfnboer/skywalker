@@ -13,7 +13,7 @@ ThumbImageView {
         if (status === Image.Ready) {
             const idealHeight = sourceSize.height * width / sourceSize.width
 
-            if (idealHeight > maxHeight) {
+            if (maxHeight > 0 && idealHeight > maxHeight) {
                 implicitHeight = maxHeight
                 fillMode = Image.PreserveAspectCrop
             }

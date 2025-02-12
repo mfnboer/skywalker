@@ -80,48 +80,30 @@ Column {
             Rectangle {
                 id: imgPreview
                 width: parent.width
-                height: defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.height
+                height: defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getHeight()
                 color: "transparent"
 
-                ThumbImageView {
-                    indicateLoading: false
-                    property double aspectRatio: implicitHeight > 0 ? implicitWidth / implicitHeight : 0
-                    property double maxWidth: maxHeight * aspectRatio
-
+                Loader {
                     id: thumbImg
-                    x: (parent.width - width) / 2
-                    width: parent.width - 2
-                    imageView: filter.imageVisible() ? videoView.imageView : filter.nullImage
-                    fillMode: Image.PreserveAspectFit
-                    enableAlt: !isFullViewMode
+                    x: (parent.width - getWidth()) / 2
+                    active: filter.imageVisible()
 
-                    onWidthChanged: Qt.callLater(setSize)
-                    onHeightChanged: Qt.callLater(setSize)
+                    sourceComponent: videoView.imageView.width > 0 && videoView.imageView.height > 0 ?
+                                         knownSizeComp : unknownSizeComp
 
-                    function setSize() {
-                        if (maxWidth > 0 && width > maxWidth)
-                            height = maxHeight
-                        else if (aspectRatio > 0)
-                            height = width / aspectRatio
+                    function getWidth() {
+                        return item ? item.width : 0
                     }
 
-                    Loader {
-                        anchors.right: parent.right
-                        anchors.rightMargin: 5
-                        anchors.top: parent.top
-                        anchors.topMargin: 5
-                        active: swipeMode
-
-                        sourceComponent: SkySvg {
-                            width: 20
-                            height: 20
-                            svg: SvgOutline.swipeVertical
-                            color: "white"
-                        }
+                    function getHeight() {
+                        return item ? item.height : 0
                     }
 
-                    Component.onCompleted: setSize()
+                    function getStatus() {
+                        return item ? item.status : Image.Null
+                    }
                 }
+
                 Rectangle {
                     property double maxWidth: maxHeight * videoStack.getAspectRatio()
 
@@ -130,7 +112,7 @@ Column {
                     width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
                     height: width / videoStack.getAspectRatio()
                     color: guiSettings.avatarDefaultColor
-                    visible: videoView.imageView.isNull() || thumbImg.status != Image.Ready && filter.imageVisible()
+                    visible: videoView.imageView.isNull() || thumbImg.getStatus() !== Image.Ready && filter.imageVisible()
 
                     onHeightChanged: {
                         if (maxHeight && height > maxHeight)
@@ -372,7 +354,7 @@ Column {
 
         id: playControls
         x: (parent.width - width) / 2
-        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : Math.min(thumbImg.width, thumbImg.maxWidth ? thumbImg.maxWidth : thumbImg.width))
+        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.getWidth())
         height: visible ? playPauseButton.height : 0
         color: "transparent"
         visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
@@ -588,6 +570,58 @@ Column {
         onTriggered: {
             console.debug() << "Entering inactive state"
             clearCache()
+        }
+    }
+
+    Component {
+        id: unknownSizeComp
+
+        ThumbImageUnknownSizeView {
+            maxWidth: imgPreview.width - 2
+            maxHeight: videoStack.maxHeight
+            image: videoView.imageView
+            indicateLoading: false
+
+            Loader {
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                active: swipeMode
+
+                sourceComponent: SkySvg {
+                    width: 20
+                    height: 20
+                    svg: SvgOutline.swipeVertical
+                    color: "white"
+                }
+            }
+        }
+    }
+
+    Component {
+        id: knownSizeComp
+
+        ThumbImageKnownSizeView {
+            maxWidth: imgPreview.width - 2
+            maxHeight: videoStack.maxHeight
+            image: videoView.imageView
+            indicateLoading: false
+
+            Loader {
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.top: parent.top
+                anchors.topMargin: 5
+                active: swipeMode
+
+                sourceComponent: SkySvg {
+                    width: 20
+                    height: 20
+                    svg: SvgOutline.swipeVertical
+                    color: "white"
+                }
+            }
         }
     }
 
