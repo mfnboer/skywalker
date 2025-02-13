@@ -148,7 +148,7 @@ Rectangle {
 
                     Rectangle {
                         required property int index
-                        property int imageWidth: img.paintedWidth
+                        property int imageWidth: filter.imageVisible() ? img.paintedWidth : filter.width
                         property bool zooming: img.zooming
 
                         width: mediaRect.width

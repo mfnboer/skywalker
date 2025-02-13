@@ -81,7 +81,7 @@ Column {
             Rectangle {
                 id: imgPreview
                 width: parent.width
-                height: tileMode ? parent.width : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getHeight())
+                height: tileMode ? parent.width : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getPaintedHeight())
                 color: "transparent"
 
                 Loader {
@@ -96,8 +96,15 @@ Column {
                         return item ? item.width : 0
                     }
 
-                    function getHeight() {
-                        return item ? item.height : 0
+                    function getPaintedWidth() {
+                        if (!filter.imageVisible())
+                            return filter.width
+
+                        return item ? item.paintedWidth : 0
+                    }
+
+                    function getPaintedHeight() {
+                        return item ? item.paintedHeight : 0
                     }
 
                     function getStatus() {
@@ -110,7 +117,7 @@ Column {
 
                     id: defaultThumbImg
                     x: (parent.width - width) / 2
-                    width: tileMode ? parent.width : ((maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2)
+                    width: tileMode ? parent.width : ((maxWidth > 0 && parent.width > maxWidth) ? maxWidth : parent.width)
                     height: tileMode ? parent.width : (width / videoStack.getAspectRatio())
                     color: guiSettings.avatarDefaultColor
                     visible: videoView.imageView.isNull() || thumbImg.getStatus() !== Image.Ready && filter.imageVisible()
@@ -355,7 +362,7 @@ Column {
 
         id: playControls
         x: (parent.width - width) / 2
-        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.getWidth())
+        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.getPaintedWidth())
         height: visible ? playPauseButton.height : 0
         color: "transparent"
         visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
@@ -583,6 +590,7 @@ Column {
             image: videoView.imageView
             indicateLoading: false
             tileMode: videoStack.tileMode
+            noCrop: videoStack.isFullViewMode
 
             Loader {
                 anchors.right: parent.right
@@ -610,6 +618,7 @@ Column {
             image: videoView.imageView
             indicateLoading: false
             tileMode: videoStack.tileMode
+            noCrop: videoStack.isFullViewMode
 
             Loader {
                 anchors.right: parent.right

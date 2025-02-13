@@ -5,6 +5,7 @@ ThumbImageView {
     required property int maxWidth
     required property int maxHeight
     property bool tileMode: false
+    property bool noCrop: false
 
     width: tileMode ? maxWidth : Math.min(implicitWidth, maxWidth)
     fillMode: Image.PreserveAspectFit
@@ -16,7 +17,9 @@ ThumbImageView {
 
             if ((maxHeight > 0 && idealHeight > maxHeight) || tileMode) {
                 implicitHeight = maxHeight
-                fillMode = Image.PreserveAspectCrop
+
+                if (!noCrop)
+                    fillMode = Image.PreserveAspectCrop
             }
         }
     }

@@ -7,9 +7,10 @@ ThumbImageView {
     readonly property int idealHeight: (image.height / image.width) * width
     readonly property bool exceedsMaxHeight: maxHeight > 0 && idealHeight > maxHeight
     property bool tileMode: false
+    property bool noCrop: false
 
     width: tileMode ? maxWidth : Math.min(image.width, maxWidth)
     height: (!exceedsMaxHeight && !tileMode) ? idealHeight : maxHeight
-    fillMode: (!exceedsMaxHeight && !tileMode) ? Image.PreserveAspectFit : Image.PreserveAspectCrop
+    fillMode: ((!exceedsMaxHeight && !tileMode) || noCrop) ? Image.PreserveAspectFit : Image.PreserveAspectCrop
     imageView: image
 }

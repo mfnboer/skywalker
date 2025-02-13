@@ -123,7 +123,7 @@ SkyListView {
             clip: true
             y: postFeedView.headerItem ? postFeedView.headerItem.height : 0
             width: postFeedView.width
-            height: postFeedView.height - (postFeedView.headerItem ? postFeedView.headerItem.height : 0) - (postFeedView.footerItem && postFeedView.footerItem.isVisible ? postFeedView.footerItem.height : 0)
+            height: postFeedView.height - (postFeedView.headerItem ? postFeedView.headerItem.height : 0) - (postFeedView.footerItem && postFeedView.footerItem.visible ? postFeedView.footerItem.height : 0)
             skywalker: postFeedView.skywalker
             showAsHome: postFeedView.showAsHome
             model: postFeedView.model

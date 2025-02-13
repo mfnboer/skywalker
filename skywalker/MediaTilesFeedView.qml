@@ -6,7 +6,7 @@ import skywalker
 GridView {
     required property var skywalker
     readonly property int columns: 3
-    readonly property int spacing: 3
+    readonly property int spacing: 2
     property bool showAsHome: false
 
     id: postFeedView
@@ -24,26 +24,19 @@ GridView {
     delegate: MediaTilesFeedViewDelegate {
         width: postFeedView.cellWidth
         height: postFeedView.cellHeight
-        Layout.alignment: Qt.AlignRight
 
         onActivateSwipe: {
             root.viewMediaFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
         }
-
-        // Loader {
-        //     id: extraFooterLoader
-        //     anchors.bottom: parent.bottom
-
-        //     active: model.isFilterModel() && index == count - 1 && !endOfFeed
-        //     sourceComponent: extraFooterComponent
-        // }
     }
+
+    footer: model.endOfFeed ? endOfFeedComponent : loadMoreComponent
 
     onMovementEnded: {
         const lastIndex = getBottomRightVisibleIndex()
         console.debug("Move:", postFeedView.model.feedName, "index:", lastIndex, "count:", count)
 
-        if (lastIndex >= 0 && count - lastIndex < columns * 5) {
+        if (lastIndex >= 0 && count - lastIndex < columns * 6) {
             console.debug("Prefetch next page:", postFeedView.model.feedName, "index:", lastIndex, "count:", count)
             model.getFeedNextPage(skywalker)
         }
@@ -54,26 +47,21 @@ GridView {
         verticalOvershoot: postFeedView.verticalOvershoot
         topOvershootFun: () => model.getFeed(skywalker)
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
+        topText: qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
-    }
-
-    EmptyListIndication {
-        y: parent.headerItem ? parent.headerItem.height : 0
-        svg: SvgOutline.noPosts
-        text: qsTr("Feed is empty")
-        list: postFeedView
     }
 
     Rectangle {
         z: parent.z - 1
         anchors.fill: parent
-        color: guiSettings.fullScreenColor
+        color: guiSettings.backgroundColor
     }
 
     Component {
-        id: extraFooterComponent
+        id: loadMoreComponent
 
         Rectangle {
+            z: guiSettings.footerZLevel
             width: postFeedView.width
             height: 150
             color: "transparent"
@@ -84,10 +72,20 @@ GridView {
                 padding: 10
                 textFormat: Text.RichText
                 wrapMode: Text.Wrap
-                color: "white"
                 text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColorDarkMode}; text-decoration: none">Load more</a>`)
                 onLinkActivated: model.getFeedNextPage(skywalker)
             }
+        }
+    }
+
+    Component {
+        id: endOfFeedComponent
+
+        Image {
+            z: guiSettings.footerZLevel
+            width: postFeedView.width
+            fillMode: Image.PreserveAspectFit
+            source: "/images/thats_all_folks.png"
         }
     }
 
