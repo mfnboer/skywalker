@@ -45,7 +45,7 @@ SkyListView {
         }
 
         onUnfoldPosts: model.unfoldPosts(index)
-        onActivateSwipe: root.viewVideoFeed(model, index, (newIndex) => { moveToPost(newIndex) })
+        onActivateSwipe: root.viewMediaFeed(model, index, (newIndex) => { moveToPost(newIndex) })
     }
 
     onCountChanged: {

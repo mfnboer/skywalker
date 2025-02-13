@@ -207,6 +207,14 @@ Rectangle {
                     MenuItemSvg { svg: SvgOutline.image }
                 }
                 AccessibleMenuItem {
+                    text: qsTr("Media gallery")
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_MEDIA_TILES
+                        viewChanged(contentMode)
+                    }
+                    MenuItemSvg { svg: SvgOutline.gallery }
+                }
+                AccessibleMenuItem {
                     text: qsTr("Video view")
                     onTriggered: {
                         contentMode = QEnums.CONTENT_MODE_VIDEO

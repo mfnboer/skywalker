@@ -65,7 +65,7 @@ SkyListView {
         }
 
         onActivateSwipe: {
-            root.viewVideoFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+            root.viewMediaFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
         }
 
         Loader {
@@ -84,7 +84,7 @@ SkyListView {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
 
-        if (lastVisibleIndex != -1 && modelId != -1) {
+        if (lastVisibleIndex !== -1 && modelId !== -1) {
             const lastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
             skywalker.feedMovementEnded(modelId, lastVisibleIndex, lastVisibleOffsetY)
         }
@@ -113,6 +113,21 @@ SkyListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: skywalker.getFeedInProgress
+    }
+
+    Loader {
+        id: mediaTilesLoader
+        active: false
+
+        sourceComponent: MediaTilesFeedView {
+            clip: true
+            y: postFeedView.headerItem ? postFeedView.headerItem.height : 0
+            width: postFeedView.width
+            height: postFeedView.height - (postFeedView.headerItem ? postFeedView.headerItem.height : 0) - (postFeedView.footerItem && postFeedView.footerItem.isVisible ? postFeedView.footerItem.height : 0)
+            skywalker: postFeedView.skywalker
+            showAsHome: postFeedView.showAsHome
+            model: postFeedView.model
+        }
     }
 
     Component {
@@ -144,7 +159,7 @@ SkyListView {
     Rectangle {
         y: headerItem ? headerItem.height : 0
         width: parent.width
-        height: parent.height - (headerItem ? headerItem.height : 0) - (footerItem ? footerItem.height : 0)
+        height: parent.height - (headerItem ? headerItem.height : 0) - (footerItem && footerItem.visible ? footerItem.height : 0)
         color: guiSettings.backgroundColor
         visible: !inSync && (rewindStatus.rewindPagesLoaded > 0 || rewindStatus.isFirstRewind)
 
@@ -218,10 +233,10 @@ SkyListView {
 
     function changeView(contentMode) {
         let oldModel = model
-        const lastVisibleIndex = getLastVisibleIndex()
+        const lastVisibleIndex = mediaTilesLoader.item ? mediaTilesLoader.item.getTopRightVisibleIndex() : getLastVisibleIndex()
         const timestamp = model.getPostTimelineTimestamp(lastVisibleIndex)
         const cid = model.getPostCid(lastVisibleIndex)
-        const lastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+        const lastVisibleOffsetY = mediaTilesLoader.item ? 0 : calcVisibleOffsetY(lastVisibleIndex)
 
         switch (contentMode) {
         case QEnums.CONTENT_MODE_UNSPECIFIED:
@@ -231,6 +246,7 @@ SkyListView {
             model = model.getUnderlyingModel().addVideoFilter()
             break
         case QEnums.CONTENT_MODE_MEDIA:
+        case QEnums.CONTENT_MODE_MEDIA_TILES:
             model = model.getUnderlyingModel().addMediaFilter()
             break
         default:
@@ -246,9 +262,14 @@ SkyListView {
             userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
         }
 
+        mediaTilesLoader.active = (contentMode === QEnums.CONTENT_MODE_MEDIA_TILES)
+
         if (lastVisibleIndex > -1) {
             const newIndex = model.findTimestamp(timestamp, cid)
             setInSync(modelId, newIndex, lastVisibleOffsetY)
+
+            if (mediaTilesLoader.item)
+                mediaTilesLoader.item.positionViewAtIndex(newIndex, GridView.Beginning)
         }
     }
 
@@ -264,6 +285,9 @@ SkyListView {
     function moveToHome() {
         positionViewAtBeginning()
         setAnchorItem(0, 0)
+
+        if (mediaTilesLoader.item)
+            mediaTilesLoader.item.positionViewAtBeginning()
 
         if (modelId != -1)
             skywalker.feedMovementEnded(modelId, 0, 0)
@@ -284,12 +308,12 @@ SkyListView {
     }
 
     function setInSync(id, index, offsetY = 0) {
-        if (id != modelId)
+        if (id !== modelId)
             return
 
         console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
 
-        if (index == 0 && offsetY == 0) {
+        if (index === 0 && offsetY === 0) {
             moveToHome()
             finishSync()
         }
@@ -303,7 +327,7 @@ SkyListView {
     }
 
     function syncToHome(id) {
-        if (id != modelId)
+        if (id !== modelId)
             return
 
         finishSync()
@@ -311,7 +335,7 @@ SkyListView {
     }
 
     function handleSyncStart(id, maxPages, timestamp) {
-        if (id != modelId)
+        if (id !== modelId)
             return
 
         console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
@@ -320,7 +344,7 @@ SkyListView {
     }
 
     function handleSyncProgress(id, pages, timestamp) {
-        if (id != modelId)
+        if (id !== modelId)
             return
 
         console.debug("Sync proress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
@@ -373,7 +397,7 @@ SkyListView {
         const userSettings = skywalker.getUserSettings()
         const viewMode = userSettings.getFeedViewMode(skywalker.getUserDid(), model.feedUri)
 
-        if (viewMode != QEnums.CONTENT_MODE_UNSPECIFIED) {
+        if (viewMode !== QEnums.CONTENT_MODE_UNSPECIFIED) {
             initialContentMode = viewMode
             changeView(viewMode)
         }

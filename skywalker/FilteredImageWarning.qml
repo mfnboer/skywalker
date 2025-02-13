@@ -31,10 +31,8 @@ Row {
 
     Text {
         id: warnText
-        width: parent.width
-        Layout.fillWidth: true
+        width: parent.width - imgIcon.width
         wrapMode: Text.Wrap
-        elide: Text.ElideRight
         textFormat: Text.RichText
         color: Material.color(Material.Grey)
         text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
@@ -45,11 +43,9 @@ Row {
 
     Text {
         id: hideText
-        width: parent.width
-        Layout.fillWidth: true
+        width: parent.width - imgIcon.width
         anchors.verticalCenter: parent.verticalCenter
         wrapMode: Text.Wrap
-        elide: Text.ElideRight
         textFormat: Text.RichText
         color: Material.color(Material.Grey)
         text: contentWarning

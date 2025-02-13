@@ -474,6 +474,8 @@ qt_add_qml_module(libskywalker
         SOURCES display_utils.cpp
         QML_FILES ThumbImageKnownSizeView.qml
         QML_FILES ThumbImageUnknownSizeView.qml
+        QML_FILES MediaTilesFeedViewDelegate.qml
+        QML_FILES MediaTilesFeedView.qml
 )
 
 if (NOT ANDROID)

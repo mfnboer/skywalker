@@ -300,6 +300,8 @@ Item {
             return SvgOutline.film
         case QEnums.CONTENT_MODE_MEDIA:
             return SvgOutline.image
+        case QEnums.CONTENT_MODE_MEDIA_TILES:
+            return SvgOutline.gallery
         default:
             return SvgOutline.chat
         }

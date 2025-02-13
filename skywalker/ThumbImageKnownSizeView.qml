@@ -6,9 +6,10 @@ ThumbImageView {
     required property int maxHeight
     readonly property int idealHeight: (image.height / image.width) * width
     readonly property bool exceedsMaxHeight: maxHeight > 0 && idealHeight > maxHeight
+    property bool tileMode: false
 
-    width: Math.min(image.width, maxWidth)
-    height: !exceedsMaxHeight ? idealHeight : maxHeight
-    fillMode: !exceedsMaxHeight ? Image.PreserveAspectFit : Image.PreserveAspectCrop
+    width: tileMode ? maxWidth : Math.min(image.width, maxWidth)
+    height: (!exceedsMaxHeight && !tileMode) ? idealHeight : maxHeight
+    fillMode: (!exceedsMaxHeight && !tileMode) ? Image.PreserveAspectFit : Image.PreserveAspectCrop
     imageView: image
 }

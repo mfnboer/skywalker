@@ -24,9 +24,11 @@ Column {
     property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
     property int footerHeight: 0
     property int useIfNeededHeight: 0
+    property bool tileMode: false
     readonly property int playControlsWidth: playControls.width
     readonly property int playControlsHeight: playControls.height
     readonly property bool showPlayControls: playControls.show
+    property alias contentFilter: filter
 
     // Cache
     property var videoHandle
@@ -50,7 +52,7 @@ Column {
     Rectangle {
         id: videoRect
         width: parent.width
-        height: videoColumn.height
+        height: tileMode ? parent.height : videoColumn.height
         color: "transparent"
         visible: videoPlayer.videoFound || videoPlayer.error == MediaPlayer.NoError
 
@@ -68,7 +70,6 @@ Column {
         Column {
             id: videoColumn
             width: parent.width
-            topPadding: 1
             spacing: 3
 
             Rectangle {
@@ -80,7 +81,7 @@ Column {
             Rectangle {
                 id: imgPreview
                 width: parent.width
-                height: defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getHeight()
+                height: tileMode ? parent.width : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getHeight())
                 color: "transparent"
 
                 Loader {
@@ -109,13 +110,13 @@ Column {
 
                     id: defaultThumbImg
                     x: (parent.width - width) / 2
-                    width: (maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2
-                    height: width / videoStack.getAspectRatio()
+                    width: tileMode ? parent.width : ((maxWidth > 0 && parent.width - 2 > maxWidth) ? maxWidth : parent.width - 2)
+                    height: tileMode ? parent.width : (width / videoStack.getAspectRatio())
                     color: guiSettings.avatarDefaultColor
                     visible: videoView.imageView.isNull() || thumbImg.getStatus() !== Image.Ready && filter.imageVisible()
 
                     onHeightChanged: {
-                        if (maxHeight && height > maxHeight)
+                        if (maxHeight && height > maxHeight && !tileMode)
                             Qt.callLater(setMaxHeight)
                     }
 
@@ -143,7 +144,7 @@ Column {
                     backgroundOpacity: 0.6
                     color: "white"
                     text: guiSettings.videoDurationToString(videoPlayer.getDuration())
-                    visible: !isFullViewMode && filter.imageVisible()
+                    visible: !isFullViewMode && !tileMode && filter.imageVisible()
                 }
             }
         }
@@ -338,7 +339,7 @@ Column {
             width: parent.width
             height: parent.height
             maskColor: videoStack.backgroundColor == "transparent" ? guiSettings.backgroundColor : videoStack.backgroundColor
-            visible: !isFullViewMode && !swipeMode
+            visible: !isFullViewMode && !swipeMode && !tileMode
         }
     }
 
@@ -577,17 +578,18 @@ Column {
         id: unknownSizeComp
 
         ThumbImageUnknownSizeView {
-            maxWidth: imgPreview.width - 2
-            maxHeight: videoStack.maxHeight
+            maxWidth: imgPreview.width
+            maxHeight: videoStack.tileMode ? imgPreview.width : videoStack.maxHeight
             image: videoView.imageView
             indicateLoading: false
+            tileMode: videoStack.tileMode
 
             Loader {
                 anchors.right: parent.right
                 anchors.rightMargin: 5
                 anchors.top: parent.top
                 anchors.topMargin: 5
-                active: swipeMode
+                active: swipeMode && !tileMode
 
                 sourceComponent: SkySvg {
                     width: 20
@@ -603,17 +605,18 @@ Column {
         id: knownSizeComp
 
         ThumbImageKnownSizeView {
-            maxWidth: imgPreview.width - 2
-            maxHeight: videoStack.maxHeight
+            maxWidth: imgPreview.width
+            maxHeight: videoStack.tileMode ? imgPreview.width : videoStack.maxHeight
             image: videoView.imageView
             indicateLoading: false
+            tileMode: videoStack.tileMode
 
             Loader {
                 anchors.right: parent.right
                 anchors.rightMargin: 5
                 anchors.top: parent.top
                 anchors.topMargin: 5
-                active: swipeMode
+                active: swipeMode && !tileMode
 
                 sourceComponent: SkySvg {
                     width: 20

@@ -304,8 +304,9 @@ public:
 
         // Not defined by ATProto
         CONTENT_MODE_MEDIA = 100,
+        CONTENT_MODE_MEDIA_TILES = 101,
 
-        CONTENT_MODE_LAST = CONTENT_MODE_MEDIA
+        CONTENT_MODE_LAST = CONTENT_MODE_MEDIA_TILES
     };
     Q_ENUM(ContentMode)
 

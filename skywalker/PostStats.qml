@@ -24,6 +24,8 @@ Item {
     property bool showViewThread: false
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
+    property bool limitedStats: false
+    property string color: guiSettings.statsColor
     property int topPadding: 0
 
     signal reply()
@@ -44,16 +46,17 @@ Item {
     signal unpin()
     signal blockAuthor()
 
+    id: postStats
     height: replyIcon.height + topPadding
 
     StatIcon {
         id: replyIcon
         y: topPadding
         width: parent.width / 4
-        iconColor: enabled ? guiSettings.statsColor : guiSettings.disabledColor
+        iconColor: enabled ? postStats.color : guiSettings.disabledColor
         svg: SvgOutline.reply
         statistic: replyCount
-        visible: !bookmarkNotFound
+        visible: !bookmarkNotFound && !limitedStats
         enabled: !replyDisabled
         onClicked: reply()
 
@@ -64,10 +67,10 @@ Item {
         y: topPadding
         anchors.left: replyIcon.right
         width: parent.width / 4
-        iconColor: repostUri ? guiSettings.likeColor : guiSettings.statsColor
+        iconColor: repostUri ? guiSettings.likeColor : postStats.color
         svg: SvgOutline.repost
         statistic: repostCount
-        visible: !bookmarkNotFound
+        visible: !bookmarkNotFound && !limitedStats
         onClicked: repost()
 
         Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
@@ -75,9 +78,9 @@ Item {
     StatIcon {
         id: likeIcon
         y: topPadding
-        anchors.left: repostIcon.right
+        anchors.left: !limitedStats ? repostIcon.right : parent.left
         width: parent.width / 4
-        iconColor: likeUri ? guiSettings.likeColor : guiSettings.statsColor
+        iconColor: likeUri ? guiSettings.likeColor : postStats.color
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
         visible: !bookmarkNotFound
@@ -95,8 +98,9 @@ Item {
         y: topPadding
         anchors.left: likeIcon.right
         width: parent.width / 8
-        iconColor: isBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
+        iconColor: isBookmarked ? guiSettings.buttonColor : postStats.color
         svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
+        visible: !limitedStats
         onClicked: bookmark()
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
@@ -104,8 +108,9 @@ Item {
     StatIcon {
         id: moreIcon
         y: topPadding
-        anchors.left: bookmarkIcon.right
+        anchors.right : parent.right
         width: parent.width / 8
+        iconColor: postStats.color
         svg: SvgOutline.moreVert
         visible: !bookmarkNotFound
         onClicked: moreMenuLoader.open()

@@ -51,7 +51,8 @@ Item {
 
         FilteredImageWarning {
             id: filter
-            width: parent.width
+            x: swipeMode ? 10 : 0
+            width: parent.width - x * 2
             contentVisibility: preview.contentVisibility
             contentWarning: preview.contentWarning
             images: preview.images

@@ -117,7 +117,8 @@ RoundCornerMask {
 
     FilteredImageWarning {
         id: filter
-        width: parent.width
+        x: swipeMode ? 10 : 0
+        width: parent.width - x * 2
         contentVisibility: frame.contentVisibility
         contentWarning: frame.contentWarning
         images: frame.images
