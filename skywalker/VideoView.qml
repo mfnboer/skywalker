@@ -592,21 +592,6 @@ Column {
             indicateLoading: false
             tileMode: videoStack.tileMode
             noCrop: videoStack.isFullViewMode
-
-            Loader {
-                anchors.right: parent.right
-                anchors.rightMargin: 5
-                anchors.top: parent.top
-                anchors.topMargin: 5
-                active: swipeMode && !tileMode
-
-                sourceComponent: SkySvg {
-                    width: 20
-                    height: 20
-                    svg: SvgOutline.swipeVertical
-                    color: "white"
-                }
-            }
         }
     }
 
@@ -620,21 +605,6 @@ Column {
             indicateLoading: false
             tileMode: videoStack.tileMode
             noCrop: videoStack.isFullViewMode
-
-            Loader {
-                anchors.right: parent.right
-                anchors.rightMargin: 5
-                anchors.top: parent.top
-                anchors.topMargin: 5
-                active: swipeMode && !tileMode
-
-                sourceComponent: SkySvg {
-                    width: 20
-                    height: 20
-                    svg: SvgOutline.swipeVertical
-                    color: "white"
-                }
-            }
         }
     }
 

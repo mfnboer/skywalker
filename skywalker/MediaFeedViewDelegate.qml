@@ -175,7 +175,7 @@ Rectangle {
 
                             SkyLabel {
                                 x: (parent.width - parent.paintedWidth) / 2 + parent.paintedWidth - width - 10
-                                y: parent.verticalAlignment == Image.AlignVCenter ? (parent.height - parent.paintedHeight) / 2 + 5 : 5
+                                y: parent.verticalAlignment == Image.AlignVCenter ? (parent.height - parent.paintedHeight) / 2 + 5 : optionsButton.y + optionsButton.height + 5
                                 backgroundColor: "black"
                                 backgroundOpacity: 0.6
                                 color: "white"
@@ -218,6 +218,7 @@ Rectangle {
     }
 
     SvgButton {
+        id: optionsButton
         anchors.right: parent.right
         anchors.rightMargin: rightMarginWidth + 10
         y: headerHeight + 10
