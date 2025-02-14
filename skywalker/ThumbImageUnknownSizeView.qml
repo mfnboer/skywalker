@@ -8,6 +8,7 @@ ThumbImageView {
     property bool noCrop: false
 
     width: tileMode ? maxWidth : Math.min(implicitWidth, maxWidth)
+    height: tileMode ? maxHeight : undefined
     fillMode: Image.PreserveAspectFit
     imageView: image
     sourceSize.width: width

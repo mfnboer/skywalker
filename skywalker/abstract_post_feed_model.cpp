@@ -50,7 +50,7 @@ void AbstractPostFeedModel::clearFeed()
     mFeed.clear();
     mStoredCids.clear();
     mStoredCidQueue = {};
-    mEndOfFeed = false;
+    setEndOfFeed(false);
     clearLocalChanges();
     clearLocalProfileChanges();
 }

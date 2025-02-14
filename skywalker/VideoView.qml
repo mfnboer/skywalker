@@ -81,7 +81,7 @@ Column {
             Rectangle {
                 id: imgPreview
                 width: parent.width
-                height: tileMode ? parent.width : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getPaintedHeight())
+                height: tileMode ? videoStack.height : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getPaintedHeight())
                 color: "transparent"
 
                 Loader {
@@ -118,7 +118,7 @@ Column {
                     id: defaultThumbImg
                     x: (parent.width - width) / 2
                     width: tileMode ? parent.width : ((maxWidth > 0 && parent.width > maxWidth) ? maxWidth : parent.width)
-                    height: tileMode ? parent.width : (width / videoStack.getAspectRatio())
+                    height: tileMode ? videoStack.height : (width / videoStack.getAspectRatio())
                     color: guiSettings.avatarDefaultColor
                     visible: videoView.imageView.isNull() || thumbImg.getStatus() !== Image.Ready && filter.imageVisible()
 
@@ -587,16 +587,11 @@ Column {
 
         ThumbImageUnknownSizeView {
             maxWidth: imgPreview.width
-            maxHeight: videoStack.tileMode ? imgPreview.width : videoStack.maxHeight
+            maxHeight: videoStack.tileMode ? imgPreview.height : videoStack.maxHeight
             image: videoView.imageView
             indicateLoading: false
             tileMode: videoStack.tileMode
             noCrop: videoStack.isFullViewMode
-
-            Text {
-                text: "UNKNOWN"
-                color: "white"
-            }
 
             Loader {
                 anchors.right: parent.right
@@ -620,7 +615,7 @@ Column {
 
         ThumbImageKnownSizeView {
             maxWidth: imgPreview.width
-            maxHeight: videoStack.tileMode ? imgPreview.width : videoStack.maxHeight
+            maxHeight: videoStack.tileMode ? imgPreview.height : videoStack.maxHeight
             image: videoView.imageView
             indicateLoading: false
             tileMode: videoStack.tileMode
