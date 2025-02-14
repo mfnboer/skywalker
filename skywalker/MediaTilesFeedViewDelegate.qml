@@ -154,7 +154,7 @@ Rectangle {
         anchors.bottom: postColumn.bottom
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#00000000" }
-            GradientStop { position: 1.0; color: "#CF000000" }
+            GradientStop { position: 1.0; color: "#BF000000" }
         }
         visible: postColumn.visible
     }

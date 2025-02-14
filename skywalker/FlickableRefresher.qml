@@ -15,6 +15,7 @@ Item {
     property bool scrollTopTopButtonVisible: false
     property int scrollToTopButtonMargin: 0
     property bool enableScrollToTop: true
+    property bool ignoreFooter: false
 
     anchors.fill: parent
     //z: parent.z - 1
@@ -32,7 +33,7 @@ Item {
     SvgButton {
         id: scrollToTopButton
         x: 7
-        y: parent.height - height - ((list.footerItem && list.footerItem.visible) ? list.footerItem.height : scrollToTopButtonMargin) - 10
+        y: parent.height - height - ((!ignoreFooter && list.footerItem && list.footerItem.visible) ? list.footerItem.height : scrollToTopButtonMargin) - 10
         width: 50
         height: width
         iconColor: guiSettings.textColor

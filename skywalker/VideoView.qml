@@ -89,7 +89,7 @@ Column {
                     x: (parent.width - getWidth()) / 2
                     active: filter.imageVisible()
 
-                    sourceComponent: videoView.imageView.width > 0 && videoView.imageView.height > 0 ?
+                    sourceComponent: (videoView.imageView.width > 0 && videoView.imageView.height > 0) ?
                                          knownSizeComp : unknownSizeComp
 
                     function getWidth() {
@@ -202,6 +202,7 @@ Column {
             id: player
             width: parent.width
             height: parent.height
+            visible: !swipeMode || isFullViewMode
 
             MediaPlayer {
                 property bool videoFound: false
@@ -591,6 +592,11 @@ Column {
             indicateLoading: false
             tileMode: videoStack.tileMode
             noCrop: videoStack.isFullViewMode
+
+            Text {
+                text: "UNKNOWN"
+                color: "white"
+            }
 
             Loader {
                 anchors.right: parent.right

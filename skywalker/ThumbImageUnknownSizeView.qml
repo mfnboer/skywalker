@@ -17,7 +17,7 @@ ThumbImageView {
             const idealHeight = sourceSize.height * width / sourceSize.width
 
             if ((maxHeight > 0 && idealHeight > maxHeight) || tileMode) {
-                implicitHeight = maxHeight
+                height = maxHeight
 
                 if (!noCrop)
                     fillMode = Image.PreserveAspectCrop

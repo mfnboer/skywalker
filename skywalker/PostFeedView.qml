@@ -115,21 +115,6 @@ SkyListView {
         running: skywalker.getFeedInProgress
     }
 
-    Loader {
-        id: mediaTilesLoader
-        active: false
-
-        sourceComponent: MediaTilesFeedView {
-            clip: true
-            y: postFeedView.headerItem ? postFeedView.headerItem.height : 0
-            width: postFeedView.width
-            height: postFeedView.height - (postFeedView.headerItem ? postFeedView.headerItem.height : 0) - (postFeedView.footerItem && postFeedView.footerItem.visible ? postFeedView.footerItem.height : 0)
-            skywalker: postFeedView.skywalker
-            showAsHome: postFeedView.showAsHome
-            model: postFeedView.model
-        }
-    }
-
     Component {
         id: extraFooterComponent
 
@@ -154,6 +139,21 @@ SkyListView {
         anchors.top: emptyListIndication.bottom
         active: Boolean(model) && model.isFilterModel() && count === 0 && !model.endOfFeed
         sourceComponent: extraFooterComponent
+    }
+
+    Loader {
+        id: mediaTilesLoader
+        active: false
+
+        sourceComponent: MediaTilesFeedView {
+            clip: true
+            y: postFeedView.headerItem ? postFeedView.headerItem.height : 0
+            width: postFeedView.width
+            height: postFeedView.height - (postFeedView.headerItem ? postFeedView.headerItem.height : 0) - (postFeedView.footerItem && postFeedView.footerItem.visible ? postFeedView.footerItem.height : 0)
+            skywalker: postFeedView.skywalker
+            showAsHome: postFeedView.showAsHome
+            model: postFeedView.model
+        }
     }
 
     Rectangle {

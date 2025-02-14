@@ -8,6 +8,7 @@ GridView {
     readonly property int columns: 3
     readonly property int spacing: 2
     property bool showAsHome: false
+    readonly property bool feedLoading: model.feedType === QEnums.FEED_AUTHOR ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
 
     id: postFeedView
     width: parent.width
@@ -25,7 +26,7 @@ GridView {
         height: postFeedView.cellHeight
 
         onActivateSwipe: {
-            root.viewMediaFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+            root.viewMediaFeed(model, index, (newIndex) => { postFeedView.goToIndex(newIndex) })
         }
     }
 
@@ -42,12 +43,26 @@ GridView {
     }
 
     FlickableRefresher {
-        inProgress: model.feedType === QEnums.FEED_AUTHOR ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
+        inProgress: feedLoading
         verticalOvershoot: postFeedView.verticalOvershoot
         topOvershootFun: () => model.getFeed(skywalker)
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         topText: qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
+        ignoreFooter: true
+    }
+
+    EmptyListIndication {
+        id: emptyListIndication
+        svg: SvgOutline.noPosts
+        text: qsTr("Feed is empty")
+        list: postFeedView
+    }
+
+    BusyIndicator {
+        id: busyIndicator
+        anchors.centerIn: parent
+        running: feedLoading && count > 0
     }
 
     Rectangle {
@@ -62,17 +77,34 @@ GridView {
         Rectangle {
             z: guiSettings.footerZLevel
             width: postFeedView.width
-            height: 150
+            height: 150 + footerMargin.height
             color: "transparent"
 
-            AccessibleText {
+            Rectangle {
+                id: footerMargin
                 width: parent.width
+                height: emptyListIndication.visible ? emptyListIndication.height : 0
+                color: "transparent"
+            }
+
+            AccessibleText {
+                id: loadMoreText
+                width: parent.width
+                anchors.top: footerMargin.bottom
                 horizontalAlignment: Text.AlignHCenter
                 padding: 10
                 textFormat: Text.RichText
                 wrapMode: Text.Wrap
                 text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColorDarkMode}; text-decoration: none">Load more</a>`)
                 onLinkActivated: model.getFeedNextPage(skywalker)
+            }
+
+            BusyIndicator {
+                anchors.top: loadMoreText.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 30
+                height: width
+                running: feedLoading
             }
         }
     }
@@ -85,7 +117,20 @@ GridView {
             width: postFeedView.width
             fillMode: Image.PreserveAspectFit
             source: "/images/thats_all_folks.png"
+            visible: postFeedView.count > 0
         }
+    }
+
+    function goToIndex(index) {
+        const topLeft = getTopLeftVisibleIndex()
+        const bottomRight = getBottomRightVisibleIndex()
+
+        if (index < topLeft || index > bottomRight)
+            positionViewAtIndex(index, GridView.Beginning)
+    }
+
+    function getTopLeftVisibleIndex() {
+        return indexAt(1, contentY)
     }
 
     function getTopRightVisibleIndex() {
