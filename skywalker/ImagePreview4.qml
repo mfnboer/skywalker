@@ -29,6 +29,8 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(0)
+            sourceSize.width: width
+            sourceSize.height: height
         }
 
         ThumbImageView {
@@ -38,6 +40,8 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(1)
+            sourceSize.width: width
+            sourceSize.height: height
 
             Loader {
                 anchors.right: parent.right
@@ -62,6 +66,8 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(2)
+            sourceSize.width: width
+            sourceSize.height: height
         }
 
         ThumbImageView {
@@ -71,6 +77,8 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(3)
+            sourceSize.width: width
+            sourceSize.height: height
         }
     }
     MouseArea {

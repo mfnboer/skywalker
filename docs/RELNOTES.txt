@@ -1,6 +1,8 @@
 next
 ====
+* Media gallery view
 * Keep screen on (no sleeping) while a video is playing
+* Performance improvements
 
 3.14.1
 ======

@@ -10,6 +10,7 @@ ThumbImageView {
     width: tileMode ? maxWidth : Math.min(implicitWidth, maxWidth)
     fillMode: Image.PreserveAspectFit
     imageView: image
+    sourceSize.width: width
 
     onStatusChanged: {
         if (status === Image.Ready) {
