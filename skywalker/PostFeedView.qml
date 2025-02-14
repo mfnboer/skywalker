@@ -26,11 +26,12 @@ SkyListView {
         feedAvatar: getFeedAvatar()
         defaultSvg: getFeedDefaultAvatar()
         contentMode: initialContentMode
+        underlyingContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
         showAsHome: postFeedView.showAsHome
         showLanguageFilter: underlyingModel ? underlyingModel.languageFilterConfigured : false
         filteredLanguages: underlyingModel ? underlyingModel.filteredLanguages : []
         showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
-        showViewOptions: underlyingModel ? underlyingModel.contentMode === QEnums.CONTENT_MODE_UNSPECIFIED : false
+        showViewOptions: true
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeed()
@@ -243,6 +244,7 @@ SkyListView {
             model = model.getUnderlyingModel()
             break
         case QEnums.CONTENT_MODE_VIDEO:
+            case QEnums.CONTENT_MODE_VIDEO_TILES:
             model = model.getUnderlyingModel().addVideoFilter()
             break
         case QEnums.CONTENT_MODE_MEDIA:
@@ -262,7 +264,7 @@ SkyListView {
             userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
         }
 
-        mediaTilesLoader.active = (contentMode === QEnums.CONTENT_MODE_MEDIA_TILES)
+        mediaTilesLoader.active = [QEnums.CONTENT_MODE_MEDIA_TILES, QEnums.CONTENT_MODE_VIDEO_TILES].includes(contentMode)
 
         if (lastVisibleIndex > -1) {
             const newIndex = model.findTimestamp(timestamp, cid)

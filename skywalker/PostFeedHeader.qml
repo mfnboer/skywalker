@@ -9,6 +9,7 @@ Rectangle {
     property SvgImage defaultSvg: SvgFilled.feed
     property string feedAvatar
     property int contentMode: QEnums.CONTENT_MODE_UNSPECIFIED
+    property int underlyingContentMode: QEnums.CONTENT_MODE_UNSPECIFIED
     property bool showAsHome: false
     property bool isHomeFeed: false
     property bool showLanguageFilter: false
@@ -192,6 +193,7 @@ Rectangle {
 
                 AccessibleMenuItem {
                     text: qsTr("Post view")
+                    visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
                     onTriggered: {
                         contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
                         viewChanged(contentMode)
@@ -200,6 +202,7 @@ Rectangle {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Media view")
+                    visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
                     onTriggered: {
                         contentMode = QEnums.CONTENT_MODE_MEDIA
                         viewChanged(contentMode)
@@ -208,6 +211,7 @@ Rectangle {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Media gallery")
+                    visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
                     onTriggered: {
                         contentMode = QEnums.CONTENT_MODE_MEDIA_TILES
                         viewChanged(contentMode)
@@ -221,6 +225,14 @@ Rectangle {
                         viewChanged(contentMode)
                     }
                     MenuItemSvg { svg: SvgOutline.film }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Video gallery")
+                    onTriggered: {
+                        contentMode = QEnums.CONTENT_MODE_VIDEO_TILES
+                        viewChanged(contentMode)
+                    }
+                    MenuItemSvg { svg: SvgOutline.videoGallery }
                 }
             }
         }

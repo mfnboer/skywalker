@@ -62,7 +62,7 @@ GridView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: feedLoading && count > 0
+        running: feedLoading && count > 0 && getBottomLeftVisibleIndex() >= 0
     }
 
     Rectangle {
@@ -135,6 +135,10 @@ GridView {
 
     function getTopRightVisibleIndex() {
         return indexAt(width - 1, contentY)
+    }
+
+    function getBottomLeftVisibleIndex() {
+        return indexAt(1, contentY + height - 1)
     }
 
     function getBottomRightVisibleIndex() {

@@ -1617,7 +1617,7 @@ ApplicationWindow {
         else {
             const modelId = skywalker.createPostFeedModel(generatorView)
             skywalker.getFeed(modelId)
-            let component = Qt.createComponent("PostFeedView.qml")
+            let component = guiSettings.createComponent("PostFeedView.qml")
             view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
             feedViews.set(generatorView.uri, view)
         }

@@ -15,7 +15,8 @@ Avatar {
         height: width
         color: guiSettings.videoIconColor
         outlineColor: badgeOutlineColor
-        svg: contentMode === QEnums.CONTENT_MODE_VIDEO ? SvgFilled.film : SvgFilled.image
-        visible: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA, QEnums.CONTENT_MODE_MEDIA_TILES].includes(contentMode)
+        svg: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_VIDEO_TILES].includes(contentMode) ? SvgFilled.film : SvgFilled.image
+        visible: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_VIDEO_TILES,
+                  QEnums.CONTENT_MODE_MEDIA, QEnums.CONTENT_MODE_MEDIA_TILES].includes(contentMode)
     }
 }

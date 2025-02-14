@@ -305,6 +305,7 @@ public:
         // Not defined by ATProto
         CONTENT_MODE_MEDIA = 100,
         CONTENT_MODE_MEDIA_TILES = 101,
+        CONTENT_MODE_VIDEO_TILES = 102,
 
         CONTENT_MODE_LAST = CONTENT_MODE_MEDIA_TILES
     };
