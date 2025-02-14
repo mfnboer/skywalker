@@ -96,6 +96,7 @@ Rectangle {
                 videoView: postVideo
                 contentVisibility: postContentVisibility
                 contentWarning: postContentWarning
+                autoLoad: false // avoid loading tens of videos
                 autoPlay: false
                 swipeMode: true
                 tileMode: true
@@ -114,7 +115,7 @@ Rectangle {
                 width: mediaRect.width
                 height: mediaRect.height
                 fillMode: Image.PreserveAspectCrop
-                source: filter.getImage(0).fullSizeUrl
+                source: filter.getImage(0).thumbUrl
 
                 Loader {
                     anchors.right: parent.right
