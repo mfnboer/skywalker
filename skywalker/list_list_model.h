@@ -32,6 +32,7 @@ public:
         ListPinned,
         ListHideFromTimeline,
         ListSync,
+        ListHideReplies,
         MemberCheck,
         MemberListItemUri
     };
@@ -75,6 +76,7 @@ protected:
     virtual void mutedChanged() override;
     virtual void hideFromTimelineChanged() override;
     virtual void syncListChanged() override;
+    virtual void hideRepliesChanged() override;
     virtual void memberListItemUriChanged() override;
 
     // LocalProfileChanges

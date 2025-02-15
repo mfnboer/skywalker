@@ -49,7 +49,7 @@ public:
     QEnums::FeedType getFeedType() const;
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
     bool isHomeFeed() const { return mIsHomeFeed; }
-    const QString& getPreferencesFeedKey() const;
+    QString getPreferencesFeedKey() const;
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }

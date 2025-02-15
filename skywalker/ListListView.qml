@@ -66,6 +66,7 @@ ListView {
         onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
         onHideList: (list) => graphUtils.hideList(list.uri)
         onUnhideList: (list) => graphUtils.unhideList(list.uri)
+        onHideReplies: (list, hide) => graphUtils.hideReplies(list.uri, hide)
         onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
     }
 

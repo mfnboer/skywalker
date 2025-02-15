@@ -12,6 +12,7 @@ SkyPage {
     property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
     property bool listHideFromTimeline: skywalker.getTimelineHide().hasList(list.uri)
     property bool listSync: skywalker.getUserSettings().mustSyncFeed(skywalker.getUserDid(), list.uri)
+    property bool listHideReplies: skywalker.getUserSettings().getFeedHideReplies(skywalker.getUserDid(), list.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
 
@@ -23,8 +24,13 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     onIsPinnedListChanged: {
-        if (!isPinnedList && listSync)
-            syncList(false)
+        if (!isPinnedList) {
+            if (listSync)
+                syncList(false)
+
+            if (listHideReplies)
+                hideReplies(false)
+        }
     }
 
     header: SimpleHeader {
@@ -133,6 +139,7 @@ SkyPage {
                 muted: listMuted
                 blockedUri: listBlockedUri
                 hideFromTimeline: listHideFromTimeline
+                hideReplies: listHideReplies
                 sync: listSync
             }
 
@@ -315,7 +322,22 @@ SkyPage {
 
             MenuItemSvg { svg: SvgOutline.report }
         }
+        AccessibleMenuItem {
+            text: qsTr("Show replies")
+            checkable: true
+            checked: !listHideReplies
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
+            onToggled: {
+                graphUtils.hideReplies(list.uri, !checked)
+                listHideReplies = !checked
+            }
 
+            MouseArea {
+                anchors.fill: parent
+                enabled: !isPinnedList
+                onClicked: skywalker.showStatusMessage(qsTr("Show replies can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+            }
+        }
         AccessibleMenuItem {
             text: qsTr("Rewind on startup")
             checkable: true
@@ -408,6 +430,11 @@ SkyPage {
     function syncList(sync) {
         graphUtils.syncList(list.uri, sync)
         listSync = sync
+    }
+
+    function hideReplies(hide) {
+        graphUtils.hideReplies(list.uri, hide)
+        listHideReplies = hide
     }
 
     function isOwnList() {

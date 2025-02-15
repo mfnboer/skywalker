@@ -9,7 +9,7 @@ GridView {
     readonly property int spacing: 2
     property bool showAsHome: false
     property var enclosingView // used on AuthorView
-    readonly property bool feedLoading: model.feedType === QEnums.FEED_AUTHOR ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
+    readonly property bool feedLoading: (model && model.feedType === QEnums.FEED_AUTHOR) ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
 
     id: postFeedView
     width: parent.width
@@ -20,8 +20,6 @@ GridView {
     pixelAligned: guiSettings.flickPixelAligned
     interactive: enclosingView ? !enclosingView.interactive : true
     ScrollIndicator.vertical: ScrollIndicator {}
-
-    Accessible.name: postFeedView.model.feedName
 
     onVerticalOvershootChanged: {
         if (enclosingView && verticalOvershoot < 0)
@@ -37,7 +35,7 @@ GridView {
         }
     }
 
-    footer: model.endOfFeed ? endOfFeedComponent : loadMoreComponent
+    footer: (model && model.endOfFeed) ? endOfFeedComponent : loadMoreComponent
 
     onMovementEnded: {
         const lastIndex = getBottomRightVisibleIndex()

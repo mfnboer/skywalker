@@ -285,6 +285,9 @@ Item {
     }
 
     function getFilteredPostsFooterText(model) {
+        if (!model)
+            return ""
+
         if (!model.isFilterModel())
             return ""
 

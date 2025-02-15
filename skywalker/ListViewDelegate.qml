@@ -11,6 +11,7 @@ Rectangle {
     required property bool listSaved
     required property bool listPinned
     required property bool listHideFromTimeline
+    required property bool listHideReplies
     required property bool listSync
     property bool showList: listVisible()
     property bool allowEdit: true
@@ -29,11 +30,17 @@ Rectangle {
     signal unmuteList(listview list)
     signal hideList(listview list)
     signal unhideList(listview list)
+    signal hideReplies(listview list, bool hide)
     signal syncList(listview list, bool sync)
 
     onListPinnedChanged: {
-        if (!listPinned && listSync)
-            syncList(list, false)
+        if (!listPinned) {
+            if (listSync)
+                syncList(list, false)
+
+            if (listHideReplies)
+                hideReplies(list, false)
+        }
     }
 
     GridLayout {
@@ -131,6 +138,7 @@ Rectangle {
                 muted: listMuted
                 blockedUri: listBlockedUri
                 hideFromTimeline: listHideFromTimeline
+                hideReplies: listHideReplies
                 sync: listSync
             }
         }
@@ -341,6 +349,20 @@ Rectangle {
             onTriggered: root.reportList(list)
 
             MenuItemSvg { svg: SvgOutline.report }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Show replies")
+            checkable: true
+            checked: !listHideReplies
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
+            onToggled: hideReplies(list, !checked)
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !listPinned
+                onClicked: skywalker.showStatusMessage(qsTr("Show replies can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+            }
         }
 
         AccessibleMenuItem {

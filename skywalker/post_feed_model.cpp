@@ -46,10 +46,10 @@ QEnums::FeedType PostFeedModel::getFeedType() const
     return !mListView.isNull() ? QEnums::FEED_LIST : QEnums::FEED_GENERATOR;
 }
 
-const QString& PostFeedModel::getPreferencesFeedKey() const
+QString PostFeedModel::getPreferencesFeedKey() const
 {
     static const QString HOME_KEY = HOME_FEED;
-    return mIsHomeFeed ? HOME_KEY : mFeedName;
+    return mIsHomeFeed ? HOME_KEY : getFeedUri();
 }
 
 bool PostFeedModel::isLanguageFilterConfigured() const
@@ -836,6 +836,9 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideReplies)
+        return false;
+
+    if (mUserSettings.getFeedHideReplies(mUserDid, getPreferencesFeedKey()))
         return false;
 
     // Always show the replies of the user.

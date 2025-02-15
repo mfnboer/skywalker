@@ -402,9 +402,9 @@ QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QStr
     return QEnums::ContentMode(mode);
 }
 
-QStringList UserSettings::getFeedViewModeUris(const QString& did) const
+QStringList UserSettings::getFeedViewUris(const QString& did, const QString& feedKey) const
 {
-    const_cast<QSettings&>(mSettings).beginGroup(key(did, "feedViewMode"));
+    const_cast<QSettings&>(mSettings).beginGroup(key(did, feedKey));
     QStringList uris = mSettings.allKeys();
     const_cast<QSettings&>(mSettings).endGroup();
 
@@ -412,6 +412,29 @@ QStringList UserSettings::getFeedViewModeUris(const QString& did) const
         keyToUri(uri);
 
     return uris;
+}
+
+QStringList UserSettings::getFeedViewModeUris(const QString& did) const
+{
+    return getFeedViewUris(did, "feedViewMode");
+}
+
+Q_INVOKABLE void UserSettings::setFeedHideReplies(const QString& did, const QString& feedUri, bool hide)
+{
+    if (hide)
+        mSettings.setValue(uriKey(did, "feedhideReplies", feedUri), hide);
+    else
+        mSettings.remove(uriKey(did, "feedhideReplies", feedUri));
+}
+
+Q_INVOKABLE bool UserSettings::getFeedHideReplies(const QString& did, const QString& feedUri) const
+{
+    return mSettings.value(uriKey(did, "feedhideReplies", feedUri), false).toBool();
+}
+
+QStringList UserSettings::getFeedHideRepliesUris(const QString& did) const
+{
+    return getFeedViewUris(did, "feedhideReplies");
 }
 
 void UserSettings::updateLastSignInTimestamp(const QString& did)

@@ -32,6 +32,7 @@ public:
     void updateMuted(const QString& uri, bool muted);
     void hideFromTimeline(const QString& uri, bool hide);
     void syncList(const QString& uri, bool sync);
+    void hideReplies(const QString& uri, bool hide);
     void updateMemberListItemUri(const QString& uri, const QString& listItemUri);
 
 protected:
@@ -39,6 +40,7 @@ protected:
     virtual void mutedChanged() = 0;
     virtual void hideFromTimelineChanged() = 0;
     virtual void syncListChanged() = 0;
+    virtual void hideRepliesChanged() = 0;
     virtual void memberListItemUriChanged() = 0;
 
 private:

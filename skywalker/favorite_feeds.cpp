@@ -668,7 +668,7 @@ void FavoriteFeeds::cleanupSettings()
     auto& settings = *mSkywalker->getUserSettings();
     const QString userDid = mSkywalker->getUserDid();
 
-    qDebug() << "Cleanup sync feed settings";
+    qDebug() << "Cleanup feed sync settings";
     const auto syncFeeds = settings.getSyncFeeds(userDid);
     removeNonPinnedFeeds(syncFeeds,
         [&settings, &userDid](const QString& uri){ settings.removeSyncFeed(userDid, uri); });
@@ -676,6 +676,10 @@ void FavoriteFeeds::cleanupSettings()
     qDebug() << "Cleanup feed view mode settings";
     removeNonPinnedFeeds(settings.getFeedViewModeUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedViewMode(userDid, uri, QEnums::CONTENT_MODE_UNSPECIFIED); });
+
+    qDebug() << "Cleanup feed hide replies settings";
+    removeNonPinnedFeeds(settings.getFeedHideRepliesUris(userDid),
+        [&settings, &userDid](const QString& uri){ settings.setFeedHideReplies(userDid, uri, false); });
 }
 
 template<typename Container>

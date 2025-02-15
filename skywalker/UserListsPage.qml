@@ -80,6 +80,7 @@ SkyPage {
             delegate: ListViewDelegate {
                 width: page.width
 
+                onHideReplies: (list, hide) => graphUtils.hideReplies(list.uri, hide)
                 onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
             }
 

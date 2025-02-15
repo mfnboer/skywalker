@@ -38,6 +38,11 @@ void LocalListModelChanges::syncList(const QString&, bool)
     syncListChanged();
 }
 
+void LocalListModelChanges::hideReplies(const QString&, bool)
+{
+    hideRepliesChanged();
+}
+
 void LocalListModelChanges::updateMemberListItemUri(const QString& uri, const QString& listItemUri)
 {
     mChanges[uri].mMemberListItemUri = listItemUri;
