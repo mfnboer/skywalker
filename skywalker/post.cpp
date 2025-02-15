@@ -559,10 +559,7 @@ RecordView::SharedPtr Post::getRecordViewFromRecordOrRecordWithMedia() const
     auto recordView = getRecordView();
 
     if (recordView)
-    {
-        auto* view = recordView.release();
-        return std::shared_ptr<RecordView>(view);
-    }
+        return recordView;
 
     auto recordWithMediaView = getRecordWithMediaView();
 
