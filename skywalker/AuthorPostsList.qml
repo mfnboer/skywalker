@@ -12,8 +12,10 @@ SkyListView {
     required property var getEmptyListIndicationText
     required property var visibilityShowProfileLink
     required property var disableWarning
+    property var skywalker: root.getSkywalker()
     property int modelId: -1
     property int feedFilter: QEnums.AUTHOR_FEED_FILTER_POSTS
+    property bool galleryMode: false
 
     id: authorPostsList
     width: parent.width
@@ -124,6 +126,19 @@ SkyListView {
         }
     }
 
+    Loader {
+        id: mediaTilesLoader
+        active: galleryMode && count > 0
+
+        sourceComponent: MediaTilesFeedView {
+            clip: true
+            width: authorPostsList.width
+            height: authorPostsList.height
+            skywalker: authorPostsList.skywalker
+            model: authorPostsList.model
+            enclosingView: authorPostsList.enclosingView
+        }
+    }
 
     function feedOk() {
         retryGetFeedTimer.resetRetryAttempts()

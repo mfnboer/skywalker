@@ -1,6 +1,6 @@
 next
 ====
-* Media gallery view
+* Media and video gallery views
 * Keep screen on (no sleeping) while a video is playing
 * Performance improvements
 

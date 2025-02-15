@@ -289,9 +289,9 @@ Item {
             return ""
 
         if (model.numPostsChecked === 0)
-            return qsTr(`No more posts in feed till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+            return qsTr(`No more '${model.feedName}' posts in feed till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
 
-        return qsTr(`No more posts in ${model.numPostsChecked} feed posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+        return qsTr(`No more '${model.feedName}' posts in ${model.numPostsChecked} feed posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
     }
 
     function getContentModeSvg(contentMode) {

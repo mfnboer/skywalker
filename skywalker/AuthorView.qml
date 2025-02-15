@@ -560,7 +560,15 @@ SkyPage {
                     width: implicitWidth
                 }
                 AccessibleTabButton {
+                    text: qsTr("Media gallery")
+                    width: implicitWidth
+                }
+                AccessibleTabButton {
                     text: qsTr("Video")
+                    width: implicitWidth
+                }
+                AccessibleTabButton {
+                    text: qsTr("Video gallery")
                     width: implicitWidth
                 }
                 AccessibleTabButton {
@@ -752,6 +760,33 @@ SkyPage {
                 }
             }
 
+            // Media gallery
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: true
+                asynchronous: true
+
+                StackLayout.onIsCurrentItemChanged: {
+                    if (item)
+                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                }
+
+                sourceComponent: AuthorPostsList {
+                    id: authorMediaGallery
+                    author: page.author
+                    enclosingView: authorFeedView
+                    getFeed: (id) => page.getFeed(id)
+                    getFeedNextPage: (id) => page.getFeedNextPage(id)
+                    getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
+                    getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                    disableWarning: () => page.disableWarning()
+                    feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
+                    galleryMode: true
+                }
+            }
+
             // Video
             Loader {
                 Layout.preferredWidth: parent.width
@@ -775,6 +810,33 @@ SkyPage {
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_VIDEO
+                }
+            }
+
+            // Video gallery
+            Loader {
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                active: true
+                asynchronous: true
+
+                StackLayout.onIsCurrentItemChanged: {
+                    if (item)
+                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                }
+
+                sourceComponent: AuthorPostsList {
+                    id: authorVideoGallery
+                    author: page.author
+                    enclosingView: authorFeedView
+                    getFeed: (id) => page.getFeed(id)
+                    getFeedNextPage: (id) => page.getFeedNextPage(id)
+                    getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
+                    getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                    disableWarning: () => page.disableWarning()
+                    feedFilter: QEnums.AUTHOR_FEED_FILTER_VIDEO
+                    galleryMode: true
                 }
             }
 
