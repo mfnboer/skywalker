@@ -31,6 +31,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoAutoLoad READ getVideoAutoLoad WRITE setVideoAutoLoad NOTIFY videoAutoLoadChanged FINAL)
+    Q_PROPERTY(bool videoLoopPlay READ getVideoLoopPlay WRITE setVideoLoopPlay NOTIFY videoLoopPlayChanged FINAL)
     Q_PROPERTY(QEnums::VideoQuality videoQuality READ getVideoQuality WRITE setVideoQuality NOTIFY videoQualityChanged FINAL)
     Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
     Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
@@ -179,6 +180,9 @@ public:
     void setVideoSound(bool on);
     bool getVideoSound() const;
 
+    void setVideoLoopPlay(bool loop);
+    bool getVideoLoopPlay() const;
+
     void setGiantEmojis(bool giantEmojis);
     bool getGiantEmojis() const;
 
@@ -309,6 +313,7 @@ signals:
     void videoSoundChanged();
     void videoAutoPlayChanged();
     void videoAutoLoadChanged();
+    void videoLoopPlayChanged();
     void videoQualityChanged();
     void floatingNavigationButtonsChanged();
     void scriptRecognitionChanged();

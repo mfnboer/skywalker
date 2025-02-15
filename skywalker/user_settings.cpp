@@ -666,6 +666,20 @@ bool UserSettings::getVideoSound() const
     return mSettings.value("videoSound", true).toBool();
 }
 
+void UserSettings::setVideoLoopPlay(bool loop)
+{
+    if (loop == getVideoLoopPlay())
+        return;
+
+    mSettings.setValue("videoLoopPlay", loop);
+    emit videoLoopPlayChanged();
+}
+
+bool UserSettings::getVideoLoopPlay() const
+{
+    return mSettings.value("videoLoopPlay", true).toBool();
+}
+
 void UserSettings::setGiantEmojis(bool giantEmojis)
 {
     if (giantEmojis == getGiantEmojis())

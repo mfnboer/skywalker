@@ -271,6 +271,12 @@ ColumnLayout {
         text: qsTr("With auto loading, the video is automatically loaded (more data usage) so it starts faster when you press play. Otherwise it will load when you press play.")
     }
 
+    AccessibleSwitch {
+        text: qsTr("Video loop play")
+        checked: userSettings.videoLoopPlay
+        onCheckedChanged: userSettings.videoLoopPlay = checked
+    }
+
     RowLayout {
         Layout.fillWidth: true
         spacing: -1

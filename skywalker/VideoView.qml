@@ -212,7 +212,7 @@ Column {
 
                 id: videoPlayer
                 source: transcodedSource
-                loops: MediaPlayer.Infinite
+                loops: userSettings.videoLoopPlay ? MediaPlayer.Infinite : 1
                 videoOutput: videoOutput
                 audioOutput: audioOutput
 
