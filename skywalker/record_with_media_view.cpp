@@ -24,6 +24,16 @@ RecordView& RecordWithMediaView::getRecord() const
     return *mRecordView;
 }
 
+RecordView::SharedPtr RecordWithMediaView::getRecordPtr() const
+{
+    if (mRecordView)
+        return mRecordView;
+
+    getRecord();
+
+    return mRecordView;
+}
+
 void RecordWithMediaView::setRecord(const RecordView::SharedPtr& record)
 {
     mRecordView = record;

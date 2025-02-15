@@ -22,6 +22,7 @@ public:
     RecordWithMediaView(const ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr& view);
 
     RecordView& getRecord() const;
+    RecordView::SharedPtr getRecordPtr() const;
     void setRecord(const RecordView::SharedPtr& record);
     QList<ImageView> getImages() const;
     QVariant getVideo() const;

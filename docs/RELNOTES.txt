@@ -2,6 +2,7 @@ next
 ====
 * Media and video gallery views
 * Keep screen on (no sleeping) while a video is playing
+* Hide post if it quotes another post that has muted words
 * Performance improvements
 
 3.14.1

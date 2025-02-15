@@ -78,6 +78,7 @@ public:
     ExternalView::Ptr getExternalView() const;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
+    RecordView::SharedPtr getRecordViewFromRecordOrRecordWithMedia() const;
     bool isQuotePost() const;
 
     int getReplyCount() const;

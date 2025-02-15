@@ -554,6 +554,24 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
     return std::make_unique<RecordWithMediaView>(recordView);
 }
 
+RecordView::SharedPtr Post::getRecordViewFromRecordOrRecordWithMedia() const
+{
+    auto recordView = getRecordView();
+
+    if (recordView)
+    {
+        auto* view = recordView.release();
+        return std::shared_ptr<RecordView>(view);
+    }
+
+    auto recordWithMediaView = getRecordWithMediaView();
+
+    if (!recordWithMediaView)
+        return {};
+
+    return recordWithMediaView->getRecordPtr();
+}
+
 bool Post::isQuotePost() const
 {
     if (!mPost)

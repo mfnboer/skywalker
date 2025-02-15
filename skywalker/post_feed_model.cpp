@@ -907,27 +907,9 @@ bool PostFeedModel::mustShowQuotePost(const Post& post) const
 
     if (!mUserSettings.getShowQuotesWithBlockedPost(mUserDid))
     {
-        const RecordView* record;
-        const auto recordView = post.getRecordView();
+        const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
 
-        if (recordView)
-        {
-            record = recordView.get();
-        }
-        else
-        {
-            const auto recordWithMediaView = post.getRecordWithMediaView();
-
-            if (!recordWithMediaView)
-            {
-                qWarning() << "Cannot get record from quote post";
-                return true;
-            }
-
-            record = &recordWithMediaView->getRecord();
-        }
-
-        if (record->getBlocked())
+        if (record && record->getBlocked())
             return false;
     }
 
