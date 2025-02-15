@@ -391,6 +391,7 @@ ApplicationWindow {
                     skywalker.favoriteFeeds.isPinnedFeed(feedUri) ||
                     skywalker.favoriteFeeds.isPinnedSearch(feedUri)) {
                 userSettings.setLastViewedFeed(userDid, feedUri)
+                console.debug("Saved last viewed feed:", feedUri)
             }
         }
 
@@ -1492,6 +1493,7 @@ ApplicationWindow {
 
     function viewTimeline() {
         stackLayout.currentIndex = stackLayout.timelineIndex
+        skywalker.saveLastViewedFeed("home")
     }
 
     function viewNotifications() {
@@ -1593,7 +1595,6 @@ ApplicationWindow {
     function viewHomeFeed() {
         viewTimeline()
         unwindStack()
-        skywalker.saveLastViewedFeed("home")
     }
 
     function viewFeed(generatorView) {

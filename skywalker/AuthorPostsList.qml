@@ -50,7 +50,7 @@ SkyListView {
             if (swipeMode)
                 root.viewMediaFeed(model, index, (newIndex) => { authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning) })
             else
-                console.warn("This is not a video feed")
+                console.warn("This is not a media feed")
         }
     }
 
