@@ -286,7 +286,7 @@ Rectangle {
         x: leftMarginWidth + (mediaRect.width - width) / 2
         anchors.bottom: mediaRect.bottom
         anchors.bottomMargin: mediaRect.bottomMargin + videoPage.footerHeight
-        width: mediaRect.mediaWidth - 20
+        width: Math.max(mediaRect.mediaWidth - 20, 200)
         visible: mediaRect.showDetails
 
         Rectangle {

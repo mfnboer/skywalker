@@ -1,4 +1,4 @@
-next
+3.15
 ====
 * Media and video gallery views
 * Keep screen on (no sleeping) while a video is playing

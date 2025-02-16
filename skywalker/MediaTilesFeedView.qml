@@ -11,7 +11,7 @@ GridView {
     property var enclosingView // used on AuthorView
     readonly property bool feedLoading: (model && model.feedType === QEnums.FEED_AUTHOR) ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
 
-    id: postFeedView
+    id: mediaTilesView
     width: parent.width
     cellWidth: width / columns
     cellHeight: cellWidth
@@ -27,11 +27,17 @@ GridView {
     }
 
     delegate: MediaTilesFeedViewDelegate {
-        width: postFeedView.cellWidth
-        height: postFeedView.cellHeight
+        width: mediaTilesView.cellWidth
+        height: mediaTilesView.cellHeight
 
         onActivateSwipe: {
-            root.viewMediaFeed(model, index, (newIndex) => { postFeedView.goToIndex(newIndex) })
+            let item = mediaTilesView
+            root.viewMediaFeed(model, index, (newIndex) => {
+                if (item)
+                    item.goToIndex(newIndex)
+                else
+                    console.warn("NO MEDIA TILES VIEW")
+            })
         }
     }
 
@@ -39,17 +45,17 @@ GridView {
 
     onMovementEnded: {
         const lastIndex = getBottomRightVisibleIndex()
-        console.debug("Move:", postFeedView.model.feedName, "index:", lastIndex, "count:", count)
+        console.debug("Move:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
 
         if (lastIndex >= 0 && count - lastIndex < columns * 6) {
-            console.debug("Prefetch next page:", postFeedView.model.feedName, "index:", lastIndex, "count:", count)
+            console.debug("Prefetch next page:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
             model.getFeedNextPage(skywalker)
         }
     }
 
     FlickableRefresher {
         inProgress: feedLoading
-        verticalOvershoot: postFeedView.verticalOvershoot
+        verticalOvershoot: mediaTilesView.verticalOvershoot
         topOvershootFun: () => model.getFeed(skywalker)
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         topText: qsTr("Pull down to refresh feed")
@@ -61,7 +67,7 @@ GridView {
         id: emptyListIndication
         svg: SvgOutline.noPosts
         text: qsTr("Feed is empty")
-        list: postFeedView
+        list: mediaTilesView
     }
 
     BusyIndicator {
@@ -81,7 +87,7 @@ GridView {
 
         Rectangle {
             z: guiSettings.footerZLevel
-            width: postFeedView.width
+            width: mediaTilesView.width
             height: 150 + footerMargin.height
             color: "transparent"
 
@@ -119,10 +125,10 @@ GridView {
 
         Image {
             z: guiSettings.footerZLevel
-            width: postFeedView.width
+            width: mediaTilesView.width
             fillMode: Image.PreserveAspectFit
             source: "/images/thats_all_folks.png"
-            visible: postFeedView.count > 0
+            visible: mediaTilesView.count > 0
         }
     }
 
