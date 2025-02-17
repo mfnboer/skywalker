@@ -117,6 +117,7 @@ Text {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             leftPadding: theText.leftPadding
+            bottomPadding: 10
             background: Rectangle { color: ellipsisBackgroundColor }
             text: qsTr(`<a href="show"style="color: ${guiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
 
