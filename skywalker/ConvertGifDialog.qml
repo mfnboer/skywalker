@@ -15,6 +15,7 @@ Dialog {
         Button {
             flat: true
             text: qsTr("Image")
+            display: AbstractButton.TextOnly
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
 
             // HACK
@@ -27,6 +28,7 @@ Dialog {
             id: videoButton
             flat: true
             text: qsTr("Video")
+            display: AbstractButton.TextOnly
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
 
             onPressed: clicked()

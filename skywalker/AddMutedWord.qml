@@ -69,6 +69,7 @@ Dialog {
         RadioButton {
             id: foreverButton
             text: qsTr("Forever")
+            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
@@ -77,6 +78,7 @@ Dialog {
         }
         RadioButton {
             text: qsTr("24 hours")
+            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
@@ -85,6 +87,7 @@ Dialog {
         }
         RadioButton {
             text: qsTr("7 days")
+            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
@@ -93,6 +96,7 @@ Dialog {
         }
         RadioButton {
             text: qsTr("30 days")
+            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
@@ -106,6 +110,7 @@ Dialog {
             RadioButton {
                 id: untilButton
                 text: qsTr("Until:")
+                display: AbstractButton.TextOnly
                 ButtonGroup.group: durationGroup
             }
             SkyTextInput {

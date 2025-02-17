@@ -55,7 +55,6 @@ Item {
     MouseArea {
         anchors.fill: parent
         z: -1
-        cursorShape: Qt.PointingHandCursor
         onClicked: openExternalLink()
         enabled: isLinkEnabled()
     }

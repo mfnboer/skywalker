@@ -54,6 +54,7 @@ SkyPage {
             RoundButton {
                 id: backgroundButton
                 Material.background: anniversaryCard.backgroundColor
+                display: AbstractButton.TextOnly
                 onClicked: selectColor(anniversaryCard.backgroundColor, (color) => anniversaryCard.backgroundColor = color)
             }
 
@@ -73,6 +74,7 @@ SkyPage {
             RoundButton {
                 id: logoButton
                 Material.background: anniversaryCard.logoColor
+                display: AbstractButton.TextOnly
                 onClicked: selectColor(anniversaryCard.logoColor, (color) => anniversaryCard.logoColor = color)
             }
 
@@ -92,6 +94,7 @@ SkyPage {
             RoundButton {
                 id: ageButton
                 Material.background: anniversaryCard.ageColor
+                display: AbstractButton.TextOnly
                 onClicked: selectColor(anniversaryCard.ageColor, (color) => anniversaryCard.ageColor = color)
             }
 

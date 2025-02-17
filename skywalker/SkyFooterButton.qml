@@ -27,6 +27,7 @@ Rectangle {
         radius: width / 2
         anchors.horizontalCenter: button.horizontalCenter
         Material.background: guiSettings.buttonNeutralColor
+        display: AbstractButton.TextOnly
         visible: floating
     }
 

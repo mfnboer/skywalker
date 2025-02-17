@@ -25,6 +25,7 @@ ColumnLayout {
         padding: 0
         checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_ALL
         text: qsTr("Everyone")
+        display: AbstractButton.TextOnly
         onCheckedChanged: {
             if (checked)
                 userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_ALL
@@ -35,6 +36,7 @@ ColumnLayout {
         padding: 0
         checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_FOLLOWING
         text: qsTr("Users I follow")
+        display: AbstractButton.TextOnly
         onCheckedChanged: {
             if (checked)
                 userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_FOLLOWING
@@ -45,6 +47,7 @@ ColumnLayout {
         padding: 0
         checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_NONE
         text: qsTr("No one")
+        display: AbstractButton.TextOnly
         onCheckedChanged: {
             if (checked)
                 userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_NONE

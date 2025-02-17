@@ -6,6 +6,7 @@ RoundButton {
     id: button
 
     Material.background: flat ? guiSettings.buttonFlatColor : guiSettings.buttonColor
+    display: AbstractButton.TextOnly
 
     contentItem: Text {
         leftPadding: 10

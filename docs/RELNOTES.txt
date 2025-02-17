@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 3.15
 ====
 * Media and video gallery views

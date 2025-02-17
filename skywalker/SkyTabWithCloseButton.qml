@@ -18,6 +18,7 @@ TabButton {
     // causes the tabbar not to scroll all the way to the left. It is not the
     // button itself. When I remove the button, the problem remains.
     width: avatar.width + whitespace.width + tabText.width + closeButton.width + leftPadding
+    display: AbstractButton.TextOnly
     Accessible.name: qsTr(`Press to show ${text}`)
 
     contentItem: Row {

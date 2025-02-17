@@ -10,6 +10,7 @@ RadioButton {
     padding: 0
 
     indicator: Rectangle { width: 0 }
+    display: AbstractButton.TextOnly
 
     contentItem: Label {
         padding: 5
