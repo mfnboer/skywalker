@@ -6,7 +6,8 @@ SkyListView {
     required property var skywalker
     required property int modelId
     property bool showAsHome: false
-    property int unreadPosts: 0
+    property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : feedUnreadPosts
+    property int feedUnreadPosts: 0
     property int calibrationDy: 0
     property bool inSync: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
@@ -44,7 +45,6 @@ SkyListView {
         timeline: postFeedView
         skywalker: postFeedView.skywalker
         homeActive: true
-        showHomeFeedBadge: true
         onHomeClicked: moveToHome()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
@@ -78,6 +78,10 @@ SkyListView {
         }
     }
 
+    onCountChanged: {
+        updateFeedUnreadPosts()
+    }
+
     onMovementEnded: {
         if (!inSync)
             return
@@ -91,6 +95,7 @@ SkyListView {
         }
 
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
+        updateFeedUnreadPosts()
     }
 
     FlickableRefresher {
@@ -270,8 +275,9 @@ SkyListView {
             const newIndex = model.findTimestamp(timestamp, cid)
             setInSync(modelId, newIndex, lastVisibleOffsetY)
 
-            if (mediaTilesLoader.item)
-                mediaTilesLoader.item.positionViewAtIndex(newIndex, GridView.Beginning)
+            if (mediaTilesLoader.item) {
+                mediaTilesLoader.item.goToIndex(newIndex)
+            }
         }
     }
 
@@ -284,15 +290,22 @@ SkyListView {
         calibrationDy = 0
     }
 
+    function updateFeedUnreadPosts() {
+        const firstIndex = getFirstVisibleIndex()
+        postFeedView.feedUnreadPosts = Math.max(firstIndex, 0)
+    }
+
     function moveToHome() {
         positionViewAtBeginning()
         setAnchorItem(0, 0)
 
         if (mediaTilesLoader.item)
-            mediaTilesLoader.item.positionViewAtBeginning()
+            mediaTilesLoader.item.moveToHome()
 
         if (modelId != -1)
             skywalker.feedMovementEnded(modelId, 0, 0)
+
+        updateFeedUnreadPosts()
     }
 
     function doMoveToPost(index) {
@@ -301,12 +314,14 @@ SkyListView {
         console.debug("Move to:", model.feedName, "index:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
         positionViewAtIndex(Math.max(index, 0), ListView.End)
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
+        updateFeedUnreadPosts()
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
     function finishSync() {
         inSync = true
         rewindStatus.isFirstRewind = false
+        updateFeedUnreadPosts()
     }
 
     function setInSync(id, index, offsetY = 0) {
@@ -323,7 +338,7 @@ SkyListView {
             moveToIndex(index, doMoveToPost, () => { contentY -= offsetY; finishSync() })
         }
         else {
-            moveToEnd()
+            positionViewAtEnd()
             finishSync()
         }
     }

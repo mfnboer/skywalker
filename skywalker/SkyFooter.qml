@@ -10,7 +10,6 @@ Rectangle {
     property bool searchActive: false
     property bool feedsActive: false
     property bool messagesActive: false
-    property int unreadNotifications: 0
     property bool showHomeFeedBadge: false
     property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
 

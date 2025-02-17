@@ -1,5 +1,6 @@
 next
 ====
+* Show counter of posts till top for all feeds
 * Bug fixes
 
 3.15

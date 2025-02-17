@@ -38,8 +38,7 @@ SkyListView {
         timeline: feedView
         skywalker: feedView.skywalker
         homeActive: true
-        showHomeFeedBadge: true
-        onHomeClicked: feedView.positionViewAtBeginning()
+        onHomeClicked: feedView.moveToHome()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
@@ -49,6 +48,14 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: feedView.width
+    }
+
+    onCountChanged: {
+        updateUnreadPosts()
+    }
+
+    onMovementEnded: {
+        updateUnreadPosts()
     }
 
     FlickableRefresher {
@@ -81,6 +88,16 @@ SkyListView {
             // Remove models now before the Skywalker object is destroyed.
             searchUtils.removeModels()
         }
+    }
+
+    function updateUnreadPosts() {
+        const firstIndex = getFirstVisibleIndex()
+        feedView.unreadPosts = Math.max(firstIndex, 0)
+    }
+
+    function moveToHome() {
+        positionViewAtBeginning()
+        updateUnreadPosts()
     }
 
     function search() {

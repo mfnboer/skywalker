@@ -9,6 +9,7 @@ GridView {
     readonly property int spacing: 2
     property bool showAsHome: false
     property var enclosingView // used on AuthorView
+    property int unreadPosts: 0
     readonly property bool feedLoading: (model && model.feedType === QEnums.FEED_AUTHOR) ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
 
     id: mediaTilesView
@@ -43,6 +44,10 @@ GridView {
 
     footer: (model && model.endOfFeed) ? endOfFeedComponent : loadMoreComponent
 
+    onCountChanged: {
+        updateUnreadPosts()
+    }
+
     onMovementEnded: {
         const lastIndex = getBottomRightVisibleIndex()
         console.debug("Move:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
@@ -51,6 +56,8 @@ GridView {
             console.debug("Prefetch next page:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
             model.getFeedNextPage(skywalker)
         }
+
+        updateUnreadPosts()
     }
 
     FlickableRefresher {
@@ -132,12 +139,24 @@ GridView {
         }
     }
 
+    function updateUnreadPosts() {
+        const firstIndex = getTopLeftVisibleIndex()
+        mediaTilesView.unreadPosts = Math.max(firstIndex, 0)
+    }
+
+    function moveToHome() {
+        positionViewAtBeginning()
+        updateUnreadPosts()
+    }
+
     function goToIndex(index) {
         const topLeft = getTopLeftVisibleIndex()
         const bottomRight = getBottomRightVisibleIndex()
 
         if (index < topLeft || index > bottomRight)
             positionViewAtIndex(index, GridView.Beginning)
+
+        updateUnreadPosts()
     }
 
     function getTopLeftVisibleIndex() {
