@@ -1,6 +1,7 @@
 next
 ====
 * Show counter of posts till top for all feeds
+* Improved image quality
 * Bug fixes
 
 3.15

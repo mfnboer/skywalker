@@ -29,8 +29,9 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(0)
-            sourceSize.width: width
-            sourceSize.height: height
+            sourceSize.width: width * Screen.devicePixelRatio
+            sourceSize.height: height * Screen.devicePixelRatio
+            smooth: false
         }
 
         ThumbImageView {
@@ -40,8 +41,9 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(1)
-            sourceSize.width: width
-            sourceSize.height: height
+            sourceSize.width: width * Screen.devicePixelRatio
+            sourceSize.height: height * Screen.devicePixelRatio
+            smooth: false
         }
 
         ThumbImageView {
@@ -51,8 +53,9 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(2)
-            sourceSize.width: width
-            sourceSize.height: height
+            sourceSize.width: width * Screen.devicePixelRatio
+            sourceSize.height: height * Screen.devicePixelRatio
+            smooth: false
         }
 
         ThumbImageView {
@@ -62,8 +65,9 @@ RoundCornerMask {
             Layout.fillWidth: true
             fillMode: Image.PreserveAspectCrop
             imageView: filter.getImage(3)
-            sourceSize.width: width
-            sourceSize.height: height
+            sourceSize.width: width * Screen.devicePixelRatio
+            sourceSize.height: height * Screen.devicePixelRatio
+            smooth: false
         }
     }
     MouseArea {

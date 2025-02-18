@@ -116,8 +116,9 @@ Rectangle {
                 height: mediaRect.height
                 fillMode: Image.PreserveAspectCrop
                 source: filter.getImage(0).thumbUrl
-                sourceSize.width: width
-                sourceSize.height: height
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
+                smooth: false
 
                 Loader {
                     anchors.right: parent.right

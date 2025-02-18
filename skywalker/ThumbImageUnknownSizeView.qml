@@ -11,7 +11,8 @@ ThumbImageView {
     height: tileMode ? maxHeight : undefined
     fillMode: Image.PreserveAspectFit
     imageView: image
-    sourceSize.width: width
+    sourceSize.width: width * Screen.devicePixelRatio
+    smooth: false
 
     onStatusChanged: {
         if (status === Image.Ready) {

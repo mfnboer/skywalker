@@ -13,6 +13,7 @@ ThumbImageView {
     height: (!exceedsMaxHeight && !tileMode) ? idealHeight : maxHeight
     fillMode: ((!exceedsMaxHeight && !tileMode) || noCrop) ? Image.PreserveAspectFit : Image.PreserveAspectCrop
     imageView: image
-    sourceSize.width: width
-    sourceSize.height: height
+    sourceSize.width: width * Screen.devicePixelRatio
+    sourceSize.height: height * Screen.devicePixelRatio
+    smooth: false
 }
