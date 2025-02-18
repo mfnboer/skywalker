@@ -84,7 +84,7 @@ SkyPage {
 
     id: page
     width: parent.width
-    height: parent.height - keyboardHandler.keyboardHeight
+    height: parent.height
     contentHeight: flick.height
     topPadding: 0
     bottomPadding: 10

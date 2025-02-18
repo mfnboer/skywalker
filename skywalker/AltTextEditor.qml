@@ -33,7 +33,6 @@ SkyPage {
     Flickable {
         id: flick
         anchors.fill: parent
-        anchors.bottomMargin: keyboardHandler.keyboardHeight
         clip: true
         contentWidth: parent.width
         contentHeight: altImage.y + altImage.height

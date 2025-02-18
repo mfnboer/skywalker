@@ -29,18 +29,10 @@ SkyPage {
         color: "transparent"
     }
 
-    onHeightChanged: {
-        // When the Android keyboard is visible the height sometimes shrinks to
-        // the size of the visible window. I don't why that happens. Would be nice
-        // if could do so from the start. But shrinking the height on the keyboard event
-        // cause the whole screen to move up into the void????
-        page.header.y = 0
-    }
-
     SkyListView {
         id: messagesView
         width: parent.width
-        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding - keyboardHandler.keyboardHeight
+        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
         clip: true
@@ -90,7 +82,7 @@ SkyPage {
         width: parent.width
         height: Math.min(newMessageText.height - newMessageText.padding - newMessageText.bottomPadding, maxInputTextHeight)
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: newMessageText.bottomPadding + keyboardHandler.keyboardHeight
+        anchors.bottomMargin: newMessageText.bottomPadding
         clip: true
         contentWidth: parent.width
         contentHeight: newMessageText.contentHeight + page.margin

@@ -28,7 +28,6 @@ SkyPage {
 
     Flickable {
         anchors.fill: parent
-        anchors.bottomMargin: keyboardHandler.keyboardHeight
         clip: true
         contentWidth: parent.width
         contentHeight: okButton.y + okButton.height

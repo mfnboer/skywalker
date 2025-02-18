@@ -51,7 +51,7 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: editProfilePage.width
-        height: guiSettings.footerHeight + keyboardHandler.keyboardHeight
+        height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus
@@ -242,9 +242,6 @@ SkyPage {
             Rectangle {
                 id: descriptionRect
                 Layout.fillWidth: true
-
-                // Normal height acts weird when the user changes the avatar, then it
-                // shrinks back to a single line of text. preferredHeight works.
                 Layout.preferredHeight: descriptionField.height
 
                 radius: 5
