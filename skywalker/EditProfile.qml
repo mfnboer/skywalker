@@ -51,7 +51,7 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: editProfilePage.width
-        height: guiSettings.footerHeight
+        height: guiSettings.footerHeight + keyboardHandler.keyboardHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus

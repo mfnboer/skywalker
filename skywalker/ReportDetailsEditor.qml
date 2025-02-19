@@ -23,7 +23,7 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: page.width
-        height: guiSettings.footerHeight
+        height: guiSettings.footerHeight + keyboardHandler.keyboardHeight
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
 

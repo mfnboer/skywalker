@@ -26,6 +26,11 @@ SkyPage {
         onBack: loginPage.canceled()
     }
 
+    footer: Rectangle {
+        height: keyboardHandler.keyboardHeight
+        color: "transparent"
+    }
+
     Flickable {
         anchors.fill: parent
         clip: true

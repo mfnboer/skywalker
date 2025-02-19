@@ -23,9 +23,8 @@ SkyPage {
         onBack: page.closed()
     }
 
-    // Needed for SkyFormattedTextEdit
     footer: Rectangle {
-        height: 0
+        height: keyboardHandler.keyboardHeight
         color: "transparent"
     }
 
