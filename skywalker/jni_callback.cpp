@@ -194,6 +194,14 @@ void _handleShowDirectMessages(JNIEnv*)
         instance->handleShowDirectMessages();
 }
 
+void _handleKeyboardHeightChanged(JNIEnv*, jobject, jint height)
+{
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleKeyboardHeightChanged((int)height);
+}
+
 #endif
 
 }
@@ -253,6 +261,11 @@ JNICallbackListener::JNICallbackListener() : QObject()
         {"emitLanguageIdentified", "(Ljava/lang/String;I)V", reinterpret_cast<void *>(_handleLanguageIdentified) }
     };
     jni.registerNativeMethods("com/gmail/mfnboer/LanguageDetection", languageDetectorCallbacks, 1);
+
+    const JNINativeMethod virtualKeyboardListenerCallbacks[] = {
+        {"emitKeyboardHeightChanged", "(I)V", reinterpret_cast<void *>(_handleKeyboardHeightChanged) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/VirtualKeyboardListener", virtualKeyboardListenerCallbacks, 1);
 
     const JNINativeMethod skywalkerActivityCallbacks[] = {
         { "emitSharedTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedTextReceived) },
@@ -354,6 +367,11 @@ void JNICallbackListener::handleShowNotifications()
 void JNICallbackListener::handleShowDirectMessages()
 {
     emit showDirectMessages();
+}
+
+void JNICallbackListener::handleKeyboardHeightChanged(int height)
+{
+    emit keyboardHeightChanged(height);
 }
 
 }

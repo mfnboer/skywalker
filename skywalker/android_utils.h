@@ -16,6 +16,7 @@ public:
     static int getNavigationBarSize(QEnums::InsetsSide side);
     static int getStatusBarSize(QEnums::InsetsSide side);
     static void setStatusBarTransparent(bool transparent);
+    static void installVirtualKeyboardListener();
 
 private:
     static void setKeepScreenOn(bool keepOn);

@@ -1,20 +1,41 @@
 import QtQuick
+import skywalker
 
 Item {
-    property bool keyboardVisible: Qt.inputMethod.visible && Qt.inputMethod.keyboardRectangle.y > 0 // qmllint disable missing-property
+    property int rootHeight
+    property bool keyboardVisible: receivedKeyboardHeight > 0 || Qt.inputMethod.visible
+    property int receivedKeyboardHeight: 0
+    property int keyboardHeight: 0
 
-    // HACK: sometimes when the keyboard pops up, inputMethod visible becomes true
-    // and then quickly false again. In that case the keyboard is visible on the
-    // screen, but the keyboarRectangle is null so the screen does not move up.
-    // To avoid this we force hide the keyboard. The user has to tap once more.
-    Connections {
-        target: Qt.inputMethod
-
-        function onVisibleChanged() {
-            if (!Qt.inputMethod.visible) { // qmllint disable missing-property
-                console.debug("KEYBOARD FORCE HIDE")
-                Qt.inputMethod.hide()
-            }
+    onReceivedKeyboardHeightChanged: {
+        if (receivedKeyboardHeight > 0) {
+            updateTimer.start()
         }
+        else {
+            keyboardHeight = 0;
+            updateTimer.stop()
+        }
+    }
+
+    onKeyboardHeightChanged: root.height = rootHeight - keyboardHeight
+
+    // Qt.inputMethod is not reliable
+    VirtualKeyboardUtils {
+        onKeyboardHeightChanged: (height) => receivedKeyboardHeight = Math.ceil(height / Screen.devicePixelRatio)
+    }
+
+    // Throttle updates to avoid screen flicker
+    Timer {
+        id: updateTimer
+        interval: 300
+        onTriggered: keyboardHeight = receivedKeyboardHeight
+    }
+
+    Component.onDestruction: {
+        root.height = rootHeight
+    }
+
+    Component.onCompleted: {
+        rootHeight = root.height
     }
 }

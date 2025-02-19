@@ -26,7 +26,7 @@
             android:label="Skywalker"
             android:launchMode="singleTask"
             android:screenOrientation="unspecified"
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustNothing" 
             android:exported="true"
             android:theme="@style/splashScreenTheme">
             <intent-filter>

@@ -69,15 +69,10 @@ void AndroidUtils::setNavigationBarColor(QColor color, QEnums::DisplayMode displ
 void AndroidUtils::setNavigationBarColorAndMode(QColor color, bool isLightMode)
 {
 #ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
     int rgb = color.rgba();
-    activity.callMethod<void>("setNavigationBarColor", "(IZ)V", (jint)rgb, (jboolean)isLightMode);
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/ScreenUtils", "setNavigationBarColor",
+        "(IZ)V", (jint)rgb, (jboolean)isLightMode);
 #else
     Q_UNUSED(color)
     Q_UNUSED(isLightMode)
@@ -87,14 +82,8 @@ void AndroidUtils::setNavigationBarColorAndMode(QColor color, bool isLightMode)
 int AndroidUtils::getNavigationBarSize(QEnums::InsetsSide side)
 {
 #ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return 0;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    return (int)activity.callMethod<jint>("getNavigationBarSize", "(I)I", (jint)side);
+    return (int)QJniObject::callStaticMethod<jint>(
+        "com/gmail/mfnboer/ScreenUtils", "getNavigationBarSize", "(I)I", (jint)side);
 #else
     Q_UNUSED(side)
     return 0;
@@ -104,14 +93,8 @@ int AndroidUtils::getNavigationBarSize(QEnums::InsetsSide side)
 int AndroidUtils::getStatusBarSize(QEnums::InsetsSide side)
 {
 #ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return 0;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    return (int)activity.callMethod<jint>("getStatusBarSize", "(I)I", (jint)side);
+    return (int)QJniObject::callStaticMethod<jint>(
+        "com/gmail/mfnboer/ScreenUtils", "getStatusBarSize", "(I)I", (jint)side);
 #else
     Q_UNUSED(side)
     return 0;
@@ -121,14 +104,9 @@ int AndroidUtils::getStatusBarSize(QEnums::InsetsSide side)
 void AndroidUtils::setStatusBarTransparent(bool transparent)
 {
 #ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    activity.callMethod<void>("setStatusBarTransparent", "(Z)V", (jboolean)transparent);
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/ScreenUtils", "setStatusBarTransparent",
+        "(Z)V", (jboolean)transparent);
 #else
     Q_UNUSED(transparent)
 #endif
@@ -138,16 +116,19 @@ void AndroidUtils::setKeepScreenOn(bool keepOn)
 {
     qDebug() << "Keep screen on:" << keepOn;
 #if defined(Q_OS_ANDROID)
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    activity.callMethod<void>("setKeepScreenOn", "(Z)V", (jboolean)keepOn);
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/ScreenUtils", "setKeepScreenOn", "(Z)V", (jboolean)keepOn);
 #else
     Q_UNUSED(keepOn);
+#endif
+}
+
+void AndroidUtils::installVirtualKeyboardListener()
+{
+    qDebug() << "Install virtual keyboard listener";
+#if defined(Q_OS_ANDROID)
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/VirtualKeyboardListener", "installKeyboardListener");
 #endif
 }
 

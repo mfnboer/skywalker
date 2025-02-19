@@ -35,6 +35,7 @@ public:
     void handleSharedDmTextReceived(const QString& sharedText);
     void handleShowNotifications();
     void handleShowDirectMessages();
+    void handleKeyboardHeightChanged(int height);
 
 signals:
     void photoPicked(int fd, QString mimeType);
@@ -55,6 +56,7 @@ signals:
     void sharedDmTextReceived(QString sharedText);
     void showNotifications();
     void showDirectMessages();
+    void keyboardHeightChanged(int height);
 
 private:
     JNICallbackListener();

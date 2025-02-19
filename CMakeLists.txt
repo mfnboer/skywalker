@@ -73,6 +73,10 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/QVideoEncoder.java
         RESOURCES android/src/com/gmail/mfnboer/TextExtractor.java
         RESOURCES android/src/com/gmail/mfnboer/LanguageDetection.java
+        RESOURCES android/src/com/gmail/mfnboer/VirtualKeyboardListener.java
+        RESOURCES android/src/com/gmail/mfnboer/ScreenUtils.java
+        SOURCES
+        RESOURCES android/src/com/gmail/mfnboer/KeyboardHeightProvider.java
 )
 
 if (ANDROID)
