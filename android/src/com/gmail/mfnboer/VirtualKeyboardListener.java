@@ -17,6 +17,9 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.Window;
 
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 public class VirtualKeyboardListener {
     private static final String LOGTAG = "VirtualKeyboardListener";
     private static Activity sActivity;
@@ -37,22 +40,17 @@ public class VirtualKeyboardListener {
 
         final View rootView = ((ViewGroup)sActivity.findViewById(android.R.id.content)).getChildAt(0);
 
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    int navigationBarHeight = ScreenUtils.getNavigationBarSize(ScreenUtils.INSETS_SIDE_BOTTOM);
-                    int imeHeight = ScreenUtils.getImeSize(ScreenUtils.INSETS_SIDE_BOTTOM);
-                    int keyboardHeight = imeHeight > navigationBarHeight ? imeHeight - navigationBarHeight : 0;
-                    Log.d(LOGTAG, "Keyboard height: " + keyboardHeight + " nav: " + navigationBarHeight + " ime: " + imeHeight);
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            int keyboardHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+            Log.d(LOGTAG, "Keyboard height: " + keyboardHeight);
 
-                    emitKeyboardHeightChanged(keyboardHeight);
-                }
-            }
-        );
+            emitKeyboardHeightChanged(keyboardHeight);
+            return insets;
+        });
     }
 
     private static void installLegacyKeyboardListener() {
+        Log.d(LOGTAG, "Install legacy keyboard listener");
         final View rootView = ((ViewGroup)sActivity.findViewById(android.R.id.content)).getChildAt(0);
 
         Context context = SkywalkerApplication.getContext();
