@@ -110,6 +110,8 @@ public:
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
     Q_INVOKABLE void addFilteredPostFeedModelsFromSettings();
 
+    void refreshAllData() override;
+    void refreshAllFilteredModels();
     void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 

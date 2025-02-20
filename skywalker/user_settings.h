@@ -41,7 +41,7 @@ class UserSettings : public QObject, public IUserSettings
 public:
     void reset();
 
-    static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
+    Q_INVOKABLE static QEnums::DisplayMode getActiveDisplayMode() { return sActiveDisplayMode; }
     Q_INVOKABLE void setActiveDisplayMode(QEnums::DisplayMode mode);
 
     static QString getDefaultBackgroundColor() { return sDefaultBackgroundColor; }

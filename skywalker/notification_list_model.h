@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "base_list_model.h"
 #include "bookmarks.h"
 #include "content_filter.h"
 #include "local_post_model_changes.h"
@@ -15,6 +16,7 @@
 namespace Skywalker {
 
 class NotificationListModel : public QAbstractListModel,
+                              public BaseListModel,
                               public LocalPostModelChanges,
                               public LocalProfileChanges
 {
@@ -167,7 +169,7 @@ private:
     void getPosts(ATProto::Client& bsky, std::unordered_set<QString> uris, const std::function<void()>& cb);
 
     void postBookmarkedChanged();
-    void changeData(const QList<int>& roles);
+    void changeData(const QList<int>& roles) override;
     void clearLocalState();
     void clearRows();
     void addInviteCodeUsageNotificationRows();

@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "base_list_model.h"
 #include "graph_utils.h"
 #include "list_store.h"
 #include "list_view.h"
@@ -16,6 +17,7 @@ class FavoriteFeeds;
 class Skywalker;
 
 class ListListModel : public QAbstractListModel,
+                      public BaseListModel,
                       public LocalListModelChanges,
                       public LocalProfileChanges
 {
@@ -91,7 +93,7 @@ private:
     QString getMemberListItemUri(const QString& listUri) const;
     void listSavedChanged();
     void listPinnedChanged();
-    void changeData(const QList<int>& roles);
+    void changeData(const QList<int>& roles) override;
 
     ListList filterLists(ATProto::AppBskyGraph::ListViewList lists) const;
 

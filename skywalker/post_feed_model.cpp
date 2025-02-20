@@ -691,6 +691,18 @@ void PostFeedModel::addFilteredPostFeedModelsFromJson(const QJsonObject& json)
     }
 }
 
+void PostFeedModel::refreshAllData()
+{
+    AbstractPostFeedModel::refreshAllData();
+    refreshAllFilteredModels();
+}
+
+void PostFeedModel::refreshAllFilteredModels()
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->refreshAllData();
+}
+
 void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update)
 {
     for (auto& model : mFilteredPostFeedModels)

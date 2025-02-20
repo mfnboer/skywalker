@@ -1730,6 +1730,37 @@ void Skywalker::updatePostIndexedSecondsAgo()
     makeLocalModelChange([](LocalPostModelChanges* model){ model->updatePostIndexedSecondsAgo(); });
 }
 
+void Skywalker::refreshAllModels()
+{
+    mTimelineModel.refreshAllData();
+    mNotificationListModel.refreshAllData();
+    mMentionListModel.refreshAllData();
+
+    for (auto& [_, model] : mPostThreadModels.items())
+        model->refreshAllData();
+
+    for (auto& [_, model] : mAuthorFeedModels.items())
+        model->refreshAllData();
+
+    for (auto& [_, model] : mSearchPostFeedModels.items())
+        model->refreshAllData();
+
+    for (auto& [_, model] : mPostFeedModels.items())
+        model->refreshAllData();
+
+    if (mBookmarksModel)
+        mBookmarksModel->refreshAllData();
+
+    for (auto& [_, model] : mFeedListModels.items())
+        model->refreshAllData();
+
+    for (auto& [_, model] : mListListModels.items())
+        model->refreshAllData();
+
+    for (auto& [_, model] : mAuthorListModels.items())
+        model->refreshAllData();
+}
+
 void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update)
 {
     // Apply change to all active models. When a model gets refreshed (after clear)

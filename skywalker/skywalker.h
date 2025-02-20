@@ -200,6 +200,7 @@ public:
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void signOut();
 
+    Q_INVOKABLE void refreshAllModels();
     void makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);

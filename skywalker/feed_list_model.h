@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "base_list_model.h"
 #include "generator_view.h"
 #include "local_feed_model_changes.h"
 #include "local_profile_changes.h"
@@ -12,6 +13,7 @@ namespace Skywalker {
 class FavoriteFeeds;
 
 class FeedListModel : public QAbstractListModel,
+                      public BaseListModel,
                       public LocalFeedModelChanges,
                       public LocalProfileChanges
 {
@@ -56,7 +58,7 @@ protected:
 private:
     void feedSavedChanged();
     void feedPinnedChanged();
-    void changeData(const QList<int>& roles);
+    void changeData(const QList<int>& roles) override;
 
     using FeedList = std::deque<GeneratorView>;
     FeedList mFeeds;

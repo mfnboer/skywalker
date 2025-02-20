@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "base_list_model.h"
 #include "bookmarks.h"
 #include "content_filter.h"
 #include "hashtag_index.h"
@@ -18,6 +19,7 @@ namespace Skywalker {
 class FocusHashtags;
 
 class AbstractPostFeedModel : public QAbstractListModel,
+                              public BaseListModel,
                               public LocalPostModelChanges,
                               public LocalProfileChanges
 {
@@ -167,7 +169,7 @@ protected:
     virtual void profileChanged() override;
     virtual void locallyBlockedChanged() override;
 
-    void changeData(const QList<int>& roles);
+    void changeData(const QList<int>& roles) override;
 
     using TimelineFeed = std::deque<Post>;
     TimelineFeed mFeed;

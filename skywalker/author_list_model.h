@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "base_list_model.h"
 #include "content_filter.h"
 #include "enums.h"
 #include "local_author_model_changes.h"
@@ -11,7 +12,9 @@
 
 namespace Skywalker {
 
-class AuthorListModel : public QAbstractListModel, public LocalAuthorModelChanges
+class AuthorListModel : public QAbstractListModel,
+                        public BaseListModel,
+                        public LocalAuthorModelChanges
 {
     Q_OBJECT
 public:
@@ -69,7 +72,7 @@ private:
     using AuthorList = std::deque<ListEntry>;
 
     AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const;
-    void changeData(const QList<int>& roles);
+    void changeData(const QList<int>& roles) override;
 
     Type mType;
     QString mAtId;

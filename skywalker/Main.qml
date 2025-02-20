@@ -374,6 +374,10 @@ ApplicationWindow {
         }
 
         onAppResumed: {
+            // Display mode may have changed while sleeping.
+            let userSettings = skywalker.getUserSettings()
+            setDisplayMode(userSettings.getDisplayMode())
+
             let current = currentStackItem()
 
             if (current && typeof current.uncover === 'function')
@@ -1991,14 +1995,24 @@ ApplicationWindow {
             root.Material.theme = Material.System
             break
         }
+    }
 
-        console.debug("Theme set to:", root.Material.theme)
+    Material.onThemeChanged: {
         let userSettings = skywalker.getUserSettings()
+        const oldDisplayMode = userSettings.getActiveDisplayMode()
+        const newDisplayMode = (root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
+
+        console.debug("Theme changed:", root.Material.theme, "old display mode:", oldDisplayMode, "new:", newDisplayMode)
+
         userSettings.setDefaultBackgroundColor(Material.background)
-        userSettings.setActiveDisplayMode(root.Material.theme === Material.Light ? QEnums.DISPLAY_MODE_LIGHT : QEnums.DISPLAY_MODE_DARK)
+        userSettings.setActiveDisplayMode(newDisplayMode)
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+
+        // Refreshing the models makes them format text with the new colors (e.g. link color)
+        if (oldDisplayMode !== newDisplayMode)
+            skywalker.refreshAllModels()
     }
 
     function getSkywalker() {

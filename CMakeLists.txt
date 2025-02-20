@@ -110,8 +110,17 @@ set_target_properties(appskywalker PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
-    QT_ANDROID_ABIS "arm64-v8a;armeabi-v7a"
 )
+
+if (CMAKE_BUILD_TYPE MATCHES Release)
+    set_target_properties(appskywalker PROPERTIES
+        QT_ANDROID_ABIS "arm64-v8a;armeabi-v7a"
+    )
+else()
+    set_target_properties(appskywalker PROPERTIES
+        QT_ANDROID_ABIS "arm64-v8a"
+    )
+endif()
 
 target_link_libraries(appskywalker
     PRIVATE libatproto

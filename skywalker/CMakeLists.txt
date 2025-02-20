@@ -478,6 +478,7 @@ qt_add_qml_module(libskywalker
         QML_FILES MediaTilesFeedView.qml
         SOURCES virtual_keyboard_utils.h
         SOURCES virtual_keyboard_utils.cpp
+        SOURCES base_list_model.h
 )
 
 if (NOT ANDROID)
