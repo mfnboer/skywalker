@@ -40,8 +40,8 @@ Item {
             anchors.fill: img
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                if (img.failedCanReload)
-                    img.reload()
+                if (img.item && img.item.failedCanReload)
+                    img.item.reload()
                 else if (swipeMode)
                     activateSwipe()
                 else

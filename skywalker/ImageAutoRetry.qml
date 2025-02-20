@@ -78,6 +78,7 @@ Image {
     }
 
     function reload() {
+        console.debug("Reload img:", source)
         retryCount = 0
         retryTimer.interval = 1
         retryTimer.start()
