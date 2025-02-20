@@ -3,6 +3,7 @@ next
 * Show counter of posts till top for all feeds
 * Improved image quality
 * Improved keyboard handling
+* Fix issues with light/dark mode switching
 * Bug fixes
 
 3.15
