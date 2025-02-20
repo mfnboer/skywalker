@@ -109,26 +109,49 @@ TextEdit {
     // sticks to the cursor, or the cursor begins to jump when typing. The reset on tap
     // seems to prevent this.
     // An alternative with TapHandler did not work
+    // Can we ditch this with Qt6.8.2?
+    // Note: Qt.inputMethod.visible will not work with softInputMode:AdjustNothing
+    // MouseArea {
+    //     anchors.fill: parent
+    //     propagateComposedEvents: true
+    //     onPressed: (mouse) => handleEvent(mouse)
+    //     onPressAndHold: (mouse) => { mouse.accepted = false }
+    //     onReleased: (mouse) => { mouse.accepted = false }
+    //     onClicked: (mouse) => handleEvent(mouse)
+    //     onDoubleClicked: (mouse) => handleEvent(mouse)
+
+    //     function handleEvent(mouse) {
+    //         if (Qt.inputMethod.visible) { // qmllint disable missing-property
+    //             Qt.inputMethod.reset() // qmllint disable missing-property
+    //             // editText.forceActiveFocus()
+    //             // let position = editText.positionAt(mouse.x, mouse.y)
+    //             // editText.cursorPosition = position
+    //             Qt.inputMethod.show()
+    //         }
+
+    //         // Pass to TextEdit to handle the mouse event. This seems
+    //         // better than setting the position ourselves.
+    //         mouse.accepted = false
+    //     }
+    // }
+
+    // Avoid keyboard popping up when the user is scrolling the parent flick
     MouseArea {
         anchors.fill: parent
         propagateComposedEvents: true
-        onPressed: (mouse) => handleEvent(mouse)
-        onPressAndHold: (mouse) => { mouse.accepted = false }
-        onReleased: (mouse) => { mouse.accepted = false }
-        onClicked: (mouse) => handleEvent(mouse)
-        onDoubleClicked: (mouse) => handleEvent(mouse)
 
-        function handleEvent(mouse) {
-            if (Qt.inputMethod.visible) { // qmllint disable missing-property
-                Qt.inputMethod.reset() // qmllint disable missing-property
-                // editText.forceActiveFocus()
-                // let position = editText.positionAt(mouse.x, mouse.y)
-                // editText.cursorPosition = position
-                Qt.inputMethod.show()
-            }
+        onPressed: (mouse) => {
+            console.debug("Text pressed")
+            mouse.accepted = true
+        }
 
-            // Pass to TextEdit to handle the mouse event. This seems
-            // better than setting the position ourselves.
+        // This signal only comes in if onPressed was accepted.
+        onClicked: (mouse) => {
+            console.debug("Text clicked")
+            editText.forceActiveFocus()
+            let position = editText.positionAt(mouse.x, mouse.y)
+            editText.cursorPosition = position
+            Qt.inputMethod.show()
             mouse.accepted = false
         }
     }
