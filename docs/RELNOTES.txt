@@ -1,5 +1,5 @@
-next
-====
+3.15.1
+======
 * Show counter of posts till top for all feeds
 * Improved image quality
 * Improved keyboard handling
