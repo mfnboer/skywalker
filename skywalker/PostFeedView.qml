@@ -6,12 +6,14 @@ SkyListView {
     required property var skywalker
     required property int modelId
     property bool showAsHome: false
+    property bool showFavorites: false
     property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : feedUnreadPosts
     property int feedUnreadPosts: 0
     property int calibrationDy: 0
     property bool inSync: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+    readonly property int favoritesY: headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
 
     signal closed
 
@@ -33,12 +35,13 @@ SkyListView {
         filteredLanguages: underlyingModel ? underlyingModel.filteredLanguages : []
         showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
         showViewOptions: true
+        showFavoritesPlaceHolder: showFavorites
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeed()
         onViewChanged: (contentMode) => changeView(contentMode)
     }
-    headerPositioning: ListView.OverlayHeader
+    headerPositioning: ListView.PullBackHeader
 
     footer: SkyFooter {
         visible: showAsHome
@@ -66,7 +69,8 @@ SkyListView {
         }
 
         onActivateSwipe: {
-            root.viewMediaFeed(model, index, (newIndex) => { postFeedView.positionViewAtIndex(newIndex, ListView.Beginning) })
+            let view = postFeedView
+            root.viewMediaFeed(model, index, (newIndex) => { view.positionViewAtIndex(newIndex, ListView.Beginning) })
         }
 
         Loader {

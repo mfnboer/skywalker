@@ -46,7 +46,7 @@ SkyPage {
         onMessagesClicked: root.viewChat()
     }
 
-    TabBar {
+    SkyTabBar {
         id: feedsBar
         width: parent.width
 

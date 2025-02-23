@@ -84,7 +84,7 @@ SkyPage {
         onMessagesClicked: root.viewChat()
     }
 
-    TabBar {
+    SkyTabBar {
         id: searchBar
         width: parent.width
         Material.background: guiSettings.backgroundColor

@@ -17,6 +17,9 @@ Rectangle {
     property bool showPostWithMissingLanguage: true
     property bool showMoreOptions: false
     property bool showViewOptions: false
+    property bool showFavoritesPlaceHolder: false
+    property int bottomMargin: 0
+    readonly property int favoritesY: favoritesPlaceHolder.y
 
     signal closed
     signal feedAvatarClicked
@@ -29,7 +32,7 @@ Rectangle {
 
     id: header
     width: parent.width
-    height: guiSettings.headerHeight
+    height: (showFavoritesPlaceHolder ? favoritesPlaceHolder.height : guiSettings.headerHeight) + bottomMargin
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
@@ -40,6 +43,7 @@ Rectangle {
         width: parent.width
         height: guiSettings.headerHeight
         spacing: 0
+        visible: !showFavoritesPlaceHolder
 
         SvgButton {
             id: backButton
@@ -279,6 +283,12 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: favoritesPlaceHolder
+        width: parent.width
+        height: guiSettings.tabBarHeight
+        visible: showFavoritesPlaceHolder
+    }
 
     function showLanguageFilterDetails() {
         let languageList = []

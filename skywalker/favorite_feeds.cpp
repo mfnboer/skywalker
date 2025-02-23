@@ -52,6 +52,7 @@ void FavoriteFeeds::clear()
     mSavedFeeds.clear();
     mSavedLists.clear();
     mPinnedFeeds.clear();
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
@@ -86,6 +87,7 @@ void FavoriteFeeds::addPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pin
 {
     qDebug() << "Add pinned feeds:" << pinnedGenerators.size();
     addFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList)
@@ -96,6 +98,7 @@ void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedP
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
     qInfo() << "Pinned:" << view.getName() << "size:" << mPinnedFeeds.size();
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
@@ -191,6 +194,7 @@ void FavoriteFeeds::pinFeed(const GeneratorView& feed)
     qDebug() << "Pinned:" << view.getName();
 
     emit feedPinned();
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
@@ -216,6 +220,7 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     }
 
     emit feedUnpinned(feed.getUri());
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::addList(const ListView& list)
@@ -294,6 +299,7 @@ void FavoriteFeeds::pinList(const ListView& list)
     qDebug() << "Pinned:" << view.getName();
 
     emit listPinned();
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::unpinList(const ListView& list)
@@ -319,6 +325,7 @@ void FavoriteFeeds::unpinList(const ListView& list)
     }
 
     emit listUnpinned(list.getUri());
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::pinSearch(const SearchFeed& search, bool pin)
@@ -345,6 +352,7 @@ void FavoriteFeeds::pinSearch(const SearchFeed& search)
     qDebug() << "Pinned:" << view.getName();
 
     emit searchPinned(view.getName());
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::unpinSearch(const SearchFeed& search)
@@ -371,6 +379,7 @@ void FavoriteFeeds::unpinSearch(const SearchFeed& search)
     }
 
     emit searchUnpinned(search.getName());
+    emit pinnedFeedsChanged();
 }
 
 FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const
@@ -495,6 +504,8 @@ void FavoriteFeeds::updatePinnedViews()
         updatePinnedGeneratorViews();
         updatePinnedListViews();
     }
+
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::updatePinnedGeneratorViews()

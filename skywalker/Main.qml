@@ -91,6 +91,21 @@ ApplicationWindow {
         y: guiSettings.headerHeight
     }
 
+    FavoritesTabBar {
+        property var currentView: currentStackItem()
+
+        id: favoritesTabBar
+        y: visible ? currentView.favoritesY : 0
+        z: guiSettings.headerZLevel + 10
+        width: parent.width
+        skywalker: root.getSkywalker()
+        visible: (currentView instanceof PostFeedView && currentView.showFavorites) || currentView instanceof TimelinePage
+
+        function update() {
+            currentView = currentStackItem()
+        }
+    }
+
     function clearStatusMessage() {
         statusPopup.close()
     }
@@ -469,6 +484,8 @@ ApplicationWindow {
 
             if (currentItem && typeof currentItem.uncover === 'function')
                 currentItem.uncover()
+
+            favoritesTabBar.update()
         }
 
         StackView {
@@ -1623,7 +1640,7 @@ ApplicationWindow {
             const modelId = skywalker.createPostFeedModel(generatorView)
             skywalker.getFeed(modelId)
             let component = guiSettings.createComponent("PostFeedView.qml")
-            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
+            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true, showFavorites: true })
             feedViews.set(generatorView.uri, view)
         }
 
@@ -1655,7 +1672,7 @@ ApplicationWindow {
         else {
             const modelId = skywalker.createPostFeedModel(listView)
             let component = guiSettings.createComponent("PostFeedView.qml")
-            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
+            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true, showFavorites: true })
             feedViews.set(listView.uri, view)
             skywalker.syncListFeed(modelId)
         }
@@ -1957,6 +1974,8 @@ ApplicationWindow {
             if (currentItem && typeof currentItem.uncover === 'function')
                 currentItem.uncover()
         }
+
+        favoritesTabBar.update()
     }
 
     function pushStack(item, operation) {
@@ -1970,6 +1989,8 @@ ApplicationWindow {
         if (item instanceof PostFeedView && item.showAsHome) {
             item.activate()
         }
+
+        favoritesTabBar.update()
     }
 
     function unwindStack(stack = null) {
@@ -2082,6 +2103,8 @@ ApplicationWindow {
         let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
         chatView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         chatStack.push(chatView)
+
+        favoritesTabBar.update()
 
         initHandlers()
 

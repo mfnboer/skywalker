@@ -9,6 +9,7 @@ SkyPage {
     property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
     property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
     property int margin: 10
+    readonly property int favoritesY: currentViewItem ? currentViewItem.favoritesY : 0
 
     id: page
 
@@ -17,20 +18,6 @@ SkyPage {
 
     onCover: {
         viewStack.cover()
-    }
-
-    header: PostFeedHeader {
-        skywalker: page.skywalker
-        feedName: skywalker.timelineModel.feedName
-        showAsHome: true
-        isHomeFeed: true
-        showMoreOptions: true
-
-        onAddUserView: page.addUserView()
-        onAddHashtagView: page.addHashtagView()
-        onAddFocusHashtagView: page.addFocusHashtagView()
-        onAddMediaView: page.showMediaView()
-        onAddVideoView: page.showVideoView()
     }
 
     footer: SkyFooter {
@@ -44,66 +31,11 @@ SkyPage {
         onMessagesClicked: root.viewChat()
     }
 
-    TabBar {
-        property int numDots: 0
-
-        id: viewBar
-        z: guiSettings.headerZLevel
-        width: parent.width
-        contentHeight: 40
-        Material.background: guiSettings.backgroundColor
-        visible: count > 1
-
-        onCurrentItemChanged: currentItem.showDot = false
-
-        SkyTabWithCloseButton {
-            id: tabTimeline
-            text: qsTr("Full feed")
-            showCloseButton: false
-            onShowDotChanged: viewBar.numDots += showDot ? 1 : -1
-        }
-
-        function addTab(name, backgroundColor, profile) {
-            let component = Qt.createComponent("SkyTabWithCloseButton.qml")
-            let tab = component.createObject(viewBar, {
-                                                 text: name,
-                                                 backgroundColor: backgroundColor,
-                                                 profile: profile })
-            tab.onShowDotChanged.connect(() => viewBar.numDots += tab.showDot ? 1 : -1)
-            tab.onClosed.connect(() => page.closeView(tab))
-            addItem(tab)
-            setCurrentIndex(count - 1)
-        }
-
-        function updateTab(index, name, backgroundColor, profile) {
-            let item = itemAt(index)
-
-            if (!item) {
-                console.warn("Item does not exist:", index, name)
-                return
-            }
-
-            item.text = name
-            item.backgroundColor = backgroundColor
-            item.profile = profile
-        }
-    }
-
-    Rectangle {
-        id: viewBarSeparator
-        z: guiSettings.headerZLevel
-        anchors.top: viewBar.bottom
-        width: parent.width
-        height: visible ? 1 : 0
-        color: viewBar.numDots > 0 ? guiSettings.accentColor : guiSettings.separatorColor
-        visible: viewBar.visible
-    }
-
     StackLayout {
         property list<var> syncBackup: []
 
         id: viewStack
-        anchors.top: viewBar.visible ? viewBarSeparator.bottom : parent.top
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: viewBar.currentIndex
@@ -112,6 +44,7 @@ SkyPage {
             id: timelineView
             Layout.preferredWidth: viewStack.width
             Layout.preferredHeight: viewStack.height
+            headerMargin: viewBar.visible ? (viewBar.height + viewBarSeparator.height) : 0
             skywalker: page.skywalker
 
             onNewPosts: {
@@ -133,6 +66,7 @@ SkyPage {
 
                 Layout.preferredWidth: viewStack.width
                 Layout.preferredHeight: viewStack.height
+                headerMargin: viewBar.height + viewBarSeparator.height
                 skywalker: page.skywalker
                 isView: true
                 model: modelData
@@ -190,6 +124,61 @@ SkyPage {
             if (item)
                 item.cover()
         }
+    }
+
+    SkyTabBar {
+        property int numDots: 0
+
+        id: viewBar
+        y: currentViewItem ? currentViewItem.visibleHeaderHeight : 0
+        z: guiSettings.headerZLevel
+        width: parent.width
+        Material.background: guiSettings.backgroundColor
+        visible: count > 1
+
+        onCurrentItemChanged: currentItem.showDot = false
+
+        SkyTabWithCloseButton {
+            id: tabTimeline
+            text: qsTr("Full feed")
+            showCloseButton: false
+            onShowDotChanged: viewBar.numDots += showDot ? 1 : -1
+        }
+
+        function addTab(name, backgroundColor, profile) {
+            let component = Qt.createComponent("SkyTabWithCloseButton.qml")
+            let tab = component.createObject(viewBar, {
+                                                 text: name,
+                                                 backgroundColor: backgroundColor,
+                                                 profile: profile })
+            tab.onShowDotChanged.connect(() => viewBar.numDots += tab.showDot ? 1 : -1)
+            tab.onClosed.connect(() => page.closeView(tab))
+            addItem(tab)
+            setCurrentIndex(count - 1)
+        }
+
+        function updateTab(index, name, backgroundColor, profile) {
+            let item = itemAt(index)
+
+            if (!item) {
+                console.warn("Item does not exist:", index, name)
+                return
+            }
+
+            item.text = name
+            item.backgroundColor = backgroundColor
+            item.profile = profile
+        }
+    }
+
+    Rectangle {
+        id: viewBarSeparator
+        z: guiSettings.headerZLevel
+        anchors.top: viewBar.bottom
+        width: parent.width
+        height: visible ? 1 : 0
+        color: viewBar.numDots > 0 ? guiSettings.accentColor : guiSettings.separatorColor
+        visible: viewBar.visible
     }
 
     BusyIndicator {

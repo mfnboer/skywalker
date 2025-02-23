@@ -537,7 +537,7 @@ SkyPage {
                 }
             }
 
-            TabBar {
+            SkyTabBar {
                 id: feedMenuBar
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 currentIndex: isLabeler ? 0 : 1

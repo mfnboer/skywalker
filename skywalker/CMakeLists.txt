@@ -479,6 +479,9 @@ qt_add_qml_module(libskywalker
         SOURCES virtual_keyboard_utils.h
         SOURCES virtual_keyboard_utils.cpp
         SOURCES base_list_model.h
+        QML_FILES FavoritesTabBar.qml
+        QML_FILES SkyTabBar.qml
+        QML_FILES FavoriteTabButton.qml
 )
 
 if (NOT ANDROID)

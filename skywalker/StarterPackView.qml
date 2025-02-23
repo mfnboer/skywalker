@@ -127,7 +127,7 @@ SkyPage {
         }
     }
 
-    TabBar {
+    SkyTabBar {
         id: feedsBar
         anchors.top: starterPackHeader.bottom
         width: parent.width

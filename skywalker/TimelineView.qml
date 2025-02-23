@@ -4,12 +4,15 @@ import skywalker
 
 SkyListView {
     required property var skywalker
+    property int headerMargin: 0
     property bool inSync: false
     property bool isView: false
     property int unreadPosts: 0
     property int calibrationDy: 0
     property int newLastVisibleIndex: -1
     property int newLastVisibleOffsetY: 0
+    readonly property int visibleHeaderHeight: headerItem ? Math.max(headerItem.height - headerMargin - (contentY - headerItem.y), 0) : 0
+    readonly property int favoritesY : headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
 
     signal newPosts
 
@@ -18,6 +21,23 @@ SkyListView {
     model: skywalker.timelineModel
 
     Accessible.name: model ? model.feedName : ""
+
+    header: PostFeedHeader {
+        skywalker: page.skywalker
+        feedName: skywalker.timelineModel.feedName
+        showAsHome: true
+        isHomeFeed: true
+        showMoreOptions: true
+        showFavoritesPlaceHolder: true
+        bottomMargin: headerMargin
+
+        onAddUserView: page.addUserView()
+        onAddHashtagView: page.addHashtagView()
+        onAddFocusHashtagView: page.addFocusHashtagView()
+        onAddMediaView: page.showMediaView()
+        onAddVideoView: page.showVideoView()
+    }
+    headerPositioning: ListView.PullBackHeader
 
     footer: AccessibleText {
         width: timelineView.width

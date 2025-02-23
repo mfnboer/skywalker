@@ -27,11 +27,12 @@ SkyListView {
         showLanguageFilter: searchFeed.languageList.length > 0
         filteredLanguages: searchFeed.languageList
         showPostWithMissingLanguage: false
+        showFavoritesPlaceHolder: true
 
         onClosed: feedView.closed()
         onFeedAvatarClicked: root.viewSearchViewFeed(searchFeed)
     }
-    headerPositioning: ListView.OverlayHeader
+    headerPositioning: ListView.PullBackHeader
 
     footer: SkyFooter {
         visible: showAsHome

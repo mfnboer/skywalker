@@ -21,6 +21,7 @@ class FavoriteFeeds : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool updateSavedFeedsModelInProgress READ getUpdateSavedFeedsModelInProgress NOTIFY updateSavedFeedsModelInProgressChanged FINAL)
+    Q_PROPERTY(QList<FavoriteFeedView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
 
 public:
     explicit FavoriteFeeds(Skywalker* skywalker, QObject* parent = nullptr);
@@ -70,6 +71,7 @@ signals:
     void searchPinned(QString name);
     void searchUnpinned(QString name);
     void updateSavedFeedsModelInProgressChanged();
+    void pinnedFeedsChanged();
 
 private:
     void addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);

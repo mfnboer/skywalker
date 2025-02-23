@@ -18,7 +18,7 @@ SkyPage {
         onBack: page.closed()
     }
 
-    TabBar {
+    SkyTabBar {
         id: listsBar
         width: parent.width
 
