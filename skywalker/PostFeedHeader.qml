@@ -32,7 +32,7 @@ Rectangle {
 
     id: header
     width: parent.width
-    height: (showFavoritesPlaceHolder ? favoritesPlaceHolder.height : guiSettings.headerHeight) + bottomMargin
+    height: headerRow.height + (showFavoritesPlaceHolder ? favoritesPlaceHolder.height : 0) + bottomMargin
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
@@ -43,7 +43,6 @@ Rectangle {
         width: parent.width
         height: guiSettings.headerHeight
         spacing: 0
-        visible: !showFavoritesPlaceHolder
 
         SvgButton {
             id: backButton
@@ -285,6 +284,7 @@ Rectangle {
 
     Rectangle {
         id: favoritesPlaceHolder
+        anchors.top: headerRow.bottom
         width: parent.width
         height: guiSettings.tabBarHeight
         visible: showFavoritesPlaceHolder

@@ -156,6 +156,8 @@ ApplicationWindow {
             viewSearchFeed(favorite.searchFeed)
             break
         }
+
+        favoritesTabBar.setCurrent(favorite)
     }
 
     Skywalker {
@@ -1616,6 +1618,7 @@ ApplicationWindow {
     function viewHomeFeed() {
         viewTimeline()
         unwindStack()
+        favoritesTabBar.setCurrentIndex(0)
     }
 
     function viewFeed(generatorView) {

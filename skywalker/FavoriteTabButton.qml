@@ -23,6 +23,8 @@ TabButton {
             avatarUrl: favorite.avatarThumb
             unknownSvg: getDefaultAvatar()
             contentMode: favorite.contentMode
+
+            onClicked: button.clicked()
         }
 
         Rectangle {
@@ -43,7 +45,7 @@ TabButton {
 
     background: Rectangle {
         anchors.fill: parent
-        color: parent.backgroundColor
+        color: guiSettings.backgroundColor
     }
 
     function getDefaultAvatar() {
