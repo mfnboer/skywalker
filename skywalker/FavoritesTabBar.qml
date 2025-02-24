@@ -7,28 +7,29 @@ SkyTabBar {
 
     id: tabBar
 
-    AccessibleTabButton {
-        text: qsTr("Following", "timeline title")
-
-        onClicked: root.viewHomeFeed()
-    }
-
     Repeater {
-        model: skywalker.favoriteFeeds.pinnedFeeds
+        model: skywalker.favoriteFeeds.pinnedFeeds.length + 1
 
         FavoriteTabButton {
-            required property favoritefeedview modelData
+            required property int index
+            property favoritefeedview homeFeed
+            readonly property favoritefeedview favoriteFeed: index > 0 ? skywalker.favoriteFeeds.pinnedFeeds[index - 1] : homeFeed
 
             width: implicitWidth
-            favorite: modelData
-            onClicked: root.showFavorite(modelData)
+            favorite: favoriteFeed
+            onClicked: {
+                if (index === 0)
+                    root.viewHomeFeed()
+                else
+                    root.showFavorite(favoriteFeed)
+            }
         }
     }
 
     function setCurrent(favorite) {
         skywalker.favoriteFeeds.pinnedFeeds.forEach((pinned, index) => {
             if (favorite.isSame(pinned))
-                tabBar.currentIndex = index + 1
+                tabBar.setCurrentIndex(index + 1)
         })
     }
 }

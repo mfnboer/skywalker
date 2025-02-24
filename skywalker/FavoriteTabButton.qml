@@ -10,7 +10,7 @@ TabButton {
     display: AbstractButton.TextOnly
     Accessible.name: qsTr(`Press to show ${text}`)
 
-    text: favorite.name
+    text: favorite.isNull() ? qsTr("Following", "timeline title") : favorite.name
 
     contentItem: Row {
         id: tabRow
@@ -49,13 +49,16 @@ TabButton {
     }
 
     function getDefaultAvatar() {
+        if (favorite.isNull())
+            return SvgFilled.home
+
         switch (favorite.type) {
         case QEnums.FAVORITE_FEED:
             return guiSettings.feedDefaultAvatar(favorite.generatorView)
         case QEnums.FAVORITE_LIST:
             return SvgFilled.list
         case QEnums.FAVORITE_SEARCH:
-            return modelData.searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
+            return favorite.searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
         }
 
         return SvgOutline.feed

@@ -99,7 +99,8 @@ ApplicationWindow {
         z: guiSettings.headerZLevel + 10
         width: parent.width
         skywalker: root.getSkywalker()
-        visible: (currentView instanceof PostFeedView && currentView.showFavorites) || currentView instanceof TimelinePage
+        visible: (currentView instanceof PostFeedView && currentView.showFavorites) ||
+                 currentView instanceof TimelinePage || currentView instanceof SearchFeedView
 
         function update() {
             currentView = currentStackItem()

@@ -20,6 +20,7 @@ SkyListView {
     id: postFeedView
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
+    cacheBuffer: 2000
 
     Accessible.name: underlyingModel ? underlyingModel.feedName : ""
 
