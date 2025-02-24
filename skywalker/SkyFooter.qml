@@ -82,36 +82,6 @@ Rectangle {
             Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
             onClicked: notificationsClicked()
         }
-
-        Item {
-            Layout.preferredHeight: parent.height
-            Layout.fillWidth: true
-
-            RoundButton {
-                anchors.centerIn: parent
-                width: height
-                height: parent.height
-                radius: width / 2
-                Material.background: guiSettings.buttonNeutralColor
-                display: AbstractButton.TextOnly
-                visible: floatingButtons
-            }
-
-            Avatar {
-                id: avatar
-                anchors.centerIn: parent
-                width: height
-                height: parent.height - (floatingButtons ? 10 : 20)
-                author: skywalker.user
-                onClicked: root.showSettingsDrawer()
-                onPressAndHold: root.showSwitchUserDrawer()
-
-                Accessible.role: Accessible.ButtonMenu
-                Accessible.name: qsTr("Skywalker menu")
-                Accessible.description: Accessible.name
-                Accessible.onPressAction: clicked()
-            }
-        }
     }
 
     PostButton {

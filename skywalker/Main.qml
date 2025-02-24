@@ -92,18 +92,23 @@ ApplicationWindow {
     }
 
     FavoritesTabBar {
-        property var currentView: currentStackItem()
+        property var favoritesSwipeView
 
         id: favoritesTabBar
-        y: visible ? currentView.favoritesY : 0
+        y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
         z: guiSettings.headerZLevel + 10
         width: parent.width
-        skywalker: root.getSkywalker()
-        visible: (currentView instanceof PostFeedView && currentView.showFavorites) ||
-                 currentView instanceof TimelinePage || currentView instanceof SearchFeedView
+        favoriteFeeds: skywalker.favoriteFeeds
+        visible: false
+
+        onCurrentIndexChanged: {
+            if (favoritesSwipeView)
+                favoritesSwipeView.setCurrentIndex(currentIndex)
+        }
 
         function update() {
-            currentView = currentStackItem()
+            let view = currentStackItem()
+            visible = (view instanceof FavoritesSwipeView)
         }
     }
 
@@ -123,6 +128,9 @@ ApplicationWindow {
     function showLastViewedFeed() {
         let userSettings = skywalker.getUserSettings()
         const lastViewed = userSettings.getLastViewedFeed(skywalker.getUserDid())
+
+        console.debug("Show last viewed feed:", lastViewed)
+        getFavoritesSwipeView().trackLastViewedFeed = true
 
         if (lastViewed === "home")
             return
@@ -146,17 +154,18 @@ ApplicationWindow {
     function showFavorite(favorite) {
         console.debug("Show favorite:", favorite)
 
-        switch (favorite.type) {
-        case QEnums.FAVORITE_FEED:
-            viewFeed(favorite.generatorView)
-            break
-        case QEnums.FAVORITE_LIST:
-            viewListFeed(favorite.listView)
-            break
-        case QEnums.FAVORITE_SEARCH:
-            viewSearchFeed(favorite.searchFeed)
-            break
-        }
+        // TODO
+        // switch (favorite.type) {
+        // case QEnums.FAVORITE_FEED:
+        //     viewFeed(favorite.generatorView)
+        //     break
+        // case QEnums.FAVORITE_LIST:
+        //     viewListFeed(favorite.listView)
+        //     break
+        // case QEnums.FAVORITE_SEARCH:
+        //     viewSearchFeed(favorite.searchFeed)
+        //     break
+        // }
 
         favoritesTabBar.setCurrent(favorite)
     }
@@ -1167,6 +1176,7 @@ ApplicationWindow {
     function signOutCurrentUser() {
         skywalker.stopTimelineAutoUpdate()
         getTimelineView().stopSync()
+        getFavoritesSwipeView().reset()
         unwindStack()
         destroySearchView()
         destroyFeedsView()
@@ -1517,7 +1527,7 @@ ApplicationWindow {
 
     function viewTimeline() {
         stackLayout.currentIndex = stackLayout.timelineIndex
-        skywalker.saveLastViewedFeed("home")
+        skywalker.saveLastViewedFeed("home") // TODO: remove?
     }
 
     function viewNotifications() {
@@ -1924,8 +1934,12 @@ ApplicationWindow {
         Qt.openUrlExternally(url)
     }
 
-    function getTimelineView() {
+    function getFavoritesSwipeView() {
         return timelineStack.get(0)
+    }
+
+    function getTimelineView() {
+        return getFavoritesSwipeView().itemAt(0)
     }
 
     function getNotificationView() {
@@ -2093,9 +2107,12 @@ ApplicationWindow {
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
 
-        let timelineComponent = guiSettings.createComponent("TimelinePage.qml")
+        // TODO let timelineComponent = guiSettings.createComponent("TimelinePage.qml")
+        let timelineComponent = guiSettings.createComponent("FavoritesSwipeView.qml")
         let timelinePage = timelineComponent.createObject(root, { skywalker: skywalker })
+        timelinePage.onCurrentIndexChanged.connect(() => { favoritesTabBar.setCurrentIndex(timelinePage.currentIndex) })
         timelineStack.push(timelinePage)
+        favoritesTabBar.favoritesSwipeView = timelinePage
 
         let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,

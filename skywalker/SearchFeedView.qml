@@ -9,6 +9,7 @@ SkyListView {
     required property searchfeed searchFeed
     property bool showAsHome: false
     property int unreadPosts: 0
+    readonly property int favoritesY: headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
 
     signal closed
 

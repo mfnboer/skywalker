@@ -1,0 +1,120 @@
+import QtQuick
+import QtQuick.Controls
+import skywalker
+
+SwipeView {
+    required property var skywalker
+    property bool trackLastViewedFeed: false
+    readonly property var currentView: getCurrentView()
+
+    id: view
+
+    TimelinePage {
+        skywalker: view.skywalker
+
+        SwipeView.onIsCurrentItemChanged: {
+            if (SwipeView.isCurrentItem && trackLastViewedFeed)
+                skywalker.saveLastViewedFeed("home")
+        }
+    }
+
+    Repeater {
+        model: skywalker.favoriteFeeds.pinnedFeeds
+
+        Loader {
+            required property var modelData
+
+            sourceComponent: getComponent(modelData)
+            active: false
+
+            SwipeView.onIsCurrentItemChanged: {
+                if (SwipeView.isCurrentItem) {
+                    active = true
+
+                    if (item && trackLastViewedFeed)
+                        item.saveAsLastViewedFeed()
+                }
+            }
+        }
+    }
+
+    Component {
+        id: favoriteFeedComp
+
+        PostFeedView {
+            skywalker: view.skywalker
+            modelId: skywalker.createPostFeedModel(modelData.generatorView)
+            showAsHome: true
+            showFavorites: true
+
+            function saveAsLastViewedFeed() {
+                skywalker.saveLastViewedFeed(modelData.generatorView.uri)
+            }
+
+            Component.onCompleted: skywalker.getFeed(modelId)
+        }
+    }
+
+    Component {
+        id: favoriteListComp
+
+        PostFeedView {
+            skywalker: view.skywalker
+            modelId: skywalker.createPostFeedModel(modelData.listView)
+            showAsHome: true
+            showFavorites: true
+
+            function saveAsLastViewedFeed() {
+                skywalker.saveLastViewedFeed(modelData.listView.uri)
+            }
+
+            Component.onCompleted: skywalker.syncListFeed(modelId)
+        }
+    }
+
+    Component {
+        id: favoriteSearchComp
+
+        SearchFeedView {
+            skywalker: view.skywalker
+            searchFeed: modelData.searchFeed
+            showAsHome: true
+
+            function saveAsLastViewedFeed() {
+                skywalker.saveLastViewedFeed(modelData.searchFeed.name)
+            }
+        }
+    }
+
+    function getComponent(favorite) {
+        switch (favorite.type) {
+        case QEnums.FAVORITE_FEED:
+            return favoriteFeedComp
+        case QEnums.FAVORITE_LIST:
+            return favoriteListComp
+        case QEnums.FAVORITE_SEARCH:
+            return favoriteSearchComp
+        }
+
+        return undefined
+    }
+
+    function getCurrentView() {
+        if (currentIndex === 0)
+            return currentItem // TimelinePage
+
+        if (currentItem)
+            return currentItem.item
+
+        return null
+    }
+
+    function reset() {
+        trackLastViewedFeed = false
+
+        for (let i = 1; i < count; ++i) {
+            let loader = itemAt(i)
+            loader.active = false
+        }
+    }
+}

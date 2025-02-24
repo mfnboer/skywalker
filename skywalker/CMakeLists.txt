@@ -482,6 +482,7 @@ qt_add_qml_module(libskywalker
         QML_FILES FavoritesTabBar.qml
         QML_FILES SkyTabBar.qml
         QML_FILES FavoriteTabButton.qml
+        QML_FILES FavoritesSwipeView.qml
 )
 
 if (NOT ANDROID)
