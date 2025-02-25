@@ -502,6 +502,14 @@ const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
     return gap;
 }
 
+void PostFeedModel::setGetFeedInProgress(bool inProgress)
+{
+    AbstractPostFeedModel::setGetFeedInProgress(inProgress);
+
+    for (auto& filterModel : mFilteredPostFeedModels)
+        filterModel->setGetFeedInProgress(inProgress);
+}
+
 void PostFeedModel::getFeed(IFeedPager* pager)
 {
     if (mIsHomeFeed)
@@ -579,6 +587,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     model->setModelId(mModelId);
     model->setPosts(mFeed, mFeed.size());
     model->setEndOfFeed(isEndOfFeed());
+    model->setGetFeedInProgress(isGetFeedInProgress());
     auto* retval = model.get();
 
     emit filteredPostFeedModelAboutToBeAdded();

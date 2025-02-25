@@ -18,6 +18,8 @@ class FeedListModel : public QAbstractListModel,
                       public LocalProfileChanges
 {
     Q_OBJECT
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+
 public:
     enum class Role {
         Feed = Qt::UserRole + 1,
@@ -43,6 +45,12 @@ public:
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
+    void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+
+signals:
+    void getFeedInProgressChanged();
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
@@ -64,6 +72,7 @@ private:
     FeedList mFeeds;
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
+    bool mGetFeedInProgress = false;
 };
 
 }

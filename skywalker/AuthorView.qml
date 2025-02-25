@@ -896,13 +896,13 @@ SkyPage {
                     }
 
                     FlickableRefresher {
-                        inProgress: skywalker.getFeedInProgress
+                        inProgress: model.getFeedInProgress
                         bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
                     }
 
                     BusyIndicator {
                         anchors.centerIn: parent
-                        running: skywalker.getFeedInProgress
+                        running: model.getFeedInProgress
                     }
 
                     EmptyListIndication {

@@ -226,6 +226,14 @@ QString AbstractPostFeedModel::getPostCid(int index) const
     return mFeed[index].getCid();
 }
 
+void AbstractPostFeedModel::setGetFeedInProgress(bool inProgress)
+{
+    if (inProgress != mGetFeedInProgress) {
+        mGetFeedInProgress = inProgress;
+        emit getFeedInProgressChanged();
+    }
+}
+
 int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);

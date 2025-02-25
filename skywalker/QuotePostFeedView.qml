@@ -27,7 +27,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: skywalker.getFeedInProgress
+        inProgress: model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
         bottomOvershootFun: () => skywalker.getQuotesFeedNextPage(modelId)
         enableScrollToTop: true
@@ -43,7 +43,7 @@ SkyListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: skywalker.getFeedInProgress
+        running: model.getFeedInProgress
     }
 
 

@@ -106,7 +106,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: skywalker.getFeedInProgress
+        inProgress: model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
         topOvershootFun: () => model.getFeed(skywalker)
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
@@ -125,7 +125,7 @@ SkyListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: skywalker.getFeedInProgress
+        running: model.getFeedInProgress
     }
 
     Component {
@@ -331,13 +331,10 @@ SkyListView {
     }
 
     function resetHeaderPosition() {
-        if (mediaTilesLoader.item) {
+        if (mediaTilesLoader.item)
             mediaTilesLoader.item.resetHeaderPosition()
-        }
-        else {
-            if (headerItem)
-                headerItem.y = contentY
-        }
+        else
+            privateResetHeaderPosition()
     }
 
     function doMoveToPost(index) {

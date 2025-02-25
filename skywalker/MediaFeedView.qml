@@ -55,7 +55,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: model.feedType === QEnums.FEED_AUTHOR ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
+        inProgress: model.feedType === QEnums.FEED_AUTHOR ? skywalker.getAuthorFeedInProgress : model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         enableScrollToTop: false

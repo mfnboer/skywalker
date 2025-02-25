@@ -123,6 +123,14 @@ void FeedListModel::addFeeds(const GeneratorViewList& feeds)
     qDebug() << "New feeds size:" << mFeeds.size();
 }
 
+void FeedListModel::setGetFeedInProgress(bool inProgress)
+{
+    if (inProgress != mGetFeedInProgress) {
+        mGetFeedInProgress = inProgress;
+        emit getFeedInProgressChanged();
+    }
+}
+
 QHash<int, QByteArray> FeedListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{

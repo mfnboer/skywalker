@@ -209,7 +209,7 @@ SkyPage {
             }
 
             FlickableRefresher {
-                inProgress: skywalker.getFeedInProgress
+                inProgress: model.getFeedInProgress
                 topOvershootFun: () => skywalker.getListFeed(postFeedModelId)
                 bottomOvershootFun: () => skywalker.getListFeedNextPage(postFeedModelIds)
                 topText: qsTr("Pull down to refresh feed")
@@ -224,7 +224,7 @@ SkyPage {
             BusyIndicator {
                 id: busyIndicator
                 anchors.centerIn: parent
-                running: skywalker.getFeedInProgress
+                running: model.getFeedInProgress
             }
         }
     }

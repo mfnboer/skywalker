@@ -53,7 +53,6 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(FocusHashtags* focusHashtags READ getFocusHashtags CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getMentionsInProgress READ isGetMentionsInProgress NOTIFY getMentionsInProgressChanged FINAL)
@@ -218,8 +217,6 @@ public:
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
     bool isGetTimelineInProgress() const override { return mGetTimelineInProgress; }
-    void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const override { return mGetFeedInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
     bool isGetPostThreadInProgress() const { return mGetPostThreadInProgress; }
     void setGetNotificationsInProgress(bool inProgress);
@@ -273,7 +270,6 @@ signals:
     void dataMigrationDone();
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
-    void getFeedInProgressChanged();
     void getAuthorFeedInProgressChanged();
     void getNotificationsInProgressChanged();
     void getMentionsInProgressChanged();
@@ -384,7 +380,6 @@ private:
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
-    bool mGetFeedInProgress = false; // for feeds and listFeeds and feedList and starterPackList
     bool mGetPostThreadInProgress = false;
     bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;
