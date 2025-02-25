@@ -1064,11 +1064,15 @@ void Skywalker::syncListFeed(int modelId, QDateTime tillTimestamp, const QString
             auto* model = getPostFeedModel(modelId);
 
             if (model)
+            {
                 model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
             else
+            {
                 qWarning() << "Model does not exist:" << modelId;
+            }
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
             finishFeedSyncFailed(modelId);
     });
 }
@@ -1343,11 +1347,14 @@ void Skywalker::getFeed(int modelId, int limit, int maxPages, int minEntries, co
             auto* model = getPostFeedModel(modelId);
 
             if (model)
+            {
                 model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
             else
+            {
                 qWarning() << "Model does not exist:" << modelId;
-
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            }
         });
 }
 
@@ -1442,11 +1449,14 @@ void Skywalker::getListFeed(int modelId, int limit, int maxPages, int minEntries
             auto* model = getPostFeedModel(modelId);
 
             if (model)
+            {
                 model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
             else
+            {
                 qWarning() << "Model does not exist:" << modelId;
-
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            }
         });
 }
 
@@ -1505,46 +1515,49 @@ void Skywalker::getQuotesFeed(int modelId, int limit, int maxPages, int minEntri
     model->setGetFeedInProgress(true);
 
     mBsky->getQuotes(quoteUri, {}, limit, Utils::makeOptionalString(cursor),
-                   [this, modelId, maxPages, minEntries, cursor](auto feed){
-                       int addedPosts = 0;
-                       auto* model = getPostFeedModel(modelId);
+        [this, modelId, maxPages, minEntries, cursor](auto feed){
+            int addedPosts = 0;
+            auto* model = getPostFeedModel(modelId);
 
-                       if (!model)
-                       {
-                           qWarning() << "Model does not exist:" << modelId;
-                           return;
-                       }
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
 
-                       model->setGetFeedInProgress(false);
+            model->setGetFeedInProgress(false);
 
-                       if (cursor.isEmpty())
-                       {
-                           model->setFeed(std::move(feed));
-                           addedPosts = model->rowCount();
-                       }
-                       else
-                       {
-                           const int oldRowCount = model->rowCount();
-                           model->addFeed(std::move(feed));
-                           addedPosts = model->rowCount() - oldRowCount;
-                       }
+            if (cursor.isEmpty())
+            {
+                model->setFeed(std::move(feed));
+                addedPosts = model->rowCount();
+            }
+            else
+            {
+                const int oldRowCount = model->rowCount();
+                model->addFeed(std::move(feed));
+                addedPosts = model->rowCount() - oldRowCount;
+            }
 
-                       const int postsToAdd = minEntries - addedPosts;
+            const int postsToAdd = minEntries - addedPosts;
 
-                       if (postsToAdd > 0)
-                           getFeedNextPage(modelId, maxPages - 1, postsToAdd);
-                   },
-                   [this, modelId](const QString& error, const QString& msg){
-                       qInfo() << "getQuotesFeed FAILED:" << error << " - " << msg;
-                       auto* model = getPostFeedModel(modelId);
+            if (postsToAdd > 0)
+                getFeedNextPage(modelId, maxPages - 1, postsToAdd);
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qInfo() << "getQuotesFeed FAILED:" << error << " - " << msg;
+            auto* model = getPostFeedModel(modelId);
 
-                       if (model)
-                           model->setGetFeedInProgress(false);
-                       else
-                           qWarning() << "Model does not exist:" << modelId;
-
-                       emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
-                   });
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+        });
 }
 
 void Skywalker::getQuotesFeedNextPage(int modelId, int maxPages, int minEntries)
@@ -2362,10 +2375,12 @@ void Skywalker::getAuthorFeedList(const QString& did, int id, const QString& cur
             const auto* model = mFeedListModels.get(id);
 
             if (model)
+            {
                 (*model)->setGetFeedInProgress(false);
+                (*model)->setFeedError(msg);
+            }
 
             qDebug() << "getAuthorLikes failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

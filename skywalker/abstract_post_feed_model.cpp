@@ -228,9 +228,22 @@ QString AbstractPostFeedModel::getPostCid(int index) const
 
 void AbstractPostFeedModel::setGetFeedInProgress(bool inProgress)
 {
-    if (inProgress != mGetFeedInProgress) {
+    if (inProgress != mGetFeedInProgress)
+    {
         mGetFeedInProgress = inProgress;
         emit getFeedInProgressChanged();
+
+        if (mGetFeedInProgress)
+            clearFeedError();
+    }
+}
+
+void AbstractPostFeedModel::setFeedError(const QString& error)
+{
+    if (error != mFeedError)
+    {
+        mFeedError = error;
+        emit feedErrorChanged();
     }
 }
 

@@ -510,6 +510,14 @@ void PostFeedModel::setGetFeedInProgress(bool inProgress)
         filterModel->setGetFeedInProgress(inProgress);
 }
 
+void PostFeedModel::setFeedError(const QString& error)
+{
+    AbstractPostFeedModel::setFeedError(error);
+
+    for (auto& filterModel : mFilteredPostFeedModels)
+        filterModel->setFeedError(error);
+}
+
 void PostFeedModel::getFeed(IFeedPager* pager)
 {
     if (mIsHomeFeed)

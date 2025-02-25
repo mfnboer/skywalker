@@ -120,6 +120,8 @@ SkyListView {
         svg: SvgOutline.noPosts
         text: qsTr("Feed is empty")
         list: postFeedView
+
+        onRetry: model.getFeed(skywalker)
     }
 
     BusyIndicator {

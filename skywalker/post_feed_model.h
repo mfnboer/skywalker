@@ -98,6 +98,7 @@ public:
     void reset();
 
     void setGetFeedInProgress(bool inProgress) override;
+    void setFeedError(const QString& error) override;
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
 

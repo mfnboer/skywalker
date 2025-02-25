@@ -92,7 +92,7 @@ SkyPage {
             syncBackup = []
 
             for (let i = 1; i < count; ++i) {
-                if (i == skipIndex)
+                if (i === skipIndex)
                     continue
 
                 const view = children[i]

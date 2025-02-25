@@ -19,6 +19,7 @@ class FeedListModel : public QAbstractListModel,
 {
     Q_OBJECT
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+    Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
 
 public:
     enum class Role {
@@ -48,8 +49,13 @@ public:
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 
+    void setFeedError(const QString& error);
+    void clearFeedError() { setFeedError({}); }
+    const QString& getFeedError() const { return mFeedError; }
+
 signals:
     void getFeedInProgressChanged();
+    void feedErrorChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -73,6 +79,7 @@ private:
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
     bool mGetFeedInProgress = false;
+    QString mFeedError;
 };
 
 }

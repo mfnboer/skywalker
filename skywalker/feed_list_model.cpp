@@ -131,6 +131,15 @@ void FeedListModel::setGetFeedInProgress(bool inProgress)
     }
 }
 
+void FeedListModel::setFeedError(const QString& error)
+{
+    if (error != mFeedError)
+    {
+        mFeedError = error;
+        emit feedErrorChanged();
+    }
+}
+
 QHash<int, QByteArray> FeedListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{

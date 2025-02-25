@@ -4,6 +4,7 @@ import QtQuick.Controls
 ListView {
     property bool enableOnScreenCheck: false
     property var anchorItem // item used to calibrate list position on insert of new posts
+    readonly property string error: (model && typeof model.error != 'undefined') ? model.error : ""
 
     signal covered
     signal uncovered
