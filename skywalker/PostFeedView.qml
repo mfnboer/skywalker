@@ -332,6 +332,13 @@ SkyListView {
         updateFeedUnreadPosts()
     }
 
+    function atStart() {
+        if (mediaTilesLoader.item)
+            return mediaTilesLoader.item.atYBeginning
+        else
+            return atYBeginning
+    }
+
     function resetHeaderPosition() {
         if (mediaTilesLoader.item)
             mediaTilesLoader.item.resetHeaderPosition()

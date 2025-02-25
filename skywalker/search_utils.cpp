@@ -143,21 +143,6 @@ void SearchUtils::setLastSearchedProfiles(const BasicProfileList& list)
     emit lastSearchedProfilesChanged();
 }
 
-void SearchUtils::setSearchPostsInProgress(const QString& sortOrder, bool inProgress)
-{
-    if (inProgress != mSearchPostsInProgress[sortOrder])
-    {
-        mSearchPostsInProgress[sortOrder] = inProgress;
-
-        if (sortOrder == ATProto::AppBskyFeed::SearchSortOrder::TOP)
-            emit searchPostsTopInProgressChanged();
-        else if (sortOrder == ATProto::AppBskyFeed::SearchSortOrder::LATEST)
-            emit searchPostsLatestInProgressChanged();
-        else
-            Q_ASSERT(false);
-    }
-}
-
 void SearchUtils::setSearchActorsInProgress(bool inProgress)
 {
     if (inProgress != mSearchActorsInProgress)
@@ -299,7 +284,9 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
     if (text.isEmpty())
         return;
 
-    if (getSearchPostsInProgress(sortOrder))
+    auto& model = *getSearchPostFeedModel(sortOrder);
+
+    if (model.isGetFeedInProgress())
     {
         qDebug() << "Search posts still in progress";
         return;
@@ -311,7 +298,8 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
     const std::optional<QDateTime> sinceParam = setSince ? std::optional<QDateTime>{since.toUTC()} : std::optional<QDateTime>{};
     const std::optional<QDateTime> untilParam = setUntil ? std::optional<QDateTime>{until.toUTC()} : std::optional<QDateTime>{};
 
-    setSearchPostsInProgress(sortOrder, true);
+    model.setGetFeedInProgress(true);
+
     bskyClient()->searchPosts(searchText, {}, Utils::makeOptionalString(cursor),
         Utils::makeOptionalString(sortOrder), Utils::makeOptionalString(authorId),
         Utils::makeOptionalString(mentionsId), sinceParam, untilParam,
@@ -321,8 +309,8 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
             if (!presence)
                 return;
 
-            setSearchPostsInProgress(sortOrder, false);
             auto& model = *getSearchPostFeedModel(sortOrder);
+            model.setGetFeedInProgress(false);
 
             int added = cursor.isEmpty() ?
                             model.setFeed(std::move(feed)) :
@@ -339,9 +327,10 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
             if (!presence)
                 return;
 
-            setSearchPostsInProgress(sortOrder, false);
+            auto& model = *getSearchPostFeedModel(sortOrder);
+            model.setGetFeedInProgress(false);
+            model.setFeedError(msg);
             qDebug() << "searchPosts failed:" << error << " - " << msg;
-            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -355,7 +344,9 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sor
     qDebug() << "Get next page search posts:" << text << "order:" << sortOrder << "max pages:" << maxPages
              << "min entries:" << minEntries;
 
-    if (getSearchPostsInProgress(sortOrder))
+    const auto& model = *getSearchPostFeedModel(sortOrder);
+
+    if (model.isGetFeedInProgress())
     {
         qDebug() << "Search posts still in progress";
         return;
@@ -368,7 +359,6 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sor
         return;
     }
 
-    const auto& model = *getSearchPostFeedModel(sortOrder);
     const auto& cursor = model.getCursorNextPage();
 
     if (cursor.isEmpty())

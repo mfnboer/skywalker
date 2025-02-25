@@ -332,7 +332,7 @@ SkyPage {
 
             FlickableRefresher {
                 scrollToTopButtonMargin: pageFooter.height
-                inProgress: searchUtils.searchPostsTopInProgress
+                inProgress: postsViewTop.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
                 topText: qsTr("Pull down to refresh")
@@ -342,11 +342,12 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewTop
+                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchPostsTopInProgress
+                running: postsViewTop.model.getFeedInProgress
             }
         }
 
@@ -368,7 +369,7 @@ SkyPage {
 
             FlickableRefresher {
                 scrollToTopButtonMargin: pageFooter.height
-                inProgress: searchUtils.searchPostsLatestInProgress
+                inProgress: postsViewLatest.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
                 topText: qsTr("Pull down to refresh")
@@ -378,11 +379,12 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewLatest
+                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchPostsLatestInProgress
+                running: postsViewLatest.model.getFeedInProgress
             }
         }
 

@@ -61,7 +61,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: searchUtils.searchPostsLatestInProgress
+        inProgress: feedView.model.getFeedInProgress
         topOvershootFun: () => feedView.search()
         bottomOvershootFun: () => feedView.getNextPage()
         topText: qsTr("Pull down to refresh feed")
@@ -78,7 +78,7 @@ SkyListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: searchUtils.searchPostsLatestInProgress
+        running: feedView.model.getFeedInProgress
     }
 
     SearchUtils {
@@ -95,6 +95,10 @@ SkyListView {
     function updateUnreadPosts() {
         const firstIndex = getFirstVisibleIndex()
         feedView.unreadPosts = Math.max(firstIndex, 0)
+    }
+
+    function atStart() {
+        return atYBeginning
     }
 
     function moveToHome() {

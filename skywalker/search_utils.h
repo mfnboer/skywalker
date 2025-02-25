@@ -22,8 +22,6 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(BasicProfileList lastSearchedProfiles READ getLastSearchedProfiles WRITE setLastSearchedProfiles NOTIFY lastSearchedProfilesChanged FINAL)
     Q_PROPERTY(TrendingTopicListModel* trendingTopicsListModel READ getTrendingTopicsListModel NOTIFY trendingTopicsListModelChanged FINAL)
     Q_PROPERTY(QEnums::ContentVisibility overrideAdultVisibility READ getOverrideAdultVisibility WRITE setOverrideAdultVisibility NOTIFY overrideAdultVisibilityChanged FINAL)
-    Q_PROPERTY(bool searchPostsTopInProgress READ getSearchPostsTopInProgress NOTIFY searchPostsTopInProgressChanged FINAL)
-    Q_PROPERTY(bool searchPostsLatestInProgress READ getSearchPostsLatestInProgress NOTIFY searchPostsLatestInProgressChanged FINAL)
     Q_PROPERTY(bool searchActorsInProgress READ getSearchActorsInProgress WRITE setSearchActorsInProgress NOTIFY searchActorsInProgressChanged FINAL)
     Q_PROPERTY(bool searchSuggestedActorsInProgress READ getSearchSuggestedActorsInProgress WRITE setSearchSuggestedActorsInProgress NOTIFY searchSuggestedActorsInProgressChanged FINAL)
     Q_PROPERTY(bool searchFeedsInProgress READ getSearchFeedsInProgress WRITE setSearchFeedsInProgress NOTIFY searchFeedsInProgressChanged FINAL)
@@ -81,10 +79,6 @@ public:
     void setHashtagTypeaheadList(const QStringList& list);
     const BasicProfileList& getLastSearchedProfiles() const { return mLastSearchedProfiles; }
     void setLastSearchedProfiles(const BasicProfileList& list);
-    bool getSearchPostsInProgress(const QString& sortOrder) { return mSearchPostsInProgress[sortOrder]; }
-    void setSearchPostsInProgress(const QString& sortOrder, bool inProgress);
-    bool getSearchPostsTopInProgress() { return getSearchPostsInProgress(ATProto::AppBskyFeed::SearchSortOrder::TOP); }
-    bool getSearchPostsLatestInProgress() { return getSearchPostsInProgress(ATProto::AppBskyFeed::SearchSortOrder::LATEST); }
     bool getSearchActorsInProgress() const { return mSearchActorsInProgress; }
     void setSearchActorsInProgress(bool inProgress);
     bool getSearchSuggestedActorsInProgress() const { return mSearchSuggestedActorsInProgress; }
@@ -99,8 +93,6 @@ signals:
     void authorTypeaheadListChanged();
     void hashtagTypeaheadListChanged();
     void lastSearchedProfilesChanged();
-    void searchPostsTopInProgressChanged();
-    void searchPostsLatestInProgressChanged();
     void searchActorsInProgressChanged();
     void searchSuggestedActorsInProgressChanged();
     void searchFeedsInProgressChanged();
@@ -121,7 +113,6 @@ private:
     int mSearchUsersModelId = -1;
     int mSearchSuggestedUsersModelId = -1;
     int mSearchFeedsModelId = -1;
-    std::unordered_map<QString, bool> mSearchPostsInProgress; // sort order -> progress
     bool mSearchActorsInProgress = false;
     bool mSearchSuggestedActorsInProgress = false;
     bool mSearchFeedsInProgress = false;

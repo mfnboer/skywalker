@@ -31,7 +31,15 @@ SwipeView {
 
             SwipeView.onIsCurrentItemChanged: {
                 if (SwipeView.isCurrentItem) {
-                    active = true
+                    if (active) {
+                        if (item && item.atStart()) {
+                            console.debug("Reload feed:", modelData.name)
+                            item.refreshFeed()
+                        }
+                    }
+                    else {
+                        active = true
+                    }
 
                     if (item && trackLastViewedFeed)
                         item.saveAsLastViewedFeed()
@@ -56,7 +64,11 @@ SwipeView {
                 skywalker.saveLastViewedFeed(modelData.generatorView.uri)
             }
 
-            Component.onCompleted: skywalker.getFeed(modelId)
+            function refreshFeed() {
+                skywalker.getFeed(modelId)
+            }
+
+            Component.onCompleted: refreshFeed()
         }
     }
 
@@ -73,7 +85,11 @@ SwipeView {
                 skywalker.saveLastViewedFeed(modelData.listView.uri)
             }
 
-            Component.onCompleted: skywalker.syncListFeed(modelId)
+            function refreshFeed() {
+                skywalker.syncListFeed(modelId)
+            }
+
+            Component.onCompleted: refreshFeed()
         }
     }
 
@@ -87,6 +103,10 @@ SwipeView {
 
             function saveAsLastViewedFeed() {
                 skywalker.saveLastViewedFeed(modelData.searchFeed.name)
+            }
+
+            function refreshFeed() {
+                search()
             }
         }
     }

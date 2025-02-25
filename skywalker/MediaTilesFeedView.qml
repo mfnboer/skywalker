@@ -14,7 +14,7 @@ GridView {
 
     property int headerHeight: 0
     property int startY: 0
-    readonly property int topY: (originY - contentY) - startY
+    readonly property int topY: (originY - contentY) - startY + verticalOvershoot
     readonly property int headerY: topY < 0 ? Math.max(topY, -headerHeight) : 0
 
     onTopYChanged: {

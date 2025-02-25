@@ -17,12 +17,6 @@ SkyTabBar {
 
             width: implicitWidth
             favorite: favoriteFeed
-            // onClicked: {
-            //     if (index === 0)
-            //         root.viewHomeFeed()
-            //     else
-            //         root.showFavorite(favoriteFeed)
-            // }
         }
     }
 
