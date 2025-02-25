@@ -186,6 +186,11 @@ SkyPage {
         running: !parent.enabled
     }
 
+    function resetHeaderPosition() {
+        if (currentViewItem)
+            currentViewItem.resetHeaderPosition()
+    }
+
     function setInSync(index, offsetY = 0) {
         timelineView.setInSync(index, offsetY)
     }

@@ -125,4 +125,9 @@ ListView {
         if (anchorItem)
             anchorItem.isAnchorItem = true
     }
+
+    function resetHeaderPosition() {
+        if (headerItem)
+            headerItem.y = contentY
+    }
 }

@@ -150,6 +150,7 @@ SkyListView {
         positionViewAtIndex(Math.max(index, 0), ListView.End)
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
+        resetHeaderPosition()
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
@@ -188,7 +189,7 @@ SkyListView {
             return
         }
 
-        moveToPost(index, () => { contentY -= offsetY })
+        moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
     }
 
     function rowsInsertedHandler(parent, start, end) {
@@ -197,7 +198,7 @@ SkyListView {
         console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
         calibrateUnreadPosts()
 
-        if (start == 0)
+        if (start === 0)
             newPosts()
     }
 
@@ -247,7 +248,7 @@ SkyListView {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
 
         if (index >= 0)
-            moveToPost(index, () => { contentY -= offsetY })
+            moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
         else
             moveToEnd()
 

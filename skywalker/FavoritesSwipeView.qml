@@ -15,6 +15,8 @@ SwipeView {
         SwipeView.onIsCurrentItemChanged: {
             if (SwipeView.isCurrentItem && trackLastViewedFeed)
                 skywalker.saveLastViewedFeed("home")
+
+            resetHeaderPosition()
         }
     }
 
@@ -34,6 +36,9 @@ SwipeView {
                     if (item && trackLastViewedFeed)
                         item.saveAsLastViewedFeed()
                 }
+
+                if (item)
+                    item.resetHeaderPosition()
             }
         }
     }

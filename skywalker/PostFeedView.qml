@@ -330,6 +330,16 @@ SkyListView {
         updateFeedUnreadPosts()
     }
 
+    function resetHeaderPosition() {
+        if (mediaTilesLoader.item) {
+            mediaTilesLoader.item.resetHeaderPosition()
+        }
+        else {
+            if (headerItem)
+                headerItem.y = contentY
+        }
+    }
+
     function doMoveToPost(index) {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
@@ -337,7 +347,7 @@ SkyListView {
         positionViewAtIndex(Math.max(index, 0), ListView.End)
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateFeedUnreadPosts()
-        headerItem.y = contentY
+        resetHeaderPosition()
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
@@ -345,6 +355,7 @@ SkyListView {
         inSync = true
         rewindStatus.isFirstRewind = false
         updateFeedUnreadPosts()
+        resetHeaderPosition()
     }
 
     function setInSync(id, index, offsetY = 0) {

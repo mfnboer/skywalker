@@ -18,8 +18,6 @@ GridView {
     readonly property int headerY: topY < 0 ? Math.max(topY, -headerHeight) : 0
 
     onTopYChanged: {
-        console.debug("topY:", topY, headerY)
-
         if (topY < -headerHeight || topY > 0)
             Qt.callLater(moveHeader)
     }
@@ -29,6 +27,10 @@ GridView {
             startY = topY + startY + headerHeight
         else if (topY > 0)
             startY = topY + startY
+    }
+
+    function resetHeaderPosition() {
+        startY = originY - contentY
     }
 
     id: mediaTilesView
