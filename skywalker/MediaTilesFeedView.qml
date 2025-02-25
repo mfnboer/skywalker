@@ -12,6 +12,25 @@ GridView {
     property int unreadPosts: 0
     readonly property bool feedLoading: (model && model.feedType === QEnums.FEED_AUTHOR) ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
 
+    property int headerHeight: 0
+    property int startY: 0
+    readonly property int topY: (originY - contentY) - startY
+    readonly property int headerY: topY < 0 ? Math.max(topY, -headerHeight) : 0
+
+    onTopYChanged: {
+        console.debug("topY:", topY, headerY)
+
+        if (topY < -headerHeight || topY > 0)
+            Qt.callLater(moveHeader)
+    }
+
+    function moveHeader() {
+        if (topY < -headerHeight)
+            startY = topY + startY + headerHeight
+        else if (topY > 0)
+            startY = topY + startY
+    }
+
     id: mediaTilesView
     width: parent.width
     cellWidth: width / columns
@@ -25,6 +44,12 @@ GridView {
     onVerticalOvershootChanged: {
         if (enclosingView && verticalOvershoot < 0)
             enclosingView.interactive = true
+    }
+
+    header: Rectangle {
+        width: parent.width
+        height: headerHeight
+        color: guiSettings.backgroundColor
     }
 
     delegate: MediaTilesFeedViewDelegate {
@@ -173,5 +198,9 @@ GridView {
 
     function getBottomRightVisibleIndex() {
         return indexAt(width - 1, contentY + height - 1)
+    }
+
+    Component.onCompleted: {
+        startY = originY - contentY
     }
 }

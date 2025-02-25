@@ -13,7 +13,9 @@ SkyListView {
     property bool inSync: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-    readonly property int favoritesY: headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+    readonly property int favoritesY: mediaTilesLoader.item ?
+            mediaTilesLoader.item.favoritesY :
+            (headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0)
 
     signal closed
 
@@ -157,13 +159,23 @@ SkyListView {
         active: false
 
         sourceComponent: MediaTilesFeedView {
+            property int favoritesY: headerLoader.item ? headerLoader.item.favoritesY + headerY : headerY
+
             clip: true
-            y: postFeedView.headerItem ? postFeedView.headerItem.height : 0
             width: postFeedView.width
-            height: postFeedView.height - (postFeedView.headerItem ? postFeedView.headerItem.height : 0) - (postFeedView.footerItem && postFeedView.footerItem.visible ? postFeedView.footerItem.height : 0)
+            height: postFeedView.height - (postFeedView.footerItem && postFeedView.footerItem.visible ? postFeedView.footerItem.height : 0)
+            headerHeight: postFeedView.headerItem ? postFeedView.headerItem.height : 0
             skywalker: postFeedView.skywalker
             showAsHome: postFeedView.showAsHome
             model: postFeedView.model
+
+            // HACK: grid view does not have a pullback header
+            Loader {
+                id: headerLoader
+                y: headerY
+                width: parent.width
+                sourceComponent: postFeedView.header
+            }
         }
     }
 
@@ -249,6 +261,11 @@ SkyListView {
         const cid = model.getPostCid(lastVisibleIndex)
         const lastVisibleOffsetY = mediaTilesLoader.item ? 0 : calcVisibleOffsetY(lastVisibleIndex)
 
+        // When a tiles view is shown the header gets duplicated. Make sure the content values
+        // between these headers is synced.
+        headerItem.contentMode = contentMode
+        initialContentMode = contentMode
+
         switch (contentMode) {
         case QEnums.CONTENT_MODE_UNSPECIFIED:
             model = model.getUnderlyingModel()
@@ -320,6 +337,7 @@ SkyListView {
         positionViewAtIndex(Math.max(index, 0), ListView.End)
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateFeedUnreadPosts()
+        headerItem.y = contentY
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
