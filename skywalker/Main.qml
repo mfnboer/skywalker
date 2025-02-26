@@ -1931,6 +1931,7 @@ ApplicationWindow {
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setStatusBarColor(guiSettings.headerColor)
 
         // Refreshing the models makes them format text with the new colors (e.g. link color)
         if (oldDisplayMode !== newDisplayMode)

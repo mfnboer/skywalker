@@ -20,8 +20,11 @@ public:
     Q_INVOKABLE void setNavigationBarColor(QColor color) const;
     Q_INVOKABLE static void setNavigationBarColorAndMode(QColor color, bool isLightMode);
     Q_INVOKABLE static int getNavigationBarSize(QEnums::InsetsSide side);
+    Q_INVOKABLE void setStatusBarColor(QColor color) const;
+    Q_INVOKABLE static void setStatusBarColorAndMode(QColor color, bool isLightMode);
     Q_INVOKABLE static int getStatusBarSize(QEnums::InsetsSide side);
-    Q_INVOKABLE static void setStatusBarTransparent(bool transparent);
+    Q_INVOKABLE void setStatusBarTransparent(bool transparent, QColor color);
+    Q_INVOKABLE static void setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode);
 
 private:
     static void disableScreenOn();

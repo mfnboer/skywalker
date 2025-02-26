@@ -90,43 +90,74 @@ public class ScreenUtils {
         return getInsetsSide(insets, side);
     }
 
-    public static void setStatusBarTransparent(boolean transparent) {
-        Log.d(LOGTAG, "Set status bar transparent: " + transparent);
-        sActivity.runOnUiThread(new StatusBarSetter(sActivity, transparent));
+    public static void setStatusBarTransparent(boolean transparent, int color, boolean isLightMode) {
+        Log.d(LOGTAG, "Set status bar transparent: " + transparent + " color: " + color + " light: " + isLightMode);
+        sActivity.runOnUiThread(new StatusBarSetter(sActivity, transparent, color, isLightMode));
     }
 
     private static class StatusBarSetter implements Runnable {
         private Activity mActivity;
         private boolean mTransparent;
+        private int mColor;
+        private boolean mIsLightMode;
 
-        StatusBarSetter(Activity activity, boolean transparent) {
+        StatusBarSetter(Activity activity, boolean transparent, int color, boolean isLightMode) {
             mActivity = activity;
             mTransparent = transparent;
+            mColor = color;
+            mIsLightMode = isLightMode;
         }
 
         @Override
         public void run() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 Window window = mActivity.getWindow();
-                window.setStatusBarColor(mTransparent ? Color.TRANSPARENT : Color.BLACK);
+                window.setStatusBarColor(mTransparent ? Color.TRANSPARENT : mColor);
                 window.setDecorFitsSystemWindows(!mTransparent);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    WindowInsetsController insetsController = window.getInsetsController();
+
+                    if (insetsController != null)
+                        insetsController.setSystemBarsAppearance(mIsLightMode ? WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                    else
+                        Log.w(LOGTAG, "Cannot get window insets controller");
+                }
             }
         }
     }
 
-    public static void setStatusBarColor() {
-        Window window = sActivity.getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.setStatusBarColor(Color.BLACK); // TODO: change when targetting Android 15
+    public static void setStatusBarColor(int color, boolean isLightMode) {
+        Log.d(LOGTAG, "Set status bar color: " + color + " light: " + isLightMode);
+        sActivity.runOnUiThread(new StatusBarColorSetter(sActivity, color, isLightMode));
+    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            WindowInsetsController insetsController = window.getInsetsController();
+    private static class StatusBarColorSetter implements Runnable {
+        private Activity mActivity;
+        private int mColor;
+        private boolean mIsLightMode;
 
-            if (insetsController != null)
-                insetsController.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-            else
-                Log.w(LOGTAG, "Cannot get window insets controller");
+        StatusBarColorSetter(Activity activity, int color, boolean isLightMode) {
+            mActivity = activity;
+            mColor = color;
+            mIsLightMode = isLightMode;
+        }
+
+        @Override
+        public void run() {
+            Window window = mActivity.getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.setStatusBarColor(mColor); // TODO: change when targetting Android 15
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController insetsController = window.getInsetsController();
+
+                if (insetsController != null)
+                    insetsController.setSystemBarsAppearance(mIsLightMode ? WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                else
+                    Log.w(LOGTAG, "Cannot get window insets controller");
+            }
         }
     }
 

@@ -137,6 +137,7 @@ SkyListView {
         timelineView.contentY += calibrationDy
         calibrationDy = 0
         calibrateUnreadPosts()
+        resetHeaderPosition()
     }
 
     function updateUnreadPosts(firstIndex) {

@@ -316,6 +316,7 @@ SkyListView {
         console.debug("Calibration, calibrationDy:", calibrationDy)
         contentY += calibrationDy
         calibrationDy = 0
+        resetHeaderPosition()
     }
 
     function updateFeedUnreadPosts() {

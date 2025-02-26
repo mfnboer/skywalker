@@ -90,6 +90,25 @@ int AndroidUtils::getNavigationBarSize(QEnums::InsetsSide side)
 #endif
 }
 
+void AndroidUtils::setStatusBarColor(QColor color, QEnums::DisplayMode displayMode)
+{
+    const bool isLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);
+    setStatusBarColorAndMode(color, isLightMode);
+}
+
+void AndroidUtils::setStatusBarColorAndMode(QColor color, bool isLightMode)
+{
+#ifdef Q_OS_ANDROID
+    int rgb = color.rgba();
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/ScreenUtils", "setStatusBarColor",
+        "(IZ)V", (jint)rgb, (jboolean)isLightMode);
+#else
+    Q_UNUSED(color)
+    Q_UNUSED(isLightMode)
+#endif
+}
+
 int AndroidUtils::getStatusBarSize(QEnums::InsetsSide side)
 {
 #ifdef Q_OS_ANDROID
@@ -101,14 +120,22 @@ int AndroidUtils::getStatusBarSize(QEnums::InsetsSide side)
 #endif
 }
 
-void AndroidUtils::setStatusBarTransparent(bool transparent)
+void AndroidUtils::setStatusBarTransparent(bool transparent, QColor color, QEnums::DisplayMode displayMode)
+{
+    const bool isLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);
+    setStatusBarTransparentAndMode(transparent, color, isLightMode);
+}
+
+void AndroidUtils::setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode)
 {
 #ifdef Q_OS_ANDROID
+    int rgb = color.rgba();
     QJniObject::callStaticMethod<void>(
         "com/gmail/mfnboer/ScreenUtils", "setStatusBarTransparent",
-        "(Z)V", (jboolean)transparent);
+        "(ZIZ)V", (jboolean)transparent, (jint)rgb, (jboolean)isLightMode);
 #else
     Q_UNUSED(transparent)
+    Q_UNUSED(color)
 #endif
 }
 

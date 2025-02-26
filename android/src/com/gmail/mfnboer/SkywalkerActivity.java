@@ -28,6 +28,7 @@ import android.util.Log;
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
     private static final int MAX_TEXT_LEN = 32768;
+    private static final int SKYWALKER_LOGO_COLOR = 0xff0387c7;
 
     private static SkywalkerActivity sActivity = null;
 
@@ -56,7 +57,7 @@ public class SkywalkerActivity extends QtActivity {
         Log.d(LOGTAG, "onCreate");
         ScreenUtils.init(this);
         VirtualKeyboardListener.init(this);
-        ScreenUtils.setStatusBarColor();
+        ScreenUtils.setStatusBarColor(SKYWALKER_LOGO_COLOR, false);
 
         Intent intent = getIntent();
         if (intent == null)

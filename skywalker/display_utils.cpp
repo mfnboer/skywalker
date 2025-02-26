@@ -54,14 +54,35 @@ int DisplayUtils::getNavigationBarSize(QEnums::InsetsSide side)
     return AndroidUtils::getNavigationBarSize(side);
 }
 
+void DisplayUtils::setStatusBarColor(QColor color) const
+{
+    Q_ASSERT(mSkywalker);
+    const auto displayMode = mSkywalker->getUserSettings()->getActiveDisplayMode();
+    AndroidUtils::setStatusBarColor(color, displayMode);
+}
+
+void DisplayUtils::setStatusBarColorAndMode(QColor color, bool isLightMode)
+{
+    AndroidUtils::setStatusBarColorAndMode(color, isLightMode);
+}
+
+
 int DisplayUtils::getStatusBarSize(QEnums::InsetsSide side)
 {
     return AndroidUtils::getStatusBarSize(side);
 }
 
-void DisplayUtils::setStatusBarTransparent(bool transparent)
+void DisplayUtils::setStatusBarTransparent(bool transparent, QColor color)
 {
-    AndroidUtils::setStatusBarTransparent(transparent);
+    Q_ASSERT(mSkywalker);
+    const auto displayMode = mSkywalker->getUserSettings()->getActiveDisplayMode();
+    AndroidUtils::setStatusBarTransparent(transparent, color, displayMode);
+
+}
+
+void DisplayUtils::setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode)
+{
+    AndroidUtils::setStatusBarTransparentAndMode(transparent, color, isLightMode);
 }
 
 }
