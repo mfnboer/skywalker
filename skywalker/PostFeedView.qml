@@ -29,8 +29,8 @@ SkyListView {
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
         feedName: underlyingModel ? underlyingModel.feedName : ""
-        feedAvatar: getFeedAvatar()
-        defaultSvg: getFeedDefaultAvatar()
+        feedAvatar: postFeedView.getFeedAvatar()
+        defaultSvg: postFeedView.getFeedDefaultAvatar()
         contentMode: initialContentMode
         underlyingContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
         showAsHome: postFeedView.showAsHome
@@ -80,7 +80,7 @@ SkyListView {
             id: extraFooterLoader
             anchors.bottom: parent.bottom
 
-            active: model.isFilterModel() && index == count - 1 && !endOfFeed
+            active: model && model.isFilterModel() && index == count - 1 && !endOfFeed
             sourceComponent: extraFooterComponent
         }
     }
@@ -106,7 +106,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: model.getFeedInProgress
+        inProgress: Boolean(model) && model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
         topOvershootFun: () => model.getFeed(skywalker)
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
@@ -127,7 +127,7 @@ SkyListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: model.getFeedInProgress
+        running: Boolean(model) && model.getFeedInProgress
     }
 
     Component {
@@ -445,8 +445,10 @@ SkyListView {
         skywalker.onFeedSyncOk.disconnect(setInSync)
         skywalker.onFeedSyncFailed.disconnect(syncToHome)
 
-        if (modelId !== -1)
+        if (modelId !== -1) {
+            model = null
             skywalker.removePostFeedModel(modelId)
+        }
     }
 
     Component.onCompleted: {

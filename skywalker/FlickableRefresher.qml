@@ -85,8 +85,13 @@ Item {
 
 
     Component.onDestruction: {
-        list.onMovementStarted.disconnect(showScrollToTopButton)
-        list.onMovementEnded.disconnect(hideScrollToTopButton)
+        if (Boolean(list)) {
+            if (typeof list.onMovementStarted != 'undefined')
+                list.onMovementStarted.disconnect(showScrollToTopButton)
+
+            if (typeof list.onMovementEnded != 'undefined')
+                list.onMovementEnded.disconnect(hideScrollToTopButton)
+        }
     }
 
     Component.onCompleted: {
