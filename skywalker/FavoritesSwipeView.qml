@@ -13,8 +13,14 @@ SwipeView {
         skywalker: view.skywalker
 
         SwipeView.onIsCurrentItemChanged: {
-            if (SwipeView.isCurrentItem && trackLastViewedFeed)
-                skywalker.saveLastViewedFeed("home")
+            if (SwipeView.isCurrentItem) {
+
+                if (trackLastViewedFeed)
+                    skywalker.saveLastViewedFeed("home")
+            }
+            else {
+                cover()
+            }
 
             resetHeaderPosition()
         }
@@ -32,9 +38,13 @@ SwipeView {
             SwipeView.onIsCurrentItemChanged: {
                 if (SwipeView.isCurrentItem) {
                     if (active) {
-                        if (item && item.atStart()) {
-                            console.debug("Reload feed:", modelData.name)
-                            item.refreshFeed()
+                        if (item) {
+                            item.uncover()
+
+                            if (item.atStart()) {
+                                console.debug("Reload feed:", modelData.name)
+                                item.refreshFeed()
+                            }
                         }
                     }
                     else {
@@ -43,6 +53,10 @@ SwipeView {
 
                     if (item && trackLastViewedFeed)
                         item.saveAsLastViewedFeed()
+                }
+                else {
+                    if (item)
+                        item.cover()
                 }
 
                 if (item)
@@ -132,6 +146,14 @@ SwipeView {
             return currentItem.item
 
         return null
+    }
+
+
+    function cover() {
+        let view = getCurrentView()
+
+        if (view)
+            view.cover()
     }
 
     function reset() {
