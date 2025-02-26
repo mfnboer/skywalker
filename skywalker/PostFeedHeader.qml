@@ -287,6 +287,7 @@ Rectangle {
         anchors.top: headerRow.bottom
         width: parent.width
         height: guiSettings.tabBarHeight
+        color: guiSettings.backgroundColor
         visible: showFavoritesPlaceHolder
     }
 

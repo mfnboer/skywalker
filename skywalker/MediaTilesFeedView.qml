@@ -17,11 +17,6 @@ GridView {
     readonly property int topY: (originY - contentY) - startY + verticalOvershoot
     readonly property int headerY: topY < 0 ? Math.max(topY, -headerHeight) : 0
 
-    onTopYChanged: {
-        if (topY < -headerHeight || topY > 0)
-            Qt.callLater(moveHeader)
-    }
-
     function moveHeader() {
         if (topY < -headerHeight)
             startY = topY + startY + headerHeight
@@ -76,6 +71,8 @@ GridView {
     }
 
     onMovementEnded: {
+        moveHeader()
+
         const lastIndex = getBottomRightVisibleIndex()
         console.debug("Move:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
 
