@@ -17,6 +17,8 @@ SkyTabBar {
 
             width: implicitWidth
             favorite: favoriteFeed
+
+            onPressAndHold: showSorter()
         }
     }
 
@@ -25,5 +27,12 @@ SkyTabBar {
             if (favorite.isSame(pinned))
                 tabBar.setCurrentIndex(index + 1)
         })
+    }
+
+    function showSorter() {
+        let component = guiSettings.createComponent("FavoritesSorter.qml")
+        let page = component.createObject(root, { favoriteFeeds: favoriteFeeds })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
     }
 }

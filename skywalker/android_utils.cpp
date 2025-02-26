@@ -136,6 +136,7 @@ void AndroidUtils::setStatusBarTransparentAndMode(bool transparent, QColor color
 #else
     Q_UNUSED(transparent)
     Q_UNUSED(color)
+    Q_UNUSED(isLightMode)
 #endif
 }
 

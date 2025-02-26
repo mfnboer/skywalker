@@ -4,6 +4,7 @@ import skywalker
 
 TabButton {
     required property favoritefeedview favorite
+    property string backgroundColor: guiSettings.backgroundColor
 
     id: button
     implicitWidth: tabRow.implicitWidth + leftPadding + rightPadding
@@ -15,6 +16,7 @@ TabButton {
     contentItem: Row {
         id: tabRow
         height: parent.height
+        spacing: 5
 
         FeedAvatar {
             id: avatar
@@ -25,13 +27,6 @@ TabButton {
             contentMode: favorite.contentMode
 
             onClicked: button.clicked()
-        }
-
-        Rectangle {
-            id: whitespace
-            width: 5
-            height: parent.height
-            color: "transparent"
         }
 
         Text {
@@ -45,7 +40,7 @@ TabButton {
 
     background: Rectangle {
         anchors.fill: parent
-        color: guiSettings.backgroundColor
+        color: backgroundColor
     }
 
     function getDefaultAvatar() {
