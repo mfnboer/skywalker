@@ -11,7 +11,7 @@ ComboBox {
         radius: 3
         implicitWidth: 120
         border.color: guiSettings.buttonColor
-        border.width: 2
+        border.width: 1
         color: "transparent"
     }
 

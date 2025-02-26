@@ -152,7 +152,7 @@ SkyListView {
 
     Loader {
         anchors.top: emptyListIndication.bottom
-        active: Boolean(model) && model.isFilterModel() && count === 0 && !model.endOfFeed
+        active: Boolean(model) && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error)
         sourceComponent: extraFooterComponent
     }
 
@@ -177,6 +177,10 @@ SkyListView {
                 y: headerY
                 width: parent.width
                 sourceComponent: postFeedView.header
+            }
+
+            PostButton {
+                y: parent.height - height - 10
             }
         }
     }

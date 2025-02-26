@@ -44,9 +44,9 @@ Item {
     readonly property string fullScreenColor: "black"
     readonly property string footerColor: backgroundColor
     readonly property string handleColor: Material.color(Material.Grey)
-    readonly property string headerColor: "black"
+    readonly property string headerColor: backgroundColor
     readonly property string headerHighLightColor: isLightMode ? "lightblue" : "darkslategrey"
-    readonly property string headerTextColor: "white"
+    readonly property string headerTextColor: textColor
     readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"
     readonly property string linkColorDarkMode: "#58a6ff"
@@ -71,6 +71,7 @@ Item {
     readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)
     property string textColor: Material.foreground
+    readonly property string textInputBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string textLengthExceededColor: "palevioletred"
 
     // Opacity

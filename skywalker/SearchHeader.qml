@@ -38,7 +38,9 @@ Rectangle {
             Layout.fillWidth: true
             Layout.rightMargin: 10
             Layout.preferredHeight: searchText.height
-            color: guiSettings.backgroundColor
+            color: guiSettings.textInputBackgroundColor
+            border.width: searchText.activeFocus ? 1 : 0
+            border.color: guiSettings.buttonColor
 
             TextInput {
                 id: searchText

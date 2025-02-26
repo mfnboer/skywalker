@@ -49,7 +49,7 @@ SkyListView {
         textFormat: Text.RichText
         wrapMode: Text.Wrap
         text: (isView && model) ? qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`) : ""
-        visible: model ? !model.endOfFeed : false
+        visible: model ? !model.endOfFeed && !Boolean(model.error) : false
         onLinkActivated: skywalker.getTimelineNextPage()
     }
 
