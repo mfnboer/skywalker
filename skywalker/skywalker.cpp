@@ -519,10 +519,9 @@ void Skywalker::getUserPreferences()
 void Skywalker::updateFavoriteFeeds()
 {
     qDebug() << "Update favorite feeds";
-    const auto& savedFeedsPref = mUserPreferences.getSavedFeedsPref();
-    mFavoriteFeeds.reset(savedFeedsPref);
     const auto searchFeeds = mUserSettings.getPinnedSearchFeeds(mUserDid);
-    mFavoriteFeeds.set(searchFeeds);
+    const auto& savedFeedsPref = mUserPreferences.getSavedFeedsPref();
+    mFavoriteFeeds.init(searchFeeds, savedFeedsPref);
 }
 
 void Skywalker::saveFavoriteFeeds()

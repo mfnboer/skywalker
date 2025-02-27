@@ -29,8 +29,7 @@ public:
     ~FavoriteFeeds();
 
     void clear();
-    void reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
-    void set(const SearchFeed::List& searchFeeds);
+    void init(const SearchFeed::List& searchFeeds, const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
 
     // Can also be called for list uri's
     Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.contains(uri); }
@@ -107,6 +106,10 @@ private:
     void updateSavedListsModel();
     std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
     void saveSearchFeedsTo(UserSettings& settings) const;
+    void saveUserOrderedPinnedFeeds() const;
+    void initUserOrderedPinnedFeeds();
+    void set(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
+    void set(const SearchFeed::List& searchFeeds);
     void cleanupSettings();
 
     template<typename Container>
@@ -122,6 +125,7 @@ private:
 
     // If this list is empty, then mPinnedFeeds is used for the UI
     QList<FavoriteFeedView> mUserOrderedPinnedFeeds; // ordered by the user
+    bool mUserOrderedPinnedFeedsInitialized = false;
 
     int mSavedFeedsModelId = -1;
     int mSavedListsModelId = -1;

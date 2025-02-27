@@ -128,6 +128,9 @@ public:
     Q_INVOKABLE void setFeedHideReplies(const QString& did, const QString& feedUri, bool hide);
     Q_INVOKABLE bool getFeedHideReplies(const QString& did, const QString& feedUri) const;
     QStringList getFeedHideRepliesUris(const QString& did) const;
+
+    void setUserOrderedPinnedFeeds(const QString& did, QStringList favoriteKeys);
+    QStringList getUserOrderedPinnedFeed(const QString& did) const;
     // [FAVORITES]
 
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);

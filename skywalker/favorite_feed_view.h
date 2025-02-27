@@ -33,6 +33,7 @@ public:
     bool operator==(const FavoriteFeedView& other) const { return isSame(other); }
 
     QEnums::FavoriteType getType() const;
+    QString getKey() const; // uri for feeds and lists, name for search feeds
     QString getUri() const;
     QString getName() const;
     QString getAvatar() const;

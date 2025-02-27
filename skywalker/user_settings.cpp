@@ -437,6 +437,16 @@ QStringList UserSettings::getFeedHideRepliesUris(const QString& did) const
     return getFeedViewUris(did, "feedhideReplies");
 }
 
+void UserSettings::setUserOrderedPinnedFeeds(const QString& did, QStringList favoriteKeys)
+{
+    mSettings.setValue(key(did, "userOrderedPinnedFeeds"), favoriteKeys);
+}
+
+QStringList UserSettings::getUserOrderedPinnedFeed(const QString& did) const
+{
+    return mSettings.value(key(did, "userOrderedPinnedFeeds")).toStringList();
+}
+
 void UserSettings::updateLastSignInTimestamp(const QString& did)
 {
     mSettings.setValue(key(did, "lastSignInTimestamp"), QDateTime::currentDateTime());

@@ -26,7 +26,7 @@ TabButton {
             unknownSvg: guiSettings.favoriteDefaultAvatar(favorite)
             contentMode: favorite.contentMode
 
-            onClicked: button.clicked()
+            onClicked: button.click()
         }
 
         Text {
