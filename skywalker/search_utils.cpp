@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "skywalker.h"
 #include "utils.h"
+#include <QCollator>
 #include <QTextBoundaryFinder>
 
 namespace Skywalker {
@@ -43,6 +44,16 @@ static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>
 QString SearchUtils::normalizeText(const QString& text)
 {
     return ATProto::RichTextMaster::normalizeText(text);
+}
+
+int SearchUtils::normalizedCompare(const QString& lhs, const QString& rhs)
+{
+    const int result = QCollator::defaultCompare(normalizeText(lhs), normalizeText(rhs));
+
+    if (result != 0)
+        return result;
+
+    return QCollator::defaultCompare(lhs, rhs);
 }
 
 std::vector<QString> SearchUtils::getNormalizedWords(const QString& text)

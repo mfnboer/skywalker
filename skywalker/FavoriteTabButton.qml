@@ -23,7 +23,7 @@ TabButton {
             anchors.verticalCenter: parent.verticalCenter
             width: visible ? parent.height : 0
             avatarUrl: favorite.avatarThumb
-            unknownSvg: getDefaultAvatar()
+            unknownSvg: guiSettings.favoriteDefaultAvatar(favorite)
             contentMode: favorite.contentMode
 
             onClicked: button.clicked()
@@ -41,21 +41,5 @@ TabButton {
     background: Rectangle {
         anchors.fill: parent
         color: backgroundColor
-    }
-
-    function getDefaultAvatar() {
-        if (favorite.isNull())
-            return SvgFilled.home
-
-        switch (favorite.type) {
-        case QEnums.FAVORITE_FEED:
-            return guiSettings.feedDefaultAvatar(favorite.generatorView)
-        case QEnums.FAVORITE_LIST:
-            return SvgFilled.list
-        case QEnums.FAVORITE_SEARCH:
-            return favorite.searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
-        }
-
-        return SvgOutline.feed
     }
 }

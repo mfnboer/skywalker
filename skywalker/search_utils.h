@@ -29,6 +29,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
 
 public:
     static QString normalizeText(const QString& text);
+    static int normalizedCompare(const QString& lhs, const QString& rhs);
     static std::vector<QString> getNormalizedWords(const QString& text);
     static std::vector<QString> getWords(const QString& text);
 

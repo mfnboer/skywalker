@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "favorite_feeds.h"
+#include "search_utils.h"
 #include "skywalker.h"
 #include <atproto/lib/at_uri.h>
 
@@ -8,11 +9,11 @@ namespace Skywalker
 {
 
 static auto feedNameCompare = [](const GeneratorView& lhs, const GeneratorView& rhs){
-    return lhs.getDisplayName().compare(rhs.getDisplayName(), Qt::CaseInsensitive) < 0;
+    return SearchUtils::normalizedCompare(lhs.getDisplayName(), rhs.getDisplayName()) < 0;
 };
 
 static auto listNameCompare = [](const ListView& lhs, const ListView& rhs){
-    return lhs.getName().compare(rhs.getName(), Qt::CaseInsensitive) < 0;
+    return SearchUtils::normalizedCompare(lhs.getName(), rhs.getName()) < 0;
 };
 
 static QString getFavoriteSortName(const FavoriteFeedView& favorite)
@@ -27,7 +28,7 @@ static auto favoriteFeedNameCompare = [](const FavoriteFeedView& lhs, const Favo
     const auto lhsName = getFavoriteSortName(lhs);
     const auto rhsName = getFavoriteSortName(rhs);
 
-    return lhsName.compare(rhsName, Qt::CaseInsensitive) < 0;
+    return SearchUtils::normalizedCompare(lhsName, rhsName) < 0;
 };
 
 FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :

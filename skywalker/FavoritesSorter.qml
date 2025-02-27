@@ -49,7 +49,7 @@ SkyPage {
                         anchors.verticalCenter: parent.verticalCenter
                         width: visible ? parent.height : 0
                         avatarUrl: modelData.avatarThumb
-                        unknownSvg: page.getDefaultAvatar(modelData)
+                        unknownSvg: guiSettings.favoriteDefaultAvatar(modelData)
                         contentMode: modelData.contentMode
                     }
 
@@ -62,20 +62,27 @@ SkyPage {
 
                 Drag.active: mouseArea.drag.active
                 Drag.source: rect
+                Drag.hotSpot.y: height / 2
 
                 DropArea {
                     anchors.fill: parent
 
                     onEntered: (drag) => {
                         console.debug("ENTERED:", parent.modelData.name, "src:", drag.source.modelData.name)
-                        drag.source.getDragHandler().start = Qt.point(parent.x, parent.y)
-                        drag.source.getDragHandler().startZ = parent.z
+                        drag.source.setDragStartingPoint(parent)
                         visualModel.items.move(drag.source.visualIndex, parent.visualIndex)
                     }
                 }
 
-                function getDragHandler(item) {
-                    return mouseArea
+                function setDragStartingPoint(item) {
+                    mouseArea.start = Qt.point(item.x, item.y)
+                    mouseArea.startZ = item.z
+                }
+
+                function restoreDragStartingPoint() {
+                    x = mouseArea.start.x
+                    y = mouseArea.start.y
+                    z = mouseArea.startZ
                 }
 
                 MouseArea {
@@ -88,19 +95,16 @@ SkyPage {
                     drag.axis: Drag.YAxis
 
                     onPressAndHold: (mouse) => {
-                        start = Qt.point(parent.x, parent.y)
-                        startZ = parent.z
+                        parent.setDragStartingPoint(parent)
                         parent.z = z + listView.count
-                        parent.color = "yellow"
+                        parent.color = guiSettings.dragHighLightColor
                         drag.target = rect
                         mouse.accepted = false
                     }
 
                     onReleased: {
                         if (drag.target) {
-                            parent.x = start.x
-                            parent.y = start.y
-                            parent.z = startZ
+                            parent.restoreDragStartingPoint()
                             parent.color = guiSettings.backgroundColor
                             drag.target = undefined
                         }
