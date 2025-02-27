@@ -22,6 +22,7 @@ class FavoriteFeeds : public QObject
     Q_OBJECT
     Q_PROPERTY(bool updateSavedFeedsModelInProgress READ getUpdateSavedFeedsModelInProgress NOTIFY updateSavedFeedsModelInProgressChanged FINAL)
     Q_PROPERTY(QList<FavoriteFeedView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
+    Q_PROPERTY(QList<FavoriteFeedView> userOrderedPinnedFeeds READ getUserOrderedPinnedFeeds WRITE setUserOrderedPinnedFeeds NOTIFY userOrderedPinnedFeedsChanged FINAL)
 
 public:
     explicit FavoriteFeeds(Skywalker* skywalker, QObject* parent = nullptr);
@@ -47,6 +48,12 @@ public:
     Q_INVOKABLE void pinSearch(const SearchFeed& search, bool pin);
 
     Q_INVOKABLE QList<FavoriteFeedView> getPinnedFeeds() const { return mPinnedFeeds; }
+
+    // Return mPinnedFeeds if mUserOrderedPinnedFeeds is empty
+    const QList<FavoriteFeedView>& getUserOrderedPinnedFeeds() const;
+    void setUserOrderedPinnedFeeds(const QList<FavoriteFeedView>& favorites);
+    Q_INVOKABLE void clearUserOrderedPinnedFeed();
+
     Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
     Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& name) const;
 
@@ -72,10 +79,13 @@ signals:
     void searchUnpinned(QString name);
     void updateSavedFeedsModelInProgressChanged();
     void pinnedFeedsChanged();
+    void userOrderedPinnedFeedsChanged();
 
 private:
     void addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
     void addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
+    void addToUserOrderedPinnedFeeds(const FavoriteFeedView& favorite);
+    void removeFromUserOrderedPinnedFeeds(const FavoriteFeedView& favorite);
     void pinFeed(const GeneratorView& feed);
     void unpinFeed(const GeneratorView& feed);
     void pinList(const ListView& list);
@@ -109,6 +119,10 @@ private:
     QList<GeneratorView> mSavedFeeds; // sorted by name
     QList<ListView> mSavedLists; // sorted by name
     QList<FavoriteFeedView> mPinnedFeeds; // sorted by name
+
+    // If this list is empty, then mPinnedFeeds is used for the UI
+    QList<FavoriteFeedView> mUserOrderedPinnedFeeds; // ordered by the user
+
     int mSavedFeedsModelId = -1;
     int mSavedListsModelId = -1;
     bool mUpdateSavedFeedsModelInProgress = false;

@@ -35,6 +35,10 @@ FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
     QObject(parent),
     mSkywalker(skywalker)
 {
+    connect(this, &FavoriteFeeds::pinnedFeedsChanged, this, [this]{
+        if (mUserOrderedPinnedFeeds.empty())
+            emit userOrderedPinnedFeedsChanged();
+    });
 }
 
 FavoriteFeeds::~FavoriteFeeds()
@@ -54,6 +58,8 @@ void FavoriteFeeds::clear()
     mSavedLists.clear();
     mPinnedFeeds.clear();
     emit pinnedFeedsChanged();
+    mUserOrderedPinnedFeeds.clear();
+    emit userOrderedPinnedFeedsChanged();
 }
 
 void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
@@ -167,6 +173,26 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
     emit feedSaved();
 }
 
+void FavoriteFeeds::addToUserOrderedPinnedFeeds(const FavoriteFeedView& favorite)
+{
+    if (mUserOrderedPinnedFeeds.empty())
+        return;
+
+    mUserOrderedPinnedFeeds.push_back(favorite);
+    qDebug() << "Added to user ordered pinned feeds:" << favorite.getName();
+    emit userOrderedPinnedFeedsChanged();
+}
+
+void FavoriteFeeds::removeFromUserOrderedPinnedFeeds(const FavoriteFeedView& favorite)
+{
+    if (mUserOrderedPinnedFeeds.empty())
+        return;
+
+    auto removed = mUserOrderedPinnedFeeds.removeOne(favorite);
+    qDebug() << "Removed from user ordered pinneds:" << favorite.getName() << "removed:" << removed;
+    emit userOrderedPinnedFeedsChanged();
+}
+
 void FavoriteFeeds::pinFeed(const GeneratorView& feed, bool pin)
 {
     if (pin)
@@ -196,6 +222,7 @@ void FavoriteFeeds::pinFeed(const GeneratorView& feed)
 
     emit feedPinned();
     emit pinnedFeedsChanged();
+    addToUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
@@ -222,6 +249,7 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
 
     emit feedUnpinned(feed.getUri());
     emit pinnedFeedsChanged();
+    removeFromUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::addList(const ListView& list)
@@ -301,6 +329,7 @@ void FavoriteFeeds::pinList(const ListView& list)
 
     emit listPinned();
     emit pinnedFeedsChanged();
+    addToUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::unpinList(const ListView& list)
@@ -327,6 +356,7 @@ void FavoriteFeeds::unpinList(const ListView& list)
 
     emit listUnpinned(list.getUri());
     emit pinnedFeedsChanged();
+    removeFromUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::pinSearch(const SearchFeed& search, bool pin)
@@ -354,6 +384,7 @@ void FavoriteFeeds::pinSearch(const SearchFeed& search)
 
     emit searchPinned(view.getName());
     emit pinnedFeedsChanged();
+    addToUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::unpinSearch(const SearchFeed& search)
@@ -381,6 +412,40 @@ void FavoriteFeeds::unpinSearch(const SearchFeed& search)
 
     emit searchUnpinned(search.getName());
     emit pinnedFeedsChanged();
+    removeFromUserOrderedPinnedFeeds(view);
+}
+
+const QList<FavoriteFeedView>& FavoriteFeeds::getUserOrderedPinnedFeeds() const
+{
+    return mUserOrderedPinnedFeeds.empty() ? mPinnedFeeds : mUserOrderedPinnedFeeds;
+}
+
+void FavoriteFeeds::setUserOrderedPinnedFeeds(const QList<FavoriteFeedView>& favorites)
+{
+    if (favorites == mPinnedFeeds)
+    {
+        qDebug() << "User ordered feeds are sorted";
+        clearUserOrderedPinnedFeed();
+        return;
+    }
+
+    if (favorites == mUserOrderedPinnedFeeds)
+    {
+        qDebug() << "User ordered feeds are not changed";
+        return;
+    }
+
+    mUserOrderedPinnedFeeds = favorites;
+    emit userOrderedPinnedFeedsChanged();
+}
+
+void FavoriteFeeds::clearUserOrderedPinnedFeed()
+{
+    if (mUserOrderedPinnedFeeds.empty())
+        return;
+
+    mUserOrderedPinnedFeeds.clear();
+    emit userOrderedPinnedFeedsChanged();
 }
 
 FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const

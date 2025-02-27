@@ -39,5 +39,4 @@ Rectangle {
         enabled: headerItem.enabled
         onClicked: buttonClicked()
     }
-
 }

@@ -27,7 +27,7 @@ SwipeView {
     }
 
     Repeater {
-        model: skywalker.favoriteFeeds.pinnedFeeds
+        model: skywalker.favoriteFeeds.userOrderedPinnedFeeds
 
         Loader {
             required property var modelData

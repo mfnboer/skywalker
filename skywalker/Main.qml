@@ -41,10 +41,7 @@ ApplicationWindow {
 
             event.accepted = false
 
-            // TODO: need something better than this
-            if (item instanceof ComposePost || item instanceof EditList ||
-                item instanceof EditProfile || item instanceof MediaFeedView)
-            {
+            if (typeof item.cancel == 'function') {
                 item.cancel()
                 return
             }

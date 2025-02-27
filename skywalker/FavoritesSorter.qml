@@ -1,4 +1,6 @@
 import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
 import skywalker
 
 SkyPage {
@@ -10,9 +12,37 @@ SkyPage {
     width: parent.width
     height: parent.height
 
-    header: SimpleHeader {
-        text: qsTr("Sort favorites")
-        onBack: page.closed()
+    header: SimpleDescriptionHeader {
+        title: qsTr("Sort favorites")
+        description: qsTr("To change the order, keep a favorite pushed till its background changes color, then drag it to the desired position.")
+        onClosed: page.closed()
+
+        SvgButton {
+            anchors.rightMargin: 10
+            anchors.right: parent.right
+            y: (guiSettings.headerHeight - height) / 2
+            iconColor: guiSettings.headerTextColor
+            Material.background: "transparent"
+            svg: SvgOutline.moreVert
+            accessibleName: qsTr("Sort favorites options")
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                CloseMenuItem {
+                    text: qsTr("<b>Favorites</b>")
+                    Accessible.name: qsTr("close more options menu")
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Sort alphabetically")
+                    onTriggered: alphaSort()
+                    MenuItemSvg { svg: SvgOutline.sortByAlpha }
+                }
+            }
+        }
     }
 
     SkyListView {
@@ -26,16 +56,16 @@ SkyPage {
         model: DelegateModel {
             id: visualModel
 
-            model: favoriteFeeds.pinnedFeeds
+            model: favoriteFeeds.userOrderedPinnedFeeds
 
             delegate: Rectangle {
                 required property var modelData
-
                 property int visualIndex: DelegateModel.itemsIndex
 
                 id: rect
                 width: listView.width
                 height: row.height + 10
+                color: guiSettings.backgroundColor
 
                 Row {
                     id: row
@@ -68,7 +98,7 @@ SkyPage {
                     anchors.fill: parent
 
                     onEntered: (drag) => {
-                        console.debug("ENTERED:", parent.modelData.name, "src:", drag.source.modelData.name)
+                        console.debug("Entered:", parent.modelData.name, "src:", drag.source.modelData.name)
                         drag.source.setDragStartingPoint(parent)
                         visualModel.items.move(drag.source.visualIndex, parent.visualIndex)
                     }
@@ -114,17 +144,25 @@ SkyPage {
         }
     }
 
-    // TODO: duplicate from tab button
-    function getDefaultAvatar(favorite) {
-        switch (favorite.type) {
-        case QEnums.FAVORITE_FEED:
-            return guiSettings.feedDefaultAvatar(favorite.generatorView)
-        case QEnums.FAVORITE_LIST:
-            return SvgFilled.list
-        case QEnums.FAVORITE_SEARCH:
-            return favorite.searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
+    function alphaSort() {
+        favoriteFeeds.clearUserOrderedPinnedFeed()
+
+        // Re-assign model to reset any dragging changes
+        visualModel.model = favoriteFeeds.userOrderedPinnedFeeds
+    }
+
+    function setUserOrderedFavorites() {
+        let favorites = []
+
+        for (let i = 0; i < visualModel.items.count; ++i) {
+            const item = visualModel.items.get(i)
+            favorites.push(item.model.modelData)
         }
 
-        return SvgOutline.feed
+        favoriteFeeds.userOrderedPinnedFeeds = favorites
+    }
+
+    Component.onDestruction: {
+        setUserOrderedFavorites()
     }
 }

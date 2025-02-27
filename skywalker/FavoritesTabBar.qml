@@ -9,11 +9,11 @@ SkyTabBar {
     id: tabBar
 
     Repeater {
-        model: favoriteFeeds.pinnedFeeds.length + 1
+        model: favoriteFeeds.userOrderedPinnedFeeds.length + 1
 
         FavoriteTabButton {
             required property int index
-            readonly property favoritefeedview favoriteFeed: index > 0 ? favoriteFeeds.pinnedFeeds[index - 1] : homeFeed
+            readonly property favoritefeedview favoriteFeed: index > 0 ? favoriteFeeds.userOrderedPinnedFeeds[index - 1] : homeFeed
 
             width: implicitWidth
             favorite: favoriteFeed
@@ -23,7 +23,7 @@ SkyTabBar {
     }
 
     function setCurrent(favorite) {
-        favoriteFeeds.pinnedFeeds.forEach((pinned, index) => {
+        favoriteFeeds.userOrderedPinnedFeeds.forEach((pinned, index) => {
             if (favorite.isSame(pinned))
                 tabBar.setCurrentIndex(index + 1)
         })
