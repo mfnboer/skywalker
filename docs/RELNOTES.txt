@@ -3,6 +3,7 @@ next
 * Tab bar for favorite feeds
 * Swipe sideways between favorite feeds
 * Tap on full screen image view to hide controls
+* GUI improvements
 
 3.15.1
 ======

@@ -18,13 +18,11 @@ SkyListView {
     property bool galleryMode: false
 
     id: authorPostsList
-    width: parent.width
-    height: parent.height
     model: modelId >= 0 ? skywalker.getAuthorFeedModel(page.modelId) : null
     interactive: !enclosingView.interactive
     clip: true
 
-    StackLayout.onIsCurrentItemChanged: changeCurrentItem(StackLayout.isCurrentItem)
+    SwipeView.onIsCurrentItemChanged: changeCurrentItem(SwipeView.isCurrentItem)
 
     function changeCurrentItem(isCurrentItem) {
         if (!isCurrentItem)
