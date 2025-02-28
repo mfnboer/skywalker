@@ -30,16 +30,16 @@ SkyPage {
         }
     }
 
-    StackLayout {
+    SwipeView {
         anchors.top: listsBar.bottom
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: listsBar.currentIndex
 
+        onCurrentIndexChanged: listsBar.setCurrentIndex(currentIndex)
+
         ListListView {
             id: yourLists
-            Layout.preferredWidth: parent.width
-            Layout.preferredHeight: parent.height
             skywalker: page.skywalker
             modelId: page.modelId
             ownLists: true
@@ -48,8 +48,6 @@ SkyPage {
 
         ListView {
             id: savedListsView
-            Layout.preferredWidth: parent.width
-            Layout.preferredHeight: parent.height
             spacing: 0
             clip: true
             model: skywalker.favoriteFeeds.getSavedListsModel()

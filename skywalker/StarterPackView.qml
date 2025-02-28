@@ -136,12 +136,18 @@ SkyPage {
             text: qsTr("People")
         }
         AccessibleTabButton {
+            id: feedsTab
             text: qsTr("Feeds")
-            visible: starterPack.feeds.length > 0
-            width: visible ? implicitWidth : 0
         }
         AccessibleTabButton {
             text: qsTr("Posts")
+        }
+
+        Component.onCompleted: {
+            // Just making the tab invisible does not help against swiping. You can still
+            // swipe to an invisible tab.
+            if (starterPack.feeds.length === 0)
+                removeItem(feedsTab)
         }
     }
 
@@ -153,17 +159,17 @@ SkyPage {
         color: guiSettings.separatorColor
     }
 
-    StackLayout {
+    SwipeView {
         id: feedStack
         width: parent.width
         anchors.top: feedsSeparator.bottom
         anchors.bottom: parent.bottom
         currentIndex: feedsBar.currentIndex
 
+        onCurrentIndexChanged: feedsBar.setCurrentIndex(currentIndex)
+
         AuthorListView {
             id: authorListView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
             title: ""
             skywalker: page.skywalker
             modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, starterPack.list.uri)
@@ -175,8 +181,6 @@ SkyPage {
 
         SkyListView {
             id: feedListView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
             model: skywalker.getFeedListModel(feedListModelId)
             boundsBehavior: Flickable.StopAtBounds
             clip: true
@@ -194,8 +198,6 @@ SkyPage {
 
         SkyListView {
             id: postListView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
             model: skywalker.getPostFeedModel(postFeedModelId)
             clip: true
 
@@ -203,13 +205,13 @@ SkyPage {
                 width: postListView.width
             }
 
-            StackLayout.onIsCurrentItemChanged: {
-                if (!StackLayout.isCurrentItem)
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
                     cover()
             }
 
             FlickableRefresher {
-                inProgress: model.getFeedInProgress
+                inProgress: postListView.model && postListView.model.getFeedInProgress
                 topOvershootFun: () => skywalker.getListFeed(postFeedModelId)
                 bottomOvershootFun: () => skywalker.getListFeedNextPage(postFeedModelIds)
                 topText: qsTr("Pull down to refresh feed")
@@ -224,8 +226,13 @@ SkyPage {
             BusyIndicator {
                 id: busyIndicator
                 anchors.centerIn: parent
-                running: model.getFeedInProgress
+                running: postListView.model && postListView.model.getFeedInProgress
             }
+        }
+
+        Component.onCompleted: {
+            if (starterPack.feeds.length === 0)
+                removeItem(feedListView)
         }
     }
 

@@ -1876,14 +1876,14 @@ ApplicationWindow {
 
         // TODO: can we delete this?
         // PostFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
-        if (!((item instanceof PostFeedView ||
-               item instanceof SearchFeedView) && item.showAsHome))
-        {
-            item.destroy()
-        }
-        else if (item instanceof PostFeedView && item.showAsHome) {
-            item.deactivate()
-        }
+        // if (!((item instanceof PostFeedView ||
+        //        item instanceof SearchFeedView) && item.showAsHome))
+        // {
+        //     item.destroy()
+        // }
+        // else if (item instanceof PostFeedView && item.showAsHome) {
+        //     item.deactivate()
+        // }
 
         if (stack === currentStack()) {
             let currentItem = currentStackItem()
@@ -1903,9 +1903,10 @@ ApplicationWindow {
 
         currentStack().push(item, operation)
 
-        if (item instanceof PostFeedView && item.showAsHome) {
-            item.activate()
-        }
+        // TODO: delete? if so, do we still need that activate/deactivate stuff?
+        // if (item instanceof PostFeedView && item.showAsHome) {
+        //     item.activate()
+        // }
 
         favoritesTabBar.update()
     }
@@ -1978,17 +1979,9 @@ ApplicationWindow {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    function feedFavoriteDeleted(feedKey) {
-        console.debug("Favorite deleted:", feedKey)
-        // TODO: anything still to do here?
-    }
-
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
-        skywalker.favoriteFeeds.onSearchUnpinned.connect(feedFavoriteDeleted)
-        skywalker.favoriteFeeds.onFeedUnpinned.connect(feedFavoriteDeleted)
-        skywalker.favoriteFeeds.onListUnpinned.connect(feedFavoriteDeleted)
     }
 
     Component.onCompleted: {

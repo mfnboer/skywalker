@@ -58,16 +58,16 @@ SkyPage {
         }
     }
 
-    StackLayout {
+    SwipeView {
         anchors.top: feedsBar.bottom
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: feedsBar.currentIndex
 
+        onCurrentIndexChanged: feedsBar.setCurrentIndex(currentIndex)
+
         ListView {
             id: feedListView
-            Layout.preferredWidth: parent.width
-            Layout.preferredHeight: parent.height
             spacing: 0
             clip: true
             model: searchUtils.getSearchFeedsModel()
@@ -104,8 +104,6 @@ SkyPage {
 
         ListView {
             id: savedFeedsView
-            Layout.preferredWidth: parent.width
-            Layout.preferredHeight: parent.height
             spacing: 0
             clip: true
             model: skywalker.favoriteFeeds.getSavedFeedsModel()

@@ -10,7 +10,7 @@ SkyPage {
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
     property var timeline
-    property bool isTyping: true
+    property bool isTyping: false
     property bool isHashtagSearch: false
     property bool isPostSearch: true
     property string postAuthorUser // empty, "me", handle
@@ -84,12 +84,44 @@ SkyPage {
         onMessagesClicked: root.viewChat()
     }
 
+    SimpleAuthorListView {
+        id: typeaheadView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: pageFooter.top
+        model: searchUtils.authorTypeaheadList
+        visible: page.isTyping && currentText && !page.isHashtagSearch
+
+        onAuthorClicked: (profile) => {
+            searchUtils.addLastSearchedProfile(profile)
+            page.skywalker.getDetailedProfile(profile.did)
+        }
+    }
+
+    HashtagListView {
+        id: hastagTypeaheadView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: pageFooter.top
+        model: searchUtils.hashtagTypeaheadList
+        visible: page.isTyping && currentText && page.isHashtagSearch
+
+        onHashtagClicked: (tag) => {
+            const fullTag = `#${tag}`
+            page.header.setSearchText(fullTag) // qmllint disable missing-property
+            searchUtils.search(fullTag)
+        }
+    }
+
     SkyTabBar {
         id: searchBar
         width: parent.width
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
+        visible: searchStack.visible
 
         onCurrentIndexChanged: page.isPostSearch = (currentIndex !== tabUsers.TabBar.index)
 
@@ -266,52 +298,16 @@ SkyPage {
         visible: page.isPostSearch
     }
 
-    SimpleAuthorListView {
-        id: typeaheadView
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: searchModeSeparator.bottom
-        anchors.bottom: pageFooter.top
-        model: searchUtils.authorTypeaheadList
-        visible: page.isTyping && !page.isHashtagSearch
-
-        onAuthorClicked: (profile) => {
-            searchUtils.addLastSearchedProfile(profile)
-            page.skywalker.getDetailedProfile(profile.did)
-        }
-    }
-
-    HashtagListView {
-        id: hastagTypeaheadView
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: searchModeSeparator.bottom
-        anchors.bottom: pageFooter.top
-        model: searchUtils.hashtagTypeaheadList
-        visible: page.isTyping && page.isHashtagSearch
-
-        onHashtagClicked: (tag) => {
-            const fullTag = `#${tag}`
-            page.header.setSearchText(fullTag) // qmllint disable missing-property
-            searchUtils.search(fullTag)
-        }
-    }
-
-    StackLayout {
+    SwipeView {
         id: searchStack
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         width: parent.width
-        currentIndex: currentText ?
-            searchBar.currentIndex :
-            ((page.header.hasFocus() || recentSearchesView.keepFocus || (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers)) ?
-                recentSearchesView.StackLayout.index :
-                suggestionsView.StackLayout.index)
-        visible: !page.isTyping || !currentText
+        currentIndex: searchBar.currentIndex
+        visible: currentText && !page.isTyping
 
         onCurrentIndexChanged: {
-            if (currentIndex === recentSearchesView.StackLayout.index)
-                recentSearchesRepeater.model = searchUtils.getLastSearches()
+            searchBar.setCurrentIndex(currentIndex)
         }
 
         SkyListView {
@@ -325,8 +321,8 @@ SkyPage {
                 width: postsViewTop.width
             }
 
-            StackLayout.onIsCurrentItemChanged: {
-                if (!StackLayout.isCurrentItem)
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
                     cover()
             }
 
@@ -362,8 +358,8 @@ SkyPage {
                 width: postsViewLatest.width
             }
 
-            StackLayout.onIsCurrentItemChanged: {
-                if (!StackLayout.isCurrentItem)
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
                     cover()
             }
 
@@ -420,6 +416,21 @@ SkyPage {
                 anchors.centerIn: parent
                 running: searchUtils.searchActorsInProgress
             }
+        }
+    }
+
+    StackLayout {
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: pageFooter.top
+        width: parent.width
+        currentIndex: (page.header.hasFocus() || recentSearchesView.keepFocus || (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers)) ?
+                recentSearchesView.StackLayout.index :
+                suggestionsView.StackLayout.index
+        visible: !currentText
+
+        onCurrentIndexChanged: {
+            if (currentIndex === recentSearchesView.StackLayout.index)
+                recentSearchesRepeater.model = searchUtils.getLastSearches()
         }
 
         Flickable {

@@ -87,11 +87,13 @@ SkyPage {
         color: guiSettings.separatorColor
     }
 
-    StackLayout {
+    SwipeView {
         anchors.top: tabSeparator.bottom
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: tabBar.currentIndex
+
+        onCurrentIndexChanged: tabBar.setCurrentIndex(currentIndex)
 
         SkyListView {
             id: allList
@@ -104,8 +106,8 @@ SkyPage {
                 width: page.width
             }
 
-            StackLayout.onIsCurrentItemChanged: {
-                if (!StackLayout.isCurrentItem)
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
                     cover()
             }
 
@@ -150,8 +152,8 @@ SkyPage {
                 width: page.width
             }
 
-            StackLayout.onIsCurrentItemChanged: {
-                if (!StackLayout.isCurrentItem)
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
                     cover()
             }
 
@@ -185,8 +187,6 @@ SkyPage {
             }
         }
     }
-
-
 
     function moveToNotification(index, mentions) {
         if (mentions)
