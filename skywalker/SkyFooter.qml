@@ -13,6 +13,7 @@ Rectangle {
     property bool messagesActive: false
     property bool showHomeFeedBadge: false
     property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
+    property int extraFooterMargin: 0
 
     signal homeClicked()
     signal notificationsClicked()
@@ -85,7 +86,7 @@ Rectangle {
     }
 
     PostButton {
-        y: -height - 10
+        y: -height - 10 - extraFooterMargin
         svg: getSvg()
         accessibleName: qsTr("post")
         overrideOnClicked: () => {

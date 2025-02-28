@@ -69,9 +69,6 @@ Rectangle {
                 modal: true
                 width: focusMenuItem.width
 
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
-
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")
                     Accessible.name: qsTr("close options menu")

@@ -9,7 +9,7 @@ SkyPage {
     property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
     property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
     property int margin: 10
-    readonly property int favoritesY: currentViewItem ? currentViewItem.favoritesY : 0
+    readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefinded') ? currentViewItem.favoritesY : 0
 
     id: page
 
@@ -24,6 +24,7 @@ SkyPage {
         timeline: page
         skywalker: page.skywalker
         homeActive: true
+        extraFooterMargin: viewBar.visible ? viewBar.height : 0
         onHomeClicked: currentViewItem.moveToHome()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
@@ -44,13 +45,11 @@ SkyPage {
             id: timelineView
             Layout.preferredWidth: viewStack.width
             Layout.preferredHeight: viewStack.height
-            headerMargin: viewBar.visible ? (viewBar.height + viewBarSeparator.height) : 0
-            skywalker: page.skywalker
 
-            onNewPosts: {
-                if (!StackLayout.isCurrentItem)
-                    tabTimeline.showDot = true
-            }
+            // When header at top
+            // headerMargin: viewBar.visible ? viewBar.height : 0
+
+            skywalker: page.skywalker
 
             StackLayout.onIsCurrentItemChanged: {
                 if (!StackLayout.isCurrentItem)
@@ -66,15 +65,19 @@ SkyPage {
 
                 Layout.preferredWidth: viewStack.width
                 Layout.preferredHeight: viewStack.height
-                headerMargin: viewBar.height + viewBarSeparator.height
+
+                // When header at top
+                // headerMargin: viewBar.height + viewBarSeparator.height
+
                 skywalker: page.skywalker
                 isView: true
                 model: modelData
 
-                onNewPosts: {
-                    if (!StackLayout.isCurrentItem) {
-                        viewBar.itemAt(StackLayout.index).showDot = true
-                    }
+                onUnreadPostsChanged: {
+                    let item = viewBar.itemAt(StackLayout.index)
+
+                    if (item)
+                        item.counter = unreadPosts
                 }
 
                 StackLayout.onIsCurrentItemChanged: {
@@ -127,31 +130,35 @@ SkyPage {
     }
 
     SkyTabBar {
-        property int numDots: 0
-
         id: viewBar
-        y: currentViewItem ? currentViewItem.visibleHeaderHeight : 0
+
+        // For showing at top
+        // y: currentViewItem ? currentViewItem.visibleHeaderHeight : 0
+
+        y: parent.height - height
         z: guiSettings.headerZLevel
         width: parent.width
+        position: TabBar.Footer
         Material.background: guiSettings.backgroundColor
         visible: count > 1
-
-        onCurrentItemChanged: currentItem.showDot = false
 
         SkyTabWithCloseButton {
             id: tabTimeline
             text: qsTr("Full feed")
+            counter: timelineView.unreadPosts
             showCloseButton: false
-            onShowDotChanged: viewBar.numDots += showDot ? 1 : -1
         }
 
         function addTab(name, backgroundColor, profile) {
+            let item = viewStack.itemAt(count)
+            const counter = item ? item.unreadPosts : 0
+
             let component = Qt.createComponent("SkyTabWithCloseButton.qml")
             let tab = component.createObject(viewBar, {
-                                                 text: name,
-                                                 backgroundColor: backgroundColor,
-                                                 profile: profile })
-            tab.onShowDotChanged.connect(() => viewBar.numDots += tab.showDot ? 1 : -1)
+                    text: name,
+                    backgroundColor: backgroundColor,
+                    profile: profile,
+                    counter: counter})
             tab.onClosed.connect(() => page.closeView(tab))
             addItem(tab)
             setCurrentIndex(count - 1)
@@ -169,16 +176,6 @@ SkyPage {
             item.backgroundColor = backgroundColor
             item.profile = profile
         }
-    }
-
-    Rectangle {
-        id: viewBarSeparator
-        z: guiSettings.headerZLevel
-        anchors.top: viewBar.bottom
-        width: parent.width
-        height: visible ? 1 : 0
-        color: viewBar.numDots > 0 ? guiSettings.accentColor : guiSettings.separatorColor
-        visible: viewBar.visible
     }
 
     BusyIndicator {
