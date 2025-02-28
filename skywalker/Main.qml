@@ -1884,6 +1884,7 @@ ApplicationWindow {
         // else if (item instanceof PostFeedView && item.showAsHome) {
         //     item.deactivate()
         // }
+        item.destroy()
 
         if (stack === currentStack()) {
             let currentItem = currentStackItem()

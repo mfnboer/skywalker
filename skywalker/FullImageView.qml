@@ -76,13 +76,14 @@ SkyPage {
                     source: images[index].fullSizeUrl
                     reloadIconColor: "white"
                 }
+
+                MouseArea {
+                    width: parent.width
+                    height: parent.height
+                    onClicked: showControls = !showControls
+                }
             }
         }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: showControls = !showControls
     }
 
     SvgButton {
