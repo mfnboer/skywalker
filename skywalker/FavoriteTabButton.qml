@@ -2,15 +2,11 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-TabButton {
+AccessibleTabButton {
     required property favoritefeedview favorite
-    property string backgroundColor: guiSettings.backgroundColor
 
     id: button
     implicitWidth: tabRow.implicitWidth + leftPadding + rightPadding
-    display: AbstractButton.TextOnly
-    Accessible.name: qsTr(`Press to show ${text}`)
-
     text: favorite.isNull() ? qsTr("Following", "timeline title") : favorite.name
 
     contentItem: Row {
@@ -36,10 +32,5 @@ TabButton {
             color: button.checked ? guiSettings.accentColor : guiSettings.textColor
             text: button.text
         }
-    }
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: backgroundColor
     }
 }

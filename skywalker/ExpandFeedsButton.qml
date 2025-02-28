@@ -110,6 +110,34 @@ SvgButton {
             }
         }
 
+        MenuItem {
+            contentItem: Text {
+                verticalAlignment: Text.AlignVCenter
+                rightPadding: settingsIcon.width + 5
+                color: guiSettings.textColor
+                elide: Text.ElideRight
+                text: qsTr("Sort favorites")
+            }
+
+            SkySvg {
+                id: settingsIcon
+                y: height + 5
+                anchors.rightMargin: 10
+                anchors.right: parent.right
+                width: height
+                height: parent.height - 10
+                color: guiSettings.buttonColor
+                svg: SvgFilled.settings
+            }
+
+            onTriggered: { highlighted = false; root.showFavoritesSorter() }
+
+            Accessible.role: Accessible.MenuItem
+            Accessible.name: contentItem.text
+            Accessible.description: Accessible.name
+            Accessible.onPressAction: triggered()
+        }
+
         onAboutToShow: {
             let favorites = skywalker.favoriteFeeds.getPinnedFeeds()
 

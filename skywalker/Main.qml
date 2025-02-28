@@ -97,14 +97,33 @@ ApplicationWindow {
         visible: false
 
         onCurrentIndexChanged: {
-            if (favoritesSwipeView)
+            if (currentIndex < 0)
+                return
+
+            const item = contentChildren[currentIndex]
+
+            if (item && item.settingsTab) {
+                if (favoritesSwipeView)
+                    Qt.callLater(() => { setCurrentIndex(favoritesSwipeView.currentIndex) })
+                else
+                    Qt.callLater(() => { setCurrentIndex(0) })
+            }
+            else if (favoritesSwipeView) {
                 favoritesSwipeView.setCurrentIndex(currentIndex)
+            }
         }
 
         function update() {
             let view = currentStackItem()
             visible = (view instanceof FavoritesSwipeView)
         }
+    }
+
+    function showFavoritesSorter() {
+        let component = guiSettings.createComponent("FavoritesSorter.qml")
+        let page = component.createObject(root, { favoriteFeeds: skywalker.favoriteFeeds })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
     }
 
     function clearStatusMessage() {
