@@ -6,6 +6,7 @@ import skywalker
 SkyPage {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
+    property bool showControls: true
 
     signal closed
     signal saveImage(string sourceUrl)
@@ -79,12 +80,18 @@ SkyPage {
         }
     }
 
+    MouseArea {
+        anchors.fill: parent
+        onClicked: showControls = !showControls
+    }
+
     SvgButton {
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
+        visible: showControls
         onClicked: page.closed()
     }
 
@@ -96,6 +103,7 @@ SkyPage {
         opacity: 0.7
         svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
+        visible: showControls
         onClicked: moreMenu.open()
 
         Menu {

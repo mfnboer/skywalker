@@ -75,8 +75,8 @@ SkyPage {
         SvgButton {
             anchors.top: parent.top
             anchors.left: parent.left
-            iconColor: guiSettings.headerTextColor
-            Material.background: guiSettings.headerColor
+            iconColor: "white"
+            Material.background: "black"
             opacity: 0.5
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")

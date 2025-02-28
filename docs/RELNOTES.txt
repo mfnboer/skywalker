@@ -1,3 +1,9 @@
+next
+====
+* Tab bar for favorite feeds
+* Swipe sideways between favorite feeds
+* Tap on full screen image view to hide controls
+
 3.15.1
 ======
 * Show counter of posts till top for all feeds
