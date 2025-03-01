@@ -5,11 +5,12 @@ import skywalker
 SkyTabBar {
     required property var favoriteFeeds
     property favoritefeedview homeFeed
+    readonly property int pinnedFeedsCount: favoriteFeeds.userOrderedPinnedFeeds.length
 
     id: tabBar
 
     Repeater {
-        model: favoriteFeeds.userOrderedPinnedFeeds.length + 1
+        model: pinnedFeedsCount + 1
 
         FavoriteTabButton {
             required property int index
@@ -19,7 +20,10 @@ SkyTabBar {
             width: implicitWidth
             favorite: favoriteFeed
 
-            onPressAndHold: root.showFavoritesSorter()
+            onPressAndHold: {
+                if (pinnedFeedsCount > 1)
+                    root.showFavoritesSorter()
+            }
         }
     }
 
@@ -27,6 +31,7 @@ SkyTabBar {
         readonly property bool settingsTab: true
 
         implicitWidth: contentItem.width
+        visible: pinnedFeedsCount > 1
         Accessible.name: qsTr("press to change tab order")
 
         contentItem: Rectangle {

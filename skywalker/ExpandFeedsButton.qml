@@ -6,6 +6,7 @@ import skywalker
 
 SvgButton {
     required property var skywalker
+    property list<favoritefeedview> favorites: skywalker.favoriteFeeds.userOrderedPinnedFeeds
 
     iconColor: guiSettings.headerTextColor
     Material.background: "transparent"
@@ -110,7 +111,7 @@ SvgButton {
             }
         }
 
-        MenuItem {
+        AccessibleMenuItem {
             contentItem: Text {
                 verticalAlignment: Text.AlignVCenter
                 rightPadding: settingsIcon.width + 5
@@ -130,17 +131,13 @@ SvgButton {
                 svg: SvgFilled.settings
             }
 
+            visible: favorites.length > 1
             onTriggered: { highlighted = false; root.showFavoritesSorter() }
 
-            Accessible.role: Accessible.MenuItem
             Accessible.name: contentItem.text
-            Accessible.description: Accessible.name
-            Accessible.onPressAction: triggered()
         }
 
         onAboutToShow: {
-            let favorites = skywalker.favoriteFeeds.getPinnedFeeds()
-
             if (!compareFavorites(favorites))
                 menuInstantiator.model = favorites
         }

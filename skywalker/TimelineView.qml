@@ -28,7 +28,7 @@ SkyListView {
         showAsHome: true
         isHomeFeed: true
         showMoreOptions: true
-        showFavoritesPlaceHolder: true
+        showFavoritesPlaceHolder: root.isFavoritesTabBarVisible()
         bottomMargin: headerMargin
 
         onAddUserView: page.addUserView()

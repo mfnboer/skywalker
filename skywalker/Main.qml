@@ -88,13 +88,14 @@ ApplicationWindow {
 
     FavoritesTabBar {
         property var favoritesSwipeView
+        property bool show: false
 
         id: favoritesTabBar
         y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
         z: guiSettings.headerZLevel + 10
         width: parent.width
         favoriteFeeds: skywalker.favoriteFeeds
-        visible: false
+        visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
 
         onCurrentIndexChanged: {
             if (currentIndex < 0)
@@ -115,8 +116,12 @@ ApplicationWindow {
 
         function update() {
             let view = currentStackItem()
-            visible = (view instanceof FavoritesSwipeView)
+            show = (view instanceof FavoritesSwipeView)
         }
+    }
+
+    function isFavoritesTabBarVisible() {
+        return favoritesTabBar.visible
     }
 
     function showFavoritesSorter() {
