@@ -80,7 +80,7 @@ SkyListView {
             id: extraFooterLoader
             anchors.bottom: parent.bottom
 
-            active: model && model.isFilterModel() && index == count - 1 && !endOfFeed
+            active: model && model.isFilterModel() && index === count - 1 && !endOfFeed
             sourceComponent: extraFooterComponent
         }
     }

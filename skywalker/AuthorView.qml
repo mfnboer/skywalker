@@ -128,10 +128,23 @@ SkyPage {
 
     onCover: {
         let feeds = authorFeedView.itemAtIndex(0)
-        let item = feeds.children[feeds.currentIndex] // qmllint disable missing-property
 
-        if (item instanceof AuthorPostsList)
+        if (!(feeds instanceof SwipeView)) {
+            qWarning() << "Wrong type:" << feeds
+            return
+        }
+
+        let item = feeds.itemAt(feeds.currentIndex) // qmllint disable missing-property
+
+        if (item instanceof AuthorPostsList) {
             item.cover()
+        }
+        else if (item instanceof Loader) {
+            let loaderItem = item.item
+
+            if (loaderItem && loaderItem instanceof AuthorPostsList)
+                loaderItem.cover()
+        }
     }
 
     ListView {
