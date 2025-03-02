@@ -56,7 +56,6 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getMentionsInProgress READ isGetMentionsInProgress NOTIFY getMentionsInProgressChanged FINAL)
-    Q_PROPERTY(bool getAuthorFeedInProgress READ isGetAuthorFeedInProgress NOTIFY getAuthorFeedInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
     Q_PROPERTY(bool getStarterPackListInProgress READ isGetStarterPackListInProgress NOTIFY getStarterPackListInProgressChanged FINAL)
@@ -223,8 +222,6 @@ public:
     bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
     void setGetMentionsInProgress(bool inProgress);
     bool isGetMentionsInProgress() const { return mGetMentionsInProgress; }
-    void setGetAuthorFeedInProgress(bool inProgress);
-    bool isGetAuthorFeedInProgress() const override { return mGetAuthorFeedInProgress; }
     void setGetAuthorListInProgress(bool inProgress);
     bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
     void setGetListListInProgress(bool inProgress);
@@ -270,7 +267,6 @@ signals:
     void dataMigrationDone();
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
-    void getAuthorFeedInProgressChanged();
     void getNotificationsInProgressChanged();
     void getMentionsInProgressChanged();
     void sessionExpired(QString error);
@@ -381,7 +377,6 @@ private:
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
-    bool mGetAuthorFeedInProgress = false;
     bool mGetAuthorListInProgress = false;
     bool mGetListListInProgress = false;
     bool mGetStarterPackListInProgress = false;

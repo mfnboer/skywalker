@@ -23,7 +23,6 @@ public:
     virtual void getListFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10) = 0;
     virtual void syncListFeed(int modelId, int maxPages = 20) = 0;
 
-    virtual bool isGetAuthorFeedInProgress() const = 0;
     virtual void getAuthorFeed(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {}) = 0;
     virtual void getAuthorFeedNextPage(int id, int maxPages = 20, int minEntries = 10) = 0;
 };

@@ -10,7 +10,7 @@ GridView {
     property bool showAsHome: false
     property var enclosingView // used on AuthorView
     property int unreadPosts: 0
-    readonly property bool feedLoading: (model && model.feedType === QEnums.FEED_AUTHOR) ? skywalker.getAuthorFeedInProgress : (model ? model.getFeedInProgress : false)
+    readonly property bool feedLoading: model ? model.getFeedInProgress : false
 
     property int headerHeight: 0
     property int startY: 0

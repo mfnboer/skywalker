@@ -1615,12 +1615,6 @@ void Skywalker::setGetMentionsInProgress(bool inProgress)
     emit getMentionsInProgressChanged();
 }
 
-void Skywalker::setGetAuthorFeedInProgress(bool inProgress)
-{
-    mGetAuthorFeedInProgress = inProgress;
-    emit getAuthorFeedInProgressChanged();
-}
-
 void Skywalker::setGetAuthorListInProgress(bool inProgress)
 {
     mGetAuthorListInProgress = inProgress;
@@ -2063,18 +2057,18 @@ void Skywalker::clearAuthorFeed(int id)
     Q_ASSERT(mBsky);
     qDebug() << "Clear author feed model:" << id;
 
-    if (mGetAuthorFeedInProgress)
-    {
-        qDebug() << "Get author feed still in progress";
-        return;
-    }
-
     const auto* model = mAuthorFeedModels.get(id);
     Q_ASSERT(model);
 
     if (!model)
     {
         qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author feed still in progress";
         return;
     }
 
@@ -2087,18 +2081,18 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     qDebug() << "Get author feed model:" << id << "cursor:" << cursor << "max pages:"
              << maxPages << "min entries:" << minEntries;
 
-    if (mGetAuthorFeedInProgress)
-    {
-        qDebug() << "Get author feed still in progress";
-        return;
-    }
-
     const auto* model = mAuthorFeedModels.get(id);
     Q_ASSERT(model);
 
     if (!model)
     {
         qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author feed still in progress";
         return;
     }
 
@@ -2127,14 +2121,15 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     const auto& author = (*model)->getAuthor();
     qDebug() << "Get author feed:" << author.getHandle();
 
-    setGetAuthorFeedInProgress(true);
+    (*model)->setGetFeedInProgress(true);
     mBsky->getAuthorFeed(author.getDid(), limit, Utils::makeOptionalString(cursor), filter, includePins,
         [this, id, maxPages, minEntries, cursor](auto feed){
-            setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
 
             if (!model)
                 return; // user has closed the view
+
+            (*model)->setGetFeedInProgress(false);
 
             int added = cursor.isEmpty() ?
                     (*model)->setFeed(std::move(feed)) :
@@ -2149,7 +2144,13 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
                 emit getAuthorFeedOk(id);
         },
         [this, id](const QString& error, const QString& msg){
-            setGetAuthorFeedInProgress(false);
+            const auto* model = mAuthorFeedModels.get(id);
+
+            if (model) {
+                (*model)->setGetFeedInProgress(false);
+                (*model)->setFeedError(msg);
+            }
+
             qDebug() << "getAuthorFeed failed:" << error << " - " << msg;
             emit getAuthorFeedFailed(id, error, msg);
         });
@@ -2160,7 +2161,16 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     qDebug() << "Get author feed next page, model:" << id << "max pages:" << maxPages
              << "min entries:" << minEntries;
 
-    if (mGetAuthorFeedInProgress)
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
     {
         qDebug() << "Get author feed still in progress";
         return;
@@ -2170,15 +2180,6 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     {
         // Protection against infinite loop.
         qWarning() << "Maximum pages reached!";
-        return;
-    }
-
-    const auto* model = mAuthorFeedModels.get(id);
-    Q_ASSERT(model);
-
-    if (!model)
-    {
-        qWarning() << "Model does not exist:" << id;
         return;
     }
 
@@ -2200,12 +2201,6 @@ void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, 
     qDebug() << "Get author likes model:" << id << "cursor:" << cursor << "max pages:"
              << maxPages << "min entries:" << minEntries;
 
-    if (mGetAuthorFeedInProgress)
-    {
-        qDebug() << "Get author likes still in progress";
-        return;
-    }
-
     const auto* model = mAuthorFeedModels.get(id);
     Q_ASSERT(model);
 
@@ -2215,17 +2210,24 @@ void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, 
         return;
     }
 
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author likes still in progress";
+        return;
+    }
+
     const auto& author = (*model)->getAuthor();
     qDebug() << "Get author likes:" << author.getHandle();
 
-    setGetAuthorFeedInProgress(true);
+    (*model)->setGetFeedInProgress(true);
     mBsky->getActorLikes(author.getDid(), limit, Utils::makeOptionalString(cursor),
         [this, id, maxPages, minEntries, cursor](auto feed){
-            setGetAuthorFeedInProgress(false);
             const auto* model = mAuthorFeedModels.get(id);
 
             if (!model)
                 return; // user has closed the view
+
+            (*model)->setGetFeedInProgress(false);
 
             int added = cursor.isEmpty() ?
                             (*model)->setFeed(std::move(feed)) :
@@ -2235,10 +2237,16 @@ void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, 
             int entriesToAdd = minEntries - added;
 
             if (entriesToAdd > 0)
-                getAuthorFeedNextPage(id, maxPages - 1, entriesToAdd);
+                getAuthorLikesNextPage(id, maxPages - 1, entriesToAdd);
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorFeedInProgress(false);
+        [this, id](const QString& error, const QString& msg){
+            const auto* model = mAuthorFeedModels.get(id);
+
+            if (model) {
+                (*model)->setGetFeedInProgress(false);
+                (*model)->setFeedError(msg);
+            }
+
             qDebug() << "getAuthorLikes failed:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -2249,7 +2257,16 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
     qDebug() << "Get author likes next page, model:" << id << "max pages:" << maxPages
              << "min entries:" << minEntries;
 
-    if (mGetAuthorFeedInProgress)
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
     {
         qDebug() << "Get author likes still in progress";
         return;
@@ -2259,15 +2276,6 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
     {
         // Protection against infinite loop.
         qWarning() << "Maximum pages reached!";
-        return;
-    }
-
-    const auto* model = mAuthorFeedModels.get(id);
-    Q_ASSERT(model);
-
-    if (!model)
-    {
-        qWarning() << "Model does not exist:" << id;
         return;
     }
 
@@ -3744,7 +3752,6 @@ void Skywalker::signOut()
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);
     setGetPostThreadInProgress(false);
-    setGetAuthorFeedInProgress(false);
     setGetAuthorListInProgress(false);
 
     mSignOutInProgress = false;
