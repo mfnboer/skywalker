@@ -16,6 +16,34 @@ SkyListView {
     header: SimpleHeader {
         text: qsTr("Conversations")
         onBack: conversationsView.closed()
+
+        SvgPlainButton {
+            id: moreOptions
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            svg: SvgOutline.moreVert
+            accessibleName: qsTr("chat options")
+            onClicked: moreMenu.open()
+
+            Menu {
+                id: moreMenu
+                modal: true
+
+                onAboutToShow: root.enablePopupShield(true)
+                onAboutToHide: root.enablePopupShield(false)
+
+                CloseMenuItem {
+                    text: qsTr("<b>Options</b>")
+                    Accessible.name: qsTr("close options menu")
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Permissions")
+                    onTriggered: root.editChatSettings()
+                    MenuItemSvg { svg: SvgOutline.key }
+                }
+            }
+        }
     }
     headerPositioning: ListView.OverlayHeader
 

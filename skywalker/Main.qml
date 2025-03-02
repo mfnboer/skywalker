@@ -1765,6 +1765,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function editChatSettings() {
+        let component = guiSettings.createComponent("SettingsForm.qml")
+        let form = component.createObject(root, { allVisible: false, onlyChatVisible: true })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(form)
+    }
+
     function editContentFilterSettings() {
         let component = Qt.createComponent("ContentFilterSettings.qml")
         let contentGroupListModel = skywalker.getGlobalContentGroupListModel()
