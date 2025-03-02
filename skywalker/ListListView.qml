@@ -42,7 +42,7 @@ ListView {
                 text: view.description
             }
 
-            SvgButton {
+            SvgPlainButton {
                 id: addButton
                 svg: SvgOutline.add
                 accessibleName: qsTr("create new list")

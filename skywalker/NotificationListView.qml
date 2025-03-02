@@ -16,7 +16,7 @@ SkyPage {
         text: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
         onBack: page.closed()
 
-        SvgButton {
+        SvgPlainButton {
             id: moreOptions
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -41,7 +41,7 @@ SkyPage {
                     checkable: true
                     checked: skywalker.notificationListModel.priority
 
-                    onToggled:{
+                    onToggled: {
                         skywalker.updateNotificationPreferences(checked)
                     }
                 }

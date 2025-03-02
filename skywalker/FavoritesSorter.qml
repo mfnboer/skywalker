@@ -17,14 +17,12 @@ SkyPage {
         description: qsTr("To change the order, keep a favorite pushed till its background changes color, then drag it to the desired position.")
         onClosed: page.closed()
 
-        SvgButton {
+        SvgPlainButton {
             anchors.rightMargin: 10
             anchors.right: parent.right
             y: (guiSettings.headerHeight - height) / 2
-            iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             svg: SvgOutline.moreVert
-            accessibleName: qsTr("Sort favorites options")
+            accessibleName: qsTr("Favorites options")
             onClicked: moreMenu.open()
 
             Menu {

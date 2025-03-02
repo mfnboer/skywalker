@@ -129,14 +129,12 @@ Dialog {
                 onClicked: selectDate(sinceText)
             }
 
-            SvgButton {
+            SvgPlainButton {
                 width: 40
                 height: width
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: SvgOutline.cancel
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
                 accessibleName: qsTr("clear since date")
                 visible: setSince
                 onClicked: {
@@ -163,14 +161,12 @@ Dialog {
                 onClicked: selectDate(untilText)
             }
 
-            SvgButton {
+            SvgPlainButton {
                 width: 40
                 height: width
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 svg: SvgOutline.cancel
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
                 accessibleName: qsTr("clear until date")
                 visible: setUntil
                 onClicked: {

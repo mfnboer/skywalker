@@ -26,11 +26,12 @@ SkyPage {
         backIsCancel: true
         onBack: editListPage.cancel()
 
-        SvgButton {
+        SvgPlainButton {
             id: createListButton
             anchors.right: parent.right
             anchors.top: parent.top
             svg: SvgOutline.check
+            iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             accessibleName: qsTr("save list")
             enabled: nameField.text.length > 0 && !nameField.maxGraphemeLengthExceeded() && changesMade()
 

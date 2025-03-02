@@ -24,10 +24,9 @@ Rectangle {
         width: parent.width
         height: guiSettings.headerHeight
 
-        SvgButton {
+        SvgPlainButton {
             id: backButton
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
             onClicked: headerRect.back()
@@ -69,7 +68,7 @@ Rectangle {
                 Accessible.editable: true
                 Accessible.searchEdit: true
 
-                SvgButton {
+                SvgPlainButton {
                     id: clearButton
                     anchors.right: parent.right
                     imageMargin: 8
@@ -77,8 +76,6 @@ Rectangle {
                     width: height
                     height: parent.height + 10
                     svg: SvgOutline.close
-                    flat: true
-                    iconColor: guiSettings.textColor
                     Material.background: guiSettings.backgroundColor
                     accessibleName: qsTr("clear search text")
                     visible: searchText.displayText.length > 0

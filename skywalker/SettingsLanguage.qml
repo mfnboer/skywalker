@@ -29,13 +29,13 @@ ColumnLayout {
         onCheckedLangCodesChanged: userSettings.setContentLanguages(userDid, checkedLangCodes)
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Show posts without language tag")
         checked: userSettings.getShowUnknownContentLanguage(userDid)
         onCheckedChanged: userSettings.setShowUnknownContentLanguage(userDid, checked)
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Show language tags on post")
         checked: userSettings.getShowLanguageTags()
         onCheckedChanged: userSettings.setShowLanguageTags(checked)

@@ -16,7 +16,7 @@ ColumnLayout {
         text: qsTr("Notifications can be enabled/disabled in the app settings of your phone.")
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("WiFi only")
         checked: userSettings.getNotificationsWifiOnly()
         onCheckedChanged: userSettings.setNotificationsWifiOnly(checked)

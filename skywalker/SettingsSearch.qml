@@ -10,13 +10,13 @@ ColumnLayout {
         text: qsTr("Search")
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Trending topics")
         checked: userSettings.showTrendingTopics
         onCheckedChanged: userSettings.showTrendingTopics = checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Suggested accounts")
         checked: userSettings.showSuggestedUsers
         onCheckedChanged: userSettings.showSuggestedUsers = checked

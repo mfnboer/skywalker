@@ -18,7 +18,7 @@ SkyPage {
         text: qsTr("Starter pack")
         onBack: page.closed()
 
-        SvgButton {
+        SvgPlainButton {
             id: moreButton
             anchors.right: parent.right
             svg: SvgOutline.moreVert

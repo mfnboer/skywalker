@@ -150,7 +150,7 @@ SkyPage {
         }
     }
 
-    SvgButton {
+    SvgPlainButton {
         id: moreButton
         anchors.right: parent.right
         anchors.rightMargin: 5
@@ -158,8 +158,6 @@ SkyPage {
         y: (searchBar.height - height) / 2
         width: height
         height: 30
-        iconColor: guiSettings.textColor
-        Material.background: "transparent"
         svg: SvgOutline.menu
         accessibleName: qsTr("hashtag options")
         visible: isHashtagSearch
@@ -243,15 +241,13 @@ SkyPage {
         Material.background: guiSettings.backgroundColor
         visible: page.isPostSearch
 
-        SvgButton {
+        SvgPlainButton {
             id: restrictionIcon
-            //y: 20
             Layout.preferredWidth: height
             Layout.preferredHeight: 20
             imageMargin: 0
             iconColor: guiSettings.linkColor
             Material.background: guiSettings.backgroundColor
-            flat: true
             svg: SvgOutline.noReplyRestrictions
             accessibleName: searchModeText.text
             onClicked: page.changeSearchPostScope()
@@ -273,14 +269,12 @@ SkyPage {
                 enabled: page.isPostSearch
             }
         }
-        SvgButton {
+        SvgPlainButton {
             id: clearScopeButton
             Layout.preferredWidth: 20
             Layout.preferredHeight: width
             imageMargin: 0
-            iconColor: guiSettings.textColor
             Material.background: guiSettings.backgroundColor
-            flat: true
             svg: SvgOutline.close
             accessibleName: qsTr("clear search scope")
             visible: postAuthorUser || postMentionsUser || postSetSince || postSetUntil || postLanguage
@@ -646,15 +640,13 @@ SkyPage {
                             searchUtils.addLastSearchedProfile(modelData)
                         }
 
-                        SvgButton {
+                        SvgPlainButton {
                             y: -topInset
                             x: parent.width - width + rightInset
                             width: 28
                             height: width
                             imageMargin: 8
-                            iconColor: guiSettings.textColor
                             Material.background: guiSettings.backgroundColor
-                            flat: true
                             svg: SvgOutline.close
                             accessibleName: qsTr(`remove ${modelData.name}`)
                             onPressed: {
@@ -719,14 +711,12 @@ SkyPage {
                             }
                         }
 
-                        SvgButton {
+                        SvgPlainButton {
                             id: removeRecentSearchButton
                             anchors.right: parent.right
                             width: 34
                             height: width
-                            iconColor: guiSettings.textColor
                             Material.background: guiSettings.backgroundColor
-                            flat: true
                             svg: SvgOutline.close
                             accessibleName: qsTr(`remove ${recentSearchText.text}`)
                             onPressed: {

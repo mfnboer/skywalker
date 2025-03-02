@@ -27,10 +27,11 @@ SkyPage {
         backIsCancel: true
         onBack: page.cancel()
 
-        SvgButton {
+        SvgPlainButton {
             id: okButton
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
+            iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             svg: SvgOutline.check
             accessibleName: qsTr("process video")
             onClicked: videoEdited(getNewHeight(), durationControl.first.value, durationControl.second.value, page.removeAudio)

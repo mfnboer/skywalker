@@ -33,7 +33,7 @@ SkyPage {
         z: guiSettings.headerZLevel
         color: guiSettings.headerColor
 
-        SvgButton {
+        SvgPlainButton {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             svg: SvgOutline.cancel

@@ -25,10 +25,9 @@ SkyPage {
         {
             id: headerRow
 
-            SvgButton {
+            SvgPlainButton {
                 id: backButton
                 iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
                 svg: SvgOutline.arrowBack
                 accessibleName: qsTr("go back")
                 onClicked: page.closed()

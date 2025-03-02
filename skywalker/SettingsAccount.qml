@@ -26,24 +26,21 @@ GridLayout {
             elide: Text.ElideRight
             text: userPrefs.email
         }
-        SvgButton {
+        SvgPlainButton {
             id: mailConfirmedImg
             imageMargin: 0
             implicitWidth: height
             implicitHeight: mailText.height
             iconColor: guiSettings.buttonColor
-            Material.background: "transparent"
             accessibleName: qsTr("E-mail address confirmed")
             svg: SvgOutline.check
             visible: userPrefs.emailConfirmed
             onClicked: skywalker.showStatusMessage(accessibleName, QEnums.STATUS_LEVEL_INFO)
         }
-        SvgButton {
+        SvgPlainButton {
             imageMargin: 0
             implicitWidth: height
             implicitHeight: mailText.height
-            iconColor: guiSettings.textColor
-            Material.background: "transparent"
             accessibleName: qsTr("Two-factor authentication enabled")
             svg: SvgOutline.confirmationCode
             visible: userPrefs.emailAuthFactor
@@ -86,14 +83,12 @@ GridLayout {
             elide: Text.ElideRight
             text: userPrefs.did
         }
-        SvgButton {
+        SvgPlainButton {
             imageMargin: 0
             implicitWidth: height
             implicitHeight: didLabel.height
             svg: SvgOutline.copy
             accessibleName: qsTr("copy") + " D I D"
-            iconColor: guiSettings.textColor
-            Material.background: "transparent"
             onClicked: skywalker.copyToClipboard(userPrefs.did)
         }
     }
@@ -104,7 +99,7 @@ GridLayout {
         text: qsTr("Logged-out visibility")
     }
 
-    Switch {
+    CheckBox {
         id: loggedoutSwitch
         Layout.columnSpan: 2
         Layout.fillWidth: true

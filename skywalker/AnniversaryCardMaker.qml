@@ -21,7 +21,7 @@ SkyPage {
             page.canceled()
         }
 
-        SvgButton {
+        SvgPlainButton {
             id: addCardButton
             anchors.rightMargin: 10
             anchors.right: parent.right

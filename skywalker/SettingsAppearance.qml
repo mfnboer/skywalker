@@ -80,11 +80,12 @@ ColumnLayout {
                 onClicked: selectBackgroundColor()
             }
 
-            SvgButton {
+            SvgPlainButton {
                 y: -2
                 anchors.right: parent.right
                 width: height
                 height: 34
+                Material.background: guiSettings.backgroundColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset background color to default")
                 onClicked: userSettings.resetBackgroundColor()
@@ -126,11 +127,12 @@ ColumnLayout {
                 onClicked: selectAccentColor()
             }
 
-            SvgButton {
+            SvgPlainButton {
                 y: -2
                 anchors.right: parent.right
                 width: height
                 height: 34
+                Material.background: guiSettings.backgroundColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset accent color to default")
                 onClicked: {
@@ -158,11 +160,12 @@ ColumnLayout {
                 onClicked: selectLinkColor()
             }
 
-            SvgButton {
+            SvgPlainButton {
                 y: -2
                 anchors.right: parent.right
                 width: height
                 height: 34
+                Material.background: guiSettings.backgroundColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset link color to default")
                 onClicked: userSettings.resetLinkColor()
@@ -223,11 +226,12 @@ ColumnLayout {
                 onClicked: selectThreadColor()
             }
 
-            SvgButton {
+            SvgPlainButton {
                 y: -2
                 anchors.right: parent.right
                 width: height
                 height: 34
+                Material.background: guiSettings.backgroundColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset thread color to default")
                 onClicked: userSettings.resetThreadColor()
@@ -235,31 +239,31 @@ ColumnLayout {
         }
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Floating navigation buttons")
         checked: userSettings.floatingNavigationButtons
         onCheckedChanged: userSettings.floatingNavigationButtons = checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Giant emoji")
         checked: userSettings.giantEmojis
         onCheckedChanged: userSettings.giantEmojis = checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("GIF auto play")
         checked: userSettings.getGifAutoPlay()
         onCheckedChanged: userSettings.setGifAutoPlay(checked)
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Video auto play")
         checked: userSettings.videoAutoPlay
         onCheckedChanged: userSettings.videoAutoPlay = checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Video auto load")
         checked: userSettings.videoAutoLoad
         onCheckedChanged: userSettings.videoAutoLoad = checked
@@ -271,7 +275,7 @@ ColumnLayout {
         text: qsTr("With auto loading, the video is automatically loaded (more data usage) so it starts faster when you press play. Otherwise it will load when you press play.")
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Video loop play")
         checked: userSettings.videoLoopPlay
         onCheckedChanged: userSettings.videoLoopPlay = checked

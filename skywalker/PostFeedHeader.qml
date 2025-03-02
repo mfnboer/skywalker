@@ -44,20 +44,18 @@ Rectangle {
         height: guiSettings.headerHeight
         spacing: 0
 
-        SvgButton {
+        SvgPlainButton {
             id: backButton
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
             visible: !showAsHome
 
             onClicked: header.closed()
         }
-        SvgButton {
+        SvgPlainButton {
             id: moreButton
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             svg: SvgOutline.menu
             accessibleName: qsTr("more options")
             visible: showMoreOptions
@@ -161,19 +159,17 @@ Rectangle {
             }
         }
 
-        SvgButton {
+        SvgPlainButton {
             svg: SvgOutline.language
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             accessibleName: qsTr("language filter active")
             visible: showLanguageFilter
             onClicked: showLanguageFilterDetails()
         }
 
-        SvgButton {
+        SvgPlainButton {
             svg: guiSettings.getContentModeSvg(contentMode)
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             accessibleName: qsTr("view mode")
             visible: showViewOptions
 

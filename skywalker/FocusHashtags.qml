@@ -25,7 +25,7 @@ ListView {
         text: qsTr("Focus hashtags") + ` (${view.count} / ${skywalker.focusHashtags.maxSize})`
         onBack: view.closed()
 
-        SvgButton {
+        SvgPlainButton {
             anchors.right: parent.right
             svg: SvgOutline.add
             onClicked: addHashtagEntry()
@@ -93,36 +93,30 @@ ListView {
                         }
                     }
                 }
-                SvgButton {
+                SvgPlainButton {
                     Layout.preferredWidth: 30
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: guiSettings.textColor
-                    Material.background: "transparent"
                     svg: SvgOutline.palette
                     accessibleName: qsTr(`set hightlight color for ${entryText.text}`)
                     onClicked: setHighlightColor(modelData)
                 }
-                SvgButton {
+                SvgPlainButton {
                     Layout.preferredWidth: 30
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 5
                     imageMargin: 0
-                    iconColor: guiSettings.textColor
-                    Material.background: "transparent"
                     svg: SvgOutline.add
                     accessibleName: qsTr(`edit ${entryText.text}`)
                     onClicked: addHashtagToEntry(modelData)
                 }
-                SvgButton {
+                SvgPlainButton {
                     Layout.preferredWidth: 30
                     Layout.preferredHeight: 30
                     Layout.rightMargin: 10
                     imageMargin: 0
                     id: deleteButton
-                    iconColor: guiSettings.textColor
-                    Material.background: "transparent"
                     svg: SvgOutline.delete
                     accessibleName: qsTr(`delete ${entryText.text}`)
                     onClicked: deleteHashtagEntry(modelData)

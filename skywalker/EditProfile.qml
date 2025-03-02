@@ -33,11 +33,12 @@ SkyPage {
         backIsCancel: true
         onBack: editProfilePage.cancel()
 
-        SvgButton {
+        SvgPlainButton {
             id: updateProfileButton
             anchors.right: parent.right
             anchors.top: parent.top
             svg: SvgOutline.check
+            iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             accessibleName: qsTr("save profile")
             enabled: changesMade() && !nameField.maxGraphemeLengthExceeded()
 

@@ -124,7 +124,7 @@ Dialog {
         }
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         id: excludeFollowsSwitch
         anchors.top: durationGrid.bottom
         anchors.topMargin: 10
