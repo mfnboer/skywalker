@@ -28,6 +28,8 @@ Rectangle {
         anchors.horizontalCenter: button.horizontalCenter
         Material.background: guiSettings.buttonNeutralColor
         display: AbstractButton.TextOnly
+        icon.name: ""
+        icon.source: ""
         visible: floating
     }
 

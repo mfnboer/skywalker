@@ -484,6 +484,7 @@ qt_add_qml_module(libskywalker
         QML_FILES FavoriteTabButton.qml
         QML_FILES FavoritesSwipeView.qml
         QML_FILES FavoritesSorter.qml
+        QML_FILES SkyRoundRadioButton.qml
 )
 
 if (NOT ANDROID)

@@ -221,7 +221,7 @@ SkyPage {
         }
         footerPositioning: ListView.OverlayFooter
 
-        delegate: RadioButton {
+        delegate: SkyRoundRadioButton {
             required property reportreason modelData
             property alias reportReason: reasonEntry.modelData
 
@@ -230,7 +230,6 @@ SkyPage {
             height: titleText.height + descriptionText.height
             leftPadding: 10
             rightPadding: 10
-            display: AbstractButton.TextOnly
 
             contentItem: Column {
                 id: buttonText

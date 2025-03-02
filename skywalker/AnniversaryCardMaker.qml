@@ -51,10 +51,9 @@ SkyPage {
             Layout.fillWidth: true
             spacing: 10
 
-            RoundButton {
+            SkyRoundRadioButton {
                 id: backgroundButton
                 Material.background: anniversaryCard.backgroundColor
-                display: AbstractButton.TextOnly
                 onClicked: selectColor(anniversaryCard.backgroundColor, (color) => anniversaryCard.backgroundColor = color)
             }
 
@@ -71,10 +70,9 @@ SkyPage {
             Layout.fillWidth: true
             spacing: 10
 
-            RoundButton {
+            SkyRoundRadioButton {
                 id: logoButton
                 Material.background: anniversaryCard.logoColor
-                display: AbstractButton.TextOnly
                 onClicked: selectColor(anniversaryCard.logoColor, (color) => anniversaryCard.logoColor = color)
             }
 
@@ -91,10 +89,9 @@ SkyPage {
             Layout.fillWidth: true
             spacing: 10
 
-            RoundButton {
+            SkyRoundRadioButton {
                 id: ageButton
                 Material.background: anniversaryCard.ageColor
-                display: AbstractButton.TextOnly
                 onClicked: selectColor(anniversaryCard.ageColor, (color) => anniversaryCard.ageColor = color)
             }
 
