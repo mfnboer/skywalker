@@ -609,6 +609,20 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     return retval;
 }
 
+void PostFeedModel::addFilteredPostFeedModel(FilteredPostFeedModel::Ptr model)
+{
+    Q_ASSERT(model);
+    qDebug() << "Add model:" << model->getFeedName();
+    auto* retval = model.get();
+    emit filteredPostFeedModelAboutToBeAdded();
+    mFilteredPostFeedModels.push_back(std::move(model));
+    emit filteredPostFeedModelsChanged();
+    emit filteredPostFeedModelAdded(retval);
+
+    if (isHomeFeed())
+        mUserSettings.setTimelineViews(mUserDid, filteredPostFeedModelsToJson());
+}
+
 int PostFeedModel::findFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel) const
 {
     for (auto it = mFilteredPostFeedModels.begin(); it != mFilteredPostFeedModels.end(); ++it)
@@ -620,14 +634,14 @@ int PostFeedModel::findFilteredPostFeedModel(FilteredPostFeedModel* postFeedMode
     return -1;
 }
 
-void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
+FilteredPostFeedModel::Ptr PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
 {
     const int index = findFilteredPostFeedModel(postFeedModel);
 
     if (index < 0)
     {
         qWarning() << "Could not delete filtered post feed model:" << postFeedModel->getFeedName();
-        return;
+        return nullptr;
     }
 
     emit filteredPostFeedModelAboutToBeDeleted(index);
@@ -643,6 +657,51 @@ void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedM
 
     if (isHomeFeed())
         mUserSettings.setTimelineViews(mUserDid, filteredPostFeedModelsToJson());
+
+    return deletedModel;
+}
+
+bool PostFeedModel::equalModels(QList<FilteredPostFeedModel*> models) const
+{
+    for (int i = 0; i < models.size(); ++i)
+    {
+        if (models[i] != mFilteredPostFeedModels[i].get())
+            return false;
+    }
+
+    return true;
+}
+
+void PostFeedModel::reorderFilteredPostFeedModels(const QList<FilteredPostFeedModel*>& models)
+{
+    qDebug() << "Reorder filtered post feed models";
+    Q_ASSERT(models.size() == (int)mFilteredPostFeedModels.size());
+
+    if (models.size() != (int)mFilteredPostFeedModels.size())
+    {
+        qWarning() << "Sizes differ:" << models.size() << mFilteredPostFeedModels.size();
+        return;
+    }
+
+    if (equalModels(models))
+    {
+        qDebug() << "No order change";
+        return;
+    }
+
+    for (auto* model : models)
+    {
+        auto deletedModel = deleteFilteredPostFeedModel(model);
+
+        if (deletedModel)
+            deletedModel.release();
+    }
+
+    for (auto* model : models)
+    {
+        auto modelPtr = FilteredPostFeedModel::Ptr(model);
+        addFilteredPostFeedModel(std::move(modelPtr));
+    }
 }
 
 QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const

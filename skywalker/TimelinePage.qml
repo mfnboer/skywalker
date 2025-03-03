@@ -29,7 +29,7 @@ SkyPage {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: parent.width
-        currentIndex: viewBar.currentIndex
+        currentIndex: 0
 
         TimelineView {
             id: timelineView
@@ -53,7 +53,7 @@ SkyPage {
 
                 Layout.preferredWidth: viewStack.width
                 Layout.preferredHeight: viewStack.height
-                headerMargin: viewBar.position == TabBar.Header ? viewBar.height + viewBarSeparator.height : 0
+                headerMargin: viewBar.position == TabBar.Header ? viewBar.height : 0
 
                 skywalker: page.skywalker
                 isView: true
@@ -117,33 +117,55 @@ SkyPage {
 
     SkyTabBar {
         id: viewBar
-        y: (position == TabBar.Header && currentViewItem) ? currentViewItem.visibleHeaderHeight : parent.height - height
+        y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height
         z: guiSettings.headerZLevel
         width: parent.width
         position: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP ? TabBar.Footer : TabBar.Header
         Material.background: guiSettings.backgroundColor
-        visible: count > 1
+        visible: count > 2
+
+        onCurrentIndexChanged: {
+            if (currentIndex < 0)
+                return
+
+            if (currentIndex === count - 1)
+                Qt.callLater(() => setCurrentIndex(0))
+            else
+                viewStack.currentIndex = currentIndex
+        }
 
         SkyTabWithCloseButton {
             id: tabTimeline
             text: qsTr("Full feed")
             counter: timelineView.unreadPosts
             showCloseButton: false
+
+            onPressAndHold: showTimelineViewsSorter()
+        }
+
+        SkySettingsTabButton {
+            visible: skywalker.timelineModel.filteredPostFeedModels.length > 1
+            onActivated: showTimelineViewsSorter()
         }
 
         function addTab(name, backgroundColor, profile) {
-            let item = viewStack.itemAt(count)
+            let item = viewStack.itemAt(count - 1)
             const counter = item ? item.unreadPosts : 0
 
             let component = Qt.createComponent("SkyTabWithCloseButton.qml")
-            let tab = component.createObject(viewBar, {
+
+            // Creates with null parent, otherwise the button will be added
+            // immediately to the end of that tab bar
+            let tab = component.createObject(null, {
                     text: name,
                     backgroundColor: backgroundColor,
                     profile: profile,
                     counter: counter})
+            tab.onPressAndHold.connect(() => showTimelineViewsSorter())
             tab.onClosed.connect(() => page.closeView(tab))
-            addItem(tab)
-            setCurrentIndex(count - 1)
+            console.debug("Add tab:", count - 1, name)
+            insertItem(count - 1, tab) // Last item is the settings tab button
+            setCurrentIndex(count - 2)
         }
 
         function updateTab(index, name, backgroundColor, profile) {
@@ -191,37 +213,47 @@ SkyPage {
         timelineView.resumeTimeline(index, offsetY)
     }
 
+    function showTimelineViewsSorter() {
+        if (skywalker.timelineModel.filteredPostFeedModels.length < 2)
+            return
+
+        let component = guiSettings.createComponent("TimelineViewsSorter.qml")
+        let sorter = component.createObject(page, { timelineModel: skywalker.timelineModel })
+        sorter.onClosed.connect(() => { root.popStack() })
+        root.pushStack(sorter)
+    }
+
     function addUserView() {
-        let component = Qt.createComponent("AddUserTimelineView.qml")
+        let component = guiSettings.createComponent("AddUserTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })
         addViewPage.onSelected.connect((profile) => { // qmllint disable missing-property
                 page.showUserView(profile)
                 root.popStack()
         })
         addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
-        pushStack(addViewPage)
+        root.pushStack(addViewPage)
     }
 
     function addHashtagView() {
-        let component = Qt.createComponent("AddHashtagTimelineView.qml")
+        let component = guiSettings.createComponent("AddHashtagTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })
         addViewPage.onSelected.connect((hashtag) => { // qmllint disable missing-property
                 page.showHashtagView(hashtag)
                 root.popStack()
         })
         addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
-        pushStack(addViewPage)
+        root.pushStack(addViewPage)
     }
 
     function addFocusHashtagView() {
-        let component = Qt.createComponent("AddFocusHashtagTimelineView.qml")
+        let component = guiSettings.createComponent("AddFocusHashtagTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })
         addViewPage.onSelected.connect((focusHashtagEntry) => { // qmllint disable missing-property
                 page.showFocusHashtagView(focusHashtagEntry)
                 root.popStack()
         })
         addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
-        pushStack(addViewPage)
+        root.pushStack(addViewPage)
     }
 
     function showUserView(profile) {

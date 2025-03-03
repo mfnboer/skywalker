@@ -105,7 +105,7 @@ ApplicationWindow {
 
             const item = contentChildren[currentIndex]
 
-            if (item && item.settingsTab) {
+            if (item && item instanceof SkySettingsTabButton) {
                 if (favoritesSwipeView)
                     Qt.callLater(() => { setCurrentIndex(favoritesSwipeView.currentIndex) })
                 else
@@ -129,13 +129,20 @@ ApplicationWindow {
         timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
         skywalker: root.getSkywalker()
         homeActive: true
-        extraFooterMargin: favoritesTabBar.position == TabBar.Footer ? y - favoritesTabBar.y : (favoritesSwipeView ? favoritesSwipeView.currentView.extraFooterMargin : 0)
+        extraFooterMargin: getExtraFooterMargin()
         onHomeClicked: favoritesSwipeView.currentView.moveToHome()
         onNotificationsClicked: viewNotifications()
         onSearchClicked: viewSearchView()
         onFeedsClicked: viewFeedsView()
         onMessagesClicked: viewChat()
         visible: favoritesTabBar.favoritesSwipeViewVisible
+
+        function getExtraFooterMargin() {
+            if (favoritesTabBar.position == TabBar.Footer)
+                return favoritesTabBar.visible ? y - favoritesTabBar.y : 0
+            else
+                return favoritesSwipeView && favoritesSwipeView.currentView ? favoritesSwipeView.currentView.extraFooterMargin : 0
+        }
     }
 
     function isFavoritesTabBarVisible() {
