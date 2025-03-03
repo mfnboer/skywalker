@@ -88,7 +88,8 @@ ApplicationWindow {
 
     FavoritesTabBar {
         property var favoritesSwipeView
-        property bool show: false
+        property bool favoritesSwipeViewVisible: false
+        property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
         y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
@@ -118,7 +119,7 @@ ApplicationWindow {
         function update() {
             let userSettings = skywalker.getUserSettings()
             let view = currentStackItem()
-            show = (view instanceof FavoritesSwipeView) && userSettings.favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
+            favoritesSwipeViewVisible = (view instanceof FavoritesSwipeView)
         }
     }
 
@@ -134,7 +135,7 @@ ApplicationWindow {
         onSearchClicked: viewSearchView()
         onFeedsClicked: viewFeedsView()
         onMessagesClicked: viewChat()
-        visible: favoritesTabBar.show
+        visible: favoritesTabBar.favoritesSwipeViewVisible
     }
 
     function isFavoritesTabBarVisible() {

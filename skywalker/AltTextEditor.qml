@@ -170,6 +170,11 @@ SkyPage {
         id: keyboardHandler
     }
 
+    // Catch the Android back button
+    function cancel() {
+        altTextChanged(page.text)
+    }
+
     Component.onCompleted: {
         altText.forceActiveFocus()
     }
