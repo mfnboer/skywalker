@@ -92,8 +92,9 @@ ApplicationWindow {
 
         id: favoritesTabBar
         y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
-        z: guiSettings.headerZLevel + 10
+        z: guiSettings.headerZLevel - 1
         width: parent.width
+        position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
         visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
 
@@ -115,9 +116,25 @@ ApplicationWindow {
         }
 
         function update() {
+            let userSettings = skywalker.getUserSettings()
             let view = currentStackItem()
-            show = (view instanceof FavoritesSwipeView)
+            show = (view instanceof FavoritesSwipeView) && userSettings.favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
         }
+    }
+
+    footer: SkyFooter {
+        property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+
+        timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
+        skywalker: root.getSkywalker()
+        homeActive: true
+        extraFooterMargin: favoritesTabBar.position == TabBar.Footer ? y - favoritesTabBar.y : (favoritesSwipeView ? favoritesSwipeView.currentView.extraFooterMargin : 0)
+        onHomeClicked: favoritesSwipeView.currentView.moveToHome()
+        onNotificationsClicked: viewNotifications()
+        onSearchClicked: viewSearchView()
+        onFeedsClicked: viewFeedsView()
+        onMessagesClicked: viewChat()
+        visible: favoritesTabBar.show
     }
 
     function isFavoritesTabBarVisible() {

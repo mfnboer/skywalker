@@ -11,14 +11,16 @@ SkyListView {
     property int calibrationDy: 0
     property int newLastVisibleIndex: -1
     property int newLastVisibleOffsetY: 0
+    property var userSettings: skywalker.getUserSettings()
     readonly property int visibleHeaderHeight: headerItem ? Math.max(headerItem.height - headerMargin - (contentY - headerItem.y), 0) : 0
-    readonly property int favoritesY : headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+    readonly property int favoritesY : getFavoritesY()
 
     signal newPosts
 
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
+    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: model ? model.feedName : ""
 
@@ -28,7 +30,7 @@ SkyListView {
         showAsHome: true
         isHomeFeed: true
         showMoreOptions: true
-        showFavoritesPlaceHolder: root.isFavoritesTabBarVisible()
+        showFavoritesPlaceHolder: root.isFavoritesTabBarVisible() && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
         bottomMargin: headerMargin
 
         onAddUserView: page.addUserView()
@@ -127,6 +129,17 @@ SkyListView {
         anchors.centerIn: parent
         running: skywalker.getTimelineInProgress && !skywalker.autoUpdateTimelineInProgress
         Accessible.role: Accessible.ProgressBar
+    }
+
+    function getFavoritesY() {
+        switch (userSettings.favoritesBarPosition) {
+        case QEnums.FAVORITES_BAR_POSITION_TOP:
+            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
+            return virtualFooterY
+        }
+
+        return 0
     }
 
     function calibratePosition() {

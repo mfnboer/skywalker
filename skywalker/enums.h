@@ -337,6 +337,16 @@ public:
         VIDEO_QUALITY_LAST = VIDEO_QUALITY_SD
     };
     Q_ENUM(VideoQuality)
+
+    enum FavoritesBarPosition
+    {
+        FAVORITES_BAR_POSITION_TOP,
+        FAVORITES_BAR_POSITION_BOTTOM,
+        FAVORITES_BAR_POSITION_NONE,
+
+        FAVORITES_BAR_POSITION_LAST = FAVORITES_BAR_POSITION_NONE
+    };
+    Q_ENUM(FavoritesBarPosition)
 };
 
 }

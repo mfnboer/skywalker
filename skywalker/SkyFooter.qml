@@ -37,7 +37,7 @@ Rectangle {
             Layout.fillWidth: true
             floating: floatingButtons
             svg: homeActive ? SvgFilled.home : SvgOutline.home
-            counter: homeActive ? timeline.unreadPosts : 0
+            counter: homeActive && timeline ? timeline.unreadPosts : 0
             counterBackgroundColor: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
             counterTextColor: guiSettings.textColor
             showAltBadge: showHomeFeedBadge
@@ -124,6 +124,9 @@ Rectangle {
     function getHomeSpeech() {
         if (!homeActive)
             return qsTr("show feed")
+
+        if (!timeline)
+            return ""
 
         if (timeline.unreadPosts === 0)
             return qsTr("You are at the top of your time line")

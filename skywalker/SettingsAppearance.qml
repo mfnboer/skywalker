@@ -237,6 +237,44 @@ ColumnLayout {
                 onClicked: userSettings.resetThreadColor()
             }
         }
+
+        AccessibleText {
+            Layout.preferredWidth: 120
+            text: qsTr("Favorites bar")
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: -1
+
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
+                text: qsTr("Top");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.favoritesBarPosition = QEnums.FAVORITES_BAR_POSITION_TOP
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM
+                text: qsTr("Bottom");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.favoritesBarPosition = QEnums.FAVORITES_BAR_POSITION_BOTTOM
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_NONE
+                text: qsTr("None");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.favoritesBarPosition = QEnums.FAVORITES_BAR_POSITION_NONE
+                }
+            }
+        }
     }
 
     AccessibleCheckBox {

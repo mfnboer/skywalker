@@ -9,7 +9,9 @@ SkyPage {
     property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
     property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
     property int margin: 10
-    readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefinded') ? currentViewItem.favoritesY : 0
+    property var userSettings: skywalker.getUserSettings()
+    readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefined') ? currentViewItem.favoritesY : 0
+    readonly property int extraFooterMargin: viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
 
     id: page
 
@@ -18,18 +20,6 @@ SkyPage {
 
     onCover: {
         viewStack.cover()
-    }
-
-    footer: SkyFooter {
-        timeline: page
-        skywalker: page.skywalker
-        homeActive: true
-        extraFooterMargin: viewBar.visible ? viewBar.height : 0
-        onHomeClicked: currentViewItem.moveToHome()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
     }
 
     StackLayout {
@@ -45,9 +35,7 @@ SkyPage {
             id: timelineView
             Layout.preferredWidth: viewStack.width
             Layout.preferredHeight: viewStack.height
-
-            // When header at top
-            // headerMargin: viewBar.visible ? viewBar.height : 0
+            headerMargin: viewBar.visible && viewBar.position == TabBar.Header ? viewBar.height : 0
 
             skywalker: page.skywalker
 
@@ -65,9 +53,7 @@ SkyPage {
 
                 Layout.preferredWidth: viewStack.width
                 Layout.preferredHeight: viewStack.height
-
-                // When header at top
-                // headerMargin: viewBar.height + viewBarSeparator.height
+                headerMargin: viewBar.position == TabBar.Header ? viewBar.height + viewBarSeparator.height : 0
 
                 skywalker: page.skywalker
                 isView: true
@@ -131,14 +117,10 @@ SkyPage {
 
     SkyTabBar {
         id: viewBar
-
-        // For showing at top
-        // y: currentViewItem ? currentViewItem.visibleHeaderHeight : 0
-
-        y: parent.height - height
+        y: (position == TabBar.Header && currentViewItem) ? currentViewItem.visibleHeaderHeight : parent.height - height
         z: guiSettings.headerZLevel
         width: parent.width
-        position: TabBar.Footer
+        position: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP ? TabBar.Footer : TabBar.Header
         Material.background: guiSettings.backgroundColor
         visible: count > 1
 
@@ -194,6 +176,11 @@ SkyPage {
 
     function stopSync() {
         timelineView.stopSync()
+    }
+
+    function moveToHome() {
+        if (currentViewItem)
+            currentViewItem.moveToHome()
     }
 
     function moveToPost(index) {

@@ -618,6 +618,25 @@ QString UserSettings::getThreadColor() const
     return mSettings.value(displayKey("threadColor"), defaultColor).toString();
 }
 
+void UserSettings::setFavoritesBarPosition(QEnums::FavoritesBarPosition position)
+{
+    if (getFavoritesBarPosition() != position)
+    {
+        mSettings.setValue("favoritesBarPosition", (int)position);
+        emit favoritesBarPositionChanged();
+    }
+}
+
+QEnums::FavoritesBarPosition UserSettings::getFavoritesBarPosition() const
+{
+    const int position = mSettings.value("favoritesBarPosition", (int)QEnums::FAVORITES_BAR_POSITION_TOP).toInt();
+
+    if (position < 0 || position > QEnums::FAVORITES_BAR_POSITION_LAST)
+        return QEnums::FAVORITES_BAR_POSITION_TOP;
+
+    return QEnums::FavoritesBarPosition(position);
+}
+
 void UserSettings::setPostButtonRelativeX(double x)
 {
     mSettings.setValue("postButtonRelativeX", x);

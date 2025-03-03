@@ -6,6 +6,26 @@ ListView {
     property var anchorItem // item used to calibrate list position on insert of new posts
     readonly property string error: (model && typeof model.error != 'undefined') ? model.error : ""
 
+    property int prevOriginY: 0
+    property int virtualFooterHeight: 0
+    property int virtualFooterStartY: 0
+    readonly property int virtualFooterTopY: (originY - contentY) - virtualFooterStartY + height - virtualFooterHeight + verticalOvershoot
+    readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
+
+    onOriginYChanged: {
+        virtualFooterStartY += (originY - prevOriginY)
+        prevOriginY = originY
+    }
+
+    function moveVirtualFooter() {
+        if (virtualFooterTopY < height - virtualFooterHeight) {
+            virtualFooterStartY = originY - contentY + verticalOvershoot
+        }
+        else if (virtualFooterTopY > height) {
+            virtualFooterStartY = originY - contentY - virtualFooterHeight + verticalOvershoot
+        }
+    }
+
     signal covered
     signal uncovered
 
@@ -18,6 +38,9 @@ ListView {
     Accessible.role: Accessible.List
 
     onMovementEnded: {
+        if (virtualFooterHeight !== 0)
+            moveVirtualFooter()
+
         if (!enableOnScreenCheck)
             return
 
@@ -130,9 +153,16 @@ ListView {
     function privateResetHeaderPosition() {
         if (headerItem)
             headerItem.y = contentY
+
+        virtualFooterStartY = originY - contentY
     }
 
     function resetHeaderPosition() {
         privateResetHeaderPosition()
+    }
+
+    Component.onCompleted: {
+        prevOriginY = originY
+        virtualFooterStartY = originY - contentY
     }
 }

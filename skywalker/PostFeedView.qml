@@ -13,9 +13,9 @@ SkyListView {
     property bool inSync: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-    readonly property int favoritesY: mediaTilesLoader.item ?
-            mediaTilesLoader.item.favoritesY :
-            (headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0)
+    property var userSettings: skywalker.getUserSettings()
+    readonly property int favoritesY: getFavoritesY()
+    readonly property int extraFooterMargin: 0
 
     signal closed
 
@@ -23,6 +23,7 @@ SkyListView {
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
     cacheBuffer: 2000
+    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: underlyingModel ? underlyingModel.feedName : ""
 
@@ -38,26 +39,13 @@ SkyListView {
         filteredLanguages: underlyingModel ? underlyingModel.filteredLanguages : []
         showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
         showViewOptions: true
-        showFavoritesPlaceHolder: showFavorites
+        showFavoritesPlaceHolder: showFavorites && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeed()
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
-
-    footer: SkyFooter {
-        visible: showAsHome
-        timeline: postFeedView
-        skywalker: postFeedView.skywalker
-        homeActive: true
-        onHomeClicked: moveToHome()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
-    }
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         required property int index
@@ -161,7 +149,7 @@ SkyListView {
         active: false
 
         sourceComponent: MediaTilesFeedView {
-            property int favoritesY: headerLoader.item ? headerLoader.item.favoritesY + headerY : headerY
+            property int favoritesY: getFavoritesY()
 
             clip: true
             width: postFeedView.width
@@ -170,6 +158,7 @@ SkyListView {
             skywalker: postFeedView.skywalker
             showAsHome: postFeedView.showAsHome
             model: postFeedView.model
+            virtualFooterHeight: postFeedView.virtualFooterHeight
 
             // HACK: grid view does not have a pullback header
             Loader {
@@ -179,8 +168,15 @@ SkyListView {
                 sourceComponent: postFeedView.header
             }
 
-            PostButton {
-                y: parent.height - height - 10
+            function getFavoritesY() {
+                switch (userSettings.favoritesBarPosition) {
+                case QEnums.FAVORITES_BAR_POSITION_TOP:
+                    return headerLoader.item ? headerLoader.item.favoritesY + headerY : headerY
+                case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
+                    return virtualFooterY
+                }
+
+                return 0
             }
         }
     }
@@ -209,6 +205,20 @@ SkyListView {
                 width: parent.width
             }
         }
+    }
+
+    function getFavoritesY() {
+        if (mediaTilesLoader.item)
+            return mediaTilesLoader.item.favoritesY
+
+        switch (userSettings.favoritesBarPosition) {
+        case QEnums.FAVORITES_BAR_POSITION_TOP:
+            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
+            return virtualFooterY
+        }
+
+        return 0
     }
 
     function getFeedDefaultAvatar() {
@@ -293,7 +303,6 @@ SkyListView {
             oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
 
         if (skywalker.favoriteFeeds.isPinnedFeed(underlyingModel.feedUri)) {
-            const userSettings = skywalker.getUserSettings()
             userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
         }
 
@@ -458,7 +467,6 @@ SkyListView {
         skywalker.onFeedSyncOk.connect(setInSync)
         skywalker.onFeedSyncFailed.connect(syncToHome)
 
-        const userSettings = skywalker.getUserSettings()
         const viewMode = userSettings.getFeedViewMode(skywalker.getUserDid(), model.feedUri)
 
         if (viewMode !== QEnums.CONTENT_MODE_UNSPECIFIED) {

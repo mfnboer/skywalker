@@ -5,9 +5,11 @@ import skywalker
 SwipeView {
     required property var skywalker
     property bool trackLastViewedFeed: false
+    property var userSettings: skywalker.getUserSettings()
     readonly property var currentView: getCurrentView()
 
     id: view
+    interactive: userSettings.favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
     TimelinePage {
         skywalker: view.skywalker

@@ -17,6 +17,17 @@ GridView {
     readonly property int topY: (originY - contentY) - startY + verticalOvershoot
     readonly property int headerY: topY < 0 ? Math.max(topY, -headerHeight) : 0
 
+    property int prevOriginY: 0
+    property int virtualFooterHeight: 0
+    property int virtualFooterStartY: 0
+    readonly property int virtualFooterTopY: (originY - contentY) - virtualFooterStartY + height - virtualFooterHeight + verticalOvershoot
+    readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
+
+    onOriginYChanged: {
+        virtualFooterStartY += (originY - prevOriginY)
+        prevOriginY = originY
+    }
+
     function moveHeader() {
         if (topY < -headerHeight)
             startY = topY + startY + headerHeight
@@ -24,8 +35,18 @@ GridView {
             startY = topY + startY
     }
 
+    function moveVirtualFooter() {
+        if (virtualFooterTopY < height - virtualFooterHeight) {
+            virtualFooterStartY = originY - contentY + verticalOvershoot
+        }
+        else if (virtualFooterTopY > height) {
+            virtualFooterStartY = originY - contentY - virtualFooterHeight + verticalOvershoot
+        }
+    }
+
     function resetHeaderPosition() {
         startY = originY - contentY
+        virtualFooterStartY = originY - contentY
     }
 
     id: mediaTilesView
@@ -72,6 +93,9 @@ GridView {
 
     onMovementEnded: {
         moveHeader()
+
+        if (virtualFooterHeight !== 0)
+            moveVirtualFooter()
 
         const lastIndex = getBottomRightVisibleIndex()
         console.debug("Move:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
@@ -200,6 +224,8 @@ GridView {
     }
 
     Component.onCompleted: {
+        prevOriginY = originY
         startY = originY - contentY
+        virtualFooterStartY = originY - contentY
     }
 }

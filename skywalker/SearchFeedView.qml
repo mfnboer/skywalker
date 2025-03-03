@@ -9,13 +9,16 @@ SkyListView {
     required property searchfeed searchFeed
     property bool showAsHome: false
     property int unreadPosts: 0
-    readonly property int favoritesY: headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+    property var userSettings: skywalker.getUserSettings()
+    readonly property int favoritesY: getFavoritesY()
+    readonly property int extraFooterMargin: 0
 
     signal closed
 
     id: feedView
     width: parent.width
     model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
+    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: searchFeed.name
 
@@ -28,25 +31,12 @@ SkyListView {
         showLanguageFilter: searchFeed.languageList.length > 0
         filteredLanguages: searchFeed.languageList
         showPostWithMissingLanguage: false
-        showFavoritesPlaceHolder: true
+        showFavoritesPlaceHolder: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
 
         onClosed: feedView.closed()
         onFeedAvatarClicked: root.viewSearchViewFeed(searchFeed)
     }
     headerPositioning: ListView.PullBackHeader
-
-    footer: SkyFooter {
-        visible: showAsHome
-        timeline: feedView
-        skywalker: feedView.skywalker
-        homeActive: true
-        onHomeClicked: feedView.moveToHome()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
-    }
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         width: feedView.width
@@ -90,6 +80,17 @@ SkyListView {
             // Remove models now before the Skywalker object is destroyed.
             searchUtils.removeModels()
         }
+    }
+
+    function getFavoritesY() {
+        switch (userSettings.favoritesBarPosition) {
+        case QEnums.FAVORITES_BAR_POSITION_TOP:
+            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
+            return virtualFooterY
+        }
+
+        return 0
     }
 
     function updateUnreadPosts() {
