@@ -53,8 +53,19 @@ Dialog {
         anchors.horizontalCenter: parent.horizontalCenter
 
         DayOfWeekRow {
+            id: dayOfWeekRow
             locale: monthGrid.locale
             Layout.fillWidth: true
+
+            delegate: Text {
+                text: shortName
+                color: guiSettings.textColor
+                font: dayOfWeekRow.font
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+
+                required property string shortName
+            }
         }
 
         MonthGrid {
