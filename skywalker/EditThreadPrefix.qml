@@ -35,7 +35,7 @@ Dialog {
             initialText: prefix
         }
 
-        SvgButton {
+        SvgPlainButton {
             id: clearButton
             anchors.right: parent.right
             imageMargin: 8

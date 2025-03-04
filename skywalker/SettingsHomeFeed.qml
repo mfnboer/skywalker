@@ -15,62 +15,62 @@ ColumnLayout {
         text: qsTr("Following feed preferences")
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Show replies")
         checked: !userPrefs.hideReplies
         onCheckedChanged: userPrefs.hideReplies = !checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Replies in threads from followed users only")
         checked: userSettings.getHideRepliesInThreadFromUnfollowed(userDid)
         enabled: !userPrefs.hideReplies
         onCheckedChanged: userSettings.setHideRepliesInThreadFromUnfollowed(userDid, checked)
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Replies to followed users only")
         checked: userPrefs.hideRepliesByUnfollowed
         enabled: !userPrefs.hideReplies
         onCheckedChanged: userPrefs.hideRepliesByUnfollowed = checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Assemble post threads")
         checked: userSettings.getAssembleThreads(userDid)
         enabled: !userPrefs.hideReplies
         onCheckedChanged: userSettings.setAssembleThreads(userDid, checked)
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         id: showRepostsSwitch
         text: qsTr("Show reposts")
         checked: !userPrefs.hideReposts
         onCheckedChanged: userPrefs.hideReposts = !checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Show self-reposts")
         checked: userSettings.getShowSelfReposts(userDid)
         onCheckedChanged: userSettings.setShowSelfReposts(userDid, checked)
         enabled: showRepostsSwitch.checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         id: showQuotesSwitch
         text: qsTr("Show quote posts")
         checked: !userPrefs.hideQuotePosts
         onCheckedChanged: userPrefs.hideQuotePosts = !checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Show quotes with blocked post")
         checked: userSettings.getShowQuotesWithBlockedPost(userDid)
         onCheckedChanged: userSettings.setShowQuotesWithBlockedPost(userDid, checked)
         enabled: showQuotesSwitch.checked
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         text: qsTr("Rewind to last seen post at startup")
         checked: userSettings.getRewindToLastSeenPost(userDid)
         onCheckedChanged: userSettings.setRewindToLastSeenPost(userDid, checked)

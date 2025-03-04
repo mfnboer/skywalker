@@ -108,7 +108,7 @@ Rectangle {
             sourceComponent: VideoView {
                 id: video
                 width: mediaRect.width
-                height: root.height
+                height: root.height - videoPage.footerHeight
                 maxHeight: root.height
                 videoView: postVideo
                 contentVisibility: postContentVisibility
@@ -119,7 +119,6 @@ Rectangle {
                 isFullViewMode: true
                 swipeMode: true
                 autoPlay: false
-                footerHeight: videoPage.footerHeight
                 useIfNeededHeight: postColumn.height
 
                 onVideoLoaded: {

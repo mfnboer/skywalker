@@ -30,7 +30,7 @@ Rectangle {
         Accessible.description: Accessible.name
     }
 
-    SvgButton {
+    SvgPlainButton {
         anchors.rightMargin: 10
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
@@ -39,5 +39,4 @@ Rectangle {
         enabled: headerItem.enabled
         onClicked: buttonClicked()
     }
-
 }

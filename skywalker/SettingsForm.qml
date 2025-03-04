@@ -7,6 +7,8 @@ import skywalker
 SkyPage {
     property var skywalker: root.getSkywalker()
     property var userPrefs: skywalker.getEditUserPreferences()
+    property bool allVisible: true
+    property bool onlyChatVisible: false
 
     id: page
     padding: 10
@@ -25,10 +27,9 @@ SkyPage {
         {
             id: headerRow
 
-            SvgButton {
+            SvgPlainButton {
                 id: backButton
                 iconColor: guiSettings.headerTextColor
-                Material.background: "transparent"
                 svg: SvgOutline.arrowBack
                 accessibleName: qsTr("go back")
                 onClicked: page.closed()
@@ -55,45 +56,59 @@ SkyPage {
         SettingsAccount {
             id: settingsAccount
             width: parent.width
+            height: visible ? undefined : 0
             userPrefs: page.userPrefs
+            visible: allVisible
         }
 
         SettingsHomeFeed {
             id: settingsHomeFeed
             anchors.top: settingsAccount.bottom
             width: parent.width
+            height: visible ? undefined : 0
             userPrefs: page.userPrefs
+            visible: allVisible
         }
 
         SettingsChat {
             id: settingsChat
             anchors.top: settingsHomeFeed.bottom
             width: parent.width
+            height: visible ? undefined : 0
             userPrefs: page.userPrefs
+            visible: allVisible || onlyChatVisible
         }
 
         SettingsSearch {
             id: settingsSearch
             anchors.top: settingsChat.bottom
             width: parent.width
+            height: visible ? undefined : 0
+            visible: allVisible
         }
 
         SettingsLanguage {
             id: settingsLanguage
             anchors.top: settingsSearch.bottom
             width: parent.width
+            height: visible ? undefined : 0
+            visible: allVisible
         }
 
         SettingsAppearance {
             id: settingsAppearance
             anchors.top: settingsLanguage.bottom
             width: parent.width
+            height: visible ? undefined : 0
+            visible: allVisible
         }
 
         SettingsNotifications {
             id: settingsNotifications
             anchors.top: settingsAppearance.bottom
             width: parent.width
+            height: visible ? undefined : 0
+            visible: allVisible
         }
     }
 

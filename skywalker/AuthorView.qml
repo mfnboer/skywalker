@@ -75,8 +75,8 @@ SkyPage {
         SvgButton {
             anchors.top: parent.top
             anchors.left: parent.left
-            iconColor: guiSettings.headerTextColor
-            Material.background: guiSettings.headerColor
+            iconColor: "white"
+            Material.background: "black"
             opacity: 0.5
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
@@ -128,10 +128,23 @@ SkyPage {
 
     onCover: {
         let feeds = authorFeedView.itemAtIndex(0)
-        let item = feeds.children[feeds.currentIndex] // qmllint disable missing-property
 
-        if (item instanceof AuthorPostsList)
+        if (!(feeds instanceof SwipeView)) {
+            qWarning() << "Wrong type:" << feeds
+            return
+        }
+
+        let item = feeds.itemAt(feeds.currentIndex) // qmllint disable missing-property
+
+        if (item instanceof AuthorPostsList) {
             item.cover()
+        }
+        else if (item instanceof Loader) {
+            let loaderItem = item.item
+
+            if (loaderItem && loaderItem instanceof AuthorPostsList)
+                loaderItem.cover()
+        }
     }
 
     ListView {
@@ -537,15 +550,14 @@ SkyPage {
                 }
             }
 
-            TabBar {
+            SkyTabBar {
                 id: feedMenuBar
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
-                currentIndex: isLabeler ? 0 : 1
+                currentIndex: 0
 
                 AccessibleTabButton {
+                    id: labelsTab
                     text: qsTr("Labels")
-                    visible: isLabeler
-                    width: isLabeler ? implicitWidth : 0
                 }
                 AccessibleTabButton {
                     text: qsTr("Posts")
@@ -572,24 +584,37 @@ SkyPage {
                     width: implicitWidth
                 }
                 AccessibleTabButton {
+                    id: likesTab
                     text: qsTr("Likes")
-                    visible: guiSettings.isUser(author)
-                    width: guiSettings.isUser(author) ? implicitWidth : 0
                 }
                 AccessibleTabButton {
+                    id: feedsTab
                     text: qsTr("Feeds")
-                    visible: hasFeeds
-                    width: hasFeeds ? implicitWidth : 0
                 }
                 AccessibleTabButton {
+                    id: starterPacksTab
                     text: qsTr("Starter packs")
-                    visible: hasStarterPacks
-                    width: hasStarterPacks ? implicitWidth : 0
                 }
                 AccessibleTabButton {
+                    id: listsTab
                     text: qsTr("Lists")
-                    visible: hasLists
-                    width: hasLists ? implicitWidth : 0
+                }
+
+                Component.onCompleted: {
+                    if (!isLabeler)
+                        removeItem(labelsTab)
+
+                    if (!guiSettings.isUser(author))
+                        removeItem(likesTab)
+
+                    if (!hasFeeds)
+                        removeItem(feedsTab)
+
+                    if (!hasStarterPacks)
+                        removeItem(starterPacksTab)
+
+                    if (!hasLists)
+                        removeItem(listsTab)
                 }
             }
 
@@ -609,19 +634,25 @@ SkyPage {
             }
         }
 
-        delegate: StackLayout {
+        delegate: SwipeView {
             id: feedStack
             width: parent.width
 
             // -1 to make the interactive enable/disable work
             height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() + page.header.height - 1 : 0)
 
-            currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 1
+            currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
+
+            onCurrentIndexChanged: {
+                if (authorFeedView.headerItem) {
+                    console.debug("CURRENT:", currentIndex)
+                    authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(currentIndex)
+                }
+            }
 
             // Labels
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
+                id: labelsView
                 active: isLabeler
                 asynchronous: true
 
@@ -710,18 +741,18 @@ SkyPage {
 
             // Replies
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
                 active: true
                 asynchronous: true
 
-                StackLayout.onIsCurrentItemChanged: {
+                SwipeView.onIsCurrentItemChanged: {
                     if (item)
-                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                        item.changeCurrentItem(SwipeView.isCurrentItem) // qmllint disable missing-property
                 }
 
                 sourceComponent: AuthorPostsList {
                     id: authorRepliesList
+                    width: parent.width
+                    height: parent.height
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -736,18 +767,18 @@ SkyPage {
 
             // Media
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
                 active: true
                 asynchronous: true
 
-                StackLayout.onIsCurrentItemChanged: {
+                SwipeView.onIsCurrentItemChanged: {
                     if (item)
-                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                        item.changeCurrentItem(SwipeView.isCurrentItem) // qmllint disable missing-property
                 }
 
                 sourceComponent: AuthorPostsList {
                     id: authorMediaList
+                    width: parent.width
+                    height: parent.height
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -762,18 +793,18 @@ SkyPage {
 
             // Media gallery
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
                 active: true
                 asynchronous: true
 
-                StackLayout.onIsCurrentItemChanged: {
+                SwipeView.onIsCurrentItemChanged: {
                     if (item)
-                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                        item.changeCurrentItem(SwipeView.isCurrentItem) // qmllint disable missing-property
                 }
 
                 sourceComponent: AuthorPostsList {
                     id: authorMediaGallery
+                    width: parent.width
+                    height: parent.height
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -789,18 +820,18 @@ SkyPage {
 
             // Video
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
                 active: true
                 asynchronous: true
 
-                StackLayout.onIsCurrentItemChanged: {
+                SwipeView.onIsCurrentItemChanged: {
                     if (item)
-                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                        item.changeCurrentItem(SwipeView.isCurrentItem) // qmllint disable missing-property
                 }
 
                 sourceComponent: AuthorPostsList {
                     id: authorVideoList
+                    width: parent.width
+                    height: parent.height
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -815,18 +846,18 @@ SkyPage {
 
             // Video gallery
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
                 active: true
                 asynchronous: true
 
-                StackLayout.onIsCurrentItemChanged: {
+                SwipeView.onIsCurrentItemChanged: {
                     if (item)
-                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                        item.changeCurrentItem(SwipeView.isCurrentItem) // qmllint disable missing-property
                 }
 
                 sourceComponent: AuthorPostsList {
                     id: authorVideoGallery
+                    width: parent.width
+                    height: parent.height
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -842,18 +873,19 @@ SkyPage {
 
             // Likes
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
+                id: likesView
                 active: guiSettings.isUser(author)
                 asynchronous: true
 
-                StackLayout.onIsCurrentItemChanged: {
+                SwipeView.onIsCurrentItemChanged: {
                     if (item)
-                        item.changeCurrentItem(StackLayout.isCurrentItem) // qmllint disable missing-property
+                        item.changeCurrentItem(SwipeView.isCurrentItem) // qmllint disable missing-property
                 }
 
                 sourceComponent: AuthorPostsList {
                     id: authorLikesList
+                    width: parent.width
+                    height: parent.height
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => skywalker.getAuthorLikes(id)
@@ -868,15 +900,14 @@ SkyPage {
 
             // Feeds
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
+                id: feedsView
                 active: hasFeeds
                 asynchronous: true
 
                 sourceComponent: ListView {
                     id: authorFeedList
-                    Layout.preferredWidth: parent.width
-                    Layout.preferredHeight: parent.height
+                    width: parent.width
+                    height: parent.height
                     clip: true
                     spacing: 0
                     model: skywalker.getFeedListModel(feedListModelId)
@@ -896,13 +927,13 @@ SkyPage {
                     }
 
                     FlickableRefresher {
-                        inProgress: skywalker.getFeedInProgress
+                        inProgress: model.getFeedInProgress
                         bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
                     }
 
                     BusyIndicator {
                         anchors.centerIn: parent
-                        running: skywalker.getFeedInProgress
+                        running: model.getFeedInProgress
                     }
 
                     EmptyListIndication {
@@ -923,15 +954,14 @@ SkyPage {
 
             // Starter packs
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
+                id: starterPacksView
                 active: hasStarterPacks
                 asynchronous: true
 
                 sourceComponent: ListView {
                     id: authorStarterPackList
-                    Layout.preferredWidth: parent.width
-                    Layout.preferredHeight: parent.height
+                    width: parent.width
+                    height: parent.height
                     clip: true
                     spacing: 0
                     model: skywalker.getStarterPackListModel(starterPackListModelId)
@@ -978,15 +1008,14 @@ SkyPage {
 
             // Lists
             Loader {
-                Layout.preferredWidth: parent.width
-                Layout.preferredHeight: parent.height
+                id: listsView
                 active: hasLists
                 asynchronous: true
 
                 sourceComponent: ListView {
                     id: authorListList
-                    Layout.preferredWidth: parent.width
-                    Layout.preferredHeight: parent.height
+                    width: parent.width
+                    height: parent.height
                     clip: true
                     spacing: 0
                     model: skywalker.getListListModel(listListModelId)
@@ -1039,6 +1068,23 @@ SkyPage {
                         model.clear()
                     }
                 }
+            }
+
+            Component.onCompleted: {
+                if (!isLabeler)
+                    removeItem(labelsView)
+
+                if (!guiSettings.isUser(author))
+                    removeItem(likesView)
+
+                if (!hasFeeds)
+                    removeItem(feedsView)
+
+                if (!hasStarterPacks)
+                    removeItem(starterPacksView)
+
+                if (!hasLists)
+                    removeItem(listsView)
             }
 
             function feedOk(modelId) {
@@ -1487,5 +1533,8 @@ SkyPage {
 
         if (isLabeler)
             profileUtils.getLabelerViewDetailed(author.did)
+
+        // HACK: directly setting the current index does not work...
+        Qt.callLater(() => { authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0) })
     }
 }

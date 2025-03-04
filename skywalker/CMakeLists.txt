@@ -430,7 +430,7 @@ qt_add_qml_module(libskywalker
         QML_FILES AddUserTimelineView.qml
         QML_FILES SkyTabWithCloseButton.qml
         QML_FILES AddFocusHashtagTimelineView.qml
-        QML_FILES SkyDot.qml
+        QML_FILES
         QML_FILES AddHashtagTimelineView.qml
         SOURCES image_utils.h
         SOURCES image_utils.cpp
@@ -479,6 +479,17 @@ qt_add_qml_module(libskywalker
         SOURCES virtual_keyboard_utils.h
         SOURCES virtual_keyboard_utils.cpp
         SOURCES base_list_model.h
+        QML_FILES FavoritesTabBar.qml
+        QML_FILES SkyTabBar.qml
+        QML_FILES FavoriteTabButton.qml
+        QML_FILES FavoritesSwipeView.qml
+        QML_FILES FavoritesSorter.qml
+        QML_FILES SkyRoundRadioButton.qml
+        QML_FILES SvgPlainButton.qml
+        QML_FILES SkyRadioMenuItem.qml
+        QML_FILES DragDropRectangle.qml
+        QML_FILES TimelineViewsSorter.qml
+        QML_FILES SkySettingsTabButton.qml
 )
 
 if (NOT ANDROID)

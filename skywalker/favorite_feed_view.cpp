@@ -24,6 +24,21 @@ QEnums::FavoriteType FavoriteFeedView::getType() const
     return std::visit([](auto&& view){ return view.getFavoriteType(); }, mView);
 }
 
+QString FavoriteFeedView::getKey() const
+{
+    switch (getType())
+    {
+    case QEnums::FAVORITE_FEED:
+    case QEnums::FAVORITE_LIST:
+        return getUri();
+    case QEnums::FAVORITE_SEARCH:
+        return getName();
+    }
+
+    Q_ASSERT(false);
+    return "";
+}
+
 QString FavoriteFeedView::getUri() const
 {
     switch (getType())

@@ -22,12 +22,26 @@ Column {
     property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
     property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || swipeMode
     property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
-    property int footerHeight: 0
     property int useIfNeededHeight: 0
     property bool tileMode: false
     readonly property int playControlsWidth: playControls.width
     readonly property int playControlsHeight: playControls.height
     readonly property bool showPlayControls: playControls.show
+    readonly property bool videoPlayingOrPaused: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting
+
+    // The meta information for video can be wrong.
+    // I have seen 2160 x 3840 whereas the video and the thumbnail are 1080 x 1920
+    // I have also seen a correct size for the video 1080 x 1920, but with a thumbnail image
+    // having size 1080 x 1080
+    // The meta information is most importan for timeline views, to know the size of a
+    // full post in advance. For full screen video, use as much of the screen and ignore
+    // meta information.
+    readonly property bool videoSizeIsKnown: videoView.width > 0 && videoView.height > 0 && !isFullViewMode
+
+    // Move video to top in swipe mode if it is close to the top to avoid covering too much
+    // by the post text
+    readonly property bool moveToTop: isFullVideoFeedViewMode && thumbImg && (height - thumbImg.getHeight()) / 2 < useIfNeededHeight + playControlsHeight && height !== thumbImg.getHeight()
+
     property alias contentFilter: filter
 
     // Cache
@@ -40,20 +54,13 @@ Column {
     spacing: isFullViewMode ? -playControls.height : 10
 
     Rectangle {
-        property int fullVideoFeedHeight: Math.max(playControls.height, (parent.height - useIfNeededHeight - videoColumn.height) / 2 - parent.spacing)
-
-        width: parent.width
-        // Move video to top if it is close to the top of the screen
-        height: isFullVideoFeedViewMode ? (fullVideoFeedHeight < playControls.height + 50 ? playControls.height : fullVideoFeedHeight) : 0
-        color: "transparent"
-        visible: isFullVideoFeedViewMode
-    }
-
-    Rectangle {
         id: videoRect
         width: parent.width
         height: tileMode ? parent.height : videoColumn.height
-        color: "transparent"
+
+        // The high light color is visible when the thumbnail image is smaller than the
+        // given aspect ratio size.
+        color: isFullViewMode ? "transparent" : guiSettings.postHighLightColor
         visible: videoPlayer.videoFound || videoPlayer.error == MediaPlayer.NoError
 
         FilteredImageWarning {
@@ -81,30 +88,47 @@ Column {
             Rectangle {
                 id: imgPreview
                 width: parent.width
-                height: tileMode ? videoStack.height : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getPaintedHeight())
+                height: tileMode ? videoStack.height : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getDisplayHeight())
                 color: "transparent"
+
+                onWidthChanged: {
+                    // Force image to resize
+                    if (thumbImg.active) {
+                        thumbImg.active = false
+                        thumbImg.active = true
+                    }
+                }
 
                 Loader {
                     id: thumbImg
                     x: (parent.width - getWidth()) / 2
+                    y: moveToTop ? 0 : (parent.height - getHeight()) / 2
                     active: filter.imageVisible()
-
-                    sourceComponent: (videoView.imageView.width > 0 && videoView.imageView.height > 0) ?
-                                         knownSizeComp : unknownSizeComp
+                    sourceComponent: videoSizeIsKnown ? knownSizeComp : unknownSizeComp
 
                     function getWidth() {
                         return item ? item.width : 0
                     }
 
-                    function getPaintedWidth() {
+                    function getHeight() {
+                        return item ? item.height: 0
+                    }
+
+                    function getDisplayWidth() {
                         if (!filter.imageVisible())
                             return filter.width
 
-                        return item ? item.paintedWidth : 0
+                        if (isFullViewMode)
+                            return videoStack.width
+
+                        return item ? (videoSizeIsKnown ? item.width : item.paintedWidth) : 0
                     }
 
-                    function getPaintedHeight() {
-                        return item ? item.paintedHeight : 0
+                    function getDisplayHeight() {
+                        if (isFullViewMode)
+                            return videoStack.height
+
+                        return item ? (videoSizeIsKnown ? item.height : item.paintedHeight) : 0
                     }
 
                     function getStatus() {
@@ -120,7 +144,7 @@ Column {
                     width: tileMode ? parent.width : ((maxWidth > 0 && parent.width > maxWidth) ? maxWidth : parent.width)
                     height: tileMode ? videoStack.height : (width / videoStack.getAspectRatio())
                     color: guiSettings.avatarDefaultColor
-                    visible: videoView.imageView.isNull() || thumbImg.getStatus() !== Image.Ready && filter.imageVisible()
+                    visible: (videoView.imageView.isNull() || thumbImg.getStatus() !== Image.Ready && filter.imageVisible()) && !videoPlayer.playing
 
                     onHeightChanged: {
                         if (maxHeight && height > maxHeight && !tileMode)
@@ -280,7 +304,12 @@ Column {
             }
             VideoOutput {
                 id: videoOutput
-                anchors.fill: parent
+                y: moveToTop ? -contentRect.y : 0
+                width: parent.width
+                height: parent.height
+
+                // Avoid flicker when video is moved to top
+                visible: !moveToTop || contentRect.y > 0
             }
             AudioOutput {
                 id: audioOutput
@@ -352,21 +381,14 @@ Column {
     }
 
     Rectangle {
-        width: parent.width
-        height: isFullVideoFeedViewMode ? Math.max(0, parent.height - videoRect.y - videoRect.height - footerHeight - parent.spacing) : 0
-        color: "transparent"
-        visible: isFullVideoFeedViewMode
-    }
-
-    Rectangle {
         property bool show: true
 
         id: playControls
         x: (parent.width - width) / 2
-        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.getPaintedWidth())
+        width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.getDisplayWidth())
         height: visible ? playPauseButton.height : 0
         color: "transparent"
-        visible: show && (videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting)
+        visible: show && videoPlayingOrPaused
 
         Loader {
             anchors.fill: parent
@@ -624,10 +646,10 @@ Column {
     }
 
     function getAspectRatio() {
-        if (videoView && videoView.width > 0 && videoView.height > 0)
+        if (videoSizeIsKnown)
             return videoView.width / videoView.height
         else
-            return 16/9
+            return videoStack.width / videoStack.height
     }
 
     function getDurationMs() {

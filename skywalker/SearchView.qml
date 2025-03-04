@@ -10,7 +10,7 @@ SkyPage {
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
     property var timeline
-    property bool isTyping: true
+    property bool isTyping: false
     property bool isHashtagSearch: false
     property bool isPostSearch: true
     property string postAuthorUser // empty, "me", handle
@@ -84,12 +84,44 @@ SkyPage {
         onMessagesClicked: root.viewChat()
     }
 
-    TabBar {
+    SimpleAuthorListView {
+        id: typeaheadView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: pageFooter.top
+        model: searchUtils.authorTypeaheadList
+        visible: page.isTyping && currentText && !page.isHashtagSearch
+
+        onAuthorClicked: (profile) => {
+            searchUtils.addLastSearchedProfile(profile)
+            page.skywalker.getDetailedProfile(profile.did)
+        }
+    }
+
+    HashtagListView {
+        id: hastagTypeaheadView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: pageFooter.top
+        model: searchUtils.hashtagTypeaheadList
+        visible: page.isTyping && currentText && page.isHashtagSearch
+
+        onHashtagClicked: (tag) => {
+            const fullTag = `#${tag}`
+            page.header.setSearchText(fullTag) // qmllint disable missing-property
+            searchUtils.search(fullTag)
+        }
+    }
+
+    SkyTabBar {
         id: searchBar
         width: parent.width
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
+        visible: searchStack.visible
 
         onCurrentIndexChanged: page.isPostSearch = (currentIndex !== tabUsers.TabBar.index)
 
@@ -118,7 +150,7 @@ SkyPage {
         }
     }
 
-    SvgButton {
+    SvgPlainButton {
         id: moreButton
         anchors.right: parent.right
         anchors.rightMargin: 5
@@ -126,8 +158,6 @@ SkyPage {
         y: (searchBar.height - height) / 2
         width: height
         height: 30
-        iconColor: guiSettings.textColor
-        Material.background: "transparent"
         svg: SvgOutline.menu
         accessibleName: qsTr("hashtag options")
         visible: isHashtagSearch
@@ -211,15 +241,13 @@ SkyPage {
         Material.background: guiSettings.backgroundColor
         visible: page.isPostSearch
 
-        SvgButton {
+        SvgPlainButton {
             id: restrictionIcon
-            //y: 20
             Layout.preferredWidth: height
             Layout.preferredHeight: 20
             imageMargin: 0
             iconColor: guiSettings.linkColor
             Material.background: guiSettings.backgroundColor
-            flat: true
             svg: SvgOutline.noReplyRestrictions
             accessibleName: searchModeText.text
             onClicked: page.changeSearchPostScope()
@@ -241,14 +269,12 @@ SkyPage {
                 enabled: page.isPostSearch
             }
         }
-        SvgButton {
+        SvgPlainButton {
             id: clearScopeButton
             Layout.preferredWidth: 20
             Layout.preferredHeight: width
             imageMargin: 0
-            iconColor: guiSettings.textColor
             Material.background: guiSettings.backgroundColor
-            flat: true
             svg: SvgOutline.close
             accessibleName: qsTr("clear search scope")
             visible: postAuthorUser || postMentionsUser || postSetSince || postSetUntil || postLanguage
@@ -266,52 +292,16 @@ SkyPage {
         visible: page.isPostSearch
     }
 
-    SimpleAuthorListView {
-        id: typeaheadView
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: searchModeSeparator.bottom
-        anchors.bottom: pageFooter.top
-        model: searchUtils.authorTypeaheadList
-        visible: page.isTyping && !page.isHashtagSearch
-
-        onAuthorClicked: (profile) => {
-            searchUtils.addLastSearchedProfile(profile)
-            page.skywalker.getDetailedProfile(profile.did)
-        }
-    }
-
-    HashtagListView {
-        id: hastagTypeaheadView
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: searchModeSeparator.bottom
-        anchors.bottom: pageFooter.top
-        model: searchUtils.hashtagTypeaheadList
-        visible: page.isTyping && page.isHashtagSearch
-
-        onHashtagClicked: (tag) => {
-            const fullTag = `#${tag}`
-            page.header.setSearchText(fullTag) // qmllint disable missing-property
-            searchUtils.search(fullTag)
-        }
-    }
-
-    StackLayout {
+    SwipeView {
         id: searchStack
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         width: parent.width
-        currentIndex: currentText ?
-            searchBar.currentIndex :
-            ((page.header.hasFocus() || recentSearchesView.keepFocus || (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers)) ?
-                recentSearchesView.StackLayout.index :
-                suggestionsView.StackLayout.index)
-        visible: !page.isTyping || !currentText
+        currentIndex: searchBar.currentIndex
+        visible: currentText && !page.isTyping
 
         onCurrentIndexChanged: {
-            if (currentIndex === recentSearchesView.StackLayout.index)
-                recentSearchesRepeater.model = searchUtils.getLastSearches()
+            searchBar.setCurrentIndex(currentIndex)
         }
 
         SkyListView {
@@ -325,14 +315,14 @@ SkyPage {
                 width: postsViewTop.width
             }
 
-            StackLayout.onIsCurrentItemChanged: {
-                if (!StackLayout.isCurrentItem)
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
                     cover()
             }
 
             FlickableRefresher {
                 scrollToTopButtonMargin: pageFooter.height
-                inProgress: searchUtils.searchPostsTopInProgress
+                inProgress: postsViewTop.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
                 topText: qsTr("Pull down to refresh")
@@ -342,11 +332,12 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewTop
+                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchPostsTopInProgress
+                running: postsViewTop.model.getFeedInProgress
             }
         }
 
@@ -361,14 +352,14 @@ SkyPage {
                 width: postsViewLatest.width
             }
 
-            StackLayout.onIsCurrentItemChanged: {
-                if (!StackLayout.isCurrentItem)
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
                     cover()
             }
 
             FlickableRefresher {
                 scrollToTopButtonMargin: pageFooter.height
-                inProgress: searchUtils.searchPostsLatestInProgress
+                inProgress: postsViewLatest.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
                 topText: qsTr("Pull down to refresh")
@@ -378,11 +369,12 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewLatest
+                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchPostsLatestInProgress
+                running: postsViewLatest.model.getFeedInProgress
             }
         }
 
@@ -418,6 +410,21 @@ SkyPage {
                 anchors.centerIn: parent
                 running: searchUtils.searchActorsInProgress
             }
+        }
+    }
+
+    StackLayout {
+        anchors.top: searchModeSeparator.bottom
+        anchors.bottom: pageFooter.top
+        width: parent.width
+        currentIndex: (page.header.hasFocus() || recentSearchesView.keepFocus || (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers)) ?
+                recentSearchesView.StackLayout.index :
+                suggestionsView.StackLayout.index
+        visible: !currentText
+
+        onCurrentIndexChanged: {
+            if (currentIndex === recentSearchesView.StackLayout.index)
+                recentSearchesRepeater.model = searchUtils.getLastSearches()
         }
 
         Flickable {
@@ -633,15 +640,13 @@ SkyPage {
                             searchUtils.addLastSearchedProfile(modelData)
                         }
 
-                        SvgButton {
+                        SvgPlainButton {
                             y: -topInset
                             x: parent.width - width + rightInset
                             width: 28
                             height: width
                             imageMargin: 8
-                            iconColor: guiSettings.textColor
                             Material.background: guiSettings.backgroundColor
-                            flat: true
                             svg: SvgOutline.close
                             accessibleName: qsTr(`remove ${modelData.name}`)
                             onPressed: {
@@ -706,14 +711,12 @@ SkyPage {
                             }
                         }
 
-                        SvgButton {
+                        SvgPlainButton {
                             id: removeRecentSearchButton
                             anchors.right: parent.right
                             width: 34
                             height: width
-                            iconColor: guiSettings.textColor
                             Material.background: guiSettings.backgroundColor
-                            flat: true
                             svg: SvgOutline.close
                             accessibleName: qsTr(`remove ${recentSearchText.text}`)
                             onPressed: {

@@ -18,19 +18,17 @@ SkyListView {
     property bool galleryMode: false
 
     id: authorPostsList
-    width: parent.width
-    height: parent.height
     model: modelId >= 0 ? skywalker.getAuthorFeedModel(page.modelId) : null
     interactive: !enclosingView.interactive
     clip: true
 
-    StackLayout.onIsCurrentItemChanged: changeCurrentItem(StackLayout.isCurrentItem)
+    SwipeView.onIsCurrentItemChanged: changeCurrentItem(SwipeView.isCurrentItem)
 
     function changeCurrentItem(isCurrentItem) {
         if (!isCurrentItem)
             cover()
 
-        if (isCurrentItem && modelId < 0 && !skywalker.getAuthorFeedInProgress) {
+        if (isCurrentItem && modelId < 0) {
             modelId = skywalker.createAuthorFeedModel(author, feedFilter)
             model = skywalker.getAuthorFeedModel(modelId)
             getFeed(modelId)
@@ -57,7 +55,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: skywalker.getAuthorFeedInProgress
+        inProgress: model && model.getFeedInProgress
         topOvershootFun: () => {
             if (modelId >= 0)
                 getFeed(modelId)
@@ -72,7 +70,7 @@ SkyListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: skywalker.getAuthorFeedInProgress
+        running: model && model.getFeedInProgress
     }
 
     EmptyListIndication {

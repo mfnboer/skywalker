@@ -1,3 +1,12 @@
+4.0
+===
+* Tab bar for favorite feeds
+* Swipe sideways between favorite feeds
+* You can reorder favorite feeds
+* Tap on fullscreen image view to hide controls
+* GUI improvements
+* Fix video scaling issues
+
 3.15.1
 ======
 * Show counter of posts till top for all feeds

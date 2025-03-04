@@ -57,6 +57,11 @@ SkyPage {
         }
     }
 
+    DisplayUtils {
+        id: displayUtils
+        skywalker: root.getSkywalker()
+    }
+
     function setStatus(msg) {
         status.text = msg
         status.forceActiveFocus()
@@ -68,5 +73,15 @@ SkyPage {
 
     function updateRewindProgress(pages, timestamp) {
         rewindStatus.updateRewindProgress(pages, timestamp)
+    }
+
+    Component.onDestruction: {
+        displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setStatusBarColor(guiSettings.headerColor)
+    }
+
+    Component.onCompleted: {
+        displayUtils.setNavigationBarColorAndMode(guiSettings.skywalkerLogoColor, false)
+        displayUtils.setStatusBarColorAndMode(guiSettings.skywalkerLogoColor, false)
     }
 }

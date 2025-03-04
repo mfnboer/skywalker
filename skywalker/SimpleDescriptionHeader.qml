@@ -29,10 +29,9 @@ Rectangle {
                 width: parent.width
                 height: guiSettings.headerHeight
 
-                SvgButton {
+                SvgPlainButton {
                     id: backButton
                     iconColor: guiSettings.headerTextColor
-                    Material.background: "transparent"
                     svg: SvgOutline.arrowBack
                     accessibleName: qsTr("go back")
                     onClicked: header.closed()

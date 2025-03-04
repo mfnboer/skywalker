@@ -99,7 +99,7 @@ SkyPage {
         z: guiSettings.headerZLevel
         color: guiSettings.headerColor
 
-        SvgButton {
+        SvgPlainButton {
             id: cancelButton
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -148,7 +148,7 @@ SkyPage {
             }
         }
 
-        SvgButton {
+        SvgPlainButton {
             id: moreOptions
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -174,7 +174,7 @@ SkyPage {
                     checkable: true
                     checked: skywalker.getUserSettings().getRequireAltText(userDid)
 
-                    onToggled:{
+                    onToggled: {
                         requireAltText = checked
                         skywalker.getUserSettings().setRequireAltText(userDid, checked)
                     }

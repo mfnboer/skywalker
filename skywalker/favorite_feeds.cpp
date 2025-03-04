@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "favorite_feeds.h"
+#include "search_utils.h"
 #include "skywalker.h"
 #include <atproto/lib/at_uri.h>
 
@@ -8,11 +9,11 @@ namespace Skywalker
 {
 
 static auto feedNameCompare = [](const GeneratorView& lhs, const GeneratorView& rhs){
-    return lhs.getDisplayName().compare(rhs.getDisplayName(), Qt::CaseInsensitive) < 0;
+    return SearchUtils::normalizedCompare(lhs.getDisplayName(), rhs.getDisplayName()) < 0;
 };
 
 static auto listNameCompare = [](const ListView& lhs, const ListView& rhs){
-    return lhs.getName().compare(rhs.getName(), Qt::CaseInsensitive) < 0;
+    return SearchUtils::normalizedCompare(lhs.getName(), rhs.getName()) < 0;
 };
 
 static QString getFavoriteSortName(const FavoriteFeedView& favorite)
@@ -27,13 +28,17 @@ static auto favoriteFeedNameCompare = [](const FavoriteFeedView& lhs, const Favo
     const auto lhsName = getFavoriteSortName(lhs);
     const auto rhsName = getFavoriteSortName(rhs);
 
-    return lhsName.compare(rhsName, Qt::CaseInsensitive) < 0;
+    return SearchUtils::normalizedCompare(lhsName, rhsName) < 0;
 };
 
 FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
     QObject(parent),
     mSkywalker(skywalker)
 {
+    connect(this, &FavoriteFeeds::pinnedFeedsChanged, this, [this]{
+        if (mUserOrderedPinnedFeeds.empty())
+            emit userOrderedPinnedFeedsChanged();
+    });
 }
 
 FavoriteFeeds::~FavoriteFeeds()
@@ -52,12 +57,26 @@ void FavoriteFeeds::clear()
     mSavedFeeds.clear();
     mSavedLists.clear();
     mPinnedFeeds.clear();
+    emit pinnedFeedsChanged();
+    mUserOrderedPinnedFeedsInitialized = false;
+    mUserOrderedPinnedFeeds.clear();
+    emit userOrderedPinnedFeedsChanged();
 }
 
-void FavoriteFeeds::reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
+void FavoriteFeeds::init(const SearchFeed::List& searchFeeds, const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
 {
-    qDebug() << "Reset favorite feeds";
+    qDebug() << "Initialize favorite feeds";
     clear();
+
+    // NOTE: order is important, setting save feeds preferences is async and will eventually
+    // initialize user ordered pinned feeds. For that the search feeds must have been set.
+    set(searchFeeds);
+    set(savedFeedsPref);
+}
+
+void FavoriteFeeds::set(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
+{
+    qDebug() << "Set favorite feeds";
     mSavedFeedsPref = savedFeedsPref;
     mSavedUris.insert(mSavedFeedsPref.mSaved.begin(), mSavedFeedsPref.mSaved.end());
     mPinnedUris.insert(mSavedFeedsPref.mPinned.begin(), mSavedFeedsPref.mPinned.end());
@@ -73,6 +92,57 @@ void FavoriteFeeds::set(const SearchFeed::List& searchFeeds)
         pinSearch(search);
 }
 
+void FavoriteFeeds::initUserOrderedPinnedFeeds()
+{
+    qInfo() << "Init user ordered pinned feeds";
+    mUserOrderedPinnedFeeds.clear();
+    mUserOrderedPinnedFeedsInitialized = true;
+
+    auto& settings = *mSkywalker->getUserSettings();
+    const QString userDid = mSkywalker->getUserDid();
+    const QStringList favoriteKeys = settings.getUserOrderedPinnedFeed(userDid);
+
+    if (favoriteKeys.empty())
+    {
+        qInfo() << "No user ordered feeds";
+        return;
+    }
+
+    for (const auto& key : favoriteKeys)
+    {
+        if (isPinnedFeed(key))
+        {
+            const auto favorite = getPinnedFeed(key);
+            mUserOrderedPinnedFeeds.push_back(favorite);
+        }
+        else if (isPinnedSearch(key))
+        {
+            const auto favorite = getPinnedSearch(key);
+            mUserOrderedPinnedFeeds.push_back(favorite);
+        }
+        else
+        {
+            // May have been unpinned by another client
+            qInfo() << "Favorite not pinned:" << key;
+        }
+    }
+
+    const std::unordered_set<QString> sortedKeys(favoriteKeys.begin(), favoriteKeys.end());
+
+    // Pinned feeds may have been added with another client
+    for (const auto& feed : std::as_const(mPinnedFeeds))
+    {
+        if (!sortedKeys.contains(feed.getKey()))
+        {
+            qDebug() << "New favorite:" << feed.getKey();
+            mUserOrderedPinnedFeeds.push_back(feed);
+        }
+    }
+
+    emit userOrderedPinnedFeedsChanged();
+    saveUserOrderedPinnedFeeds();
+}
+
 void FavoriteFeeds::addSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators)
 {
     qDebug() << "Add saved feeds:" << savedGenerators.size();
@@ -86,6 +156,7 @@ void FavoriteFeeds::addPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pin
 {
     qDebug() << "Add pinned feeds:" << pinnedGenerators.size();
     addFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList)
@@ -96,6 +167,7 @@ void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedP
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
     qInfo() << "Pinned:" << view.getName() << "size:" << mPinnedFeeds.size();
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
@@ -163,6 +235,28 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
     emit feedSaved();
 }
 
+void FavoriteFeeds::addToUserOrderedPinnedFeeds(const FavoriteFeedView& favorite)
+{
+    if (mUserOrderedPinnedFeeds.empty())
+        return;
+
+    mUserOrderedPinnedFeeds.push_back(favorite);
+    qDebug() << "Added to user ordered pinned feeds:" << favorite.getName();
+    emit userOrderedPinnedFeedsChanged();
+    saveUserOrderedPinnedFeeds();
+}
+
+void FavoriteFeeds::removeFromUserOrderedPinnedFeeds(const FavoriteFeedView& favorite)
+{
+    if (mUserOrderedPinnedFeeds.empty())
+        return;
+
+    auto removed = mUserOrderedPinnedFeeds.removeOne(favorite);
+    qDebug() << "Removed from user ordered pinneds:" << favorite.getName() << "removed:" << removed;
+    emit userOrderedPinnedFeedsChanged();
+    saveUserOrderedPinnedFeeds();
+}
+
 void FavoriteFeeds::pinFeed(const GeneratorView& feed, bool pin)
 {
     if (pin)
@@ -191,6 +285,8 @@ void FavoriteFeeds::pinFeed(const GeneratorView& feed)
     qDebug() << "Pinned:" << view.getName();
 
     emit feedPinned();
+    emit pinnedFeedsChanged();
+    addToUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
@@ -216,6 +312,8 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     }
 
     emit feedUnpinned(feed.getUri());
+    emit pinnedFeedsChanged();
+    removeFromUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::addList(const ListView& list)
@@ -294,6 +392,8 @@ void FavoriteFeeds::pinList(const ListView& list)
     qDebug() << "Pinned:" << view.getName();
 
     emit listPinned();
+    emit pinnedFeedsChanged();
+    addToUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::unpinList(const ListView& list)
@@ -319,6 +419,8 @@ void FavoriteFeeds::unpinList(const ListView& list)
     }
 
     emit listUnpinned(list.getUri());
+    emit pinnedFeedsChanged();
+    removeFromUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::pinSearch(const SearchFeed& search, bool pin)
@@ -345,6 +447,8 @@ void FavoriteFeeds::pinSearch(const SearchFeed& search)
     qDebug() << "Pinned:" << view.getName();
 
     emit searchPinned(view.getName());
+    emit pinnedFeedsChanged();
+    addToUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::unpinSearch(const SearchFeed& search)
@@ -371,6 +475,43 @@ void FavoriteFeeds::unpinSearch(const SearchFeed& search)
     }
 
     emit searchUnpinned(search.getName());
+    emit pinnedFeedsChanged();
+    removeFromUserOrderedPinnedFeeds(view);
+}
+
+const QList<FavoriteFeedView>& FavoriteFeeds::getUserOrderedPinnedFeeds() const
+{
+    return mUserOrderedPinnedFeeds.empty() ? mPinnedFeeds : mUserOrderedPinnedFeeds;
+}
+
+void FavoriteFeeds::setUserOrderedPinnedFeeds(const QList<FavoriteFeedView>& favorites)
+{
+    if (favorites == mPinnedFeeds)
+    {
+        qDebug() << "User ordered feeds are sorted";
+        clearUserOrderedPinnedFeed();
+        return;
+    }
+
+    if (favorites == mUserOrderedPinnedFeeds)
+    {
+        qDebug() << "User ordered feeds are not changed";
+        return;
+    }
+
+    mUserOrderedPinnedFeeds = favorites;
+    emit userOrderedPinnedFeedsChanged();
+    saveUserOrderedPinnedFeeds();
+}
+
+void FavoriteFeeds::clearUserOrderedPinnedFeed()
+{
+    if (mUserOrderedPinnedFeeds.empty())
+        return;
+
+    mUserOrderedPinnedFeeds.clear();
+    emit userOrderedPinnedFeedsChanged();
+    saveUserOrderedPinnedFeeds();
 }
 
 FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const
@@ -488,13 +629,12 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
 
 void FavoriteFeeds::updatePinnedViews()
 {
-    mPinnedFeeds.clear();
-
     if (!mSavedFeedsPref.mPinned.empty())
-    {
-        updatePinnedGeneratorViews();
-        updatePinnedListViews();
-    }
+        updatePinnedGeneratorViews(); // NOTE: this will update pinned list views after it finished
+    else
+        initUserOrderedPinnedFeeds();
+
+    emit pinnedFeedsChanged();
 }
 
 void FavoriteFeeds::updatePinnedGeneratorViews()
@@ -502,22 +642,27 @@ void FavoriteFeeds::updatePinnedGeneratorViews()
     auto feedGeneratorUris = filterUris(mSavedFeedsPref.mPinned, ATProto::ATUri::COLLECTION_FEED_GENERATOR);
     qDebug() << "Update pinned generators:" << feedGeneratorUris.size();
 
-    if (feedGeneratorUris.empty())
+    if (feedGeneratorUris.empty()) {
+        updatePinnedListViews();
         return;
+    }
 
     mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
         [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::SharedPtr output){
             addPinnedFeeds(std::move(output->mFeeds));
+            updatePinnedListViews();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Cannot get pinned feeds:" << error << " - " << msg;
             mSkywalker->showStatusMessage(tr("Cannot get pinned feeds: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+            updatePinnedListViews();
         });
 }
 
 void FavoriteFeeds::updatePinnedListViews()
 {
     auto listUris = filterUris(mSavedFeedsPref.mPinned, ATProto::ATUri::COLLECTION_GRAPH_LIST);
+    qDebug() << "Update pinned list views:" << listUris.size();
     updatePinnedListViews(listUris);
 }
 
@@ -525,6 +670,7 @@ void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
 {
     if (listUris.empty())
     {
+        initUserOrderedPinnedFeeds();
         cleanupSettings();
         return;
     }
@@ -660,6 +806,29 @@ void FavoriteFeeds::saveSearchFeedsTo(UserSettings& settings) const
     }
 
     settings.setPinnedSearchFeeds(mSkywalker->getUserDid(), searchFeeds);
+}
+
+void FavoriteFeeds::saveUserOrderedPinnedFeeds() const
+{
+    if (!mUserOrderedPinnedFeedsInitialized)
+        return;
+
+    auto& settings = *mSkywalker->getUserSettings();
+    const QString userDid = mSkywalker->getUserDid();
+    QStringList keys;
+
+    for (const auto& favorite : mUserOrderedPinnedFeeds)
+    {
+        const QString key = favorite.getKey();
+
+        if (!key.isEmpty())
+            keys.push_back(key);
+        else
+            qWarning() << "Empty key for favorite:" << favorite.getName();
+    }
+
+    qDebug() << "Save user ordered settings:" << keys;
+    settings.setUserOrderedPinnedFeeds(userDid, keys);
 }
 
 void FavoriteFeeds::cleanupSettings()

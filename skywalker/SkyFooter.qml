@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -12,6 +13,7 @@ Rectangle {
     property bool messagesActive: false
     property bool showHomeFeedBadge: false
     property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
+    property int extraFooterMargin: 0
 
     signal homeClicked()
     signal notificationsClicked()
@@ -35,7 +37,7 @@ Rectangle {
             Layout.fillWidth: true
             floating: floatingButtons
             svg: homeActive ? SvgFilled.home : SvgOutline.home
-            counter: homeActive ? timeline.unreadPosts : 0
+            counter: homeActive && timeline ? timeline.unreadPosts : 0
             counterBackgroundColor: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
             counterTextColor: guiSettings.textColor
             showAltBadge: showHomeFeedBadge
@@ -84,7 +86,7 @@ Rectangle {
     }
 
     PostButton {
-        y: -height - 10
+        y: -height - 10 - extraFooterMargin
         svg: getSvg()
         accessibleName: qsTr("post")
         overrideOnClicked: () => {
@@ -122,6 +124,9 @@ Rectangle {
     function getHomeSpeech() {
         if (!homeActive)
             return qsTr("show feed")
+
+        if (!timeline)
+            return ""
 
         if (timeline.unreadPosts === 0)
             return qsTr("You are at the top of your time line")

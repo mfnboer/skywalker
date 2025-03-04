@@ -9,12 +9,16 @@ SkyListView {
     required property searchfeed searchFeed
     property bool showAsHome: false
     property int unreadPosts: 0
+    property var userSettings: skywalker.getUserSettings()
+    readonly property int favoritesY: getFavoritesY()
+    readonly property int extraFooterMargin: 0
 
     signal closed
 
     id: feedView
     width: parent.width
     model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
+    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: searchFeed.name
 
@@ -27,24 +31,12 @@ SkyListView {
         showLanguageFilter: searchFeed.languageList.length > 0
         filteredLanguages: searchFeed.languageList
         showPostWithMissingLanguage: false
+        showFavoritesPlaceHolder: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
 
         onClosed: feedView.closed()
         onFeedAvatarClicked: root.viewSearchViewFeed(searchFeed)
     }
-    headerPositioning: ListView.OverlayHeader
-
-    footer: SkyFooter {
-        visible: showAsHome
-        timeline: feedView
-        skywalker: feedView.skywalker
-        homeActive: true
-        onHomeClicked: feedView.moveToHome()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
-    }
-    footerPositioning: ListView.OverlayFooter
+    headerPositioning: ListView.PullBackHeader
 
     delegate: PostFeedViewDelegate {
         width: feedView.width
@@ -59,7 +51,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: searchUtils.searchPostsLatestInProgress
+        inProgress: feedView.model.getFeedInProgress
         topOvershootFun: () => feedView.search()
         bottomOvershootFun: () => feedView.getNextPage()
         topText: qsTr("Pull down to refresh feed")
@@ -76,7 +68,7 @@ SkyListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: searchUtils.searchPostsLatestInProgress
+        running: feedView.model.getFeedInProgress
     }
 
     SearchUtils {
@@ -90,9 +82,24 @@ SkyListView {
         }
     }
 
+    function getFavoritesY() {
+        switch (userSettings.favoritesBarPosition) {
+        case QEnums.FAVORITES_BAR_POSITION_TOP:
+            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
+            return virtualFooterY
+        }
+
+        return 0
+    }
+
     function updateUnreadPosts() {
         const firstIndex = getFirstVisibleIndex()
         feedView.unreadPosts = Math.max(firstIndex, 0)
+    }
+
+    function atStart() {
+        return atYBeginning
     }
 
     function moveToHome() {

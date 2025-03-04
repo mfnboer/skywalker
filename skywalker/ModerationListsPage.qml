@@ -18,7 +18,7 @@ SkyPage {
         onBack: page.closed()
     }
 
-    TabBar {
+    SkyTabBar {
         id: listsBar
         width: parent.width
 
@@ -33,7 +33,7 @@ SkyPage {
         }
     }
 
-    StackLayout {
+    SwipeView {
         anchors.top: listsBar.bottom
         anchors.bottom: parent.bottom
         width: parent.width
@@ -44,12 +44,12 @@ SkyPage {
                 blockedLists.refresh()
             else if (currentIndex === 2)
                 mutedLists.refresh()
+
+            listsBar.setCurrentIndex(currentIndex)
         }
 
         ListListView {
             id: yourLists
-            width: parent.width
-            height: parent.height
             skywalker: page.skywalker
             modelId: page.modelId
             ownLists: true
@@ -58,8 +58,6 @@ SkyPage {
 
         ListListView {
             id: blockedLists
-            width: parent.width
-            height: parent.height
             skywalker: page.skywalker
             modelId: skywalker.createListListModel(QEnums.LIST_TYPE_BLOCKS, QEnums.LIST_PURPOSE_MOD, "")
             ownLists: false
@@ -68,13 +66,10 @@ SkyPage {
 
         ListListView {
             id: mutedLists
-            width: parent.width
-            height: parent.height
             skywalker: page.skywalker
             modelId: skywalker.createListListModel(QEnums.LIST_TYPE_MUTES, QEnums.LIST_PURPOSE_MOD, "")
             ownLists: false
             description: qsTr("Lists muted by you.")
         }
     }
-
 }

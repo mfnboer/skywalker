@@ -56,7 +56,6 @@ public class SkywalkerActivity extends QtActivity {
         Log.d(LOGTAG, "onCreate");
         ScreenUtils.init(this);
         VirtualKeyboardListener.init(this);
-        ScreenUtils.setStatusBarColor();
 
         Intent intent = getIntent();
         if (intent == null)

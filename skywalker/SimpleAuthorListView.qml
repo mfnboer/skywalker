@@ -74,11 +74,9 @@ ListView {
                 Accessible.ignored: true
             }
 
-            SvgButton {
+            SvgPlainButton {
                 id: deleteButton
                 Layout.rowSpan: 2
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
                 svg: SvgOutline.delete
                 accessibleName: qsTr(`delete ${author.name}`)
                 onClicked: deleteClicked(author)

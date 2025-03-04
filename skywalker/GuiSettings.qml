@@ -18,6 +18,7 @@ Item {
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
     readonly property int statsHeight: appFontHeight + 4
+    readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60
     readonly property int threadLineWidth: 2
 
@@ -38,14 +39,15 @@ Item {
     readonly property string contentLabelColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string contentUserLabelColor: isLightMode ? "lightblue" : "steelblue"
     readonly property string disabledColor: isLightMode ? "lightgrey" : "darkslategrey"
+    readonly property string dragHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string errorColor: isLightMode ? "darkred" : "palevioletred"
     readonly property string favoriteColor: "gold"
     readonly property string fullScreenColor: "black"
     readonly property string footerColor: backgroundColor
     readonly property string handleColor: Material.color(Material.Grey)
-    readonly property string headerColor: "black"
+    readonly property string headerColor: backgroundColor
     readonly property string headerHighLightColor: isLightMode ? "lightblue" : "darkslategrey"
-    readonly property string headerTextColor: "white"
+    readonly property string headerTextColor: textColor
     readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
     readonly property string likeColor: "palevioletred"
     readonly property string linkColorDarkMode: "#58a6ff"
@@ -70,6 +72,7 @@ Item {
     readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)
     property string textColor: Material.foreground
+    readonly property string textInputBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string textLengthExceededColor: "palevioletred"
 
     // Opacity
@@ -251,8 +254,24 @@ Item {
         return text
     }
 
-    function feedDefaultAvatar(feed) {
+    function feedDefaultAvatar(feed: generatorview) : SvgImage {
         return feed.creator.did === guiSettings.blueskyTrendingDid ? SvgOutline.trending : SvgFilled.feed
+    }
+
+    function favoriteDefaultAvatar(favorite: favoritefeedview) : SvgImage {
+        if (favorite.isNull())
+            return SvgFilled.home
+
+        switch (favorite.type) {
+        case QEnums.FAVORITE_FEED:
+            return feedDefaultAvatar(favorite.generatorView)
+        case QEnums.FAVORITE_LIST:
+            return SvgFilled.list
+        case QEnums.FAVORITE_SEARCH:
+            return favorite.searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
+        }
+
+        return SvgOutline.feed
     }
 
     function contentVisible(author)

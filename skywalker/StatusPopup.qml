@@ -38,12 +38,11 @@ Popup {
         Accessible.name: text
         Accessible.description: Accessible.name
     }
-    SvgButton {
+    SvgPlainButton {
         id: closeButton
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         iconColor: statusText.color.toString()
-        Material.background: "transparent"
         svg: SvgOutline.close
         accessibleName: qsTr("close status message")
         onClicked: statusPopup.close()

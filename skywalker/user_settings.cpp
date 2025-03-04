@@ -437,6 +437,16 @@ QStringList UserSettings::getFeedHideRepliesUris(const QString& did) const
     return getFeedViewUris(did, "feedhideReplies");
 }
 
+void UserSettings::setUserOrderedPinnedFeeds(const QString& did, QStringList favoriteKeys)
+{
+    mSettings.setValue(key(did, "userOrderedPinnedFeeds"), favoriteKeys);
+}
+
+QStringList UserSettings::getUserOrderedPinnedFeed(const QString& did) const
+{
+    return mSettings.value(key(did, "userOrderedPinnedFeeds")).toStringList();
+}
+
 void UserSettings::updateLastSignInTimestamp(const QString& did)
 {
     mSettings.setValue(key(did, "lastSignInTimestamp"), QDateTime::currentDateTime());
@@ -606,6 +616,25 @@ QString UserSettings::getThreadColor() const
 {
     const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#000080" : "#8080ff";
     return mSettings.value(displayKey("threadColor"), defaultColor).toString();
+}
+
+void UserSettings::setFavoritesBarPosition(QEnums::FavoritesBarPosition position)
+{
+    if (getFavoritesBarPosition() != position)
+    {
+        mSettings.setValue("favoritesBarPosition", (int)position);
+        emit favoritesBarPositionChanged();
+    }
+}
+
+QEnums::FavoritesBarPosition UserSettings::getFavoritesBarPosition() const
+{
+    const int position = mSettings.value("favoritesBarPosition", (int)QEnums::FAVORITES_BAR_POSITION_TOP).toInt();
+
+    if (position < 0 || position > QEnums::FAVORITES_BAR_POSITION_LAST)
+        return QEnums::FAVORITES_BAR_POSITION_TOP;
+
+    return QEnums::FavoritesBarPosition(position);
 }
 
 void UserSettings::setPostButtonRelativeX(double x)

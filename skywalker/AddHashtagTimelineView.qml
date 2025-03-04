@@ -15,10 +15,11 @@ SkyPage {
         backIsCancel: true
         onBack: closed()
 
-        SvgButton {
+        SvgPlainButton {
             id: okButton
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
+            iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             svg: SvgOutline.check
             accessibleName: qsTr("ok")
             onClicked: page.selected(page.getHashtag())

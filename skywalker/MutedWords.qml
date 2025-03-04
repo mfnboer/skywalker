@@ -25,7 +25,7 @@ ListView {
         text: qsTr("Muted words") + ` (${view.count} / ${skywalker.mutedWords.maxSize})`
         onBack: view.closed()
 
-        SvgButton {
+        SvgPlainButton {
             anchors.right: parent.right
             svg: SvgOutline.add
             onClicked: addWord()
@@ -78,16 +78,12 @@ ListView {
                     visible: modelData.actorTarget === QEnums.ACTOR_TARGET_EXCLUDE_FOLLOWING
                 }
             }
-            SvgButton {
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
+            SvgPlainButton {
                 svg: SvgOutline.edit
                 accessibleName: qsTr(`edit ${entryText.text}`)
                 onClicked: editWord(modelData)
             }
-            SvgButton {
-                iconColor: guiSettings.textColor
-                Material.background: "transparent"
+            SvgPlainButton {
                 svg: SvgOutline.delete
                 accessibleName: qsTr(`delete ${entryText.text}`)
                 onClicked: skywalker.mutedWords.removeEntry(entryText.text)

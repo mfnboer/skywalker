@@ -3,11 +3,11 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import skywalker
 
-TabButton {
+AccessibleTabButton {
     property color backgroundColor: "transparent"
     property basicprofile profile
     property bool showCloseButton: true
-    property bool showDot: false
+    property int counter: 0
 
     signal closed
 
@@ -17,9 +17,7 @@ TabButton {
     // For some reason setting the width of closeButton to 0 when it is invisible
     // causes the tabbar not to scroll all the way to the left. It is not the
     // button itself. When I remove the button, the problem remains.
-    width: avatar.width + whitespace.width + tabText.width + closeButton.width + leftPadding
-    display: AbstractButton.TextOnly
-    Accessible.name: qsTr(`Press to show ${text}`)
+    width: avatar.width + whitespace.width + tabText.width + badge.width + closeButton.width + leftPadding
 
     contentItem: Row {
         id: tabRow
@@ -50,6 +48,13 @@ TabButton {
             text: button.text
         }
 
+        BadgeCounter {
+            id: badge
+            color: guiSettings.backgroundColor
+            counterColor: tabText.color
+            counter: button.counter
+        }
+
         SvgButton {
             id: closeButton
             anchors.verticalCenter: parent.verticalCenter
@@ -63,16 +68,5 @@ TabButton {
             visible: showCloseButton
             onClicked: button.closed()
         }
-    }
-
-    background: Rectangle {
-        anchors.fill: parent
-        color: parent.backgroundColor
-        opacity: guiSettings.focusHighlightOpacity
-    }
-
-    SkyDot {
-        anchors.rightMargin: 22
-        visible: showDot
     }
 }

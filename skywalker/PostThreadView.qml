@@ -23,8 +23,6 @@ SkyListView {
             height: restrictionRow.height + 5
             anchors.bottom: parent.bottom
             color: guiSettings.threadStartColor(root.getSkywalker().getUserSettings().threadColor)
-            border.width: 1
-            border.color: guiSettings.headerColor
             visible: model.replyRestriction !== QEnums.REPLY_RESTRICTION_NONE
 
             Accessible.role: Accessible.StaticText

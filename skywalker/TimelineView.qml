@@ -4,20 +4,42 @@ import skywalker
 
 SkyListView {
     required property var skywalker
+    property int headerMargin: 0
     property bool inSync: false
     property bool isView: false
     property int unreadPosts: 0
     property int calibrationDy: 0
     property int newLastVisibleIndex: -1
     property int newLastVisibleOffsetY: 0
+    property var userSettings: skywalker.getUserSettings()
+    readonly property int visibleHeaderHeight: headerItem ? Math.max(headerItem.height - headerMargin - (contentY - headerItem.y), 0) : 0
+    readonly property int favoritesY : getFavoritesY()
 
     signal newPosts
 
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
+    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: model ? model.feedName : ""
+
+    header: PostFeedHeader {
+        skywalker: page.skywalker
+        feedName: skywalker.timelineModel.feedName
+        showAsHome: true
+        isHomeFeed: true
+        showMoreOptions: true
+        showFavoritesPlaceHolder: root.isFavoritesTabBarVisible() && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
+        bottomMargin: headerMargin
+
+        onAddUserView: page.addUserView()
+        onAddHashtagView: page.addHashtagView()
+        onAddFocusHashtagView: page.addFocusHashtagView()
+        onAddMediaView: page.showMediaView()
+        onAddVideoView: page.showVideoView()
+    }
+    headerPositioning: ListView.PullBackHeader
 
     footer: AccessibleText {
         width: timelineView.width
@@ -29,7 +51,7 @@ SkyListView {
         textFormat: Text.RichText
         wrapMode: Text.Wrap
         text: (isView && model) ? qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`) : ""
-        visible: model ? !model.endOfFeed : false
+        visible: model ? !model.endOfFeed && !Boolean(model.error) : false
         onLinkActivated: skywalker.getTimelineNextPage()
     }
 
@@ -109,6 +131,17 @@ SkyListView {
         Accessible.role: Accessible.ProgressBar
     }
 
+    function getFavoritesY() {
+        switch (userSettings.favoritesBarPosition) {
+        case QEnums.FAVORITES_BAR_POSITION_TOP:
+            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
+        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
+            return virtualFooterY
+        }
+
+        return 0
+    }
+
     function calibratePosition() {
         if (calibrationDy === 0)
             return
@@ -117,6 +150,7 @@ SkyListView {
         timelineView.contentY += calibrationDy
         calibrationDy = 0
         calibrateUnreadPosts()
+        resetHeaderPosition()
     }
 
     function updateUnreadPosts(firstIndex) {
@@ -130,6 +164,7 @@ SkyListView {
         positionViewAtIndex(Math.max(index, 0), ListView.End)
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
+        resetHeaderPosition()
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
@@ -168,7 +203,7 @@ SkyListView {
             return
         }
 
-        moveToPost(index, () => { contentY -= offsetY })
+        moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
     }
 
     function rowsInsertedHandler(parent, start, end) {
@@ -177,7 +212,7 @@ SkyListView {
         console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
         calibrateUnreadPosts()
 
-        if (start == 0)
+        if (start === 0)
             newPosts()
     }
 
@@ -227,7 +262,7 @@ SkyListView {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
 
         if (index >= 0)
-            moveToPost(index, () => { contentY -= offsetY })
+            moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
         else
             moveToEnd()
 

@@ -16,10 +16,13 @@ SkyPage {
     height: parent.height
     background: Rectangle { color: guiSettings.fullScreenColor }
 
+    onCover: view.pause()
+
     VideoView {
         id: view
         y: (parent.height - height) / 2
         width: parent.width
+        height: parent.height
         maxHeight: parent.height
         videoView: page.videoView
         videoSource: page.videoSource
@@ -52,7 +55,7 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: ScrollBar { id: altScrollBar }
-        visible: !view.isPlaying
+        visible: !view.videoPlayingOrPaused
 
         onHeightChanged: setScrollBarPolicy()
         onContentHeightChanged: setScrollBarPolicy()
@@ -133,22 +136,24 @@ SkyPage {
         textColor: "white"
     }
 
-    function setNavigationBarColor() {
+    function setSystemBarsColor() {
         displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setStatusBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
-    function resetNavigationBarColor() {
+    function resetSystemBarsColor() {
         // As GuiSettings are temporarily set to dark on this page, we determine
         // the normal background color here instead of taking it from guiSettings
         const backgroundColor = userSettings ? userSettings.backgroundColor : Material.background
         displayUtils.setNavigationBarColor(backgroundColor)
+        displayUtils.setStatusBarColor(backgroundColor)
     }
 
     Component.onDestruction: {
-        resetNavigationBarColor()
+        resetSystemBarsColor()
     }
 
     Component.onCompleted: {
-        setNavigationBarColor()
+        setSystemBarsColor()
     }
 }

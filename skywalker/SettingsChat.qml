@@ -20,34 +20,31 @@ ColumnLayout {
         text: qsTr("Allow new messages from:")
     }
 
-    RadioButton {
+    SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
         checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_ALL
         text: qsTr("Everyone")
-        display: AbstractButton.TextOnly
         onCheckedChanged: {
             if (checked)
                 userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_ALL
         }
     }
-    RadioButton {
+    SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
         checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_FOLLOWING
         text: qsTr("Users I follow")
-        display: AbstractButton.TextOnly
         onCheckedChanged: {
             if (checked)
                 userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_FOLLOWING
         }
     }
-    RadioButton {
+    SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
         checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_NONE
         text: qsTr("No one")
-        display: AbstractButton.TextOnly
         onCheckedChanged: {
             if (checked)
                 userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_NONE

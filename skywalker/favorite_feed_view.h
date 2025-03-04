@@ -30,8 +30,10 @@ public:
 
     Q_INVOKABLE bool isNull() const { return mView.index() == 0 && std::get<0>(mView).isNull(); }
     Q_INVOKABLE bool isSame(const FavoriteFeedView& other) const;
+    bool operator==(const FavoriteFeedView& other) const { return isSame(other); }
 
     QEnums::FavoriteType getType() const;
+    QString getKey() const; // uri for feeds and lists, name for search feeds
     QString getUri() const;
     QString getName() const;
     QString getAvatar() const;

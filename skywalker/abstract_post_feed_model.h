@@ -25,6 +25,8 @@ class AbstractPostFeedModel : public QAbstractListModel,
 {
     Q_OBJECT
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+    Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -132,8 +134,17 @@ public:
     Q_INVOKABLE QDateTime getPostTimelineTimestamp(int index) const;
     Q_INVOKABLE QString getPostCid(int index) const;
 
+    virtual void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+
+    virtual void setFeedError(const QString& error);
+    void clearFeedError() { setFeedError({}); }
+    const QString& getFeedError() const { return mFeedError; }
+
 signals:
     void endOfFeedChanged();
+    void getFeedInProgressChanged();
+    void feedErrorChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -193,6 +204,8 @@ private:
     std::optional<QEnums::ContentVisibility> mOverrideAdultVisibility;
     QString mOverrideLinkColor;
     bool mEndOfFeed = false;
+    bool mGetFeedInProgress = false;
+    QString mFeedError;
 };
 
 }

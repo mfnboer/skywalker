@@ -27,7 +27,7 @@ SkyPage {
         backIsCancel: true
         onBack: closed()
 
-        SvgButton {
+        SvgPlainButton {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: SvgOutline.check

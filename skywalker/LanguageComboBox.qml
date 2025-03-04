@@ -7,7 +7,7 @@ ComboBox {
     property bool reversedColors: false
     property bool autoDetectColor: false
     property int radius: 3
-    property int borderWidth: 2
+    property int borderWidth: 1
     property string borderColor: guiSettings.buttonColor
     property string color: guiSettings.buttonColor
     property bool addAnyLanguage: false

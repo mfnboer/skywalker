@@ -11,6 +11,8 @@ RadioButton {
 
     indicator: Rectangle { width: 0 }
     display: AbstractButton.TextOnly
+    icon.name: ""
+    icon.source: ""
 
     contentItem: Label {
         padding: 5

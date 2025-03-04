@@ -55,7 +55,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: model.feedType === QEnums.FEED_AUTHOR ? skywalker.getAuthorFeedInProgress : skywalker.getFeedInProgress
+        inProgress: model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         enableScrollToTop: false
@@ -105,12 +105,12 @@ SkyListView {
     }
 
     function setSystemBars() {
-        displayUtils.setStatusBarTransparent(true)
+        displayUtils.setStatusBarTransparentAndMode(true, guiSettings.headerColor, false)
         displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
     function resetSystemBars() {
-        displayUtils.setStatusBarTransparent(false)
+        displayUtils.setStatusBarTransparent(false, guiSettings.headerColor)
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
     }
 

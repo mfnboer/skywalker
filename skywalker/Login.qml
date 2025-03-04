@@ -107,7 +107,7 @@ SkyPage {
                 maximumLength: 255
             }
 
-            AccessibleSwitch {
+            AccessibleCheckBox {
                 id: rememberPasswordSwitch
                 text: qsTr("Remember password")
                 checked: !isNewAccount() && userSettings.getRememberPassword(did)

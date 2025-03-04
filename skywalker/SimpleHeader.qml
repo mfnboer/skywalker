@@ -24,10 +24,8 @@ Rectangle {
         width: parent.width
         Accessible.role: Accessible.Pane
 
-        SvgButton {
+        SvgPlainButton {
             id: backButton
-            iconColor: backIsCancel ? guiSettings.buttonTextColor : guiSettings.headerTextColor
-            Material.background: backIsCancel ? guiSettings.buttonColor : "transparent"
             svg: backIsCancel ? SvgOutline.cancel : SvgOutline.arrowBack
             accessibleName: backIsCancel ? qsTr("cancel") : qsTr("go back")
             onClicked: headerRect.back()

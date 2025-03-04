@@ -53,19 +53,21 @@ SkyPage {
         skywalker: root.getSkywalker()
     }
 
-    function setNavigationBarColor() {
+    function setSystemBarsColor() {
         displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setStatusBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
-    function resetNavigationBarColor() {
+    function resetSystemBarsColor() {
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setStatusBarColor(guiSettings.headerColor)
     }
 
     Component.onDestruction: {
-        resetNavigationBarColor()
+        resetSystemBarsColor()
     }
 
     Component.onCompleted: {
-        setNavigationBarColor()
+        setSystemBarsColor()
     }
 }

@@ -21,14 +21,15 @@ class FavoriteFeeds : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool updateSavedFeedsModelInProgress READ getUpdateSavedFeedsModelInProgress NOTIFY updateSavedFeedsModelInProgressChanged FINAL)
+    Q_PROPERTY(QList<FavoriteFeedView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
+    Q_PROPERTY(QList<FavoriteFeedView> userOrderedPinnedFeeds READ getUserOrderedPinnedFeeds WRITE setUserOrderedPinnedFeeds NOTIFY userOrderedPinnedFeedsChanged FINAL)
 
 public:
     explicit FavoriteFeeds(Skywalker* skywalker, QObject* parent = nullptr);
     ~FavoriteFeeds();
 
     void clear();
-    void reset(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
-    void set(const SearchFeed::List& searchFeeds);
+    void init(const SearchFeed::List& searchFeeds, const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
 
     // Can also be called for list uri's
     Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.contains(uri); }
@@ -46,6 +47,12 @@ public:
     Q_INVOKABLE void pinSearch(const SearchFeed& search, bool pin);
 
     Q_INVOKABLE QList<FavoriteFeedView> getPinnedFeeds() const { return mPinnedFeeds; }
+
+    // Return mPinnedFeeds if mUserOrderedPinnedFeeds is empty
+    const QList<FavoriteFeedView>& getUserOrderedPinnedFeeds() const;
+    void setUserOrderedPinnedFeeds(const QList<FavoriteFeedView>& favorites);
+    Q_INVOKABLE void clearUserOrderedPinnedFeed();
+
     Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
     Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& name) const;
 
@@ -70,10 +77,14 @@ signals:
     void searchPinned(QString name);
     void searchUnpinned(QString name);
     void updateSavedFeedsModelInProgressChanged();
+    void pinnedFeedsChanged();
+    void userOrderedPinnedFeedsChanged();
 
 private:
     void addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
     void addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
+    void addToUserOrderedPinnedFeeds(const FavoriteFeedView& favorite);
+    void removeFromUserOrderedPinnedFeeds(const FavoriteFeedView& favorite);
     void pinFeed(const GeneratorView& feed);
     void unpinFeed(const GeneratorView& feed);
     void pinList(const ListView& list);
@@ -95,6 +106,10 @@ private:
     void updateSavedListsModel();
     std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
     void saveSearchFeedsTo(UserSettings& settings) const;
+    void saveUserOrderedPinnedFeeds() const;
+    void initUserOrderedPinnedFeeds();
+    void set(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
+    void set(const SearchFeed::List& searchFeeds);
     void cleanupSettings();
 
     template<typename Container>
@@ -107,6 +122,11 @@ private:
     QList<GeneratorView> mSavedFeeds; // sorted by name
     QList<ListView> mSavedLists; // sorted by name
     QList<FavoriteFeedView> mPinnedFeeds; // sorted by name
+
+    // If this list is empty, then mPinnedFeeds is used for the UI
+    QList<FavoriteFeedView> mUserOrderedPinnedFeeds; // ordered by the user
+    bool mUserOrderedPinnedFeedsInitialized = false;
+
     int mSavedFeedsModelId = -1;
     int mSavedListsModelId = -1;
     bool mUpdateSavedFeedsModelInProgress = false;

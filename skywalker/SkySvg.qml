@@ -12,6 +12,7 @@ Shape {
 
     ShapePath {
         scale: Qt.size(shape.height / svg.width, shape.height / svg.height)
+        strokeWidth: Screen.devicePixelRatio > 1 ? 0.4 : 1
         strokeColor: shape.outlineColor
         fillColor: shape.color
         PathSvg { path: svg.path }

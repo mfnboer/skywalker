@@ -9,6 +9,9 @@ SkyPage {
     property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
     property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
     property int margin: 10
+    property var userSettings: skywalker.getUserSettings()
+    readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefined') ? currentViewItem.favoritesY : 0
+    readonly property int extraFooterMargin: viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
 
     id: page
 
@@ -19,105 +22,22 @@ SkyPage {
         viewStack.cover()
     }
 
-    header: PostFeedHeader {
-        skywalker: page.skywalker
-        feedName: skywalker.timelineModel.feedName
-        showAsHome: true
-        isHomeFeed: true
-        showMoreOptions: true
-
-        onAddUserView: page.addUserView()
-        onAddHashtagView: page.addHashtagView()
-        onAddFocusHashtagView: page.addFocusHashtagView()
-        onAddMediaView: page.showMediaView()
-        onAddVideoView: page.showVideoView()
-    }
-
-    footer: SkyFooter {
-        timeline: page
-        skywalker: page.skywalker
-        homeActive: true
-        onHomeClicked: currentViewItem.moveToHome()
-        onNotificationsClicked: root.viewNotifications()
-        onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
-        onMessagesClicked: root.viewChat()
-    }
-
-    TabBar {
-        property int numDots: 0
-
-        id: viewBar
-        z: guiSettings.headerZLevel
-        width: parent.width
-        contentHeight: 40
-        Material.background: guiSettings.backgroundColor
-        visible: count > 1
-
-        onCurrentItemChanged: currentItem.showDot = false
-
-        SkyTabWithCloseButton {
-            id: tabTimeline
-            text: qsTr("Full feed")
-            showCloseButton: false
-            onShowDotChanged: viewBar.numDots += showDot ? 1 : -1
-        }
-
-        function addTab(name, backgroundColor, profile) {
-            let component = Qt.createComponent("SkyTabWithCloseButton.qml")
-            let tab = component.createObject(viewBar, {
-                                                 text: name,
-                                                 backgroundColor: backgroundColor,
-                                                 profile: profile })
-            tab.onShowDotChanged.connect(() => viewBar.numDots += tab.showDot ? 1 : -1)
-            tab.onClosed.connect(() => page.closeView(tab))
-            addItem(tab)
-            setCurrentIndex(count - 1)
-        }
-
-        function updateTab(index, name, backgroundColor, profile) {
-            let item = itemAt(index)
-
-            if (!item) {
-                console.warn("Item does not exist:", index, name)
-                return
-            }
-
-            item.text = name
-            item.backgroundColor = backgroundColor
-            item.profile = profile
-        }
-    }
-
-    Rectangle {
-        id: viewBarSeparator
-        z: guiSettings.headerZLevel
-        anchors.top: viewBar.bottom
-        width: parent.width
-        height: visible ? 1 : 0
-        color: viewBar.numDots > 0 ? guiSettings.accentColor : guiSettings.separatorColor
-        visible: viewBar.visible
-    }
-
     StackLayout {
         property list<var> syncBackup: []
 
         id: viewStack
-        anchors.top: viewBar.visible ? viewBarSeparator.bottom : parent.top
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: parent.width
-        currentIndex: viewBar.currentIndex
+        currentIndex: 0
 
         TimelineView {
             id: timelineView
             Layout.preferredWidth: viewStack.width
             Layout.preferredHeight: viewStack.height
-            skywalker: page.skywalker
+            headerMargin: viewBar.visible && viewBar.position == TabBar.Header ? viewBar.height : 0
 
-            onNewPosts: {
-                if (!StackLayout.isCurrentItem)
-                    tabTimeline.showDot = true
-            }
+            skywalker: page.skywalker
 
             StackLayout.onIsCurrentItemChanged: {
                 if (!StackLayout.isCurrentItem)
@@ -133,14 +53,17 @@ SkyPage {
 
                 Layout.preferredWidth: viewStack.width
                 Layout.preferredHeight: viewStack.height
+                headerMargin: viewBar.position == TabBar.Header ? viewBar.height : 0
+
                 skywalker: page.skywalker
                 isView: true
                 model: modelData
 
-                onNewPosts: {
-                    if (!StackLayout.isCurrentItem) {
-                        viewBar.itemAt(StackLayout.index).showDot = true
-                    }
+                onUnreadPostsChanged: {
+                    let item = viewBar.itemAt(StackLayout.index)
+
+                    if (item)
+                        item.counter = unreadPosts
                 }
 
                 StackLayout.onIsCurrentItemChanged: {
@@ -158,7 +81,7 @@ SkyPage {
             syncBackup = []
 
             for (let i = 1; i < count; ++i) {
-                if (i == skipIndex)
+                if (i === skipIndex)
                     continue
 
                 const view = children[i]
@@ -192,9 +115,81 @@ SkyPage {
         }
     }
 
+    SkyTabBar {
+        id: viewBar
+        y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height
+        z: guiSettings.headerZLevel
+        width: parent.width
+        position: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP ? TabBar.Footer : TabBar.Header
+        Material.background: guiSettings.backgroundColor
+        visible: count > 2
+
+        onCurrentIndexChanged: {
+            if (currentIndex < 0)
+                return
+
+            if (currentIndex === count - 1)
+                Qt.callLater(() => setCurrentIndex(0))
+            else
+                viewStack.currentIndex = currentIndex
+        }
+
+        SkyTabWithCloseButton {
+            id: tabTimeline
+            text: qsTr("Full feed")
+            counter: timelineView.unreadPosts
+            showCloseButton: false
+
+            onPressAndHold: showTimelineViewsSorter()
+        }
+
+        SkySettingsTabButton {
+            visible: skywalker.timelineModel.filteredPostFeedModels.length > 1
+            onActivated: showTimelineViewsSorter()
+        }
+
+        function addTab(name, backgroundColor, profile) {
+            let item = viewStack.itemAt(count - 1)
+            const counter = item ? item.unreadPosts : 0
+
+            let component = Qt.createComponent("SkyTabWithCloseButton.qml")
+
+            // Creates with null parent, otherwise the button will be added
+            // immediately to the end of that tab bar
+            let tab = component.createObject(null, {
+                    text: name,
+                    backgroundColor: backgroundColor,
+                    profile: profile,
+                    counter: counter})
+            tab.onPressAndHold.connect(() => showTimelineViewsSorter())
+            tab.onClosed.connect(() => page.closeView(tab))
+            console.debug("Add tab:", count - 1, name)
+            insertItem(count - 1, tab) // Last item is the settings tab button
+            setCurrentIndex(count - 2)
+        }
+
+        function updateTab(index, name, backgroundColor, profile) {
+            let item = itemAt(index)
+
+            if (!item) {
+                console.warn("Item does not exist:", index, name)
+                return
+            }
+
+            item.text = name
+            item.backgroundColor = backgroundColor
+            item.profile = profile
+        }
+    }
+
     BusyIndicator {
         anchors.centerIn: parent
         running: !parent.enabled
+    }
+
+    function resetHeaderPosition() {
+        if (currentViewItem)
+            currentViewItem.resetHeaderPosition()
     }
 
     function setInSync(index, offsetY = 0) {
@@ -205,6 +200,11 @@ SkyPage {
         timelineView.stopSync()
     }
 
+    function moveToHome() {
+        if (currentViewItem)
+            currentViewItem.moveToHome()
+    }
+
     function moveToPost(index) {
         timelineView.moveToPost(index)
     }
@@ -213,37 +213,47 @@ SkyPage {
         timelineView.resumeTimeline(index, offsetY)
     }
 
+    function showTimelineViewsSorter() {
+        if (skywalker.timelineModel.filteredPostFeedModels.length < 2)
+            return
+
+        let component = guiSettings.createComponent("TimelineViewsSorter.qml")
+        let sorter = component.createObject(page, { timelineModel: skywalker.timelineModel })
+        sorter.onClosed.connect(() => { root.popStack() })
+        root.pushStack(sorter)
+    }
+
     function addUserView() {
-        let component = Qt.createComponent("AddUserTimelineView.qml")
+        let component = guiSettings.createComponent("AddUserTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })
         addViewPage.onSelected.connect((profile) => { // qmllint disable missing-property
                 page.showUserView(profile)
                 root.popStack()
         })
         addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
-        pushStack(addViewPage)
+        root.pushStack(addViewPage)
     }
 
     function addHashtagView() {
-        let component = Qt.createComponent("AddHashtagTimelineView.qml")
+        let component = guiSettings.createComponent("AddHashtagTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })
         addViewPage.onSelected.connect((hashtag) => { // qmllint disable missing-property
                 page.showHashtagView(hashtag)
                 root.popStack()
         })
         addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
-        pushStack(addViewPage)
+        root.pushStack(addViewPage)
     }
 
     function addFocusHashtagView() {
-        let component = Qt.createComponent("AddFocusHashtagTimelineView.qml")
+        let component = guiSettings.createComponent("AddFocusHashtagTimelineView.qml")
         let addViewPage = component.createObject(page, { skywalker: skywalker })
         addViewPage.onSelected.connect((focusHashtagEntry) => { // qmllint disable missing-property
                 page.showFocusHashtagView(focusHashtagEntry)
                 root.popStack()
         })
         addViewPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
-        pushStack(addViewPage)
+        root.pushStack(addViewPage)
     }
 
     function showUserView(profile) {

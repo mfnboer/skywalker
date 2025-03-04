@@ -6,12 +6,14 @@ ThumbImageView {
     required property int maxHeight
     property bool tileMode: false
     property bool noCrop: false
+    readonly property bool isPortrait: root.width <= root.height
 
-    width: tileMode ? maxWidth : Math.min(implicitWidth, maxWidth)
-    height: tileMode ? maxHeight : undefined
+    width: tileMode ? maxWidth : (isPortrait ? Math.min(implicitWidth, maxWidth) : undefined)
+    height: tileMode ? maxHeight : (isPortrait ? undefined : Math.min(implicitHeight, maxHeight))
     fillMode: Image.PreserveAspectFit
     imageView: image
-    sourceSize.width: width * Screen.devicePixelRatio
+    sourceSize.width: isPortrait ? width * Screen.devicePixelRatio : undefined
+    sourceSize.height: isPortrait ? undefined : height * Screen.devicePixelRatio
     smooth: false
 
     onStatusChanged: {

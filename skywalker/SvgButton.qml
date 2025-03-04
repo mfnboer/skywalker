@@ -12,6 +12,8 @@ RoundButton {
     id: button
     Material.background: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
     display: AbstractButton.TextOnly
+    icon.name: ""
+    icon.source: ""
 
     Accessible.role: Accessible.Button
     Accessible.name: accessibleName

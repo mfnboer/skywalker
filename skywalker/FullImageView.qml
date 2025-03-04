@@ -6,6 +6,7 @@ import skywalker
 SkyPage {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
+    property bool showControls: true
 
     signal closed
     signal saveImage(string sourceUrl)
@@ -75,6 +76,12 @@ SkyPage {
                     source: images[index].fullSizeUrl
                     reloadIconColor: "white"
                 }
+
+                MouseArea {
+                    width: parent.width
+                    height: parent.height
+                    onClicked: showControls = !showControls
+                }
             }
         }
     }
@@ -85,6 +92,7 @@ SkyPage {
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
+        visible: showControls
         onClicked: page.closed()
     }
 
@@ -96,6 +104,7 @@ SkyPage {
         opacity: 0.7
         svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
+        visible: showControls
         onClicked: moreMenu.open()
 
         Menu {
@@ -131,19 +140,21 @@ SkyPage {
         skywalker: root.getSkywalker()
     }
 
-    function setNavigationBarColor() {
+    function setSystemBarsColor() {
         displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setStatusBarColorAndMode(guiSettings.fullScreenColor, false)
     }
 
-    function resetNavigationBarColor() {
+    function resetSystemBarsColor() {
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setStatusBarColor(guiSettings.headerColor)
     }
 
     Component.onDestruction: {
-        resetNavigationBarColor()
+        resetSystemBarsColor()
     }
 
     Component.onCompleted: {
-        setNavigationBarColor()
+        setSystemBarsColor()
     }
 }

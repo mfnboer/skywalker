@@ -7,12 +7,6 @@ import skywalker
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
 
-    // Map for pinned feeds
-    // GeneratorView.uri -> PostFeedView
-    // ListView.uri      -> PostFeedView
-    // SearchFeed.name   -> SearchFeedView
-    property var feedViews: new Map()
-
     id: root
     width: 480
     height: 960
@@ -47,10 +41,7 @@ ApplicationWindow {
 
             event.accepted = false
 
-            // TODO: need something better than this
-            if (item instanceof ComposePost || item instanceof EditList ||
-                item instanceof EditProfile || item instanceof MediaFeedView)
-            {
+            if (typeof item.cancel == 'function') {
                 item.cancel()
                 return
             }
@@ -68,6 +59,10 @@ ApplicationWindow {
         else if (stackLayout.currentIndex !== stackLayout.timelineIndex) {
             event.accepted = false
             viewTimeline()
+        }
+        else if (favoritesTabBar.currentIndex !== 0) {
+            event.accepted = false
+            favoritesTabBar.setCurrentIndex(0)
         }
         else if (displayUtils.sendAppToBackground()) {
             event.accepted = false
@@ -91,6 +86,76 @@ ApplicationWindow {
         y: guiSettings.headerHeight
     }
 
+    FavoritesTabBar {
+        property var favoritesSwipeView
+        property bool favoritesSwipeViewVisible: false
+        property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
+
+        id: favoritesTabBar
+        y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
+        z: guiSettings.headerZLevel - 1
+        width: parent.width
+        position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
+        favoriteFeeds: skywalker.favoriteFeeds
+        visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
+
+        onCurrentIndexChanged: {
+            if (currentIndex < 0)
+                return
+
+            const item = contentChildren[currentIndex]
+
+            if (item && item instanceof SkySettingsTabButton) {
+                if (favoritesSwipeView)
+                    Qt.callLater(() => { setCurrentIndex(favoritesSwipeView.currentIndex) })
+                else
+                    Qt.callLater(() => { setCurrentIndex(0) })
+            }
+            else if (favoritesSwipeView) {
+                favoritesSwipeView.setCurrentIndex(currentIndex)
+            }
+        }
+
+        function update() {
+            let userSettings = skywalker.getUserSettings()
+            let view = currentStackItem()
+            favoritesSwipeViewVisible = (view instanceof FavoritesSwipeView)
+        }
+    }
+
+    footer: SkyFooter {
+        property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+
+        timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
+        skywalker: root.getSkywalker()
+        homeActive: true
+        extraFooterMargin: getExtraFooterMargin()
+        onHomeClicked: favoritesSwipeView.currentView.moveToHome()
+        onNotificationsClicked: viewNotifications()
+        onSearchClicked: viewSearchView()
+        onFeedsClicked: viewFeedsView()
+        onMessagesClicked: viewChat()
+        visible: favoritesTabBar.favoritesSwipeViewVisible
+
+        function getExtraFooterMargin() {
+            if (favoritesTabBar.position == TabBar.Footer)
+                return favoritesTabBar.visible ? y - favoritesTabBar.y : 0
+            else
+                return favoritesSwipeView && favoritesSwipeView.currentView ? favoritesSwipeView.currentView.extraFooterMargin : 0
+        }
+    }
+
+    function isFavoritesTabBarVisible() {
+        return favoritesTabBar.visible
+    }
+
+    function showFavoritesSorter() {
+        let component = guiSettings.createComponent("FavoritesSorter.qml")
+        let page = component.createObject(root, { favoriteFeeds: skywalker.favoriteFeeds })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
+    }
+
     function clearStatusMessage() {
         statusPopup.close()
     }
@@ -107,6 +172,9 @@ ApplicationWindow {
     function showLastViewedFeed() {
         let userSettings = skywalker.getUserSettings()
         const lastViewed = userSettings.getLastViewedFeed(skywalker.getUserDid())
+
+        console.debug("Show last viewed feed:", lastViewed)
+        getFavoritesSwipeView().trackLastViewedFeed = true
 
         if (lastViewed === "home")
             return
@@ -129,18 +197,7 @@ ApplicationWindow {
 
     function showFavorite(favorite) {
         console.debug("Show favorite:", favorite)
-
-        switch (favorite.type) {
-        case QEnums.FAVORITE_FEED:
-            viewFeed(favorite.generatorView)
-            break
-        case QEnums.FAVORITE_LIST:
-            viewListFeed(favorite.listView)
-            break
-        case QEnums.FAVORITE_SEARCH:
-            viewSearchFeed(favorite.searchFeed)
-            break
-        }
+        favoritesTabBar.setCurrent(favorite)
     }
 
     Skywalker {
@@ -469,6 +526,8 @@ ApplicationWindow {
 
             if (currentItem && typeof currentItem.uncover === 'function')
                 currentItem.uncover()
+
+            favoritesTabBar.update()
         }
 
         StackView {
@@ -1147,6 +1206,7 @@ ApplicationWindow {
     function signOutCurrentUser() {
         skywalker.stopTimelineAutoUpdate()
         getTimelineView().stopSync()
+        getFavoritesSwipeView().reset()
         unwindStack()
         destroySearchView()
         destroyFeedsView()
@@ -1497,7 +1557,6 @@ ApplicationWindow {
 
     function viewTimeline() {
         stackLayout.currentIndex = stackLayout.timelineIndex
-        skywalker.saveLastViewedFeed("home")
     }
 
     function viewNotifications() {
@@ -1579,12 +1638,6 @@ ApplicationWindow {
             item.forceDestroy()
             feedsStack.clear()
         }
-
-        for (let view of feedViews.values()) {
-            view.forceDestroy()
-        }
-
-        feedViews.clear()
     }
 
     function viewFeedsView() {
@@ -1599,101 +1652,7 @@ ApplicationWindow {
     function viewHomeFeed() {
         viewTimeline()
         unwindStack()
-    }
-
-    function viewFeed(generatorView) {
-        let view = null
-
-        if (root.feedViews.has(generatorView.uri)) {
-            view = feedViews.get(generatorView.uri)
-            const visibleItem = currentStackItem()
-
-            if (visibleItem === view)
-            {
-                console.debug("Feed already showing:", generatorView.displayName)
-                return
-            }
-
-            if (view.atYBeginning) {
-                console.debug("Reload feed:", generatorView.displayName)
-                skywalker.getFeed(view.modelId)
-            }
-        }
-        else {
-            const modelId = skywalker.createPostFeedModel(generatorView)
-            skywalker.getFeed(modelId)
-            let component = guiSettings.createComponent("PostFeedView.qml")
-            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
-            feedViews.set(generatorView.uri, view)
-        }
-
-        viewTimeline()
-        unwindStack()
-        pushStack(view)
-        skywalker.saveLastViewedFeed(generatorView.uri)
-    }
-
-    function viewListFeed(listView) {
-        let view = null
-
-        console.debug("uri:", listView.uri, "feedViews:", root.feedViews.size)
-        if (root.feedViews.has(listView.uri)) {
-            view = feedViews.get(listView.uri)
-            const visibleItem = currentStackItem()
-
-            if (visibleItem === view)
-            {
-                console.debug("List feed already showing:", listView.name)
-                return
-            }
-
-            if (view.atYBeginning) {
-                console.debug("Reload list feed:", listView.name)
-                skywalker.syncListFeed(view.modelId)
-            }
-        }
-        else {
-            const modelId = skywalker.createPostFeedModel(listView)
-            let component = guiSettings.createComponent("PostFeedView.qml")
-            view = component.createObject(root, { skywalker: skywalker, modelId: modelId, showAsHome: true })
-            feedViews.set(listView.uri, view)
-            skywalker.syncListFeed(modelId)
-        }
-
-        viewTimeline()
-        unwindStack()
-        pushStack(view)
-        skywalker.saveLastViewedFeed(listView.uri)
-    }
-
-    function viewSearchFeed(searchFeed) {
-        let view = null
-
-        if (root.feedViews.has(searchFeed.name)) {
-            view = feedViews.get(searchFeed.name)
-            const visibleItem = currentStackItem()
-
-            if (visibleItem === view)
-            {
-                console.debug("Feed already showing:", searchFeed.name)
-                return
-            }
-
-            if (view.atYBeginning) {
-                console.debug("Reload feed:", searchFeed.name)
-                view.search()
-            }
-        }
-        else {
-            let component = Qt.createComponent("SearchFeedView.qml")
-            view = component.createObject(root, { skywalker: skywalker, searchFeed: searchFeed, showAsHome: true })
-            feedViews.set(searchFeed.name, view)
-        }
-
-        viewTimeline()
-        unwindStack()
-        pushStack(view)
-        skywalker.saveLastViewedFeed(searchFeed.name)
+        favoritesTabBar.setCurrentIndex(0)
     }
 
     function viewPostFeed(feed) {
@@ -1831,6 +1790,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function editChatSettings() {
+        let component = guiSettings.createComponent("SettingsForm.qml")
+        let form = component.createObject(root, { allVisible: false, onlyChatVisible: true })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(form)
+    }
+
     function editContentFilterSettings() {
         let component = Qt.createComponent("ContentFilterSettings.qml")
         let contentGroupListModel = skywalker.getGlobalContentGroupListModel()
@@ -1903,8 +1869,12 @@ ApplicationWindow {
         Qt.openUrlExternally(url)
     }
 
-    function getTimelineView() {
+    function getFavoritesSwipeView() {
         return timelineStack.get(0)
+    }
+
+    function getTimelineView() {
+        return getFavoritesSwipeView().itemAt(0)
     }
 
     function getNotificationView() {
@@ -1941,15 +1911,17 @@ ApplicationWindow {
 
         let item = stack.pop()
 
+        // TODO: can we delete this?
         // PostFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
-        if (!((item instanceof PostFeedView ||
-               item instanceof SearchFeedView) && item.showAsHome))
-        {
-            item.destroy()
-        }
-        else if (item instanceof PostFeedView && item.showAsHome) {
-            item.deactivate()
-        }
+        // if (!((item instanceof PostFeedView ||
+        //        item instanceof SearchFeedView) && item.showAsHome))
+        // {
+        //     item.destroy()
+        // }
+        // else if (item instanceof PostFeedView && item.showAsHome) {
+        //     item.deactivate()
+        // }
+        item.destroy()
 
         if (stack === currentStack()) {
             let currentItem = currentStackItem()
@@ -1957,6 +1929,8 @@ ApplicationWindow {
             if (currentItem && typeof currentItem.uncover === 'function')
                 currentItem.uncover()
         }
+
+        favoritesTabBar.update()
     }
 
     function pushStack(item, operation) {
@@ -1967,9 +1941,12 @@ ApplicationWindow {
 
         currentStack().push(item, operation)
 
-        if (item instanceof PostFeedView && item.showAsHome) {
-            item.activate()
-        }
+        // TODO: delete? if so, do we still need that activate/deactivate stuff?
+        // if (item instanceof PostFeedView && item.showAsHome) {
+        //     item.activate()
+        // }
+
+        favoritesTabBar.update()
     }
 
     function unwindStack(stack = null) {
@@ -2009,6 +1986,7 @@ ApplicationWindow {
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setStatusBarColor(guiSettings.headerColor)
 
         // Refreshing the models makes them format text with the new colors (e.g. link color)
         if (oldDisplayMode !== newDisplayMode)
@@ -2039,24 +2017,9 @@ ApplicationWindow {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    function feedFavoriteDeleted(feedKey) {
-        console.debug("Favorite deleted:", feedKey)
-
-        if (!feedViews.has(feedKey))
-            return
-
-        if (getStackTopItem(timelineStack) === feedViews.get(feedKey))
-            unwindStack(timelineStack)
-
-        feedViews.delete(feedKey)
-    }
-
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
-        skywalker.favoriteFeeds.onSearchUnpinned.connect(feedFavoriteDeleted)
-        skywalker.favoriteFeeds.onFeedUnpinned.connect(feedFavoriteDeleted)
-        skywalker.favoriteFeeds.onListUnpinned.connect(feedFavoriteDeleted)
     }
 
     Component.onCompleted: {
@@ -2068,9 +2031,11 @@ ApplicationWindow {
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
 
-        let timelineComponent = guiSettings.createComponent("TimelinePage.qml")
+        let timelineComponent = guiSettings.createComponent("FavoritesSwipeView.qml")
         let timelinePage = timelineComponent.createObject(root, { skywalker: skywalker })
+        timelinePage.onCurrentIndexChanged.connect(() => { favoritesTabBar.setCurrentIndex(timelinePage.currentIndex) })
         timelineStack.push(timelinePage)
+        favoritesTabBar.favoritesSwipeView = timelinePage
 
         let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,
@@ -2082,6 +2047,8 @@ ApplicationWindow {
         let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
         chatView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
         chatStack.push(chatView)
+
+        favoritesTabBar.update()
 
         initHandlers()
 

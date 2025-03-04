@@ -35,7 +35,7 @@ SkyPage {
             text: qsTr("Global content filters")
         }
 
-        AccessibleSwitch {
+        AccessibleCheckBox {
             anchors.top: globalContentFilters.bottom
             anchors.topMargin: 10
             bottomPadding: 20

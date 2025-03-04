@@ -66,37 +66,33 @@ Dialog {
         rowSpacing: 0
         columns: 2
 
-        RadioButton {
+        SkyRoundRadioButton {
             id: foreverButton
             text: qsTr("Forever")
-            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
                     expiresAt = nullDate
             }
         }
-        RadioButton {
+        SkyRoundRadioButton {
             text: qsTr("24 hours")
-            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
                     setExpiresAtDays(1)
             }
         }
-        RadioButton {
+        SkyRoundRadioButton {
             text: qsTr("7 days")
-            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
                     setExpiresAtDays(7)
             }
         }
-        RadioButton {
+        SkyRoundRadioButton {
             text: qsTr("30 days")
-            display: AbstractButton.TextOnly
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
                 if (checked)
@@ -107,10 +103,9 @@ Dialog {
         RowLayout {
             Layout.columnSpan: 2
 
-            RadioButton {
+            SkyRoundRadioButton {
                 id: untilButton
                 text: qsTr("Until:")
-                display: AbstractButton.TextOnly
                 ButtonGroup.group: durationGroup
             }
             SkyTextInput {
@@ -129,7 +124,7 @@ Dialog {
         }
     }
 
-    AccessibleSwitch {
+    AccessibleCheckBox {
         id: excludeFollowsSwitch
         anchors.top: durationGrid.bottom
         anchors.topMargin: 10

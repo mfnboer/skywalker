@@ -6,6 +6,7 @@ import skywalker
 
 SvgButton {
     required property var skywalker
+    property list<favoritefeedview> favorites: skywalker.favoriteFeeds.userOrderedPinnedFeeds
 
     iconColor: guiSettings.headerTextColor
     Material.background: "transparent"
@@ -110,9 +111,33 @@ SvgButton {
             }
         }
 
-        onAboutToShow: {
-            let favorites = skywalker.favoriteFeeds.getPinnedFeeds()
+        AccessibleMenuItem {
+            contentItem: Text {
+                verticalAlignment: Text.AlignVCenter
+                rightPadding: settingsIcon.width + 5
+                color: guiSettings.textColor
+                elide: Text.ElideRight
+                text: qsTr("Sort favorites")
+            }
 
+            SkySvg {
+                id: settingsIcon
+                y: height + 5
+                anchors.rightMargin: 10
+                anchors.right: parent.right
+                width: height
+                height: parent.height - 10
+                color: guiSettings.buttonColor
+                svg: SvgFilled.settings
+            }
+
+            visible: favorites.length > 1
+            onTriggered: { highlighted = false; root.showFavoritesSorter() }
+
+            Accessible.name: contentItem.text
+        }
+
+        onAboutToShow: {
             if (!compareFavorites(favorites))
                 menuInstantiator.model = favorites
         }
@@ -132,5 +157,4 @@ SvgButton {
             return true
         }
     }
-
 }

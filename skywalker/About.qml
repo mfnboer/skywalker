@@ -35,7 +35,7 @@ SkyPage {
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             color: "white"
-            text: "\u00A9 2024 Michel de Boer"
+            text: "\u00A9 2025 Michel de Boer"
         }
         Text {
             id: handle
@@ -81,4 +81,18 @@ SkyPage {
         }
     }
 
+    DisplayUtils {
+        id: displayUtils
+        skywalker: root.getSkywalker()
+    }
+
+    Component.onDestruction: {
+        displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+        displayUtils.setStatusBarColor(guiSettings.headerColor)
+    }
+
+    Component.onCompleted: {
+        displayUtils.setNavigationBarColorAndMode(guiSettings.skywalkerLogoColor, false)
+        displayUtils.setStatusBarColorAndMode(guiSettings.skywalkerLogoColor, false)
+    }
 }

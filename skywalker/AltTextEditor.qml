@@ -68,6 +68,7 @@ SkyPage {
                 width: 34
                 height: width
                 svg: SvgOutline.moreVert
+                iconColor: enabled ? guiSettings.buttonTextColor : guiSettings.disabledColor
                 accessibleName: qsTr("change script to extract")
                 enabled: extractButton.enabled
                 onClicked: moreMenu.open()
@@ -167,6 +168,11 @@ SkyPage {
 
     VirtualKeyboardHandler {
         id: keyboardHandler
+    }
+
+    // Catch the Android back button
+    function cancel() {
+        altTextChanged(page.text)
     }
 
     Component.onCompleted: {

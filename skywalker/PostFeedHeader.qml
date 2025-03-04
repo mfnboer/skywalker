@@ -17,6 +17,9 @@ Rectangle {
     property bool showPostWithMissingLanguage: true
     property bool showMoreOptions: false
     property bool showViewOptions: false
+    property bool showFavoritesPlaceHolder: false
+    property int bottomMargin: 0
+    readonly property int favoritesY: favoritesPlaceHolder.y
 
     signal closed
     signal feedAvatarClicked
@@ -29,7 +32,7 @@ Rectangle {
 
     id: header
     width: parent.width
-    height: guiSettings.headerHeight
+    height: headerRow.height + (showFavoritesPlaceHolder ? favoritesPlaceHolder.height : 0) + bottomMargin
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
@@ -41,20 +44,18 @@ Rectangle {
         height: guiSettings.headerHeight
         spacing: 0
 
-        SvgButton {
+        SvgPlainButton {
             id: backButton
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
             visible: !showAsHome
 
             onClicked: header.closed()
         }
-        SvgButton {
+        SvgPlainButton {
             id: moreButton
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             svg: SvgOutline.menu
             accessibleName: qsTr("more options")
             visible: showMoreOptions
@@ -65,9 +66,6 @@ Rectangle {
                 id: moreMenu
                 modal: true
                 width: focusMenuItem.width
-
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
 
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")
@@ -161,19 +159,17 @@ Rectangle {
             }
         }
 
-        SvgButton {
+        SvgPlainButton {
             svg: SvgOutline.language
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             accessibleName: qsTr("language filter active")
             visible: showLanguageFilter
             onClicked: showLanguageFilterDetails()
         }
 
-        SvgButton {
+        SvgPlainButton {
             svg: guiSettings.getContentModeSvg(contentMode)
             iconColor: guiSettings.headerTextColor
-            Material.background: "transparent"
             accessibleName: qsTr("view mode")
             visible: showViewOptions
 
@@ -279,6 +275,14 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: favoritesPlaceHolder
+        anchors.top: headerRow.bottom
+        width: parent.width
+        height: guiSettings.tabBarHeight
+        color: guiSettings.backgroundColor
+        visible: showFavoritesPlaceHolder
+    }
 
     function showLanguageFilterDetails() {
         let languageList = []

@@ -30,7 +30,7 @@ Drawer {
                 text: qsTr("Switch Account")
             }
 
-            SvgButton {
+            SvgPlainButton {
                 id: closeButton
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter

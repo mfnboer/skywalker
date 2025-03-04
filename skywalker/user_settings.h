@@ -27,6 +27,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QString linkColor READ getLinkColor WRITE setLinkColor NOTIFY linkColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
+    Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
@@ -128,6 +129,9 @@ public:
     Q_INVOKABLE void setFeedHideReplies(const QString& did, const QString& feedUri, bool hide);
     Q_INVOKABLE bool getFeedHideReplies(const QString& did, const QString& feedUri) const;
     QStringList getFeedHideRepliesUris(const QString& did) const;
+
+    void setUserOrderedPinnedFeeds(const QString& did, QStringList favoriteKeys);
+    QStringList getUserOrderedPinnedFeed(const QString& did) const;
     // [FAVORITES]
 
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
@@ -165,6 +169,9 @@ public:
     Q_INVOKABLE void resetThreadColor();
     void setThreadColor(const QString& color);
     QString getThreadColor() const;
+
+    void setFavoritesBarPosition(QEnums::FavoritesBarPosition position);
+    QEnums::FavoritesBarPosition getFavoritesBarPosition() const;
 
     Q_INVOKABLE void setPostButtonRelativeX(double x);
     Q_INVOKABLE double getPostButtonRelativeX() const;
@@ -313,6 +320,7 @@ signals:
     void linkColorChanged();
     void threadStyleChanged();
     void threadColorChanged();
+    void favoritesBarPositionChanged();
     void giantEmojisChanged();
     void videoSoundChanged();
     void videoAutoPlayChanged();
