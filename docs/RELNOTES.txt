@@ -1,5 +1,6 @@
 next
 ====
+* Highlight post age when it is more than 1 month
 * Bug fixes
 
 4.0

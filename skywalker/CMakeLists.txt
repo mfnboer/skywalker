@@ -490,6 +490,7 @@ qt_add_qml_module(libskywalker
         QML_FILES DragDropRectangle.qml
         QML_FILES TimelineViewsSorter.qml
         QML_FILES SkySettingsTabButton.qml
+        QML_FILES DurationLabel.qml
 )
 
 if (NOT ANDROID)

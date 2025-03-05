@@ -36,25 +36,22 @@ Column {
             active: true
             asynchronous: true
 
-            sourceComponent: Row {
+            sourceComponent: RowLayout {
                 spacing: 10
                 width: parent.width
 
                 SkyCleanedTextLine {
-                    width: parent.width - durationText.width - parent.spacing
+                    Layout.fillWidth: true
                     elide: Text.ElideRight
                     plainText: author.name
                     font.bold: true
                     color: guiSettings.textColor
-
                     Accessible.ignored: true
                 }
-                Text {
+                DurationLabel {
                     id: durationText
-                    text: guiSettings.durationToString(postIndexedSecondsAgo)
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    color: Material.color(Material.Grey)
-
+                    Layout.alignment: Qt.AlignVCenter
+                    durationSeconds: postIndexedSecondsAgo
                     Accessible.ignored: true
                 }
             }
@@ -67,7 +64,6 @@ Column {
             text: "@" + author.handle
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
-
             Accessible.ignored: true
         }
     }

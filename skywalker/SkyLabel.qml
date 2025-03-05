@@ -4,8 +4,10 @@ import QtQuick.Controls
 Label {
     property string backgroundColor: guiSettings.labelColor
     property double backgroundOpacity: 1.0
+    property double labelFontHeight: guiSettings.labelFontHeight
+    property double labelHeight: guiSettings.labelHeight
 
-    topPadding: (guiSettings.labelHeight - guiSettings.labelFontHeight) / 2
+    topPadding: (labelHeight - labelFontHeight) / 2
     bottomPadding: topPadding
     leftPadding: 2
     rightPadding: 2
