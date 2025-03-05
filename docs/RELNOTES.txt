@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.0
 ===
 * Tab bar for favorite feeds

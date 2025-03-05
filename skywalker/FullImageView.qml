@@ -37,6 +37,11 @@ SkyPage {
                 id: imgRect
                 color: guiSettings.fullScreenColor
 
+                MouseArea {
+                    width: parent.width
+                    height: parent.height
+                    onClicked: showControls = !showControls
+                }
                 Flickable {
                     id: altFlick
                     anchors.bottom: parent.bottom
@@ -75,12 +80,6 @@ SkyPage {
                     fillMode: Image.PreserveAspectFit
                     source: images[index].fullSizeUrl
                     reloadIconColor: "white"
-                }
-
-                MouseArea {
-                    width: parent.width
-                    height: parent.height
-                    onClicked: showControls = !showControls
                 }
             }
         }
