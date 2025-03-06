@@ -2024,6 +2024,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)
+        console.debug("Screen:", Screen.width, "x", Screen.height)
         console.debug("Font pt:", Qt.application.font.pointSize) // qmllint disable missing-property
         console.debug("Font px:", Qt.application.font.pixelSize)
         console.debug(Qt.fontFamilies());

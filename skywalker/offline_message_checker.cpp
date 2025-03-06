@@ -98,6 +98,8 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
 
 namespace Skywalker {
 
+bool OffLineMessageChecker::sNotificationPermissionGranted = false;
+
 const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNELS = {
     {
         CHANNEL_POST,
@@ -581,7 +583,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     createNotification(channelId, notification.getAuthor(), msg, when, iconType);
 }
 
-bool OffLineMessageChecker::checkNotificationPermission()
+void OffLineMessageChecker::checkNotificationPermission()
 {
 #if defined(Q_OS_ANDROID)
     static const QString POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS";
@@ -591,27 +593,33 @@ bool OffLineMessageChecker::checkNotificationPermission()
     if (osVersion < QOperatingSystemVersion::Android13)
     {
         qDebug() << "Android version:" << osVersion;
-        return true;
+        sNotificationPermissionGranted = true;
     }
 
     if (!AndroidUtils::checkPermission(POST_NOTIFICATIONS))
     {
         qDebug() << "No permission:" << POST_NOTIFICATIONS;
-        return false;
+        sNotificationPermissionGranted = false;
     }
 
-    return true;
+    sNotificationPermissionGranted = true;
 #else
-    return false;
+    sNotificationPermissionGranted = false;
 #endif
 }
 
 void OffLineMessageChecker::start(bool wifiOnly)
 {
 #if defined(Q_OS_ANDROID)
-    if (!checkNotificationPermission())
+    // Do not peroform the permission check here. It seems that sometimes
+    // crashes when the app is going into pause mode.
+    if (!sNotificationPermissionGranted)
+    {
+        qDebug() << "No permission to send notifications";
         return;
+    }
 
+    qDebug() << "Start offline message checker";
     jboolean jWifiOnly = wifiOnly;
 
     QJniObject::callStaticMethod<void>(

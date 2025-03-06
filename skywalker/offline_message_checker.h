@@ -34,10 +34,11 @@ public:
     static const std::vector<NotificationChannel> NOTIFCATION_CHANNELS;
 
     // Start background process that periodically checks for new messages.
+    // checkNotificationPermission must have been called before.
     static void start(bool wifiOnly);
 
     static void createNotificationChannels();
-    static bool checkNotificationPermission();
+    static void checkNotificationPermission();
 
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
     explicit OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop);
@@ -71,6 +72,8 @@ private:
     void createNotifications();
     void createNotification(const Notification& notification);
     void createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType);
+
+    static bool sNotificationPermissionGranted;
 
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;
