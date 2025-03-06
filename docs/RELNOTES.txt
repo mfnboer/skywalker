@@ -1,5 +1,5 @@
-next
-====
+4.0.1
+=====
 * Highlight post age when it is more than 1 month
 * Setting to show/hide reposted posts from followed users
 * Bug fixes
