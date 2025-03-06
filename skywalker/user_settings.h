@@ -244,6 +244,9 @@ public:
     Q_INVOKABLE bool getShowQuotesWithBlockedPost(const QString& did) const;
     Q_INVOKABLE void setShowQuotesWithBlockedPost(const QString& did, bool show);
 
+    Q_INVOKABLE bool getShowFollowedReposts(const QString& did) const;
+    Q_INVOKABLE void setShowFollowedReposts(const QString& did, bool show);
+
     Q_INVOKABLE bool getShowSelfReposts(const QString& did) const;
     Q_INVOKABLE void setShowSelfReposts(const QString& did, bool show);
 

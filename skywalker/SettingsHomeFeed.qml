@@ -50,6 +50,13 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Show reposted posts from followed users")
+        checked: userSettings.getShowFollowedReposts(userDid)
+        onCheckedChanged: userSettings.setShowFollowedReposts(userDid, checked)
+        enabled: showRepostsSwitch.checked
+    }
+
+    AccessibleCheckBox {
         text: qsTr("Show self-reposts")
         checked: userSettings.getShowSelfReposts(userDid)
         onCheckedChanged: userSettings.setShowSelfReposts(userDid, checked)

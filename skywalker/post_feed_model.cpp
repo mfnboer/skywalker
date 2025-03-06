@@ -870,12 +870,20 @@ bool PostFeedModel::mustHideContent(const Post& post) const
     if (AbstractPostFeedModel::mustHideContent(post))
         return true;
 
-    if (post.isRepost() && !mUserSettings.getShowSelfReposts(mUserDid))
+    if (post.isRepost())
     {
         const auto repostedBy = post.getRepostedBy();
 
         if (repostedBy->getDid() == post.getAuthorDid())
-            return true;
+        {
+            if (!mUserSettings.getShowSelfReposts(mUserDid))
+                return true;
+        }
+        else if (!mUserSettings.getShowFollowedReposts(mUserDid))
+        {
+            if (mFollowing.contains(post.getAuthorDid()))
+                return true;
+        }
     }
 
     // All posts should be video posts in a video feed.

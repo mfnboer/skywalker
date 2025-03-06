@@ -920,6 +920,16 @@ void UserSettings::setShowQuotesWithBlockedPost(const QString& did, bool show)
     mSettings.setValue(key(did, "showQuotesWithBlockedPost"), show);
 }
 
+bool UserSettings::getShowFollowedReposts(const QString& did) const
+{
+    return mSettings.value(key(did, "showFollowedReposts"), true).toBool();
+}
+
+void UserSettings::setShowFollowedReposts(const QString& did, bool show)
+{
+    mSettings.setValue(key(did, "showFollowedReposts"), show);
+}
+
 bool UserSettings::getShowSelfReposts(const QString& did) const
 {
     return mSettings.value(key(did, "showSelfReposts"), true).toBool();

@@ -1,6 +1,7 @@
 next
 ====
 * Highlight post age when it is more than 1 month
+* Setting to show/hide reposted posts from followed users
 * Bug fixes
 
 4.0
