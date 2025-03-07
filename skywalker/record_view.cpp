@@ -227,12 +227,22 @@ QList<ImageView> RecordView::getImages() const
 
 QVariant RecordView::getVideo() const
 {
+    auto videoView = getVideoView();
+
+    if (!videoView)
+        return {};
+
+    return QVariant::fromValue(*videoView.release());
+}
+
+VideoView::Ptr RecordView::getVideoView() const
+{
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW);
 
     if (embed)
     {
         const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(embed->mEmbed);
-        return QVariant::fromValue(VideoView(videoView));
+        return std::make_unique<VideoView>(videoView);
     }
 
     embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
@@ -246,17 +256,27 @@ QVariant RecordView::getVideo() const
         return {};
 
     const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia);
-    return QVariant::fromValue(VideoView(videoView));
+    return std::make_unique<VideoView>(videoView);
 }
 
 QVariant RecordView::getExternal() const
+{
+    auto externalView = getExternalView();
+
+    if (!externalView)
+        return {};
+
+    return QVariant::fromValue(*externalView.release());
+}
+
+ExternalView::Ptr RecordView::getExternalView() const
 {
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW);
 
     if (embed)
     {
         const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mEmbed)->mExternal;
-        return QVariant::fromValue(ExternalView(external));
+        return std::make_unique<ExternalView>(external);
     }
 
     embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
@@ -270,7 +290,7 @@ QVariant RecordView::getExternal() const
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia)->mExternal;
-    return QVariant::fromValue(ExternalView(external));
+    return std::make_unique<ExternalView>(external);
 }
 
 const ContentLabelList& RecordView::getContentLabels() const

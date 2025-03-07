@@ -69,9 +69,12 @@ public:
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
-    QList<ImageView> getImages() const;
+    QList<ImageView> getImages() const override;
     QVariant getVideo() const;
+    VideoView::Ptr getVideoView() const override;
+
     QVariant getExternal() const;
+    ExternalView::Ptr getExternalView() const override;
     const ContentLabelList& getContentLabels() const;
     const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
     const ContentLabelList& getLabelsIncludingAuthorLabels() const;

@@ -24,7 +24,36 @@ const std::unordered_set<QString>& NormalizedWordIndex::getUniqueHashtags() cons
 const std::vector<QString>& NormalizedWordIndex::getNormalizedWords() const
 {
     if (mNormalizedWords.empty())
-        const_cast<NormalizedWordIndex*>(this)->mNormalizedWords = SearchUtils::getNormalizedWords(getText());
+    {
+        auto& normalizeWords = const_cast<NormalizedWordIndex*>(this)->mNormalizedWords;
+        normalizeWords = SearchUtils::getNormalizedWords(getText());
+
+        const auto& imageViews = getImages();
+
+        for (const auto& imageView : imageViews)
+        {
+            const auto normalizedAlt = SearchUtils::getNormalizedWords(imageView.getAlt());
+            normalizeWords.insert(normalizeWords.end(), normalizedAlt.begin(), normalizedAlt.end());
+        }
+
+        const auto& videoView = getVideoView();
+
+        if (videoView)
+        {
+            const auto normalizedAlt = SearchUtils::getNormalizedWords(videoView->getAlt());
+            normalizeWords.insert(normalizeWords.end(), normalizedAlt.begin(), normalizedAlt.end());
+        }
+
+        const auto& externalView = getExternalView();
+
+        if (externalView)
+        {
+            const auto normalizedTitle = SearchUtils::getNormalizedWords(externalView->getTitle());
+            normalizeWords.insert(normalizeWords.end(), normalizedTitle.begin(), normalizedTitle.end());
+            const auto normalizedDescription = SearchUtils::getNormalizedWords(externalView->getDescription());
+            normalizeWords.insert(normalizeWords.end(), normalizedDescription.begin(), normalizedDescription.end());
+        }
+    }
 
     return mNormalizedWords;
 }

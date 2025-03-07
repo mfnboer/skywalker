@@ -1,6 +1,9 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "external_view.h"
+#include "image_view.h"
+#include "video_view.h"
 #include <QHashFunctions>
 #include <QString>
 #include <unordered_map>
@@ -14,6 +17,9 @@ class NormalizedWordIndex
 public:
     virtual ~NormalizedWordIndex() = default;
     virtual QString getText() const = 0;
+    virtual QList<ImageView> getImages() const = 0;
+    virtual VideoView::Ptr getVideoView() const = 0;
+    virtual ExternalView::Ptr getExternalView() const = 0;
     virtual std::vector<QString> getHashtags() const = 0;
     virtual QString getAuthorDid() const = 0;
 

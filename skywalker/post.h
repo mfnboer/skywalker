@@ -71,11 +71,11 @@ public:
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
 
-    QList<ImageView> getImages() const;
+    QList<ImageView> getImages() const override;
     QList<ImageView> getDraftImages() const;
-    VideoView::Ptr getVideoView() const;
+    VideoView::Ptr getVideoView() const override;
     VideoView::Ptr getDraftVideoView() const;
-    ExternalView::Ptr getExternalView() const;
+    ExternalView::Ptr getExternalView() const override;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
     RecordView::SharedPtr getRecordViewFromRecordOrRecordWithMedia() const;

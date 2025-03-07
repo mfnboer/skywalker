@@ -30,6 +30,9 @@ public:
 
     // NormalizedWordIndex
     QString getText() const override { return getTopic(); }
+    QList<ImageView> getImages() const override { return {}; }
+    VideoView::Ptr getVideoView() const override { return {}; }
+    ExternalView::Ptr getExternalView() const override { return {}; }
     std::vector<QString> getHashtags() const override { return {}; }
     QString getAuthorDid() const override { return {}; }
 

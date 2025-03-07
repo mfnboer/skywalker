@@ -137,6 +137,8 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
 
     const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
 
+    qDebug() << "RECORD:" << (record != nullptr) << post.getText();
+
     if (record && mMutedWords.match(*record))
     {
         qDebug() << "Hide post due to muted words in record" << post.getCid();
