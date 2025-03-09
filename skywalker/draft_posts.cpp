@@ -934,7 +934,6 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
         return nullptr;
 
     auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
-    const QString host = bskyClient()->getHost();
     const QString did = mSkywalker->getUserDid();
     auto view = std::make_shared<ATProto::AppBskyEmbed::ImagesView>();
 
@@ -958,7 +957,7 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
         case STORAGE_REPO:
         {
             const QString& cid = image->mImage->mRefLink;
-            imgSource = imgProvider->createImageSource(host, did, cid);
+            imgSource = imgProvider->createImageSource(did, cid);
             break;
         }
         }

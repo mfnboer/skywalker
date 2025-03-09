@@ -69,10 +69,8 @@ public:
     void setActiveUserDid(const QString& did);
     Q_INVOKABLE QString getActiveUserDid() const;
 
-    void addUser(const QString& did, const QString& host);
+    void addUser(const QString& did);
     Q_INVOKABLE void removeUser(const QString& did);
-
-    Q_INVOKABLE QString getHost(const QString& did) const;
 
     Q_INVOKABLE void setRememberPassword(const QString& did, bool enable);
     Q_INVOKABLE bool getRememberPassword(const QString& did) const;

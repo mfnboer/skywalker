@@ -18,7 +18,7 @@ public:
     explicit ATProtoImageProvider(const QString& name);
     ~ATProtoImageProvider();
 
-    QString createImageSource(const QString& host, const QString& did, const QString& cid) const;
+    QString createImageSource(const QString& did, const QString& cid) const;
     QString idToSource(const QString& id) const;
     QString sourceToId(const QString& source) const;
     void addImage(const QString& id, const QImage& img);
@@ -27,7 +27,7 @@ public:
 
     void asyncAddImage(const QString& source, const std::function<void()>& cb);
 
-    // id = <host>/<did>/<cid>
+    // id = <did>/<cid>
     QQuickImageResponse *requestImageResponse(const QString& id, const QSize& requestedSize) override;
 
 private:
@@ -47,7 +47,7 @@ public:
     QQuickTextureFactory* textureFactory() const override;
 
 private:
-    void loadImage(const QString& host, const QString& did, const QString& cid);
+    void loadImage(const QString& did, const QString& cid);
     void handleDone(QImage img);
 
     QString mProviderName;

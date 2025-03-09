@@ -247,24 +247,19 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
 #endif
 }
 
-bool OffLineMessageChecker::getSession(QString& host, ATProto::ComATProtoServer::Session& session)
+std::optional<ATProto::ComATProtoServer::Session> OffLineMessageChecker::getSession() const
 {
     const QString did = mUserSettings.getActiveUserDid();
 
     if (did.isEmpty())
-        return false;
+        return {};
 
-    session = mUserSettings.getSession(did);
+    const auto session = mUserSettings.getSession(did);
 
     if (session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty())
-        return false;
+        return {};
 
-    host = mUserSettings.getHost(did);
-
-    if (host.isEmpty())
-        return false;
-
-    return true;
+    return session;
 }
 
 void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session& session)
@@ -276,22 +271,21 @@ void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session
 void OffLineMessageChecker::resumeSession(bool retry)
 {
     qDebug() << "Resume session, retry:" << retry;
-    QString host;
-    ATProto::ComATProtoServer::Session session;
+    const auto session = getSession();
 
-    if (!getSession(host, session))
+    if (!session)
     {
         qWarning() << "No saved session";
         exit(EXIT_OK);
         return;
     }
 
-    mUserDid = session.mDid;
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    mUserDid = session->mDid;
+    auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
-    mBsky->resumeSession(session,
+    mBsky->resumeSession(*session,
         [this] {
             qDebug() << "Session resumed";
             saveSession(*mBsky->getSession());
@@ -302,7 +296,7 @@ void OffLineMessageChecker::resumeSession(bool retry)
 
             if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
             {
-                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(session));
+                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
                 mBsky->refreshSession(
                     [this]{
                         qDebug() << "Session refreshed";

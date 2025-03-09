@@ -28,9 +28,9 @@ ATProtoImageProvider::~ATProtoImageProvider()
     Q_ASSERT(mImages.empty());
 }
 
-QString ATProtoImageProvider::createImageSource(const QString& host, const QString& did, const QString& cid) const
+QString ATProtoImageProvider::createImageSource(const QString& did, const QString& cid) const
 {
-    const QString source = QString("image://%1/%2/%3/%4").arg(mName, host, did, cid);
+    const QString source = QString("image://%1/%2/%3").arg(mName, did, cid);
     return source;
 }
 
@@ -105,17 +105,16 @@ ATProtoImageResponse::ATProtoImageResponse(const QString& providerName, const QS
 {
     const auto idParts = id.split('/');
 
-    if (idParts.size() != 3)
+    if (idParts.size() != 2)
     {
         qWarning() << "Invalid id:" << id;
         QTimer::singleShot(0, this, [this]{ handleDone(QImage()); });
         return;
     }
 
-    const QString& host = idParts[0];
-    const QString& did = idParts[1];
-    const QString& cid = idParts[2];
-    loadImage(host, did, cid);
+    const QString& did = idParts[0];
+    const QString& cid = idParts[1];
+    loadImage(did, cid);
 }
 
 QQuickTextureFactory* ATProtoImageResponse::textureFactory() const
@@ -139,11 +138,10 @@ void ATProtoImageResponse::handleDone(QImage img)
     emit finished();
 }
 
-void ATProtoImageResponse::loadImage(const QString &host, const QString& did, const QString& cid)
+void ATProtoImageResponse::loadImage(const QString& did, const QString& cid)
 {
-    qDebug() << "Load image, host:" << host << "did:" << did << "cid:" << cid;
-
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    qDebug() << "Load image, did:" << did << "cid:" << cid;
+    auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mClient = std::make_unique<ATProto::Client>(std::move(xrpc));
 

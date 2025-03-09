@@ -133,18 +133,17 @@ Skywalker::~Skywalker()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString user, QString password, const QString host, bool rememberPassword, const QString authFactorToken)
+void Skywalker::login(const QString user, QString password, bool rememberPassword, const QString authFactorToken)
 {
-    qDebug() << "Login:" << user << "host:" << host;
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
-        [this, host, user, password, rememberPassword]{
+        [this, user, password, rememberPassword]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
-            updateUser(session->mDid, host);
+            updateUser(session->mDid);
             saveSession(*session);
             mUserSettings.setRememberPassword(session->mDid, rememberPassword);
 
@@ -154,10 +153,10 @@ void Skywalker::login(const QString user, QString password, const QString host, 
             emit loginOk();
             startRefreshTimers();
         },
-        [this, host, user, password](const QString& error, const QString& msg){
+        [this, user, password](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(error, msg, host, user, password);
+            emit loginFailed(error, msg, user, password);
         });
 }
 
@@ -178,14 +177,6 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    const QString host = mUserSettings.getHost(did);
-
-    if (host.isEmpty())
-    {
-        qDebug() << "No host";
-        return false;
-    }
-
     ATProto::ComATProtoServer::Session session = mUserSettings.getSession(did);
 
     if (session.mEmailAuthFactor)
@@ -194,29 +185,28 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    login(did, mUserSettings.getPassword(did), host, true, {});
+    login(did, mUserSettings.getPassword(did), true, {});
     return true;
 }
 
 bool Skywalker::resumeSession(bool retry)
 {
     qDebug() << "Resume session, retry:" << retry;
-    QString host;
-    ATProto::ComATProtoServer::Session session;
+    const auto session = getSavedSession();
 
-    if (!getSavedSession(host, session))
+    if (!session)
     {
         qDebug() << "No saved session";
         return false;
     }
 
-    qInfo() << "Session:" << session.mDid << session.mAccessJwt << session.mRefreshJwt;
+    qInfo() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
 
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
-    mBsky->resumeSession(session,
+    mBsky->resumeSession(*session,
         [this, retry] {
             qInfo() << "Session resumed";
             saveSession(*mBsky->getSession());
@@ -249,14 +239,14 @@ bool Skywalker::resumeSession(bool retry)
 
             if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
             {
-                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(session));
+                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
                 mBsky->refreshSession(
                     [this]{
                         qDebug() << "Session refreshed";
                         saveSession(*mBsky->getSession());
                         resumeSession(true);
                     },
-                    [this, did=session.mDid](const QString& error, const QString& msg){
+                    [this, did=session->mDid](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
                         mUserSettings.clearTokens(did);
                         mBsky->clearSession();
@@ -3343,7 +3333,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     }
     else
     {
-        mEditUserPreferences->setPDS(mBsky->getHost());
+        mEditUserPreferences->setPDS(mBsky->getPDS());
     }
 
     return mEditUserPreferences.get();
@@ -3414,10 +3404,10 @@ DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 
 
 
-void Skywalker::updateUser(const QString& did, const QString& host)
+void Skywalker::updateUser(const QString& did)
 {
     mUserDid = did;
-    mUserSettings.addUser(did, host);
+    mUserSettings.addUser(did);
     mUserSettings.setActiveUserDid(did);
 }
 
@@ -3426,24 +3416,19 @@ void Skywalker::saveSession(const ATProto::ComATProtoServer::Session& session)
     mUserSettings.saveSession(session);
 }
 
-bool Skywalker::getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session)
+std::optional<ATProto::ComATProtoServer::Session> Skywalker::getSavedSession() const
 {
     const QString did = mUserSettings.getActiveUserDid();
 
     if (did.isEmpty())
-        return false;
+        return {};
 
-    session = mUserSettings.getSession(did);
+    const auto session = mUserSettings.getSession(did);
 
     if (session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty())
-        return false;
+        return {};
 
-    host = mUserSettings.getHost(did);
-
-    if (host.isEmpty())
-        return false;
-
-    return true;
+    return session;
 }
 
 void Skywalker::saveSyncTimestamp(int postIndex, int offsetY)

@@ -74,7 +74,7 @@ public:
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
 
-    Q_INVOKABLE void login(const QString user, QString password, const QString host, bool rememberPassword, const QString authFactorToken);
+    Q_INVOKABLE void login(const QString user, QString password, bool rememberPassword, const QString authFactorToken);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeSession(bool retry = false);
     Q_INVOKABLE void deleteSession();
@@ -245,7 +245,7 @@ public:
 
 signals:
     void loginOk();
-    void loginFailed(QString error, QString msg, QString host, QString handle, QString password);
+    void loginFailed(QString error, QString msg, QString handle, QString password);
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
     void sessionDeleted();
@@ -323,10 +323,10 @@ private:
     void stopRefreshTimers();
     void refreshSession(const std::function<void()>& cbDone = {});
     void refreshNotificationCount();
-    void updateUser(const QString& did, const QString& host);
+    void updateUser(const QString& did);
     ATProto::ProfileMaster& getProfileMaster();
     void saveSession(const ATProto::ComATProtoServer::Session& session);
-    bool getSavedSession(QString& host, ATProto::ComATProtoServer::Session& session);
+    std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
     void saveSyncTimestamp(int postIndex, int offsetY);
     void saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int offsetY);
     void shareImage(const QString& contentUri, const QString& text);

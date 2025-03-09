@@ -60,7 +60,7 @@ private:
     int startEventLoop();
     void exit(int exitCode);
     void resumeSession(bool retry = false);
-    bool getSession(QString& host, ATProto::ComATProtoServer::Session& session);
+    std::optional<ATProto::ComATProtoServer::Session> getSession() const;
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();
     void getUserPreferences();

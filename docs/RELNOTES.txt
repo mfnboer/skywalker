@@ -1,6 +1,8 @@
 next
 ====
 * Match muted words against alt-texts and link cards
+* Handle to DID resolution via DNS and HTTP
+* DID to PDS resolution via plc.directory
 
 4.0.1
 =====
