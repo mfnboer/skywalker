@@ -3,6 +3,8 @@ next
 * Match muted words against alt-texts and link cards
 * Handle to DID resolution via DNS and HTTP
 * DID to PDS resolution via plc.directory
+* Handle video already exists error
+* Bug fixes
 
 4.0.1
 =====
