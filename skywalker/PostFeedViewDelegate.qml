@@ -508,6 +508,7 @@ Rectangle {
                     authorIsUser: guiSettings.isUser(author)
                     isBookmarked: postBookmarked
                     bookmarkNotFound: postBookmarkNotFound
+                    plainTextForEmoji: postPlainText
                     showViewThread: swipeMode
                     record: postRecord
                     recordWithMedia: postRecordWithMedia
@@ -554,6 +555,7 @@ Rectangle {
                     onPin: root.pinPost(postUri, postCid)
                     onUnpin: root.unpinPost(postCid)
                     onBlockAuthor: root.blockAuthor(author.did)
+                    onShowEmojiNames: root.showEmojiNamesList(postPlainText)
                 }
             }
 

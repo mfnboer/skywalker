@@ -21,6 +21,7 @@ Item {
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkNotFound
+    property string plainTextForEmoji: ""
     property bool showViewThread: false
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
@@ -45,6 +46,7 @@ Item {
     signal pin()
     signal unpin()
     signal blockAuthor()
+    signal showEmojiNames()
 
     id: postStats
     height: replyIcon.height + topPadding
@@ -236,6 +238,13 @@ Item {
                     onTriggered: blockAuthor()
 
                     MenuItemSvg { svg: SvgOutline.block }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Emoji names")
+                    visible: UnicodeFonts.hasEmoji(plainTextForEmoji)
+                    onTriggered: showEmojiNames()
+
+                    MenuItemSvg { svg: SvgOutline.smiley }
                 }
 
                 Component.onCompleted: background.color = guiSettings.menuColor

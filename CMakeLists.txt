@@ -57,6 +57,7 @@ qt_add_qml_module(appskywalker
         images/giphy_logo.png
         images/buycoffee.png
         images/thats_all_folks.png
+        images/dont_panic.png
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java
@@ -75,7 +76,6 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/LanguageDetection.java
         RESOURCES android/src/com/gmail/mfnboer/VirtualKeyboardListener.java
         RESOURCES android/src/com/gmail/mfnboer/ScreenUtils.java
-        SOURCES
         RESOURCES android/src/com/gmail/mfnboer/KeyboardHeightProvider.java
 )
 

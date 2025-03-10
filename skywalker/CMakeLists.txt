@@ -491,6 +491,9 @@ qt_add_qml_module(libskywalker
         QML_FILES TimelineViewsSorter.qml
         QML_FILES SkySettingsTabButton.qml
         QML_FILES DurationLabel.qml
+        SOURCES emoji_names.cpp
+        SOURCES emoji_names.h
+        QML_FILES EmojiNamesList.qml
 )
 
 if (NOT ANDROID)

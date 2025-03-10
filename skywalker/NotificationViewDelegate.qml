@@ -286,6 +286,7 @@ Rectangle {
                         authorIsUser: false
                         isBookmarked: notificationPostBookmarked
                         bookmarkNotFound: false
+                        plainTextForEmoji: notificationPostPlainText
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia
 
@@ -330,6 +331,7 @@ Rectangle {
                         onPin: root.pinPost(notificationPostUri, notificationCid)
                         onUnpin: root.unpinPost(notificationCid)
                         onBlockAuthor: root.blockAuthor(notificationPostAuthor.did)
+                        onShowEmojiNames: root.showEmojiNamesList(postPlainText)
                     }
                 }
             }

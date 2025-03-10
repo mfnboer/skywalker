@@ -11,6 +11,7 @@ namespace Skywalker {
 namespace {
 
 constexpr char const* COMBINING_LONG_STROKE_OVERLAY = "\u0336";
+constexpr char const* VARIATION_SELECTOR_16 = "\ufe0f";
 
 struct FontCodePoint
 {
@@ -211,13 +212,28 @@ GraphemeInfo UnicodeFonts::getGraphemeInfo(const QString& text)
 
 bool UnicodeFonts::onlyEmojis(const QString& text)
 {
-    for (const auto c : text.toUcs4())
+    const auto ucs4 = text.toUcs4();
+
+    for (const auto c : ucs4)
     {
         if (!isEmoji(c))
             return false;
     }
 
     return true;
+}
+
+bool UnicodeFonts::hasEmoji(const QString& text)
+{
+    const auto ucs4 = text.toUcs4();
+
+    for (const auto c : ucs4)
+    {
+        if (isEmoji(c))
+            return true;
+    }
+
+    return false;
 }
 
 bool UnicodeFonts::isEmoji(uint c)
@@ -368,7 +384,10 @@ QStringList UnicodeFonts::getUniqueEmojis(const QString& text)
         const QString grapheme = text.sliced(prev, len);
 
         if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
-            emojiSet.insert(grapheme);
+        {
+            if (grapheme != VARIATION_SELECTOR_16)
+                emojiSet.insert(grapheme);
+        }
 
         prev = next;
     }

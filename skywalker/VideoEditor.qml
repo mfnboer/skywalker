@@ -10,7 +10,7 @@ SkyPage {
     property int endMs: 0
     property bool removeAudio: false
     property int newHeight: 0
-    readonly property int maxDurationMs: 60000
+    readonly property int maxDurationMs: 3 * 60000
     readonly property int margin: 10
     property var userSettings: root.getSkywalker().getUserSettings()
 

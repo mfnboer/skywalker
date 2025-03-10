@@ -4,7 +4,7 @@
 #include "enums.h"
 #include "grapheme_info.h"
 #include <QQuickTextDocument>
-#include <QtQmlIntegration>
+#include <qqmlintegration.h>
 #include <QObject>
 
 namespace Skywalker {
@@ -33,6 +33,7 @@ public:
     Q_INVOKABLE static int graphemeLength(const QString& text);
     Q_INVOKABLE static GraphemeInfo getGraphemeInfo(const QString& text);
     Q_INVOKABLE static bool onlyEmojis(const QString& text);
+    Q_INVOKABLE static bool hasEmoji(const QString& text);
     Q_INVOKABLE static bool hasCombinedEmojis(const QString& text);
     Q_INVOKABLE static QStringList getUniqueEmojis(const QString& text);
     Q_INVOKABLE static bool isHashtag(const QString& text);

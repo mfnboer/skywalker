@@ -156,6 +156,14 @@ ApplicationWindow {
         root.pushStack(page)
     }
 
+    function showEmojiNamesList(txt) {
+        let component = guiSettings.createComponent("EmojiNamesList.qml")
+        let page = component.createObject(root, { txt: txt })
+        page.onAccepted.connect(() => { page.destroy() })
+        page.onRejected.connect(() => { page.destroy() })
+        page.open()
+    }
+
     function clearStatusMessage() {
         statusPopup.close()
     }
