@@ -883,6 +883,11 @@ bool PostFeedModel::mustHideContent(const Post& post) const
         {
             if (mFollowing.contains(post.getAuthorDid()))
                 return true;
+
+            // Technically you do not follow yourself, but your own posts
+            // show up in your timeline, so we hide such resposts.
+            if (post.getAuthorDid() == mUserDid)
+                return true;
         }
     }
 
