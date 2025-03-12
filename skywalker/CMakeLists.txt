@@ -494,6 +494,7 @@ qt_add_qml_module(libskywalker
         SOURCES emoji_names.cpp
         SOURCES emoji_names.h
         QML_FILES EmojiNamesList.qml
+        QML_FILES KnownFollowers.qml
 )
 
 if (NOT ANDROID)

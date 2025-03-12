@@ -16,6 +16,7 @@ class ConvoView
     Q_PROPERTY(ChatBasicProfileList members READ getMembers FINAL)
     Q_PROPERTY(QString memberNames READ getMemberNames FINAL)
     Q_PROPERTY(bool muted READ isMuted FINAL)
+    Q_PROPERTY(QEnums::ConvoStatus status READ getStatus FINAL)
     Q_PROPERTY(int unreadCount READ getUnreadCount FINAL)
     Q_PROPERTY(MessageView lastMessage READ getLastMessage FINAL)
     Q_PROPERTY(QDateTime lastMessageDate READ getLastMessageDate FINAL)
@@ -29,6 +30,7 @@ public:
     const ChatBasicProfileList& getMembers() const { return mMembers; }
     const QString getMemberNames() const { return mMemberNames.join(", "); }
     bool isMuted() const { return mMuted; }
+    QEnums::ConvoStatus getStatus() const { return mStatus; }
     int getUnreadCount() const { return mUnreadCount; }
     const MessageView& getLastMessage() const { return mLastMessage; }
     QDateTime getLastMessageDate() const;
@@ -40,6 +42,7 @@ private:
     QString mRev;
     ChatBasicProfileList mMembers; // all others than the user
     bool mMuted = false;
+    QEnums::ConvoStatus mStatus = QEnums::CONVO_STATUS_UNKNOWN;
     int mUnreadCount = 0;
     MessageView mLastMessage;
     QStringList mMemberNames;

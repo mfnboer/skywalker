@@ -8,6 +8,7 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
     mId(convo.mId),
     mRev(convo.mRev),
     mMuted(convo.mMuted),
+    mStatus(convo.mStatus ? QEnums::ConvoStatus(*convo.mStatus) : QEnums::CONVO_STATUS_UNKNOWN),
     mUnreadCount(convo.mUnreadCount)
 {    
     mMembers.reserve(convo.mMembers.size());

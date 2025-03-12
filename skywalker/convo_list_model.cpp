@@ -128,6 +128,52 @@ QString ConvoListModel::getLastRev() const
     return mConvos.front().getRev();
 }
 
+void ConvoListModel::setGetConvosInProgress(bool inProgress)
+{
+    if (inProgress != mGetConvosInProgress)
+    {
+        mGetConvosInProgress = inProgress;
+        emit getConvosInProgressChanged();
+    }
+}
+
+void ConvoListModel::setLoaded(bool loaded)
+{
+    if (loaded != mLoaded)
+    {
+        mLoaded = loaded;
+        emit loadedChanged();
+    }
+}
+
+void ConvoListModel::setUnreadCount(int unread)
+{
+    if (unread < 0)
+    {
+        qWarning() << "Negative unread:" << unread;
+        unread = 0;
+    }
+
+    if (mUnreadCount != unread)
+    {
+        mUnreadCount = unread;
+        emit unreadCountChanged();
+    }
+}
+
+void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output)
+{
+    int unread = mUnreadCount;
+
+    for (const auto& convo : output.mConvos)
+    {
+        if (!convo->mMuted)
+            unread += convo->mUnreadCount;
+    }
+
+    setUnreadCount(unread);
+}
+
 BasicProfileList ConvoListModel::getAllConvoMembers() const
 {
     std::unordered_set<QString> usedDids;

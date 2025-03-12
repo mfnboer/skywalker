@@ -90,7 +90,7 @@ SkyPage {
 
 
     function resetAuthorTypeaheadList() {
-        searchUtils.authorTypeaheadList = skywalker.chat.getAllConvoMembers()
+        searchUtils.authorTypeaheadList = skywalker.chat.getAllAcceptedConvoMembers()
     }
 
     Component.onCompleted: {

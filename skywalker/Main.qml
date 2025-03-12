@@ -287,7 +287,8 @@ ApplicationWindow {
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
-            skywalker.chat.getConvos()
+            skywalker.chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED)
+            skywalker.chat.getConvos(QEnums.CONVO_STATUS_REQUEST)
 
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
@@ -1583,8 +1584,11 @@ ApplicationWindow {
     function viewChat() {
         stackLayout.currentIndex = stackLayout.chatIndex
 
-        if (!skywalker.chat.convosLoaded())
-            skywalker.chat.getConvos()
+        if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_ACCEPTED))
+            skywalker.chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED)
+
+        if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_REQUEST))
+            skywalker.chat.getConvos(QEnums.CONVO_STATUS_REQUEST)
     }
 
     function startConvo(text) {
@@ -2006,7 +2010,8 @@ ApplicationWindow {
         let view = component.createObject(root, { chat: skywalker.chat, convo: convo })
 
         view.onClosed.connect((lastMessageId) => {
-            skywalker.chat.getConvos()
+            skywalker.chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED)
+            skywalker.chat.getConvos(QEnums.CONVO_STATUS_REQUEST)
             root.popStack()
         })
 

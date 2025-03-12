@@ -449,54 +449,9 @@ SkyPage {
 
             Loader {
                 active: author.viewer.knownFollowers.count > 0
-
-                sourceComponent: RowLayout {
-                    id: knownOthersRow
+                sourceComponent: KnownFollowers {
+                    author: page.author
                     width: viewHeader.width - (viewHeader.leftPadding + viewHeader.rightPadding)
-                    spacing: 10
-
-                    Row {
-                        id: avatarRow
-                        topPadding: 10
-                        spacing: -20
-
-                        Repeater {
-                            model: author.viewer.knownFollowers.followers
-
-                            Avatar {
-                                required property int index
-                                required property basicprofile modelData
-
-                                z: 5 - index
-                                width: 34
-                                height: width
-                                author: modelData
-                                onClicked: knownOthersRow.showKnownFollowers()
-                            }
-                        }
-                    }
-
-                    SkyCleanedText {
-                        id: knownFollowersText
-                        Layout.fillWidth: true
-                        topPadding: 10
-                        elide: Text.ElideRight
-                        wrapMode: Text.Wrap
-                        textFormat: Text.RichText
-                        maximumLineCount: 3
-                        color: guiSettings.linkColor
-                        plainText: qsTr(`Followed by ${getKnownFollowersText()}`)
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: knownOthersRow.showKnownFollowers()
-                        }
-                    }
-
-                    function showKnownFollowers() {
-                        let modelId = root.getSkywalker().createAuthorListModel(QEnums.AUTHOR_LIST_KNOWN_FOLLOWERS, author.did)
-                        root.viewAuthorList(modelId, qsTr(`Followers you follow`));
-                    }
                 }
             }
 
@@ -1457,28 +1412,6 @@ SkyPage {
             profileUtils.undoLikeLabeler(likeUri)
         else
             profileUtils.likeLabeler(uri, cid)
-    }
-
-    function getKnownFollowersText() {
-        const knownFollowers = author.viewer.knownFollowers
-
-        if (knownFollowers.count <= 0)
-            return ""
-
-        if (knownFollowers.followers.length === 0)
-            return knownFollowers.count > 1 ? qsTr(`${knownFollowers.count} others you follow`) : qsTr("1 other you follow")
-
-        let followersText = UnicodeFonts.toCleanedHtml(knownFollowers.followers[0].name)
-
-        if (knownFollowers.followers.length > 1)
-            followersText = `${followersText}, ${UnicodeFonts.toCleanedHtml(knownFollowers.followers[1].name)}`
-
-        if (knownFollowers.count > 3)
-            followersText = qsTr(`${followersText} and ${(knownFollowers.count - 2)} others`)
-        else if (knownFollowers.count > 2)
-            followersText = qsTr(`${followersText} and 1 other`)
-
-        return followersText
     }
 
     Component.onDestruction: {

@@ -13,9 +13,9 @@ namespace Skywalker {
 class Chat : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(ConvoListModel* convoListModel READ getConvoListModel CONSTANT FINAL)
+    Q_PROPERTY(ConvoListModel* acceptedConvoListModel READ getAcceptedConvoListModel CONSTANT FINAL)
+    Q_PROPERTY(ConvoListModel* requestConvoListModel READ getRequestConvoListModel CONSTANT FINAL)
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged FINAL)
-    Q_PROPERTY(bool getConvosInProgress READ isGetConvosInProgress NOTIFY getConvosInProgressChanged FINAL)
     Q_PROPERTY(bool startConvoInProgress READ isStartConvoInProgress NOTIFY startConvoInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
@@ -28,22 +28,21 @@ public:
     QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
     QString getLastRev() const;
 
-    Q_INVOKABLE void getConvos(const QString& cursor = "");
-    Q_INVOKABLE void getConvosNextPage();
-    Q_INVOKABLE void updateConvos();
+    Q_INVOKABLE void getConvos(QEnums::ConvoStatus status, const QString& cursor = "");
+    Q_INVOKABLE void getConvosNextPage(QEnums::ConvoStatus status);
+    Q_INVOKABLE void updateConvos(QEnums::ConvoStatus status);
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
     Q_INVOKABLE void leaveConvo(const QString& convoId);
     Q_INVOKABLE void muteConvo(const QString& convoId);
     Q_INVOKABLE void unmuteConvo(const QString& convoId);
-    Q_INVOKABLE BasicProfileList getAllConvoMembers() const { return mConvoListModel.getAllConvoMembers(); }
-    Q_INVOKABLE bool convosLoaded() const { return mLoaded; }
+    Q_INVOKABLE BasicProfileList getAllAcceptedConvoMembers() const { return mAcceptedConvoListModel.getAllConvoMembers(); }
+    Q_INVOKABLE bool convosLoaded(QEnums::ConvoStatus status) const;
+    bool convosLoaded() const;
 
-    ConvoListModel* getConvoListModel() { return &mConvoListModel; }
+    ConvoListModel* getAcceptedConvoListModel() { return &mAcceptedConvoListModel; }
+    ConvoListModel* getRequestConvoListModel() { return &mRequestConvoListModel; }
     int getUnreadCount() const { return mUnreadCount; }
-
-    bool isGetConvosInProgress() const { return mGetConvosInProgress; }
-    void setConvosInProgress(bool inProgress);
 
     bool isStartConvoInProgress() const { return mStartConvoInProgress; }
     void setStartConvoInProgress(bool inProgress);
@@ -68,7 +67,6 @@ public:
 
 signals:
     void unreadCountChanged();
-    void getConvosInProgressChanged();
     void startConvoForMembersOk(ConvoView convo, QString msg);
     void startConvoForMembersFailed(QString error);
     void startConvoInProgressChanged();
@@ -87,14 +85,16 @@ signals:
 private:
     ATProto::ChatMaster* chatMaster();
     ATProto::PostMaster* postMaster();
-    void setUnreadCount(int unread);
-    void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output);
+    ConvoListModel* getConvoListModel(QEnums::ConvoStatus status) const;
+    void updateConvoInModel(const ATProto::ChatBskyConvo::ConvoView& convo);
+    void setUnreadCount(QEnums::ConvoStatus status, int unread);
+    void updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoListOutput& output);
     QString getLastReadMessageId(const ConvoView& convo) const;
     void updateMessages();
     void startMessagesUpdateTimer();
     void stopMessagesUpdateTimer();
-    void startConvosUpdateTimer();
-    void stopConvosUpdateTimer();
+    void startConvosUpdateTimer(QEnums::ConvoStatus status);
+    void stopConvosUpdateTimer(QEnums::ConvoStatus status);
     bool isMessagesUpdating(const QString& convoId) const { return mConvoIdUpdatingMessages.contains(convoId); }
     void setMessagesUpdating(const QString& convoId, bool updating);
     void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message, const QString& quoteUri, const QString& quoteCid);
@@ -105,16 +105,16 @@ private:
     std::unique_ptr<ATProto::ChatMaster> mChatMaster;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     const QString& mUserDid;
-    ConvoListModel mConvoListModel;
+    ConvoListModel mAcceptedConvoListModel;
+    ConvoListModel mRequestConvoListModel;
     int mUnreadCount = 0;
-    bool mGetConvosInProgress = false;
-    bool mLoaded = false;
     std::unordered_map<QString, MessageListModel::Ptr> mMessageListModels; // convoId -> model
     std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
     bool mStartConvoInProgress = false;
     QTimer mMessagesUpdateTimer;
-    QTimer mConvosUpdateTimer;
+    QTimer mAcceptedConvosUpdateTimer;
+    QTimer mRequestConvosUpdateTimer;
     QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 };
 

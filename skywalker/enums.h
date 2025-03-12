@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <atproto/lib/lexicon/app_bsky_actor.h>
+#include <atproto/lib/lexicon/chat_bsky_convo.h>
 #include <atproto/lib/lexicon/app_bsky_graph.h>
 #include <atproto/lib/lexicon/app_bsky_notification.h>
 #include <atproto/lib/lexicon/com_atproto_moderation.h>
@@ -250,6 +251,14 @@ public:
         ALLOW_INCOMING_CHAT_FOLLOWING = (int)ATProto::AppBskyActor::AllowIncomingType::FOLLOWING
     };
     Q_ENUM(AllowIncomingChat)
+
+    enum ConvoStatus
+    {
+        CONVO_STATUS_REQUEST = (int)ATProto::ChatBskyConvo::ConvoStatus::REQUEST,
+        CONVO_STATUS_ACCEPTED = (int)ATProto::ChatBskyConvo::ConvoStatus::ACCEPTED,
+        CONVO_STATUS_UNKNOWN = (int)ATProto::ChatBskyConvo::ConvoStatus::UNKNOWN
+    };
+    Q_ENUM(ConvoStatus)
 
     enum ThreadStyle
     {

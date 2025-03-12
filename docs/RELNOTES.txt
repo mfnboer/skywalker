@@ -3,6 +3,7 @@ next
 * Match muted words against alt-texts and link cards
 * Max video upload increased to 3 minutes
 * View names of emoji in a post
+* DM requests inbox
 * Handle to DID resolution via DNS and HTTP
 * DID to PDS resolution via plc.directory
 * Handle video already exists error

@@ -27,7 +27,6 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
-    QML_ELEMENT
 
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;

@@ -19,7 +19,7 @@ Rectangle {
     signal unmuteConvo(convoview convo)
 
     id: convoRect
-    height: convoRow.height
+    height: convoRow.height + (endOfFeedText.visible ? endOfFeedText.height : 0)
     color: guiSettings.backgroundColor
 
     RowLayout {
@@ -31,6 +31,7 @@ Rectangle {
 
         Rectangle {
             id: avatarRect
+            Layout.alignment: Qt.AlignTop
             Layout.preferredHeight: avatar.height + 10
             Layout.preferredWidth: guiSettings.threadColumnWidth
             color: "transparent"
@@ -145,12 +146,20 @@ Rectangle {
                         }
                     }
 
+                    Loader {
+                        width: parent.width
+                        active: convo.status === QEnums.CONVO_STATUS_REQUEST
+                        sourceComponent: KnownFollowers {
+                            author: firstMember
+                        }
+                    }
+
                     SkyCleanedText {
                         readonly property string deletedText: qsTr("message deleted")
                         readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
 
                         width: parent.width
-                        topPadding: 5
+                        topPadding: 10
                         elide: Text.ElideRight
                         textFormat: Text.RichText
                         font.italic: convo.lastMessage.deleted
@@ -203,10 +212,12 @@ Rectangle {
 
     // End of feed indication
     Text {
+        id: endOfFeedText
         anchors.top: convoRow.bottom
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
-        topPadding: 10
+        topPadding: 30
+        bottomPadding: 100
         elide: Text.ElideRight
         color: guiSettings.textColor
         text: qsTr("End of conversations")

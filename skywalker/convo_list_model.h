@@ -11,6 +11,10 @@ namespace Skywalker
 class ConvoListModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(bool getConvosInProgress READ isGetConvosInProgress NOTIFY getConvosInProgressChanged FINAL)
+    Q_PROPERTY(bool isLoaded READ isLoaded NOTIFY loadedChanged FINAL)
+    Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged FINAL)
+
 public:
     enum class Role {
         Convo = Qt::UserRole + 1,
@@ -33,6 +37,20 @@ public:
     QString getLastRev() const;
     BasicProfileList getAllConvoMembers() const;
 
+    void setGetConvosInProgress(bool inProgress);
+    bool isGetConvosInProgress() const { return mGetConvosInProgress; }
+    void setLoaded(bool loaded);
+    bool isLoaded() const { return mLoaded; }
+
+    void setUnreadCount(int unread);
+    void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output);
+    int getUnreadCount() const { return mUnreadCount; }
+
+signals:
+    void getConvosInProgressChanged();
+    void loadedChanged();
+    void unreadCountChanged();
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
@@ -43,6 +61,9 @@ private:
     std::vector<ConvoView> mConvos;
     std::unordered_map<QString, int> mConvoIdIndexMap;
     QString mCursor;
+    bool mGetConvosInProgress = false;
+    bool mLoaded = false;
+    int mUnreadCount = 0;
 };
 
 }
