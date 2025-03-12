@@ -12,6 +12,7 @@ class EmojiNames : public QObject
     QML_ELEMENT
 
 public:
+    bool static isEmoji(const QString& grapheme) { return EMOJI_NAMES_MAP.contains(grapheme); };
     Q_INVOKABLE static QString getEmojiName(const QString emoji);
 
 private:

@@ -26,6 +26,7 @@ public:
 
     static bool convertLastCharsToFont(QString& text, int numChars, FontType font);
 
+    Q_INVOKABLE static QString getEmojiFontFamily();
     Q_INVOKABLE static QString getEmojiFontSource();
     Q_INVOKABLE static QString toPlainText(const QString& text);
     Q_INVOKABLE static QString toCleanedHtml(const QString& text);
@@ -39,7 +40,7 @@ public:
     Q_INVOKABLE static bool isHashtag(const QString& text);
     Q_INVOKABLE static QStringList splitText(const QString& text, int maxLength, int minSplitLineLength, int maxParts = 1000000);
 
-    static bool isEmoji(uint c);
+    static bool isEmoji(uint c); // heuristic
     static bool isKeycapEmoji(const QString& grapheme);
     static QString setEmojiFontCombinedEmojis(const QString& text);
 

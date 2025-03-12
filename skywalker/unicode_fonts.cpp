@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "unicode_fonts.h"
+#include "emoji_names.h"
 #include "font_downloader.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QQuickTextDocument>
@@ -11,7 +12,6 @@ namespace Skywalker {
 namespace {
 
 constexpr char const* COMBINING_LONG_STROKE_OVERLAY = "\u0336";
-constexpr char const* VARIATION_SELECTOR_16 = "\ufe0f";
 
 struct FontCodePoint
 {
@@ -212,12 +212,19 @@ GraphemeInfo UnicodeFonts::getGraphemeInfo(const QString& text)
 
 bool UnicodeFonts::onlyEmojis(const QString& text)
 {
-    const auto ucs4 = text.toUcs4();
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int prev = 0;
+    int next;
 
-    for (const auto c : ucs4)
+    while ((next = boundaryFinder.toNextBoundary()) != -1)
     {
-        if (!isEmoji(c))
+        const int len = next - prev;
+        const QString grapheme = text.sliced(prev, len);
+
+        if (!EmojiNames::isEmoji(grapheme))
             return false;
+
+        prev = next;
     }
 
     return true;
@@ -225,12 +232,19 @@ bool UnicodeFonts::onlyEmojis(const QString& text)
 
 bool UnicodeFonts::hasEmoji(const QString& text)
 {
-    const auto ucs4 = text.toUcs4();
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int prev = 0;
+    int next;
 
-    for (const auto c : ucs4)
+    while ((next = boundaryFinder.toNextBoundary()) != -1)
     {
-        if (isEmoji(c))
+        const int len = next - prev;
+        const QString grapheme = text.sliced(prev, len);
+
+        if (EmojiNames::isEmoji(grapheme))
             return true;
+
+        prev = next;
     }
 
     return false;
@@ -238,6 +252,8 @@ bool UnicodeFonts::hasEmoji(const QString& text)
 
 bool UnicodeFonts::isEmoji(uint c)
 {
+    // These code ranges are a heuristic. Emoji are missing and some are not emoji.
+    // If the grapheme splitting is fast enough, we can drop this.
     static const std::map<uint, uint> RANGES = {
         {0x0200D, 0x0200D}, // Zero Width Joiner to combine codepoints
         {0x02600, 0x026FF}, // Miscellaneous symbols
@@ -273,6 +289,11 @@ bool UnicodeFonts::isHashtag(const QString& text)
     return ATProto::RichTextMaster::isHashtag(text);
 }
 
+QString UnicodeFonts::getEmojiFontFamily()
+{
+    return FontDownloader::getEmojiFontFamily();
+}
+
 QString UnicodeFonts::setEmojiFontCombinedEmojis(const QString& text)
 {
     static const QString emojiSpanStart = QString("<span style=\"font-family:'%1'\">").arg(FontDownloader::getEmojiFontFamily());
@@ -306,7 +327,7 @@ QString UnicodeFonts::setEmojiFontCombinedEmojis(const QString& text)
 
         if (len > 2)
         {
-            if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
+            if (EmojiNames::isEmoji(grapheme))
             {
                 if (startEmojis == -1)
                 {
@@ -361,7 +382,7 @@ bool UnicodeFonts::hasCombinedEmojis(const QString& text)
 
         if (len > 2)
         {
-            if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
+            if (EmojiNames::isEmoji(grapheme))
                 return true;
         }
 
@@ -383,11 +404,8 @@ QStringList UnicodeFonts::getUniqueEmojis(const QString& text)
         const int len = next - prev;
         const QString grapheme = text.sliced(prev, len);
 
-        if (UnicodeFonts::onlyEmojis(grapheme) || UnicodeFonts::isKeycapEmoji(grapheme))
-        {
-            if (grapheme != VARIATION_SELECTOR_16)
+        if (EmojiNames::isEmoji(grapheme))
                 emojiSet.insert(grapheme);
-        }
 
         prev = next;
     }

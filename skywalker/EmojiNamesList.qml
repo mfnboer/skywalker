@@ -34,6 +34,7 @@ Dialog {
             AccessibleText {
                 text: modelData
                 font.pointSize: guiSettings.scaledFont(2)
+                font.family: UnicodeFonts.getEmojiFontFamily()
             }
 
             AccessibleText {
