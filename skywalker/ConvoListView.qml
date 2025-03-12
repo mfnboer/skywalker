@@ -98,6 +98,7 @@ SkyPage {
     }
 
     SwipeView {
+        id: swipeView
         anchors.top: tabSeparator.bottom
         anchors.bottom: parent.bottom
         width: parent.width
@@ -115,7 +116,7 @@ SkyPage {
 
             delegate: ConvoViewDelegate {
                 width: page.width
-                onViewConvo: (convo) => page.viewMessages(convo)
+                onViewConvo: (convo) => page.viewMessages(convo, true)
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) => chat.unmuteConvo(convo.id)
@@ -153,12 +154,14 @@ SkyPage {
 
             delegate: ConvoViewDelegate {
                 width: page.width
-                onViewConvo: (convo) => page.viewMessages(convo)
+                onViewConvo: (convo) => page.viewMessages(convo, false)
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) =>chat.unmuteConvo(convo.id)
                 onBlockAuthor: (author) => graphUtils.block(author.did)
                 onUnblockAuthor: (author) => graphUtils.unblock(author.did, author.viewer.blocking)
+                onAcceptConvo: (convo) => chat.acceptConvo(convo)
+                onBlockAndDeleteConvo: (convo, author) => page.blockAndDeleteConvo(convo, author)
             }
 
             FlickableRefresher {
@@ -178,6 +181,11 @@ SkyPage {
             BusyIndicator {
                 anchors.centerIn: parent
                 running: chat.requestConvoListModel.getConvosInProgress
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: chat.acceptConvoInProgress
             }
         }
     }
@@ -203,6 +211,13 @@ SkyPage {
         onUnblockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    function positionViewAtBeginning() {
+        let item = swipeView.currentItem
+
+        if (item)
+            item.positionViewAtBeginning()
+    }
+
     function addConvo(msg = "") {
         let component = Qt.createComponent("StartConversation.qml")
         let convoPage = component.createObject(page)
@@ -216,18 +231,52 @@ SkyPage {
         root.pushStack(convoPage)
     }
 
-    function deleteConvo(convo) {
-        guiSettings.askYesNoQuestion(page,
-                qsTr(`Do you want to delete the conversation with <b>${convo.memberNames}</b>. Your messages will be deleted for you, but not for the other participant.`),
-                () => chat.leaveConvo(convo.id))
+    function deleteConvo(convo, parentPage = page, yesCb = () => {}) {
+        guiSettings.askYesNoQuestion(parentPage,
+                qsTr(`Do you want to delete the conversation with <b>${convo.memberNames}</b>? Your messages will be deleted for you, but not for the other participant.`),
+                () => {
+                    chat.leaveConvo(convo.id)
+                    yesCb()
+                })
     }
 
-    function viewMessages(convo) {
+    function blockAndDeleteConvo(convo, author, parentPage = page, yesCb = () => {}) {
+        guiSettings.askYesNoQuestion(parentPage,
+                qsTr(`Do you want to block <b>@${author.handle}</b> and delete the conversation?`),
+                () => {
+                    graphUtils.block(author.did)
+                    chat.leaveConvo(convo.id)
+                    yesCb()
+                })
+    }
+
+    function viewMessages(convo, accepted, closeCb = () => {}) {
         let component = Qt.createComponent("MessagesListView.qml")
-        let view = component.createObject(page, { chat: chat, convo: convo })
-        view.onClosed.connect(() => root.popStack())
+        let view = component.createObject(page, { chat: chat, convo: convo, convoAccepted: accepted })
+        view.onClosed.connect(() => {
+                root.popStack()
+                closeCb()
+            })
+        view.onAcceptConvo.connect((convo) => {
+                chat.acceptConvo(convo)
+                root.popStack();
+            })
+        view.onDeleteConvo.connect((convo) => {
+                page.deleteConvo(convo, view, () => root.popStack())
+            })
+        view.onBlockAndDeleteConvo.connect((convo, author) => {
+                page.blockAndDeleteConvo(convo, author, view, () => root.popStack())
+            })
         chat.getMessages(convo.id)
         root.pushStack(view)
+    }
+
+    function acceptConvoOkHandler(convo) {
+        skywalker.showStatusMessage(qsTr("Conversation accepted"), QEnums.STATUS_LEVEL_INFO)
+        viewMessages(convo, true, () => {
+                chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED);
+                chat.getConvos(QEnums.CONVO_STATUS_REQUEST);
+            })
     }
 
     function leaveConvoOkHandler() {
@@ -242,11 +291,13 @@ SkyPage {
     }
 
     function initHandlers() {
+        chat.onAcceptConvoOk.connect(acceptConvoOkHandler)
         chat.onLeaveConvoOk.connect(leaveConvoOkHandler)
         chat.onFailure.connect(failureHandler)
     }
 
     function destroyHandlers() {
+        chat.onAcceptConvoOk.disconnect(acceptConvoOkHandler)
         chat.onLeaveConvoOk.disconnect(leaveConvoOkHandler)
         chat.onFailure.disconnect(failureHandler)
     }

@@ -298,6 +298,38 @@ void Chat::startConvoForMember(const QString& did, const QString& msg)
     startConvoForMembers(dids, msg);
 }
 
+void Chat::acceptConvo(const ConvoView& convo)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Accept convo:" << convo.getId();
+
+    if (mAcceptConvoInProgress)
+    {
+        qDebug() << "Accepting still in progress";
+        return;
+    }
+
+    setAcceptConvoInProgress(true);
+
+    mBsky->acceptConvo(convo.getId(),
+        [this, presence=*mPresence, convo](ATProto::ChatBskyConvo::AcceptConvoOutput::SharedPtr){
+            if (!presence)
+                return;
+
+            qDebug() << "Accepted convo:" << convo.getId();
+            setAcceptConvoInProgress(false);
+            emit acceptConvoOk(convo);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "acceptConvo FAILED:" << error << " - " << msg;
+            setAcceptConvoInProgress(false);
+            emit failure(msg);
+        });
+}
+
 void Chat::leaveConvo(const QString& convoId)
 {
     Q_ASSERT(mBsky);
@@ -430,6 +462,15 @@ void Chat::setStartConvoInProgress(bool inProgress)
     {
         mStartConvoInProgress = inProgress;
         emit startConvoInProgressChanged();
+    }
+}
+
+void Chat::setAcceptConvoInProgress(bool inProgress)
+{
+    if (inProgress != mAcceptConvoInProgress)
+    {
+        mAcceptConvoInProgress = inProgress;
+        emit acceptConvoInProgressChanged();
     }
 }
 

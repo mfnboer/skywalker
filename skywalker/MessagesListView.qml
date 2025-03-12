@@ -5,6 +5,8 @@ import skywalker
 SkyPage {
     required property var chat
     required property convoview convo
+    property bool convoAccepted: true
+    property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
     property bool isSending: false
     property int maxInputTextHeight
     readonly property int maxMessageLength: 1000
@@ -15,6 +17,9 @@ SkyPage {
     property int lastIndex: -1
 
     signal closed
+    signal acceptConvo(convoview convo)
+    signal deleteConvo(convoview convo)
+    signal blockAndDeleteConvo(convoview convo, basicprofile author)
 
     id: page
 
@@ -31,7 +36,7 @@ SkyPage {
     SkyListView {
         id: messagesView
         width: parent.width
-        height: parent.height - y - flick.height - newMessageText.padding - newMessageText.bottomPadding
+        height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.padding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
         boundsMovement: Flickable.StopAtBounds
         clip: true
@@ -74,6 +79,20 @@ SkyPage {
         }
     }
 
+    ConvoRequestButtonRow {
+        id: requestButtons
+        x: page.margin
+        width: parent.width - 2 * page.margin
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: page.margin
+        author: firstMember
+        visible: !convoAccepted
+
+        onAcceptConvo: page.acceptConvo(convo)
+        onDeleteConvo: page.deleteConvo(convo)
+        onBlockAndDeleteConvo: page.blockAndDeleteConvo(convo, firstMember)
+    }
+
     Flickable {
         property bool contentYUpdating: false
 
@@ -87,6 +106,7 @@ SkyPage {
         contentHeight: newMessageText.contentHeight + page.margin
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
+        visible: convoAccepted
 
         onHeightChanged: newMessageText.ensureVisible(newMessageText.cursorRectangle)
 
@@ -189,6 +209,7 @@ SkyPage {
         svg: SvgFilled.send
         accessibleName: qsTr("send message")
         enabled: !page.isSending && newMessageText.graphemeLength > 0 && newMessageText.graphemeLength <= page.maxMessageLength
+        visible: convoAccepted
         onClicked: sendMessage()
     }
 
@@ -202,6 +223,7 @@ SkyPage {
         color: guiSettings.messageNewBackgroundColor
         border.width: newMessageText.activeFocus ? 1 : 0
         border.color: guiSettings.buttonColor
+        visible: convoAccepted
 
         // Quote post
         Rectangle {

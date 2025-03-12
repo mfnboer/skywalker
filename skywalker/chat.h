@@ -17,6 +17,7 @@ class Chat : public QObject
     Q_PROPERTY(ConvoListModel* requestConvoListModel READ getRequestConvoListModel CONSTANT FINAL)
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged FINAL)
     Q_PROPERTY(bool startConvoInProgress READ isStartConvoInProgress NOTIFY startConvoInProgressChanged FINAL)
+    Q_PROPERTY(bool acceptConvoInProgress READ isAcceptConvoInProgress NOTIFY acceptConvoInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
@@ -33,6 +34,7 @@ public:
     Q_INVOKABLE void updateConvos(QEnums::ConvoStatus status);
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
+    Q_INVOKABLE void acceptConvo(const ConvoView& convo);
     Q_INVOKABLE void leaveConvo(const QString& convoId);
     Q_INVOKABLE void muteConvo(const QString& convoId);
     Q_INVOKABLE void unmuteConvo(const QString& convoId);
@@ -46,6 +48,9 @@ public:
 
     bool isStartConvoInProgress() const { return mStartConvoInProgress; }
     void setStartConvoInProgress(bool inProgress);
+
+    bool isAcceptConvoInProgress() const { return mAcceptConvoInProgress; }
+    void setAcceptConvoInProgress(bool inProgress);
 
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
@@ -70,6 +75,8 @@ signals:
     void startConvoForMembersOk(ConvoView convo, QString msg);
     void startConvoForMembersFailed(QString error);
     void startConvoInProgressChanged();
+    void acceptConvoInProgressChanged();
+    void acceptConvoOk(ConvoView convo);
     void leaveConvoOk();
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
@@ -112,6 +119,7 @@ private:
     std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
     bool mStartConvoInProgress = false;
+    bool mAcceptConvoInProgress = false;
     QTimer mMessagesUpdateTimer;
     QTimer mAcceptedConvosUpdateTimer;
     QTimer mRequestConvosUpdateTimer;

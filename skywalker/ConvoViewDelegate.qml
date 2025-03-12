@@ -19,6 +19,8 @@ Rectangle {
     signal unmuteConvo(convoview convo)
     signal blockAuthor(basicprofile author)
     signal unblockAuthor(basicprofile author)
+    signal acceptConvo(convoview convo)
+    signal blockAndDeleteConvo(convoview convo, basicprofile author)
 
     id: convoRect
     height: convoRow.height + (endOfFeedText.visible ? endOfFeedText.height : 0)
@@ -227,6 +229,7 @@ Rectangle {
                         }
                         AccessibleMenuItem {
                             text: firstMember.viewer.blocking ? qsTr("Unblock account") : qsTr("Block account")
+                            visible: !guiSettings.isUser(firstMember)
                             onTriggered: {
                                 if (firstMember.viewer.blocking)
                                     unblockAuthor(firstMember)
@@ -237,6 +240,18 @@ Rectangle {
                             MenuItemSvg { svg: firstMember.viewer.blocking ? SvgOutline.unblock : SvgOutline.block }
                         }
                     }
+                }
+            }
+
+            Loader {
+                width: parent.width - margin
+                active: convo.status === QEnums.CONVO_STATUS_REQUEST
+                sourceComponent: ConvoRequestButtonRow {
+                    author: firstMember
+
+                    onAcceptConvo: convoRect.acceptConvo(convo)
+                    onDeleteConvo: convoRect.deleteConvo(convo)
+                    onBlockAndDeleteConvo: convoRect.blockAndDeleteConvo(convo, firstMember)
                 }
             }
         }

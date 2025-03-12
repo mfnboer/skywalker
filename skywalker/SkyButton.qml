@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 RoundButton {
+    property string textColor: guiSettings.buttonTextColor
+
     id: button
 
     Material.background: flat ? guiSettings.buttonFlatColor : guiSettings.buttonColor
@@ -15,7 +17,7 @@ RoundButton {
         rightPadding: 10
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        color: guiSettings.buttonTextColor
+        color: textColor
         text: button.text
     }
 
