@@ -40,7 +40,8 @@ public:
     Q_INVOKABLE static bool isHashtag(const QString& text);
     Q_INVOKABLE static QStringList splitText(const QString& text, int maxLength, int minSplitLineLength, int maxParts = 1000000);
 
-    static bool isEmoji(uint c); // heuristic
+    static bool isEmojiCodePoint(uint c); // heuristic
+    static bool isEmoji(const QString& grapheme);
     static bool isKeycapEmoji(const QString& grapheme);
     static QString setEmojiFontCombinedEmojis(const QString& text);
 

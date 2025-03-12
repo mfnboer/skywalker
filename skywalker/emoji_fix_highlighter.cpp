@@ -134,7 +134,7 @@ void EmojiFixHighlighter::setEmojiFontCombinedEmojis(const QString& text)
         {
             const QString grapheme = text.sliced(prev, len);
 
-            if (UnicodeFonts::onlyEmojis(grapheme))
+            if (UnicodeFonts::isEmoji(grapheme))
                 addFormat(prev, len, mEmojiFormat);
         }
 

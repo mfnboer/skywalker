@@ -250,7 +250,7 @@ bool UnicodeFonts::hasEmoji(const QString& text)
     return false;
 }
 
-bool UnicodeFonts::isEmoji(uint c)
+bool UnicodeFonts::isEmojiCodePoint(uint c)
 {
     // These code ranges are a heuristic. Emoji are missing and some are not emoji.
     // If the grapheme splitting is fast enough, we can drop this.
@@ -275,6 +275,11 @@ bool UnicodeFonts::isEmoji(uint c)
     --it;
 
     return c >= it->first && c <= it->second;
+}
+
+bool UnicodeFonts::isEmoji(const QString& grapheme)
+{
+    return EmojiNames::isEmoji(grapheme);
 }
 
 bool UnicodeFonts::isKeycapEmoji(const QString& grapheme)
