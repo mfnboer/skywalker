@@ -17,6 +17,8 @@ Rectangle {
     signal deleteConvo(convoview convo)
     signal muteConvo(convoview convo)
     signal unmuteConvo(convoview convo)
+    signal blockAuthor(basicprofile author)
+    signal unblockAuthor(basicprofile author)
 
     id: convoRect
     height: convoRow.height + (endOfFeedText.visible ? endOfFeedText.height : 0)
@@ -123,6 +125,31 @@ Rectangle {
                         visible: convo.members.length > 1
                     }
 
+                    Row {
+                        spacing: 5
+
+                        SkyLabel {
+                            text: qsTr("blocked")
+                            visible: firstMember.viewer.blocking && firstMember.viewer.blockingByList.isNull()
+                        }
+                        SkyLabel {
+                            text: qsTr("blocks you")
+                            visible: firstMember.viewer.blockedBy
+                        }
+                        SkyLabel {
+                            text: qsTr("list blocked")
+                            visible: !firstMember.viewer.blockingByList.isNull()
+                        }
+                        SkyLabel {
+                            text: qsTr("muted")
+                            visible: firstMember.viewer.muted && firstMember.viewer.mutedByList.isNull()
+                        }
+                        SkyLabel {
+                            text: qsTr("list muted")
+                            visible: !firstMember.viewer.mutedByList.isNull()
+                        }
+                    }
+
                     Loader {
                         active: convoRect.labelsToShow.length > 0 && convo.members.length <= 1
                         width: parent.width
@@ -197,6 +224,17 @@ Rectangle {
                             onTriggered: convo.muted ? unmuteConvo(convo) : muteConvo(convo)
 
                             MenuItemSvg { svg: convo.muted ? SvgOutline.notifications : SvgOutline.notificationsOff }
+                        }
+                        AccessibleMenuItem {
+                            text: firstMember.viewer.blocking ? qsTr("Unblock account") : qsTr("Block account")
+                            onTriggered: {
+                                if (firstMember.viewer.blocking)
+                                    unblockAuthor(firstMember)
+                                else
+                                    blockAuthor(firstMember)
+                            }
+
+                            MenuItemSvg { svg: firstMember.viewer.blocking ? SvgOutline.unblock : SvgOutline.block }
                         }
                     }
                 }

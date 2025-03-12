@@ -118,7 +118,9 @@ SkyPage {
                 onViewConvo: (convo) => page.viewMessages(convo)
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
-                onUnmuteConvo: (convo) =>chat.unmuteConvo(convo.id)
+                onUnmuteConvo: (convo) => chat.unmuteConvo(convo.id)
+                onBlockAuthor: (author) => graphUtils.block(author.did)
+                onUnblockAuthor: (author) => graphUtils.unblock(author.did, author.viewer.blocking)
             }
 
             FlickableRefresher {
@@ -155,6 +157,8 @@ SkyPage {
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) =>chat.unmuteConvo(convo.id)
+                onBlockAuthor: (author) => graphUtils.block(author.did)
+                onUnblockAuthor: (author) => graphUtils.unblock(author.did, author.viewer.blocking)
             }
 
             FlickableRefresher {
@@ -176,6 +180,27 @@ SkyPage {
                 running: chat.requestConvoListModel.getConvosInProgress
             }
         }
+    }
+
+    GraphUtils {
+        id: graphUtils
+        skywalker: page.skywalker
+
+        onBlockOk: (uri) => {
+            skywalker.showStatusMessage(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO)
+            chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED);
+            chat.getConvos(QEnums.CONVO_STATUS_REQUEST);
+        }
+
+        onBlockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onUnblockOk: (uri) => {
+            skywalker.showStatusMessage(qsTr("Ublocked"), QEnums.STATUS_LEVEL_INFO)
+            chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED);
+            chat.getConvos(QEnums.CONVO_STATUS_REQUEST);
+        }
+
+        onUnblockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     function addConvo(msg = "") {

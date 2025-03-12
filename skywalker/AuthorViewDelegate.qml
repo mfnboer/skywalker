@@ -82,14 +82,6 @@ Rectangle {
                 Accessible.ignored: true
             }
 
-            ContentLabels {
-                id: contentLabels
-                anchors.left: parent.left
-                anchors.right: undefined
-                contentLabels: author.labels
-                contentAuthorDid: author.did
-            }
-
             Row {
                 spacing: 5
 
@@ -100,6 +92,10 @@ Rectangle {
                 SkyLabel {
                     text: qsTr("blocked")
                     visible: blockingUri && author.viewer.blockingByList.isNull()
+                }
+                SkyLabel {
+                    text: qsTr("blocks you")
+                    visible: author.viewer.blockedBy
                 }
                 SkyLabel {
                     text: qsTr("list blocked")
@@ -121,6 +117,14 @@ Rectangle {
                     text: qsTr("hide from timeline")
                     visible: hideFromTimeline
                 }
+            }
+
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.right: undefined
+                contentLabels: author.labels
+                contentAuthorDid: author.did
             }
         }
 
