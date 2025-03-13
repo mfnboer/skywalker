@@ -116,7 +116,7 @@ SkyPage {
 
             delegate: ConvoViewDelegate {
                 width: page.width
-                onViewConvo: (convo) => page.viewMessages(convo, true)
+                onViewConvo: (convo) => page.viewMessages(convo)
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) => chat.unmuteConvo(convo.id)
@@ -154,7 +154,7 @@ SkyPage {
 
             delegate: ConvoViewDelegate {
                 width: page.width
-                onViewConvo: (convo) => page.viewMessages(convo, false)
+                onViewConvo: (convo) => page.viewMessages(convo)
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) =>chat.unmuteConvo(convo.id)
@@ -196,16 +196,14 @@ SkyPage {
 
         onBlockOk: (uri) => {
             skywalker.showStatusMessage(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO)
-            chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED);
-            chat.getConvos(QEnums.CONVO_STATUS_REQUEST);
+            chat.getAllConvos(); // TODO local update
         }
 
         onBlockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onUnblockOk: (uri) => {
             skywalker.showStatusMessage(qsTr("Ublocked"), QEnums.STATUS_LEVEL_INFO)
-            chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED);
-            chat.getConvos(QEnums.CONVO_STATUS_REQUEST);
+            chat.getAllConvos(); // TODO local update
         }
 
         onUnblockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
@@ -250,12 +248,11 @@ SkyPage {
                 })
     }
 
-    function viewMessages(convo, accepted, closeCb = () => {}) {
+    function viewMessages(convo) {
         let component = Qt.createComponent("MessagesListView.qml")
-        let view = component.createObject(page, { chat: chat, convo: convo, convoAccepted: accepted })
+        let view = component.createObject(page, { chat: chat, convo: convo })
         view.onClosed.connect(() => {
                 root.popStack()
-                closeCb()
             })
         view.onAcceptConvo.connect((convo) => {
                 chat.acceptConvo(convo)
@@ -273,16 +270,11 @@ SkyPage {
 
     function acceptConvoOkHandler(convo) {
         skywalker.showStatusMessage(qsTr("Conversation accepted"), QEnums.STATUS_LEVEL_INFO)
-        viewMessages(convo, true, () => {
-                chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED);
-                chat.getConvos(QEnums.CONVO_STATUS_REQUEST);
-            })
+        viewMessages(convo)
     }
 
     function leaveConvoOkHandler() {
         skywalker.showStatusMessage(qsTr("Conversation deleted"), QEnums.STATUS_LEVEL_INFO)
-        chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED);
-        chat.getConvos(QEnums.CONVO_STATUS_REQUEST);
     }
 
     function failureHandler(error) {

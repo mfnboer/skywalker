@@ -5,7 +5,7 @@ import skywalker
 SkyPage {
     required property var chat
     required property convoview convo
-    property bool convoAccepted: true
+    readonly property bool convoAccepted: convo.status === QEnums.CONVO_STATUS_ACCEPTED
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
     property bool isSending: false
     property int maxInputTextHeight

@@ -37,6 +37,10 @@ public:
 
     Q_INVOKABLE ChatBasicProfile getMember(const QString& did) const;
 
+    void setRev(const QString& rev) { mRev = rev; }
+    void setStatus(QEnums::ConvoStatus status) { mStatus = status; }
+    void clearUnreadCount() { mUnreadCount = 0; }
+
 private:
     QString mId;
     QString mRev;

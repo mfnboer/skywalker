@@ -97,6 +97,91 @@ void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
     changeData({ int(Role::Convo) }, index, index);
 }
 
+void ConvoListModel::insertConvo(const ConvoView& convo)
+{
+    qDebug() << "Insert convo:" << convo.getId() << "rev:" << convo.getRev();
+
+    if (hasConvo(convo.getId()))
+    {
+        qWarning() << "Convo is already present";
+        return;
+    }
+
+    int insertIndex = 0;
+    for (; insertIndex < (int)mConvos.size(); ++insertIndex)
+    {
+        const auto& otherConvo = mConvos[insertIndex];
+
+        if (convo.getRev() >= otherConvo.getRev())
+        {
+            qDebug() << "Insert index found:" << insertIndex << "convoRev:" << convo.getRev() << "otherRev:" << otherConvo.getRev();
+            break;
+        }
+    }
+
+    auto insertIt = insertIndex < (int)mConvos.size() ? mConvos.begin() + insertIndex : mConvos.end();
+
+    beginInsertRows({}, insertIndex, insertIndex);
+    mConvos.insert(insertIt, convo);
+
+    for (auto& [convoId, index] : mConvoIdIndexMap)
+    {
+        if (index >= insertIndex)
+            ++index;
+    }
+
+    mConvoIdIndexMap[convo.getId()] = insertIndex;
+    endInsertRows();
+
+    setUnreadCount(mUnreadCount + convo.getUnreadCount());
+}
+
+bool ConvoListModel::checkIndex(int index) const
+{
+    Q_ASSERT(index >= 0);
+    Q_ASSERT(index < (int)mConvos.size());
+
+    if (index < 0 || index >= (int)mConvos.size())
+    {
+        qWarning() << "Index out of range:" << index << "size:" << mConvos.size();
+        return false;
+    }
+
+    return true;
+}
+
+void ConvoListModel::deleteConvo(const QString& convoId)
+{
+    qDebug() << "Delete convo:" << convoId;
+    auto it = mConvoIdIndexMap.find(convoId);
+
+    if (it == mConvoIdIndexMap.end())
+    {
+        qDebug() << "Convo not present:" << convoId;
+        return;
+    }
+
+    const int index = it->second;
+
+    if (!checkIndex(index))
+        return;
+
+    const int convoUnread = mConvos[index].getUnreadCount();
+    setUnreadCount(mUnreadCount - convoUnread);
+
+    beginRemoveRows({}, index, index);
+    mConvos.erase(mConvos.begin() + index);
+    mConvoIdIndexMap.erase(it);
+
+    for (auto& [otherId, otherIndex] : mConvoIdIndexMap)
+    {
+        if (otherIndex > index)
+            --otherIndex;
+    }
+
+    endRemoveRows();
+}
+
 const ConvoView* ConvoListModel::getConvo(const QString& convoId) const
 {
     auto it = mConvoIdIndexMap.find(convoId);
@@ -108,14 +193,9 @@ const ConvoView* ConvoListModel::getConvo(const QString& convoId) const
     }
 
     const int index = it->second;
-    Q_ASSERT(index >= 0);
-    Q_ASSERT(index < (int)mConvos.size());
 
-    if (index < 0 || index >= (int)mConvos.size())
-    {
-        qWarning() << "Index out of range:" << index << "size:" << mConvos.size();
+    if (!checkIndex(index))
         return nullptr;
-    }
 
     return &mConvos[index];
 }

@@ -31,7 +31,10 @@ public:
     void clear();
     void addConvos(const ATProto::ChatBskyConvo::ConvoViewList& convos, const QString& cursor);
     void updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo);
+    void insertConvo(const ConvoView& convo);
+    void deleteConvo(const QString& convoId);
     const ConvoView* getConvo(const QString& convoId) const;
+    bool hasConvo(const QString& convoId) const { return getConvo(convoId) != nullptr; }
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
     QString getLastRev() const;
@@ -56,6 +59,7 @@ protected:
 
 private:
     void changeData(const QList<int>& roles, int begin = 0, int end = -1);
+    bool checkIndex(int index) const;
 
     const QString& mUserDid;
     std::vector<ConvoView> mConvos;

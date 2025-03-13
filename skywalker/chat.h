@@ -29,9 +29,10 @@ public:
     QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
     QString getLastRev() const;
 
+    Q_INVOKABLE void getAllConvos();
     Q_INVOKABLE void getConvos(QEnums::ConvoStatus status, const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage(QEnums::ConvoStatus status);
-    Q_INVOKABLE void updateConvos(QEnums::ConvoStatus status);
+    void updateConvos(QEnums::ConvoStatus status);
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
     Q_INVOKABLE void acceptConvo(const ConvoView& convo);
@@ -94,6 +95,7 @@ private:
     ATProto::PostMaster* postMaster();
     ConvoListModel* getConvoListModel(QEnums::ConvoStatus status) const;
     void updateConvoInModel(const ATProto::ChatBskyConvo::ConvoView& convo);
+    void updateTotalUnreadCount();
     void setUnreadCount(QEnums::ConvoStatus status, int unread);
     void updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoListOutput& output);
     QString getLastReadMessageId(const ConvoView& convo) const;
