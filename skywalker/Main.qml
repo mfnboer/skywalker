@@ -2007,11 +2007,7 @@ ApplicationWindow {
     function chatOnStartConvoForMembersOk(convo, msg) {
         let component = Qt.createComponent("MessagesListView.qml")
         let view = component.createObject(root, { chat: skywalker.chat, convo: convo })
-
-        view.onClosed.connect((lastMessageId) => {
-            skywalker.chat.getAllConvos() // TODO local update
-            root.popStack()
-        })
+        view.onClosed.connect((lastMessageId) => root.popStack())
 
         skywalker.chat.getMessages(convo.id)
         root.pushStack(view)

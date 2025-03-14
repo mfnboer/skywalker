@@ -64,6 +64,8 @@ public:
     const ListViewBasic& getBlockingByList() const;
     const KnownFollowers& getKnownFollowers() const;
 
+    void setBlocking(const QString& blocking);
+
 private:
     struct PrivateData
     {
@@ -153,6 +155,7 @@ public:
     QString getAvatarThumbUrl() const;
     ImageView getImageView() const;
     ProfileAssociated getAssociated() const;
+    ProfileViewerState& getViewer();
     const ProfileViewerState& getViewer() const;
     const ContentLabelList& getContentLabels() const;
 

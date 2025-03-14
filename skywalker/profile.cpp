@@ -65,6 +65,21 @@ const QString& ProfileViewerState::getBlocking() const
     return mPrivate && mPrivate->mViewerState && mPrivate->mViewerState->mBlocking ? *mPrivate->mViewerState->mBlocking : NULL_STRING;
 }
 
+void ProfileViewerState::setBlocking(const QString& blocking)
+{
+    if (mPrivate && mPrivate->mViewerState)
+    {
+        if (blocking.isEmpty())
+            mPrivate->mViewerState->mBlocking = {};
+        else
+            mPrivate->mViewerState->mBlocking = blocking;
+    }
+    else
+    {
+        qWarning() << "No viewer state to set blocking:" << blocking;
+    }
+}
+
 const QString& ProfileViewerState::getFollowing() const
 {
     return mPrivate && mPrivate->mViewerState && mPrivate->mViewerState->mFollowing ? *mPrivate->mViewerState->mFollowing : NULL_STRING;
@@ -333,7 +348,7 @@ ProfileAssociated BasicProfile::getAssociated() const
     return {};
 }
 
-const ProfileViewerState& BasicProfile::getViewer() const
+ProfileViewerState& BasicProfile::getViewer()
 {
     if (mPrivate)
     {
@@ -360,6 +375,12 @@ const ProfileViewerState& BasicProfile::getViewer() const
         mPrivate->mViewer = ProfileViewerState{};
 
     return *mPrivate->mViewer;
+}
+
+const ProfileViewerState& BasicProfile::getViewer() const
+{
+    ProfileViewerState& viewer = const_cast<BasicProfile*>(this)->getViewer();
+    return viewer;
 }
 
 const ContentLabelList& BasicProfile::getContentLabels() const

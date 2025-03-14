@@ -40,6 +40,7 @@ public:
     void setRev(const QString& rev) { mRev = rev; }
     void setStatus(QEnums::ConvoStatus status) { mStatus = status; }
     void clearUnreadCount() { mUnreadCount = 0; }
+    bool updateMemberBlocked(const QString& did, const QString& blockingUri);
 
 private:
     QString mId;

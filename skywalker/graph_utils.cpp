@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "graph_utils.h"
+#include "chat.h"
 #include "definitions.h"
 #include "graph_listener.h"
 #include "list_cache.h"
@@ -118,6 +119,7 @@ void GraphUtils::block(const QString& did)
                     model->setLocallyBlocked(did, true);
                 });
 
+            mSkywalker->getChat()->updateBlockingUri(did, blockingUri);
             emit blockOk(blockingUri);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -149,6 +151,7 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
                     model->setLocallyBlocked(did, false);
                 });
 
+            mSkywalker->getChat()->updateBlockingUri(did, "");
             emit unblockOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){

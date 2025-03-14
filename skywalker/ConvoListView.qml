@@ -196,14 +196,12 @@ SkyPage {
 
         onBlockOk: (uri) => {
             skywalker.showStatusMessage(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO)
-            chat.getAllConvos(); // TODO local update
         }
 
         onBlockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onUnblockOk: (uri) => {
             skywalker.showStatusMessage(qsTr("Ublocked"), QEnums.STATUS_LEVEL_INFO)
-            chat.getAllConvos(); // TODO local update
         }
 
         onUnblockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)

@@ -39,4 +39,17 @@ QDateTime ConvoView::getLastMessageDate() const
     return mLastMessage.isNull() ? QDateTime{} : mLastMessage.getSentAt();
 }
 
+bool ConvoView::updateMemberBlocked(const QString& did, const QString& blockingUri)
+{
+    auto it = mDidMemberMap.find(did);
+
+    if (it == mDidMemberMap.end())
+        return false;
+
+    auto& chatProfile = mMembers[it->second];
+    BasicProfile& profile = chatProfile.getBasicProfile();
+    profile.getViewer().setBlocking(blockingUri);
+    return true;
+}
+
 }

@@ -31,6 +31,7 @@ public:
     void clear();
     void addConvos(const ATProto::ChatBskyConvo::ConvoViewList& convos, const QString& cursor);
     void updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo);
+    void updateBlockingUri(const QString& did, const QString& blockingUri);
     void insertConvo(const ConvoView& convo);
     void deleteConvo(const QString& convoId);
     const ConvoView* getConvo(const QString& convoId) const;
@@ -60,10 +61,18 @@ protected:
 private:
     void changeData(const QList<int>& roles, int begin = 0, int end = -1);
     bool checkIndex(int index) const;
+    void addConvoToDidMap(const ConvoView& convo);
 
     const QString& mUserDid;
     std::vector<ConvoView> mConvos;
     std::unordered_map<QString, int> mConvoIdIndexMap;
+
+    // This is a lazy map.
+    // This map may contain convo ids that are not in the model anymore.
+    // A did mapping to a convo may not be a member anymore.
+    // All members and convos in the model are always in the map.
+    std::unordered_map<QString, std::unordered_set<QString>> mDidConvoIdMap;
+
     QString mCursor;
     bool mGetConvosInProgress = false;
     bool mLoaded = false;

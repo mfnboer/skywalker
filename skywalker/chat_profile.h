@@ -18,12 +18,12 @@ public:
     explicit ChatBasicProfile(const ATProto::ChatBskyActor::ProfileViewBasic& profile);
 
     const BasicProfile& getBasicProfile() const { return mBasicProfile; }
+    BasicProfile& getBasicProfile() { return mBasicProfile; }
     bool isChatDisabled() const { return mChatDisabled; }
 
     Q_INVOKABLE bool isNull() const { return mBasicProfile.isNull(); }
 
 private:
-    ATProto::ChatBskyActor::ProfileViewBasic::SharedPtr mProfile;
     BasicProfile mBasicProfile;
     bool mChatDisabled = false;
 };

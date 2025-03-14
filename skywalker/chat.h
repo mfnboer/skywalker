@@ -68,6 +68,8 @@ public:
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }
     void setMessagesInProgress(bool inProgress);
 
+    void updateBlockingUri(const QString& did, const QString& blockingUri);
+
     void pause();
     void resume();
 

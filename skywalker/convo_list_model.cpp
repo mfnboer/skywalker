@@ -46,6 +46,7 @@ void ConvoListModel::clear()
     }
 
     mConvoIdIndexMap.clear();
+    mDidConvoIdMap.clear();
     mCursor.clear();
 }
 
@@ -70,6 +71,7 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoViewList& conv
         qDebug() << "New convo, id:" << convo->mId << "rev:" << convo->mRev;
         mConvos.emplace_back(*convo, mUserDid);
         mConvoIdIndexMap[convo->mId] = mConvos.size() - 1;
+        addConvoToDidMap(mConvos.back());
     }
 
     endInsertRows();
@@ -94,7 +96,29 @@ void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
     auto it = mConvoIdIndexMap.find(convo.mId);
     const int index = it->second;
     mConvos[index] = ConvoView{convo, mUserDid};
+    addConvoToDidMap(mConvos[index]);
     changeData({ int(Role::Convo) }, index, index);
+}
+
+void ConvoListModel::updateBlockingUri(const QString& did, const QString& blockingUri)
+{
+    const auto& convoIds = mDidConvoIdMap[did];
+
+    for (const auto& convoId : convoIds)
+    {
+        auto it = mConvoIdIndexMap.find(convoId);
+
+        if (it == mConvoIdIndexMap.end())
+            continue;
+
+        const int index = it->second;
+
+        if (!checkIndex(index))
+            continue;
+
+        mConvos[index].updateMemberBlocked(did, blockingUri);
+        changeData({ int(Role::Convo) }, index, index);
+    }
 }
 
 void ConvoListModel::insertConvo(const ConvoView& convo)
@@ -123,6 +147,7 @@ void ConvoListModel::insertConvo(const ConvoView& convo)
 
     beginInsertRows({}, insertIndex, insertIndex);
     mConvos.insert(insertIt, convo);
+    addConvoToDidMap(convo);
 
     for (auto& [convoId, index] : mConvoIdIndexMap)
     {
@@ -148,6 +173,18 @@ bool ConvoListModel::checkIndex(int index) const
     }
 
     return true;
+}
+
+void ConvoListModel::addConvoToDidMap(const ConvoView& convo)
+{
+    const QString& convoId = convo.getId();
+    const auto& members = convo.getMembers();
+
+    for (const auto& member : members)
+    {
+        const QString& did = member.getBasicProfile().getDid();
+        mDidConvoIdMap[did].insert(convoId);
+    }
 }
 
 void ConvoListModel::deleteConvo(const QString& convoId)

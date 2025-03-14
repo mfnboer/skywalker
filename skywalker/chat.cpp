@@ -142,8 +142,7 @@ QString Chat::getLastRev() const
 
 void Chat::getAllConvos()
 {
-    // When sending these reqeusts one after the other, then the second gets
-    // no response.
+    // Spread requests in times
     getConvos(QEnums::CONVO_STATUS_ACCEPTED);
     QTimer::singleShot(1s, this, [this]{ getConvos(QEnums::CONVO_STATUS_REQUEST); });
 }
@@ -294,7 +293,19 @@ void Chat::startConvoForMembers(const QStringList& dids, const QString& msg)
                 return;
 
             setStartConvoInProgress(false);
-            const ConvoView convo(*output->mConvo, mUserDid);
+            ConvoView convo(*output->mConvo, mUserDid);
+
+            // A new convo with someone who does not follow you do not follow starts
+            // in the REQUEST state. We set it to ACCEPTED as the first message typed will
+            // accept the convo.
+            // Theoretically a user may not type any message. In that case the convo will
+            // move to the REQUEST inbox on the first update of the convo list models.
+            convo.setStatus(QEnums::CONVO_STATUS_ACCEPTED);
+            auto* model = getConvoListModel(convo.getStatus());
+
+            if (model)
+                model->insertConvo(convo);
+
             emit startConvoForMembersOk(convo, msg);
         },
         [this, presence=*mPresence](const QString& error, const QString& errorMsg){
@@ -521,6 +532,12 @@ void Chat::setMessagesInProgress(bool inProgress)
         mGetMessagesInProgress = inProgress;
         emit getMessagesInProgressChanged();
     }
+}
+
+void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)
+{
+    mAcceptedConvoListModel.updateBlockingUri(did, blockingUri);
+    mRequestConvoListModel.updateBlockingUri(did, blockingUri);
 }
 
 MessageListModel* Chat::getMessageListModel(const QString& convoId)
