@@ -190,6 +190,11 @@ SkyPage {
         }
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: chat.leaveConvoInProgress
+    }
+
     GraphUtils {
         id: graphUtils
         skywalker: page.skywalker

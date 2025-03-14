@@ -18,6 +18,7 @@ class Chat : public QObject
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged FINAL)
     Q_PROPERTY(bool startConvoInProgress READ isStartConvoInProgress NOTIFY startConvoInProgressChanged FINAL)
     Q_PROPERTY(bool acceptConvoInProgress READ isAcceptConvoInProgress NOTIFY acceptConvoInProgressChanged FINAL)
+    Q_PROPERTY(bool leaveConvoInProgress READ isLeaveConvoInProgress NOTIFY leaveConvoInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
@@ -53,6 +54,9 @@ public:
     bool isAcceptConvoInProgress() const { return mAcceptConvoInProgress; }
     void setAcceptConvoInProgress(bool inProgress);
 
+    bool isLeaveConvoInProgress() const { return mLeaveConvoInProgress; }
+    void setLeaveConvoInProgress(bool inProgress);
+
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
     Q_INVOKABLE bool messageConvoOpen() const { return !mMessageListModels.empty(); }
@@ -80,6 +84,7 @@ signals:
     void startConvoInProgressChanged();
     void acceptConvoInProgressChanged();
     void acceptConvoOk(ConvoView convo);
+    void leaveConvoInProgressChanged();
     void leaveConvoOk();
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
@@ -124,6 +129,7 @@ private:
     bool mGetMessagesInProgress = false;
     bool mStartConvoInProgress = false;
     bool mAcceptConvoInProgress = false;
+    bool mLeaveConvoInProgress = false;
     QTimer mMessagesUpdateTimer;
     QTimer mAcceptedConvosUpdateTimer;
     QTimer mRequestConvosUpdateTimer;

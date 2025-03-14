@@ -381,12 +381,21 @@ void Chat::leaveConvo(const QString& convoId)
     Q_ASSERT(mBsky);
     qDebug() << "Leave convo:" << convoId;
 
+    if (mLeaveConvoInProgress)
+    {
+        qDebug() << "Leave convo still in progress";
+        return;
+    }
+
+    setLeaveConvoInProgress(true);
+
     mBsky->leaveConvo(convoId,
         [this, presence=*mPresence](ATProto::ChatBskyConvo::LeaveConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
             qDebug() << "Left convo:" << output->mConvoId;
+            setLeaveConvoInProgress(false);
             mAcceptedConvoListModel.deleteConvo(output->mConvoId);
             mRequestConvoListModel.deleteConvo(output->mConvoId);
             emit leaveConvoOk();
@@ -396,6 +405,7 @@ void Chat::leaveConvo(const QString& convoId)
                 return;
 
             qDebug() << "leaveConvo FAILED:" << error << " - " << msg;
+            setLeaveConvoInProgress(false);
             emit failure(msg);
         });
 }
@@ -522,6 +532,15 @@ void Chat::setAcceptConvoInProgress(bool inProgress)
     {
         mAcceptConvoInProgress = inProgress;
         emit acceptConvoInProgressChanged();
+    }
+}
+
+void Chat::setLeaveConvoInProgress(bool inProgress)
+{
+    if (inProgress != mLeaveConvoInProgress)
+    {
+        mLeaveConvoInProgress = inProgress;
+        emit leaveConvoInProgressChanged();
     }
 }
 
