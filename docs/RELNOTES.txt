@@ -1,3 +1,7 @@
+next
+====
+* Fallback to bsky.social for login when handle resolution via DNS fails
+
 4.1
 ===
 * Match muted words against alt-texts and link cards

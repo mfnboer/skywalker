@@ -216,16 +216,16 @@ ApplicationWindow {
 
         onLoginOk: start()
 
-        onLoginFailed: (error, msg, handleOrDid, password) => {
+        onLoginFailed: (error, msg, host, handleOrDid, password) => {
             closeStartupStatus()
 
             if (handleOrDid.startsWith("did:")) {
                 const did = handleOrDid
                 const userSettings = getUserSettings()
                 const user = userSettings.getUser(did)
-                loginUser(user.handle, did, error, msg, password)
+                loginUser(host, user.handle, did, error, msg, password)
             } else {
-                loginUser(handleOrDid, "", error, msg, password)
+                loginUser(host, handleOrDid, "", error, msg, password)
             }
         }
 
@@ -725,6 +725,7 @@ ApplicationWindow {
                 }
                 else {
                     const userSettings = skywalker.getUserSettings()
+                    const host = userSettings.getHost(profile.did)
                     loginUser(profile.handle, profile.did)
                 }
             }
@@ -1109,9 +1110,10 @@ ApplicationWindow {
         pushStack(page, StackView.Immediate)
     }
 
-    function loginUser(handle, did, error="", msg="", password="") {
+    function loginUser(host, handle, did, error="", msg="", password="") {
         let component = Qt.createComponent("Login.qml")
         let page = component.createObject(root, {
+                host: host,
                 user: handle,
                 did: did,
                 errorCode: error,
@@ -1122,10 +1124,10 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((handle, password, did, rememberPassword, authFactorToken) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken) => {
                 popStack()
                 const user = did ? did : handle
-                skywalkerLogin(user, password, rememberPassword, authFactorToken)
+                skywalkerLogin(host, user, password, rememberPassword, authFactorToken)
         })
         pushStack(page)
     }
@@ -1137,9 +1139,9 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((handle, password, did, rememberPassword) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword) => {
                 popStack()
-                skywalkerLogin(handle, password, rememberPassword)
+                skywalkerLogin(host, handle, password, rememberPassword)
         })
 
         pushStack(page)
@@ -1178,10 +1180,11 @@ ApplicationWindow {
                 else {
                     if (userSettings.getRememberPassword(profile.did)) {
                         const password = userSettings.getPassword(profile.did)
-                        skywalkerLogin(profile.did, password, true)
+                        skywalkerLogin("", profile.did, password, true)
                     }
                     else {
-                        loginUser(profile.handle, profile.did)
+                        const host = userSettings.getHost(profile.did)
+                        loginUser(host, profile.handle, profile.did)
                     }
                 }
         })
@@ -1202,9 +1205,9 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(user, password, rememberPassword, authFactorToken) {
+    function skywalkerLogin(host, user, password, rememberPassword, authFactorToken) {
         showStartupStatus()
-        skywalker.login(user, password, rememberPassword, authFactorToken)
+        skywalker.login(host, user, password, rememberPassword, authFactorToken)
     }
 
     function signOutCurrentUser() {

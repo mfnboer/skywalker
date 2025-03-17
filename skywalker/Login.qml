@@ -6,13 +6,14 @@ import atproto.lib
 
 SkyPage {
     property string did
+    property string host
     property string user
     property string errorCode
     property string errorMsg
     property string password
     property var userSettings: root.getSkywalker().getUserSettings()
 
-    signal accepted(string handle, string password, string did, bool rememberPassword, string authFactorTokenField)
+    signal accepted(string host, string handle, string password, string did, bool rememberPassword, string authFactorTokenField)
     signal canceled
 
     id: loginPage
@@ -42,6 +43,33 @@ SkyPage {
             id: loginForm
             width: parent.width
             Accessible.role: Accessible.Pane
+
+            AccessibleText {
+                Layout.fillWidth: true
+                topPadding: 10
+                leftPadding: 10
+                font.bold: true
+                color: guiSettings.textColor
+                text: qsTr("Sign into")
+            }
+
+            ComboBox {
+                id: hostField
+                Layout.fillWidth: true
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
+                model: ["bsky.social"]
+                editable: true
+                editText: host
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                enabled: isNewAccount()
+                activeFocusOnTab: false
+
+                Accessible.role: Accessible.ComboBox
+                Accessible.name: qsTr(`Sign into network ${editText}`)
+                Accessible.description: qsTr("Choose network to sign into")
+                Accessible.editable: enabled
+            }
 
             AccessibleText {
                 Layout.fillWidth: true
@@ -143,10 +171,10 @@ SkyPage {
             anchors.top: loginForm.bottom
             anchors.right: parent.right
             text: qsTr("OK")
-            enabled: userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
+            enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
             onClicked: {
-                const handle = autoCompleteHandle(userField.text)
-                loginPage.accepted(handle, passwordField.text, loginPage.did, rememberPasswordSwitch.checked, authFactorTokenField.text)
+                const handle = autoCompleteHandle(userField.text, hostField.editText)
+                loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did, rememberPasswordSwitch.checked, authFactorTokenField.text)
             }
         }
     }
@@ -155,14 +183,14 @@ SkyPage {
         id: keyboardHandler
     }
 
-    function autoCompleteHandle(handle) {
+    function autoCompleteHandle(handle, host) {
         let newHandle = handle
 
         if (newHandle.charAt(0) === "@")
             newHandle = newHandle.slice(1)
 
         if (!newHandle.includes("."))
-            newHandle = newHandle + ".bsky.social"
+            newHandle = newHandle + "." + host
 
         return newHandle
     }

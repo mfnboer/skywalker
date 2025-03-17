@@ -74,7 +74,7 @@ public:
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
 
-    Q_INVOKABLE void login(const QString user, QString password, bool rememberPassword, const QString authFactorToken);
+    Q_INVOKABLE void login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeSession(bool retry = false);
     Q_INVOKABLE void deleteSession();
@@ -245,7 +245,7 @@ public:
 
 signals:
     void loginOk();
-    void loginFailed(QString error, QString msg, QString handle, QString password);
+    void loginFailed(QString error, QString msg, const QString host, QString handle, QString password);
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
     void sessionDeleted();
@@ -323,7 +323,7 @@ private:
     void stopRefreshTimers();
     void refreshSession(const std::function<void()>& cbDone = {});
     void refreshNotificationCount();
-    void updateUser(const QString& did);
+    void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;

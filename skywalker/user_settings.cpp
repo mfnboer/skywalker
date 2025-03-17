@@ -137,22 +137,20 @@ QString UserSettings::getActiveUserDid() const
     return mSettings.value("activeUser").toString();
 }
 
-void UserSettings::addUser(const QString& did)
+void UserSettings::addUser(const QString& did, const QString& host)
 {
     auto users = getUserDidList();
 
     if (users.contains(did))
     {
         qDebug() << "User already added:" << did;
-
-        // host field removed in v4.1
-        mSettings.remove(key(did, "host"));
         return;
     }
 
     users.append(did);
     users.sort();
     mSettings.setValue("users", users);
+    mSettings.setValue(key(did, "host"), host);
 }
 
 void UserSettings::removeUser(const QString& did)
@@ -165,6 +163,11 @@ void UserSettings::removeUser(const QString& did)
     const auto activeUser = getActiveUserDid();
     if (did == activeUser)
         setActiveUserDid({});
+}
+
+QString UserSettings::getHost(const QString& did) const
+{
+    return mSettings.value(key(did, "host")).toString();
 }
 
 void UserSettings::setRememberPassword(const QString& did, bool enable)

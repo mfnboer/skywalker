@@ -133,17 +133,17 @@ Skywalker::~Skywalker()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString user, QString password, bool rememberPassword, const QString authFactorToken)
+void Skywalker::login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken)
 {
-    auto xrpc = std::make_unique<Xrpc::Client>();
+    auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
-        [this, user, password, rememberPassword]{
+        [this, host, user, password, rememberPassword]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
-            updateUser(session->mDid);
+            updateUser(session->mDid, host);
             saveSession(*session);
             mUserSettings.setRememberPassword(session->mDid, rememberPassword);
 
@@ -153,10 +153,10 @@ void Skywalker::login(const QString user, QString password, bool rememberPasswor
             emit loginOk();
             startRefreshTimers();
         },
-        [this, user, password](const QString& error, const QString& msg){
+        [this, host, user, password](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(error, msg, user, password);
+            emit loginFailed(error, msg, host, user, password);
         });
 }
 
@@ -185,7 +185,7 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    login(did, mUserSettings.getPassword(did), true, {});
+    login("", did, mUserSettings.getPassword(did), true, {});
     return true;
 }
 
@@ -3404,10 +3404,10 @@ DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 
 
 
-void Skywalker::updateUser(const QString& did)
+void Skywalker::updateUser(const QString& did, const QString& host)
 {
     mUserDid = did;
-    mUserSettings.addUser(did);
+    mUserSettings.addUser(did, host);
     mUserSettings.setActiveUserDid(did);
 }
 
