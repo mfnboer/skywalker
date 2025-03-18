@@ -7,6 +7,8 @@ Column {
     readonly property int margin: 10
     required property basicprofile postAuthor
     required property string postText
+    required property bool postHasUnknownEmbed
+    required property string postUnknownEmbedType
     required property list<imageview> postImages
     required property date postDateTime
     required property list<language> postLanguageLabels
@@ -47,7 +49,7 @@ Column {
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: postText
-        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia ? 5 : 0
+        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
         visible: postVisible() && postText
 
         onLinkActivated: (link) => root.openLink(link)
@@ -190,7 +192,6 @@ Column {
             font.pointSize: guiSettings.scaledFont(7/8)
         }
     }
-
 
     function movedOffScreen() {
         if (postVideo && mediaLoader.item)
@@ -360,6 +361,15 @@ Column {
         }
     }
 
+    Component {
+        id: unknownEmbedComponent
+
+        UnknownEmbedView {
+            width: parent.width
+            unknownEmbedType: postUnknownEmbedType
+        }
+    }
+
     function showPostAttachements() {
         showLanguageLabels()
 
@@ -380,6 +390,10 @@ Column {
         }
         else if (postExternal) {
             mediaLoader.sourceComponent = externalViewComponent
+            mediaLoader.active = true
+        }
+        else if (postHasUnknownEmbed) {
+            mediaLoader.sourceComponent = unknownEmbedComponent
             mediaLoader.active = true
         }
 

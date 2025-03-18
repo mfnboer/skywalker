@@ -42,6 +42,8 @@ public:
         PostIndexedDateTime,
         PostIndexedSecondsAgo,
         PostRepostedByAuthor,
+        PostHasUnknownEmbed,
+        PostUnknownEmbedType,
         PostImages,
         PostVideo,
         PostExternal,

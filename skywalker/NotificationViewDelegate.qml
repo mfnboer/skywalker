@@ -16,6 +16,8 @@ Rectangle {
     required property string notificationReasonPostPlainText
     required property bool notificationReasonPostIsReply
     required property basicprofile notificationReasonPostReplyToAuthor
+    required property bool notificationReasonPostHasUnknownEmbed
+    required property string notificationReasonPostUnknownEmbedType
     required property list<imageview> notificationReasonPostImages
     required property var notificationReasonPostVideo
     required property var notificationReasonPostExternal // externalview (var allows NULL)
@@ -35,6 +37,8 @@ Rectangle {
     required property string notificationPostText
     required property string notificationPostPlainText
     required property date notificationPostTimestamp
+    required property bool notificationPostHasUnknownEmbed
+    required property string notificationPostUnknownEmbedType
     required property list<imageview> notificationPostImages
     required property var notificationPostVideo
     required property var notificationPostExternal // externalview (var allows NULL)
@@ -243,6 +247,8 @@ Rectangle {
                     postAuthor: notificationAuthor
                     postText: notificationPostBlocked ? qsTr("🚫 Blocked") : notificationPostText
                     postPlainText: notificationPostBlocked ? "" : notificationPostPlainText
+                    postHasUnknownEmbed: notificationPostHasUnknownEmbed
+                    postUnknownEmbedType: notificationPostUnknownEmbedType
                     postImages: notificationPostImages
                     postLanguageLabels: notificationPostLanguages
                     postContentLabels: notificationPostLabels
@@ -440,6 +446,8 @@ Rectangle {
                     }
                     postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
                                        notificationReasonPostPlainText : ""
+                    postHasUnknownEmbed: notificationReasonPostHasUnknownEmbed
+                    postUnknownEmbedType: notificationReasonPostUnknownEmbedType
                     postImages: notificationReasonPostImages
                     postLanguageLabels: notificationReasonPostLanguages
                     postContentLabels: notificationReasonPostLabels

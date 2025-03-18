@@ -285,6 +285,10 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getIndexedAt();
     case Role::PostIndexedSecondsAgo:
         return double((QDateTime::currentDateTimeUtc() - post.getIndexedAt()) / 1s);
+    case Role::PostHasUnknownEmbed:
+        return post.hasUnknownEmbed();
+    case Role::PostUnknownEmbedType:
+        return post.getUnknownEmbedType();
     case Role::PostImages:
         return QVariant::fromValue(post.getImages());
     case Role::PostVideo:
@@ -578,6 +582,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
         { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },
         { int(Role::PostRepostedByAuthor), "postRepostedByAuthor" },
+        { int(Role::PostHasUnknownEmbed), "postHasUnknownEmbed" },
+        { int(Role::PostUnknownEmbedType), "postUnknownEmbedType" },
         { int(Role::PostImages), "postImages" },
         { int(Role::PostVideo), "postVideo" },
         { int(Role::PostExternal), "postExternal" },

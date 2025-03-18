@@ -17,6 +17,8 @@ Rectangle {
     required property date postIndexedDateTime
     required property double postIndexedSecondsAgo
     required property basicprofile postRepostedByAuthor
+    required property bool postHasUnknownEmbed
+    required property string postUnknownEmbedType
     required property list<imageview> postImages
     required property var postVideo // videoView
     required property var postExternal // externalview (var allows NULL)
@@ -426,6 +428,8 @@ Rectangle {
                 postAuthor: author
                 postText: postEntry.postText
                 postPlainText: postEntry.postPlainText
+                postHasUnknownEmbed: postEntry.postHasUnknownEmbed
+                postUnknownEmbedType: postEntry.postUnknownEmbedType
                 postImages: postEntry.postImages
                 postLanguageLabels: postLanguages
                 postContentLabels: postLabels

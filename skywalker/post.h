@@ -71,6 +71,8 @@ public:
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
 
+    bool hasUnknownEmbed() const;
+    QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const override;
     QList<ImageView> getDraftImages() const;
     VideoView::Ptr getVideoView() const override;

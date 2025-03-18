@@ -10,6 +10,8 @@ class RecordWithMediaView
 {
     Q_GADGET
     Q_PROPERTY(RecordView record READ getRecord FINAL)
+    Q_PROPERTY(bool hasUnknownEmbed READ hasUnknownEmbed FINAL)
+    Q_PROPERTY(QString unknownEmbedType READ getUnknownEmbedType FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
     Q_PROPERTY(QVariant video READ getVideo FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
@@ -24,6 +26,8 @@ public:
     RecordView& getRecord() const;
     RecordView::SharedPtr getRecordPtr() const;
     void setRecord(const RecordView::SharedPtr& record);
+    bool hasUnknownEmbed() const;
+    QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const;
     QVariant getVideo() const;
     QVariant getExternal() const;

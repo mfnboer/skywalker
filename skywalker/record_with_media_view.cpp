@@ -39,6 +39,22 @@ void RecordWithMediaView::setRecord(const RecordView::SharedPtr& record)
     mRecordView = record;
 }
 
+bool RecordWithMediaView::hasUnknownEmbed() const
+{
+    if (!mView)
+        return false;
+
+    return mView->mMediaType == ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN;
+}
+
+QString RecordWithMediaView::getUnknownEmbedType() const
+{
+    if (!hasUnknownEmbed())
+        return {};
+
+    return mView->mRawMediaType;
+}
+
 QList<ImageView> RecordWithMediaView::getImages() const
 {
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)

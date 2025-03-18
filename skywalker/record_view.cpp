@@ -193,6 +193,22 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr RecordView::getEmbedView(ATProto::Ap
     return embed;
 }
 
+bool RecordView::hasUnknownEmbed() const
+{
+    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN);
+    return embed != nullptr;
+}
+
+QString RecordView::getUnknownEmbedType() const
+{
+    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN);
+
+    if (!embed)
+        return {};
+
+    return embed->mRawType;
+}
+
 QList<ImageView> RecordView::getImages() const
 {
     ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView;

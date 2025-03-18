@@ -89,6 +89,8 @@ Rectangle {
                 postText: draftPostView.postText
                 postPlainText: draftPostView.postPlainText
                 postVideo: draftPostView.postVideo
+                postHasUnknownEmbed: false
+                postUnknownEmbedType: ""
                 postImages: draftPostView.postImages
                 postLanguageLabels: draftPostView.postLanguages
                 postContentLabels: draftPostView.postLabels

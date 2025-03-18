@@ -439,6 +439,22 @@ QString Post::getReplyRootUri() const
     return ref ? ref->mUri : QString();
 }
 
+bool Post::hasUnknownEmbed() const
+{
+    if (!mPost || !mPost->mEmbed)
+        return false;
+
+    return mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN;
+}
+
+QString Post::getUnknownEmbedType() const
+{
+    if (!hasUnknownEmbed())
+        return {};
+
+    return mPost->mEmbed->mRawType;
+}
+
 QList<ImageView> Post::getImages() const
 {
     if (!mPost)

@@ -99,6 +99,15 @@ Item {
             }
         }
 
+        Component {
+            id: unknownEmbedComponent
+
+            UnknownEmbedView {
+                width: parent.width
+                unknownEmbedType: record.unknownEmbedType
+            }
+        }
+
         Component.onCompleted: {
             if (record.images.length > 0) {
                 const compList = [images1Component, images2Component, images3Component, images4Component]
@@ -111,6 +120,10 @@ Item {
             }
             else if (record.external) {
                 mediaLoader.sourceComponent = externalViewComponent
+                mediaLoader.active = true
+            }
+            else if (record.hasUnknownEmbed) {
+                mediaLoader.sourceComponent = unknownEmbedComponent
                 mediaLoader.active = true
             }
         }

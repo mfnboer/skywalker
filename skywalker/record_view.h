@@ -26,6 +26,8 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(bool postIsReply READ isReply FINAL)
     Q_PROPERTY(BasicProfile replyToAuthor READ getReplyToAuthor FINAL)
+    Q_PROPERTY(bool hasUnknownEmbed READ hasUnknownEmbed FINAL)
+    Q_PROPERTY(QString unknownEmbedType READ getUnknownEmbedType FINAL)
     Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
     Q_PROPERTY(LanguageList languages READ getLanguages FINAL)
     Q_PROPERTY(ContentLabelList contentLabels READ getContentLabels FINAL)
@@ -69,6 +71,8 @@ public:
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
+    bool hasUnknownEmbed() const;
+    QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const override;
     QVariant getVideo() const;
     VideoView::Ptr getVideoView() const override;

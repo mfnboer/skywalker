@@ -497,6 +497,7 @@ qt_add_qml_module(libskywalker
         QML_FILES KnownFollowers.qml
         QML_FILES ConvoRequestButtonRow.qml
         QML_FILES FeedViewerState.qml
+        QML_FILES UnknownEmbedView.qml
 )
 
 if (NOT ANDROID)

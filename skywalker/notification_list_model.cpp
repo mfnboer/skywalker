@@ -548,6 +548,10 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         return QVariant::fromValue(*author);
     }
+    case Role::NotificationReasonPostHasUnknownEmbed:
+        return notification.getReasonPost(mReasonPostCache).hasUnknownEmbed();
+    case Role::NotificationReasonPostUnknownEmbedType:
+        return notification.getReasonPost(mReasonPostCache).getUnknownEmbedType();
     case Role::NotificationReasonPostImages:
         return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getImages());
     case Role::NotificationReasonPostVideo:
@@ -646,6 +650,10 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         const auto& post = notification.getNotificationPost(mPostCache);
         return post.isNotFound() ? notification.getTimestamp() : post.getTimelineTimestamp();
     }
+    case Role::NotificationPostHasUnknownEmbed:
+        return notification.getNotificationPost(mPostCache).hasUnknownEmbed();
+    case Role::NotificationPostUnknownEmbedType:
+        return notification.getNotificationPost(mPostCache).getUnknownEmbedType();
     case Role::NotificationPostImages:
         return QVariant::fromValue(notification.getNotificationPost(mPostCache).getImages());
     case Role::NotificationPostVideo:
@@ -891,6 +899,8 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostPlainText), "notificationReasonPostPlainText" },
         { int(Role::NotificationReasonPostIsReply), "notificationReasonPostIsReply" },
         { int(Role::NotificationReasonPostReplyToAuthor), "notificationReasonPostReplyToAuthor" },
+        { int(Role::NotificationReasonPostHasUnknownEmbed), "notificationReasonPostHasUnknownEmbed" },
+        { int(Role::NotificationReasonPostUnknownEmbedType), "notificationReasonPostUnknownEmbedType" },
         { int(Role::NotificationReasonPostImages), "notificationReasonPostImages" },
         { int(Role::NotificationReasonPostVideo), "notificationReasonPostVideo" },
         { int(Role::NotificationReasonPostLanguages), "notificationReasonPostLanguages" },
@@ -911,6 +921,8 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostPlainText), "notificationPostPlainText" },
         { int(Role::NotificationPostLanguages), "notificationPostLanguages" },
         { int(Role::NotificationPostTimestamp), "notificationPostTimestamp" },
+        { int(Role::NotificationPostHasUnknownEmbed), "notificationPostHasUnknownEmbed" },
+        { int(Role::NotificationPostUnknownEmbedType), "notificationPostUnknownEmbedType" },
         { int(Role::NotificationPostImages), "notificationPostImages" },
         { int(Role::NotificationPostVideo), "notificationPostVideo" },
         { int(Role::NotificationPostExternal), "notificationPostExternal" },
