@@ -80,6 +80,8 @@ SkyPage {
 
             delegate: GeneratorViewDelegate {
                 width: page.width
+
+                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
             }
 
             FlickableRefresher {
@@ -118,6 +120,7 @@ SkyPage {
             delegate: GeneratorViewDelegate {
                 width: page.width
 
+                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
             }
 
             FlickableRefresher {
@@ -141,6 +144,11 @@ SkyPage {
         id: typeaheadSearchTimer
         interval: 1000
         onTriggered: searchFeeds()
+    }
+
+    FeedUtils {
+        id: feedUtils
+        skywalker: page.skywalker // qmllint disable missing-type
     }
 
     SearchUtils {

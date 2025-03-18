@@ -2,12 +2,16 @@
 // License: GPLv3
 #include "feed_list_model.h"
 #include "favorite_feeds.h"
+#include "skywalker.h"
 
 namespace Skywalker {
 
-FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, QObject* parent) :
+FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
+                             QObject* parent) :
     QAbstractListModel(parent),
-    mFavoriteFeeds(favoriteFeeds)
+    mFavoriteFeeds(favoriteFeeds),
+    mUserDid(skywalker->getUserDid()),
+    mUserSettings(*skywalker->getUserSettings())
 {
     connect(&mFavoriteFeeds, &FavoriteFeeds::feedSaved, this, [this]{ feedSavedChanged(); });
     connect(&mFavoriteFeeds, &FavoriteFeeds::feedPinned, this, [this]{ feedPinnedChanged(); });
@@ -38,6 +42,8 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
         return change && change->mLikeUri ? *change->mLikeUri : feed.getViewer().getLike();
     case Role::FeedLikeTransient:
         return change ? change->mLikeTransient : false;
+    case Role::FeedHideFollowing:
+        return mUserSettings.getFeedHideFollowing(mUserDid, feed.getUri());
     case Role::FeedCreator:
     {
         auto creator = feed.getCreator();
@@ -147,6 +153,7 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
         { int(Role::FeedLikeCount), "feedLikeCount" },
         { int(Role::FeedLikeUri), "feedLikeUri" },
         { int(Role::FeedLikeTransient), "feedLikeTransient" },
+        { int(Role::FeedHideFollowing), "feedHideFollowing" },
         { int(Role::FeedCreator), "feedCreator" },
         { int(Role::FeedSaved), "feedSaved" },
         { int(Role::FeedPinned), "feedPinned" },
@@ -169,6 +176,11 @@ void FeedListModel::likeUriChanged()
 void FeedListModel::likeTransientChanged()
 {
     changeData({ int(Role::FeedLikeTransient) });
+}
+
+void FeedListModel::hideFollowingChanged()
+{
+    changeData({ int(Role::FeedHideFollowing) });
 }
 
 void FeedListModel::profileChanged()

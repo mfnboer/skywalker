@@ -870,6 +870,15 @@ bool PostFeedModel::mustHideContent(const Post& post) const
     if (AbstractPostFeedModel::mustHideContent(post))
         return true;
 
+    if (mUserSettings.getFeedHideFollowing(mUserDid, getPreferencesFeedKey()))
+    {
+        if (mFollowing.contains(post.getAuthorDid()))
+        {
+            qDebug() << "Hide post from followed user:" << post.getAuthorDid();
+            return true;
+        }
+    }
+
     if (post.isRepost())
     {
         const auto repostedBy = post.getRepostedBy();

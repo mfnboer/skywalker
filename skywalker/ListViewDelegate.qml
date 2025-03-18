@@ -12,6 +12,7 @@ Rectangle {
     required property bool listPinned
     required property bool listHideFromTimeline
     required property bool listHideReplies
+    required property bool listHideFollowing
     required property bool listSync
     property bool showList: listVisible()
     property bool allowEdit: true
@@ -31,6 +32,7 @@ Rectangle {
     signal hideList(listview list)
     signal unhideList(listview list)
     signal hideReplies(listview list, bool hide)
+    signal hideFollowing(listview list, bool hide)
     signal syncList(listview list, bool sync)
 
     onListPinnedChanged: {
@@ -40,6 +42,9 @@ Rectangle {
 
             if (listHideReplies)
                 hideReplies(list, false)
+
+            if (listHideFollowing)
+                hideFollowing(list, false)
         }
     }
 
@@ -139,6 +144,7 @@ Rectangle {
                 blockedUri: listBlockedUri
                 hideFromTimeline: listHideFromTimeline
                 hideReplies: listHideReplies
+                hideFollowing: listHideFollowing
                 sync: listSync
             }
         }
@@ -362,6 +368,20 @@ Rectangle {
                 anchors.fill: parent
                 enabled: !listPinned
                 onClicked: skywalker.showStatusMessage(qsTr("Show replies can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+            }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Show following")
+            checkable: true
+            checked: !listHideFollowing
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
+            onToggled: hideFollowing(list, !checked)
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !listPinned
+                onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
             }
         }
 

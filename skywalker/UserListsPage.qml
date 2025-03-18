@@ -79,6 +79,7 @@ SkyPage {
                 width: page.width
 
                 onHideReplies: (list, hide) => graphUtils.hideReplies(list.uri, hide)
+                onHideFollowing: (list, hide) => graphUtils.hideFollowing(list.uri, hide)
                 onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
             }
 

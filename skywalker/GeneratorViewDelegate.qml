@@ -13,13 +13,23 @@ Rectangle {
     required property profile feedCreator
     required property bool feedSaved
     required property bool feedPinned
+    required property bool feedHideFollowing
     required property bool endOfFeed
     property bool showFeed: feedVisible()
     property int maxTextLines: 1000
 
+    signal hideFollowing(generatorview feed, bool hide)
+
     id: generatorView
     height: grid.height
     color: "transparent"
+
+    onFeedPinnedChanged: {
+        if (!feedPinned) {
+            if (feedHideFollowing)
+                hideFollowing(feed, false)
+        }
+    }
 
     GridLayout {
         id: grid
@@ -97,6 +107,11 @@ Rectangle {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(feedCreator.did)
                 }
+            }
+
+            FeedViewerState {
+                topPadding: 5
+                hideFollowing: feedHideFollowing
             }
         }
 
@@ -237,6 +252,18 @@ Rectangle {
                         onTriggered: root.reportFeed(feed)
 
                         MenuItemSvg { svg: SvgOutline.report }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Show following")
+                        checkable: true
+                        checked: !feedHideFollowing
+                        onToggled: hideFollowing(feed, !checked)
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: !feedPinned
+                            onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite feeds."), QEnums.STATUS_LEVEL_INFO, 10)
+                        }
                     }
                 }
             }

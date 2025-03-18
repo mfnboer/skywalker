@@ -115,4 +115,16 @@ void FeedUtils::undoLike(const QString& likeUri, const QString& cid)
         });
 }
 
+void FeedUtils::hideFollowing(const QString& feedUri, bool hide)
+{
+    Q_ASSERT(mSkywalker);
+    auto* settings = mSkywalker->getUserSettings();
+    settings->setFeedHideFollowing(mSkywalker->getUserDid(), feedUri, hide);
+
+    mSkywalker->makeLocalModelChange(
+        [feedUri, hide](LocalFeedModelChanges* model){
+            model->hideFollowing(feedUri, hide);
+        });
+}
+
 }

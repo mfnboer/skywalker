@@ -1769,7 +1769,7 @@ ApplicationWindow {
     }
 
     function viewModerationLists(modelId) {
-        let component = Qt.createComponent("ModerationListsPage.qml")
+        let component = guiSettings.createComponent("ModerationListsPage.qml")
         let page = component.createObject(root, {
                 modelId: modelId,
                 skywalker: skywalker
@@ -1780,14 +1780,14 @@ ApplicationWindow {
     }
 
     function viewFeedDescription(feed) {
-        let component = Qt.createComponent("FeedDescriptionView.qml")
+        let component = guiSettings.createComponent("FeedDescriptionView.qml")
         let view = component.createObject(root, { feed: feed, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
     function viewListFeedDescription(list) {
-        let component = Qt.createComponent("ListFeedDescriptionView.qml")
+        let component = guiSettings.createComponent("ListFeedDescriptionView.qml")
         let view = component.createObject(root, { list: list, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)

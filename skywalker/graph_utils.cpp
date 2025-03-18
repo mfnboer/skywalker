@@ -839,6 +839,18 @@ void GraphUtils::hideReplies(const QString& listUri, bool hide)
         });
 }
 
+void GraphUtils::hideFollowing(const QString& listUri, bool hide)
+{
+    Q_ASSERT(mSkywalker);
+    auto* settings = mSkywalker->getUserSettings();
+    settings->setFeedHideFollowing(mSkywalker->getUserDid(), listUri, hide);
+
+    mSkywalker->makeLocalModelChange(
+        [listUri, hide](LocalListModelChanges* model){
+            model->hideFollowing(listUri, hide);
+        });
+}
+
 bool GraphUtils::areRepostsMuted(const QString& did) const
 {
     Q_ASSERT(mSkywalker);

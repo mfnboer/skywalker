@@ -5,12 +5,14 @@
 #include "generator_view.h"
 #include "local_feed_model_changes.h"
 #include "local_profile_changes.h"
+#include "user_settings.h"
 #include <QAbstractListModel>
 #include <deque>
 
 namespace Skywalker {
 
 class FavoriteFeeds;
+class Skywalker;
 
 class FeedListModel : public QAbstractListModel,
                       public BaseListModel,
@@ -28,6 +30,7 @@ public:
         FeedLikeCount,
         FeedLikeUri,
         FeedLikeTransient,
+        FeedHideFollowing,
         FeedSaved,
         FeedPinned,
         EndOfFeed
@@ -35,7 +38,8 @@ public:
 
     using Ptr = std::unique_ptr<FeedListModel>;
 
-    explicit FeedListModel(const FavoriteFeeds& favoriteFeeds, QObject* parent = nullptr);
+    explicit FeedListModel(const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
+                           QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -64,6 +68,7 @@ protected:
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
     virtual void likeTransientChanged() override;
+    virtual void hideFollowingChanged() override;
 
     // LocalProfileChanges
     virtual void profileChanged() override;
@@ -78,6 +83,8 @@ private:
     FeedList mFeeds;
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
+    QString mUserDid;
+    const UserSettings& mUserSettings;
     bool mGetFeedInProgress = false;
     QString mFeedError;
 };

@@ -43,6 +43,11 @@ void LocalListModelChanges::hideReplies(const QString&, bool)
     hideRepliesChanged();
 }
 
+void LocalListModelChanges::hideFollowing(const QString&, bool)
+{
+    hideFollowingChanged();
+}
+
 void LocalListModelChanges::updateMemberListItemUri(const QString& uri, const QString& listItemUri)
 {
     mChanges[uri].mMemberListItemUri = listItemUri;

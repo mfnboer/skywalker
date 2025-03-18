@@ -11,6 +11,7 @@ SkyPage {
     property bool feedLikeTransient: false
     property bool isSavedFeed: skywalker.favoriteFeeds.isSavedFeed(feed.uri)
     property bool isPinnedFeed: skywalker.favoriteFeeds.isPinnedFeed(feed.uri)
+    property bool feedHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     property bool showWarnedMedia: false
@@ -21,6 +22,13 @@ SkyPage {
     id: page
 
     Accessible.role: Accessible.Pane
+
+    onIsPinnedFeedChanged: {
+        if (!isPinnedFeed) {
+            if (feedHideFollowing)
+                hideFollowing(false)
+        }
+    }
 
     header: SimpleHeader {
         text: isVideoFeed ? qsTr("Video feed") : qsTr("Feed")
@@ -186,6 +194,43 @@ SkyPage {
                         svg: SvgOutline.report
                     }
                 }
+                AccessibleMenuItem {
+                    text: qsTr("Show following")
+                    checkable: true
+                    checked: !feedHideFollowing
+                    onToggled: {
+                        feedUtils.hideFollowing(feed.uri, !checked)
+                        feedHideFollowing = !checked
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: !isPinnedFeed
+                        onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite feeds."), QEnums.STATUS_LEVEL_INFO, 10)
+                    }
+                }
+            }
+        }
+
+        FeedViewerState {
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            topPadding: 5
+            hideFollowing: feedHideFollowing
+        }
+
+        Rectangle {
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            height: contentLabels.height
+            color: "transparent"
+
+            ContentLabels {
+                id: contentLabels
+                anchors.left: parent.left
+                anchors.right: undefined
+                contentLabels: feed.labels
+                contentAuthorDid: feed.creator.did
             }
         }
 
@@ -205,21 +250,6 @@ SkyPage {
 
             Accessible.role: Accessible.StaticText
             Accessible.name: feed.description
-        }
-
-        Rectangle {
-            Layout.columnSpan: 3
-            Layout.fillWidth: true
-            height: contentLabels.height
-            color: "transparent"
-
-            ContentLabels {
-                id: contentLabels
-                anchors.left: parent.left
-                anchors.right: undefined
-                contentLabels: feed.labels
-                contentAuthorDid: feed.creator.did
-            }
         }
 
         Rectangle {
@@ -292,6 +322,11 @@ SkyPage {
             feedUtils.undoLike(likeUri, cid)
         else
             feedUtils.like(uri, cid)
+    }
+
+    function hideFollowing(hide) {
+        feedUtils.hideFollowing(feed.uri, hide)
+        feedHideFollowing = hide
     }
 
     function contentVisible() {

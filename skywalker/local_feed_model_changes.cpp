@@ -33,4 +33,9 @@ void LocalFeedModelChanges::updateLikeTransient(const QString& cid, bool transie
     likeTransientChanged();
 }
 
+void LocalFeedModelChanges::hideFollowing(const QString&, bool)
+{
+    hideFollowingChanged();
+}
+
 }

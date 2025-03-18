@@ -437,6 +437,24 @@ QStringList UserSettings::getFeedHideRepliesUris(const QString& did) const
     return getFeedViewUris(did, "feedhideReplies");
 }
 
+Q_INVOKABLE void UserSettings::setFeedHideFollowing(const QString& did, const QString& feedUri, bool hide)
+{
+    if (hide)
+        mSettings.setValue(uriKey(did, "feedhideFollowing", feedUri), hide);
+    else
+        mSettings.remove(uriKey(did, "feedhideFollowing", feedUri));
+}
+
+Q_INVOKABLE bool UserSettings::getFeedHideFollowing(const QString& did, const QString& feedUri) const
+{
+    return mSettings.value(uriKey(did, "feedhideFollowing", feedUri), false).toBool();
+}
+
+QStringList UserSettings::getFeedHideFollowingUris(const QString& did) const
+{
+    return getFeedViewUris(did, "feedhideFollowing");
+}
+
 void UserSettings::setUserOrderedPinnedFeeds(const QString& did, QStringList favoriteKeys)
 {
     mSettings.setValue(key(did, "userOrderedPinnedFeeds"), favoriteKeys);

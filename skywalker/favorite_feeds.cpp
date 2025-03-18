@@ -849,6 +849,10 @@ void FavoriteFeeds::cleanupSettings()
     qDebug() << "Cleanup feed hide replies settings";
     removeNonPinnedFeeds(settings.getFeedHideRepliesUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedHideReplies(userDid, uri, false); });
+
+    qDebug() << "Cleanup feed hide following settings";
+    removeNonPinnedFeeds(settings.getFeedHideFollowingUris(userDid),
+        [&settings, &userDid](const QString& uri){ settings.setFeedHideFollowing(userDid, uri, false); });
 }
 
 template<typename Container>

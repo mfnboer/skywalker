@@ -30,11 +30,13 @@ public:
     void updateLikeCountDelta(const QString& cid, int delta);
     void updateLikeUri(const QString& cid, const QString& likeUri);
     void updateLikeTransient(const QString& cid, bool transient);
+    void hideFollowing(const QString& uri, bool hide);
 
 protected:
     virtual void likeCountChanged() = 0;
     virtual void likeUriChanged() = 0;
     virtual void likeTransientChanged() = 0;
+     virtual void hideFollowingChanged() = 0;
 
 private:
     // CID to change

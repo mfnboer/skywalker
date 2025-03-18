@@ -13,6 +13,7 @@ SkyPage {
     property bool listHideFromTimeline: skywalker.getTimelineHide().hasList(list.uri)
     property bool listSync: skywalker.getUserSettings().mustSyncFeed(skywalker.getUserDid(), list.uri)
     property bool listHideReplies: skywalker.getUserSettings().getFeedHideReplies(skywalker.getUserDid(), list.uri)
+    property bool listHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), list.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
 
@@ -30,6 +31,9 @@ SkyPage {
 
             if (listHideReplies)
                 hideReplies(false)
+
+            if (listHideFollowing)
+                hideFollowing(false)
         }
     }
 
@@ -140,6 +144,7 @@ SkyPage {
                 blockedUri: listBlockedUri
                 hideFromTimeline: listHideFromTimeline
                 hideReplies: listHideReplies
+                hideFollowing: listHideFollowing
                 sync: listSync
             }
 
@@ -339,6 +344,22 @@ SkyPage {
             }
         }
         AccessibleMenuItem {
+            text: qsTr("Show following")
+            checkable: true
+            checked: !listHideFollowing
+            visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
+            onToggled: {
+                graphUtils.hideFollowing(list.uri, !checked)
+                listHideFollowing = !checked
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !isPinnedList
+                onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+            }
+        }
+        AccessibleMenuItem {
             text: qsTr("Rewind on startup")
             checkable: true
             checked: listSync
@@ -435,6 +456,11 @@ SkyPage {
     function hideReplies(hide) {
         graphUtils.hideReplies(list.uri, hide)
         listHideReplies = hide
+    }
+
+    function hideFollowing(hide) {
+        graphUtils.hideFollowing(list.uri, hide)
+        listHideFollowing = hide
     }
 
     function isOwnList() {

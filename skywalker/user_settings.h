@@ -130,6 +130,10 @@ public:
     Q_INVOKABLE bool getFeedHideReplies(const QString& did, const QString& feedUri) const;
     QStringList getFeedHideRepliesUris(const QString& did) const;
 
+    Q_INVOKABLE void setFeedHideFollowing(const QString& did, const QString& feedUri, bool hide);
+    Q_INVOKABLE bool getFeedHideFollowing(const QString& did, const QString& feedUri) const;
+    QStringList getFeedHideFollowingUris(const QString& did) const;
+
     void setUserOrderedPinnedFeeds(const QString& did, QStringList favoriteKeys);
     QStringList getUserOrderedPinnedFeed(const QString& did) const;
     // [FAVORITES]

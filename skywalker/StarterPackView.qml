@@ -187,6 +187,8 @@ SkyPage {
 
             delegate: GeneratorViewDelegate {
                 width: feedListView.width
+
+                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
             }
 
             EmptyListIndication {
@@ -249,6 +251,11 @@ SkyPage {
             listUri = uri
             start()
         }
+    }
+
+    FeedUtils {
+        id: feedUtils
+        skywalker: page.skywalker
     }
 
     GraphUtils {

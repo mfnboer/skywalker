@@ -1,5 +1,6 @@
 next
 ====
+* Option to hide posts from people you follow from a favorite feed
 * Fallback to bsky.social for login when handle resolution via DNS fails
 * Bug fixes
 
