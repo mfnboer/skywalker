@@ -366,7 +366,7 @@ ColumnLayout {
     }
 
     function selectThreadColor() {
-        let component = Qt.createComponent("ColorSelector.qml")
+        let component = guiSettings.createComponent("ColorSelector.qml")
         let cs = component.createObject(page)
         cs.selectedColor = userSettings.threadColor
         cs.onRejected.connect(() => cs.destroy())
@@ -378,7 +378,7 @@ ColumnLayout {
     }
 
     function selectBackgroundColor() {
-        let component = Qt.createComponent("ColorSelector.qml")
+        let component = guiSettings.createComponent("ColorSelector.qml")
         let cs = component.createObject(page)
         cs.selectedColor = userSettings.backgroundColor
         cs.onRejected.connect(() => cs.destroy())
@@ -393,7 +393,7 @@ ColumnLayout {
     }
 
     function selectAccentColor() {
-        let component = Qt.createComponent("ColorSelector.qml")
+        let component = guiSettings.createComponent("ColorSelector.qml")
         let cs = component.createObject(page)
         cs.selectedColor = userSettings.accentColor
         cs.onRejected.connect(() => cs.destroy())
@@ -411,7 +411,7 @@ ColumnLayout {
     }
 
     function selectLinkColor() {
-        let component = Qt.createComponent("ColorSelector.qml")
+        let component = guiSettings.createComponent("ColorSelector.qml")
         let cs = component.createObject(page)
         cs.selectedColor = userSettings.accentColor
         cs.onRejected.connect(() => cs.destroy())

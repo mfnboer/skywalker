@@ -98,7 +98,7 @@ ScrollView {
     }
 
     function appeal(contentLabel, contentGroup, labelerHandle) {
-        let component = Qt.createComponent("ReportAppeal.qml")
+        let component = guiSettings.createComponent("ReportAppeal.qml")
         let page = component.createObject(root.currentStackItem(), {
             label: contentLabel,
             contentGroup: contentGroup,
@@ -109,7 +109,7 @@ ScrollView {
     }
 
     function showInfo(contentLabel) {
-        let component = Qt.createComponent("ContentLabelInfo.qml")
+        let component = guiSettings.createComponent("ContentLabelInfo.qml")
         let infoPage = component.createObject(root.currentStackItem(),
                 { contentAuthorDid: contentAuthorDid, label: contentLabel })
         infoPage.onAccepted.connect(() => infoPage.destroy())

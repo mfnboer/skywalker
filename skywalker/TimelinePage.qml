@@ -152,7 +152,7 @@ SkyPage {
             let item = viewStack.itemAt(count - 1)
             const counter = item ? item.unreadPosts : 0
 
-            let component = Qt.createComponent("SkyTabWithCloseButton.qml")
+            let component = guiSettings.createComponent("SkyTabWithCloseButton.qml")
 
             // Creates with null parent, otherwise the button will be added
             // immediately to the end of that tab bar

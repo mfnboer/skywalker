@@ -849,7 +849,7 @@ SkyPage {
                 }
 
                 function newComposePostItem() {
-                    let component = Qt.createComponent("ComposePostItem.qml")
+                    let component = guiSettings.createComponent("ComposePostItem.qml")
                     return component.createObject(page)
                 }
 
@@ -1963,7 +1963,7 @@ SkyPage {
     }
 
     function editThreadPrefix() {
-        let component = Qt.createComponent("EditThreadPrefix.qml")
+        let component = guiSettings.createComponent("EditThreadPrefix.qml")
         let dialog = component.createObject(page, { prefix: threadPrefix })
 
         dialog.onAccepted.connect(() => {
@@ -2158,7 +2158,7 @@ SkyPage {
     }
 
     function showDraftPosts() {
-        let component = Qt.createComponent("DraftPostsView.qml")
+        let component = guiSettings.createComponent("DraftPostsView.qml")
         let draftsPage = component.createObject(page, { model: draftPosts.getDraftPostsModel() })
         draftsPage.onClosed.connect(() => root.popStack())
         draftsPage.onSelected.connect((index) => {
@@ -2173,7 +2173,7 @@ SkyPage {
     }
 
     function addAnniversaryCard() {
-        let component = Qt.createComponent("AnniversaryCardMaker.qml")
+        let component = guiSettings.createComponent("AnniversaryCardMaker.qml")
         let cardPage = component.createObject(page)
         cardPage.onCanceled.connect(() => root.popStack())
         cardPage.onAddCard.connect((source, years) => {
@@ -2267,7 +2267,7 @@ SkyPage {
     function addReplyRestrictions() {
         createRestrictionListModel()
 
-        let component = Qt.createComponent("AddReplyRestrictions.qml")
+        let component = guiSettings.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(page, {
                 rootUri: "",
                 postUri: "",
@@ -2335,7 +2335,7 @@ SkyPage {
         if (!postItem)
             return
 
-        let component = Qt.createComponent("AddContentWarning.qml")
+        let component = guiSettings.createComponent("AddContentWarning.qml")
         let cwPage = component.createObject(page, {
                 suggestive: postItem.cwSuggestive,
                 nudity: postItem.cwNudity,
@@ -2428,7 +2428,7 @@ SkyPage {
 
     function editVideo(videoSource, startMs = 0, endMs = 0, removeAudio = false, newHeight = 0) {
         console.debug("Edit video, start:", startMs, "end:", endMs, "height:", newHeight)
-        let component = Qt.createComponent("VideoEditor.qml")
+        let component = guiSettings.createComponent("VideoEditor.qml")
         let videoPage = component.createObject(page, {
                 videoSource: videoSource,
                 startMs: startMs,
@@ -2460,7 +2460,7 @@ SkyPage {
     }
 
     function showVideoUploadLimits(limits) {
-        let component = Qt.createComponent("VideoUploadLimits.qml")
+        let component = guiSettings.createComponent("VideoUploadLimits.qml")
         let limitsPage = component.createObject(page, { limits: limits })
         limitsPage.onAccepted.connect(() => limitsPage.destroy())
         limitsPage.open()

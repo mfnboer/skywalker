@@ -144,7 +144,7 @@ ScrollView {
     }
 
     function editMeme(index) {
-        let component = Qt.createComponent("MemeEditor.qml")
+        let component = guiSettings.createComponent("MemeEditor.qml")
         let memePage = component.createObject(page, {
             imgSource: images[index],
             memeTopText: memeTopTexts[index],

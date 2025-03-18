@@ -283,7 +283,7 @@ SkyPage {
 
 
     function editDetails() {
-        let component = Qt.createComponent("ReportDetailsEditor.qml")
+        let component = guiSettings.createComponent("ReportDetailsEditor.qml")
         let detailsPage = component.createObject(page, { text: page.details })
         detailsPage.onDetailsChanged.connect((text) => { // qmllint disable missing-property
                 page.details = text

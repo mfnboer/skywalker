@@ -156,7 +156,7 @@ ListView {
     }
 
     function addHashtagEntry() {
-        let component = Qt.createComponent("AddFocusHashtag.qml")
+        let component = guiSettings.createComponent("AddFocusHashtag.qml")
         let dialog = component.createObject(view);
 
         dialog.onAccepted.connect(() => {
@@ -173,7 +173,7 @@ ListView {
     }
 
     function addHashtagToEntry(entry) {
-        let component = Qt.createComponent("AddFocusHashtag.qml")
+        let component = guiSettings.createComponent("AddFocusHashtag.qml")
         let dialog = component.createObject(view);
 
         dialog.onAccepted.connect(() => {
@@ -194,7 +194,7 @@ ListView {
     }
 
     function editHashtagInEntry(entry, hashtag) {
-        let component = Qt.createComponent("AddFocusHashtag.qml")
+        let component = guiSettings.createComponent("AddFocusHashtag.qml")
         let dialog = component.createObject(view, { focusHashtag: hashtag });
 
         dialog.onAccepted.connect(() => {
@@ -219,7 +219,7 @@ ListView {
     }
 
     function setHighlightColor(entry) {
-        let component = Qt.createComponent("ColorSelector.qml")
+        let component = guiSettings.createComponent("ColorSelector.qml")
         let cs = component.createObject(view)
         cs.selectedColor = entry.highlightColor
         cs.onRejected.connect(() => cs.destroy())

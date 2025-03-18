@@ -295,7 +295,7 @@ SkyPage {
     // "file://" or "image://" source
     function photoPicked(source) {
         console.debug("IMAGE:", source)
-        let component = Qt.createComponent("EditAvatar.qml")
+        let component = guiSettings.createComponent("EditAvatar.qml")
         let page = component.createObject(editListPage, { photoSource: source, relativeRadius: 0.1 })
         page.onClosed.connect(() => { // qmllint disable missing-property
             root.popStack()

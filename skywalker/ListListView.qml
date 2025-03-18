@@ -109,7 +109,7 @@ ListView {
 
 
     function newList() {
-        let component = Qt.createComponent("EditList.qml")
+        let component = guiSettings.createComponent("EditList.qml")
         let page = component.createObject(view, {
                 skywalker: skywalker,
                 purpose: model.getPurpose()
@@ -131,7 +131,7 @@ ListView {
     }
 
     function editList(list, index) {
-        let component = Qt.createComponent("EditList.qml")
+        let component = guiSettings.createComponent("EditList.qml")
         let page = component.createObject(view, {
                 skywalker: skywalker,
                 purpose: list.purpose,

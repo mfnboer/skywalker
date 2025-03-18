@@ -587,7 +587,7 @@ ApplicationWindow {
         }
 
         // onInviteCodes: {
-        //     let component = Qt.createComponent("InviteCodesView.qml")
+        //     let component = guiSettings.createComponent("InviteCodesView.qml")
         //     const codes = inviteCodeStore.getCodes()
         //     const failedToLoad = inviteCodeStore.failedToLoad()
         //     let page = component.createObject(root, { codes: codes, failedToLoad: failedToLoad })
@@ -598,7 +598,7 @@ ApplicationWindow {
         // }
 
         onBookmarks: {
-            let component = Qt.createComponent("Bookmarks.qml")
+            let component = guiSettings.createComponent("Bookmarks.qml")
             let page = component.createObject(root, { skywalker: skywalker })
             page.onClosed.connect(() => { popStack() })
             pushStack(page)
@@ -651,7 +651,7 @@ ApplicationWindow {
         }
 
         onMutedWords: {
-            let component = Qt.createComponent("MutedWords.qml")
+            let component = guiSettings.createComponent("MutedWords.qml")
             let page = component.createObject(root, { skywalker: skywalker })
             page.onClosed.connect(() => { popStack() })
             pushStack(page)
@@ -659,7 +659,7 @@ ApplicationWindow {
         }
 
         onFocusHashtags: {
-            let component = Qt.createComponent("FocusHashtags.qml")
+            let component = guiSettings.createComponent("FocusHashtags.qml")
             let page = component.createObject(root)
             page.onClosed.connect(() => { popStack() })
             pushStack(page)
@@ -1050,7 +1050,7 @@ ApplicationWindow {
     }
 
     function showStartupStatus() {
-        let component = Qt.createComponent("StartupStatus.qml")
+        let component = guiSettings.createComponent("StartupStatus.qml")
         let page = component.createObject(root)
         page.setStatus(qsTr("Connecting"))
         pushStack(page, StackView.Immediate)
@@ -1085,14 +1085,14 @@ ApplicationWindow {
     }
 
     function showAbout() {
-        let component = Qt.createComponent("About.qml")
+        let component = guiSettings.createComponent("About.qml")
         let page = component.createObject(root)
         page.onClosed.connect(() => { popStack() })
         pushStack(page)
     }
 
     function signIn() {
-        let component = Qt.createComponent("SignIn.qml")
+        let component = guiSettings.createComponent("SignIn.qml")
         let page = component.createObject(root)
         page.onSignIn.connect(() => {
             popStack()
@@ -1111,7 +1111,7 @@ ApplicationWindow {
     }
 
     function loginUser(host, handle, did, error="", msg="", password="") {
-        let component = Qt.createComponent("Login.qml")
+        let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root, {
                 host: host,
                 user: handle,
@@ -1133,7 +1133,7 @@ ApplicationWindow {
     }
 
     function newUser() {
-        let component = Qt.createComponent("Login.qml")
+        let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root)
         page.onCanceled.connect(() => {
                 popStack()
@@ -1151,7 +1151,7 @@ ApplicationWindow {
         const userSettings = skywalker.getUserSettings()
         const userList = userSettings.getUserListWithAddAccount()
 
-        let component = Qt.createComponent("SelectSignInUser.qml")
+        let component = guiSettings.createComponent("SelectSignInUser.qml")
         let page = component.createObject(root, { userList: userList })
         page.onCanceled.connect(() => {
                 popStack()
@@ -1233,7 +1233,7 @@ ApplicationWindow {
     }
 
     function composeVideoPost(initialText = "", videoSource = "") {
-        let component = Qt.createComponent("ComposePost.qml")
+        let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 initialText: initialText,
@@ -1254,7 +1254,7 @@ ApplicationWindow {
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, initialText = "", imageSource = "")
     {
-        let component = Qt.createComponent("ComposePost.qml")
+        let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 initialText: initialText,
@@ -1283,7 +1283,7 @@ ApplicationWindow {
     function doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource)
     {
-        let component = Qt.createComponent("ComposePost.qml")
+        let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 initialText: initialText,
@@ -1302,7 +1302,7 @@ ApplicationWindow {
     }
 
     function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor, initialText = "") {
-        let component = Qt.createComponent("ComposePost.qml")
+        let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
                 initialText: initialText,
@@ -1394,7 +1394,7 @@ ApplicationWindow {
         skywalker.getListList(restrictionsListModelId)
         postUtils.setAllowListUris(replyRestrictionLists)
 
-        let component = Qt.createComponent("AddReplyRestrictions.qml")
+        let component = guiSettings.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(currentStackItem(), {
                 rootUri: rootUri,
                 postUri: uri,
@@ -1512,7 +1512,7 @@ ApplicationWindow {
     }
 
     function viewPostThread(modelId, postEntryIndex) {
-        let component = Qt.createComponent("PostThreadView.qml")
+        let component = guiSettings.createComponent("PostThreadView.qml")
         let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
@@ -1527,7 +1527,7 @@ ApplicationWindow {
     }
 
     function viewFullImage(imageList, currentIndex) {
-        let component = Qt.createComponent("FullImageView.qml")
+        let component = guiSettings.createComponent("FullImageView.qml")
         let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
@@ -1536,7 +1536,7 @@ ApplicationWindow {
     }
 
     function viewFullAnimatedImage(imageUrl, imageTitle) {
-        let component = Qt.createComponent("FullAnimatedImageView.qml")
+        let component = guiSettings.createComponent("FullAnimatedImageView.qml")
         let view = component.createObject(root, { imageUrl: imageUrl, imageTitle: imageTitle })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
@@ -1635,7 +1635,7 @@ ApplicationWindow {
     }
 
     function createFeedsView() {
-        let feedsComponent = Qt.createComponent("SearchFeeds.qml")
+        let feedsComponent = guiSettings.createComponent("SearchFeeds.qml")
         let feedsView = feedsComponent.createObject(root,
                 { skywalker: skywalker, timeline: getTimelineView() })
         feedsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
@@ -1689,7 +1689,7 @@ ApplicationWindow {
     function viewQuotePostFeed(quoteUri) {
         const modelId = skywalker.createQuotePostFeedModel(quoteUri)
         skywalker.getQuotesFeed(modelId)
-        let component = Qt.createComponent("QuotePostFeedView.qml")
+        let component = guiSettings.createComponent("QuotePostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
@@ -1713,7 +1713,7 @@ ApplicationWindow {
     function viewPostListFeed(list) {
         const modelId = skywalker.createPostFeedModel(list)
         skywalker.getListFeed(modelId)
-        let component = Qt.createComponent("PostFeedView.qml")
+        let component = guiSettings.createComponent("PostFeedView.qml")
         let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
         view.onClosed.connect(() => { popStack() })
         root.pushStack(view)
@@ -1734,7 +1734,7 @@ ApplicationWindow {
     }
 
     function viewAuthorList(modelId, title, description = "", showFollow = true) {
-        let component = Qt.createComponent("AuthorListView.qml")
+        let component = guiSettings.createComponent("AuthorListView.qml")
         let view = component.createObject(root, {
                 title: title,
                 modelId: modelId,
@@ -1748,7 +1748,7 @@ ApplicationWindow {
     }
 
     function viewSimpleAuthorList(title, profiles) {
-        let component = Qt.createComponent("SimpleAuthorListPage.qml")
+        let component = guiSettings.createComponent("SimpleAuthorListPage.qml")
         let view = component.createObject(root, {
                 title: title,
                 model: profiles
@@ -1758,7 +1758,7 @@ ApplicationWindow {
     }
 
     function viewUserLists(modelId) {
-        let component = Qt.createComponent("UserListsPage.qml")
+        let component = guiSettings.createComponent("UserListsPage.qml")
         let page = component.createObject(root, {
                 modelId: modelId,
                 skywalker: skywalker
@@ -1808,7 +1808,7 @@ ApplicationWindow {
     }
 
     function editContentFilterSettings() {
-        let component = Qt.createComponent("ContentFilterSettings.qml")
+        let component = guiSettings.createComponent("ContentFilterSettings.qml")
         let contentGroupListModel = skywalker.getGlobalContentGroupListModel()
         let labelerModelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LABELERS, "")
         let form = component.createObject(root, {
@@ -1820,14 +1820,14 @@ ApplicationWindow {
     }
 
     function reportAuthor(author) {
-        let component = Qt.createComponent("Report.qml")
+        let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, author: author })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
     function reportPost(postUri, postCid, postText, postDateTime, author) {
-        let component = Qt.createComponent("Report.qml")
+        let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, {
                 skywalker: skywalker,
                 postUri: postUri,
@@ -1840,28 +1840,28 @@ ApplicationWindow {
     }
 
     function reportFeed(feed) {
-        let component = Qt.createComponent("Report.qml")
+        let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, feed: feed })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
     function reportList(list) {
-        let component = Qt.createComponent("Report.qml")
+        let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, list: list })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
     function reportStarterPack(starterPack) {
-        let component = Qt.createComponent("Report.qml")
+        let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, starterPack: starterPack })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
     function reportDirectMessage(message, convoId, sender) {
-        let component = Qt.createComponent("Report.qml")
+        let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, {
                 skywalker: skywalker,
                 message: message,
@@ -2008,7 +2008,7 @@ ApplicationWindow {
     }
 
     function chatOnStartConvoForMembersOk(convo, msg) {
-        let component = Qt.createComponent("MessagesListView.qml")
+        let component = guiSettings.createComponent("MessagesListView.qml")
         let view = component.createObject(root, { chat: skywalker.chat, convo: convo })
         view.onClosed.connect((lastMessageId) => root.popStack())
 

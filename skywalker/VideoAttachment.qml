@@ -68,7 +68,7 @@ VideoThumbnail {
     }
 
     function editAltText() {
-        let component = Qt.createComponent("AltTextEditor.qml")
+        let component = guiSettings.createComponent("AltTextEditor.qml")
         let altPage = component.createObject(page, {
             imgSource: video,
             sourceIsVideo: true,

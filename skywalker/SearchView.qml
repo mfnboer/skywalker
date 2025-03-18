@@ -871,7 +871,7 @@ SkyPage {
 
         console.debug("AUTHOR:", authorName, otherAuthorHandle)
 
-        let component = Qt.createComponent("SearchPostScope.qml")
+        let component = guiSettings.createComponent("SearchPostScope.qml")
         let scopePage = component.createObject(page, {
                 skywalker: page.skywalker,
                 authorName: authorName,
@@ -969,7 +969,7 @@ SkyPage {
     }
 
     function focusHashtag(hashtag) {
-        let component = Qt.createComponent("FocusHashtags.qml")
+        let component = guiSettings.createComponent("FocusHashtags.qml")
         let focusPage = component.createObject(page)
         focusPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
         skywalker.focusHashtags.addEntry(hashtag.slice(1)) // strip #-symbol

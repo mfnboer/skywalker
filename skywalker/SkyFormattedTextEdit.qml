@@ -355,7 +355,7 @@ TextEdit {
     }
 
     function createAuthorTypeaheadView() {
-        let component = Qt.createComponent("AuthorTypeaheadView.qml")
+        let component = guiSettings.createComponent("AuthorTypeaheadView.qml")
         let page = component.createObject(parentPage, {
                 parentPage: parentPage,
                 editText: editText,
@@ -365,7 +365,7 @@ TextEdit {
     }
 
     function createHashtagTypeaheadView() {
-        let component = Qt.createComponent("HashtagTypeaheadView.qml")
+        let component = guiSettings.createComponent("HashtagTypeaheadView.qml")
         let page = component.createObject(parentPage, {
                 parentPage: parentPage,
                 editText: editText,

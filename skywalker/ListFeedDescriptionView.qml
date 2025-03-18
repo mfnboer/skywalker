@@ -421,7 +421,7 @@ SkyPage {
 
 
     function editList() {
-        let component = Qt.createComponent("EditList.qml")
+        let component = guiSettings.createComponent("EditList.qml")
         let editPage = component.createObject(page, {
                 skywalker: skywalker,
                 purpose: list.purpose,
@@ -438,7 +438,7 @@ SkyPage {
     }
 
     function addUser() {
-        let component = Qt.createComponent("SearchAuthor.qml")
+        let component = guiSettings.createComponent("SearchAuthor.qml")
         let searchPage = component.createObject(page, { skywalker: skywalker })
         searchPage.onAuthorClicked.connect((profile) => { // qmllint disable missing-property
             graphUtils.addListUser(list.uri, profile)

@@ -220,7 +220,7 @@ SkyPage {
     }
 
     function addConvo(msg = "") {
-        let component = Qt.createComponent("StartConversation.qml")
+        let component = guiSettings.createComponent("StartConversation.qml")
         let convoPage = component.createObject(page)
         convoPage.onClosed.connect(() => root.popStack())
 
@@ -252,7 +252,7 @@ SkyPage {
     }
 
     function viewMessages(convo) {
-        let component = Qt.createComponent("MessagesListView.qml")
+        let component = guiSettings.createComponent("MessagesListView.qml")
         let view = component.createObject(page, { chat: chat, convo: convo })
         view.onClosed.connect(() => {
                 root.popStack()

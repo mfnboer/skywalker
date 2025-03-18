@@ -168,7 +168,7 @@ Item {
     }
 
     function askDiscardSaveQuestion(parent, question, onDiscardCb, onSaveCb) {
-        let component = Qt.createComponent("Message.qml")
+        let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save })
         message.onDiscarded.connect(() => { message.destroy(); onDiscardCb() })
         message.onAccepted.connect(() => { message.destroy(); onSaveCb() })
@@ -177,7 +177,7 @@ Item {
     }
 
     function askYesNoQuestion(parent, question, onYesCb, onNoCb = () => {}) {
-        let component = Qt.createComponent("Message.qml")
+        let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Yes | Dialog.No })
         message.onAccepted.connect(() => { message.destroy(); onYesCb() })
         message.onRejected.connect(() => { message.destroy(); onNoCb() })
@@ -185,7 +185,7 @@ Item {
     }
 
     function notice(parent, msg, emoji = "", onOkCb = () => {}) {
-        let component = Qt.createComponent("Message.qml")
+        let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { emoji: emoji, standardButtons: Dialog.Ok })
         message.onAccepted.connect(() => { message.destroy(); onOkCb() })
         message.onRejected.connect(() => message.destroy())
@@ -193,7 +193,7 @@ Item {
     }
 
     function askConvertGif(parent, gifSource, onVideoCb, onImageCb) {
-        let component = Qt.createComponent("ConvertGifDialog.qml")
+        let component = guiSettings.createComponent("ConvertGifDialog.qml")
         let dialog = component.createObject(parent, { gifSource: gifSource })
         dialog.onAccepted.connect(() => { dialog.destroy(); onVideoCb() })
         dialog.onRejected.connect(() => { dialog.destroy(); onImageCb() })
@@ -201,7 +201,7 @@ Item {
     }
 
     function showProgress(parent, msg, onCancelCb) {
-        let component = Qt.createComponent("ProgressDialog.qml")
+        let component = guiSettings.createComponent("ProgressDialog.qml")
         let dialog = component.createObject(parent)
         dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
         dialog.show(msg)

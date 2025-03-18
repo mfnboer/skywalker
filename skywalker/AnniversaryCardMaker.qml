@@ -111,7 +111,7 @@ SkyPage {
     }
 
     function selectColor(color, setColor) {
-        let component = Qt.createComponent("ColorSelector.qml")
+        let component = guiSettings.createComponent("ColorSelector.qml")
         let cs = component.createObject(page)
         cs.selectedColor = color
         cs.onRejected.connect(() => addCardButton.enabled = true)

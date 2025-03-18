@@ -361,7 +361,7 @@ SkyPage {
 
     // "file://" or "image://" source
     function avatarPhotoPicked(source) {
-        let component = Qt.createComponent("EditAvatar.qml")
+        let component = guiSettings.createComponent("EditAvatar.qml")
         let page = component.createObject(editProfilePage, { photoSource: source })
         page.onClosed.connect(() => { // qmllint disable missing-property
             root.popStack()
@@ -380,7 +380,7 @@ SkyPage {
 
     // "file://" or "image://" source
     function bannerPhotoPicked(source) {
-        let component = Qt.createComponent("EditAvatar.qml")
+        let component = guiSettings.createComponent("EditAvatar.qml")
 
         const pageMargin = 10
         const maskWidth = width - 2 * pageMargin

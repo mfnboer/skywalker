@@ -1234,7 +1234,7 @@ SkyPage {
 
 
     function editAuthor(author) {
-        let component = Qt.createComponent("EditProfile.qml")
+        let component = guiSettings.createComponent("EditProfile.qml")
         let editPage = component.createObject(page, {
                 skywalker: skywalker,
                 authorDid: author.did,
@@ -1344,7 +1344,7 @@ SkyPage {
         let listModel = skywalker.getListListModel(listModelId)
         listModel.setMemberCheckDid(author.did)
         listModel.setExcludeInternalLists(true)
-        let component = Qt.createComponent("AddUserListListView.qml")
+        let component = guiSettings.createComponent("AddUserListListView.qml")
         let view = component.createObject(page, { author: author, modelId: listModelId, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
