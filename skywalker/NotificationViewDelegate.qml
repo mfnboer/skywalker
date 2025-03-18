@@ -331,7 +331,7 @@ Rectangle {
                         onPin: root.pinPost(notificationPostUri, notificationCid)
                         onUnpin: root.unpinPost(notificationCid)
                         onBlockAuthor: root.blockAuthor(notificationPostAuthor.did)
-                        onShowEmojiNames: root.showEmojiNamesList(postPlainText)
+                        onShowEmojiNames: root.showEmojiNamesList(notificationPostPlainText)
                     }
                 }
             }
