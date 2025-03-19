@@ -19,6 +19,11 @@ static constexpr int MIN_LANGUAGE_IDENTIFICATION_LENGTH = 20;
 
 int PostUtils::sNextRequestId = 1;
 
+inline bool isCursorInMatch(int cursor, const ATProto::RichTextMaster::ParsedMatch& match)
+{
+    return cursor >= match.mStartIndex && cursor <= match.mEndIndex;
+}
+
 PostUtils::PostUtils(QObject* parent) :
     WrappedSkywalker(parent),
     Presence(),
@@ -1232,7 +1237,7 @@ void PostUtils::setFirstWebLink(const QString& link)
 void PostUtils::setFirstWebLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
 {
     setFirstWebLink(linkMatch.mMatch);
-    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+    const bool inLink = isCursorInMatch(cursor, linkMatch);
     setCursorInFirstWebLink(inLink);
 }
 
@@ -1260,7 +1265,7 @@ void PostUtils::setFirstPostLink(const QString& link)
 void PostUtils::setFirstPostLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
 {
     setFirstPostLink(linkMatch.mMatch);
-    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+    const bool inLink = isCursorInMatch(cursor, linkMatch);
     setCursorInFirstPostLink(inLink);
 }
 
@@ -1288,7 +1293,7 @@ void PostUtils::setFirstFeedLink(const QString& link)
 void PostUtils::setFirstFeedLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
 {
     setFirstFeedLink(linkMatch.mMatch);
-    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+    const bool inLink = isCursorInMatch(cursor, linkMatch);
     setCursorInFirstFeedLink(inLink);
 }
 
@@ -1316,7 +1321,7 @@ void PostUtils::setFirstListLink(const QString& link)
 void PostUtils::setFirstListLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor)
 {
     setFirstListLink(linkMatch.mMatch);
-    const bool inLink = cursor >= linkMatch.mStartIndex && cursor <= linkMatch.mEndIndex;
+    const bool inLink = isCursorInMatch(cursor, linkMatch);
     setCursorInFirstListLink(inLink);
 }
 
@@ -1327,6 +1332,24 @@ void PostUtils::setCursorInFirstListLink(bool inLink)
 
     mCursorInFirstListLink = inLink;
     emit cursorInFirstListLinkChanged();
+}
+
+void PostUtils::setWebLinks(const WebLink::List& webLinks)
+{
+    if (webLinks == mWebLinks)
+        return;
+
+    mWebLinks = webLinks;
+    emit webLinksChanged();
+}
+
+void PostUtils::setCursorInWebLink(int index)
+{
+    if (index == mCursorInWebLink)
+        return;
+
+    mCursorInWebLink = index;
+    emit cursorInWebLinkChanged();
 }
 
 void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
@@ -1358,6 +1381,8 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
     bool postLinkFound = false;
     bool feedLinkFound = false;
     bool listLinkFound = false;
+    WebLink::List webLinks;
+    int cursorInWebLink = -1;
     mLinkShorteningReduction = 0;
     QString textWithoutLinks = "";
     int textIndex = 0;
@@ -1408,12 +1433,20 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
                             listLinkFound = true;
                         }
                     }
-                    else if (!webLinkFound)
+                    else
                     {
                         qDebug() << "Web link:" << facet.mMatch;
+                        webLinks.push_back(WebLink(facet.mMatch, facet.mStartIndex, facet.mEndIndex));
 
-                        setFirstWebLink(facet, cursor);
-                        webLinkFound = true;
+                        if (isCursorInMatch(cursor, facet))
+                            cursorInWebLink = webLinks.size() - 1;
+
+                        if (!webLinkFound)
+                        {
+                            qDebug() << "First web link:" << facet.mMatch;
+                            setFirstWebLink(facet, cursor);
+                            webLinkFound = true;
+                        }
                     }
                 }
             }
@@ -1451,6 +1484,8 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
         }
     }
 
+    setWebLinks(webLinks);
+    setCursorInWebLink(cursorInWebLink);
     textWithoutLinks += fullText.sliced(textIndex);
     setTextWithoutLinks(textWithoutLinks);
 
@@ -1471,6 +1506,22 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
     if (!listLinkFound)
         setFirstListLink({});
+}
+
+void PostUtils::updateCursor(int cursor)
+{
+    for (int i = 0; i < (int)mWebLinks.size(); ++i)
+    {
+        const auto& link = mWebLinks[i];
+
+        if (cursor >= link.getStartIndex() && cursor <= link.getEndIndex())
+        {
+            setCursorInWebLink(i);
+            return;
+        }
+    }
+
+    setCursorInWebLink(-1);
 }
 
 void PostUtils::cacheTags(const QString& text)

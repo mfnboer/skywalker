@@ -22,6 +22,8 @@ TextEdit {
     property bool cursorInFirstFeedLink: false
     property string firstListLink
     property bool cursorInFirstListLink: false
+    property list<string> webLinks
+    property int cursorInWebLink: -1
     property int prevTextLen: 0
     property int lastDeltaTextLen: 0
 
@@ -58,6 +60,8 @@ TextEdit {
 
         ensureVisible(cursorRectangle)
     }
+
+    onCursorPositionChanged: postUtils.updateCursor(cursorPosition)
 
     onFocusChanged: {
         if (focus)
@@ -338,6 +342,8 @@ TextEdit {
         onCursorInFirstFeedLinkChanged: editText.cursorInFirstFeedLink = cursorInFirstFeedLink
         onFirstListLinkChanged: editText.firstListLink = firstListLink
         onCursorInFirstListLinkChanged: editText.cursorInFirstListLink = cursorInFirstListLink
+        onWebLinksChanged: editText.webLinks = webLinks
+        onCursorInWebLinkChanged: editText.cursorInWebLink = cursorInWebLink
     }
 
 

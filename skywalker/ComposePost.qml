@@ -1249,8 +1249,18 @@ SkyPage {
         }
 
         SvgTransparentButton {
-            id: contentWarningIcon
+            id: linkButton
             anchors.left: languageSelector.right
+            anchors.leftMargin: 8
+            y: height + 5 + restrictionRow.height + footerSeparator.height
+            accessibleName: qsTr("embed web link")
+            svg: SvgOutline.link
+            visible: getCursorInWebLink() >= 0
+        }
+
+        SvgTransparentButton {
+            id: contentWarningIcon
+            anchors.left: linkButton.right
             anchors.leftMargin: 8
             y: height + 5 + restrictionRow.height + footerSeparator.height
             accessibleName: qsTr("add content warning")
@@ -2351,6 +2361,15 @@ SkyPage {
         })
         cwPage.onRejected.connect(() => cwPage.destroy())
         cwPage.open()
+    }
+
+    function getCursorInWebLink() {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return -1
+
+        return postItem.getPostText().cursorInWebLink
     }
 
     function hasImageContent() {

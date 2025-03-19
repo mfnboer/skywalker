@@ -12,6 +12,7 @@
 #include "presence.h"
 #include "profile.h"
 #include "video_upload_limits.h"
+#include "web_link.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <QImage>
@@ -34,6 +35,8 @@ class PostUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(bool cursorInFirstFeedLink READ isCursorInFirstFeedLink WRITE setCursorInFirstFeedLink NOTIFY cursorInFirstFeedLinkChanged FINAL)
     Q_PROPERTY(QString firstListLink READ getFirstListLink WRITE setFirstListLink NOTIFY firstListLinkChanged FINAL)
     Q_PROPERTY(bool cursorInFirstListLink READ isCursorInFirstListLink WRITE setCursorInFirstListLink NOTIFY cursorInFirstListLinkChanged FINAL)
+    Q_PROPERTY(WebLink::List webLinks READ getWebLinks WRITE setWebLinks NOTIFY webLinksChanged FINAL)
+    Q_PROPERTY(int cursorInWebLink READ getCursorInWebLink WRITE setCursorInWebLink NOTIFY cursorInWebLinkChanged FINAL);
     QML_ELEMENT
 
 public:
@@ -79,8 +82,8 @@ public:
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
                                           int maxLength = -1, const QString& lengthExceededColor = {});
     Q_INVOKABLE void setHighLightMaxLength(int maxLength);
-    Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText,
-                                             int cursor);
+    Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText, int cursor);
+    Q_INVOKABLE void updateCursor(int cursor);
     Q_INVOKABLE void cacheTags(const QString& text);
 
     // Returns a new text up to cursor with the last type char transformed into font.
@@ -130,6 +133,10 @@ public:
     void setFirstListLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
     bool isCursorInFirstListLink() const { return mCursorInFirstListLink; }
     void setCursorInFirstListLink(bool inLink);
+    const WebLink::List& getWebLinks() const { return mWebLinks; }
+    void setWebLinks(const WebLink::List& webLinks);
+    int getCursorInWebLink() const { return mCursorInWebLink; }
+    void setCursorInWebLink(int index);
 
 signals:
     void checkPostExistsOk(QString uri, QString cid);
@@ -178,6 +185,8 @@ signals:
     void cursorInFirstFeedLinkChanged();
     void firstListLinkChanged();
     void cursorInFirstListLinkChanged();
+    void webLinksChanged();
+    void cursorInWebLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
     void quoteFeed(GeneratorView feed);
     void quoteList(ListView list);
@@ -230,6 +239,8 @@ private:
     bool mCursorInFirstWebLink = false;
     int mLinkShorteningReduction = 0;
     QString mTextWithoutLinks;
+    WebLink::List mWebLinks;
+    int mCursorInWebLink = -1;
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;
     bool mPickingPhoto = false;

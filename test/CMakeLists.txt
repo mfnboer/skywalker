@@ -28,7 +28,8 @@ qt_add_executable(test_skywalker
     test_unicode_fonts.h
     test_anniversary.h
     test_focus_hashtags.h
-    test_filtered_post_feed_model.h)
+    test_filtered_post_feed_model.h
+    test_text_differ.h)
 
 set(LINK_LIBS
     PRIVATE libatproto
