@@ -1,2 +1,5 @@
 leak:wl_proxy_marshal_array_flags
 leak:libfontconfig.so
+leak:qcollator.cpp
+leak:libicuuc.so
+leak:qlocale.cpp
