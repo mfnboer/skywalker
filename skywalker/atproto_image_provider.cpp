@@ -99,10 +99,14 @@ QQuickImageResponse* ATProtoImageProvider::requestImageResponse(const QString& i
 
 
 ATProtoImageResponse::ATProtoImageResponse(const QString& providerName, const QString& id, const QSize& requestedSize) :
+    mNetwork(new QNetworkAccessManager(this)),
     mProviderName(providerName),
     mId(id),
     mRequestedSize(requestedSize)
 {
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
+
     const auto idParts = id.split('/');
 
     if (idParts.size() != 2)
@@ -141,7 +145,7 @@ void ATProtoImageResponse::handleDone(QImage img)
 void ATProtoImageResponse::loadImage(const QString& did, const QString& cid)
 {
     qDebug() << "Load image, did:" << did << "cid:" << cid;
-    auto xrpc = std::make_unique<Xrpc::Client>();
+    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mClient = std::make_unique<ATProto::Client>(std::move(xrpc));
 

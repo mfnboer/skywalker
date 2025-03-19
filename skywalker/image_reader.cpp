@@ -6,11 +6,11 @@
 
 namespace Skywalker {
 
-ImageReader::ImageReader() :
-    QObject()
+ImageReader::ImageReader(QNetworkAccessManager* network) :
+    QObject(),
+    mNetwork(network)
 {
-    mNetwork.setAutoDeleteReplies(true);
-    mNetwork.setTransferTimeout(10000);
+    Q_ASSERT(mNetwork);
 }
 
 bool ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb)
@@ -44,7 +44,7 @@ bool ImageReader::getImageFromWeb(const QString& urlString, const ImageCb& image
     }
 
     QNetworkRequest request(url);
-    QNetworkReply* reply = mNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply, imageCb, errorCb]{
             replyFinished(reply, imageCb, errorCb); });

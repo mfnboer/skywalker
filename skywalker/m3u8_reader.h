@@ -59,7 +59,7 @@ private:
     void loadStreamFailed(QNetworkReply* reply, int errCode);
     void loadStreamSslFailed(QNetworkReply* reply);
 
-    QNetworkAccessManager mNetwork;
+    QNetworkAccessManager* mNetwork;
     QNetworkReply* mInProgress = nullptr;
     int mLoopCount = 0; // protect against potential loop
     StreamResolution mResolution = STREAM_RESOLUTION_360;

@@ -212,6 +212,7 @@ private:
     void addIndexLanguageIdentificationRequestId(int index, int requestId);
     void removeIndexLanguageIdentificationRequestId(int index, int requestId);
 
+    QNetworkAccessManager* mNetwork;
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
     std::unique_ptr<ATProto::PostMaster> mPostMaster;

@@ -129,8 +129,10 @@ const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNE
 };
 
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp) :
+    mNetwork(new QNetworkAccessManager(this)),
     mBackgroundApp(backgroundApp),
     mUserSettings(settingsFileName),
+    mImageReader(mNetwork),
     mContentFilter(mUserPreferences, &mUserSettings),
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
@@ -139,13 +141,22 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
 }
 
 OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop) :
+    mNetwork(new QNetworkAccessManager(this)),
     mEventLoop(eventLoop),
     mUserSettings(settingsFileName),
+    mImageReader(mNetwork),
     mContentFilter(mUserPreferences, &mUserSettings),
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
     mNotificationListModel.enableRetrieveNotificationPosts(false);
+}
+
+void OffLineMessageChecker::initNetwork()
+{
+    Q_ASSERT(mNetwork);
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
 }
 
 int OffLineMessageChecker::startEventLoop()
@@ -281,7 +292,7 @@ void OffLineMessageChecker::resumeSession(bool retry)
     }
 
     mUserDid = session->mDid;
-    auto xrpc = std::make_unique<Xrpc::Client>();
+    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 

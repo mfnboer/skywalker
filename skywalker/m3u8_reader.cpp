@@ -10,10 +10,11 @@ namespace Skywalker {
 static constexpr int HD_BANDWIDTH_THRESHOLD_KBPS = 2000;
 
 M3U8Reader::M3U8Reader(QObject* parent) :
-    QObject(parent)
+    QObject(parent),
+    mNetwork(new QNetworkAccessManager(this))
 {
-    mNetwork.setAutoDeleteReplies(true);
-    mNetwork.setTransferTimeout(10000);
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
 }
 
 void M3U8Reader::setVideoQuality(QEnums::VideoQuality quality)
@@ -86,7 +87,7 @@ void M3U8Reader::getVideoStream(const QString& link, bool firstCall)
     }
 
     QNetworkRequest request(url);
-    QNetworkReply* reply = mNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
     mInProgress = reply;
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]{ extractStream(reply); });
@@ -237,7 +238,7 @@ void M3U8Reader::loadStream(const QString& fileName)
 
     mStreamSegments.pop_front();
     QNetworkRequest request(url);
-    QNetworkReply* reply = mNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]{ loadStream(reply); });
     connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ loadStreamFailed(reply, errCode); });

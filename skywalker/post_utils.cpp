@@ -21,8 +21,11 @@ int PostUtils::sNextRequestId = 1;
 
 PostUtils::PostUtils(QObject* parent) :
     WrappedSkywalker(parent),
-    Presence()
+    Presence(),
+    mNetwork(new QNetworkAccessManager(this))
 {
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
@@ -65,7 +68,7 @@ ATProto::PostMaster* PostUtils::postMaster()
 ImageReader* PostUtils::imageReader()
 {
     if (!mImageReader)
-        mImageReader = std::make_unique<ImageReader>();
+        mImageReader = std::make_unique<ImageReader>(mNetwork);
 
     return mImageReader.get();
 }
@@ -1109,7 +1112,7 @@ bool PostUtils::pickPhoto(bool pickVideo)
 
 void PostUtils::savePhoto(const QString& sourceUrl)
 {
-    PhotoPicker::savePhoto(sourceUrl, false,
+    PhotoPicker::savePhoto(imageReader(), sourceUrl, false,
         [this, presence=getPresence()](const QString& fileName){
             if (!presence)
                 return;
@@ -1129,7 +1132,7 @@ void PostUtils::sharePhotoToApp(const QString& sourceUrl)
 {
     qDebug() << "Share photo to app:" << sourceUrl;
 #ifdef Q_OS_ANDROID
-    PhotoPicker::savePhoto(sourceUrl, true,
+    PhotoPicker::savePhoto(imageReader(), sourceUrl, true,
         [this, presence=getPresence()](const QString& fileName){
             if (!presence)
                 return;
@@ -1144,7 +1147,7 @@ void PostUtils::sharePhotoToApp(const QString& sourceUrl)
             mSkywalker->showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR);
         });
 #else
-    PhotoPicker::copyPhotoToClipboard(sourceUrl,
+    PhotoPicker::copyPhotoToClipboard(imageReader(), sourceUrl,
         [this, presence=getPresence()](){
             if (!presence)
                 return;

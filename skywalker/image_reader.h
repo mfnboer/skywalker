@@ -13,7 +13,7 @@ public:
     using ImageCb = std::function<void(QImage)>;
     using ErrorCb = std::function<void(const QString& error)>;
 
-    ImageReader();
+    explicit ImageReader(QNetworkAccessManager* network);
 
     // Gets file:// image:// http:// https:// images
     bool getImage(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb);
@@ -23,7 +23,7 @@ public:
 private:
     void replyFinished(QNetworkReply* reply, const ImageCb& imageCb, const ErrorCb& errorCb);
 
-    QNetworkAccessManager mNetwork;
+    QNetworkAccessManager* mNetwork;
 };
 
 }

@@ -15,14 +15,13 @@ constexpr int MAX_RECENT_GIFS = 50;
 
 }
 
-QNetworkAccessManager Tenor::sNetwork;
-
 Tenor::Tenor(QObject* parent) :
     WrappedSkywalker(parent),
     Presence(),
     mApiKey(TENOR_API_KEY),
     mClientKey("com.gmail.mfnboer.skywalker"),
-    mOverviewModel(mWidth, mSpacing, this)
+    mOverviewModel(mWidth, mSpacing, this),
+    mNetwork(new QNetworkAccessManager(this))
 {
     QLocale locale;
     mLocale = QString("%1_%2").arg(
@@ -30,8 +29,8 @@ Tenor::Tenor(QObject* parent) :
         QLocale::territoryToCode(locale.territory()));
     qDebug() << "Locale:" << mLocale;
 
-    sNetwork.setAutoDeleteReplies(true);
-    sNetwork.setTransferTimeout(10000);
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
 }
 
 void Tenor::setWidth(int width)
@@ -103,7 +102,7 @@ void Tenor::searchRecentGifs()
 
     setSearchInProgress(true);
     QNetworkRequest request(buildUrl("posts", params));
-    QNetworkReply* reply = sNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
         if (!presence)
@@ -159,7 +158,7 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
 
     setSearchInProgress(true);
     QNetworkRequest request(buildUrl("search", params));
-    QNetworkReply* reply = sNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, query]{
         if (!presence)
@@ -227,7 +226,7 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
 
     Params params{{"type", type}, {"contentfilter", CONTENT_FILTER}};
     QNetworkRequest request(buildUrl("categories", params));
-    QNetworkReply* reply = sNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, &categoryList, getNext]{
         if (!presence)
@@ -271,7 +270,7 @@ void Tenor::getRecentCategory()
                   {"media_filter", MEDIA_FILTER}};
 
     QNetworkRequest request(buildUrl("posts", params));
-    QNetworkReply* reply = sNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
         if (!presence)
@@ -382,7 +381,7 @@ void Tenor::registerShare(const TenorGif& gif)
         params.push_back({"q", gif.getSearchTerm()});
 
     QNetworkRequest request(buildUrl("registershare", params));
-    QNetworkReply* reply = sNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [reply]{
         if (reply->error() == QNetworkReply::NoError)

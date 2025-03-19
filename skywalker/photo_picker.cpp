@@ -3,7 +3,6 @@
 #include "photo_picker.h"
 #include "atproto_image_provider.h"
 #include "file_utils.h"
-#include "image_reader.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
 #include <QtGlobal>
@@ -218,16 +217,15 @@ static QString createPictureFileName()
     return QString("SKYWALKER_%1.jpg").arg(FileUtils::createDateTimeName());
 }
 
-void savePhoto(const QString& sourceUrl, bool cache,
+void savePhoto(ImageReader* imageReader, const QString& sourceUrl, bool cache,
                const std::function<void(const QString&)>& successCb,
                const std::function<void(const QString&)>& errorCb)
 {
-    static ImageReader imageReader;
-
+    Q_ASSERT(imageReader);
     Q_ASSERT(successCb);
     Q_ASSERT(errorCb);
 
-    imageReader.getImage(sourceUrl,
+    imageReader->getImage(sourceUrl,
         [cache, successCb, errorCb](QImage img){
             QString picturesPath;
 
@@ -272,16 +270,15 @@ void savePhoto(const QString& sourceUrl, bool cache,
         });
 }
 
-void copyPhotoToClipboard(const QString& sourceUrl,
+void copyPhotoToClipboard(ImageReader* imageReader, const QString& sourceUrl,
                           const std::function<void()>& successCb,
                           const std::function<void(const QString&)>& errorCb)
 {
-    static ImageReader imageReader;
-
+    Q_ASSERT(imageReader);
     Q_ASSERT(successCb);
     Q_ASSERT(errorCb);
 
-    imageReader.getImage(sourceUrl,
+    imageReader->getImage(sourceUrl,
         [successCb, errorCb](QImage img){
             QClipboard *clipboard = QGuiApplication::clipboard();
             clipboard->setImage(img);

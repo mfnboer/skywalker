@@ -236,7 +236,7 @@ public:
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     Q_INVOKABLE ListStore* getTimelineHide() { return &mTimelineHide; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
-    ATProto::PlcDirectoryClient& getPlcDirectory() { return mPlcDirectory; }
+    ATProto::PlcDirectoryClient& getPlcDirectory() { return *mPlcDirectory; }
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
     HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
@@ -349,8 +349,9 @@ private:
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
 
+    QNetworkAccessManager* mNetwork;
     ATProto::Client::Ptr mBsky;
-    ATProto::PlcDirectoryClient mPlcDirectory;
+    ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
 
     QString mAvatarUrl;
     QString mUserDid;

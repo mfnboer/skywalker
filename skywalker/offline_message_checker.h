@@ -28,7 +28,7 @@ struct NotificationChannel
 
 // Checks if there are new messages and raises app notifications.
 // This is run from the Android WorkManager in a background thread when the app is not running!
-class OffLineMessageChecker
+class OffLineMessageChecker : public QObject
 {
 public:
     static const std::vector<NotificationChannel> NOTIFCATION_CHANNELS;
@@ -57,6 +57,7 @@ private:
         CHAT = 5
     };
 
+    void initNetwork();
     int startEventLoop();
     void exit(int exitCode);
     void resumeSession(bool retry = false);
@@ -75,6 +76,7 @@ private:
 
     static bool sNotificationPermissionGranted;
 
+    QNetworkAccessManager* mNetwork;
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;
     UserSettings mUserSettings;

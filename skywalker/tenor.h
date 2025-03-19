@@ -80,7 +80,7 @@ private:
     QString mNextPos;
     bool mSearchInProgress = false;
 
-    static QNetworkAccessManager sNetwork;
+    QNetworkAccessManager* mNetwork;
 };
 
 }

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "image_reader.h"
 #include <QImage>
 #include <QString>
 #include <tuple>
@@ -25,11 +26,11 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
 
 QImage cutRect(const QString& imgName, const QRect& rect);
 
-void savePhoto(const QString& sourceUrl, bool cache,
+void savePhoto(ImageReader* imageReader, const QString& sourceUrl, bool cache,
                const std::function<void(const QString&)>& successCb,
                const std::function<void(const QString&)>& errorCb);
 
-void copyPhotoToClipboard(const QString& sourceUrl,
+void copyPhotoToClipboard(ImageReader* imageReader, const QString& sourceUrl,
                           const std::function<void()>& successCb,
                           const std::function<void(const QString&)>& errorCb);
 

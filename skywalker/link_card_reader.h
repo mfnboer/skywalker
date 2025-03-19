@@ -33,7 +33,7 @@ private:
     void requestSslFailed(QNetworkReply* reply);
     void redirect(QNetworkReply* reply, const QUrl& redirectUrl);
 
-    QNetworkAccessManager mNetwork;
+    QNetworkAccessManager* mNetwork;
     QCache<QUrl, LinkCard> mCardCache;
     QNetworkReply* mInProgress = nullptr;
     QUrl mPrevDestination;

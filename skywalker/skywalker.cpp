@@ -49,6 +49,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
     IFeedPager(parent),
+    mNetwork(new QNetworkAccessManager(this)),
     mTimelineHide(this),
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
@@ -66,6 +67,9 @@ Skywalker::Skywalker(QObject* parent) :
                    mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, this)
 {
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
+    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
     mBookmarks.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
@@ -135,7 +139,7 @@ Skywalker::~Skywalker()
 // NOTE: user can be handle or DID
 void Skywalker::login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken)
 {
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork, host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
@@ -202,7 +206,7 @@ bool Skywalker::resumeSession(bool retry)
 
     qInfo() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
 
-    auto xrpc = std::make_unique<Xrpc::Client>();
+    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
@@ -428,7 +432,7 @@ void Skywalker::getUserProfileAndFollows()
             emit getUserProfileFailed(msg);
         });
 
-    mPlcDirectory.getFirstAppearance(session->mDid,
+    mPlcDirectory->getFirstAppearance(session->mDid,
         [this](QDateTime appearance){
             mAnniversary.setFirstAppearance(appearance);
             checkAnniversary();

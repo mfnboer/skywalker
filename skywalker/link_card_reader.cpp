@@ -48,12 +48,13 @@ public:
 
 LinkCardReader::LinkCardReader(QObject* parent):
     QObject(parent),
+    mNetwork(new QNetworkAccessManager(this)),
     mCardCache(100),
     mGifUtils(this)
 {
-    mNetwork.setAutoDeleteReplies(true);
-    mNetwork.setTransferTimeout(10000);
-    mNetwork.setCookieJar(new CookieJar);
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
+    mNetwork->setCookieJar(new CookieJar);
 
     QLocale locale;
     mAcceptLanguage = QString("%1_%2, *;q=0.5").arg(
@@ -148,7 +149,7 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     request.setRawHeader("Priority", "i"); // For Reuters
     request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For NYT, Reuters
 
-    QNetworkReply* reply = mNetwork.get(request);
+    QNetworkReply* reply = mNetwork->get(request);
     mInProgress = reply;
     mPrevDestination = url;
     mRetry = retry;
@@ -287,7 +288,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     if (card->isEmpty())
     {
-        auto* cookieJar = static_cast<CookieJar*>(mNetwork.cookieJar());
+        auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
         Q_ASSERT(cookieJar);
 
         if (!mRetry && cookieJar->setCookiesFromReply(*reply))
@@ -349,7 +350,7 @@ void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
         emit reply->redirectAllowed();
     }
 
-    auto* cookieJar = static_cast<CookieJar*>(mNetwork.cookieJar());
+    auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
     Q_ASSERT(cookieJar);
     cookieJar->setCookiesFromReply(*reply);
 
