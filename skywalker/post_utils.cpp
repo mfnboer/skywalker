@@ -1547,6 +1547,40 @@ bool PostUtils::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::Par
     return false;
 }
 
+bool PostUtils::checkMisleadingEmbeddedLinks() const
+{
+    Q_ASSERT(mSkywalker);
+
+    for (const auto& link : mEmbeddedLinks)
+    {
+        const auto facets = ATProto::RichTextMaster::parseFacets(link.getName());
+
+        if (facets.empty())
+            continue;
+
+        const auto& facet = facets.front();
+
+        switch (facet.mType)
+        {
+        case ATProto::RichTextMaster::ParsedMatch::Type::LINK:
+            mSkywalker->showStatusMessage(tr("Do not use a link url as link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
+            return false;
+        case ATProto::RichTextMaster::ParsedMatch::Type::PARTIAL_MENTION:
+        case ATProto::RichTextMaster::ParsedMatch::Type::MENTION:
+            mSkywalker->showStatusMessage(tr("Do not use a mention as link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
+            return false;
+        case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
+            mSkywalker->showStatusMessage(tr("Do not use a hashtag as link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
+            return false;
+        case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
+            mSkywalker->showStatusMessage(tr("Misleading part in link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 WebLink PostUtils::makeWebLink(const QString& name, const QString& link, int startIndex, int endIndex) const
 {
     return WebLink(link, startIndex, endIndex, name);

@@ -133,6 +133,9 @@ SkyPage {
             Accessible.name: replyToPostUri ? qsTr("send reply") : qsTr("send post")
 
             function sendPost() {
+                if (!checkMisleadingEmbeddedLinks())
+                    return
+
                 postButton.isPosting = true
                 threadPosts.copyPostItemsToPostList()
 
@@ -1913,6 +1916,18 @@ SkyPage {
     function postDone() {
         busyIndicator.running = false
         page.closed()
+    }
+
+    function checkMisleadingEmbeddedLinks()
+    {
+        for (let i = 0; i < threadPosts.count; ++ i) {
+            const postItem = threadPosts.itemAt(i)
+
+            if (!postItem.getPostText().checkMisleadingEmbeddedLinks())
+                return false
+        }
+
+        return true
     }
 
     function postsAreValid() {

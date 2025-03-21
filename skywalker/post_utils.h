@@ -86,6 +86,7 @@ public:
                                           int maxLength = -1, const QString& lengthExceededColor = {});
     Q_INVOKABLE void setHighLightMaxLength(int maxLength);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText, int cursor);
+    Q_INVOKABLE bool checkMisleadingEmbeddedLinks() const;
     Q_INVOKABLE WebLink makeWebLink(const QString& name, const QString& link, int startIndex, int endIndex) const;
     Q_INVOKABLE void addEmbeddedLink(const WebLink& link);
     Q_INVOKABLE void updatedEmbeddedLink(int linkIndex, const WebLink& link);

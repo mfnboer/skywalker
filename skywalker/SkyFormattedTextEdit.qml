@@ -396,6 +396,11 @@ TextEdit {
         replaceLinkWithName(embeddedLink, "")
     }
 
+    function checkMisleadingEmbeddedLinks()
+    {
+        return postUtils.checkMisleadingEmbeddedLinks()
+    }
+
     function createAuthorTypeaheadView() {
         let component = guiSettings.createComponent("AuthorTypeaheadView.qml")
         let page = component.createObject(parentPage, {
