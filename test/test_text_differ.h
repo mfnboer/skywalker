@@ -29,6 +29,7 @@ private slots:
         QTest::newRow("replace back") << "foobar!" << "fooworld" << createReplaceResult(3, 6, 3, 7);
         QTest::newRow("replace mid") << "foobar!" << "fooworld!" << createReplaceResult(3, 5, 3, 7);
         QTest::newRow("replace all") << "foo" << "barbar" << createReplaceResult(0, 2, 0, 5);
+        QTest::newRow("insert") << "xhello link" << "xxhello link" << createInsertResult(1, 1);
     }
 
     void diff()

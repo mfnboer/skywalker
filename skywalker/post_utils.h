@@ -11,6 +11,7 @@
 #include "postgate.h"
 #include "presence.h"
 #include "profile.h"
+#include "text_differ.h"
 #include "video_upload_limits.h"
 #include "web_link.h"
 #include "wrapped_skywalker.h"
@@ -36,7 +37,9 @@ class PostUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QString firstListLink READ getFirstListLink WRITE setFirstListLink NOTIFY firstListLinkChanged FINAL)
     Q_PROPERTY(bool cursorInFirstListLink READ isCursorInFirstListLink WRITE setCursorInFirstListLink NOTIFY cursorInFirstListLinkChanged FINAL)
     Q_PROPERTY(WebLink::List webLinks READ getWebLinks WRITE setWebLinks NOTIFY webLinksChanged FINAL)
-    Q_PROPERTY(int cursorInWebLink READ getCursorInWebLink WRITE setCursorInWebLink NOTIFY cursorInWebLinkChanged FINAL);
+    Q_PROPERTY(int cursorInWebLink READ getCursorInWebLink WRITE setCursorInWebLink NOTIFY cursorInWebLinkChanged FINAL)
+    Q_PROPERTY(WebLink::List embeddedLinks READ getEmbeddedLinks WRITE setEmbeddedLinks NOTIFY embeddedLinksChanged FINAL)
+    Q_PROPERTY(int cursorInEmbeddedLink READ getCursorInEmbeddedLink WRITE setCursorInEmbeddedLink NOTIFY cursorInEmbeddedLinkChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -83,7 +86,12 @@ public:
                                           int maxLength = -1, const QString& lengthExceededColor = {});
     Q_INVOKABLE void setHighLightMaxLength(int maxLength);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText, int cursor);
+    Q_INVOKABLE WebLink makeWebLink(const QString& name, const QString& link, int startIndex, int endIndex) const;
+    Q_INVOKABLE void addEmbeddedLink(const WebLink& link);
+    Q_INVOKABLE void updatedEmbeddedLink(int linkIndex, const WebLink& link);
+    Q_INVOKABLE void removeEmbeddedLink(int linkIndex);
     Q_INVOKABLE void updateCursor(int cursor);
+    Q_INVOKABLE void updateText(const QString& prevText, const QString& text);
     Q_INVOKABLE void cacheTags(const QString& text);
 
     // Returns a new text up to cursor with the last type char transformed into font.
@@ -137,6 +145,10 @@ public:
     void setWebLinks(const WebLink::List& webLinks);
     int getCursorInWebLink() const { return mCursorInWebLink; }
     void setCursorInWebLink(int index);
+    const WebLink::List& getEmbeddedLinks() const { return mEmbeddedLinks; }
+    void setEmbeddedLinks(const WebLink::List& embeddedLinks);
+    int getCursorInEmbeddedLink() const { return mCursorInEmbeddedLink; }
+    void setCursorInEmbeddedLink(int index);
 
 signals:
     void checkPostExistsOk(QString uri, QString cid);
@@ -187,6 +199,8 @@ signals:
     void cursorInFirstListLinkChanged();
     void webLinksChanged();
     void cursorInWebLinkChanged();
+    void embeddedLinksChanged();
+    void cursorInEmbeddedLinkChanged();
     void quotePost(QString uri, QString cid, QString text, BasicProfile author, QDateTime);
     void quoteFeed(GeneratorView feed);
     void quoteList(ListView list);
@@ -220,6 +234,10 @@ private:
     void handleLanguageIdentified(const QString& languageCode, int requestId);
     void addIndexLanguageIdentificationRequestId(int index, int requestId);
     void removeIndexLanguageIdentificationRequestId(int index, int requestId);
+    void updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff, const QString& text);
+    void updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff);
+    void updateEmbeddedLinksUpdatedText(const TextDiffer::Result& diff, const QString& text);
+    bool facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const;
 
     QNetworkAccessManager* mNetwork;
     ATProto::PostMaster* postMaster();
@@ -239,8 +257,12 @@ private:
     bool mCursorInFirstWebLink = false;
     int mLinkShorteningReduction = 0;
     QString mTextWithoutLinks;
+
     WebLink::List mWebLinks;
     int mCursorInWebLink = -1;
+    WebLink::List mEmbeddedLinks;
+    int mCursorInEmbeddedLink = -1;
+
     std::unique_ptr<ImageReader> mImageReader;
     FacetHighlighter mFacetHighlighter;
     bool mPickingPhoto = false;

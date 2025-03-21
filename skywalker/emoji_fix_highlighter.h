@@ -7,6 +7,12 @@
 
 namespace Skywalker {
 
+class HighlightState : public QTextBlockUserData
+{
+public:
+    int mTextLength = 0; // in characters
+};
+
 class EmojiFixHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
@@ -21,6 +27,7 @@ public:
 
 protected:
     void highlightBlock(const QString& text) override;
+    int getPrevBlockTotalCharLength() const;
     void addFormat(int start, int sz, const QTextCharFormat& fmt);
 
 private:

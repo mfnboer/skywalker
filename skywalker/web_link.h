@@ -28,6 +28,13 @@ public:
     int getStartIndex() const { return mStartIndex; }
     int getEndIndex() const { return mEndIndex; }
 
+    void setName(const QString& name) { mName = name; }
+    void setStartIndex(int index) { mStartIndex = index; }
+    void setEndIndex(int index) { mEndIndex = index; }
+    void addToIndexes(int add);
+
+    bool isValidEmbeddedLink() const;
+
 private:
     QString mLink;
     QString mName;

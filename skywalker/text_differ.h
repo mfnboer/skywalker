@@ -16,6 +16,9 @@ enum class TextDiffType
 class TextDiffer
 {
 public:
+    // Indexes in old text for deleted part
+    // Indexes in new text for inserted part
+    // Replacement is a combination of delete and insert
     struct Result
     {
         TextDiffType mType;

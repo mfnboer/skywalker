@@ -16,6 +16,11 @@ void FacetHighlighter::setHighlightColor(const QString& colorName)
     mHighlightFormat.setForeground(color);
 }
 
+void FacetHighlighter::setEmbeddedLinks(const WebLink::List* links)
+{
+    mEmbeddedLinks = links;
+}
+
 void FacetHighlighter::highlightBlock(const QString& text)
 {
     EmojiFixHighlighter::highlightBlock(text);
@@ -25,6 +30,9 @@ void FacetHighlighter::highlightBlock(const QString& text)
 
     for (const auto& facet : facets)
     {
+        if (facetOverlapsWithEmbeddedLink(facet))
+            continue;
+
         switch (facet.mType)
         {
         case ATProto::RichTextMaster::ParsedMatch::Type::MENTION:
@@ -39,6 +47,62 @@ void FacetHighlighter::highlightBlock(const QString& text)
         case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
             break;
         }
+    }
+
+    highlightEmbeddedLinks();
+}
+
+bool FacetHighlighter::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const
+{
+    if (!mEmbeddedLinks)
+        return false;
+
+    const int prevLength = getPrevBlockTotalCharLength();
+
+    if (prevLength < 0)
+        return false;
+
+    for (const auto& link : *mEmbeddedLinks)
+    {
+        const int startIndex = link.getStartIndex() - prevLength;
+
+        if (startIndex < 0)
+        {
+            qWarning() <<"Invalid index:" << link.getName() << "start:" << link.getStartIndex() << "prev:" << prevLength;
+            continue;
+        }
+
+        const int endIndex = link.getEndIndex() - prevLength;
+
+        if (facet.mStartIndex < endIndex && facet.mEndIndex > startIndex)
+            return true;
+    }
+
+    return false;
+}
+
+void FacetHighlighter::highlightEmbeddedLinks()
+{
+    if (!mEmbeddedLinks)
+        return;
+
+    const int prevLength = getPrevBlockTotalCharLength();
+
+    if (prevLength < 0)
+        return;
+
+    for (const auto& link : *mEmbeddedLinks)
+    {
+        const int startIndex = link.getStartIndex() - prevLength;
+
+        if (startIndex < 0)
+        {
+            qWarning() <<"Invalid index:" << link.getName() << "start:" << link.getStartIndex() << "prev:" << prevLength;
+            continue;
+        }
+
+        const int facetLength = link.getEndIndex() - link.getStartIndex();
+        addFormat(startIndex, facetLength, mHighlightFormat);
     }
 }
 

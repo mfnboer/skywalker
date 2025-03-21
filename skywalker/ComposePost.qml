@@ -1251,11 +1251,13 @@ SkyPage {
         SvgTransparentButton {
             id: linkButton
             anchors.left: languageSelector.right
-            anchors.leftMargin: 8
+            anchors.leftMargin: visible ? 8 : 0
             y: height + 5 + restrictionRow.height + footerSeparator.height
+            width: visible ? height: 0
             accessibleName: qsTr("embed web link")
             svg: SvgOutline.link
             visible: getCursorInWebLink() >= 0
+            onClicked: page.addEmbeddedLink()
         }
 
         SvgTransparentButton {
@@ -2361,6 +2363,36 @@ SkyPage {
         })
         cwPage.onRejected.connect(() => cwPage.destroy())
         cwPage.open()
+    }
+
+    function addEmbeddedLink() {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return -1
+
+        const postText = postItem.getPostText()
+        const webLinkIndex = postText.cursorInWebLink
+
+        if (webLinkIndex < 0)
+            return
+
+        console.debug("Web link index:", webLinkIndex, "size:", postText.webLinks.length)
+        const webLink = postText.webLinks[webLinkIndex]
+        console.debug("Web link:", webLink.link)
+        let component = guiSettings.createComponent("EditEmbeddedLink.qml")
+        let linkPage = component.createObject(page, { link: webLink.link })
+        linkPage.onAccepted.connect(() => {
+                const name = linkPage.getName()
+                linkPage.destroy()
+
+                if (name.length <= 0)
+                    return
+
+                postText.addEmbeddedLink(webLinkIndex, name)
+        })
+        linkPage.onRejected.connect(() => linkPage.destroy())
+        linkPage.open()
     }
 
     function getCursorInWebLink() {

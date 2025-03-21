@@ -22,8 +22,11 @@ TextEdit {
     property bool cursorInFirstFeedLink: false
     property string firstListLink
     property bool cursorInFirstListLink: false
-    property list<string> webLinks
+    property list<weblink> webLinks
     property int cursorInWebLink: -1
+    property list<weblink> embeddedLinks
+    property int cursorInEmbeddedLink: -1
+    property string prevText: ""
     property int prevTextLen: 0
     property int lastDeltaTextLen: 0
 
@@ -79,6 +82,9 @@ TextEdit {
             prevTextLen = text.length
         }
 
+        postUtils.updateText(prevText, text)
+        prevText = text
+
         highlightFacets()
 
         const added = updateGraphemeLength()
@@ -101,12 +107,6 @@ TextEdit {
         postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
                                        editText.maxLength, guiSettings.textLengthExceededColor)
     }
-
-    // Keys.onReleased: (event) => {
-    //     // Work around for Qt6.7.2 which hides the keyboard on pressing return.
-    //     if (event.key === Qt.Key_Return)
-    //         Qt.inputMethod.show()
-    // }
 
     // HACK:
     // Sometimes while editing and moving the cursor by tapping on the screen, the text
@@ -344,9 +344,9 @@ TextEdit {
         onCursorInFirstListLinkChanged: editText.cursorInFirstListLink = cursorInFirstListLink
         onWebLinksChanged: editText.webLinks = webLinks
         onCursorInWebLinkChanged: editText.cursorInWebLink = cursorInWebLink
+        onEmbeddedLinksChanged: editText.embeddedLinks = embeddedLinks
+        onCursorInEmbeddedLinkChanged: editText.cursorInEmbeddedLink = cursorInEmbeddedLink
     }
-
-
 
     function maxGraphemeLengthExceeded() {
         return maxLength > -1 && graphemeLength > maxLength
@@ -359,6 +359,18 @@ TextEdit {
         const fullText = textBefore + textBetween + textAfter
 
         return {textBefore, textBetween, textAfter, fullText}
+    }
+
+    function addEmbeddedLink(webLinkIndex, name) {
+        const webLink = postUtils.webLinks[webLinkIndex]
+        const textBefore = editText.text.slice(0, webLink.startIndex)
+        const textAfter = editText.text.slice(webLink.endIndex)
+        const newText = textBefore + name + textAfter
+        editText.text = newText
+        const embedStart = webLink.startIndex
+        const embedEnd = embedStart + name.length
+        const embeddedLink = postUtils.makeWebLink(name, webLink.link, embedStart, embedEnd)
+        postUtils.addEmbeddedLink(embeddedLink)
     }
 
     function createAuthorTypeaheadView() {

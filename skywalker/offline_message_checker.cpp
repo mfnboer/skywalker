@@ -137,6 +137,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
+    initNetwork();
     mNotificationListModel.enableRetrieveNotificationPosts(false);
 }
 
@@ -149,6 +150,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QE
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords)
 {
+    initNetwork();
     mNotificationListModel.enableRetrieveNotificationPosts(false);
 }
 

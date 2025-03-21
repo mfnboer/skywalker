@@ -31,6 +31,10 @@ PostUtils::PostUtils(QObject* parent) :
 {
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
+
+    mFacetHighlighter.setEmbeddedLinks(&mEmbeddedLinks);
+    connect(this, &PostUtils::embeddedLinksChanged, this, [this]{ mFacetHighlighter.rehighlight(); });
+
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
@@ -1352,6 +1356,24 @@ void PostUtils::setCursorInWebLink(int index)
     emit cursorInWebLinkChanged();
 }
 
+void PostUtils::setEmbeddedLinks(const WebLink::List& embeddedLinks)
+{
+    if (embeddedLinks == mEmbeddedLinks)
+        return;
+
+    mEmbeddedLinks = embeddedLinks;
+    emit embeddedLinksChanged();
+}
+
+void PostUtils::setCursorInEmbeddedLink(int index)
+{
+    if (index == mCursorInEmbeddedLink)
+        return;
+
+    mCursorInEmbeddedLink = index;
+    emit cursorInEmbeddedLinkChanged();
+}
+
 void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
         int maxLength, const QString& lengthExceededColor)
 {
@@ -1389,6 +1411,9 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
 
     for (const auto& facet : facets)
     {
+        if (facetOverlapsWithEmbeddedLink(facet))
+            continue;
+
         switch (facet.mType)
         {
         case ATProto::RichTextMaster::ParsedMatch::Type::LINK:
@@ -1508,20 +1533,233 @@ void PostUtils::extractMentionsAndLinks(const QString& text, const QString& pree
         setFirstListLink({});
 }
 
-void PostUtils::updateCursor(int cursor)
+bool PostUtils::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const
 {
-    for (int i = 0; i < (int)mWebLinks.size(); ++i)
+    for (const auto& link : mEmbeddedLinks)
     {
-        const auto& link = mWebLinks[i];
-
-        if (cursor >= link.getStartIndex() && cursor <= link.getEndIndex())
+        if (facet.mStartIndex < link.getEndIndex() && facet.mEndIndex > link.getStartIndex())
         {
-            setCursorInWebLink(i);
-            return;
+            qDebug() << "Overlap, facet:" << facet.mMatch << facet.mStartIndex << facet.mEndIndex << "link:" << link.getName() << link.getStartIndex() << link.getEndIndex();
+            return true;
         }
     }
 
-    setCursorInWebLink(-1);
+    return false;
+}
+
+WebLink PostUtils::makeWebLink(const QString& name, const QString& link, int startIndex, int endIndex) const
+{
+    return WebLink(link, startIndex, endIndex, name);
+}
+
+void PostUtils::addEmbeddedLink(const WebLink& link)
+{
+    qDebug() << "Add embedded link:" << link.getName() << "link:" << link.getLink() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
+    Q_ASSERT(link.isValidEmbeddedLink());
+
+    if (!link.isValidEmbeddedLink())
+        return;
+
+    if (mEmbeddedLinks.contains(link))
+    {
+        qWarning() << "Link aready added:" << link.getName() << "link:" << link.getLink() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
+        return;
+    }
+
+    mEmbeddedLinks.push_back(link);
+    emit embeddedLinksChanged();
+}
+
+void PostUtils::updatedEmbeddedLink(int linkIndex, const WebLink& link)
+{
+    qDebug() << "Update embedded link:" << linkIndex << "name:" << link.getName() << "link:" << link.getLink() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
+    Q_ASSERT(linkIndex >= 0);
+    Q_ASSERT(linkIndex < mEmbeddedLinks.size());
+
+    if (linkIndex < 0 || linkIndex >= mEmbeddedLinks.size())
+    {
+        qWarning() << "Link index out of range:" << linkIndex << "size:" << mEmbeddedLinks.size() << "name:" << link.getName() << "link:" << link.getLink() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
+        return;
+    }
+
+    if (mEmbeddedLinks[linkIndex] == link)
+    {
+        qDebug() << "Link not changed:" << linkIndex;
+        return;
+    }
+
+    mEmbeddedLinks[linkIndex] = link;
+    emit embeddedLinksChanged();
+}
+
+void PostUtils::removeEmbeddedLink(int linkIndex)
+{
+    Q_ASSERT(linkIndex >= 0);
+    Q_ASSERT(linkIndex < mEmbeddedLinks.size());
+
+    if (linkIndex < 0 || linkIndex >= mEmbeddedLinks.size())
+    {
+        qWarning() << "Link index out of range:" << linkIndex << "size:" << mEmbeddedLinks.size();
+        return;
+    }
+
+    qDebug() << "Delete embedded link:" << linkIndex << mEmbeddedLinks[linkIndex].getLink();
+
+    mEmbeddedLinks.remove(linkIndex);
+    emit embeddedLinksChanged();
+}
+
+static int getLinkIndexForCursor(const WebLink::List& links, int cursor)
+{
+    for (int i = 0; i < (int)links.size(); ++i)
+    {
+        const auto& link = links[i];
+
+        if (cursor >= link.getStartIndex() && cursor <= link.getEndIndex())
+            return i;
+    }
+
+    return -1;
+}
+
+void PostUtils::updateCursor(int cursor)
+{
+    setCursorInWebLink(getLinkIndexForCursor(mWebLinks, cursor));
+    setCursorInEmbeddedLink(getLinkIndexForCursor(mEmbeddedLinks, cursor));
+}
+
+void PostUtils::updateText(const QString& prevText, const QString& text)
+{
+    if (mEmbeddedLinks.empty())
+        return;
+
+    const TextDiffer::Result diff = TextDiffer::diff(prevText, text);
+    qDebug() << "Updated diff:" << (int)diff.mType << "prev:" << prevText << "text:" << text;
+
+    switch (diff.mType)
+    {
+    case TextDiffType::NONE:
+        break;
+    case TextDiffType::INSERTED:
+        updateEmbeddedLinksInsertedText(diff, text);
+        break;
+    case TextDiffType::DELETED:
+        updateEmbeddedLinksDeletedText(diff);
+        break;
+    case TextDiffType::REPLACED:
+        updateEmbeddedLinksUpdatedText(diff, text);
+        break;
+    }
+}
+
+void PostUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff, const QString& text)
+{
+    qDebug() << "Inserted:" << diff.mNewStartIndex << diff.mNewEndIndex;
+    const int diffLength = diff.mNewEndIndex - diff.mNewStartIndex + 1;
+    bool updated = false;
+
+    for (auto& link : mEmbeddedLinks)
+    {
+        qDebug() << "Link:" << link.getName() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
+
+        if (link.getStartIndex() >= diff.mNewStartIndex)
+        {
+            // Text inserted before link
+            qDebug() << "Move link:" << diffLength;
+            link.addToIndexes(diffLength);
+            updated = true;
+        }
+        else if (link.getEndIndex() > diff.mNewStartIndex)
+        {
+            // Text inserted inside link
+            link.setEndIndex(link.getEndIndex() + diffLength);
+            const int nameLength = link.getEndIndex() - link.getStartIndex();
+            const QString name = text.mid(link.getStartIndex(), nameLength);
+            qDebug() << "Name:" << name;
+            link.setName(name);
+            updated = true;
+        }
+    }
+
+    if (updated)
+        emit embeddedLinksChanged();
+}
+
+void PostUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
+{
+    qDebug() << "Deleted:" << diff.mOldStartIndex << diff.mOldEndIndex;
+    const int diffLength = diff.mOldEndIndex - diff.mOldStartIndex + 1;
+    bool updated = false;
+
+    for (int i = 0; i < mEmbeddedLinks.size();)
+    {
+        auto& link = mEmbeddedLinks[i];
+        qDebug() << "Link:" << link.getName() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
+
+        if (link.getStartIndex() > diff.mOldEndIndex)
+        {
+            // Text removed before link
+            qDebug() << "Move link:" << -diffLength;
+            link.addToIndexes(-diffLength);
+            updated = true;
+        }
+        else if (link.getStartIndex() >= diff.mOldStartIndex && link.getEndIndex() <= diff.mOldEndIndex + 1)
+        {
+            // Deleted text contains full link
+            qDebug() << "Remove link:" << link.getName();
+            mEmbeddedLinks.remove(i);
+            updated = true;
+            continue;
+        }
+        else if (link.getStartIndex() >= diff.mOldStartIndex && link.getEndIndex() > diff.mOldEndIndex + 1)
+        {
+            // Deleted text overlaps with prefix of link
+            const int move = link.getStartIndex() - diff.mOldStartIndex;
+            const int pos = diff.mOldEndIndex - link.getStartIndex() + 1;
+            const QString name = link.getName().sliced(pos);
+            qDebug() << "Name:" << name << "move:" << -move;
+            link.setName(name);
+            link.setStartIndex(link.getStartIndex() - move);
+            link.setEndIndex(link.getStartIndex() + name.length());
+            updated = true;
+        }
+        else if (link.getStartIndex() < diff.mOldStartIndex && link.getEndIndex() > diff.mOldEndIndex + 1)
+        {
+            // Deleted text is inside link
+            const QString& oldName = link.getName();
+            const int prefixLength = diff.mOldStartIndex - link.getStartIndex();
+            const QString nameBefore = oldName.sliced(0, prefixLength);
+            const int suffixLength = link.getEndIndex() - (diff.mOldEndIndex + 1);
+            const QString nameAfter = oldName.sliced(oldName.length() - suffixLength);
+            const QString name = nameBefore + nameAfter;
+            qDebug() << "Name:" << name;
+            link.setName(name);
+            link.setEndIndex(link.getStartIndex() + name.length());
+            updated = true;
+        }
+        else if (link.getStartIndex() < diff.mOldStartIndex && link.getEndIndex() > diff.mOldStartIndex)
+        {
+            // Deleted text overlaps with suffix of link
+            const int length = diff.mOldStartIndex - link.getStartIndex();
+            const QString name = link.getName().sliced(0, length);
+            qDebug() << "Name:" << name;
+            link.setName(name);
+            link.setEndIndex(link.getStartIndex() + length);
+            updated = true;
+        }
+
+        ++i;
+    }
+
+    if (updated)
+        emit embeddedLinksChanged();
+}
+
+void PostUtils::updateEmbeddedLinksUpdatedText(const TextDiffer::Result& diff, const QString& text)
+{
+    qDebug() << "Replaced, old:" << diff.mOldStartIndex << diff.mOldEndIndex << "new:" << diff.mNewStartIndex << diff.mNewEndIndex;
+    updateEmbeddedLinksDeletedText(diff);
+    updateEmbeddedLinksInsertedText(diff, text);
 }
 
 void PostUtils::cacheTags(const QString& text)

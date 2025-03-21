@@ -37,7 +37,7 @@ TextDiffer::Result TextDiffer::diff(const QString& oldText, const QString& newTe
     {
         const int oldIndex = oldText.size() - (newText.size() - i);
 
-        if (oldIndex < 0 || newText[i] != oldText[oldIndex])
+        if (oldIndex < result.mNewStartIndex || newText[i] != oldText[oldIndex])
         {
             result.mNewEndIndex = i;
             break;

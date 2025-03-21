@@ -58,35 +58,40 @@ void EmojiFixHighlighter::highlightLengthExceeded(const QString& text)
     if (mMaxLength == -1)
         return;
 
-    int totalLength = 0;
-    const int prevLength = previousBlockState();
+    int totalCharLength = 0;
+    int totalGraphemeLength = 0;
+    const int prevBlockState = previousBlockState();
+    const int prevGraphemeLength = prevBlockState & 0x0000ffff;
+    const int prevCharLength = (prevBlockState >> 16) & 0x0000ffff;
 
     if (currentBlock().blockNumber() > 0)
     {
-        if (prevLength == -1)
+        if (prevGraphemeLength == -1)
             return;
 
-        totalLength = prevLength + 1; // +1 for newline
+        totalGraphemeLength = prevGraphemeLength + 1; // +1 for newline
+        totalCharLength = prevCharLength + 1;
     }
 
     const auto graphemeInfo = UnicodeFonts::getGraphemeInfo(text);
-    const int blockLength = graphemeInfo.getLength();
-    totalLength += blockLength;
-    setCurrentBlockState(totalLength);
+    const int blockGraphemeLength = graphemeInfo.getLength();
+    totalGraphemeLength += blockGraphemeLength;
+    totalCharLength += text.length();
+    setCurrentBlockState((totalCharLength << 16) | totalGraphemeLength);
 
-    if (totalLength <= mMaxLength)
+    if (totalGraphemeLength <= mMaxLength)
     {
         QTextCharFormat fmt;
         fmt.setFont(document()->defaultFont());
         setFormat(0, text.length(), fmt);
     }
-    else if (prevLength >= mMaxLength)
+    else if (prevGraphemeLength >= mMaxLength)
     {
         setFormat(0, text.length(), mLengthExceededFormat);
     }
     else
     {
-        const int inMaxGraphemes = mMaxLength - prevLength;
+        const int inMaxGraphemes = mMaxLength - prevGraphemeLength;
         Q_ASSERT(inMaxGraphemes > 0);
         const int charPos = graphemeInfo.getCharPos(inMaxGraphemes - 1);
         QTextCharFormat fmt;
@@ -96,6 +101,23 @@ void EmojiFixHighlighter::highlightLengthExceeded(const QString& text)
         const auto exceededLen = text.length() - charPos;
         setFormat(charPos, exceededLen, mLengthExceededFormat);
     }
+}
+
+int EmojiFixHighlighter::getPrevBlockTotalCharLength() const
+{
+    if (currentBlock().blockNumber() == -1)
+        return -1;
+
+    if (currentBlock().blockNumber() == 0)
+        return 0;
+
+    const int blockState = previousBlockState();
+
+    if (blockState == -1)
+        return -1;
+
+    const int prevCharLength = (blockState >> 16) & 0x0000ffff;
+    return prevCharLength + 1; // +1 for newline
 }
 
 void EmojiFixHighlighter::setEmojiFontKeycaps(const QString& text)
