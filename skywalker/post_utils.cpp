@@ -1658,8 +1658,9 @@ void PostUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff, 
     const int diffLength = diff.mNewEndIndex - diff.mNewStartIndex + 1;
     bool updated = false;
 
-    for (auto& link : mEmbeddedLinks)
+    for (int i = 0; i < mEmbeddedLinks.size(); )
     {
+        auto& link = mEmbeddedLinks[i];
         qDebug() << "Link:" << link.getName() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
 
         if (link.getStartIndex() >= diff.mNewStartIndex)
@@ -1674,11 +1675,30 @@ void PostUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff, 
             // Text inserted inside link
             link.setEndIndex(link.getEndIndex() + diffLength);
             const int nameLength = link.getEndIndex() - link.getStartIndex();
-            const QString name = text.mid(link.getStartIndex(), nameLength);
+            QString name = text.mid(link.getStartIndex(), nameLength);
+            const int newlineIndex = name.indexOf('\n');
+
+            if (newlineIndex >= 0)
+            {
+                qDebug() << "Remove index from name:" << name;
+                name = name.sliced(0, newlineIndex).trimmed();
+                link.setEndIndex(link.getStartIndex() + name.length());
+            }
+
+            if (name.isEmpty())
+            {
+                qDebug() << "Remove link due to newline:" << link.getLink();
+                mEmbeddedLinks.remove(i);
+                updated = true;
+                continue;
+            }
+
             qDebug() << "Name:" << name;
             link.setName(name);
             updated = true;
         }
+
+        ++i;
     }
 
     if (updated)
@@ -1691,7 +1711,7 @@ void PostUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
     const int diffLength = diff.mOldEndIndex - diff.mOldStartIndex + 1;
     bool updated = false;
 
-    for (int i = 0; i < mEmbeddedLinks.size();)
+    for (int i = 0; i < mEmbeddedLinks.size(); )
     {
         auto& link = mEmbeddedLinks[i];
         qDebug() << "Link:" << link.getName() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
@@ -1714,8 +1734,25 @@ void PostUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
         else if (link.getStartIndex() >= diff.mOldStartIndex && link.getEndIndex() > diff.mOldEndIndex + 1)
         {
             // Deleted text overlaps with prefix of link
-            const int move = link.getStartIndex() - diff.mOldStartIndex;
-            const int pos = diff.mOldEndIndex - link.getStartIndex() + 1;
+            int move = link.getStartIndex() - diff.mOldStartIndex;
+            int pos = diff.mOldEndIndex - link.getStartIndex() + 1;
+            const QString& linkName = link.getName();
+
+            while (pos < linkName.size() && linkName.at(pos).isSpace())
+            {
+                ++pos;
+                --move;
+            }
+
+            if (pos >= linkName.size())
+            {
+                // No name left
+                qDebug() << "Remove link:" << link.getName();
+                mEmbeddedLinks.remove(i);
+                updated = true;
+                continue;
+            }
+
             const QString name = link.getName().sliced(pos);
             qDebug() << "Name:" << name << "move:" << -move;
             link.setName(name);
@@ -1740,7 +1777,21 @@ void PostUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
         else if (link.getStartIndex() < diff.mOldStartIndex && link.getEndIndex() > diff.mOldStartIndex)
         {
             // Deleted text overlaps with suffix of link
-            const int length = diff.mOldStartIndex - link.getStartIndex();
+            int length = diff.mOldStartIndex - link.getStartIndex();
+            const QString& linkName = link.getName();
+
+            while (length > 0 && linkName.at(length - 1).isSpace())
+                --length;
+
+            if (length <= 0)
+            {
+                // No name left
+                qDebug() << "Remove link:" << link.getName();
+                mEmbeddedLinks.remove(i);
+                updated = true;
+                continue;
+            }
+
             const QString name = link.getName().sliced(0, length);
             qDebug() << "Name:" << name;
             link.setName(name);

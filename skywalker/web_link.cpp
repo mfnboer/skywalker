@@ -11,6 +11,8 @@ WebLink::WebLink(const QString& link, int startIndex, int endIndex, const QStrin
     mStartIndex(startIndex),
     mEndIndex(endIndex)
 {
+    if (!mLink.startsWith("http"))
+        mLink = "https://" + mLink;
 }
 
 void WebLink::addToIndexes(int add)

@@ -49,7 +49,7 @@ void FacetHighlighter::highlightBlock(const QString& text)
         }
     }
 
-    highlightEmbeddedLinks();
+    highlightEmbeddedLinks(text);
 }
 
 bool FacetHighlighter::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const
@@ -81,7 +81,7 @@ bool FacetHighlighter::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMast
     return false;
 }
 
-void FacetHighlighter::highlightEmbeddedLinks()
+void FacetHighlighter::highlightEmbeddedLinks(const QString& text)
 {
     if (!mEmbeddedLinks)
         return;
@@ -95,9 +95,9 @@ void FacetHighlighter::highlightEmbeddedLinks()
     {
         const int startIndex = link.getStartIndex() - prevLength;
 
-        if (startIndex < 0)
+        if (startIndex < 0 || startIndex >= text.size())
         {
-            qWarning() <<"Invalid index:" << link.getName() << "start:" << link.getStartIndex() << "prev:" << prevLength;
+            qDebug() << "Link in other block:" << link.getName() << "start:" << link.getStartIndex() << "prev:" << prevLength << "block:" << currentBlock().blockNumber();
             continue;
         }
 

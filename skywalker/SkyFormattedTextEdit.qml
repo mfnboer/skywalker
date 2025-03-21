@@ -361,16 +361,39 @@ TextEdit {
         return {textBefore, textBetween, textAfter, fullText}
     }
 
-    function addEmbeddedLink(webLinkIndex, name) {
-        const webLink = postUtils.webLinks[webLinkIndex]
-        const textBefore = editText.text.slice(0, webLink.startIndex)
-        const textAfter = editText.text.slice(webLink.endIndex)
+    function replaceLinkWithName(link, name)
+    {
+        const textBefore = editText.text.slice(0, link.startIndex)
+        const textAfter = editText.text.slice(link.endIndex)
         const newText = textBefore + name + textAfter
         editText.text = newText
-        const embedStart = webLink.startIndex
+    }
+
+    function makeEmbeddedLink(name, oldLink)
+    {
+        const embedStart = oldLink.startIndex
         const embedEnd = embedStart + name.length
-        const embeddedLink = postUtils.makeWebLink(name, webLink.link, embedStart, embedEnd)
+        return postUtils.makeWebLink(name, oldLink.link, embedStart, embedEnd)
+    }
+
+    function addEmbeddedLink(webLinkIndex, name) {
+        const webLink = postUtils.webLinks[webLinkIndex]
+        replaceLinkWithName(webLink, name)
+        const embeddedLink = makeEmbeddedLink(name, webLink)
         postUtils.addEmbeddedLink(embeddedLink)
+    }
+
+    function updateEmbeddedLink(linkIndex, name)
+    {
+        const embeddedLink = postUtils.embeddedLinks[linkIndex]
+        replaceLinkWithName(embeddedLink, name)
+        // NOTE: replacing the link text will automatically update the embedded link itself!
+    }
+
+    function removeEmbeddedLink(linkIndex) {
+        const embeddedLink = postUtils.embeddedLinks[linkIndex]
+        postUtils.removeEmbeddedLink(linkIndex)
+        replaceLinkWithName(embeddedLink, "")
     }
 
     function createAuthorTypeaheadView() {

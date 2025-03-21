@@ -21,7 +21,7 @@ protected:
 
 private:
     bool facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const;
-    void highlightEmbeddedLinks();
+    void highlightEmbeddedLinks(const QString& text);
 
     QTextCharFormat mHighlightFormat;
     const WebLink::List* mEmbeddedLinks = nullptr;

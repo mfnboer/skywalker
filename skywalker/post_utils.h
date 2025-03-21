@@ -90,8 +90,13 @@ public:
     Q_INVOKABLE void addEmbeddedLink(const WebLink& link);
     Q_INVOKABLE void updatedEmbeddedLink(int linkIndex, const WebLink& link);
     Q_INVOKABLE void removeEmbeddedLink(int linkIndex);
+
+    // Make updates due to cursor moving to a new position
     Q_INVOKABLE void updateCursor(int cursor);
+
+    // Make updates due to changed text
     Q_INVOKABLE void updateText(const QString& prevText, const QString& text);
+
     Q_INVOKABLE void cacheTags(const QString& text);
 
     // Returns a new text up to cursor with the last type char transformed into font.

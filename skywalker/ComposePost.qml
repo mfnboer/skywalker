@@ -1256,8 +1256,13 @@ SkyPage {
             width: visible ? height: 0
             accessibleName: qsTr("embed web link")
             svg: SvgOutline.link
-            visible: getCursorInWebLink() >= 0
-            onClicked: page.addEmbeddedLink()
+            visible: getCursorInWebLink() >= 0 || getCursorInEmbeddedLink() >= 0
+            onClicked: {
+                if (getCursorInWebLink() >= 0)
+                    page.addEmbeddedLink()
+                else if (getCursorInEmbeddedLink() >= 0)
+                    page.updateEmbeddedLink()
+            }
         }
 
         SvgTransparentButton {
@@ -2395,6 +2400,39 @@ SkyPage {
         linkPage.open()
     }
 
+    function updateEmbeddedLink() {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return -1
+
+        const postText = postItem.getPostText()
+        const linkIndex = postText.cursorInEmbeddedLink
+
+        if (linkIndex < 0)
+            return
+
+        console.debug("Embedded link index:", linkIndex, "size:", postText.embeddedLinks.length)
+        const link = postText.embeddedLinks[linkIndex]
+        console.debug("Embedded link:", link.link, "name:", link.name)
+        let component = guiSettings.createComponent("EditEmbeddedLink.qml")
+        let linkPage = component.createObject(page, { link: link.link, name: link.name })
+        linkPage.onAccepted.connect(() => {
+                const name = linkPage.getName()
+                linkPage.destroy()
+
+                if (name.length <= 0)
+                {
+                    postText.removeEmbeddedLink(linkIndex)
+                    return
+                }
+
+                postText.updateEmbeddedLink(linkIndex, name)
+        })
+        linkPage.onRejected.connect(() => linkPage.destroy())
+        linkPage.open()
+    }
+
     function getCursorInWebLink() {
         let postItem = currentPostItem()
 
@@ -2402,6 +2440,15 @@ SkyPage {
             return -1
 
         return postItem.getPostText().cursorInWebLink
+    }
+
+    function getCursorInEmbeddedLink() {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return -1
+
+        return postItem.getPostText().cursorInEmbeddedLink
     }
 
     function hasImageContent() {
