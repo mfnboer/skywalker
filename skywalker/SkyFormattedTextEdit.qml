@@ -398,6 +398,10 @@ TextEdit {
         replaceLinkWithName(embeddedLink, "")
     }
 
+    function setEmbeddedLinks(embeddedLinkList) {
+        postUtils.embeddedLinks = embeddedLinkList
+    }
+
     function checkMisleadingEmbeddedLinks()
     {
         return postUtils.checkMisleadingEmbeddedLinks()

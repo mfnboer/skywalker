@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <atproto/lib/rich_text_master.h>
 #include <QObject>
 #include <qqmlintegration.h>
 
@@ -36,6 +37,10 @@ public:
     bool isValidEmbeddedLink() const;
     Q_INVOKABLE bool hasMisleadingName() const { return mHasMisleadingName; }
     Q_INVOKABLE QString getMisleadingNameError() const;
+
+    ATProto::RichTextMaster::ParsedMatch toFacet() const;
+
+    static std::vector<ATProto::RichTextMaster::ParsedMatch> toFacetList(const List& links);
 
 private:
     void checkMisleadingName();

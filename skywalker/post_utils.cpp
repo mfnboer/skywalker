@@ -132,6 +132,7 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
+                     const WebLink::List& embeddedLinks,
                      const QStringList& labels, const QString& language)
 {
     qDebug() << "Posting:" << text;
@@ -143,7 +144,8 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
 
     if (replyToUri.isEmpty())
     {
-        postMaster()->createPost(text, language, nullptr,
+        const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+        postMaster()->createPost(text, language, nullptr, embeddedFacets,
             [this, presence=getPresence(), imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
                 if (presence)
                     continuePost(imageFileNames, altTexts, post, quoteUri, quoteCid, labels);
@@ -152,14 +154,15 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels, language]
+        [this, presence=getPresence(), text, imageFileNames, altTexts , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, embeddedLinks, labels, language]
         {
             if (!presence)
                 return;
 
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+            const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
 
-            postMaster()->createPost(text, language, std::move(replyRef),
+            postMaster()->createPost(text, language, std::move(replyRef), embeddedFacets,
                 [this, presence, imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
                     if (presence)
                         continuePost(imageFileNames, altTexts , post, quoteUri, quoteCid, labels);
@@ -178,6 +181,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
+                     const WebLink::List& embeddedLinks,
                      const QStringList& labels, const QString& language)
 {
     Q_ASSERT(card);
@@ -190,7 +194,8 @@ void PostUtils::post(const QString& text, const LinkCard* card,
 
     if (replyToUri.isEmpty())
     {
-        postMaster()->createPost(text, language, nullptr,
+        const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+        postMaster()->createPost(text, language, nullptr, embeddedFacets,
             [this, presence=getPresence(), card, quoteUri, quoteCid, labels](auto post){
                 if (presence)
                     continuePost(card, post, quoteUri, quoteCid, labels);
@@ -199,14 +204,15 @@ void PostUtils::post(const QString& text, const LinkCard* card,
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels, language]
+        [this, presence=getPresence(), text, card, replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, embeddedLinks, labels, language]
         {
             if (!presence)
                 return;
 
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+            const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
 
-            postMaster()->createPost(text, language, std::move(replyRef),
+            postMaster()->createPost(text, language, std::move(replyRef), embeddedFacets,
                 [this, presence, card, quoteUri, quoteCid, labels](auto post){
                     if (presence)
                         continuePost(card, post, quoteUri, quoteCid, labels);
@@ -225,6 +231,7 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName, con
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
+                     const WebLink::List& embeddedLinks,
                      const QStringList& labels, const QString& language)
 {
     qDebug() << "Posting video:" << text;
@@ -237,7 +244,8 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName, con
     // TODO: code duplication
     if (replyToUri.isEmpty())
     {
-        postMaster()->createPost(text, language, nullptr,
+        const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+        postMaster()->createPost(text, language, nullptr, embeddedFacets,
             [this, presence=getPresence(), videoFileName, videoAltText, quoteUri, quoteCid, labels](auto post){
                 if (presence)
                     continuePostVideo(videoFileName, videoAltText, post, quoteUri, quoteCid, labels);
@@ -246,14 +254,15 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName, con
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, videoFileName, videoAltText , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, labels, language]
+        [this, presence=getPresence(), text, videoFileName, videoAltText , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, embeddedLinks, labels, language]
         {
             if (!presence)
                 return;
 
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
+            const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
 
-            postMaster()->createPost(text, language, std::move(replyRef),
+            postMaster()->createPost(text, language, std::move(replyRef), embeddedFacets,
                 [this, presence, videoFileName, videoAltText, quoteUri, quoteCid, labels](auto post){
                     if (presence)
                         continuePostVideo(videoFileName, videoAltText , post, quoteUri, quoteCid, labels);

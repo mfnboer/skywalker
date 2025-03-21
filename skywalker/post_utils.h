@@ -51,16 +51,19 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
+                          const WebLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language);
     Q_INVOKABLE void post(const QString& text, const LinkCard* card,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
+                          const WebLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language);
     Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName, const QString& videoAltText,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
+                          const WebLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const QStringList& allowList, bool allowNobody, const QStringList& hiddenReplies);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const ListViewBasicList& allowList, bool allowNobody, const QStringList& hiddenReplies);

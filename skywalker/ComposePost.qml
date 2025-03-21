@@ -277,6 +277,7 @@ SkyPage {
                 property list<ComposePostItem> postList: [
                     ComposePostItem {
                         text: initialText ? initialText : ""
+                        embeddedLinks: []
                         images: initialImage ? [initialImage] : []
                         altTexts: initialImage ? [""] : []
                         memeTopTexts: initialImage ? [""] : []
@@ -299,6 +300,7 @@ SkyPage {
                 Item {
                     required property int index
                     property string text
+                    property list<weblink> embeddedLinks
                     property list<string> images
                     property list<string> altTexts
                     property list<string> memeTopTexts
@@ -326,6 +328,7 @@ SkyPage {
 
                     function copyToPostList() {
                         threadPosts.postList[index].text = text
+                        threadPosts.postList[index].embeddedLinks = postText.embeddedLinks
                         threadPosts.postList[index].images = images
                         threadPosts.postList[index].altTexts = altTexts
                         threadPosts.postList[index].memeTopTexts = memeTopTexts
@@ -390,6 +393,7 @@ SkyPage {
                         // Set text last as it will trigger link extractions which
                         // will check if a link card is already in place.
                         text = threadPosts.postList[index].text
+                        postText.setEmbeddedLinks(threadPosts.postList[index].embeddedLinks)
                     }
 
                     function getPostText() { return postText }
@@ -2048,7 +2052,9 @@ SkyPage {
                            postItem.card,
                            parentUri, parentCid,
                            rootUri, rootCid,
-                           qUri, qCid, labels, postItem.language)
+                           qUri, qCid,
+                           postItem.embeddedLinks,
+                           labels, postItem.language)
         } else if (!postItem.gif.isNull()) {
             tenor.registerShare(postItem.gif)
 
@@ -2063,7 +2069,9 @@ SkyPage {
             postUtils.post(postText, gifCard,
                            parentUri, parentCid,
                            rootUri, rootCid,
-                           qUri, qCid, labels, postItem.language)
+                           qUri, qCid,
+                           postItem.embeddedLinks,
+                           labels, postItem.language)
         } else if (Boolean(postItem.video)) {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
@@ -2072,7 +2080,9 @@ SkyPage {
                             postUtils.postVideo(postText, transcodedVideo, postItem.videoAltText,
                             parentUri, parentCid,
                             rootUri, rootCid,
-                            qUri, qCid, labels, postItem.language) },
+                            qUri, qCid,
+                            postItem.embeddedLinks,
+                            labels, postItem.language) },
                         (error) => postFailed(error)),
                 (error) => postFailed(error))
         } else {
@@ -2080,7 +2090,9 @@ SkyPage {
             postUtils.post(postText, images, postItem.altTexts,
                            parentUri, parentCid,
                            rootUri, rootCid,
-                           qUri, qCid, labels, postItem.language);
+                           qUri, qCid,
+                           postItem.embeddedLinks,
+                           labels, postItem.language);
         }
 
         postUtils.cacheTags(postItem.text)
