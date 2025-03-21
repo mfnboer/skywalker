@@ -16,6 +16,12 @@ void FacetHighlighter::setHighlightColor(const QString& colorName)
     mHighlightFormat.setForeground(color);
 }
 
+void FacetHighlighter::setErrorColor(const QString& colorName)
+{
+    const auto color = QColor::fromString(colorName);
+    mErrorFormat.setForeground(color);
+}
+
 void FacetHighlighter::setEmbeddedLinks(const WebLink::List* links)
 {
     mEmbeddedLinks = links;
@@ -30,7 +36,7 @@ void FacetHighlighter::highlightBlock(const QString& text)
 
     for (const auto& facet : facets)
     {
-        if (facetOverlapsWithEmbeddedLink(facet))
+        if (facetOverlapsWithEmbeddedLink(facet, text))
             continue;
 
         switch (facet.mType)
@@ -52,7 +58,7 @@ void FacetHighlighter::highlightBlock(const QString& text)
     highlightEmbeddedLinks(text);
 }
 
-bool FacetHighlighter::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const
+bool FacetHighlighter::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet, const QString& text) const
 {
     if (!mEmbeddedLinks)
         return false;
@@ -66,9 +72,9 @@ bool FacetHighlighter::facetOverlapsWithEmbeddedLink(const ATProto::RichTextMast
     {
         const int startIndex = link.getStartIndex() - prevLength;
 
-        if (startIndex < 0)
+        if (startIndex < 0 || startIndex >= text.size())
         {
-            qWarning() <<"Invalid index:" << link.getName() << "start:" << link.getStartIndex() << "prev:" << prevLength;
+            qDebug() << "Link in other block:" << link.getName() << "start:" << link.getStartIndex() << "prev:" << prevLength << "block:" << currentBlock().blockNumber();
             continue;
         }
 
@@ -102,7 +108,8 @@ void FacetHighlighter::highlightEmbeddedLinks(const QString& text)
         }
 
         const int facetLength = link.getEndIndex() - link.getStartIndex();
-        addFormat(startIndex, facetLength, mHighlightFormat);
+        const auto& format = link.hasMisleadingName() ? mErrorFormat : mHighlightFormat;
+        addFormat(startIndex, facetLength, format);
     }
 }
 

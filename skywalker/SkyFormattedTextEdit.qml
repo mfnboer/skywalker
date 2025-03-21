@@ -104,8 +104,9 @@ TextEdit {
     }
 
     onMaxLengthChanged: {
-        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
-                                       editText.maxLength, guiSettings.textLengthExceededColor)
+        postUtils.setHighlightDocument(
+                editText.textDocument, guiSettings.linkColor, guiSettings.errorColor,
+                editText.maxLength, guiSettings.textLengthExceededColor)
     }
 
     // HACK:
@@ -387,7 +388,8 @@ TextEdit {
     {
         const embeddedLink = postUtils.embeddedLinks[linkIndex]
         replaceLinkWithName(embeddedLink, name)
-        // NOTE: replacing the link text will automatically update the embedded link itself!
+        const updatedLink = makeEmbeddedLink(name, embeddedLink)
+        postUtils.updatedEmbeddedLink(linkIndex, updatedLink)
     }
 
     function removeEmbeddedLink(linkIndex) {
@@ -424,8 +426,9 @@ TextEdit {
     Component.onCompleted: {
         createAuthorTypeaheadView()
         createHashtagTypeaheadView()
-        postUtils.setHighlightDocument(editText.textDocument, guiSettings.linkColor,
-                                       editText.maxLength, guiSettings.textLengthExceededColor)
+        postUtils.setHighlightDocument(
+                editText.textDocument, guiSettings.linkColor, guiSettings.errorColor,
+                editText.maxLength, guiSettings.textLengthExceededColor)
     }
 }
 

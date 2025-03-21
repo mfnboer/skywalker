@@ -14,16 +14,18 @@ class FacetHighlighter : public EmojiFixHighlighter
 public:
     explicit FacetHighlighter(QTextDocument* parent = nullptr);
     void setHighlightColor(const QString& colorName);
+    void setErrorColor(const QString& colorName);
     void setEmbeddedLinks(const WebLink::List* links);
 
 protected:
     void highlightBlock(const QString& text) override;
 
 private:
-    bool facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const;
+    bool facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet, const QString& text) const;
     void highlightEmbeddedLinks(const QString& text);
 
     QTextCharFormat mHighlightFormat;
+    QTextCharFormat mErrorFormat;
     const WebLink::List* mEmbeddedLinks = nullptr;
 };
 

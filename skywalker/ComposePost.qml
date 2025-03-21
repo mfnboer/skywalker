@@ -2429,9 +2429,11 @@ SkyPage {
 
         console.debug("Embedded link index:", linkIndex, "size:", postText.embeddedLinks.length)
         const link = postText.embeddedLinks[linkIndex]
-        console.debug("Embedded link:", link.link, "name:", link.name)
+        const error = link.hasMisleadingName() ? link.getMisleadingNameError() : ""
+        console.debug("Embedded link:", link.link, "name:", link.name, "error:", error)
+
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
-        let linkPage = component.createObject(page, { link: link.link, name: link.name })
+        let linkPage = component.createObject(page, { link: link.link, name: link.name, error: error })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
                 linkPage.destroy()

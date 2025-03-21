@@ -1375,10 +1375,11 @@ void PostUtils::setCursorInEmbeddedLink(int index)
 }
 
 void PostUtils::setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
-        int maxLength, const QString& lengthExceededColor)
+        const QString& errorColor, int maxLength, const QString& lengthExceededColor)
 {
     mFacetHighlighter.setDocument(doc->textDocument());
     mFacetHighlighter.setHighlightColor(highlightColor);
+    mFacetHighlighter.setErrorColor(errorColor);
     mFacetHighlighter.setMaxLength(maxLength, lengthExceededColor);
 }
 
@@ -1553,27 +1554,9 @@ bool PostUtils::checkMisleadingEmbeddedLinks() const
 
     for (const auto& link : mEmbeddedLinks)
     {
-        const auto facets = ATProto::RichTextMaster::parseFacets(link.getName());
-
-        if (facets.empty())
-            continue;
-
-        const auto& facet = facets.front();
-
-        switch (facet.mType)
+        if (link.hasMisleadingName())
         {
-        case ATProto::RichTextMaster::ParsedMatch::Type::LINK:
-            mSkywalker->showStatusMessage(tr("Do not use a link url as link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
-            return false;
-        case ATProto::RichTextMaster::ParsedMatch::Type::PARTIAL_MENTION:
-        case ATProto::RichTextMaster::ParsedMatch::Type::MENTION:
-            mSkywalker->showStatusMessage(tr("Do not use a mention as link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
-            return false;
-        case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
-            mSkywalker->showStatusMessage(tr("Do not use a hashtag as link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
-            return false;
-        case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
-            mSkywalker->showStatusMessage(tr("Misleading part in link display name: %1").arg(facet.mMatch), QEnums::STATUS_LEVEL_ERROR);
+            mSkywalker->showStatusMessage(link.getMisleadingNameError(), QEnums::STATUS_LEVEL_ERROR);
             return false;
         }
     }

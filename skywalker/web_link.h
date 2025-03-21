@@ -28,18 +28,23 @@ public:
     int getStartIndex() const { return mStartIndex; }
     int getEndIndex() const { return mEndIndex; }
 
-    void setName(const QString& name) { mName = name; }
+    void setName(const QString& name);
     void setStartIndex(int index) { mStartIndex = index; }
     void setEndIndex(int index) { mEndIndex = index; }
     void addToIndexes(int add);
 
     bool isValidEmbeddedLink() const;
+    Q_INVOKABLE bool hasMisleadingName() const { return mHasMisleadingName; }
+    Q_INVOKABLE QString getMisleadingNameError() const;
 
 private:
+    void checkMisleadingName();
+
     QString mLink;
     QString mName;
     int mStartIndex = -1;
     int mEndIndex = -1;
+    bool mHasMisleadingName = false;
 };
 
 }

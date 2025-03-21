@@ -5,6 +5,7 @@ import QtQuick.Layouts
 Dialog {
     required property string link
     property string name
+    property string error
 
     id: page
     width: parent.width
@@ -43,6 +44,14 @@ Dialog {
                 inputMethodHints: Qt.ImhNoAutoUppercase
                 singleLine: true
             }
+        }
+
+        AccessibleText {
+            Layout.fillWidth: true
+            color: guiSettings.errorColor
+            wrapMode: Text.Wrap
+            text: error
+            visible: Boolean(error)
         }
 
         AccessibleText {

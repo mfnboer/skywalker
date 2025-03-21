@@ -83,6 +83,7 @@ public:
     Q_INVOKABLE static void dropVideo(const QString& source);
     Q_INVOKABLE QString cutPhotoRect(const QString& source, const QRect& rect, const QSize& scaledSize);
     Q_INVOKABLE void setHighlightDocument(QQuickTextDocument* doc, const QString& highlightColor,
+                                          const QString& errorColor,
                                           int maxLength = -1, const QString& lengthExceededColor = {});
     Q_INVOKABLE void setHighLightMaxLength(int maxLength);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText, int cursor);
