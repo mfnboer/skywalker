@@ -26,6 +26,7 @@ public:
     explicit WebLink(const QString& link, int startIndex, int endIndex, const QString& name = "");
 
     bool operator==(const WebLink&) const = default;
+    WebLink& operator=(const WebLink&) = default;
 
     const QString& getLink() const { return mLink; }
     const QString& getName() const { return mName; }
