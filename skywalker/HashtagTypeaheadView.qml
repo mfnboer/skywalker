@@ -7,13 +7,13 @@ HashtagListView {
     required property var parentPage
     required property var editText
     required property SearchUtils searchUtils
-    required property PostUtils postUtils
+    required property FacetUtils facetUtils
 
     id: searchList
     z: 10
     width: parentPage.width
     model: searchUtils.hashtagTypeaheadList
-    visible: postUtils.editTag.length > 0
+    visible: facetUtils.editTag.length > 0
 
     onVisibleChanged: {
         if (!visible && searchUtils)
@@ -25,8 +25,8 @@ HashtagListView {
 
     onHashtagClicked: (hashtag) => {
         const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
-        const hashtagStartIndex = postUtils.getEditTagIndex()
-        const hashtagEndIndex = hashtagStartIndex + postUtils.editTag.length
+        const hashtagStartIndex = facetUtils.getEditTagIndex()
+        const hashtagEndIndex = hashtagStartIndex + facetUtils.editTag.length
         editText.clear() // also clears the preedit buffer
 
         // Add space and move the cursor 1 postion beyond the end

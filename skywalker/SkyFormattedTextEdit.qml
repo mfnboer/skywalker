@@ -51,20 +51,20 @@ TextEdit {
     Accessible.multiLine: true
 
     onCursorRectangleChanged: {
-        let editMentionY = postUtils.editMentionCursorY
-        let editTagY = postUtils.editTagCursorY
+        let editMentionY = facetUtils.editMentionCursorY
+        let editTagY = facetUtils.editTagCursorY
         let cursorY = cursorRectangle.y
 
-        if (postUtils.editMention.length > 0 && editMentionY != cursorY)
-            postUtils.editMention = ""
+        if (facetUtils.editMention.length > 0 && editMentionY !== cursorY)
+            facetUtils.editMention = ""
 
-        if (postUtils.editTag.length > 0 && editTagY != cursorY)
-            postUtils.editTag = ""
+        if (facetUtils.editTag.length > 0 && editTagY !== cursorY)
+            facetUtils.editTag = ""
 
         ensureVisible(cursorRectangle)
     }
 
-    onCursorPositionChanged: postUtils.updateCursor(cursorPosition)
+    onCursorPositionChanged: facetUtils.updateCursor(cursorPosition)
 
     onFocusChanged: {
         if (focus)
@@ -82,7 +82,7 @@ TextEdit {
             prevTextLen = text.length
         }
 
-        postUtils.updateText(prevText, text)
+        facetUtils.updateText(prevText, text)
         prevText = text
 
         highlightFacets()
@@ -104,7 +104,7 @@ TextEdit {
     }
 
     onMaxLengthChanged: {
-        postUtils.setHighlightDocument(
+        facetUtils.setHighlightDocument(
                 editText.textDocument, guiSettings.linkColor, guiSettings.errorColor,
                 editText.maxLength, guiSettings.textLengthExceededColor)
     }
@@ -188,7 +188,7 @@ TextEdit {
         if (!fontSelectorCombo)
             return
 
-        const modifiedTillCursor = postUtils.applyFontToLastTypedChars(
+        const modifiedTillCursor = facetUtils.applyFontToLastTypedChars(
                                      editText.text, editText.preeditText,
                                      editText.cursorPosition, numChars,
                                      fontSelectorCombo.currentIndex)
@@ -202,19 +202,19 @@ TextEdit {
     }
 
     function highlightFacets() {
-        postUtils.extractMentionsAndLinks(editText.text,
+        facetUtils.extractMentionsAndLinks(editText.text,
                 editText.preeditText, cursorPosition)
     }
 
     function updateGraphemeLength() {
         const prevGraphemeLength = graphemeLength
-        const linkShorteningReduction = enableLinkShortening ? postUtils.getLinkShorteningReduction() : 0
+        const linkShorteningReduction = enableLinkShortening ? facetUtils.getLinkShorteningReduction() : 0
 
         graphemeLength = UnicodeFonts.graphemeLength(editText.text) +
                 UnicodeFonts.graphemeLength(preeditText) -
                 linkShorteningReduction
 
-        postUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
+        facetUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
 
         return graphemeLength - prevGraphemeLength
     }
@@ -290,8 +290,8 @@ TextEdit {
         id: authorTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (postUtils.editMention.length > 0)
-                searchUtils.searchAuthorsTypeahead(postUtils.editMention, 10)
+            if (facetUtils.editMention.length > 0)
+                searchUtils.searchAuthorsTypeahead(facetUtils.editMention, 10)
         }
     }
 
@@ -299,8 +299,8 @@ TextEdit {
         id: hashtagTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            if (postUtils.editTag.length > 0)
-                searchUtils.searchHashtagsTypeahead(postUtils.editTag, 10)
+            if (facetUtils.editTag.length > 0)
+                searchUtils.searchHashtagsTypeahead(facetUtils.editTag, 10)
         }
     }
 
@@ -315,11 +315,11 @@ TextEdit {
         }
     }
 
-    PostUtils {
+    FacetUtils {
         property double editMentionCursorY: 0
         property double editTagCursorY: 0
 
-        id: postUtils
+        id: facetUtils
         skywalker: parentPage.skywalker
 
         onEditMentionChanged: {
@@ -374,41 +374,41 @@ TextEdit {
     {
         const embedStart = oldLink.startIndex
         const embedEnd = embedStart + name.length
-        return postUtils.makeWebLink(name, oldLink.link, embedStart, embedEnd)
+        return facetUtils.makeWebLink(name, oldLink.link, embedStart, embedEnd)
     }
 
     function addEmbeddedLink(webLinkIndex, name) {
-        const webLink = postUtils.webLinks[webLinkIndex]
+        const webLink = facetUtils.webLinks[webLinkIndex]
         replaceLinkWithName(webLink, name)
         const embeddedLink = makeEmbeddedLink(name, webLink)
-        postUtils.addEmbeddedLink(embeddedLink)
+        facetUtils.addEmbeddedLink(embeddedLink)
         cursorPosition = embeddedLink.endIndex
     }
 
     function updateEmbeddedLink(linkIndex, name)
     {
-        const embeddedLink = postUtils.embeddedLinks[linkIndex]
+        const embeddedLink = facetUtils.embeddedLinks[linkIndex]
         replaceLinkWithName(embeddedLink, name)
         const updatedLink = makeEmbeddedLink(name, embeddedLink)
-        postUtils.updatedEmbeddedLink(linkIndex, updatedLink)
+        facetUtils.updatedEmbeddedLink(linkIndex, updatedLink)
         cursorPosition = updatedLink.endIndex
     }
 
     function removeEmbeddedLink(linkIndex) {
-        const embeddedLink = postUtils.embeddedLinks[linkIndex]
+        const embeddedLink = facetUtils.embeddedLinks[linkIndex]
         const rawLink = embeddedLink.link
-        postUtils.removeEmbeddedLink(linkIndex)
+        facetUtils.removeEmbeddedLink(linkIndex)
         replaceLinkWithName(embeddedLink, rawLink)
         cursorPosition = embeddedLink.startIndex + rawLink.length
     }
 
     function setEmbeddedLinks(embeddedLinkList) {
-        postUtils.embeddedLinks = embeddedLinkList
+        facetUtils.embeddedLinks = embeddedLinkList
     }
 
     function checkMisleadingEmbeddedLinks()
     {
-        return postUtils.checkMisleadingEmbeddedLinks()
+        return facetUtils.checkMisleadingEmbeddedLinks()
     }
 
     function createAuthorTypeaheadView() {
@@ -417,7 +417,7 @@ TextEdit {
                 parentPage: parentPage,
                 editText: editText,
                 searchUtils: searchUtils,
-                postUtils: postUtils
+                facetUtils: facetUtils
             })
     }
 
@@ -427,14 +427,14 @@ TextEdit {
                 parentPage: parentPage,
                 editText: editText,
                 searchUtils: searchUtils,
-                postUtils: postUtils
+                facetUtils: facetUtils
             })
     }
 
     Component.onCompleted: {
         createAuthorTypeaheadView()
         createHashtagTypeaheadView()
-        postUtils.setHighlightDocument(
+        facetUtils.setHighlightDocument(
                 editText.textDocument, guiSettings.linkColor, guiSettings.errorColor,
                 editText.maxLength, guiSettings.textLengthExceededColor)
     }

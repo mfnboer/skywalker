@@ -503,6 +503,8 @@ qt_add_qml_module(libskywalker
         SOURCES text_differ.h
         SOURCES text_differ.cpp
         QML_FILES EditEmbeddedLink.qml
+        SOURCES facet_utils.h
+        SOURCES facet_utils.cpp
 )
 
 if (NOT ANDROID)

@@ -6,13 +6,13 @@ SimpleAuthorListView {
     required property var parentPage
     required property var editText
     required property SearchUtils searchUtils
-    required property PostUtils postUtils
+    required property FacetUtils facetUtils
 
     id: typeaheadView
     z: 10
     width: parentPage.width
     model: searchUtils.authorTypeaheadList
-    visible: postUtils.editMention.length > 0
+    visible: facetUtils.editMention.length > 0
 
     onVisibleChanged: {
         if (!visible && searchUtils)
@@ -25,8 +25,8 @@ SimpleAuthorListView {
     onAuthorClicked: (profile) => {
         console.debug("AUTHOR CLICKED")
         const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
-        const mentionStartIndex = postUtils.getEditMentionIndex()
-        const mentionEndIndex = mentionStartIndex + postUtils.editMention.length
+        const mentionStartIndex = facetUtils.getEditMentionIndex()
+        const mentionEndIndex = mentionStartIndex + facetUtils.editMention.length
         editText.clear() // also clears the preedit buffer
 
         // Add space and move the cursor 1 postion beyond the end
