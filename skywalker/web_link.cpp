@@ -11,9 +11,6 @@ WebLink::WebLink(const QString& link, int startIndex, int endIndex, const QStrin
     mStartIndex(startIndex),
     mEndIndex(endIndex)
 {
-    if (!mLink.startsWith("http"))
-        mLink = "https://" + mLink;
-
     checkMisleadingName();
 }
 
@@ -85,13 +82,13 @@ QString WebLink::getMisleadingNameError() const
 }
 
 ATProto::RichTextMaster::ParsedMatch WebLink::toFacet() const
-{
+{   
     ATProto::RichTextMaster::ParsedMatch facet;
     facet.mStartIndex = mStartIndex;
     facet.mEndIndex = mEndIndex;
     facet.mMatch = mName;
     facet.mType = ATProto::RichTextMaster::ParsedMatch::Type::LINK;
-    facet.mRef = mLink;
+    facet.mRef = mLink.startsWith("http") ? mLink : "https://" + mLink;
     return facet;
 }
 

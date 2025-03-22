@@ -382,6 +382,7 @@ TextEdit {
         replaceLinkWithName(webLink, name)
         const embeddedLink = makeEmbeddedLink(name, webLink)
         postUtils.addEmbeddedLink(embeddedLink)
+        cursorPosition = embeddedLink.endIndex
     }
 
     function updateEmbeddedLink(linkIndex, name)
@@ -390,12 +391,15 @@ TextEdit {
         replaceLinkWithName(embeddedLink, name)
         const updatedLink = makeEmbeddedLink(name, embeddedLink)
         postUtils.updatedEmbeddedLink(linkIndex, updatedLink)
+        cursorPosition = updatedLink.endIndex
     }
 
     function removeEmbeddedLink(linkIndex) {
         const embeddedLink = postUtils.embeddedLinks[linkIndex]
+        const rawLink = embeddedLink.link
         postUtils.removeEmbeddedLink(linkIndex)
-        replaceLinkWithName(embeddedLink, "")
+        replaceLinkWithName(embeddedLink, rawLink)
+        cursorPosition = embeddedLink.startIndex + rawLink.length
     }
 
     function setEmbeddedLinks(embeddedLinkList) {

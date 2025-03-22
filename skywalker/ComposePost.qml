@@ -1323,25 +1323,25 @@ SkyPage {
         id: linkCardReader
 
         onLinkCard: (card) => {
-                        busyIndicator.running = false
-                        console.debug("Got card:", card.link, card.title, card.thumb)
-                        console.debug(card.description)
-                        linkCardTimer.immediateGetInProgress = false
+            busyIndicator.running = false
+            console.debug("Got card:", card.link, card.title, card.thumb)
+            console.debug(card.description)
+            linkCardTimer.immediateGetInProgress = false
 
-                        let postItem = threadPosts.itemAt(linkCardTimer.postIndex)
+            let postItem = threadPosts.itemAt(linkCardTimer.postIndex)
 
-                        if (postItem) {
-                            postItem.getLinkCard().show(card)
-                            let postText = postItem.getPostText()
+            if (postItem) {
+                postItem.getLinkCard().show(card)
+                let postText = postItem.getPostText()
 
-                            if (!postText.cursorInFirstWebLink)
-                                postItem.getLinkCard().linkFixed = true
-                            else
-                                postText.cutLinkIfJustAdded(postText.firstWebLink, () => postItem.getLinkCard().linkFixed = true)
-                        }
+                if (!postText.cursorInFirstWebLink)
+                    postItem.getLinkCard().linkFixed = true
+                else
+                    postText.cutLinkIfJustAdded(postText.firstWebLink, () => postItem.getLinkCard().linkFixed = true)
+            }
 
-                        getNextLink()
-                    }
+            getNextLink()
+        }
 
         onLinkCardFailed: {
             busyIndicator.running = false
@@ -2418,12 +2418,15 @@ SkyPage {
                 const name = linkPage.getName()
                 linkPage.destroy()
 
-                if (name.length <= 0)
-                    return
+                if (name.length > 0)
+                    postText.addEmbeddedLink(webLinkIndex, name)
 
-                postText.addEmbeddedLink(webLinkIndex, name)
+                postText.forceActiveFocus()
         })
-        linkPage.onRejected.connect(() => linkPage.destroy())
+        linkPage.onRejected.connect(() => {
+                linkPage.destroy()
+                postText.forceActiveFocus()
+        })
         linkPage.open()
     }
 
@@ -2451,14 +2454,16 @@ SkyPage {
                 linkPage.destroy()
 
                 if (name.length <= 0)
-                {
                     postText.removeEmbeddedLink(linkIndex)
-                    return
-                }
+                else
+                    postText.updateEmbeddedLink(linkIndex, name)
 
-                postText.updateEmbeddedLink(linkIndex, name)
+                postText.forceActiveFocus()
         })
-        linkPage.onRejected.connect(() => linkPage.destroy())
+        linkPage.onRejected.connect(() => {
+                linkPage.destroy()
+                postText.forceActiveFocus()
+        })
         linkPage.open()
     }
 
