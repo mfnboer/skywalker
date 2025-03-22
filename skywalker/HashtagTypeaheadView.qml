@@ -12,8 +12,8 @@ HashtagListView {
     id: searchList
     z: 10
     width: parentPage.width
-    model: searchUtils.hashtagTypeaheadList
-    visible: facetUtils.editTag.length > 0
+    model: searchUtils ? searchUtils.hashtagTypeaheadList : undefined
+    visible: facetUtils && facetUtils.editTag.length > 0
 
     onVisibleChanged: {
         if (!visible && searchUtils)

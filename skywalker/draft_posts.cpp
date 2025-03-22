@@ -56,28 +56,31 @@ bool DraftPosts::canSaveDraft() const
     return mDraftPostsModel->rowCount() < MAX_DRAFTS;
 }
 
-DraftPostData* DraftPosts::createDraft(const QString& text,
-                                       const QStringList& imageFileNames, const QStringList& altTexts,
-                                       const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
-                                       const QString& videoFileName, const QString& videoAltText,
-                                       int videoStartMs, int videoEndMs, int videoNewHeight,
-                                       bool videoRemoveAudio,
-                                       const QString& replyToUri, const QString& replyToCid,
-                                       const QString& replyRootUri, const QString& replyRootCid,
-                                       const BasicProfile& replyToAuthor, const QString& replyToText,
-                                       const QDateTime& replyToDateTime,
-                                       const QString& quoteUri, const QString& quoteCid,
-                                       const BasicProfile& quoteAuthor, const QString& quoteText,
-                                       const QDateTime& quoteDateTime, bool quoteFixed,
-                                       const GeneratorView& quoteFeed, const ListView& quoteList,
-                                       const TenorGif gif, const LinkCard* card, const QStringList& labels,
-                                       const QString& language,
-                                       bool restrictReplies, bool allowMention, bool allowFollower, bool allowFollowing,
-                                       const QStringList& allowLists, bool embeddingDisabled,
-                                       QDateTime timestamp)
+DraftPostData* DraftPosts::createDraft(
+    const QString& text,
+    const WebLink::List& embeddedLinks,
+    const QStringList& imageFileNames, const QStringList& altTexts,
+    const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
+    const QString& videoFileName, const QString& videoAltText,
+    int videoStartMs, int videoEndMs, int videoNewHeight,
+    bool videoRemoveAudio,
+    const QString& replyToUri, const QString& replyToCid,
+    const QString& replyRootUri, const QString& replyRootCid,
+    const BasicProfile& replyToAuthor, const QString& replyToText,
+    const QDateTime& replyToDateTime,
+    const QString& quoteUri, const QString& quoteCid,
+    const BasicProfile& quoteAuthor, const QString& quoteText,
+    const QDateTime& quoteDateTime, bool quoteFixed,
+    const GeneratorView& quoteFeed, const ListView& quoteList,
+    const TenorGif gif, const LinkCard* card, const QStringList& labels,
+    const QString& language,
+    bool restrictReplies, bool allowMention, bool allowFollower, bool allowFollowing,
+    const QStringList& allowLists, bool embeddingDisabled,
+    QDateTime timestamp)
 {
     auto* draft = new DraftPostData(this);
     draft->setText(text);
+    draft->setEmbeddedLinks(embeddedLinks);
 
     QList<ImageView> images;
     Q_ASSERT(imageFileNames.size() == altTexts.size());
@@ -282,6 +285,12 @@ ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createPost(const Draft
     else if (!draftPost->externalLink().isEmpty())
         addExternalLinkToPost(*post, draftPost->externalLink());
 
+    if (!draftPost->embeddedLinks().empty())
+    {
+        auto links = createEmbeddedLinks(draftPost->embeddedLinks());
+        post->mJson.insert(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD, links->toJson());
+    }
+
     return post;
 }
 
@@ -469,6 +478,7 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
     {
         auto* data = new DraftPostData(this);
         data->setText(post.getText());
+        data->setEmbeddedLinks(post.getDraftEmbeddedLinks());
         setImages(data, post.getDraftImages());
 
         const auto videoView = post.getDraftVideoView();
@@ -648,6 +658,20 @@ ATProto::AppBskyActor::ProfileView::SharedPtr DraftPosts::createProfileView(cons
     view->mAvatar = author.getAvatarUrl();
 
     return view;
+}
+
+Draft::EmbeddedLinks::SharedPtr DraftPosts::createEmbeddedLinks(const WebLink::List& links)
+{
+    auto embeddedLinks = std::make_shared<Draft::EmbeddedLinks>();
+    embeddedLinks->mEmbeddedLinks.reserve(links.size());
+
+    for (const auto& link : links)
+    {
+        auto draftLink = std::make_shared<WebLink>(link);
+        embeddedLinks->mEmbeddedLinks.push_back(draftLink);
+    }
+
+    return embeddedLinks;
 }
 
 Draft::ReplyToPost::SharedPtr DraftPosts::createReplyToPost(const QString& replyToUri, const BasicProfile& author,
@@ -1123,7 +1147,7 @@ void DraftPosts::loadDraftFeed()
     if (!mDraftPostsModel)
         mDraftPostsModel = mSkywalker->createDraftPostsModel();
 
-    auto fileList = getDraftPostFiles(draftsPath);
+    const auto fileList = getDraftPostFiles(draftsPath);
     std::vector<ATProto::AppBskyFeed::PostFeed> postThreads;
 
     for (const auto& file : fileList)

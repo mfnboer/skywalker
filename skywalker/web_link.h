@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include <atproto/lib/rich_text_master.h>
+#include <QJsonObject>
 #include <QObject>
 #include <qqmlintegration.h>
 
@@ -18,8 +19,10 @@ class WebLink
 
 public:
     using List = QList<WebLink>;
+    using SharedPtr = std::shared_ptr<WebLink>;
 
     WebLink() = default;
+    WebLink(const WebLink&) = default;
     explicit WebLink(const QString& link, int startIndex, int endIndex, const QString& name = "");
 
     bool operator==(const WebLink&) const = default;
@@ -40,6 +43,9 @@ public:
 
     ATProto::RichTextMaster::ParsedMatch toFacet() const;
 
+    QJsonObject toJson() const;
+
+    static SharedPtr fromJson(const QJsonObject& json);
     static std::vector<ATProto::RichTextMaster::ParsedMatch> toFacetList(const List& links);
 
 private:

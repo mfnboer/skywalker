@@ -11,8 +11,8 @@ SimpleAuthorListView {
     id: typeaheadView
     z: 10
     width: parentPage.width
-    model: searchUtils.authorTypeaheadList
-    visible: facetUtils.editMention.length > 0
+    model: searchUtils ? searchUtils.authorTypeaheadList : undefined
+    visible: facetUtils && facetUtils.editMention.length > 0
 
     onVisibleChanged: {
         if (!visible && searchUtils)

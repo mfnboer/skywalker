@@ -2149,22 +2149,24 @@ SkyPage {
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
 
-        const draft = draftPosts.createDraft(postItem.text,
-                                 postItem.images, postItem.altTexts,
-                                 postItem.memeTopTexts, postItem.memeBottomTexts,
-                                 postItem.video, postItem.videoAltText,
-                                 postItem.videoStartMs, postItem.videoEndMs, postItem.videoNewHeight,
-                                 postItem.videoRemoveAudio,
-                                 replyToPostUri, replyToPostCid,
-                                 replyRootPostUri, replyRootPostCid,
-                                 replyToAuthor, UnicodeFonts.toPlainText(replyToPostText),
-                                 replyToPostDateTime,
-                                 qUri, qCid, postItem.quoteAuthor, UnicodeFonts.toPlainText(postItem.quoteText),
-                                 postItem.quoteDateTime, postItem.quoteFixed,
-                                 postItem.quoteFeed, postItem.quoteList,
-                                 postItem.gif, postItem.card, labels, postItem.language,
-                                 restrictReply, allowReplyMentioned, allowReplyFollower, allowReplyFollowing,
-                                 getReplyRestrictionListUris(), !allowQuoting)
+        const draft = draftPosts.createDraft(
+                        postItem.text,
+                        postItem.embeddedLinks,
+                        postItem.images, postItem.altTexts,
+                        postItem.memeTopTexts, postItem.memeBottomTexts,
+                        postItem.video, postItem.videoAltText,
+                        postItem.videoStartMs, postItem.videoEndMs, postItem.videoNewHeight,
+                        postItem.videoRemoveAudio,
+                        replyToPostUri, replyToPostCid,
+                        replyRootPostUri, replyRootPostCid,
+                        replyToAuthor, UnicodeFonts.toPlainText(replyToPostText),
+                        replyToPostDateTime,
+                        qUri, qCid, postItem.quoteAuthor, UnicodeFonts.toPlainText(postItem.quoteText),
+                        postItem.quoteDateTime, postItem.quoteFixed,
+                        postItem.quoteFeed, postItem.quoteList,
+                        postItem.gif, postItem.card, labels, postItem.language,
+                        restrictReply, allowReplyMentioned, allowReplyFollower, allowReplyFollowing,
+                        getReplyRestrictionListUris(), !allowQuoting)
 
         let draftItemList = []
 
@@ -2174,22 +2176,24 @@ SkyPage {
             const qCidItem = threadItem.getQuoteCid()
             const labelsItem = threadItem.getContentLabels()
 
-            const draftItem = draftPosts.createDraft(threadItem.text,
-                                     threadItem.images, threadItem.altTexts,
-                                     threadItem.memeTopTexts, threadItem.memeBottomTexts,
-                                     threadItem.video, threadItem.videoAltText,
-                                     threadItem.videoStartMs, threadItem.videoEndMs, threadItem.videoNewHeight,
-                                     threadItem.videoRemoveAudio,
-                                     "", "",
-                                     "", "",
-                                     nullAuthor, "",
-                                     new Date(),
-                                     qUriItem, qCidItem, threadItem.quoteAuthor, UnicodeFonts.toPlainText(threadItem.quoteText),
-                                     threadItem.quoteDateTime, threadItem.quoteFixed,
-                                     threadItem.quoteFeed, threadItem.quoteList,
-                                     threadItem.gif, threadItem.card, labelsItem, threadItem.language,
-                                     false, false, false, false,
-                                     [], false)
+            const draftItem = draftPosts.createDraft(
+                                threadItem.text,
+                                threadItem.embeddedLinks,
+                                threadItem.images, threadItem.altTexts,
+                                threadItem.memeTopTexts, threadItem.memeBottomTexts,
+                                threadItem.video, threadItem.videoAltText,
+                                threadItem.videoStartMs, threadItem.videoEndMs, threadItem.videoNewHeight,
+                                threadItem.videoRemoveAudio,
+                                "", "",
+                                "", "",
+                                nullAuthor, "",
+                                new Date(),
+                                qUriItem, qCidItem, threadItem.quoteAuthor, UnicodeFonts.toPlainText(threadItem.quoteText),
+                                threadItem.quoteDateTime, threadItem.quoteFixed,
+                                threadItem.quoteFeed, threadItem.quoteList,
+                                threadItem.gif, threadItem.card, labelsItem, threadItem.language,
+                                false, false, false, false,
+                                [], false)
 
             draftItemList.push(draftItem)
             postUtils.cacheTags(threadItem.text)
@@ -2233,6 +2237,7 @@ SkyPage {
             const draftData = draftDataList[j]
             let postItem = threadPosts.newComposePostItem()
             postItem.text = draftData.text
+            postItem.embeddedLinks = draftData.embeddedLinks
 
             for (let i = 0; i < draftData.images.length; ++i) {
                 postItem.images.push(draftData.images[i].fullSizeUrl)

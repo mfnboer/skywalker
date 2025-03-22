@@ -10,6 +10,7 @@
 #include "record_view.h"
 #include "record_with_media_view.h"
 #include "video_view.h"
+#include "web_link.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
 
 namespace Skywalker {
@@ -54,6 +55,7 @@ public:
 
     QString getText() const override;
     QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}, const QString& linkColor = {}) const;
+    WebLink::List getDraftEmbeddedLinks() const;
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;

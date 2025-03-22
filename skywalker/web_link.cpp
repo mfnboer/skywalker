@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "web_link.h"
+#include <atproto/lib/xjson.h>
 #include <QDebug>
 
 namespace Skywalker {
@@ -100,6 +101,28 @@ std::vector<ATProto::RichTextMaster::ParsedMatch> WebLink::toFacetList(const Lis
         facets.push_back(link.toFacet());
 
     return facets;
+}
+
+QJsonObject WebLink::toJson() const
+{
+    QJsonObject json;
+    json.insert("name", mName);
+    json.insert("link", mLink);
+    json.insert("startIndex", mStartIndex);
+    json.insert("endIndex", mEndIndex);
+    return json;
+}
+
+WebLink::SharedPtr WebLink::fromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+    auto webLink = std::make_shared<WebLink>();
+    webLink->mName = xjson.getRequiredString("name");
+    webLink->mLink = xjson.getRequiredString("link");
+    webLink->mStartIndex = xjson.getRequiredInt("startIndex");
+    webLink->mEndIndex = xjson.getRequiredInt("endIndex");
+    webLink->checkMisleadingName();
+    return webLink;
 }
 
 }

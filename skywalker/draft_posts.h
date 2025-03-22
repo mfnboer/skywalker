@@ -38,25 +38,27 @@ public:
 
     Q_INVOKABLE bool canSaveDraft() const;
 
-    Q_INVOKABLE DraftPostData* createDraft(const QString& text,
-                                           const QStringList& imageFileNames, const QStringList& altTexts,
-                                           const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
-                                           const QString& videoFileName, const QString& videoAltText,
-                                           int videoStartMs, int videoEndMs, int videoNewHeight,
-                                           bool videoRemoveAudio,
-                                           const QString& replyToUri, const QString& replyToCid,
-                                           const QString& replyRootUri, const QString& replyRootCid,
-                                           const BasicProfile& replyToAuthor, const QString& replyToText,
-                                           const QDateTime& replyToDateTime,
-                                           const QString& quoteUri, const QString& quoteCid,
-                                           const BasicProfile& quoteAuthor, const QString& quoteText,
-                                           const QDateTime& quoteDateTime, bool quoteFixed,
-                                           const GeneratorView& quoteFeed, const ListView& quoteList,
-                                           const TenorGif gif, const LinkCard* card, const QStringList& labels,
-                                           const QString& language,
-                                           bool restrictReplies, bool allowMention, bool allowFollwer, bool allowFollowing,
-                                           const QStringList& allowLists, bool embeddingDisabled,
-                                           QDateTime timestamp = QDateTime::currentDateTime());
+    Q_INVOKABLE DraftPostData* createDraft(
+        const QString& text,
+        const WebLink::List& embeddedLinks,
+        const QStringList& imageFileNames, const QStringList& altTexts,
+        const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
+        const QString& videoFileName, const QString& videoAltText,
+        int videoStartMs, int videoEndMs, int videoNewHeight,
+        bool videoRemoveAudio,
+        const QString& replyToUri, const QString& replyToCid,
+        const QString& replyRootUri, const QString& replyRootCid,
+        const BasicProfile& replyToAuthor, const QString& replyToText,
+        const QDateTime& replyToDateTime,
+        const QString& quoteUri, const QString& quoteCid,
+        const BasicProfile& quoteAuthor, const QString& quoteText,
+        const QDateTime& quoteDateTime, bool quoteFixed,
+        const GeneratorView& quoteFeed, const ListView& quoteList,
+        const TenorGif gif, const LinkCard* card, const QStringList& labels,
+        const QString& language,
+        bool restrictReplies, bool allowMention, bool allowFollwer, bool allowFollowing,
+        const QStringList& allowLists, bool embeddingDisabled,
+        QDateTime timestamp = QDateTime::currentDateTime());
 
     Q_INVOKABLE bool saveDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread = {});
     Q_INVOKABLE void loadDraftPosts();
@@ -95,6 +97,7 @@ private:
     static ATProto::AppBskyActor::ProfileView::SharedPtr createProfileView(const Profile& author);
 
     ATProto::AppBskyFeed::Record::Post::SharedPtr createPost(const DraftPostData* draftPost, const QString& picBaseName);
+    Draft::EmbeddedLinks::SharedPtr createEmbeddedLinks(const WebLink::List& links);
     Draft::ReplyToPost::SharedPtr createReplyToPost(const QString& replyToUri, const BasicProfile& author,
                                        const QString& text, const QDateTime& dateTime) const;
 

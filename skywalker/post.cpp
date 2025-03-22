@@ -6,6 +6,7 @@
 #include "content_filter.h"
 #include "unicode_fonts.h"
 #include "user_settings.h"
+#include "lexicon/draft.h"
 #include "lexicon/lexicon.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/xjson.h>
@@ -193,6 +194,31 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags, const
 
     QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;
     return ATProto::RichTextMaster::plainToHtml(text);
+}
+
+WebLink::List Post::getDraftEmbeddedLinks() const
+{
+    if (!mPost)
+        return {};
+
+    WebLink::List embeddedLinks;
+
+    if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    {
+        const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
+        const ATProto::XJsonObject xjson(record->mJson);
+        auto draftLinks = xjson.getOptionalObject<Draft::EmbeddedLinks>(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD);
+
+        if (draftLinks)
+        {
+            embeddedLinks.reserve(draftLinks->mEmbeddedLinks.size());
+
+            for (const auto& link : draftLinks->mEmbeddedLinks)
+                embeddedLinks.push_back(*link);
+        }
+    }
+
+    return embeddedLinks;
 }
 
 BasicProfile Post::getAuthor() const
