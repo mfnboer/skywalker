@@ -57,6 +57,7 @@ SkyPage {
 
     readonly property string userDid: skywalker.getUserDid()
     property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
+    property bool autoLinkCard: skywalker.getUserSettings().getAutoLinkCard()
     property bool threadAutoNumber: skywalker.getUserSettings().getThreadAutoNumber()
     property string threadPrefix: skywalker.getUserSettings().getThreadPrefix()
     property bool threadAutoSplit: skywalker.getUserSettings().getThreadAutoSplit()
@@ -180,6 +181,16 @@ SkyPage {
                     onToggled: {
                         requireAltText = checked
                         skywalker.getUserSettings().setRequireAltText(userDid, checked)
+                    }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Auto link card")
+                    checkable: true
+                    checked: skywalker.getUserSettings().getAutoLinkCard()
+
+                    onToggled: {
+                        autoLinkCard = checked
+                        skywalker.getUserSettings().setAutoLinkCard(checked)
                     }
                 }
                 AccessibleMenuItem {
@@ -524,6 +535,9 @@ SkyPage {
                         }
 
                         onFirstWebLinkChanged: {
+                            if (!autoLinkCard)
+                                return
+
                             if (gifAttachment.visible)
                                 return
 
@@ -2418,13 +2432,20 @@ SkyPage {
         const webLink = postText.webLinks[webLinkIndex]
         console.debug("Web link:", webLink.link)
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
-        let linkPage = component.createObject(page, { link: webLink.link })
+        let linkPage = component.createObject(page, {
+                link: webLink.link,
+                canAddLinkCard: !Boolean(postItem.getLinkCard().card)
+        })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
+                const addLinkCard = linkPage.addLinkCard
                 linkPage.destroy()
 
                 if (name.length > 0)
                     postText.addEmbeddedLink(webLinkIndex, name)
+
+                if (addLinkCard)
+                    linkCardTimer.getLinkImmediate(currentPostIndex, webLink.link)
 
                 postText.forceActiveFocus()
         })
@@ -2453,15 +2474,24 @@ SkyPage {
         console.debug("Embedded link:", link.link, "name:", link.name, "error:", error)
 
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
-        let linkPage = component.createObject(page, { link: link.link, name: link.name, error: error })
+        let linkPage = component.createObject(page, {
+                link: link.link,
+                name: link.name,
+                error: error,
+                canAddLinkCard: !Boolean(postItem.getLinkCard().card)
+        })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
+                const addLinkCard = linkPage.addLinkCard
                 linkPage.destroy()
 
                 if (name.length <= 0)
                     postText.removeEmbeddedLink(linkIndex)
                 else
                     postText.updateEmbeddedLink(linkIndex, name)
+
+                if (addLinkCard)
+                    linkCardTimer.getLinkImmediate(currentPostIndex, link.link)
 
                 postText.forceActiveFocus()
         })

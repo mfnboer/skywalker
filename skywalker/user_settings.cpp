@@ -813,6 +813,16 @@ QString UserSettings::getMutedRepostsListUri(const QString& did) const
     return uri.toString();
 }
 
+void UserSettings::setAutoLinkCard(bool autoLinkCard)
+{
+    mSettings.setValue("autoLinkCard", autoLinkCard);
+}
+
+bool UserSettings::getAutoLinkCard() const
+{
+    return mSettings.value("autoLinkCard", true).toBool();
+}
+
 void UserSettings::setThreadAutoNumber(bool autoNumber)
 {
     mSettings.setValue("threadAutoNumber", autoNumber);

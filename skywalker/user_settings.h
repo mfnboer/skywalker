@@ -210,6 +210,9 @@ public:
     void setScriptRecognition(QEnums::Script script);
     QEnums::Script getScriptRecognition() const;
 
+    Q_INVOKABLE void setAutoLinkCard(bool autoLinkCard);
+    Q_INVOKABLE bool getAutoLinkCard() const;
+
     Q_INVOKABLE void setThreadAutoNumber(bool autoNumber);
     Q_INVOKABLE bool getThreadAutoNumber() const;
 

@@ -268,6 +268,9 @@ void FacetUtils::removeEmbeddedLink(int linkIndex)
 
     qDebug() << "Delete embedded link:" << linkIndex << mEmbeddedLinks[linkIndex].getLink();
 
+    if (mCursorInEmbeddedLink == linkIndex)
+        setCursorInEmbeddedLink(-1);
+
     mEmbeddedLinks.remove(linkIndex);
     emit embeddedLinksChanged();
 }
@@ -351,8 +354,7 @@ void FacetUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff,
             if (name.isEmpty())
             {
                 qDebug() << "Remove link due to newline:" << link.getLink();
-                mEmbeddedLinks.remove(i);
-                updated = true;
+                removeEmbeddedLink(i);
                 continue;
             }
 
@@ -390,8 +392,7 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
         {
             // Deleted text contains full link
             qDebug() << "Remove link:" << link.getName();
-            mEmbeddedLinks.remove(i);
-            updated = true;
+            removeEmbeddedLink(i);
             continue;
         }
         else if (link.getStartIndex() >= diff.mOldStartIndex && link.getEndIndex() > diff.mOldEndIndex + 1)
@@ -411,8 +412,7 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
             {
                 // No name left
                 qDebug() << "Remove link:" << link.getName();
-                mEmbeddedLinks.remove(i);
-                updated = true;
+                removeEmbeddedLink(i);
                 continue;
             }
 
@@ -450,8 +450,7 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
             {
                 // No name left
                 qDebug() << "Remove link:" << link.getName();
-                mEmbeddedLinks.remove(i);
-                updated = true;
+                removeEmbeddedLink(i);
                 continue;
             }
 

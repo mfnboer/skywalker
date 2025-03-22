@@ -43,14 +43,18 @@ public:
     Q_INVOKABLE void addEmbeddedLink(const WebLink& link);
     Q_INVOKABLE void updatedEmbeddedLink(int linkIndex, const WebLink& link);
     Q_INVOKABLE void removeEmbeddedLink(int linkIndex);
+
     // Make updates due to cursor moving to a new position
     Q_INVOKABLE void updateCursor(int cursor);
+
     // Make updates due to changed text
     Q_INVOKABLE void updateText(const QString& prevText, const QString& text);
+
     // Returns a new text up to cursor with the last type char transformed into font.
     // Returns null string if last typed char was not a transformable char.
     Q_INVOKABLE QString applyFontToLastTypedChars(const QString& text,const QString& preeditText,
                                                   int cursor, int numChars, QEnums::FontType font);
+
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE int getEditTagIndex() const { return mEditTagIndex; }
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; }

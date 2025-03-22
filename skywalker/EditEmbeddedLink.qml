@@ -6,6 +6,8 @@ Dialog {
     required property string link
     property string name
     property string error
+    property bool canAddLinkCard: false
+    property bool addLinkCard: false
 
     id: page
     width: parent.width
@@ -65,6 +67,16 @@ Dialog {
             color: guiSettings.linkColor
             wrapMode: Text.Wrap
             text: page.link
+        }
+
+        AccessibleCheckBox {
+            leftPadding: 0
+            topPadding: 10
+            Layout.fillWidth: true
+            checked: addLinkCard
+            text: qsTr("Add link card")
+            visible: canAddLinkCard
+            onCheckedChanged: addLinkCard = checked
         }
     }
 
