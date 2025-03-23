@@ -275,6 +275,19 @@ void FacetUtils::removeEmbeddedLink(int linkIndex)
     emit embeddedLinksChanged();
 }
 
+void FacetUtils::removeEmbeddedLinkNoSignal(int linkIndex)
+{
+    Q_ASSERT(linkIndex >= 0);
+    Q_ASSERT(linkIndex < mEmbeddedLinks.size());
+
+    qDebug() << "Delete embedded link:" << linkIndex << mEmbeddedLinks[linkIndex].getLink();
+
+    if (mCursorInEmbeddedLink == linkIndex)
+        mCursorInEmbeddedLink = -1;
+
+    mEmbeddedLinks.remove(linkIndex);
+}
+
 static int getLinkIndexForCursor(const WebLink::List& links, int cursor)
 {
     for (int i = 0; i < (int)links.size(); ++i)
@@ -354,7 +367,8 @@ void FacetUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff,
             if (name.isEmpty())
             {
                 qDebug() << "Remove link due to newline:" << link.getLink();
-                removeEmbeddedLink(i);
+                removeEmbeddedLinkNoSignal(i);
+                updated = true;
                 continue;
             }
 
@@ -367,7 +381,10 @@ void FacetUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff,
     }
 
     if (updated)
+    {
         emit embeddedLinksChanged();
+        emit cursorInEmbeddedLinkChanged();
+    }
 }
 
 void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
@@ -392,7 +409,8 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
         {
             // Deleted text contains full link
             qDebug() << "Remove link:" << link.getName();
-            removeEmbeddedLink(i);
+            removeEmbeddedLinkNoSignal(i);
+            updated = true;
             continue;
         }
         else if (link.getStartIndex() >= diff.mOldStartIndex && link.getEndIndex() > diff.mOldEndIndex + 1)
@@ -412,7 +430,8 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
             {
                 // No name left
                 qDebug() << "Remove link:" << link.getName();
-                removeEmbeddedLink(i);
+                removeEmbeddedLinkNoSignal(i);
+                updated = true;
                 continue;
             }
 
@@ -450,7 +469,8 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
             {
                 // No name left
                 qDebug() << "Remove link:" << link.getName();
-                removeEmbeddedLink(i);
+                removeEmbeddedLinkNoSignal(i);
+                updated = true;
                 continue;
             }
 
@@ -465,7 +485,10 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
     }
 
     if (updated)
+    {
         emit embeddedLinksChanged();
+        emit cursorInEmbeddedLinkChanged();
+    }
 }
 
 void FacetUtils::updateEmbeddedLinksUpdatedText(const TextDiffer::Result& diff, const QString& text)

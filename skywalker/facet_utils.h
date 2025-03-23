@@ -115,6 +115,7 @@ private:
     void updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff, const QString& text);
     void updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff);
     void updateEmbeddedLinksUpdatedText(const TextDiffer::Result& diff, const QString& text);
+    void removeEmbeddedLinkNoSignal(int linkIndex);
     bool facetOverlapsWithEmbeddedLink(const ATProto::RichTextMaster::ParsedMatch& facet) const;
 
     QString mEditMention; // Mention currently being edited (without @-symbol)
