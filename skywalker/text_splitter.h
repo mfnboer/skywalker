@@ -39,7 +39,11 @@ public:
 
     Q_INVOKABLE TextSplitterPart::List splitText(
         const QString& text, const WebLink::List& embeddedLinks, int maxLength,
-        int minSplitLineLength, int maxParts = 1000000);
+        int minSplitLineLength, int maxParts = 1000000) const;
+
+    Q_INVOKABLE TextSplitterPart joinText(
+        const QString& text1, const WebLink::List& embeddedLinks1,
+        const QString& text2, const WebLink::List& embeddedLinks2) const;
 };
 
 }

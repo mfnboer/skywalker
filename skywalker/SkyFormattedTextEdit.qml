@@ -411,8 +411,7 @@ TextEdit {
         facetUtils.embeddedLinks = embeddedLinkList
     }
 
-    function checkMisleadingEmbeddedLinks()
-    {
+    function checkMisleadingEmbeddedLinks() {
         return facetUtils.checkMisleadingEmbeddedLinks()
     }
 

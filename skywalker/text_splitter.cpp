@@ -46,8 +46,9 @@ static WebLink::List getLinksForPart(const WebLink::List& embeddedLinks, int par
     return partLinks;
 }
 
-TextSplitterPart::List TextSplitter::splitText(const QString& text, const WebLink::List& embeddedLinks,
-                                    int maxLength, int minSplitLineLength, int maxParts)
+TextSplitterPart::List TextSplitter::splitText(
+        const QString& text, const WebLink::List& embeddedLinks,
+        int maxLength, int minSplitLineLength, int maxParts) const
 {
     if (text.size() <= maxLength)
         return {TextSplitterPart(text, embeddedLinks)};
@@ -114,6 +115,35 @@ TextSplitterPart::List TextSplitter::splitText(const QString& text, const WebLin
     }
 
     return parts;
+}
+
+TextSplitterPart TextSplitter::joinText(
+    const QString& text1, const WebLink::List& embeddedLinks1,
+    const QString& text2, const WebLink::List& embeddedLinks2) const
+{
+    if (text1.isEmpty())
+        return TextSplitterPart(text2, embeddedLinks2);
+
+    if (text2.isEmpty())
+        return TextSplitterPart(text1, embeddedLinks1);
+
+    QString joinedText = text1;
+    WebLink::List joinedLinks = embeddedLinks1;
+
+    if (!text1.back().isSpace() && !text2.front().isSpace())
+        joinedText += ' ';
+
+    const int indexShift = joinedText.size();
+    joinedText += text2;
+
+    for (const auto& link : embeddedLinks2)
+    {
+        joinedLinks.push_back(link);
+        auto& addedLink = joinedLinks.back();
+        addedLink.addToIndexes(indexShift);
+    }
+
+    return TextSplitterPart(std::move(joinedText), std::move(joinedLinks));
 }
 
 }

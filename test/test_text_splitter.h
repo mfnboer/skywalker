@@ -102,6 +102,7 @@ private slots:
         QFETCH(int, maxLength);
         QFETCH(WebLink::List, links);
         QFETCH(TextSplitterPart::List, output);
+
         const auto parts = mTextSplitter.splitText(text, links, maxLength, 0);
         QCOMPARE(parts.size(), output.size());
 
@@ -113,6 +114,45 @@ private slots:
             QCOMPARE(part.getText(), outputPart.getText());
             QCOMPARE(part.getEmbeddedLinks(), outputPart.getEmbeddedLinks());
         }
+    }
+
+    void joinText_data()
+    {
+        QTest::addColumn<QString>("text1");
+        QTest::addColumn<WebLink::List>("links1");
+        QTest::addColumn<QString>("text2");
+        QTest::addColumn<WebLink::List>("links2");
+        QTest::addColumn<TextSplitterPart>("output");
+
+        QTest::newRow("empty") << "" << WebLink::List{} << "" << WebLink::List{} << TextSplitterPart{"", {}};
+        QTest::newRow("empty1") << "" << WebLink::List{}
+                                << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
+                                << TextSplitterPart{"foo", { WebLink{"foo", 0, 3} }};
+        QTest::newRow("empty2") << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
+                                << "" << WebLink::List{}
+                                << TextSplitterPart{"foo", { WebLink{"foo", 0, 3} }};
+        QTest::newRow("join1") << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
+                               << "bar" << WebLink::List{ WebLink{"bar", 0, 3} }
+                               << TextSplitterPart{"foo bar", { WebLink{"foo", 0, 3}, WebLink{"bar", 4, 7} }};
+        QTest::newRow("join2") << "foo " << WebLink::List{ WebLink{"foo", 0, 3} }
+                               << "bar" << WebLink::List{ WebLink{"bar", 0, 3} }
+                               << TextSplitterPart{"foo bar", { WebLink{"foo", 0, 3}, WebLink{"bar", 4, 7} }};
+        QTest::newRow("join3") << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
+                               << " bar" << WebLink::List{ WebLink{"bar", 1, 4} }
+                               << TextSplitterPart{"foo bar", { WebLink{"foo", 0, 3}, WebLink{"bar", 4, 7} }};
+    }
+
+    void joinText()
+    {
+        QFETCH(QString, text1);
+        QFETCH(WebLink::List, links1);
+        QFETCH(QString, text2);
+        QFETCH(WebLink::List, links2);
+        QFETCH(TextSplitterPart, output);
+
+        const auto part = mTextSplitter.joinText(text1, links1, text2, links2);
+        QCOMPARE(part.getText(), output.getText());
+        QCOMPARE(part.getEmbeddedLinks(), output.getEmbeddedLinks());
     }
 
 private:

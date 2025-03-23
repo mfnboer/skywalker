@@ -976,7 +976,9 @@ SkyPage {
                     if (index === count - 1)
                         return index
 
-                    let text = itemAt(index).getPostText().text
+                    let postText = itemAt(index).getPostText()
+                    let text = postText.text
+                    let links = postText.embeddedLinks
                     let endIndex = index + 1
 
                     while (endIndex < count) {
@@ -985,7 +987,10 @@ SkyPage {
                         if (nextPost.hasAttachment())
                             break
 
-                        text = joinPosts(text, nextPost.getPostText().text)
+                        let nextPostText = nextPost.getPostText()
+                        let part = textSplitter.joinText(text, links, nextPostText.text, nextPostText.embeddedLinks)
+                        text = part.text
+                        links = part.embeddedLinks
                         ++endIndex
                     }
 
@@ -997,12 +1002,16 @@ SkyPage {
                     for (let i = index + 1; i < endIndex; ++i)
                         threadPosts.removePost(index + 1)
 
-                    const parts = UnicodeFonts.splitText(text, [], maxLength, page.minPostSplitLineLengths)
-                    threadPosts.itemAt(index).getPostText().text = parts[0].text.trim()
+                    const parts = textSplitter.splitText(text, links, maxLength, page.minPostSplitLineLengths)
+                    let firstPost = threadPosts.itemAt(index).getPostText()
+                    firstPost.text = UnicodeFonts.rtrim(parts[0].text)
+                    firstPost.setEmbeddedLinks(parts[0].embeddedLinks)
 
                     for (let j = 1; j < parts.length; ++j) {
                         threadPosts.addPost(index + j - 1, "", [], false)
-                        threadPosts.itemAt(index + j).getPostText().text = parts[j].text.trim()
+                        let nextPost = threadPosts.itemAt(index + j).getPostText()
+                        nextPost.text = UnicodeFonts.rtrim(parts[j].text)
+                        nextPost.setEmbeddedLinks(parts[j].embeddedLinks)
                     }
 
                     return index + parts.length - 1
