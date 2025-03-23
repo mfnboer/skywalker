@@ -478,7 +478,7 @@ SkyPage {
                         maxLength: page.maxPostLength - postCountText.size()
                         fontSelectorCombo: fontSelector
 
-                        onTextChanged: {
+                        onTextUpdated: {
                             const textHasChanged = Boolean(postItem.text !== text)
                             postItem.text = text
 
@@ -507,16 +507,17 @@ SkyPage {
                                     postUtils.identifyLanguage(textWithoutLinks, index)
 
                                     if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
-                                        console.debug("PART 1:", parts[1].text, "LINKS:", parts[1].embeddedLinks.length)
                                         threadPosts.addPost(index, parts[1].text, parts[1].embeddedLinks, moveCursor)
                                     }
                                     else {
                                         // Prepend excess text to next post
                                         let nextPostText = threadPosts.itemAt(index + 1).getPostText()
-                                        const newText = joinPosts(parts[1].text, nextPostText.text)
+                                        let joinedPart = textSplitter.joinText(parts[1].text, parts[1].embeddedLinks, nextPostText.text, nextPostText.embeddedLinks)
+                                        const newText = joinedPart.text
+                                        const newLinks = joinedPart.embeddedLinks
                                         const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].text.length : -1
 
-                                        setPostTextTimer.startSetText(newText, parts[1].embeddedLinks, index + 1, newCursorPosition)
+                                        setPostTextTimer.startSetText(newText, newLinks, index + 1, newCursorPosition)
 
                                         if (moveCursor)
                                             currentPostIndex = index + 1
@@ -1743,7 +1744,7 @@ SkyPage {
                 setCursorTimer.startSetCursor(index, cursorPosition)
 
             postText.text = text
-            postText.addEmbeddedLinkList(embeddedLinks)
+            postText.setEmbeddedLinks(embeddedLinks)
         }
 
         function startSetText(text, embeddedLinks, index, cursorPosition = -1) {
@@ -1998,12 +1999,6 @@ SkyPage {
         }
 
         return false
-    }
-
-    function joinPosts(text1, text2) {
-        const joinStr = (/\s/.test(text1.slice(-1)) || /\s/.test(text2.charAt(0))) ? "" : " "
-        const newText = text1 + joinStr + text2
-        return newText
     }
 
     function cancel() {

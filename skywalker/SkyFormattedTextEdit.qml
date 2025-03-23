@@ -29,6 +29,9 @@ TextEdit {
     property string prevText: ""
     property int prevTextLen: 0
     property int lastDeltaTextLen: 0
+    property bool suppressTextUpdates: false
+
+    signal textUpdated
 
     id: editText
     width: parentPage.width
@@ -92,6 +95,9 @@ TextEdit {
             updateTextTimer.set(added)
 
         textChangeInProgress = false
+
+        if (!suppressTextUpdates)
+            textUpdated()
     }
 
     onPreeditTextChanged: {
@@ -377,25 +383,37 @@ TextEdit {
         return facetUtils.makeWebLink(name, oldLink.link, embedStart, embedEnd)
     }
 
-    function addEmbeddedLinkList(embeddedLinkList) {
-        for (let link of embeddedLinkList)
-            facetUtils.addEmbeddedLink(link)
-    }
-
     function addEmbeddedLink(webLinkIndex, name) {
+        // Delay text updates
+        // As links get replaced by names in the text, the text may exceed the maximum
+        // length. That would trigger a split before the new link has beend add.
+        // Adding the link before doing text replacements goes wrong as text replacement
+        // will cause link shifts.
+        suppressTextUpdates = true
+
         const webLink = facetUtils.webLinks[webLinkIndex]
         replaceLinkWithName(webLink, name)
         const embeddedLink = makeEmbeddedLink(name, webLink)
         facetUtils.addEmbeddedLink(embeddedLink)
+
+        suppressTextUpdates = false
+
+        textUpdated()
         cursorPosition = embeddedLink.endIndex
     }
 
     function updateEmbeddedLink(linkIndex, name)
     {
+        suppressTextUpdates = true
+
         const embeddedLink = facetUtils.embeddedLinks[linkIndex]
         replaceLinkWithName(embeddedLink, name)
         const updatedLink = makeEmbeddedLink(name, embeddedLink)
         facetUtils.updatedEmbeddedLink(linkIndex, updatedLink)
+
+        suppressTextUpdates = false
+
+        textUpdated()
         cursorPosition = updatedLink.endIndex
     }
 
