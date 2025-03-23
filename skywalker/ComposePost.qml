@@ -490,14 +490,15 @@ SkyPage {
 
                                 // Avoid to re-split when the post count text becomes visible or longer
                                 const maxPartLength = page.maxPostLength - postCountText.maxSize()
-                                const parts = UnicodeFonts.splitText(text, maxPartLength, minPostSplitLineLength, 2)
+                                const parts = textSplitter.splitText(text, embeddedLinks, maxPartLength, minPostSplitLineLength, 2)
 
                                 if (parts.length > 1) {
-                                    const moveCursor = cursorPosition > parts[0].length && index === currentPostIndex
+                                    const moveCursor = cursorPosition > parts[0].text.length && index === currentPostIndex
                                     const oldCursorPosition = cursorPosition
 
                                     splitting = true
-                                    text = parts[0].trim()
+                                    text = UnicodeFonts.rtrim(parts[0].text)
+                                    embeddedLinks = parts[0].embeddedLinks
 
                                     if (!moveCursor && index === currentPostIndex)
                                         cursorPosition = oldCursorPosition
@@ -506,15 +507,16 @@ SkyPage {
                                     postUtils.identifyLanguage(textWithoutLinks, index)
 
                                     if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
-                                        threadPosts.addPost(index, parts[1], moveCursor)
+                                        console.debug("PART 1:", parts[1].text, "LINKS:", parts[1].embeddedLinks.length)
+                                        threadPosts.addPost(index, parts[1].text, parts[1].embeddedLinks, moveCursor)
                                     }
                                     else {
                                         // Prepend excess text to next post
                                         let nextPostText = threadPosts.itemAt(index + 1).getPostText()
-                                        const newText = joinPosts(parts[1], nextPostText.text)
-                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].length : -1
+                                        const newText = joinPosts(parts[1].text, nextPostText.text)
+                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].text.length : -1
 
-                                        setPostTextTimer.startSetText(newText, index + 1, newCursorPosition)
+                                        setPostTextTimer.startSetText(newText, parts[1].embeddedLinks, index + 1, newCursorPosition)
 
                                         if (moveCursor)
                                             currentPostIndex = index + 1
@@ -920,7 +922,7 @@ SkyPage {
                     console.debug("REMOVED POST:", index)
                 }
 
-                function addPost(index, text = "", focus = true) {
+                function addPost(index, text = "", embeddedLinks = [], focus = true) {
                     console.debug("ADD POST:", index)
 
                     if (count >= maxThreadPosts) {
@@ -949,7 +951,7 @@ SkyPage {
                     }
 
                     if (text)
-                        setPostTextTimer.startSetText(text, index + 1)
+                        setPostTextTimer.startSetText(text, embeddedLinks, index + 1)
 
                     console.debug("ADDED POST:", index)
                 }
@@ -969,6 +971,7 @@ SkyPage {
                     }
                 }
 
+                // TODO: merge embeddedLinks
                 function mergePostsAt(index) {
                     if (index === count - 1)
                         return index
@@ -994,12 +997,12 @@ SkyPage {
                     for (let i = index + 1; i < endIndex; ++i)
                         threadPosts.removePost(index + 1)
 
-                    const parts = UnicodeFonts.splitText(text, maxLength, page.minPostSplitLineLengths)
-                    threadPosts.itemAt(index).getPostText().text = parts[0].trim()
+                    const parts = UnicodeFonts.splitText(text, [], maxLength, page.minPostSplitLineLengths)
+                    threadPosts.itemAt(index).getPostText().text = parts[0].text.trim()
 
                     for (let j = 1; j < parts.length; ++j) {
-                        threadPosts.addPost(index + j - 1, "", false)
-                        threadPosts.itemAt(index + j).getPostText().text = parts[j].trim()
+                        threadPosts.addPost(index + j - 1, "", [], false)
+                        threadPosts.itemAt(index + j).getPostText().text = parts[j].text.trim()
                     }
 
                     return index + parts.length - 1
@@ -1329,6 +1332,10 @@ SkyPage {
         id: fileDialog
         onImageSelected: (fileUri) => photoPicked(fileUri)
         onVideoSelected: (fileUri) => videoPicked(fileUri)
+    }
+
+    TextSplitter {
+        id: textSplitter
     }
 
     LinkCardReader {
@@ -1714,6 +1721,7 @@ SkyPage {
 
     Timer {
         property string text
+        property list<weblink> embeddedLinks
         property int index
         property int cursorPosition
 
@@ -1726,10 +1734,12 @@ SkyPage {
                 setCursorTimer.startSetCursor(index, cursorPosition)
 
             postText.text = text
+            postText.addEmbeddedLinkList(embeddedLinks)
         }
 
-        function startSetText(text, index, cursorPosition = -1) {
+        function startSetText(text, embeddedLinks, index, cursorPosition = -1) {
             setPostTextTimer.text = text
+            setPostTextTimer.embeddedLinks = embeddedLinks
             setPostTextTimer.index = index
             setPostTextTimer.cursorPosition = cursorPosition
             start()

@@ -2,7 +2,7 @@
 // License: GPLv3
 #include "meme_maker.h"
 #include "photo_picker.h"
-#include "unicode_fonts.h"
+#include "text_splitter.h"
 #include <QFont>
 #include <QPainter>
 #include <QPainterPath>
@@ -115,15 +115,17 @@ QPainterPath MemeMaker::createTextPath(int x, int y, const QString& text, int ma
 
 std::vector<QPainterPath> MemeMaker::createTextMultiPathList(int x, int y, const QString& text, int maxWidth, int pathCount, int& fontPx) const
 {
+    TextSplitter textSplitter;
     std::vector<QPainterPath> paths;
     const int maxLength = text.length() / pathCount + 1;
-    const auto textList = UnicodeFonts::splitText(text, maxLength, 1, pathCount);
+    const auto partList = textSplitter.splitText(text, {}, maxLength, 1, pathCount);
     int lineY = y;
     int firstLineFontPx = 0;
     int smallestFontPx = fontPx;
 
-    for (const auto& line : textList)
+    for (const auto& part : partList)
     {
+        const auto& line = part.getText();
         const auto linePath = createTextPath(x, lineY, line, maxWidth, fontPx);
         paths.push_back(linePath);
         lineY += linePath.boundingRect().height();
@@ -145,8 +147,9 @@ std::vector<QPainterPath> MemeMaker::createTextMultiPathList(int x, int y, const
         lineY = y;
         fontPx = smallestFontPx;
 
-        for (const auto& line : textList)
+        for (const auto& part : partList)
         {
+            const auto& line = part.getText();
             const auto linePath = createTextPath(x, lineY, line, maxWidth, fontPx);
             paths.push_back(linePath);
             lineY += linePath.boundingRect().height();

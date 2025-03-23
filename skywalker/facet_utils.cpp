@@ -288,7 +288,7 @@ void FacetUtils::removeEmbeddedLinkNoSignal(int linkIndex)
     mEmbeddedLinks.remove(linkIndex);
 }
 
-static int getLinkIndexForCursor(const WebLink::List& links, int cursor)
+int FacetUtils::getLinkIndexForCursor(const WebLink::List& links, int cursor)
 {
     for (int i = 0; i < (int)links.size(); ++i)
     {

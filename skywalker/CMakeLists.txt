@@ -505,6 +505,10 @@ qt_add_qml_module(libskywalker
         QML_FILES EditEmbeddedLink.qml
         SOURCES facet_utils.h
         SOURCES facet_utils.cpp
+        SOURCES split_text_boundary_finder.h
+        SOURCES split_text_boundary_finder.cpp
+        SOURCES text_splitter.h
+        SOURCES text_splitter.cpp
 )
 
 if (NOT ANDROID)

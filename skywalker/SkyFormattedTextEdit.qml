@@ -377,6 +377,11 @@ TextEdit {
         return facetUtils.makeWebLink(name, oldLink.link, embedStart, embedEnd)
     }
 
+    function addEmbeddedLinkList(embeddedLinkList) {
+        for (let link of embeddedLinkList)
+            facetUtils.addEmbeddedLink(link)
+    }
+
     function addEmbeddedLink(webLinkIndex, name) {
         const webLink = facetUtils.webLinks[webLinkIndex]
         replaceLinkWithName(webLink, name)

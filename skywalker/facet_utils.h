@@ -94,6 +94,8 @@ public:
     int getCursorInEmbeddedLink() const { return mCursorInEmbeddedLink; }
     void setCursorInEmbeddedLink(int index);
 
+    static int getLinkIndexForCursor(const WebLink::List& links, int cursor);
+
 signals:
     void textWithoutLinksChanged();
     void editMentionChanged();
