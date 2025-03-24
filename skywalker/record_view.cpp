@@ -185,7 +185,7 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr RecordView::getEmbedView(ATProto::Ap
     if (!mRecord || mRecord->mEmbeds.empty())
         return nullptr;
 
-    // TODO: there is a list of embeds; can there be more than 1?
+    // There is a list of embeds; can there be more than 1?
     const auto& embed = mRecord->mEmbeds[0];
     if (embed->mType != embedViewType)
         return nullptr;

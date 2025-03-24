@@ -972,7 +972,6 @@ SkyPage {
                     }
                 }
 
-                // TODO: merge embeddedLinks
                 function mergePostsAt(index) {
                     if (index === count - 1)
                         return index

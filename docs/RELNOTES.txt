@@ -1,5 +1,5 @@
-next
-====
+4.2
+===
 * Add embedded links to a post
 * Notice when you click on an embedded link
 * Option to disable automatic adding of link cards
