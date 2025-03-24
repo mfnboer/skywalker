@@ -47,6 +47,7 @@ Column {
         width: parent.width - 20
         postAuthor: author
         postText: quoteColumn.postText
+        postPlainText: quoteColumn.postText
         postHasUnknownEmbed: false
         postUnknownEmbedType: ""
         postImages: []

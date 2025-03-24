@@ -184,6 +184,14 @@ Item {
         message.show(question)
     }
 
+    function noticeOkCancel(parent, question, onOkCb, onCancelCb = () => {}) {
+        let component = guiSettings.createComponent("Message.qml")
+        let message = component.createObject(parent, { standardButtons: Dialog.Ok | Dialog.Cancel })
+        message.onAccepted.connect(() => { message.destroy(); onOkCb() })
+        message.onRejected.connect(() => { message.destroy(); onCancelCb() })
+        message.show(question)
+    }
+
     function notice(parent, msg, emoji = "", onOkCb = () => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { emoji: emoji, standardButtons: Dialog.Ok })

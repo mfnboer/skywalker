@@ -24,7 +24,7 @@ QString LinkUtils::toHttpsLink(const QString& atUri)
     return httpsLink;
 }
 
-void LinkUtils::openLink(const QString& link)
+void LinkUtils::openLink(const QString& link, const QString& containingText)
 {
     const auto atUri = getPostUri(link);
 
@@ -66,7 +66,9 @@ void LinkUtils::openLink(const QString& link)
         return;
     }
 
-    emit webLink(link);
+    const QUrl url(link);
+    bool hostPresent = url.isValid() && containingText.contains(url.host(), Qt::CaseInsensitive);
+    emit webLink(link, containingText, hostPresent);
 }
 
 void LinkUtils::openLink(const ATProto::ATUri& atUri, const std::function<void(const QString& uri)>& openFun)

@@ -315,6 +315,7 @@ Rectangle {
             width: parent.width
             postAuthor: videoPage.author
             postText: videoPage.postText
+            postPlainText: videoPage.postPlainText
             postHasUnknownEmbed: false
             postUnknownEmbedType: ""
             postImages: []

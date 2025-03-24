@@ -16,7 +16,7 @@ Column {
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
     required property int postMuted // QEnums::MutedPostReason
-    property string postPlainText
+    required property string postPlainText
     property var postVideo // videoView
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
@@ -52,7 +52,7 @@ Column {
         bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
         visible: postVisible() && postText
 
-        onLinkActivated: (link) => root.openLink(link)
+        onLinkActivated: (link) => root.openLink(link, postPlainText)
 
         Accessible.ignored: true
 

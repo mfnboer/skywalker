@@ -16,10 +16,10 @@ public:
     explicit LinkUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE QString toHttpsLink(const QString& atUri);
-    Q_INVOKABLE void openLink(const QString& link);
+    Q_INVOKABLE void openLink(const QString& link, const QString& containingText = {});
 
 signals:
-    void webLink(QString uri);
+    void webLink(QString uri, QString containingText, bool hostInContainingText);
     void authorLink(QString handleOrDid);
     void postLink(QString atUri);
     void feedLink(QString atUri);

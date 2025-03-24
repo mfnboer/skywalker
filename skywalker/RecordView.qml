@@ -54,6 +54,7 @@ Item {
                 width: parent.width
                 postAuthor: record.author
                 postText: record.postTextFormatted
+                postPlainText: record.postPlainText
                 postHasUnknownEmbed: record.hasUnknownEmbed
                 postUnknownEmbedType: record.unknownEmbedType
                 postImages: record.images

@@ -190,7 +190,7 @@ Rectangle {
             text: feed.formattedDescription
             visible: showFeed
 
-            onLinkActivated: (link) => root.openLink(link)
+            onLinkActivated: (link) => root.openLink(link, feed.description)
 
             Accessible.role: Accessible.StaticText
             Accessible.name: feed.description

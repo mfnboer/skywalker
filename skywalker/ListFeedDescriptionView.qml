@@ -187,7 +187,7 @@ SkyPage {
             color: guiSettings.textColor
             text: list.formattedDescription
 
-            onLinkActivated: (link) => root.openLink(link)
+            onLinkActivated: (link) => root.openLink(link, list.description)
 
             Accessible.role: Accessible.StaticText
             Accessible.name: list.description

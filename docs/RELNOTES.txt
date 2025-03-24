@@ -1,6 +1,7 @@
 next
 ====
 * Add embedded links to a post
+* Notice when you click on an embedded link
 * Option to disable automatic adding of link cards
 * Option to hide posts from people you follow from a favorite feed
 * Fallback to bsky.social for login when handle resolution via DNS fails

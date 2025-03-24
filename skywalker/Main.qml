@@ -946,7 +946,17 @@ ApplicationWindow {
         id: linkUtils
         skywalker: skywalker // qmllint disable missing-type
 
-        onWebLink: (link) => Qt.openUrlExternally(link)
+        onWebLink: (link, containingText, hostPresent) => {
+            if (!containingText || hostPresent) {
+                Qt.openUrlExternally(link)
+                return
+            }
+
+            const linkText = `<font color="${guiSettings.linkColor}">${link}</font>`
+            guiSettings.noticeOkCancel(root,
+                qsTr("This link will open the following website:") + "<br><br>" + linkText,
+                () => Qt.openUrlExternally(link))
+        }
         onPostLink: (atUri) => skywalker.getPostThread(atUri)
         onFeedLink: (atUri) => skywalker.getFeedGenerator(atUri, true)
         onListLink: (atUri) => viewListByUri(atUri, true)
@@ -1034,7 +1044,7 @@ ApplicationWindow {
         switchUserDrawer.show()
     }
 
-    function openLink(link) {
+    function openLink(link, containingText) {
         if (link.startsWith("@")) {
             console.debug("@-MENTION:", link)
             skywalker.getDetailedProfile(link.slice(1))
@@ -1045,7 +1055,7 @@ ApplicationWindow {
             console.debug("#-TAG:", link)
             viewSearchView(link)
         } else {
-            linkUtils.openLink(link)
+            linkUtils.openLink(link, containingText)
         }
     }
 

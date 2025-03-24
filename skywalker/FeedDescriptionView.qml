@@ -246,7 +246,7 @@ SkyPage {
             color: guiSettings.textColor
             text: feed.formattedDescription
 
-            onLinkActivated: (link) => root.openLink(link)
+            onLinkActivated: (link) => root.openLink(link, feed.description)
 
             Accessible.role: Accessible.StaticText
             Accessible.name: feed.description

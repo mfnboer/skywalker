@@ -206,7 +206,7 @@ Rectangle {
             text: list.formattedDescription
             visible: text && showList
 
-            onLinkActivated: (link) => root.openLink(link)
+            onLinkActivated: (link) => root.openLink(link, list.description)
 
             Accessible.role: Accessible.StaticText
             Accessible.name: list.description

@@ -83,7 +83,7 @@ Rectangle {
             color: senderIsUser ? guiSettings.messageUserTextColor : guiSettings.messageOtherTextColor
             plainText: getMessageDisplayText()
 
-            onLinkActivated: (link) => root.openLink(link)
+            onLinkActivated: (link) => root.openLink(link, message.text)
 
             function getMessageDisplayText() {
                 if (message.deleted)
