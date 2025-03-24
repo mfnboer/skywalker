@@ -108,7 +108,7 @@ void FacetHighlighter::highlightEmbeddedLinks(const QString& text)
         }
 
         const int facetLength = link.getEndIndex() - link.getStartIndex();
-        const auto& format = link.hasMisleadingName() ? mErrorFormat : mHighlightFormat;
+        const auto& format = (link.hasMisleadingName() || link.isTouchingOtherLink()) ? mErrorFormat : mHighlightFormat;
         addFormat(startIndex, facetLength, format);
     }
 }

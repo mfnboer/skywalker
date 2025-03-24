@@ -2484,7 +2484,8 @@ SkyPage {
 
         console.debug("Embedded link index:", linkIndex, "size:", postText.embeddedLinks.length)
         const link = postText.embeddedLinks[linkIndex]
-        const error = link.hasMisleadingName() ? link.getMisleadingNameError() : ""
+        const error = link.hasMisleadingName() ? link.getMisleadingNameError() :
+                            (link.isTouchingOtherLink() ? qsTr("Connected to previous link") : "")
         console.debug("Embedded link:", link.link, "name:", link.name, "error:", error)
 
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")

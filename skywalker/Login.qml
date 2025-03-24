@@ -157,7 +157,7 @@ SkyPage {
                 Layout.fillWidth: true
                 color: guiSettings.errorColor
                 wrapMode: Text.Wrap
-                text: errorMsg
+                text: "⚠️ " + errorMsg
                 visible: errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
 
                 Accessible.role: Accessible.AlertMessage

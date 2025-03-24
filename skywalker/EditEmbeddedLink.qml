@@ -52,7 +52,7 @@ Dialog {
             Layout.fillWidth: true
             color: guiSettings.errorColor
             wrapMode: Text.Wrap
-            text: error
+            text: "⚠️ " + error
             visible: Boolean(error)
         }
 

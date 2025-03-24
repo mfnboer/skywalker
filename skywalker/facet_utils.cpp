@@ -205,6 +205,12 @@ bool FacetUtils::checkMisleadingEmbeddedLinks() const
             mSkywalker->showStatusMessage(link.getMisleadingNameError(), QEnums::STATUS_LEVEL_ERROR);
             return false;
         }
+
+        if (link.isTouchingOtherLink())
+        {
+            mSkywalker->showStatusMessage(tr("Seperate embedded links by white space"), QEnums::STATUS_LEVEL_ERROR);
+            return false;
+        }
     }
 
     return true;
@@ -230,7 +236,7 @@ void FacetUtils::addEmbeddedLink(const WebLink& link)
     }
 
     mEmbeddedLinks.push_back(link);
-    emit embeddedLinksChanged();
+    signalEmbeddedLinksUpdated();
 }
 
 void FacetUtils::updatedEmbeddedLink(int linkIndex, const WebLink& link)
@@ -252,7 +258,7 @@ void FacetUtils::updatedEmbeddedLink(int linkIndex, const WebLink& link)
     }
 
     mEmbeddedLinks[linkIndex] = link;
-    emit embeddedLinksChanged();
+    signalEmbeddedLinksUpdated();
 }
 
 void FacetUtils::removeEmbeddedLink(int linkIndex)
@@ -272,7 +278,7 @@ void FacetUtils::removeEmbeddedLink(int linkIndex)
         setCursorInEmbeddedLink(-1);
 
     mEmbeddedLinks.remove(linkIndex);
-    emit embeddedLinksChanged();
+    signalEmbeddedLinksUpdated();
 }
 
 void FacetUtils::removeEmbeddedLinkNoSignal(int linkIndex)
@@ -331,6 +337,26 @@ void FacetUtils::updateText(const QString& prevText, const QString& text)
     }
 }
 
+void FacetUtils::signalEmbeddedLinksUpdated()
+{
+    verifyEmbeddedLinks();
+    emit embeddedLinksChanged();
+}
+
+void FacetUtils::verifyEmbeddedLinks()
+{
+    std::unordered_set<int> endIndexes;
+
+    for (auto& link : mEmbeddedLinks)
+        endIndexes.insert(link.getEndIndex());
+
+    for (auto& link : mEmbeddedLinks)
+    {
+        const bool touching = endIndexes.contains(link.getStartIndex());
+        link.setTouchingOtherLink(touching);
+    }
+}
+
 void FacetUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff, const QString& text)
 {
     qDebug() << "Inserted:" << diff.mNewStartIndex << diff.mNewEndIndex;
@@ -382,7 +408,7 @@ void FacetUtils::updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff,
 
     if (updated)
     {
-        emit embeddedLinksChanged();
+        signalEmbeddedLinksUpdated();
         emit cursorInEmbeddedLinkChanged();
     }
 }
@@ -486,7 +512,7 @@ void FacetUtils::updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff)
 
     if (updated)
     {
-        emit embeddedLinksChanged();
+        signalEmbeddedLinksUpdated();
         emit cursorInEmbeddedLinkChanged();
     }
 }
@@ -681,7 +707,7 @@ void FacetUtils::setEmbeddedLinks(const WebLink::List& embeddedLinks)
         return;
 
     mEmbeddedLinks = embeddedLinks;
-    emit embeddedLinksChanged();
+    signalEmbeddedLinksUpdated();
 }
 
 void FacetUtils::setCursorInEmbeddedLink(int index)

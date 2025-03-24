@@ -114,6 +114,8 @@ signals:
     void cursorInEmbeddedLinkChanged();
 
 private:
+    void signalEmbeddedLinksUpdated();
+    void verifyEmbeddedLinks();
     void updateEmbeddedLinksInsertedText(const TextDiffer::Result& diff, const QString& text);
     void updateEmbeddedLinksDeletedText(const TextDiffer::Result& diff);
     void updateEmbeddedLinksUpdatedText(const TextDiffer::Result& diff, const QString& text);

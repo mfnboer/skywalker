@@ -42,6 +42,9 @@ public:
     Q_INVOKABLE bool hasMisleadingName() const { return mHasMisleadingName; }
     Q_INVOKABLE QString getMisleadingNameError() const;
 
+    void setTouchingOtherLink(bool touching) { mTouchingOtherLink = touching; }
+    Q_INVOKABLE bool isTouchingOtherLink() const { return mTouchingOtherLink; }
+
     ATProto::RichTextMaster::ParsedMatch toFacet() const;
 
     QJsonObject toJson() const;
@@ -57,6 +60,7 @@ private:
     int mStartIndex = -1;
     int mEndIndex = -1;
     bool mHasMisleadingName = false;
+    bool mTouchingOtherLink = false;
 };
 
 }
