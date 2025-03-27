@@ -719,7 +719,7 @@ void UserSettings::setVideoAutoLoad(bool autoLoad)
 
 bool UserSettings::getVideoAutoLoad() const
 {
-    return mSettings.value("videoAutoLoad", false).toBool();
+    return mSettings.value("videoAutoLoad", true).toBool();
 }
 
 void UserSettings::setVideoSound(bool on)

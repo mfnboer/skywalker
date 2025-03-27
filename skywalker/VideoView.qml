@@ -18,10 +18,14 @@ Column {
     readonly property bool isFullVideoFeedViewMode: isFullViewMode && swipeMode
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
-    property string videoSource
-    property string transcodedSource // Could be the same as videoSource if transcoding failed or not needed
-    property bool autoLoad: userSettings.videoAutoPlay || userSettings.videoAutoLoad || swipeMode
-    property bool autoPlay: userSettings.videoAutoPlay || isFullVideoFeedViewMode
+
+    property bool streamingEnabled: userSettings.videoStreamingEnabled
+    property string videoSource: streamingEnabled ? videoView.playlistUrl : ""
+    property string transcodedSource
+
+    property bool autoLoad: (userSettings.videoAutoPlay || userSettings.videoAutoLoad) && (!swipeMode || !streamingEnabled) || isFullVideoFeedViewMode
+    property bool autoPlay: (userSettings.videoAutoPlay && !swipeMode) || isFullVideoFeedViewMode
+
     property int useIfNeededHeight: 0
     property bool tileMode: false
     readonly property int playControlsWidth: playControls.width
@@ -212,8 +216,15 @@ Column {
                 }
 
 
-                if (!autoLoad)
-                    m3u8Reader.loadStream()
+                if (!autoLoad) {
+                    if (streamingEnabled) {
+                        transcodedSource = videoSource
+                        videoPlayer.start()
+                    }
+                    else {
+                        m3u8Reader.loadStream()
+                    }
+                }
             }
 
             BusyIndicator {
@@ -256,12 +267,11 @@ Column {
                 }
 
                 onErrorOccurred: (error, errorString) => {
-                    console.debug("Video error:", source, error, errorString)
-
                     if (error === MediaPlayer.ResourceError &&
                         videoUtils.isTempVideoSource(transcodedSource) &&
                         !videoUtils.videoSourceExists(transcodedSource))
                     {
+                        console.debug("Video error:", source, error, errorString)
                         console.debug("Reload video")
                         transcodedSource = ""
                         videoHandle.destroy()
@@ -659,7 +669,16 @@ Column {
     function setVideoSource() {
         console.debug("Set video source for:", videoView.playlistUrl)
 
-        if (videoView.playlistUrl.endsWith(".m3u8")) {
+        if (streamingEnabled) {
+            console.debug("Streaming enabled")
+
+            if (autoLoad)
+                transcodedSource = videoSource
+
+            if (autoPlay)
+                videoPlayer.start()
+        }
+        else if (videoView.playlistUrl.endsWith(".m3u8")) {
             videoHandle = videoUtils.getVideoFromCache(videoView.playlistUrl)
 
             if (videoHandle.isValid()) {

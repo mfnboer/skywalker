@@ -1,3 +1,7 @@
+next
+====
+* True video streaming. Video play will start faster.
+
 4.2
 ===
 * Add embedded links to a post
