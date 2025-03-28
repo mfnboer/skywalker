@@ -27,6 +27,9 @@ public:
     // Returns index of the entry post
     int setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
 
+    // Then entry posts of the thread must be an existing leaf node
+    void addMorePosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
+
     Q_INVOKABLE QString getThreadEntryUri() const { return mThreadEntryUri; }
     Q_INVOKABLE void showHiddenReplies();
 
@@ -66,7 +69,7 @@ private:
 
     void clear();
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
-    Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
+    Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     bool isHiddenReply(const QString& uri) const;

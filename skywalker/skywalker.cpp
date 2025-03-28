@@ -1735,6 +1735,35 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
         });
 }
 
+void Skywalker::addPostThread(const QString& uri, int modelId)
+{
+    Q_ASSERT(modelId >= 0);
+    qDebug() << "Add post thread:" << uri << "model:" << modelId;
+
+    if (mGetPostThreadInProgress)
+    {
+        qDebug() << "Get post thread still in progress";
+        return;
+    }
+
+    setGetPostThreadInProgress(true);
+    mBsky->getPostThread(uri, {}, 0,
+        [this, uri, modelId](auto thread){
+            setGetPostThreadInProgress(false);
+            auto model = getPostThreadModel(modelId);
+
+            if (model)
+                model->addMorePosts(thread);
+            else
+                qWarning() << "Model does not exist:" << modelId;
+        },
+        [this](const QString& error, const QString& msg){
+            setGetPostThreadInProgress(false);
+            qDebug() << "addPostThread FAILED:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 PostThreadModel* Skywalker::getPostThreadModel(int id) const
 {
     qDebug() << "Get model:" << id;

@@ -212,6 +212,19 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
     return 0;
 }
 
+int AbstractPostFeedModel::findPost(const QString& cid) const
+{
+    for (int i = mFeed.size() - 1; i >= 0; --i)
+    {
+        const Post& post = mFeed[i];
+
+        if (post.getCid() == cid)
+            return i;
+    }
+
+    return -1;
+}
+
 QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int index) const
 {
     if (index < 0 || index >= (int)mFeed.size())

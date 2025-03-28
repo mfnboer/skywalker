@@ -81,6 +81,7 @@ Rectangle {
     signal showHiddenReplies
     signal unfoldPosts
     signal activateSwipe
+    signal addMorePosts(string uri)
 
     id: postEntry
     // HACK
@@ -580,7 +581,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: openPostThread()
+                        onClicked: addMorePosts(postUri)
                     }
                 }
             }

@@ -114,6 +114,7 @@ public:
 
     int getThreadType() const { return mThreadType; }
     void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
+    void removeThreadType(QEnums::ThreadPostType threadType) { mThreadType &= ~threadType; }
     int getThreadIndentLevel() const { return mThreadIndentLevel; }
     void setThreadIndentLevel(int indentLevel) { mThreadIndentLevel = indentLevel; }
 

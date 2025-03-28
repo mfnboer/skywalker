@@ -133,6 +133,9 @@ public:
     // matching cid.
     Q_INVOKABLE int findTimestamp(QDateTime timestamp, const QString& cid) const;
 
+    // Returns index of post, or -1 if post not found.
+    int findPost(const QString& cid) const;
+
     Q_INVOKABLE QDateTime getPostTimelineTimestamp(int index) const;
     Q_INVOKABLE QString getPostCid(int index) const;
 

@@ -1,6 +1,6 @@
 next
 ====
-* True video streaming. Video play will start faster.
+* True video streaming. Video will start faster.
 
 4.2
 ===

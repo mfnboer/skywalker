@@ -29,7 +29,7 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
         clear();
 
     setThreadgateView(thread->mThreadgate);
-    auto page = createPage(thread);
+    auto page = createPage(thread, false);
 
     if (page->mFeed.empty())
     {
@@ -53,6 +53,57 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
 
     qDebug() << "New feed size:" << mFeed.size();
     return page->mEntryPostIndex;
+}
+
+void PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
+{
+    if (mFeed.empty())
+    {
+        qWarning() << "Cannot add more posts to an empty thread";
+        return;
+    }
+
+    setThreadgateView(thread->mThreadgate);
+    auto page = createPage(thread, true);
+
+    if (page->mFeed.size() <= 1)
+    {
+        qWarning() << "Page has no new posts:" << page->mFeed.size();
+        return;
+    }
+
+    const auto& post = page->mFeed.front();
+    const int index = findPost(post.getCid());
+
+    if (index == -1)
+    {
+        qWarning() << "Post not found, cid:" << post.getCid();
+        return;
+    }
+
+    // NOTE: the first page must not be inserted as it is the same as the leaf page to
+    // which we add.
+    const size_t pageInsertCount = (page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex) - 1;
+
+    beginInsertRows({}, index + 1, index + pageInsertCount);
+    auto feedInsertIt = mFeed.begin() + index + 1;
+    mFeed.insert(feedInsertIt, page->mFeed.begin() + 1, page->mFeed.begin() + 1 + pageInsertCount);
+    endInsertRows();
+
+    if (page->mFirstHiddenReplyIndex != -1)
+    {
+        mHiddenRepliesFeed.insert(mHiddenRepliesFeed.end(), page->mFeed.begin() + page->mFirstHiddenReplyIndex, page->mFeed.end());
+
+        if (!mFeed.back().isHiddenPosts())
+        {
+            beginInsertRows({}, mFeed.size(), mFeed.size());
+            mFeed.push_back(Post::createHiddenPosts());
+            endInsertRows();
+        }
+    }
+
+    mFeed[index].removeThreadType(QEnums::THREAD_LEAF);
+    changeData({ int(Role::PostThreadType) });
 }
 
 void PostThreadModel::showHiddenReplies()
@@ -196,7 +247,7 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
             const auto& nextReply = post->mReplies[0];
             Q_ASSERT(nextReply);
 
-            // Hide a reply that is not a direct reply of then thread entry post.
+            // Hide a reply that is not a direct reply of the thread entry post.
             // The user will see the current post as a post with a non-zero reply count.
             // By clicking on this post the hidden replies can be accessed.
             if (!mPostFeedModel.isHiddenReply(*nextReply))
@@ -330,7 +381,7 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
         });
 }
 
-PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
+PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore)
 {
     auto page = std::make_unique<Page>(*this);
     page->mRawThread = thread;
@@ -363,7 +414,10 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
     if (viewPost)
     {
         auto parent = viewPost->mParent.get();
-        while (parent)
+
+        // If more posts are added to the threads, then parent posts are in the thread model
+        // already.
+        while (parent && addMore)
         {
             Post parentPost = Post::createPost(*parent, mThreadgateView);
             parentPost.addThreadType(QEnums::THREAD_PARENT);
@@ -391,7 +445,8 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         // The entry post is now at the end of the feed
         page->mEntryPostIndex = page->mFeed.size() - 1;
 
-        bool firstReply = true;
+        bool firstReply = !addMore;
+        const bool directReply = !addMore;
         sortReplies(viewPost);
         const int indentLevel = viewPost->mReplies.size() > 1 ? 1 : 0;
 
@@ -405,7 +460,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
                 qDebug() << "First hidden reply:" << page->mFirstHiddenReplyIndex;
             }
 
-            page->addReplyThread(*reply, true, firstReply, indentLevel);
+            page->addReplyThread(*reply, directReply, firstReply, indentLevel);
             firstReply = false;
         }
     }

@@ -145,6 +145,7 @@ SkyListView {
 
         width: view.width
         onShowHiddenReplies: model.showHiddenReplies()
+        onAddMorePosts: (uri) => skywalker.addPostThread(uri, modelId)
     }
 
     FlickableRefresher {
