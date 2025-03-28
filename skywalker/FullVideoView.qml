@@ -7,7 +7,6 @@ SkyPage {
     property Skywalker skywalker: root.getSkywalker()
     readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
     required property var videoView // videoview
-    property string videoSource
 
     signal closed
 
@@ -25,7 +24,6 @@ SkyPage {
         height: parent.height
         maxHeight: parent.height
         videoView: page.videoView
-        videoSource: page.videoSource
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
         controlColor: "white"

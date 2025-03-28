@@ -23,7 +23,7 @@ Column {
     property string videoSource: streamingEnabled ? videoView.playlistUrl : ""
     property string transcodedSource
 
-    property bool autoLoad: (userSettings.videoAutoPlay || userSettings.videoAutoLoad) && (!swipeMode || !streamingEnabled) || isFullVideoFeedViewMode
+    property bool autoLoad: (userSettings.videoAutoPlay || userSettings.videoAutoLoad) && !swipeMode || isFullVideoFeedViewMode || streamingEnabled
     property bool autoPlay: (userSettings.videoAutoPlay && !swipeMode) || isFullVideoFeedViewMode
 
     property int useIfNeededHeight: 0
@@ -193,7 +193,7 @@ Column {
             accessibleName: qsTr("play video")
             svg: SvgFilled.play
             visible: filter.imageVisible() && !videoPlayer.playing && !videoPlayer.restarting
-            enabled: videoPlayer.hasVideo || !autoLoad
+            enabled: videoPlayer.hasVideo || !autoLoad || streamingEnabled
 
             onClicked: {
                 if (swipeMode && !isFullViewMode) {
@@ -670,7 +670,7 @@ Column {
         console.debug("Set video source for:", videoView.playlistUrl)
 
         if (streamingEnabled) {
-            console.debug("Streaming enabled")
+            console.debug("Streaming enabled, autoLoad:", autoLoad, "autoPlay:", autoPlay, "videoSource:", videoSource)
 
             if (autoLoad)
                 transcodedSource = videoSource
