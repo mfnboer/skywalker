@@ -306,11 +306,13 @@ ColumnLayout {
         checked: userSettings.videoAutoLoad
         onCheckedChanged: userSettings.videoAutoLoad = checked
         enabled: !userSettings.videoAutoPlay
+        visible: !userSettings.videoStreamingEnabled
     }
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
         text: qsTr("With auto loading, the video is automatically loaded (more data usage) so it starts faster when you press play. Otherwise it will load when you press play.")
+        visible: !userSettings.videoStreamingEnabled
     }
 
     AccessibleCheckBox {

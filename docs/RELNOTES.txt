@@ -1,6 +1,9 @@
 next
 ====
 * True video streaming. Video will start faster.
+* Load long threads completely when you open a thread
+* Clicking "read more" in a thread will add posts in place instead of
+  opening a new page.
 
 4.2
 ===

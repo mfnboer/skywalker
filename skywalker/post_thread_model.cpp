@@ -55,12 +55,12 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
     return page->mEntryPostIndex;
 }
 
-void PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
+bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
 {
     if (mFeed.empty())
     {
         qWarning() << "Cannot add more posts to an empty thread";
-        return;
+        return false;
     }
 
     setThreadgateView(thread->mThreadgate);
@@ -69,7 +69,7 @@ void PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
     if (page->mFeed.size() <= 1)
     {
         qWarning() << "Page has no new posts:" << page->mFeed.size();
-        return;
+        return false;
     }
 
     const auto& post = page->mFeed.front();
@@ -78,7 +78,7 @@ void PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
     if (index == -1)
     {
         qWarning() << "Post not found, cid:" << post.getCid();
-        return;
+        return false;
     }
 
     // NOTE: the first page must not be inserted as it is the same as the leaf page to
@@ -104,6 +104,36 @@ void PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
 
     mFeed[index].removeThreadType(QEnums::THREAD_LEAF);
     changeData({ int(Role::PostThreadType) });
+
+    return true;
+}
+
+QString PostThreadModel::getPostToAttachMore() const
+{
+    if (mFeed.empty())
+        return {};
+
+    const auto& firstPost = mFeed.front();
+    const auto authorDid = firstPost.getAuthorDid();
+
+    for (const auto& post : mFeed)
+    {
+        if (post.getThreadType() & QEnums::THREAD_LEAF)
+        {
+            if (post.getReplyCount() == 0)
+                return {};
+
+            if (post.getAuthorDid() == authorDid)
+                return post.getUri();
+
+            return {};
+        }
+
+        if (post.getAuthorDid() != authorDid)
+            break;
+    }
+
+    return {};
 }
 
 void PostThreadModel::showHiddenReplies()
@@ -417,7 +447,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
         // If more posts are added to the threads, then parent posts are in the thread model
         // already.
-        while (parent && addMore)
+        while (parent && !addMore)
         {
             Post parentPost = Post::createPost(*parent, mThreadgateView);
             parentPost.addThreadType(QEnums::THREAD_PARENT);

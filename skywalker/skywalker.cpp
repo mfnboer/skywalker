@@ -1715,7 +1715,14 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
                     return;
                 }
 
+                const QString uri = model->getPostToAttachMore();
                 const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
+
+                if (!uri.isEmpty())
+                    addPostThread(uri, id);
+                else
+                    qDebug() << "No more posts to add";
+
                 emit postThreadOk(id, postEntryIndex);
             }
             else
@@ -1735,10 +1742,16 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
         });
 }
 
-void Skywalker::addPostThread(const QString& uri, int modelId)
+void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
 {
     Q_ASSERT(modelId >= 0);
-    qDebug() << "Add post thread:" << uri << "model:" << modelId;
+    qDebug() << "Add post thread:" << uri << "model:" << modelId << "maxPages:" << maxPages;
+
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
 
     if (mGetPostThreadInProgress)
     {
@@ -1748,14 +1761,28 @@ void Skywalker::addPostThread(const QString& uri, int modelId)
 
     setGetPostThreadInProgress(true);
     mBsky->getPostThread(uri, {}, 0,
-        [this, uri, modelId](auto thread){
+        [this, uri, modelId, maxPages](auto thread){
             setGetPostThreadInProgress(false);
             auto model = getPostThreadModel(modelId);
 
             if (model)
-                model->addMorePosts(thread);
+            {
+                if (model->addMorePosts(thread))
+                {
+                    const QString uri = model->getPostToAttachMore();
+
+                    if (!uri.isEmpty())
+                        addPostThread(uri, modelId, maxPages - 1);
+                }
+                else
+                {
+                    qDebug() << "No more posts to add";
+                }
+            }
             else
+            {
                 qWarning() << "Model does not exist:" << modelId;
+            }
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);

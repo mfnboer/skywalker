@@ -28,7 +28,11 @@ public:
     int setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
 
     // Then entry posts of the thread must be an existing leaf node
-    void addMorePosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
+    bool addMorePosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
+
+    // Get URI of post to which more posts for the natural thread can be attached.
+    // The natural thread is a chain of posts from the original author.
+    QString getPostToAttachMore() const;
 
     Q_INVOKABLE QString getThreadEntryUri() const { return mThreadEntryUri; }
     Q_INVOKABLE void showHiddenReplies();
