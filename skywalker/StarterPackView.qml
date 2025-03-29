@@ -58,6 +58,13 @@ SkyPage {
 
                     MenuItemSvg { svg: SvgOutline.report }
                 }
+                AccessibleMenuItem {
+                    text: qsTr("Emoji names")
+                    visible: UnicodeFonts.hasEmoji(starterPack.description)
+                    onTriggered: root.showEmojiNamesList(starterPack.description)
+
+                    MenuItemSvg { svg: SvgOutline.smiley }
+                }
             }
         }
     }

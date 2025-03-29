@@ -358,6 +358,14 @@ Rectangle {
         }
 
         AccessibleMenuItem {
+            text: qsTr("Emoji names")
+            visible: UnicodeFonts.hasEmoji(list.description)
+            onTriggered: root.showEmojiNamesList(list.description)
+
+            MenuItemSvg { svg: SvgOutline.smiley }
+        }
+
+        AccessibleMenuItem {
             text: qsTr("Show replies")
             checkable: true
             checked: !listHideReplies

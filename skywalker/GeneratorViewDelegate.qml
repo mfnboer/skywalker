@@ -254,6 +254,13 @@ Rectangle {
                         MenuItemSvg { svg: SvgOutline.report }
                     }
                     AccessibleMenuItem {
+                        text: qsTr("Emoji names")
+                        visible: UnicodeFonts.hasEmoji(feed.description)
+                        onTriggered: root.showEmojiNamesList(feed.description)
+
+                        MenuItemSvg { svg: SvgOutline.smiley }
+                    }
+                    AccessibleMenuItem {
                         text: qsTr("Show following")
                         checkable: true
                         checked: !feedHideFollowing
