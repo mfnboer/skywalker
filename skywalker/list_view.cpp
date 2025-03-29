@@ -170,10 +170,12 @@ ListView::ListView(const ATProto::AppBskyGraph::ListView::SharedPtr& view) :
 
 ListView::ListView(const QString& uri, const QString& cid, const QString& name,
          ATProto::AppBskyGraph::ListPurpose purpose, const QString& avatar,
-         const Profile& creator, const QString& description) :
+         const Profile& creator, const QString& description,
+         const WebLink::List& embeddedLinks) :
     ListViewBasic(uri, cid, name, purpose, avatar),
     mCreator(creator),
-    mDescription(description)
+    mDescription(description),
+    mEmbeddedLinksDescription(embeddedLinks)
 {
 }
 
@@ -199,12 +201,33 @@ QString ListView::getDescription() const
 QString ListView::getFormattedDescription() const
 {
     if (mDescription)
-        return ATProto::RichTextMaster::linkiFy(*mDescription, UserSettings::getCurrentLinkColor());
+    {
+        const auto facets = WebLink::toFacetList(mEmbeddedLinksDescription);
+        return ATProto::RichTextMaster::linkiFy(*mDescription, facets, UserSettings::getCurrentLinkColor());
+    }
 
     if (!mListView || !mListView->mDescription)
         return {};
 
     return ATProto::RichTextMaster::getFormattedListDescription(*mListView, UserSettings::getCurrentLinkColor());
+}
+
+WebLink::List ListView::getEmbeddedLinksDescription() const
+{
+    if (mDescription)
+        return mEmbeddedLinksDescription;
+
+    if (!mListView || !mListView->mDescription)
+        return {};
+
+    const auto facets = ATProto::RichTextMaster::getEmbeddedLinks(*mListView->mDescription, mListView->mDescriptionFacets);
+    return WebLink::fromFacetList(facets);
+}
+
+void ListView::setDescription(const QString& description, const WebLink::List& embeddedLinks)
+{
+    mDescription = description;
+    mEmbeddedLinksDescription = embeddedLinks;
 }
 
 }

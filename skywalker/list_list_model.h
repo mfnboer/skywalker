@@ -60,7 +60,9 @@ public:
     int addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor);
     void addLists(const QList<ListView>& lists);
     Q_INVOKABLE void prependList(const ListView& list);
-    Q_INVOKABLE ListView updateEntry(int index, const QString& cid, const QString& name, const QString& description, const QString& avatar);
+    Q_INVOKABLE ListView updateEntry(int index, const QString& cid, const QString& name,
+            const QString& description, const WebLink::List& embeddedLinks,
+            const QString& avatar);
     Q_INVOKABLE void deleteEntry(int index);
     Q_INVOKABLE ListView getEntry(int index) const;
 

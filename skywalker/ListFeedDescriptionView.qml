@@ -427,9 +427,10 @@ SkyPage {
                 purpose: list.purpose,
                 list: list
             })
-        editPage.onListUpdated.connect((cid, name, description, avatar) => {
+        editPage.onListUpdated.connect((cid, name, description, embeddedLinks, avatar) => {
             list = graphUtils.makeListView(list.uri, cid, name, list.purpose, avatar,
-                                           skywalker.getUserProfile(), description)
+                                           skywalker.getUserProfile(), description,
+                                           embeddedLinks)
             page.listUpdated(list)
             root.popStack()
         })

@@ -279,6 +279,23 @@ SkyPage {
             focusPolicy: Qt.NoFocus
             visible: textInputToolbarHeight > 0
         }
+        SvgTransparentButton {
+            id: linkButton
+            anchors.left: fontSelector.right
+            anchors.leftMargin: visible ? 8 : 0
+            anchors.bottomMargin: -height
+            anchors.bottom: parent.bottom
+            width: visible ? height: 0
+            accessibleName: qsTr("embed web link")
+            svg: SvgOutline.link
+            visible: textInputToolbarHeight > 0 && (newMessageText.cursorInWebLink >= 0 || newMessageText.cursorInEmbeddedLink >= 0)
+            onClicked: {
+                if (newMessageText.cursorInWebLink >= 0)
+                    page.addEmbeddedLink()
+                else if (newMessageText.cursorInEmbeddedLink >= 0)
+                    page.updateEmbeddedLink()
+            }
+        }
 
         TextLengthCounter {
             anchors.rightMargin: page.margin
@@ -342,12 +359,16 @@ SkyPage {
 
     function sendMessage() {
         Qt.inputMethod.commit() // qmllint disable missing-property
+
+        if (!newMessageText.checkMisleadingEmbeddedLinks())
+            return
+
         isSending = true
         const qUri = newMessageText.getQuoteUri()
         const qCid = newMessageText.getQuoteCid()
         let msgText = newMessageText.text
         console.debug("Send message:", convo.id, msgText)
-        chat.sendMessage(convo.id, msgText, qUri, qCid)
+        chat.sendMessage(convo.id, msgText, qUri, qCid, newMessageText.embeddedLinks)
     }
 
     function deleteMessage(messageId) {
@@ -358,6 +379,73 @@ SkyPage {
 
     function reportDirectMessage(msg) {
         root.reportDirectMessage(msg, convo.id, convo.getMember(msg.senderDid).basicProfile)
+    }
+
+    function addEmbeddedLink() {
+        const webLinkIndex = newMessageText.cursorInWebLink
+
+        if (webLinkIndex < 0)
+            return
+
+        console.debug("Web link index:", webLinkIndex, "size:", newMessageText.webLinks.length)
+        const webLink = newMessageText.webLinks[webLinkIndex]
+        console.debug("Web link:", newMessageText.link)
+        let component = guiSettings.createComponent("EditEmbeddedLink.qml")
+        let linkPage = component.createObject(page, {
+                link: webLink.link,
+                canAddLinkCard: false
+        })
+        linkPage.onAccepted.connect(() => {
+                const name = linkPage.getName()
+                linkPage.destroy()
+
+                if (name.length > 0)
+                    newMessageText.addEmbeddedLink(webLinkIndex, name)
+
+                newMessageText.forceActiveFocus()
+        })
+        linkPage.onRejected.connect(() => {
+                linkPage.destroy()
+                newMessageText.forceActiveFocus()
+        })
+        linkPage.open()
+    }
+
+    function updateEmbeddedLink() {
+        const linkIndex = newMessageText.cursorInEmbeddedLink
+
+        if (linkIndex < 0)
+            return
+
+        console.debug("Embedded link index:", linkIndex, "size:", newMessageText.embeddedLinks.length)
+        const link = newMessageText.embeddedLinks[linkIndex]
+        const error = link.hasMisleadingName() ? link.getMisleadingNameError() :
+                            (link.isTouchingOtherLink() ? qsTr("Connected to previous link") : "")
+        console.debug("Embedded link:", link.link, "name:", link.name, "error:", error)
+
+        let component = guiSettings.createComponent("EditEmbeddedLink.qml")
+        let linkPage = component.createObject(page, {
+                link: link.link,
+                name: link.name,
+                error: error,
+                canAddLinkCard: false
+        })
+        linkPage.onAccepted.connect(() => {
+                const name = linkPage.getName()
+                linkPage.destroy()
+
+                if (name.length <= 0)
+                    newMessageText.removeEmbeddedLink(linkIndex)
+                else
+                    newMessageText.updateEmbeddedLink(linkIndex, name)
+
+                newMessageText.forceActiveFocus()
+        })
+        linkPage.onRejected.connect(() => {
+                linkPage.destroy()
+                newMessageText.forceActiveFocus()
+        })
+        linkPage.open()
     }
 
     function sendMessageOkHandler() {

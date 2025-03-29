@@ -103,6 +103,21 @@ std::vector<ATProto::RichTextMaster::ParsedMatch> WebLink::toFacetList(const Lis
     return facets;
 }
 
+WebLink WebLink::fromFacet(const ATProto::RichTextMaster::ParsedMatch& facet)
+{
+    return WebLink(facet.mRef, facet.mStartIndex, facet.mEndIndex, facet.mMatch);
+}
+
+WebLink::List WebLink::fromFacetList(const std::vector<ATProto::RichTextMaster::ParsedMatch>& facets)
+{
+    List links;
+
+    for (const auto& facet : facets)
+        links.push_back(fromFacet(facet));
+
+    return links;
+}
+
 QJsonObject WebLink::toJson() const
 {
     QJsonObject json;

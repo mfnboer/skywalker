@@ -137,10 +137,10 @@ ListView {
                 purpose: list.purpose,
                 list: list
             })
-        page.onListUpdated.connect((cid, name, description, avatar) => {
+        page.onListUpdated.connect((cid, name, description, embeddedLinks, avatar) => {
             statusPopup.show(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
             let oldList = view.model.getEntry(index)
-            let newList = view.model.updateEntry(index, cid, name, description, avatar)
+            let newList = view.model.updateEntry(index, cid, name, description, embeddedLinks, avatar)
 
             if (skywalker.favoriteFeeds.isPinnedFeed(oldList.uri)) {
                 skywalker.favoriteFeeds.removeList(oldList)

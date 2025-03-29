@@ -216,7 +216,8 @@ void GraphUtils::unmute(const QString& did)
 }
 
 void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& name,
-                const QString& description, const QString& avatarImgSource)
+                const QString& description, const WebLink::List& embeddedLinks,
+                const QString& avatarImgSource)
 {
     if (!bskyClient())
         return;
@@ -235,11 +236,11 @@ void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& na
         }
 
         bskyClient()->uploadBlob(blob, mimeType,
-            [this, presence=getPresence(), purpose, name, description](auto blob){
+            [this, presence=getPresence(), purpose, name, description, embeddedLinks](auto blob){
                 if (!presence)
                     return;
 
-                continueCreateList(purpose, name, description, std::move(blob));
+                continueCreateList(purpose, name, description, embeddedLinks, std::move(blob));
             },
             [this, presence=getPresence()](const QString& error, const QString& msg){
                 if (!presence)
@@ -251,16 +252,18 @@ void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& na
     }
     else
     {
-        continueCreateList(purpose, name, description, nullptr);
+        continueCreateList(purpose, name, description, embeddedLinks, nullptr);
     }
 }
 
 void GraphUtils::continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
-                        const QString& description, ATProto::Blob::SharedPtr blob)
+                        const QString& description,const WebLink::List& embeddedLinks,
+                        ATProto::Blob::SharedPtr blob)
 {
     emit createListProgress(tr("Creating list"));
+    const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
 
-    graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose(purpose), name, description, std::move(blob), {},
+    graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose(purpose), name, description, embeddedFacets, std::move(blob), {},
         [this, presence=getPresence()](const QString& uri, const QString& cid){
             if (!presence)
                 return;
@@ -280,7 +283,7 @@ void GraphUtils::createListFromStarterPack(const StarterPackView& starterPack)
 {
     qDebug() << "Create list from starter pack:" << starterPack.getName();
 
-    graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, starterPack.getName(), starterPack.getDescription(), nullptr, {},
+    graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, starterPack.getName(), starterPack.getDescription(), {}, nullptr, {},
         [this, presence=getPresence(), starterPack](const QString& uri, const QString& cid){
             if (!presence)
                 return;
@@ -361,8 +364,8 @@ void GraphUtils::continueCreateListFromStarterPack(const StarterPackView& starte
 }
 
 void GraphUtils::updateList(const QString& listUri, const QString& name,
-                const QString& description, const QString& avatarImgSource,
-                bool updateAvatar)
+                const QString& description, const WebLink::List& embeddedLinks,
+                const QString& avatarImgSource, bool updateAvatar)
 {
     if (!bskyClient())
         return;
@@ -381,11 +384,11 @@ void GraphUtils::updateList(const QString& listUri, const QString& name,
         }
 
         bskyClient()->uploadBlob(blob, mimeType,
-            [this, presence=getPresence(), listUri, name, description](auto blob){
+            [this, presence=getPresence(), listUri, name, description, embeddedLinks](auto blob){
                 if (!presence)
                     return;
 
-                continueUpdateList(listUri, name, description, std::move(blob), true);
+                continueUpdateList(listUri, name, description, embeddedLinks, std::move(blob), true);
             },
             [this, presence=getPresence()](const QString& error, const QString& msg){
                 if (!presence)
@@ -397,16 +400,18 @@ void GraphUtils::updateList(const QString& listUri, const QString& name,
     }
     else
     {
-        continueUpdateList(listUri, name, description, nullptr, updateAvatar);
+        continueUpdateList(listUri, name, description, embeddedLinks, nullptr, updateAvatar);
     }
 }
 
 void GraphUtils::continueUpdateList(const QString& listUri, const QString& name,
-                        const QString& description, ATProto::Blob::SharedPtr blob, bool updateAvatar)
+                        const QString& description, const WebLink::List& embeddedLinks,
+                        ATProto::Blob::SharedPtr blob, bool updateAvatar)
 {
     emit updateListProgress(tr("Updating list"));
+    const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
 
-    graphMaster()->updateList(listUri, name, description, std::move(blob), updateAvatar,
+    graphMaster()->updateList(listUri, name, description, embeddedFacets, std::move(blob), updateAvatar,
         [this, presence=getPresence()](const QString& uri, const QString& cid){
             if (!presence)
                 return;
@@ -654,11 +659,11 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
 }
 
 ListView GraphUtils::makeListView(const QString& uri, const QString& cid, const QString& name,
-                      QEnums::ListPurpose purpose, const QString& avatar,
-                      const Profile& creator, const QString& description)
+                    QEnums::ListPurpose purpose, const QString& avatar, const Profile& creator,
+                    const QString& description, const WebLink::List& embeddedLinks)
 {
     return ListView(uri, cid, name, ATProto::AppBskyGraph::ListPurpose(purpose),
-                    avatar, creator, description);
+                    avatar, creator, description, embeddedLinks);
 }
 
 void GraphUtils::blockList(const QString& listUri)
@@ -870,7 +875,7 @@ void GraphUtils::muteReposts(const BasicProfile& profile)
         graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::MOD_LIST,
             "Skywalker muted reposts",
             "Used by Skywalker to keep track of muted reposts. Do not delete.",
-            {}, RKEY_MUTED_REPOSTS,
+            {}, {}, RKEY_MUTED_REPOSTS,
             [this, presence=getPresence(), profile](const QString& uri, const QString&){
                 if (!presence)
                     return;

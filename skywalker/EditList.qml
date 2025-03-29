@@ -13,7 +13,7 @@ SkyPage {
 
     signal closed
     signal listCreated(listview list)
-    signal listUpdated(string cid, string name, string description, string avatar)
+    signal listUpdated(string cid, string name, string description, list<weblink> embeddedLinks, string avatar)
 
     id: editListPage
     width: parent.width
@@ -78,6 +78,32 @@ SkyPage {
             anchors.right: parent.right
             textField: descriptionField
             visible: descriptionField.activeFocus
+        }
+
+        FontComboBox {
+            id: fontSelector
+            x: 10
+            y: 10
+            popup.height: Math.min(editListPage.height - 20, popup.contentHeight)
+            focusPolicy: Qt.NoFocus
+            visible: descriptionField.activeFocus
+        }
+
+        SvgTransparentButton {
+            id: linkButton
+            anchors.left: fontSelector.right
+            anchors.leftMargin: visible ? 8 : 0
+            y: 5 + height
+            width: visible ? height: 0
+            accessibleName: qsTr("embed web link")
+            svg: SvgOutline.link
+            visible: descriptionField.activeFocus && (descriptionField.cursorInWebLink >= 0 || descriptionField.cursorInEmbeddedLink >= 0)
+            onClicked: {
+                if (descriptionField.cursorInWebLink >= 0)
+                    editListPage.addEmbeddedLink()
+                else if (descriptionField.cursorInEmbeddedLink >= 0)
+                    editListPage.updateEmbeddedLink()
+            }
         }
     }
 
@@ -205,6 +231,7 @@ SkyPage {
                     placeholderText: qsTr("List description")
                     initialText: list.description
                     maxLength: 300
+                    fontSelectorCombo: fontSelector
                 }
             }
         }
@@ -252,7 +279,7 @@ SkyPage {
         onCreateListOk: (uri, cid) => {
             let listView = graphUtils.makeListView(uri, cid, nameField.text, purpose,
                                                    avatar.avatarUrl, skywalker.getUserProfile(),
-                                                   descriptionField.text)
+                                                   descriptionField.text, descriptionField.embeddedLinks)
             editListPage.listCreated(listView)
         }
 
@@ -277,11 +304,13 @@ SkyPage {
     }
 
     function createList() {
-        graphUtils.createList(purpose, nameField.text, descriptionField.text, avatar.avatarUrl)
+        if (descriptionField.checkMisleadingEmbeddedLinks())
+            graphUtils.createList(purpose, nameField.text, descriptionField.text, descriptionField.embeddedLinks, avatar.avatarUrl)
     }
 
     function updateList() {
-        graphUtils.updateList(list.uri, nameField.text, descriptionField.text, avatar.avatarUrl, avatar.isUpdated)
+        if (descriptionField.checkMisleadingEmbeddedLinks())
+            graphUtils.updateList(list.uri, nameField.text, descriptionField.text, descriptionField.embeddedLinks, avatar.avatarUrl, avatar.isUpdated)
     }
 
     function updateListDone(uri, cid) {
@@ -289,7 +318,7 @@ SkyPage {
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
         statusPopup.close()
-        editListPage.listUpdated(cid, nameField.text, descriptionField.text, avatar.avatarUrl)
+        editListPage.listUpdated(cid, nameField.text, descriptionField.text, descriptionField.embeddedLinks, avatar.avatarUrl)
     }
 
     // "file://" or "image://" source
@@ -337,11 +366,81 @@ SkyPage {
         }
     }
 
+    function addEmbeddedLink() {
+        const webLinkIndex = descriptionField.cursorInWebLink
+
+        if (webLinkIndex < 0)
+            return
+
+        console.debug("Web link index:", webLinkIndex, "size:", descriptionField.webLinks.length)
+        const webLink = descriptionField.webLinks[webLinkIndex]
+        console.debug("Web link:", descriptionField.link)
+        let component = guiSettings.createComponent("EditEmbeddedLink.qml")
+        let linkPage = component.createObject(editListPage, {
+                link: webLink.link,
+                canAddLinkCard: false
+        })
+        linkPage.onAccepted.connect(() => {
+                const name = linkPage.getName()
+                linkPage.destroy()
+
+                if (name.length > 0)
+                    descriptionField.addEmbeddedLink(webLinkIndex, name)
+
+                descriptionField.forceActiveFocus()
+        })
+        linkPage.onRejected.connect(() => {
+                linkPage.destroy()
+                descriptionField.forceActiveFocus()
+        })
+        linkPage.open()
+    }
+
+    function updateEmbeddedLink() {
+        const linkIndex = descriptionField.cursorInEmbeddedLink
+
+        if (linkIndex < 0)
+            return
+
+        console.debug("Embedded link index:", linkIndex, "size:", descriptionField.embeddedLinks.length)
+        const link = descriptionField.embeddedLinks[linkIndex]
+        const error = link.hasMisleadingName() ? link.getMisleadingNameError() :
+                            (link.isTouchingOtherLink() ? qsTr("Connected to previous link") : "")
+        console.debug("Embedded link:", link.link, "name:", link.name, "error:", error)
+
+        let component = guiSettings.createComponent("EditEmbeddedLink.qml")
+        let linkPage = component.createObject(editListPage, {
+                link: link.link,
+                name: link.name,
+                error: error,
+                canAddLinkCard: false
+        })
+        linkPage.onAccepted.connect(() => {
+                const name = linkPage.getName()
+                linkPage.destroy()
+
+                if (name.length <= 0)
+                    descriptionField.removeEmbeddedLink(linkIndex)
+                else
+                    descriptionField.updateEmbeddedLink(linkIndex, name)
+
+                descriptionField.forceActiveFocus()
+        })
+        linkPage.onRejected.connect(() => {
+                linkPage.destroy()
+                descriptionField.forceActiveFocus()
+        })
+        linkPage.open()
+    }
+
     Component.onDestruction: {
         dropCreatedAvatar()
     }
 
     Component.onCompleted: {
+        if (!list.isNull())
+            descriptionField.setEmbeddedLinks(list.embeddedLinksDescription)
+
         nameField.forceActiveFocus()
     }
 }

@@ -4,6 +4,8 @@ next
 * Load long threads completely when you open a thread
 * Clicking "read more" in a thread will add posts in place instead of
   opening a new page.
+* Font selector for profile and list descriptions
+* Embedded links for direct messages and list descriptions
 
 4.2
 ===

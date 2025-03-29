@@ -1218,7 +1218,7 @@ void PostUtils::cacheTags(const QString& text)
 
 QString PostUtils::linkiFy(const QString& text, const QString& colorName)
 {
-    return ATProto::RichTextMaster::linkiFy(text, colorName);
+    return ATProto::RichTextMaster::linkiFy(text, {}, colorName);
 }
 
 void PostUtils::getQuotePost(const QString& httpsUri)

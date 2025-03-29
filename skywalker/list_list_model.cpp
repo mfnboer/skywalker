@@ -174,7 +174,8 @@ void ListListModel::prependList(const ListView& list)
     qDebug() << "New lists size:" << mLists.size();
 }
 
-ListView ListListModel::updateEntry(int index, const QString& cid, const QString& name, const QString& description, const QString& avatar)
+ListView ListListModel::updateEntry(int index, const QString& cid, const QString& name,
+        const QString& description, const WebLink::List& embeddedLinks, const QString& avatar)
 {
     qDebug() << "Update entry:" << name << "index:" << index;
 
@@ -193,7 +194,7 @@ ListView ListListModel::updateEntry(int index, const QString& cid, const QString
         list.setName(name);
 
     if (description != list.getDescription())
-        list.setDescription(description);
+        list.setDescription(description, embeddedLinks);
 
     if (avatar != list.getAvatar())
         list.setAvatar(avatar);

@@ -4,6 +4,7 @@
 #include "convo_list_model.h"
 #include "message_list_model.h"
 #include "presence.h"
+#include "web_link.h"
 #include <atproto/lib/chat_master.h>
 #include <atproto/lib/client.h>
 #include <atproto/lib/post_master.h>
@@ -66,7 +67,9 @@ public:
     Q_INVOKABLE void updateMessages(const QString& convoId);
     Q_INVOKABLE void updateRead(const QString& convoId);
 
-    Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text, const QString& quoteUri, const QString& quoteCid);
+    Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text,
+                                 const QString& quoteUri, const QString& quoteCid,
+                                 const WebLink::List& embeddedLinks);
     Q_INVOKABLE void deleteMessage(const QString& convoId, const QString& messageId);
 
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }

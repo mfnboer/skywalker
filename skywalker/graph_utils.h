@@ -5,6 +5,7 @@
 #include "enums.h"
 #include "presence.h"
 #include "starter_pack.h"
+#include "web_link.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/graph_master.h>
 
@@ -27,10 +28,11 @@ public:
 
     // avatarImgSource must be a 'file://' or 'image://' reference.
     Q_INVOKABLE void createList(const QEnums::ListPurpose purpose, const QString& name,
-                                const QString& description, const QString& avatarImgSource);
+                                const QString& description, const WebLink::List& embeddedLinks,
+                                const QString& avatarImgSource);
     Q_INVOKABLE void updateList(const QString& listUri, const QString& name,
-                                const QString& description, const QString& avatarImgSource,
-                                bool updateAvatar);
+                                const QString& description, const WebLink::List& embeddedLinks,
+                                const QString& avatarImgSource, bool updateAvatar);
     Q_INVOKABLE void deleteList(const QString& listUri);
     Q_INVOKABLE ListViewBasic getCachedListView(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri, bool viewPosts = false);
@@ -41,8 +43,8 @@ public:
     Q_INVOKABLE void createListFromStarterPack(const StarterPackView& starterPack);
 
     Q_INVOKABLE ListView makeListView(const QString& uri, const QString& cid, const QString& name,
-                    QEnums::ListPurpose purpose, const QString& avatar,
-                    const Profile& creator, const QString& description);
+                    QEnums::ListPurpose purpose, const QString& avatar, const Profile& creator,
+                    const QString& description, const WebLink::List& embeddedLinks);
 
     Q_INVOKABLE void blockList(const QString& listUri);
     Q_INVOKABLE void unblockList(const QString& listUri, const QString& blockingUri);
@@ -110,9 +112,11 @@ signals:
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
-                            const QString& description, ATProto::Blob::SharedPtr blob);
+                            const QString& description, const WebLink::List& embeddedLinks,
+                            ATProto::Blob::SharedPtr blob);
     void continueUpdateList(const QString& listUri, const QString& name,
-                            const QString& description, ATProto::Blob::SharedPtr blob, bool updateAvatar);
+                            const QString& description, const WebLink::List& embeddedLinks,
+                            ATProto::Blob::SharedPtr blob, bool updateAvatar);
     void continueCreateListFromStarterPack(const StarterPackView& starterPack, const QString &listUri, const QString& listCid, int maxPages = 3, const std::optional<QString> cursor = {});
 
     ATProto::GraphMaster* graphMaster();

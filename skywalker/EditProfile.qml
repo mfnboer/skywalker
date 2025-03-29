@@ -82,6 +82,15 @@ SkyPage {
             textField: descriptionField
             visible: descriptionField.activeFocus
         }
+
+        FontComboBox {
+            id: fontSelector
+            x: 10
+            y: 10
+            popup.height: Math.min(editProfilePage.height - 20, popup.contentHeight)
+            focusPolicy: Qt.NoFocus
+            visible: descriptionField.activeFocus
+        }
     }
 
     Flickable {
@@ -261,6 +270,7 @@ SkyPage {
                     initialText: authorDescription
                     maxLength: 256
                     enableLinkShortening: false
+                    fontSelectorCombo: fontSelector
                 }
             }
         }

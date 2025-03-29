@@ -51,6 +51,8 @@ public:
 
     static SharedPtr fromJson(const QJsonObject& json);
     static std::vector<ATProto::RichTextMaster::ParsedMatch> toFacetList(const List& links);
+    static WebLink fromFacet(const ATProto::RichTextMaster::ParsedMatch& facet);
+    static List fromFacetList(const std::vector<ATProto::RichTextMaster::ParsedMatch>& facets);
 
 private:
     void checkMisleadingName();
