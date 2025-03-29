@@ -86,7 +86,6 @@ SkyPage {
             y: 10
             popup.height: Math.min(editListPage.height - 20, popup.contentHeight)
             focusPolicy: Qt.NoFocus
-            visible: descriptionField.activeFocus
         }
 
         SvgTransparentButton {
@@ -200,6 +199,7 @@ SkyPage {
                     placeholderText: qsTr("List name")
                     singleLine: true
                     maxLength: 64
+                    fontSelectorCombo: fontSelector
                 }
             }
 

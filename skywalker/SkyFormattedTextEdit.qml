@@ -91,6 +91,7 @@ TextEdit {
         highlightFacets()
 
         const added = updateGraphemeLength()
+
         if (added > 0)
             updateTextTimer.set(added)
 
@@ -105,6 +106,7 @@ TextEdit {
             return
 
         const added = updateGraphemeLength()
+
         if (added > 0)
             updateTextTimer.set(added)
     }

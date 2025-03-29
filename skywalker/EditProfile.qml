@@ -89,7 +89,6 @@ SkyPage {
             y: 10
             popup.height: Math.min(editProfilePage.height - 20, popup.contentHeight)
             focusPolicy: Qt.NoFocus
-            visible: descriptionField.activeFocus
         }
     }
 
@@ -238,6 +237,7 @@ SkyPage {
                     placeholderText: qsTr("Your name")
                     singleLine: true
                     maxLength: 64
+                    fontSelectorCombo: fontSelector
                 }
             }
 

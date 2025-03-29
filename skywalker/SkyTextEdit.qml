@@ -9,6 +9,8 @@ TextEdit {
     property int graphemeLength: 0
     property int maxLength: -1
     property bool strictMax: false
+    property var fontSelectorCombo
+    property bool textChangeInProgress: false
 
     id: skyTextEdit
     width: page.width
@@ -29,7 +31,13 @@ TextEdit {
     Accessible.editable: true
 
     onTextChanged: {
-        updateGraphemeLength()
+        if (textChangeInProgress)
+            return
+
+        const added = updateGraphemeLength()
+
+        if (added > 0)
+            updateTextTimer.set(added)
 
         if (!singleLine)
             return
@@ -40,9 +48,18 @@ TextEdit {
             remove(index, text.length)
     }
 
-    onPreeditTextChanged: updateGraphemeLength()
+    onPreeditTextChanged: {
+        if (textChangeInProgress)
+            return
+
+        const added = updateGraphemeLength()
+
+        if (added > 0)
+            updateTextTimer.set(added)
+    }
 
     function updateGraphemeLength() {
+        const prevGraphemeLength = graphemeLength
         graphemeLength = UnicodeFonts.graphemeLength(skyTextEdit.text) +
                 UnicodeFonts.graphemeLength(preeditText)
 
@@ -51,7 +68,10 @@ TextEdit {
             const graphemeInfo = UnicodeFonts.getGraphemeInfo(text)
             text = graphemeInfo.sliced(text, 0, maxLength)
             cursorPosition = text.length
+            graphemeLength = maxLength
         }
+
+        return graphemeLength - prevGraphemeLength
     }
 
     Text {
@@ -75,6 +95,50 @@ TextEdit {
 
     EmojiFixHighlighter {
         id: emojiFixer
+    }
+
+    FacetUtils {
+        id: facetUtils
+        skywalker: root.getSkywalker()
+    }
+
+    // Text can only be changed outside onPreeditTextChanged.
+    // This timer makes the call to applyFont async.
+    Timer {
+        property int numChars: 1
+
+        id: updateTextTimer
+        interval: 0
+        onTriggered: {
+            skyTextEdit.textChangeInProgress = true
+            skyTextEdit.applyFont(numChars)
+            skyTextEdit.textChangeInProgress = false
+        }
+
+        function set(num) {
+            if (!fontSelectorCombo || fontSelectorCombo.currentIndex === QEnums.FONT_NORMAL)
+                return
+
+            numChars = num
+            start()
+        }
+    }
+
+    function applyFont(numChars) {
+        if (!fontSelectorCombo)
+            return
+
+        const modifiedTillCursor = facetUtils.applyFontToLastTypedChars(
+                                     skyTextEdit.text, skyTextEdit.preeditText,
+                                     skyTextEdit.cursorPosition, numChars,
+                                     fontSelectorCombo.currentIndex)
+
+        if (modifiedTillCursor) {
+            const fullText = modifiedTillCursor + skyTextEdit.text.slice(skyTextEdit.cursorPosition)
+            skyTextEdit.clear()
+            skyTextEdit.text = fullText
+            skyTextEdit.cursorPosition = modifiedTillCursor.length
+        }
     }
 
     Component.onCompleted: {
