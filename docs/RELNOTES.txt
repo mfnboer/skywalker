@@ -1,5 +1,5 @@
-next
-====
+4.3
+===
 * True video streaming. Video will start faster.
 * Load long threads completely when you open a thread
 * Clicking "read more" in a thread will insert posts in place instead of
