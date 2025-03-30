@@ -9,6 +9,7 @@ Rectangle {
     property var onClicked
 
     signal clicked()
+    signal pressAndHold()
 
     id: control
     height: statIcon.height
@@ -42,6 +43,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: control.clicked()
+        onPressAndHold: control.pressAndHold()
     }
 
 }

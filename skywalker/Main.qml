@@ -1336,6 +1336,15 @@ ApplicationWindow {
         repostDrawer.show(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText)
     }
 
+    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled) {
+        if (embeddingDisabled) {
+            skywalker.showStatusMessage(qsTr("Quoting not allowed"), QEnums.STATUS_LEVEL_INFO)
+            return
+        }
+
+        postUtils.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author))
+    }
+
     function like(likeUri, uri, cid) {
         if (likeUri)
             postUtils.undoLike(likeUri, cid)

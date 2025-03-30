@@ -31,6 +31,7 @@ Item {
 
     signal reply()
     signal repost()
+    signal quotePost()
     signal like()
     signal viewThread()
     signal muteThread()
@@ -74,6 +75,7 @@ Item {
         statistic: repostCount
         visible: !bookmarkNotFound && !limitedStats
         onClicked: repost()
+        onPressAndHold: quotePost()
 
         Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
     }

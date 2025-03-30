@@ -312,6 +312,12 @@ Rectangle {
                                         notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText)
                         }
 
+                        onQuotePost: {
+                            root.quotePost(notificationPostUri, notificationCid,
+                                           notificationPostText, notificationPostTimestamp,
+                                           notificationAuthor, notificationPostEmbeddingDisabled)
+                        }
+
                         onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
 
                         onBookmark: {

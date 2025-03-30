@@ -529,6 +529,11 @@ Rectangle {
                                     postIndexedDateTime, author, postEmbeddingDisabled, postPlainText)
                     }
 
+                    onQuotePost: {
+                        root.quotePost(postUri, postCid, postText, postIndexedDateTime,
+                                       author, postEmbeddingDisabled)
+                    }
+
                     onLike: root.like(postLikeUri, postUri, postCid)
 
                     onBookmark: {
