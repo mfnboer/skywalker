@@ -5,12 +5,15 @@ MouseArea {
     property string containingText
 
     anchors.fill: parent
+    propagateComposedEvents: true
 
     onClicked: (mouse) => {
         const link = parent.linkAt(mouse.x, mouse.y)
 
         if (link)
             root.openLink(link, containingText)
+        else
+            mouse.accepted = false
     }
 
     onPressAndHold: (mouse) => {
@@ -19,6 +22,9 @@ MouseArea {
         if (link) {
             if (UnicodeFonts.isHashtag(link))
                 hashtagContextMenuLoader.activate(link)
+        }
+        else {
+            mouse.accepted = false
         }
     }
 
