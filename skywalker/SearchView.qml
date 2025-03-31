@@ -162,64 +162,15 @@ SkyPage {
         accessibleName: qsTr("hashtag options")
         visible: isHashtagSearch
 
-        onClicked: moreMenu.open()
+        onClicked: moreMenu.show(page.getSearchText())
 
-        Menu {
-            property bool isMuted: false
-            property bool isPinned: false
-
+        HashtagContextMenu {
             id: moreMenu
-            modal: true
-
-            onAboutToShow: {
-                root.enablePopupShield(true)
-                isMuted = skywalker.mutedWords.containsEntry(page.getSearchText())
-                isPinned = skywalker.favoriteFeeds.isPinnedSearch(page.getSearchText())
-            }
-
-            onAboutToHide: root.enablePopupShield(false)
-
-            CloseMenuItem {
-                text: qsTr("<b>Hashtags</b>")
-                Accessible.name: qsTr("close hashtag options menu")
-            }
-
-            AccessibleMenuItem {
-                text: qsTr("Focus hashtag")
-                onTriggered: focusHashtag(page.getSearchText())
-                MenuItemSvg { svg: SvgOutline.hashtag }
-            }
-
-            AccessibleMenuItem {
-                text: moreMenu.isMuted ? qsTr("Unmute hashtag") : qsTr("Mute hashtag")
-                onTriggered: {
-                    if (moreMenu.isMuted)
-                        unmuteWord(page.getSearchText())
-                    else
-                        muteWord(page.getSearchText())
-                }
-
-                MenuItemSvg { svg: moreMenu.isMuted ? SvgOutline.unmute : SvgOutline.mute }
-            }
-
-            AccessibleMenuItem {
-                text: moreMenu.isPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
-                onTriggered: {
-                    const view = searchUtils.createSearchFeed(page.getSearchText(),
-                        postAuthorUser, postMentionsUser,
-                        postSetSince ? postSince : nullDate,
-                        postSetUntil ? postUntil : nullDate,
-                        postLanguage)
-
-                    skywalker.favoriteFeeds.pinSearch(view, !moreMenu.isPinned)
-                    skywalker.saveFavoriteFeeds()
-                }
-
-                MenuItemSvg {
-                    svg: moreMenu.isPinned ? SvgFilled.star : SvgOutline.star
-                    color: moreMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
-                }
-            }
+            postAuthorUser: page.postAuthorUser
+            postMentionsUser: page.postMentionsUser
+            postSince: page.postSince
+            postUntil: page.postUntil
+            postLanguage: page.postLanguage
         }
     }
 
@@ -954,26 +905,6 @@ SkyPage {
         default:
             return qsTr("unknown")
         }
-    }
-
-    function muteWord(word) {
-        skywalker.mutedWords.addEntry(word)
-        skywalker.saveMutedWords()
-        skywalker.showStatusMessage(qsTr(`Muted ${word}`), QEnums.STATUS_LEVEL_INFO)
-    }
-
-    function unmuteWord(word) {
-        skywalker.mutedWords.removeEntry(word)
-        skywalker.saveMutedWords()
-        skywalker.showStatusMessage(qsTr(`Unmuted ${word}`), QEnums.STATUS_LEVEL_INFO)
-    }
-
-    function focusHashtag(hashtag) {
-        let component = guiSettings.createComponent("FocusHashtags.qml")
-        let focusPage = component.createObject(page)
-        focusPage.onClosed.connect(() => { root.popStack() }) // qmllint disable missing-property
-        skywalker.focusHashtags.addEntry(hashtag.slice(1)) // strip #-symbol
-        root.pushStack(focusPage)
     }
 
     function clearRecentSearches() {

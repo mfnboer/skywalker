@@ -52,9 +52,11 @@ Column {
         bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
         visible: postVisible() && postText
 
-        onLinkActivated: (link) => root.openLink(link, postPlainText)
-
         Accessible.ignored: true
+
+        LinkCatcher {
+            containingText: postPlainText
+        }
 
         Rectangle {
             anchors.fill: parent

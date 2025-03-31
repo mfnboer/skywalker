@@ -175,7 +175,7 @@ SkyPage {
             }
         }
 
-        Text {
+        AccessibleText {
             topPadding: 5
             bottomPadding: 10
             Layout.columnSpan: 3
@@ -187,10 +187,9 @@ SkyPage {
             color: guiSettings.textColor
             text: list.formattedDescription
 
-            onLinkActivated: (link) => root.openLink(link, list.description)
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: list.description
+            LinkCatcher {
+                containingText: list.description
+            }
         }
     }
 

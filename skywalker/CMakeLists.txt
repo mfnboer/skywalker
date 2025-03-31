@@ -509,6 +509,8 @@ qt_add_qml_module(libskywalker
         SOURCES split_text_boundary_finder.cpp
         SOURCES text_splitter.h
         SOURCES text_splitter.cpp
+        QML_FILES LinkCatcher.qml
+        QML_FILES HashtagContextMenu.qml
 )
 
 if (NOT ANDROID)

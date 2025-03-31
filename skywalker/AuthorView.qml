@@ -442,7 +442,7 @@ SkyPage {
                 text: postUtils.linkiFy(authorDescription, guiSettings.linkColor)
                 visible: contentVisible()
 
-                onLinkActivated: (link) => root.openLink(link)
+                LinkCatcher {}
             }
 
             AccessibleText {

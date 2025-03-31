@@ -1,3 +1,7 @@
+next
+====
+* Long press on hashtag to mute, focus or pin to favorites
+
 4.3
 ===
 * True video streaming. Video will start faster.

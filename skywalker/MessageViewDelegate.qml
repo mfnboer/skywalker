@@ -83,8 +83,6 @@ Rectangle {
             color: senderIsUser ? guiSettings.messageUserTextColor : guiSettings.messageOtherTextColor
             plainText: getMessageDisplayText()
 
-            onLinkActivated: (link) => root.openLink(link, message.text)
-
             function getMessageDisplayText() {
                 if (message.deleted)
                     return deletedText
@@ -100,6 +98,10 @@ Rectangle {
                 id: textMetrics
                 font: messageText.font
                 text: !message.deleted ? message.text : messageText.deletedText
+            }
+
+            LinkCatcher {
+                containingText: message.text
             }
         }
 

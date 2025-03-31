@@ -241,7 +241,7 @@ SkyPage {
             }
         }
 
-        Text {
+        AccessibleText {
             topPadding: 5
             bottomPadding: 10
             Layout.columnSpan: 3
@@ -253,10 +253,9 @@ SkyPage {
             color: guiSettings.textColor
             text: feed.formattedDescription
 
-            onLinkActivated: (link) => root.openLink(link, feed.description)
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: feed.description
+            LinkCatcher {
+                containingText: feed.description
+            }
         }
 
         Rectangle {

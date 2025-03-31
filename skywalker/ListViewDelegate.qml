@@ -192,7 +192,7 @@ Rectangle {
             }
         }
 
-        Text {
+        AccessibleText {
             topPadding: 5
             Layout.columnSpan: 3
             Layout.fillWidth: true
@@ -206,10 +206,9 @@ Rectangle {
             text: list.formattedDescription
             visible: text && showList
 
-            onLinkActivated: (link) => root.openLink(link, list.description)
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: list.description
+            LinkCatcher {
+                containingText: list.description
+            }
         }
 
         Rectangle {
