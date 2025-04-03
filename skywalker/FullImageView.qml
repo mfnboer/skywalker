@@ -41,6 +41,10 @@ SkyPage {
                     width: parent.width
                     height: parent.height
                     onClicked: showControls = !showControls
+                    onDoubleClicked: (mouse) => {
+                        showControls = !showControls
+                        img.toggleFullScale(mouse.x, mouse.y)
+                    }
                 }
                 Flickable {
                     id: altFlick

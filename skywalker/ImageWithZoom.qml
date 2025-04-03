@@ -76,4 +76,25 @@ ImageAutoRetry {
     function getCenter() {
         return Qt.point(width / 2, height / 2)
     }
+
+    function toggleFullScale(scaleX, scaleY) {
+        if (!img.zooming) {
+            const fullScale = img.sourceSize.width / img.width
+
+            if (fullScale > 1) {
+                const imgCenter = img.getCenter()
+                imgTranslation.x = (imgCenter.x - scaleX) * fullScale
+                imgTranslation.y = (imgCenter.y - scaleY) * fullScale
+                img.scale = fullScale
+                img.zooming = true
+                img.keepInScreen()
+            }
+        }
+        else {
+            img.scale = 1
+            img.zooming = false
+            imgTranslation.x = 0
+            imgTranslation.y = 0
+        }
+    }
 }

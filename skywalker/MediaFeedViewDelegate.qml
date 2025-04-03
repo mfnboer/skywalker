@@ -188,6 +188,10 @@ Rectangle {
                             height: parent.height
 
                             onClicked: showDetails = !showDetails
+                            onDoubleClicked: (mouse) => {
+                                showDetails = !showDetails
+                                img.toggleFullScale(mouse.x, mouse.y)
+                            }
                         }
 
                         FilteredImageWarning {

@@ -1,6 +1,7 @@
 next
 ====
 * Long press on hashtag to mute, focus or pin to favorites
+* Double click on full screen image zooms to full image size
 * Copy, cut and paste in post composer
 * Bug fixes
 
