@@ -73,7 +73,10 @@ Rectangle {
     readonly property int threadColumnWidth: threadBarVisible ? guiSettings.threadColumnWidth : 0
     readonly property int contentLeftMargin: threadBarVisible ? 0 : margin
 
-    property int prevY: 0
+    property int prevYCoord: 0
+    property int lastDY: 0
+    property int prevHeight: height
+    property int prevAnchorY: 0
     property bool isAnchorItem: false
     property bool onScreen: false
 
@@ -97,24 +100,47 @@ Rectangle {
     Accessible.name: getSpeech()
     Accessible.onPressAction: performAccessiblePressAction()
 
-    onIsAnchorItemChanged: prevY = y
+    onIsAnchorItemChanged: prevAnchorY = y
 
     // New items added at the top of the list sometimes push all items below downwards,
     // causing the list to scroll. To prevent that, we detect the downward movement and
     // scroll back (ideally Qt should not do push down)
     onYChanged: {
+        console.debug("PD Y CHANGED height:", height, "y:", y, "prevYCoord:", prevYCoord, "contentY:", ListView.view.contentY, "relY:", y - ListView.view.contentY, "index:", index, "anchor:", ListView.view.getAnchorIndex())
+
+        if (prevYCoord != 0)
+            lastDY = y - prevYCoord
+
+        prevYCoord = y
+
         checkOnScreen()
 
         if (!isAnchorItem)
             return
 
-        const dy = y - prevY
+        const dy = y - prevAnchorY
 
         if (dy != 0) {
-            prevY = y
-            console.debug("Calibration:", dy)
-            calibratedPosition(dy)
+            prevAnchorY = y
+            console.debug("PD Calibration old:", dy, "index:", index)
+            // TODO calibratedPosition(dy)
+            // Delete is the height change based calibration works
         }
+    }
+
+    onHeightChanged: {
+        const dh = height - prevHeight
+        const relY = y - ListView.view.contentY
+        const anchorIndex = ListView.view.getAnchorIndex()
+
+        console.debug("PD HEIGHT CHANGED height:", height, "prevHeight:", prevHeight, "dh:", dh, "lastDY:", lastDY, "y:", y, "contentY:", ListView.view.contentY, "relY:", relY, "index:", index, "anchor:", anchorIndex)
+
+        if (index < anchorIndex && y !== 0 && dh != -lastDY) {
+            console.debug("PD Calibration candidate dh:", dh, "lastDY:", lastDY, "index:", index, "anchor:", anchorIndex)
+            ListView.view.contentY += dh
+        }
+
+        lastDY = 0
     }
 
     onOnScreenChanged: {
@@ -893,6 +919,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        console.debug("PD NEW height:", height, "y:", y, "contentY:", ListView.view.contentY, "relY:", y - ListView.view.contentY, "index:", index, "anchor:", ListView.view.getAnchorIndex())
         ListView.view.enableOnScreenCheck = true
         checkOnScreen()
     }

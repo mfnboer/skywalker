@@ -33,7 +33,6 @@ ListView {
     flickDeceleration: guiSettings.flickDeceleration
     maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
-    cacheBuffer: 2000
     ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List
@@ -142,6 +141,8 @@ ListView {
         if (index < 0)
             return
 
+        console.debug("PD Calibration anchor index:", index)
+
         if (anchorItem)
             anchorItem.isAnchorItem = false
 
@@ -149,6 +150,13 @@ ListView {
 
         if (anchorItem)
             anchorItem.isAnchorItem = true
+    }
+
+    function getAnchorIndex() {
+        if (!anchorItem)
+            return -1
+
+        return anchorItem.index
     }
 
     function privateResetHeaderPosition() {
