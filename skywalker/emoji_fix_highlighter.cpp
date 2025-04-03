@@ -61,12 +61,12 @@ void EmojiFixHighlighter::highlightLengthExceeded(const QString& text)
     int totalCharLength = 0;
     int totalGraphemeLength = 0;
     const int prevBlockState = previousBlockState();
-    const int prevGraphemeLength = prevBlockState & 0x0000ffff;
-    const int prevCharLength = (prevBlockState >> 16) & 0x0000ffff;
+    const int prevGraphemeLength = prevBlockState >= 0 ? (prevBlockState & 0x0000ffff) : 0;
+    const int prevCharLength = prevBlockState >= 0 ? ((prevBlockState >> 16) & 0x0000ffff) : 0;
 
     if (currentBlock().blockNumber() > 0)
     {
-        if (prevGraphemeLength == -1)
+        if (prevBlockState == -1)
             return;
 
         totalGraphemeLength = prevGraphemeLength + 1; // +1 for newline
