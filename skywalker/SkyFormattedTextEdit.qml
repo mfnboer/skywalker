@@ -155,17 +155,21 @@ TextEdit {
 
         onPressed: (mouse) => {
             console.debug("Text pressed")
-            mouse.accepted = true
+            mouse.accepted = !editText.selectedText
         }
 
         // This signal only comes in if onPressed was accepted.
         onClicked: (mouse) => {
             console.debug("Text clicked")
-            Qt.inputMethod.reset() // TODO: does this solve hanging text issues?
-            editText.forceActiveFocus()
-            let position = editText.positionAt(mouse.x, mouse.y)
-            editText.cursorPosition = position
-            Qt.inputMethod.show()
+
+            if (!editText.selectedText) {
+                Qt.inputMethod.reset()
+                editText.forceActiveFocus()
+                let position = editText.positionAt(mouse.x, mouse.y)
+                editText.cursorPosition = position
+                Qt.inputMethod.show()
+            }
+
             mouse.accepted = false
         }
     }
