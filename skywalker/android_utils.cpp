@@ -171,6 +171,7 @@ bool AndroidUtils::translate(const QString& text)
         "(Ljava/lang/String;)Z",
         jsText.object<jstring>());
 #endif
+    return false;
 }
 
 }
