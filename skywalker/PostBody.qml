@@ -55,12 +55,13 @@ Column {
         Accessible.ignored: true
 
         LinkCatcher {
+            z: parent.z - 1
             containingText: postPlainText
         }
 
         Rectangle {
             anchors.fill: parent
-            z: parent.z - 1
+            z: parent.z - 2
             radius: 5
             color: postHighlightColor
             opacity: guiSettings.focusHighlightOpacity

@@ -2,7 +2,7 @@ next
 ====
 * Interface to Google Translate
 * Option to disable video streaming (video will be loaded completely
-  before playing if you disable it)
+  before playing if you disable streaming)
 * Fix flashing post bug
 * Bug fixes
 

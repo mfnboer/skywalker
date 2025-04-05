@@ -1,6 +1,6 @@
 import QtQuick
 
-// SHould be used inside a Text element
+// Should be used inside a Text element
 MouseArea {
     property string containingText
 

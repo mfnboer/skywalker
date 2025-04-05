@@ -101,6 +101,7 @@ Rectangle {
             }
 
             LinkCatcher {
+                z: parent.z - 1
                 containingText: message.text
             }
         }
