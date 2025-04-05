@@ -1028,6 +1028,17 @@ ApplicationWindow {
     //     onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
     // }
 
+    Connections {
+        target: Qt.application
+        onActiveChanged: {
+            if (Qt.application.active) {
+                console.debug("App resumed, forcing scene refresh")
+                root.visible = false
+                Qt.callLater(() => { root.visible = true })
+            }
+        }
+    }
+
     GuiSettings {
         id: guiSettings
     }

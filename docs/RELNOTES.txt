@@ -1,3 +1,9 @@
+4.3.2
+=====
+* Option to disable video streaming (video will be loaded completely
+  before playing if you disable it)
+* Bug fixes
+
 4.3.1
 =====
 * Long press on hashtag to mute, focus or pin to favorites

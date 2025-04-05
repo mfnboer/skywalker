@@ -675,6 +675,20 @@ bool UserSettings::getGifAutoPlay() const
     return mSettings.value("gifAutoPlay", true).toBool();
 }
 
+void UserSettings::setVideoStreamingEnabled(bool enabled)
+{
+    if (enabled == getVideoStreamingEnabled())
+        return;
+
+    mSettings.setValue("videoStreamingEnabled", enabled);
+    emit videoStreamingEnabledChanged();
+}
+
+bool UserSettings::getVideoStreamingEnabled() const
+{
+    return mSettings.value("videoStreamingEnabled", true).toBool();
+}
+
 void UserSettings::setVideoQuality(QEnums::VideoQuality quality)
 {
     if (quality == getVideoQuality())

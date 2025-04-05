@@ -296,6 +296,12 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Video streaming")
+        checked: userSettings.videoStreamingEnabled
+        onCheckedChanged: userSettings.videoStreamingEnabled = checked
+    }
+
+    AccessibleCheckBox {
         text: qsTr("Video auto play")
         checked: userSettings.videoAutoPlay
         onCheckedChanged: userSettings.videoAutoPlay = checked
