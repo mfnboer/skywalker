@@ -6,26 +6,44 @@ ThumbImageView {
     required property int maxHeight
     property bool tileMode: false
     property bool noCrop: false
-    readonly property bool isPortrait: root.width <= root.height
 
-    width: tileMode ? maxWidth : (isPortrait ? Math.min(implicitWidth, maxWidth) : undefined)
-    height: tileMode ? maxHeight : (isPortrait ? undefined : Math.min(implicitHeight, maxHeight))
+    width: maxWidth
+    height: maxHeight
     fillMode: Image.PreserveAspectFit
     imageView: image
-    sourceSize.width: isPortrait ? width * Screen.devicePixelRatio : undefined
-    sourceSize.height: isPortrait ? undefined : height * Screen.devicePixelRatio
     smooth: false
 
     onStatusChanged: {
-        if (status === Image.Ready) {
-            const idealHeight = sourceSize.height * width / sourceSize.width
+        if (status === Image.Ready)
+            resize()
+    }
 
-            if ((maxHeight > 0 && idealHeight > maxHeight) || tileMode) {
-                height = maxHeight
+    onMaxWidthChanged: Qt.callLater(resize)
+    onMaxHeightChanged: Qt.callLater(resize)
 
-                if (!noCrop)
-                    fillMode = Image.PreserveAspectCrop
-            }
+    function resize() {
+        const scale = Math.min(maxWidth / sourceSize.width, maxHeight / sourceSize.height)
+        const idealHeight = sourceSize.height * scale
+        const idealWidth = sourceSize.width * scale
+
+        if ((maxHeight > 0 && idealHeight > maxHeight) || tileMode) {
+            height = maxHeight
+
+            if (!noCrop)
+                fillMode = Image.PreserveAspectCrop
+        }
+        else {
+            height = idealHeight
+        }
+
+        if ((maxWidth > 0 && idealWidth > maxWidth) || tileMode) {
+            width = maxWidth
+
+            if (!noCrop)
+                fillMode = Image.PreserveAspectCrop
+        }
+        else {
+            width = idealWidth
         }
     }
 }

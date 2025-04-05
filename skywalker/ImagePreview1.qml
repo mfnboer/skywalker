@@ -14,7 +14,7 @@ Item {
 
     id: preview
 
-    // NOTE: these width/height can be overruled by that parent.
+    // NOTE: these width/height can be overruled by the parent.
     width: frame.width
     height: frame.height
 
