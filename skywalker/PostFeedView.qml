@@ -48,8 +48,6 @@ SkyListView {
     headerPositioning: ListView.PullBackHeader
 
     delegate: PostFeedViewDelegate {
-        required property int index
-
         width: postFeedView.width
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0

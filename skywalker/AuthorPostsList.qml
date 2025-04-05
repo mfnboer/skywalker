@@ -41,8 +41,6 @@ SkyListView {
     }
 
     delegate: PostFeedViewDelegate {
-        required property int index
-
         width: enclosingView.width
         swipeMode: [QEnums.AUTHOR_FEED_FILTER_VIDEO, QEnums.AUTHOR_FEED_FILTER_MEDIA].includes(feedFilter)
 

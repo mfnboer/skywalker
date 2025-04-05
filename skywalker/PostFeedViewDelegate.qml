@@ -8,6 +8,7 @@ Rectangle {
     readonly property int threadStyle: root.getSkywalker().getUserSettings().threadStyle
     readonly property string threadColor: root.getSkywalker().getUserSettings().threadColor
 
+    required property int index
     required property basicprofile author
     required property string postUri
     required property string postCid

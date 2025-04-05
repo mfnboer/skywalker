@@ -56,8 +56,6 @@ SkyListView {
     }
 
     delegate: PostFeedViewDelegate {
-        required property int index
-
         width: timelineView.width
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
 
