@@ -1021,6 +1021,10 @@ ApplicationWindow {
         skywalker: skywalker
     }
 
+    Utils {
+        id: utils
+    }
+
     // InviteCodeStore {
     //     id: inviteCodeStore
     //     skywalker: skywalker
@@ -1030,7 +1034,7 @@ ApplicationWindow {
 
     Connections {
         target: Qt.application
-        onActiveChanged: {
+        function onActiveChanged() {
             if (Qt.application.active) {
                 console.debug("App resumed, forcing scene refresh")
                 root.visible = false
@@ -1902,6 +1906,11 @@ ApplicationWindow {
     }
 
     function translateText(text) {
+        if (Qt.platform.os === "android") {
+            if (utils.translate(text))
+                return
+        }
+
         const lang = Qt.locale().name.split("_")[0]
         const normalized = UnicodeFonts.normalizeToNFKD(text)
         const encoded = encodeURIComponent(normalized)

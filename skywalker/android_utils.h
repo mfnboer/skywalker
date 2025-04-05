@@ -23,6 +23,7 @@ public:
     static void setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode);
 
     static void installVirtualKeyboardListener();
+    static bool translate(const QString& text);
 
 private:
     static void setKeepScreenOn(bool keepOn);

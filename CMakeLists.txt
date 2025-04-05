@@ -77,6 +77,8 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/VirtualKeyboardListener.java
         RESOURCES android/src/com/gmail/mfnboer/ScreenUtils.java
         RESOURCES android/src/com/gmail/mfnboer/KeyboardHeightProvider.java
+        QML_FILES
+        RESOURCES android/src/com/gmail/mfnboer/Translate.java
 )
 
 if (ANDROID)

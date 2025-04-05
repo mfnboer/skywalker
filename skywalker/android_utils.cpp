@@ -160,4 +160,17 @@ void AndroidUtils::installVirtualKeyboardListener()
 #endif
 }
 
+bool AndroidUtils::translate(const QString& text)
+{
+    qDebug() << "Translate:" << text;
+#if defined(Q_OS_ANDROID)
+    auto jsText = QJniObject::fromString(text);
+    return (bool)QJniObject::callStaticMethod<jboolean>(
+        "com/gmail/mfnboer/Translate",
+        "translate",
+        "(Ljava/lang/String;)Z",
+        jsText.object<jstring>());
+#endif
+}
+
 }
