@@ -65,6 +65,7 @@ Rectangle {
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsPinned
+    required property bool postIsThread
     required property bool postLocallyDeleted
     required property bool endOfFeed
     property bool swipeMode: false
@@ -464,6 +465,7 @@ Rectangle {
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
                 postMuted: postEntry.postMutedReason
+                postIsThread: postEntry.postIsThread
                 postVideo: postEntry.postVideo
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord

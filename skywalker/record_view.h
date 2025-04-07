@@ -25,6 +25,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(bool postIsReply READ isReply FINAL)
+    Q_PROPERTY(QEnums::TripleBool postIsThread READ isThread FINAL)
     Q_PROPERTY(BasicProfile replyToAuthor READ getReplyToAuthor FINAL)
     Q_PROPERTY(bool hasUnknownEmbed READ hasUnknownEmbed FINAL)
     Q_PROPERTY(QString unknownEmbedType READ getUnknownEmbedType FINAL)
@@ -90,6 +91,7 @@ public:
     QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }
     const QString& getContentWarning() const { return mContentWarning; }
     QEnums::MutedPostReason getMutedReason() const { return mMutedReason; }
+    QEnums::TripleBool isThread() const;
 
     bool getNotFound() const { return mNotFound; }
     bool getBlocked() const { return mBlocked; }

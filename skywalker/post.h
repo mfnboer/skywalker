@@ -138,6 +138,8 @@ public:
     bool isPinned() const { return mPinned; }
     void setPinned(bool pinned) { mPinned = pinned; }
 
+    QEnums::TripleBool isThread() const;
+
     QJsonObject toJson() const;
 
 private:

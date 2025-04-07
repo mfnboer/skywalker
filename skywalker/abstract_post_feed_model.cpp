@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "focus_hashtags.h"
+#include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -30,7 +31,9 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
-            [this]{ changeData({ int(Role::PostReplyToAuthor), int(Role::PostRecord), int(Role::PostRecordWithMedia) }); });
+            [this](const QString&){ changeData({ int(Role::PostReplyToAuthor), int(Role::PostRecord), int(Role::PostRecordWithMedia) }); });
+    connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
+            [this](const QString&){ changeData({ int(Role::PostIsThread), int(Role::PostRecord), int(Role::PostRecordWithMedia) }); });
 }
 
 void AbstractPostFeedModel::setOverrideLinkColor(const QString& color)
@@ -150,10 +153,31 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
 
 void AbstractPostFeedModel::preprocess(const Post& post)
 {
+    indexHashtags(post);
+    identifyThreadPost(post);
+}
+
+void AbstractPostFeedModel::indexHashtags(const Post& post)
+{
     const auto hashtags = post.getHashtags();
 
     for (const auto& tag : hashtags)
         mHashtags.insert(tag);
+}
+
+void AbstractPostFeedModel::identifyThreadPost(const Post& post)
+{
+    const QString replyRootUri = post.getReplyRootUri();
+
+    if (replyRootUri.isEmpty())
+        return;
+
+    if (post.getReplyToUri() == replyRootUri && post.getAuthorDid() == post.getReplyRootAuthorDid())
+    {
+        qDebug() << "Post is thread:" << replyRootUri;
+        auto& postThreadCache = PostThreadCache::instance();
+        postThreadCache.put(replyRootUri, true);
+    }
 }
 
 void AbstractPostFeedModel::unfoldPosts(int startIndex)
@@ -347,6 +371,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             if (!did.isEmpty() && !AuthorCache::instance().contains(did))
                 AuthorCache::instance().putProfile(did);
         }
+        else
+        {
+            if (record->isThread() == QEnums::TRIPLE_BOOL_UNKNOWN)
+                PostThreadCache::instance().putPost(record->getUri());
+        }
 
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         record->setContentVisibility(visibility);
@@ -377,6 +406,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
             if (!did.isEmpty() && !AuthorCache::instance().contains(did))
                 AuthorCache::instance().putProfile(did);
+        }
+        else
+        {
+            if (record.isThread() == QEnums::TRIPLE_BOOL_UNKNOWN)
+                PostThreadCache::instance().putPost(record.getUri());
         }
 
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
@@ -540,6 +574,24 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostIsPinned:
         return post.isPinned();
+    case Role::PostIsThread:
+    {
+        const auto isThread = post.isThread();
+
+        switch (isThread)
+        {
+        case QEnums::TRIPLE_BOOL_NO:
+            return false;
+        case QEnums::TRIPLE_BOOL_YES:
+            return true;
+        case QEnums::TRIPLE_BOOL_UNKNOWN:
+            PostThreadCache::instance().putPost(post.getUri());
+            break;
+        }
+
+        qWarning() << "Invalid isThread:" << isThread;
+        return false;
+    }
     case Role::PostLocallyDeleted:
     {
         if (getLocallyBlocked(post.getAuthor().getDid()))
@@ -643,6 +695,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostMutedReason), "postMutedReason" },
         { int(Role::PostHighlightColor), "postHighlightColor" },
         { int(Role::PostIsPinned), "postIsPinned" },
+        { int(Role::PostIsThread), "postIsThread" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };

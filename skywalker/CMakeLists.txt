@@ -511,6 +511,8 @@ qt_add_qml_module(libskywalker
         SOURCES text_splitter.cpp
         QML_FILES LinkCatcher.qml
         QML_FILES HashtagContextMenu.qml
+        SOURCES post_thread_cache.h
+        SOURCES post_thread_cache.cpp
 )
 
 if (NOT ANDROID)

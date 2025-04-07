@@ -58,6 +58,7 @@ Rectangle {
     required property string postContentWarning
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
+    required property bool postIsThread
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
@@ -328,6 +329,7 @@ Rectangle {
             postContentVisibility: videoPage.postContentVisibility
             postContentWarning: videoPage.postContentWarning
             postMuted: videoPage.postMutedReason
+            postIsThread: videoPage.postIsThread
             postDateTime: videoPage.postIndexedDateTime
             maxTextLines: videoPage.showFullPostText ? 1000 : 2
             bodyBackgroundColor: "transparent"

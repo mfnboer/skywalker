@@ -4,6 +4,7 @@
 #include "post_utils.h"
 #include "author_cache.h"
 #include "content_filter.h"
+#include "post_thread_cache.h"
 #include "unicode_fonts.h"
 #include "user_settings.h"
 #include "lexicon/draft.h"
@@ -850,6 +851,25 @@ std::vector<QString> Post::getHashtags() const
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     return ATProto::RichTextMaster::getFacetTags(*record);
+}
+
+QEnums::TripleBool Post::isThread() const
+{
+    if (isPlaceHolder())
+        return QEnums::TRIPLE_BOOL_NO;
+
+    if (isReply())
+        return QEnums::TRIPLE_BOOL_NO;
+
+    if (getReplyCount() == 0)
+        return QEnums::TRIPLE_BOOL_NO;
+
+    const bool* isThread = PostThreadCache::instance().getIsThread(getUri());
+
+    if (isThread == nullptr)
+        return QEnums::TRIPLE_BOOL_UNKNOWN;
+
+    return *isThread ? QEnums::TRIPLE_BOOL_YES : QEnums::TRIPLE_BOOL_NO;
 }
 
 QJsonObject Post::toJson() const

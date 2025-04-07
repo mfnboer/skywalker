@@ -21,7 +21,7 @@ NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
-            [this]{ changeData({ int(Role::ReplyToAuthor),
+            [this](const QString&){ changeData({ int(Role::ReplyToAuthor),
                                  int(Role::NotificationReasonPostReplyToAuthor),
                                  int(Role::NotificationPostRecord),
                                  int(Role::NotificationPostRecordWithMedia),

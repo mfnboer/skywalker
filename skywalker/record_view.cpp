@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "external_view.h"
+#include "post_thread_cache.h"
 #include "post_utils.h"
 #include "unicode_fonts.h"
 #include "user_settings.h"
@@ -356,6 +357,30 @@ bool RecordView::isReply() const
 
     const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
     return post->mReply != nullptr;
+}
+
+QEnums::TripleBool RecordView::isThread() const
+{
+    if (!mRecord)
+        return QEnums::TRIPLE_BOOL_NO;
+
+    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return QEnums::TRIPLE_BOOL_NO;;
+
+    if (isReply())
+        return QEnums::TRIPLE_BOOL_NO;
+
+    const QString uri = getUri();
+
+    if (uri.isEmpty())
+        return QEnums::TRIPLE_BOOL_NO;
+
+    const bool* postIsThread = PostThreadCache::instance().getIsThread(uri);
+
+    if (postIsThread == nullptr)
+        return QEnums::TRIPLE_BOOL_UNKNOWN;
+
+    return *postIsThread ? QEnums::TRIPLE_BOOL_YES : QEnums::TRIPLE_BOOL_NO;
 }
 
 QString RecordView::getReplyToAuthorDid() const

@@ -255,6 +255,7 @@ Rectangle {
                     postContentVisibility: notificationPostContentVisibility
                     postContentWarning: notificationPostContentWarning
                     postMuted: notificationPostMutedReason
+                    postIsThread: false
                     postVideo: notificationPostVideo
                     postExternal: notificationPostExternal
                     postRecord: notificationPostRecord
@@ -460,6 +461,7 @@ Rectangle {
                     postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                     postContentWarning: ""
                     postMuted: QEnums.MUTED_POST_NONE
+                    postIsThread: false
                     postDateTime: notificationReasonPostTimestamp
                     postVideo: notificationReasonPostVideo
                     postExternal: notificationReasonPostExternal

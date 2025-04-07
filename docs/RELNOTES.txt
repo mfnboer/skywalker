@@ -1,3 +1,7 @@
+next
+====
+* Show thread symbol for a post if it is the start of a thread
+
 4.3.2
 =====
 * Interface to Google Translate

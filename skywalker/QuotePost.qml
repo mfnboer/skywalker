@@ -56,6 +56,7 @@ Column {
         postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         postContentWarning: ""
         postMuted: QEnums.MUTED_POST_NONE
+        postIsThread: false
         postDateTime: postDateTime
         maxTextLines: 5
         bodyBackgroundColor: quoteColumn.ellipsisBackgroundColor

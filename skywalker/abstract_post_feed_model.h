@@ -90,6 +90,7 @@ public:
         PostMutedReason,
         PostHighlightColor,
         PostIsPinned,
+        PostIsThread,
         PostLocallyDeleted,
         EndOfFeed
     };
@@ -202,6 +203,9 @@ protected:
     int mModelId = -1;
 
 private:
+    void indexHashtags(const Post& post);
+    void identifyThreadPost(const Post& post);
+
     void postBookmarkedChanged();
 
     std::unordered_set<QString> mStoredCids;

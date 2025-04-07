@@ -17,6 +17,7 @@ Column {
     required property string postContentWarning
     required property int postMuted // QEnums::MutedPostReason
     required property string postPlainText
+    required property bool postIsThread
     property var postVideo // videoView
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
@@ -31,6 +32,7 @@ Column {
     property string postHighlightColor: "transparent"
     property bool isDraft: false
     property bool swipeMode: false
+    readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes("🧵")
 
     signal activateSwipe
 
@@ -48,7 +50,7 @@ Column {
         textFormat: Text.RichText
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
-        plainText: postText
+        plainText: !showThreadIndicator ? postText : "🧵 " + postText
         bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
         visible: postVisible() && postText
 

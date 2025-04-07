@@ -11,6 +11,7 @@
 #include "list_cache.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
+#include "post_thread_cache.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
 #include "utils.h"
@@ -87,6 +88,7 @@ Skywalker::Skywalker(QObject* parent) :
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
     ListCache::instance().setSkywalker(this);
+    PostThreadCache::instance().setSkywalker(this);
     OffLineMessageChecker::createNotificationChannels();
 
     auto& jniCallbackListener = JNICallbackListener::getInstance();

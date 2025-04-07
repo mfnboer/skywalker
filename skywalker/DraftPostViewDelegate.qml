@@ -101,6 +101,7 @@ Rectangle {
                 postRecord: draftPostView.postRecord
                 postRecordWithMedia: draftPostView.postRecordWithMedia
                 postDateTime: draftPostView.postIndexedDateTime
+                postIsThread: false
                 isDraft: true
             }
         }

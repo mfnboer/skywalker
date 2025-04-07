@@ -63,6 +63,7 @@ Item {
                 postContentVisibility: record.contentVisibility
                 postContentWarning: record.contentWarning
                 postMuted: record.mutedReason
+                postIsThread: record.postIsThread === QEnums.TRIPLE_BOOL_YES
                 postVideo: record.video
                 postExternal: record.external
                 postDateTime: record.postDateTime
