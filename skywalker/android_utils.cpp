@@ -174,4 +174,20 @@ bool AndroidUtils::translate(const QString& text)
     return false;
 }
 
+void AndroidUtils::showEmojiPicker()
+{
+    qDebug() << "Show emoji picker";
+#if defined(Q_OS_ANDROID)
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/EmojiPickerDialog", "show", "()V");
+#endif
+}
+
+void AndroidUtils::dismissEmojiPicker()
+{
+    qDebug() << "Dismiss emoji picker";
+#if defined(Q_OS_ANDROID)
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/EmojiPickerDialog", "dismiss", "()V");
+#endif
+}
+
 }

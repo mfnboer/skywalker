@@ -100,10 +100,10 @@ Rectangle {
                 text: !message.deleted ? message.text : messageText.deletedText
             }
 
-            LinkCatcher {
-                z: parent.z - 1
-                containingText: message.text
-            }
+            // LinkCatcher {
+            //     z: parent.z - 1
+            //     containingText: message.text
+            // }
         }
 
         Rectangle {
@@ -168,6 +168,11 @@ Rectangle {
 
                     MenuItemSvg { svg: SvgOutline.report }
                 }
+                AccessibleMenuItem {
+                    text: qsTr("Reaction")
+                    visible: !senderIsUser
+                    onTriggered: utils.showEmojiPicker()
+                }
             }
         }
     }
@@ -184,6 +189,10 @@ Rectangle {
         font.pointSize: guiSettings.scaledFont(6/8)
         text: Qt.locale().toString(message.sentAt, Qt.locale().timeFormat(Locale.ShortFormat))
         visible: !sameSenderAsNext || !sameTimeAsNext
+    }
+
+    Utils {
+        id: utils
     }
 
     function getMessageDateIndication() {

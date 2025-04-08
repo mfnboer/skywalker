@@ -6,6 +6,8 @@
 
 namespace Skywalker {
 
+bool Utils::sEmojiPickerShown = false;
+
 std::optional<QString> Utils::makeOptionalString(const QString& str)
 {
     std::optional<QString> optionalString;
@@ -30,6 +32,24 @@ bool Utils::similarColors(const QColor& lhs, const QColor& rhs)
 bool Utils::translate(const QString& text)
 {
     return AndroidUtils::translate(text);
+}
+
+void Utils::showEmojiPicker()
+{
+    if (!sEmojiPickerShown)
+    {
+        AndroidUtils::showEmojiPicker();
+        sEmojiPickerShown = true;
+    }
+}
+
+void Utils::dismissEmojiPicker()
+{
+    if (sEmojiPickerShown)
+    {
+        AndroidUtils::dismissEmojiPicker();
+        sEmojiPickerShown = false;
+    }
 }
 
 }

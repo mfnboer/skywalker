@@ -25,6 +25,9 @@ public:
     static void installVirtualKeyboardListener();
     static bool translate(const QString& text);
 
+    static void showEmojiPicker();
+    static void dismissEmojiPicker();
+
 private:
     static void setKeepScreenOn(bool keepOn);
 

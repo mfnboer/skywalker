@@ -79,6 +79,7 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/KeyboardHeightProvider.java
         QML_FILES
         RESOURCES android/src/com/gmail/mfnboer/Translate.java
+        RESOURCES android/src/com/gmail/mfnboer/EmojiPickerDialog.java
 )
 
 if (ANDROID)

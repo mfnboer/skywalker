@@ -26,7 +26,11 @@ ApplicationWindow {
 
         // This catches the back-button on Android
 
-        if (currentStack().depth > 1) {
+        if (utils.isEmojiPickerShown()) {
+            utils.dismissEmojiPicker()
+            event.accepted = false
+        }
+        else if (currentStack().depth > 1) {
             let item = currentStackItem()
 
             if (item instanceof SignIn || item instanceof Login || item instanceof StartupStatus) {
