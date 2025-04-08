@@ -64,6 +64,9 @@ public class EmojiPickerDialog {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (rootView == null)
+                    return;
+
                 rootView.removeView(container);
                 container = null;
                 rootView = null;
