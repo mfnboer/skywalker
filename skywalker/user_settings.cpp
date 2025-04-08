@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "user_settings.h"
 #include "definitions.h"
+#include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
 
 // NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
@@ -854,7 +855,7 @@ void UserSettings::setThreadPrefix(QString prefix)
 
 QString UserSettings::getThreadPrefix() const
 {
-    return mSettings.value("threadPrefix", "🧵").toString();
+    return mSettings.value("threadPrefix", UnicodeFonts::THREAD_SYMBOL).toString();
 }
 
 void UserSettings::setThreadAutoSplit(bool autoSplit)

@@ -44,7 +44,7 @@ Dialog {
             height: parent.height
             svg: SvgOutline.close
             accessibleName: qsTr("reset prefix")
-            onClicked: textInput.text = "🧵"
+            onClicked: textInput.text = UnicodeFonts.THREAD_SYMBOL
         }
     }
     AccessibleText {

@@ -12,11 +12,14 @@ namespace Skywalker {
 class UnicodeFonts : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString THREAD_SYMBOL MEMBER THREAD_SYMBOL CONSTANT)
     QML_ELEMENT
     QML_SINGLETON
 
 public:
     using FontType = QEnums::FontType;
+
+    static constexpr const char* THREAD_SYMBOL = "🧵";
 
     static bool isAlpha(QChar c);
     static bool isDigit(QChar c);

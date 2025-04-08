@@ -1151,10 +1151,18 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // context to the user. The leaf of this thread is a reply that passed
                 // through the filter settings.
                 if (assembleThreads && page->tryAddToExistingThread(post, *replyRef))
+                {
+                    preprocess(post);
                     continue;
+                }
 
                 if (!mustShowReply(post, replyRef))
+                {
+                    // Preprocess replies when they are not shown. Those can help
+                    // identify threads.
+                    preprocess(post);
                     continue;
+                }
 
                 bool rootAdded = false;
                 const auto& rootCid = replyRef->mRoot.getCid();

@@ -32,7 +32,7 @@ Column {
     property string postHighlightColor: "transparent"
     property bool isDraft: false
     property bool swipeMode: false
-    readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes("🧵")
+    readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
 
     signal activateSwipe
 
@@ -50,7 +50,7 @@ Column {
         textFormat: Text.RichText
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
-        plainText: !showThreadIndicator ? postText : "🧵 " + postText
+        plainText: postText + (showThreadIndicator ? `<br>${UnicodeFonts.THREAD_SYMBOL}` : "")
         bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
         visible: postVisible() && postText
 

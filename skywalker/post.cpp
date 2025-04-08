@@ -867,7 +867,19 @@ QEnums::TripleBool Post::isThread() const
     const bool* isThread = PostThreadCache::instance().getIsThread(getUri());
 
     if (isThread == nullptr)
+    {
+        const QString text = getText();
+        if (text.contains(UnicodeFonts::THREAD_SYMBOL))
+        {
+            // If the text contains the thread symbol we assume it is a thread.
+            // Technically this may not be true, but for our use (display the symbol for
+            // threads) it is good enough.
+            PostThreadCache::instance().put(getUri(), true);
+            return QEnums::TRIPLE_BOOL_YES;
+        }
+
         return QEnums::TRIPLE_BOOL_UNKNOWN;
+    }
 
     return *isThread ? QEnums::TRIPLE_BOOL_YES : QEnums::TRIPLE_BOOL_NO;
 }

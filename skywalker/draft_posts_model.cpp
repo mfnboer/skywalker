@@ -3,6 +3,7 @@
 #include "draft_posts_model.h"
 #include "draft_posts.h"
 #include "meme_maker.h"
+#include "unicode_fonts.h"
 
 namespace Skywalker {
 
@@ -126,13 +127,13 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
     case Role::PostText:
     {
         auto text = result.toString();
-        text += QString("<br>🧵1/%1").arg(threadLength);
+        text += QString("<br>%011/%02").arg(UnicodeFonts::THREAD_SYMBOL).arg(threadLength);
         return text;
     }
     case Role::PostPlainText:
     {
         auto text = result.toString();
-        text += QString("\n🧵1/%1").arg(threadLength);
+        text += QString("\n%011/%02").arg(UnicodeFonts::THREAD_SYMBOL).arg(threadLength);
         return text;
     }
     default:

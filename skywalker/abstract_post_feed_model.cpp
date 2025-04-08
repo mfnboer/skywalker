@@ -586,7 +586,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return true;
         case QEnums::TRIPLE_BOOL_UNKNOWN:
             PostThreadCache::instance().putPost(post.getUri());
-            break;
+            return false;
         }
 
         qWarning() << "Invalid isThread:" << isThread;

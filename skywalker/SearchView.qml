@@ -273,7 +273,7 @@ SkyPage {
 
             FlickableRefresher {
                 scrollToTopButtonMargin: pageFooter.height
-                inProgress: postsViewTop.model.getFeedInProgress
+                inProgress: postsViewTop.model && postsViewTop.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
                 topText: qsTr("Pull down to refresh")
@@ -288,7 +288,7 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: postsViewTop.model.getFeedInProgress
+                running: postsViewTop.model && postsViewTop.model.getFeedInProgress
             }
         }
 
@@ -310,7 +310,7 @@ SkyPage {
 
             FlickableRefresher {
                 scrollToTopButtonMargin: pageFooter.height
-                inProgress: postsViewLatest.model.getFeedInProgress
+                inProgress: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
                 topText: qsTr("Pull down to refresh")
@@ -325,7 +325,7 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: postsViewLatest.model.getFeedInProgress
+                running: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
             }
         }
 
